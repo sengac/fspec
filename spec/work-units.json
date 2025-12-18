@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-18T04:10:02.791Z"
+    "lastUpdated": "2025-12-18T04:46:57.164Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -52809,15 +52809,31 @@
       "id": "NAPI-002",
       "title": "TUI Integration for Codelet AI Agent",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-12-18T04:09:48.573Z",
-      "updatedAt": "2025-12-18T04:12:28.975Z",
+      "updatedAt": "2025-12-18T04:46:57.190Z",
       "description": "Integrate codelet-napi native module into fspec's existing TUI infrastructure to enable AI-powered conversations within the terminal interface. Uses modal overlay approach with auto-execution of tools, fresh sessions each time, and provider switching support.",
       "children": [],
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-12-18T04:09:55.487Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-18T04:30:09.476Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-18T04:32:09.685Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-18T04:42:21.025Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-18T04:46:57.190Z"
         }
       ],
       "userStory": {
@@ -52903,7 +52919,41 @@
         }
       ],
       "nextExampleId": 6,
-      "estimate": 5
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Integrates codelet-napi native module into existing fspec TUI using Ink/React modal overlay pattern",
+          "deleted": false,
+          "createdAt": "2025-12-18T04:28:47.527Z"
+        },
+        {
+          "id": 1,
+          "text": "Uses CodeletSession from codelet-napi for AI provider interactions with streaming via callback",
+          "deleted": false,
+          "createdAt": "2025-12-18T04:28:56.056Z"
+        },
+        {
+          "id": 2,
+          "text": "Creates new AgentModal component in src/tui/components/ that renders as overlay on existing TUI views",
+          "deleted": false,
+          "createdAt": "2025-12-18T04:28:57.782Z"
+        },
+        {
+          "id": 3,
+          "text": "Wires agent modal into Board component via hotkey handler (Ctrl+A or similar)",
+          "deleted": false,
+          "createdAt": "2025-12-18T04:28:59.979Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/NAPI-002/ast-research-boardview-functions.md",
+        "spec/attachments/NAPI-002/ast-research-unified-board-layout.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-18T04:46:57.190Z"
     }
   },
   "states": {
@@ -52966,13 +53016,13 @@
       "EXMAP-004",
       "AGENT-001",
       "BROWSE-001",
-      "BOARD-020",
-      "NAPI-002"
+      "BOARD-020"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "NAPI-002",
       "NAPI-001",
       "CLEAN-005",
       "REMIND-015",

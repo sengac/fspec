@@ -38,5 +38,8 @@ serde_json = "1"
 # Logging
 tracing = "0.1"
 
+# Environment
+dotenvy = "0.15"
+
 [build-dependencies]
 napi-build = "2"

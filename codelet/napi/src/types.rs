@@ -69,7 +69,7 @@ pub struct StreamChunk {
 impl StreamChunk {
     pub fn text(text: String) -> Self {
         Self {
-            chunk_type: "text".to_string(),
+            chunk_type: "Text".to_string(),
             text: Some(text),
             tool_call: None,
             tool_result: None,
@@ -79,7 +79,7 @@ impl StreamChunk {
 
     pub fn tool_call(info: ToolCallInfo) -> Self {
         Self {
-            chunk_type: "tool_call".to_string(),
+            chunk_type: "ToolCall".to_string(),
             text: None,
             tool_call: Some(info),
             tool_result: None,
@@ -89,7 +89,7 @@ impl StreamChunk {
 
     pub fn tool_result(info: ToolResultInfo) -> Self {
         Self {
-            chunk_type: "tool_result".to_string(),
+            chunk_type: "ToolResult".to_string(),
             text: None,
             tool_call: None,
             tool_result: Some(info),
@@ -99,7 +99,7 @@ impl StreamChunk {
 
     pub fn done() -> Self {
         Self {
-            chunk_type: "done".to_string(),
+            chunk_type: "Done".to_string(),
             text: None,
             tool_call: None,
             tool_result: None,
@@ -109,7 +109,7 @@ impl StreamChunk {
 
     pub fn error(message: String) -> Self {
         Self {
-            chunk_type: "error".to_string(),
+            chunk_type: "Error".to_string(),
             text: None,
             tool_call: None,
             tool_result: None,

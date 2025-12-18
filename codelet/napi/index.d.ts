@@ -77,7 +77,12 @@ export declare class CodeletSession {
   /**
    * Send a prompt and stream the response
    *
-   * The callback receives StreamChunk objects with type: 'text', 'tool_call', 'tool_result', 'done', or 'error'
+   * The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'
+   *
+   * Uses the same agent infrastructure as codelet-cli:
+   * - ProviderManager for provider access (consistent with CLI)
+   * - System-reminders in messages provide context (CLAUDE.md, environment)
+   * - RigAgent with all 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearch)
    */
   prompt(input: string, callback: (chunk: StreamChunk) => void): Promise<void>;
 }

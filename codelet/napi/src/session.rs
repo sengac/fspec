@@ -1,6 +1,11 @@
 //! CodeletSession - Main class exposed to JavaScript
 //!
 //! Wraps codelet's Session and provides async streaming prompts via ThreadsafeFunction.
+//!
+//! Uses the same agent infrastructure as codelet-cli:
+//! - ProviderManager for consistent provider access
+//! - System-reminders for context (CLAUDE.md, environment)
+//! - RigAgent with all 9 tools for full agent capabilities
 
 use crate::types::{Message, StreamChunk, TokenTracker, ToolCallInfo, ToolResultInfo};
 use napi::bindgen_prelude::*;
@@ -24,6 +29,10 @@ impl CodeletSession {
     /// Priority order: Claude > Gemini > Codex > OpenAI
     #[napi(constructor)]
     pub fn new(provider_name: Option<String>) -> Result<Self> {
+        // Load environment variables from .env file (if present)
+        // This is required for API keys to be available when running from Node.js
+        let _ = dotenvy::dotenv();
+
         let session = codelet_cli::session::Session::new(provider_name.as_deref())
             .map_err(|e| Error::from_reason(format!("Failed to create session: {e}")))?;
 
@@ -188,7 +197,12 @@ impl CodeletSession {
 
     /// Send a prompt and stream the response
     ///
-    /// The callback receives StreamChunk objects with type: 'text', 'tool_call', 'tool_result', 'done', or 'error'
+    /// The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'
+    ///
+    /// Uses the same agent infrastructure as codelet-cli:
+    /// - ProviderManager for provider access (consistent with CLI)
+    /// - System-reminders in messages provide context (CLAUDE.md, environment)
+    /// - RigAgent with all 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearch)
     #[napi]
     pub async fn prompt(
         &self,
@@ -199,7 +213,6 @@ impl CodeletSession {
         >,
     ) -> Result<()> {
         use codelet_core::RigAgent;
-        use codelet_providers::{ClaudeProvider, CodexProvider, GeminiProvider, OpenAIProvider};
         use rig::message::{Message as RigMessage, UserContent};
         use rig::OneOrMany;
 
@@ -207,6 +220,7 @@ impl CodeletSession {
         let session_arc = Arc::clone(&self.inner);
 
         // Get current provider name from session
+        // Note: CLAUDE.md content is in messages via system-reminders (same as CLI)
         let current_provider = {
             let session = session_arc
                 .lock()
@@ -232,36 +246,41 @@ impl CodeletSession {
             session.messages.clone()
         };
 
+        // Macro to eliminate code duplication across provider branches
+        // Uses ProviderManager to get providers (consistent with CLI agent_runner.rs)
+        // Note: Preamble is None - CLAUDE.md context comes via system-reminders in messages
+        macro_rules! run_with_provider {
+            ($session_arc:expr, $get_method:ident, $input:expr, $messages:expr, $callback:expr) => {{
+                let provider = {
+                    let mut session = $session_arc
+                        .lock()
+                        .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
+                    session
+                        .provider_manager_mut()
+                        .$get_method()
+                        .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?
+                };
+                // Pass None for preamble - same as CLI (CLAUDE.md is in messages as system-reminder)
+                let rig_agent = provider.create_rig_agent(None);
+                let agent = RigAgent::with_default_depth(rig_agent);
+                stream_with_agent(agent, $input, $messages, $callback).await
+            }};
+        }
+
         // Build agent and stream based on provider
-        // Create provider directly - they don't need ProviderManager for creation
+        // Uses ProviderManager for consistent provider access (same as CLI)
         let result = match current_provider.as_str() {
             "claude" => {
-                let provider = ClaudeProvider::new()
-                    .map_err(|e| Error::from_reason(format!("Failed to create Claude provider: {e}")))?;
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = RigAgent::with_default_depth(rig_agent);
-                stream_with_agent(agent, &input, &mut messages, callback).await
+                run_with_provider!(session_arc, get_claude, &input, &mut messages, callback)
             }
             "openai" => {
-                let provider = OpenAIProvider::new()
-                    .map_err(|e| Error::from_reason(format!("Failed to create OpenAI provider: {e}")))?;
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = RigAgent::with_default_depth(rig_agent);
-                stream_with_agent(agent, &input, &mut messages, callback).await
+                run_with_provider!(session_arc, get_openai, &input, &mut messages, callback)
             }
             "gemini" => {
-                let provider = GeminiProvider::new()
-                    .map_err(|e| Error::from_reason(format!("Failed to create Gemini provider: {e}")))?;
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = RigAgent::with_default_depth(rig_agent);
-                stream_with_agent(agent, &input, &mut messages, callback).await
+                run_with_provider!(session_arc, get_gemini, &input, &mut messages, callback)
             }
             "codex" => {
-                let provider = CodexProvider::new()
-                    .map_err(|e| Error::from_reason(format!("Failed to create Codex provider: {e}")))?;
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = RigAgent::with_default_depth(rig_agent);
-                stream_with_agent(agent, &input, &mut messages, callback).await
+                run_with_provider!(session_arc, get_codex, &input, &mut messages, callback)
             }
             _ => {
                 return Err(Error::from_reason(format!(
