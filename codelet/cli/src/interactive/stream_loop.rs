@@ -72,7 +72,10 @@ where
     let token_state = Arc::new(Mutex::new(TokenState {
         input_tokens: session.token_tracker.input_tokens,
         cache_read_input_tokens: session.token_tracker.cache_read_input_tokens.unwrap_or(0),
-        cache_creation_input_tokens: session.token_tracker.cache_creation_input_tokens.unwrap_or(0),
+        cache_creation_input_tokens: session
+            .token_tracker
+            .cache_creation_input_tokens
+            .unwrap_or(0),
         compaction_needed: false,
     }));
 
@@ -82,19 +85,20 @@ where
     if let Ok(manager_arc) = get_debug_capture_manager() {
         if let Ok(mut manager) = manager_arc.lock() {
             if manager.is_enabled() {
-                let state = token_state.lock().unwrap();
-                manager.capture(
-                    "compaction.check",
-                    serde_json::json!({
-                        "timing": "hook-setup",
-                        "inputTokens": state.input_tokens,
-                        "cacheReadInputTokens": state.cache_read_input_tokens,
-                        "threshold": threshold,
-                        "contextWindow": context_window,
-                        "messageCount": session.messages.len(),
-                    }),
-                    None,
-                );
+                if let Ok(state) = token_state.lock() {
+                    manager.capture(
+                        "compaction.check",
+                        serde_json::json!({
+                            "timing": "hook-setup",
+                            "inputTokens": state.input_tokens,
+                            "cacheReadInputTokens": state.cache_read_input_tokens,
+                            "threshold": threshold,
+                            "contextWindow": context_window,
+                            "messageCount": session.messages.len(),
+                        }),
+                        None,
+                    );
+                }
             }
         }
     }
@@ -207,38 +211,39 @@ where
                         if let Ok(manager_arc) = get_debug_capture_manager() {
                             if let Ok(mut manager) = manager_arc.lock() {
                                 if manager.is_enabled() {
-                                    let state = token_state.lock().unwrap();
-                                    let duration_ms = api_start_time.elapsed().as_millis() as u64;
-                                    manager.capture(
-                                        "api.response.end",
-                                        serde_json::json!({
-                                            "duration": duration_ms,
-                                            "usage": {
+                                    if let Ok(state) = token_state.lock() {
+                                        let duration_ms = api_start_time.elapsed().as_millis() as u64;
+                                        manager.capture(
+                                            "api.response.end",
+                                            serde_json::json!({
+                                                "duration": duration_ms,
+                                                "usage": {
+                                                    "inputTokens": state.input_tokens,
+                                                    "outputTokens": turn_output_tokens,
+                                                    "cacheReadInputTokens": state.cache_read_input_tokens,
+                                                    "cacheCreationInputTokens": state.cache_creation_input_tokens,
+                                                },
+                                                "responseLength": assistant_text.len(),
+                                            }),
+                                            Some(codelet_common::debug_capture::CaptureOptions {
+                                                request_id: Some(request_id.clone()),
+                                            }),
+                                        );
+
+                                        // CLI-022: Capture token.update event
+                                        manager.capture(
+                                            "token.update",
+                                            serde_json::json!({
                                                 "inputTokens": state.input_tokens,
                                                 "outputTokens": turn_output_tokens,
                                                 "cacheReadInputTokens": state.cache_read_input_tokens,
                                                 "cacheCreationInputTokens": state.cache_creation_input_tokens,
-                                            },
-                                            "responseLength": assistant_text.len(),
-                                        }),
-                                        Some(codelet_common::debug_capture::CaptureOptions {
-                                            request_id: Some(request_id.clone()),
-                                        }),
-                                    );
-
-                                    // CLI-022: Capture token.update event
-                                    manager.capture(
-                                        "token.update",
-                                        serde_json::json!({
-                                            "inputTokens": state.input_tokens,
-                                            "outputTokens": turn_output_tokens,
-                                            "cacheReadInputTokens": state.cache_read_input_tokens,
-                                            "cacheCreationInputTokens": state.cache_creation_input_tokens,
-                                            "totalInputTokens": state.input_tokens,
-                                            "totalOutputTokens": turn_output_tokens,
-                                        }),
-                                        None,
-                                    );
+                                                "totalInputTokens": state.input_tokens,
+                                                "totalOutputTokens": turn_output_tokens,
+                                            }),
+                                            None,
+                                        );
+                                    }
                                 }
                             }
                         }
@@ -296,28 +301,29 @@ where
     }
 
     // Check if hook triggered compaction (cancelled before API call could proceed)
-    let compaction_needed = {
-        let state = token_state.lock().unwrap();
-        state.compaction_needed
-    };
+    let compaction_needed = token_state
+        .lock()
+        .map(|state| state.compaction_needed)
+        .unwrap_or(false);
 
     if compaction_needed && !is_interrupted.load(Ordering::Relaxed) {
         // Capture compaction.triggered event
         if let Ok(manager_arc) = get_debug_capture_manager() {
             if let Ok(mut manager) = manager_arc.lock() {
                 if manager.is_enabled() {
-                    let state = token_state.lock().unwrap();
-                    manager.capture(
-                        "compaction.triggered",
-                        serde_json::json!({
-                            "timing": "hook-triggered",
-                            "inputTokens": state.input_tokens,
-                            "cacheReadInputTokens": state.cache_read_input_tokens,
-                            "threshold": threshold,
-                            "contextWindow": context_window,
-                        }),
-                        None,
-                    );
+                    if let Ok(state) = token_state.lock() {
+                        manager.capture(
+                            "compaction.triggered",
+                            serde_json::json!({
+                                "timing": "hook-triggered",
+                                "inputTokens": state.input_tokens,
+                                "cacheReadInputTokens": state.cache_read_input_tokens,
+                                "threshold": threshold,
+                                "contextWindow": context_window,
+                            }),
+                            None,
+                        );
+                    }
                 }
             }
         }
@@ -372,11 +378,13 @@ where
     // The hook captures per-request values in on_stream_completion_response_finish
     if !is_interrupted.load(Ordering::Relaxed) {
         // Get final token values from hook state (per-request, not accumulated)
-        let state = token_state.lock().unwrap();
-        session.token_tracker.input_tokens = state.input_tokens;
-        session.token_tracker.output_tokens = turn_output_tokens;
-        session.token_tracker.cache_read_input_tokens = Some(state.cache_read_input_tokens);
-        session.token_tracker.cache_creation_input_tokens = Some(state.cache_creation_input_tokens);
+        if let Ok(state) = token_state.lock() {
+            session.token_tracker.input_tokens = state.input_tokens;
+            session.token_tracker.output_tokens = turn_output_tokens;
+            session.token_tracker.cache_read_input_tokens = Some(state.cache_read_input_tokens);
+            session.token_tracker.cache_creation_input_tokens =
+                Some(state.cache_creation_input_tokens);
+        }
     }
 
     Ok(())

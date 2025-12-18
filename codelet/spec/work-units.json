@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-18T00:30:01.560Z"
+    "lastUpdated": "2025-12-18T01:26:00.583Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -7305,9 +7305,9 @@
       "id": "WEB-001",
       "title": "Web Search and Fetch Tool Integration",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2025-12-17T07:30:51.323Z",
-      "updatedAt": "2025-12-17T08:58:35.425Z",
+      "updatedAt": "2025-12-18T01:26:00.596Z",
       "description": "Implement native web search and fetch capabilities similar to Codex, allowing AI agents to search the web and retrieve content from URLs",
       "children": [],
       "stateHistory": [
@@ -7334,6 +7334,10 @@
         {
           "state": "validating",
           "timestamp": "2025-12-17T08:58:35.425Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-18T01:26:00.596Z"
         }
       ],
       "questions": [
@@ -7454,7 +7458,7 @@
         "spec/attachments/WEB-001/ast-research-web-search-structures.json",
         "spec/attachments/WEB-001/codex-websearch-action.rs"
       ],
-      "updated": "2025-12-17T08:22:27.497Z"
+      "updated": "2025-12-18T01:26:00.596Z"
     },
     "WEB-002": {
       "id": "WEB-002",
@@ -7618,10 +7622,9 @@
       "CLI-021",
       "REFAC-013"
     ],
-    "validating": [
-      "WEB-001"
-    ],
+    "validating": [],
     "done": [
+      "WEB-001",
       "WEB-002",
       "REFAC-015",
       "PROV-006",

@@ -207,10 +207,7 @@ fn test_agent_finds_pattern_in_page_with_context() -> Result<(), ChromeError> {
 
     // @step And multiple matches are returned if present
     // example.com mentions "example" multiple times
-    assert!(
-        matches.len() >= 1,
-        "Should return matches if present"
-    );
+    assert!(matches.len() >= 1, "Should return matches if present");
 
     Ok(())
 }

@@ -57,6 +57,9 @@ regex.workspace = true
 uuid.workspace = true
 chrono.workspace = true
 
+# Signal handling for browser cleanup
+ctrlc.workspace = true
+
 [dev-dependencies]
 tempfile.workspace = true
 tokio-test.workspace = true

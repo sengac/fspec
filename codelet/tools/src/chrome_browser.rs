@@ -102,12 +102,18 @@ impl ChromeBrowser {
             Browser::connect_with_timeout(ws_url.clone(), config.timeout)
                 .map_err(|e| ChromeError::ConnectionError(e.to_string()))?
         } else {
-            // Build launch options
+            // Build launch options with autoplay disabled to prevent media from playing
             let launch_options = LaunchOptions {
                 headless: config.headless,
                 path: config.chrome_path.clone(),
                 idle_browser_timeout: config.timeout,
                 sandbox: true,
+                args: vec![
+                    // Prevent media from auto-playing (videos, audio)
+                    std::ffi::OsStr::new("--autoplay-policy=user-gesture-required"),
+                    // Mute audio as additional safety measure
+                    std::ffi::OsStr::new("--mute-audio"),
+                ],
                 ..Default::default()
             };
 
@@ -183,6 +189,14 @@ impl ChromeBrowser {
                 Some(v.to_string())
             }
         }))
+    }
+
+    /// Clean up a tab after use by closing it
+    ///
+    /// Closing the tab via CDP's Target.closeTarget stops all media,
+    /// severs network connections, and frees all resources.
+    pub fn cleanup_tab(&self, tab: &Arc<Tab>) {
+        let _ = tab.close(true);
     }
 
     /// Check if connected to an existing Chrome instance
