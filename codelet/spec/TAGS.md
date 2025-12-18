@@ -47,6 +47,7 @@ Functional area tags
 | `@scaffold` | Project scaffold and foundation setup |
 | `@session-management` | Session and context management features including message persistence and state handling |
 | `@tool-display` | Features related to displaying tool execution information |
+| `@web-search` | Web search and content fetching functionality |
 
 ### Technical Tags
 
@@ -55,6 +56,7 @@ Technical concern tags
 | Tag | Description |
 |-----|-------------|
 | `@architecture` | Features related to system architecture and DDD |
+| `@chrome` | Chrome DevTools Protocol integration via rust-headless-chrome |
 | `@compaction` | Context compaction and anchor point strategies |
 | `@ddd` | Domain-Driven Design related features |
 | `@infrastructure` | Core infrastructure and system setup |
@@ -115,7 +117,7 @@ Automation integration tags
 
 ## Tag Statistics
 
-_Last updated: 2025-12-17T02:39:21.260Z_
+_Last updated: 2025-12-18T00:04:08.902Z_
 
 **Update Command**: `fspec tag-stats`
 

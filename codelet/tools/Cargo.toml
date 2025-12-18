@@ -12,6 +12,9 @@ codelet-common.workspace = true
 # HTTP client for web search
 reqwest.workspace = true
 
+# Chrome DevTools Protocol (WEB-002)
+headless_chrome.workspace = true
+
 # URL encoding for search queries
 urlencoding = "2.1"
 
@@ -58,6 +61,7 @@ chrono.workspace = true
 tempfile.workspace = true
 tokio-test.workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
+serial_test.workspace = true
 
 [lints]
 workspace = true

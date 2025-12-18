@@ -1,0 +1,60 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "deserialize_web_search_action",
+      "line": 33,
+      "column": 0,
+      "text": "fn deserialize_web_search_action<'de, D>(deserializer: D) -> Result<WebSearchAction, D::Error>\nwhere\n    D: serde::Deserializer<'de>,\n{\n    use serde::de::Error;\n    use serde_json::Value;\n    \n    let value = Value::deserialize(deserializer)?;\n    \n    match value {\n        // If it's already an object, deserialize directly\n        Value::Object(_) => {\n            WebSearchAction::deserialize(value).map_err(D::Error::custom)\n        }\n        // If it's a string, parse it as JSON first\n        Value::String(s) => {\n            let parsed: Value = serde_json::from_str(&s).map_err(D::Error::custom)?;\n            WebSearchAction::deserialize(parsed).map_err(D::Error::custom)\n        }\n        _ => Err(D::Error::custom(\"Expected object or string for action\"))\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 66,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 78,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> ToolDefinition {\n        // This matches the schema structure that was working in the previous implementation\n        ToolDefinition {\n            name: \"web_search\".to_string(),\n            description: \"Perform web search, open web pages, or find content within pages using web scraping capabilities\".to_string(),\n            parameters: json!({\n                \"additionalProperties\": false,\n                \"properties\": {\n                    \"action\": {\n                        \"oneOf\": [\n                            {\n                                \"additionalProperties\": false,\n                                \"properties\": {\n                                    \"query\": {\n                                        \"description\": \"Search query\",\n                                        \"type\": \"string\"\n                                    },\n                                    \"type\": {\n                                        \"const\": \"search\",\n                                        \"type\": \"string\"\n                                    }\n                                },\n                                \"required\": [\"type\"],\n                                \"type\": \"object\"\n                            },\n                            {\n                                \"additionalProperties\": false,\n                                \"properties\": {\n                                    \"type\": {\n                                        \"const\": \"open_page\",\n                                        \"type\": \"string\"\n                                    },\n                                    \"url\": {\n                                        \"description\": \"URL to open\",\n                                        \"type\": \"string\"\n                                    }\n                                },\n                                \"required\": [\"type\"],\n                                \"type\": \"object\"\n                            },\n                            {\n                                \"additionalProperties\": false,\n                                \"properties\": {\n                                    \"pattern\": {\n                                        \"description\": \"Pattern to find\",\n                                        \"type\": \"string\"\n                                    },\n                                    \"type\": {\n                                        \"const\": \"find_in_page\",\n                                        \"type\": \"string\"\n                                    },\n                                    \"url\": {\n                                        \"description\": \"URL of page to search\",\n                                        \"type\": \"string\"\n                                    }\n                                },\n                                \"required\": [\"type\"],\n                                \"type\": \"object\"\n                            }\n                        ],\n                        \"type\": \"object\"\n                    }\n                },\n                \"required\": [\"action\"],\n                \"type\": \"object\"\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 147,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        // Implement actual web search functionality using HTTP requests\n        let (success, message) = match &args.action {\n            WebSearchAction::Search { query } => {\n                let query = query.as_deref().unwrap_or(\"\");\n                if query.is_empty() {\n                    (false, \"No search query provided\".to_string())\n                } else {\n                    match perform_web_search(query).await {\n                        Ok(results) => (true, format!(\"Search results for '{}': {}\", query, results)),\n                        Err(e) => (false, format!(\"Search failed: {}\", e)),\n                    }\n                }\n            }\n            WebSearchAction::OpenPage { url } => {\n                let url = url.as_deref().unwrap_or(\"\");\n                if url.is_empty() {\n                    (false, \"No URL provided\".to_string())\n                } else {\n                    match fetch_page_content(url).await {\n                        Ok(content) => (true, format!(\"Page content from {}: {}\", url, content)),\n                        Err(e) => (false, format!(\"Failed to fetch page: {}\", e)),\n                    }\n                }\n            }\n            WebSearchAction::FindInPage { url, pattern } => {\n                let url = url.as_deref().unwrap_or(\"\");\n                let pattern = pattern.as_deref().unwrap_or(\"\");\n                if url.is_empty() || pattern.is_empty() {\n                    (false, \"URL or pattern not provided\".to_string())\n                } else {\n                    match find_pattern_in_page(url, pattern).await {\n                        Ok(found) => (true, format!(\"Pattern '{}' found in {}: {}\", pattern, url, found)),\n                        Err(e) => (false, format!(\"Pattern search failed: {}\", e)),\n                    }\n                }\n            }\n            WebSearchAction::Other => (false, \"Unknown web search action\".to_string()),\n        };\n\n        Ok(WebSearchResult {\n            success,\n            message,\n            action: args.action,\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "perform_web_search",
+      "line": 196,
+      "column": 0,
+      "text": "async fn perform_web_search(query: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {\n    let client = reqwest::Client::new();\n    \n    // Use DuckDuckGo Instant Answer API as a simple search option\n    let url = format!(\"https://api.duckduckgo.com/?q={}&format=json&no_redirect=1&no_html=1&skip_disambig=1\", \n                     urlencoding::encode(query));\n    \n    let response = client.get(&url).send().await?;\n    let text = response.text().await?;\n    \n    // Parse the JSON response\n    let json: serde_json::Value = serde_json::from_str(&text)?;\n    \n    let mut results = Vec::new();\n    \n    // Extract instant answer if available\n    if let Some(answer) = json.get(\"Answer\").and_then(|v| v.as_str()) {\n        if !answer.is_empty() {\n            results.push(format!(\"Answer: {}\", answer));\n        }\n    }\n    \n    // Extract abstract if available\n    if let Some(abstract_text) = json.get(\"Abstract\").and_then(|v| v.as_str()) {\n        if !abstract_text.is_empty() {\n            results.push(format!(\"Summary: {}\", abstract_text));\n        }\n    }\n    \n    // Extract definition if available\n    if let Some(definition) = json.get(\"Definition\").and_then(|v| v.as_str()) {\n        if !definition.is_empty() {\n            results.push(format!(\"Definition: {}\", definition));\n        }\n    }\n    \n    // Extract related topics\n    if let Some(related) = json.get(\"RelatedTopics\").and_then(|v| v.as_array()) {\n        for (i, topic) in related.iter().take(3).enumerate() {\n            if let Some(text) = topic.get(\"Text\").and_then(|v| v.as_str()) {\n                results.push(format!(\"Result {}: {}\", i + 1, text));\n            }\n        }\n    }\n    \n    if results.is_empty() {\n        Ok(\"No search results found\".to_string())\n    } else {\n        Ok(results.join(\"\\n\"))\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "fetch_page_content",
+      "line": 249,
+      "column": 0,
+      "text": "async fn fetch_page_content(url: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {\n    let client = reqwest::Client::builder()\n        .timeout(std::time::Duration::from_secs(10))\n        .build()?;\n    \n    let response = client.get(url).send().await?;\n    \n    if !response.status().is_success() {\n        return Err(format!(\"HTTP error: {}\", response.status()).into());\n    }\n    \n    let text = response.text().await?;\n    \n    // Basic HTML stripping - extract text content\n    let stripped = strip_html_tags(&text);\n    \n    // Limit content size to avoid overwhelming responses\n    let truncated = if stripped.len() > 2000 {\n        format!(\"{}... [truncated]\", &stripped[..2000])\n    } else {\n        stripped\n    };\n    \n    Ok(truncated)\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "find_pattern_in_page",
+      "line": 276,
+      "column": 0,
+      "text": "async fn find_pattern_in_page(url: &str, pattern: &str) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {\n    let content = fetch_page_content(url).await?;\n    \n    // Simple case-insensitive search\n    let lower_content = content.to_lowercase();\n    let lower_pattern = pattern.to_lowercase();\n    \n    if lower_content.contains(&lower_pattern) {\n        // Find context around the match\n        if let Some(start) = lower_content.find(&lower_pattern) {\n            let context_start = if start >= 100 { start - 100 } else { 0 };\n            let context_end = std::cmp::min(start + pattern.len() + 100, content.len());\n            \n            let context = &content[context_start..context_end];\n            Ok(format!(\"Found match: ...{}...\", context))\n        } else {\n            Ok(\"Pattern found in page\".to_string())\n        }\n    } else {\n        Ok(\"Pattern not found\".to_string())\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "strip_html_tags",
+      "line": 300,
+      "column": 0,
+      "text": "fn strip_html_tags(html: &str) -> String {\n    let mut result = String::new();\n    let mut inside_tag = false;\n    \n    for ch in html.chars() {\n        match ch {\n            '<' => inside_tag = true,\n            '>' => inside_tag = false,\n            _ if !inside_tag => result.push(ch),\n            _ => {}\n        }\n    }\n    \n    // Clean up whitespace\n    result.split_whitespace().collect::<Vec<_>>().join(\" \")\n}"
+    }
+  ]
+}
