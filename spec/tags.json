@@ -18,6 +18,10 @@
           "description": "Command-Line Interface"
         },
         {
+          "name": "@codelet",
+          "description": "Codelet AI agent integration"
+        },
+        {
           "name": "@demos",
           "description": "Demo script functionality and video recording infrastructure"
         },
@@ -694,6 +698,10 @@
       "required": false,
       "tags": [
         {
+          "name": "@ai-agent",
+          "description": "AI agent integration features"
+        },
+        {
           "name": "@ai-assisted",
           "description": "Features using AI-driven analysis and interaction"
         },
@@ -982,6 +990,10 @@
           "description": "Multi-agent compatibility features and agent-specific customizations"
         },
         {
+          "name": "@napi",
+          "description": "NAPI-RS native module bindings for Node.js"
+        },
+        {
           "name": "@outside-in-bdd",
           "description": "Outside-in BDD approach using personas and behavior-first thinking"
         },
@@ -1040,6 +1052,10 @@
         {
           "name": "@runtime",
           "description": "Runtime behavior and dynamic configuration"
+        },
+        {
+          "name": "@rust",
+          "description": "Rust implementation components"
         },
         {
           "name": "@schema-validation",
@@ -1634,7 +1650,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-11-18T02:38:59.960Z",
+    "lastUpdated": "2025-12-18T04:11:54.192Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -1,0 +1,422 @@
+{
+  "scenarios": [
+    {
+      "name": "Create session with auto-detected provider",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "23-34",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create session with specific provider",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "36-53",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List available providers",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "55-68",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream prompt with text chunks",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "70-100",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Track token usage during conversation",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "102-125",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switch provider mid-conversation",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "127-160",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Receive tool call chunks during streaming",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "162-192",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Receive tool result chunks after tool execution",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "194-225",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-inject context reminders on session creation",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "227-255",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                30,
+                31,
+                32
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Trigger context compaction automatically",
+      "testMappings": [
+        {
+          "file": "src/__tests__/codelet-napi.test.ts",
+          "lines": "257-285",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 10,
+    "coveredScenarios": 10,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/codelet-napi.test.ts"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session.rs"
+    ],
+    "totalLinesCovered": 785
+  }
+}
