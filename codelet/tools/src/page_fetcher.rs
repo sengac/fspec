@@ -261,10 +261,22 @@ impl PageFetcher {
         let tab = self.browser.new_tab()?;
 
         // Navigate and wait for page load
-        self.browser.navigate_and_wait(&tab, url)?;
+        if let Err(e) = self.browser.navigate_and_wait(&tab, url) {
+            self.browser.cleanup_tab(&tab);
+            return Err(e);
+        }
 
         // Extract content
-        let content = self.extract_content(&tab, url)?;
+        let content = match self.extract_content(&tab, url) {
+            Ok(c) => c,
+            Err(e) => {
+                self.browser.cleanup_tab(&tab);
+                return Err(e);
+            }
+        };
+
+        // Clean up tab to stop media and free resources
+        self.browser.cleanup_tab(&tab);
 
         Ok(content)
     }
@@ -316,7 +328,10 @@ impl PageFetcher {
         let tab = self.browser.new_tab()?;
 
         // Navigate and wait for page load
-        self.browser.navigate_and_wait(&tab, url)?;
+        if let Err(e) = self.browser.navigate_and_wait(&tab, url) {
+            self.browser.cleanup_tab(&tab);
+            return Err(e);
+        }
 
         // Search for pattern using JavaScript
         let escaped_pattern = pattern.replace('\\', "\\\\").replace('"', "\\\"");
@@ -354,10 +369,16 @@ impl PageFetcher {
             "#
         );
 
-        let matches_json = self
-            .browser
-            .evaluate_js(&tab, &find_js)?
-            .unwrap_or_else(|| "[]".to_string());
+        let matches_json = match self.browser.evaluate_js(&tab, &find_js) {
+            Ok(json) => json.unwrap_or_else(|| "[]".to_string()),
+            Err(e) => {
+                self.browser.cleanup_tab(&tab);
+                return Err(e);
+            }
+        };
+
+        // Clean up tab to stop media and free resources
+        self.browser.cleanup_tab(&tab);
 
         let matches: Vec<String> = serde_json::from_str(&matches_json).unwrap_or_default();
 

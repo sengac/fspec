@@ -9,7 +9,8 @@
 use codelet::agent::{RigAgent, DEFAULT_MAX_DEPTH};
 use codelet::providers::{ClaudeProvider, LlmProvider};
 use codelet::tools::{
-    AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, ReadTool, ToolRegistry, WriteTool,
+    AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, ReadTool, ToolRegistry, WebSearchTool,
+    WriteTool,
 };
 
 #[test]
@@ -51,8 +52,8 @@ fn test_refac_004_rig_agent_is_accessible() {
 }
 
 #[test]
-fn test_refac_004_all_7_tools_implement_rig_tool_trait() {
-    // Verify all 7 tools implement rig::tool::Tool trait
+fn test_refac_004_all_tools_implement_rig_tool_trait() {
+    // Verify all 9 tools implement rig::tool::Tool trait (WEB-001 added WebSearchTool)
     fn assert_implements_rig_tool<T: rig::tool::Tool>() {}
 
     assert_implements_rig_tool::<ReadTool>();
@@ -62,6 +63,7 @@ fn test_refac_004_all_7_tools_implement_rig_tool_trait() {
     assert_implements_rig_tool::<GrepTool>();
     assert_implements_rig_tool::<GlobTool>();
     assert_implements_rig_tool::<AstGrepTool>();
+    assert_implements_rig_tool::<WebSearchTool>(); // WEB-001: Added WebSearchTool
 }
 
 #[test]

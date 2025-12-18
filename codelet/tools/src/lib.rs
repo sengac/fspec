@@ -35,7 +35,7 @@ pub use ls::LsTool;
 pub use page_fetcher::{Heading, Link, PageContent, PageFetcher};
 pub use read::ReadTool;
 pub use search_engine::{SearchEngine, SearchResult};
-pub use web_search::WebSearchTool;
+pub use web_search::{install_browser_cleanup_handler, shutdown_browser, WebSearchTool};
 pub use write::WriteTool;
 
 /// Tool definition for API requests

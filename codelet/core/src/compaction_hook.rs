@@ -12,7 +12,7 @@ use rig::message::Message;
 use std::sync::{Arc, Mutex};
 
 /// Shared state for tracking token usage across API calls
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct TokenState {
     /// Last per-request input tokens from API
     pub input_tokens: u64,
@@ -22,17 +22,6 @@ pub struct TokenState {
     pub cache_creation_input_tokens: u64,
     /// Whether compaction was triggered (caller should check this)
     pub compaction_needed: bool,
-}
-
-impl Default for TokenState {
-    fn default() -> Self {
-        Self {
-            input_tokens: 0,
-            cache_read_input_tokens: 0,
-            cache_creation_input_tokens: 0,
-            compaction_needed: false,
-        }
-    }
 }
 
 /// Hook for capturing per-request usage and checking compaction thresholds
@@ -76,27 +65,28 @@ where
     ///
     /// If the last API call's effective tokens exceed the threshold,
     /// we cancel to prevent the next API call from failing with "prompt too long".
-    fn on_completion_call(
+    async fn on_completion_call(
         &self,
         _prompt: &Message,
         _history: &[Message],
         cancel_sig: CancelSignal,
-    ) -> impl std::future::Future<Output = ()> + Send {
-        async move {
-            let mut state = self.state.lock().unwrap();
+    ) {
+        // Handle mutex lock gracefully - if poisoned, skip the check
+        // A poisoned mutex indicates another thread panicked while holding it
+        let Ok(mut state) = self.state.lock() else {
+            tracing::warn!("CompactionHook state mutex poisoned, skipping compaction check");
+            return;
+        };
 
-            // Calculate effective tokens with cache discount
-            let effective = self.calculate_effective_tokens(
-                state.input_tokens,
-                state.cache_read_input_tokens,
-            );
+        // Calculate effective tokens with cache discount
+        let effective =
+            self.calculate_effective_tokens(state.input_tokens, state.cache_read_input_tokens);
 
-            // Check threshold
-            if effective > self.threshold {
-                // Signal that compaction is needed
-                state.compaction_needed = true;
-                cancel_sig.cancel();
-            }
+        // Check threshold
+        if effective > self.threshold {
+            // Signal that compaction is needed
+            state.compaction_needed = true;
+            cancel_sig.cancel();
         }
     }
 
@@ -104,20 +94,22 @@ where
     ///
     /// This stores the actual token usage from the API response,
     /// which will be checked by the next on_completion_call.
-    fn on_stream_completion_response_finish(
+    async fn on_stream_completion_response_finish(
         &self,
         _prompt: &Message,
         response: &<M as CompletionModel>::StreamingResponse,
         _cancel_sig: CancelSignal,
-    ) -> impl std::future::Future<Output = ()> + Send {
-        async move {
-            if let Some(usage) = response.token_usage() {
-                let mut state = self.state.lock().unwrap();
-                state.input_tokens = usage.input_tokens;
-                // Cache tokens are stored in the Usage struct if available
-                state.cache_read_input_tokens = usage.cache_read_input_tokens.unwrap_or(0);
-                state.cache_creation_input_tokens = usage.cache_creation_input_tokens.unwrap_or(0);
-            }
+    ) {
+        if let Some(usage) = response.token_usage() {
+            // Handle mutex lock gracefully - if poisoned, skip the update
+            let Ok(mut state) = self.state.lock() else {
+                tracing::warn!("CompactionHook state mutex poisoned, skipping token update");
+                return;
+            };
+            state.input_tokens = usage.input_tokens;
+            // Cache tokens are stored in the Usage struct if available
+            state.cache_read_input_tokens = usage.cache_read_input_tokens.unwrap_or(0);
+            state.cache_creation_input_tokens = usage.cache_creation_input_tokens.unwrap_or(0);
         }
     }
 }

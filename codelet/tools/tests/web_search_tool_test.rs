@@ -2,9 +2,8 @@
 
 use anyhow::Result;
 use codelet_common::web_search::WebSearchAction;
-use codelet_tools::{ToolError, WebSearchTool};
+use codelet_tools::WebSearchTool;
 use rig::tool::Tool;
-use serde_json::json;
 
 #[tokio::test]
 async fn test_agent_performs_web_search() -> Result<()> {

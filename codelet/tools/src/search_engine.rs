@@ -158,13 +158,22 @@ impl SearchEngine {
         let search_url = format!("https://html.duckduckgo.com/html/?q={encoded_query}");
 
         // Navigate and wait for results
-        self.browser.navigate_and_wait(&tab, &search_url)?;
+        if let Err(e) = self.browser.navigate_and_wait(&tab, &search_url) {
+            self.browser.cleanup_tab(&tab);
+            return Err(e);
+        }
 
         // Extract results using JavaScript
-        let results_json = self
-            .browser
-            .evaluate_js(&tab, EXTRACT_DDG_RESULTS_JS)?
-            .unwrap_or_else(|| r#"{"error":null,"results":[]}"#.to_string());
+        let results_json = match self.browser.evaluate_js(&tab, EXTRACT_DDG_RESULTS_JS) {
+            Ok(json) => json.unwrap_or_else(|| r#"{"error":null,"results":[]}"#.to_string()),
+            Err(e) => {
+                self.browser.cleanup_tab(&tab);
+                return Err(e);
+            }
+        };
+
+        // Clean up tab before processing results
+        self.browser.cleanup_tab(&tab);
 
         // Try to parse as new format with error detection
         if let Ok(response) = serde_json::from_str::<DdgResponse>(&results_json) {
