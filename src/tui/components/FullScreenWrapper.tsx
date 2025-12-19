@@ -35,7 +35,7 @@ export const FullScreenWrapper: React.FC<FullScreenWrapperProps> = ({
 
   // Get terminal dimensions
   const width = stdout?.columns ?? 80;
-  const height = (stdout?.rows ?? 24) - 1; // Reserve 1 row for status/cursor
+  const height = stdout?.rows ?? 24;
 
   return (
     <Box

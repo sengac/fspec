@@ -1,26 +1,34 @@
 //! NAPI output implementation for stream events
 //!
 //! Implements StreamOutput trait to send stream events to JavaScript
-//! via ThreadsafeFunction callbacks instead of printing to stdout.
+//! via ThreadsafeFunction callbacks.
+//!
+//! Uses CalleeHandled=false so JS callback receives (value) not (err, value).
 
 use crate::types::{StreamChunk, ToolCallInfo, ToolResultInfo};
-use codelet_cli::interactive::{StreamOutput};
-use napi::threadsafe_function::{ErrorStrategy, ThreadsafeFunction, ThreadsafeFunctionCallMode};
+use codelet_cli::interactive::StreamOutput;
+use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue};
+use napi::Status;
+
+/// Type alias for our ThreadsafeFunction with CalleeHandled=false
+/// Generic params: <T, Return, CallJsBackArgs, ErrorStatus, CalleeHandled>
+pub type StreamCallback = ThreadsafeFunction<StreamChunk, UnknownReturnValue, StreamChunk, Status, false>;
 
 /// NAPI output handler - sends callbacks to JavaScript
 pub struct NapiOutput<'a> {
-    callback: &'a ThreadsafeFunction<StreamChunk, ErrorStrategy::Fatal>,
+    callback: &'a StreamCallback,
 }
 
 impl<'a> NapiOutput<'a> {
-    pub fn new(callback: &'a ThreadsafeFunction<StreamChunk, ErrorStrategy::Fatal>) -> Self {
+    pub fn new(callback: &'a StreamCallback) -> Self {
         Self { callback }
     }
 }
 
 impl StreamOutput for NapiOutput<'_> {
     fn emit_text(&self, text: &str) {
-        self.callback.call(
+        // With CalleeHandled=false, call takes T directly (not Result<T>)
+        let _ = self.callback.call(
             StreamChunk::text(text.to_string()),
             ThreadsafeFunctionCallMode::NonBlocking,
         );
@@ -32,7 +40,7 @@ impl StreamOutput for NapiOutput<'_> {
             name: name.to_string(),
             input: serde_json::to_string(args).unwrap_or_default(),
         };
-        self.callback.call(
+        let _ = self.callback.call(
             StreamChunk::tool_call(info),
             ThreadsafeFunctionCallMode::NonBlocking,
         );
@@ -44,35 +52,32 @@ impl StreamOutput for NapiOutput<'_> {
             content: content.to_string(),
             is_error,
         };
-        self.callback.call(
+        let _ = self.callback.call(
             StreamChunk::tool_result(info),
             ThreadsafeFunctionCallMode::NonBlocking,
         );
     }
 
     fn emit_done(&self) {
-        self.callback.call(
-            StreamChunk::done(),
-            ThreadsafeFunctionCallMode::NonBlocking,
-        );
+        let _ = self.callback.call(StreamChunk::done(), ThreadsafeFunctionCallMode::NonBlocking);
     }
 
     fn emit_error(&self, error: &str) {
-        self.callback.call(
+        let _ = self.callback.call(
             StreamChunk::error(error.to_string()),
             ThreadsafeFunctionCallMode::NonBlocking,
         );
     }
 
     fn emit_interrupted(&self, queued_inputs: &[String]) {
-        self.callback.call(
+        let _ = self.callback.call(
             StreamChunk::interrupted(queued_inputs.to_vec()),
             ThreadsafeFunctionCallMode::NonBlocking,
         );
     }
 
     fn emit_status(&self, message: &str) {
-        self.callback.call(
+        let _ = self.callback.call(
             StreamChunk::status(message.to_string()),
             ThreadsafeFunctionCallMode::NonBlocking,
         );

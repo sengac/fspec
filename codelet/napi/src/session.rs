@@ -10,12 +10,11 @@
 //!
 //! Key difference from CLI: JavaScript calls interrupt() to set is_interrupted flag
 
-use crate::output::NapiOutput;
-use crate::types::{Message, StreamChunk, TokenTracker};
+use crate::output::{NapiOutput, StreamCallback};
+use crate::types::{Message, TokenTracker};
 use codelet_cli::interactive::run_agent_stream;
 use codelet_core::RigAgent;
 use napi::bindgen_prelude::*;
-use napi::threadsafe_function::{ErrorStrategy, ThreadsafeFunction};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -217,10 +216,7 @@ impl CodeletSession {
     pub async fn prompt(
         &self,
         input: String,
-        #[napi(ts_arg_type = "(chunk: StreamChunk) => void")] callback: ThreadsafeFunction<
-            StreamChunk,
-            ErrorStrategy::Fatal,
-        >,
+        #[napi(ts_arg_type = "(chunk: StreamChunk) => void")] callback: StreamCallback,
     ) -> Result<()> {
         // Reset interrupt flag at start of each prompt
         self.is_interrupted.store(false, Ordering::Relaxed);
