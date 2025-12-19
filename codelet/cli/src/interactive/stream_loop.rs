@@ -458,11 +458,12 @@ where
         return Ok(());
     }
 
-    // Update tokens from hook's TokenState
+    // Update tokens from hook's TokenState (accumulate, don't overwrite)
     if !is_interrupted.load(Ordering::Relaxed) {
         if let Ok(state) = token_state.lock() {
-            session.token_tracker.input_tokens = state.input_tokens;
-            session.token_tracker.output_tokens = turn_output_tokens;
+            session.token_tracker.input_tokens += state.input_tokens;
+            session.token_tracker.output_tokens += turn_output_tokens;
+            // Cache tokens are per-request, not cumulative
             session.token_tracker.cache_read_input_tokens = Some(state.cache_read_input_tokens);
             session.token_tracker.cache_creation_input_tokens =
                 Some(state.cache_creation_input_tokens);
