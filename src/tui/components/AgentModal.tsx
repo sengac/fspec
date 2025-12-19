@@ -600,12 +600,15 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   }
 
   // Main agent modal (full-screen overlay)
+  // Subtract 2 for the double border (top + bottom rows)
+  const modalHeight = terminalHeight - 2;
+
   return (
     <Box
       position="absolute"
       flexDirection="column"
       width={terminalWidth}
-      height={terminalHeight}
+      height={modalHeight}
       borderStyle="double"
       borderColor="cyan"
       backgroundColor="black"
