@@ -230,19 +230,24 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       let currentSegment = '';
 
       await sessionRef.current.prompt(userMessage, (chunk: StreamChunk) => {
+        if (!chunk) return;
+
         if (chunk.type === 'Text' && chunk.text) {
           currentSegment += chunk.text;
-          // Update the current streaming message
-          setConversation(prev => {
-            const updated = [...prev];
-            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-            if (streamingIdx >= 0) {
-              updated[streamingIdx] = {
-                ...updated[streamingIdx],
-                content: currentSegment,
-              };
-            }
-            return updated;
+          const segmentSnapshot = currentSegment;
+          // Update the current streaming message - use setImmediate to break out of React batching
+          setImmediate(() => {
+            setConversation(prev => {
+              const updated = [...prev];
+              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+              if (streamingIdx >= 0) {
+                updated[streamingIdx] = {
+                  ...updated[streamingIdx],
+                  content: segmentSnapshot,
+                };
+              }
+              return updated;
+            });
           });
         } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
           // Finalize current streaming message and add tool call (match CLI format)
@@ -264,22 +269,25 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               toolContent += `\n  ${toolCall.input}`;
             }
           }
-          setConversation(prev => {
-            const updated = [...prev];
-            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-            if (streamingIdx >= 0) {
-              // Mark current segment as complete
-              updated[streamingIdx] = {
-                ...updated[streamingIdx],
-                isStreaming: false,
-              };
-            }
-            // Add tool call message
-            updated.push({
-              role: 'tool',
-              content: toolContent,
+          const toolContentSnapshot = toolContent;
+          setImmediate(() => {
+            setConversation(prev => {
+              const updated = [...prev];
+              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+              if (streamingIdx >= 0) {
+                // Mark current segment as complete
+                updated[streamingIdx] = {
+                  ...updated[streamingIdx],
+                  isStreaming: false,
+                };
+              }
+              // Add tool call message
+              updated.push({
+                role: 'tool',
+                content: toolContentSnapshot,
+              });
+              return updated;
             });
-            return updated;
           });
         } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
           // Show tool result in CLI format, then start new streaming message
@@ -291,84 +299,84 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             .split('\n')
             .map(line => `  ${line}`)
             .join('\n');
-          const toolContent = `[Tool result preview]\n-------\n${indentedPreview}${truncated ? '...' : ''}\n-------`;
+          const toolResultContent = `[Tool result preview]\n-------\n${indentedPreview}${truncated ? '...' : ''}\n-------`;
           currentSegment = ''; // Reset for next text segment
-          setConversation(prev => [
-            ...prev,
-            {
-              role: 'tool',
-              content: toolContent,
-            },
-            // Add new streaming placeholder for AI continuation
-            { role: 'assistant', content: '', isStreaming: true },
-          ]);
-          // Update token usage after tool result (Rust updates tokens here)
-          if (sessionRef.current) {
-            setTokenUsage(sessionRef.current.tokenTracker);
-          }
+          setImmediate(() => {
+            setConversation(prev => [
+              ...prev,
+              { role: 'tool' as const, content: toolResultContent },
+              // Add new streaming placeholder for AI continuation
+              { role: 'assistant' as const, content: '', isStreaming: true },
+            ]);
+          });
+          // NOTE: Don't access sessionRef.current.tokenTracker here - it would block!
+          // The session is locked during streaming. Token usage is updated after prompt completes.
         } else if (chunk.type === 'Done') {
           // Mark streaming complete and remove empty trailing assistant messages
-          setConversation(prev => {
-            const updated = [...prev];
-            // Remove empty streaming assistant messages at the end
-            while (
-              updated.length > 0 &&
-              updated[updated.length - 1].role === 'assistant' &&
-              updated[updated.length - 1].isStreaming &&
-              !updated[updated.length - 1].content
-            ) {
-              updated.pop();
-            }
-            // Mark any remaining streaming message as complete
-            const lastAssistantIdx = updated.findLastIndex(
-              m => m.role === 'assistant' && m.isStreaming
-            );
-            if (lastAssistantIdx >= 0) {
-              updated[lastAssistantIdx] = {
-                ...updated[lastAssistantIdx],
-                isStreaming: false,
-              };
-            }
-            return updated;
+          setImmediate(() => {
+            setConversation(prev => {
+              const updated = [...prev];
+              // Remove empty streaming assistant messages at the end
+              while (
+                updated.length > 0 &&
+                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].isStreaming &&
+                !updated[updated.length - 1].content
+              ) {
+                updated.pop();
+              }
+              // Mark any remaining streaming message as complete
+              const lastAssistantIdx = updated.findLastIndex(
+                m => m.role === 'assistant' && m.isStreaming
+              );
+              if (lastAssistantIdx >= 0) {
+                updated[lastAssistantIdx] = {
+                  ...updated[lastAssistantIdx],
+                  isStreaming: false,
+                };
+              }
+              return updated;
+            });
           });
         } else if (chunk.type === 'Status' && chunk.status) {
+          const statusMessage = chunk.status;
           // Status messages (e.g., compaction notifications)
-          setConversation(prev => [
-            ...prev,
-            {
-              role: 'tool',
-              content: chunk.status!,
-            },
-          ]);
+          setImmediate(() => {
+            setConversation(prev => [
+              ...prev,
+              {
+                role: 'tool',
+                content: statusMessage,
+              },
+            ]);
+          });
         } else if (chunk.type === 'Interrupted') {
           // Agent was interrupted by user
-          setConversation(prev => [
-            ...prev,
-            {
-              role: 'tool',
-              content: '⚠️ Agent interrupted',
-            },
-          ]);
-          // Mark any streaming message as complete
-          setConversation(prev => {
-            const updated = [...prev];
-            const lastAssistantIdx = updated.findLastIndex(
-              m => m.role === 'assistant' && m.isStreaming
-            );
-            if (lastAssistantIdx >= 0) {
-              updated[lastAssistantIdx] = {
-                ...updated[lastAssistantIdx],
-                isStreaming: false,
-              };
-            }
-            return updated;
+          setImmediate(() => {
+            setConversation(prev => {
+              const updated = [
+                ...prev,
+                { role: 'tool' as const, content: '⚠️ Agent interrupted' },
+              ];
+              // Mark any streaming message as complete
+              const lastAssistantIdx = updated.findLastIndex(
+                m => m.role === 'assistant' && m.isStreaming
+              );
+              if (lastAssistantIdx >= 0) {
+                updated[lastAssistantIdx] = {
+                  ...updated[lastAssistantIdx],
+                  isStreaming: false,
+                };
+              }
+              return updated;
+            });
           });
         } else if (chunk.type === 'Error' && chunk.error) {
           setError(chunk.error);
         }
       });
 
-      // Update token usage after prompt completes
+      // Update token usage after prompt completes (safe to access now - session unlocked)
       if (sessionRef.current) {
         setTokenUsage(sessionRef.current.tokenTracker);
       }
@@ -601,7 +609,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
   // Main agent modal (full-screen overlay)
   // Subtract 2 for the double border (top + bottom rows)
-  const modalHeight = terminalHeight - 2;
+  const modalHeight = terminalHeight;
 
   return (
     <Box

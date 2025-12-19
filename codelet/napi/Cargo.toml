@@ -10,9 +10,9 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-# NAPI-RS
-napi = { version = "2", default-features = false, features = ["napi4", "async", "tokio_rt"] }
-napi-derive = "2"
+# NAPI-RS v3 with async support for proper streaming
+napi = { version = "3", default-features = false, features = ["napi4", "async", "tokio_rt"] }
+napi-derive = "3"
 
 # Codelet crates
 codelet-cli = { path = "../cli" }

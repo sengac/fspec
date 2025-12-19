@@ -156,7 +156,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 }) => {
   const { stdout } = useStdout();
   const terminalWidth = propTerminalWidth ?? (stdout?.columns || 80);
-  const terminalHeight = propTerminalHeight ?? ((stdout?.rows || 24) - 1);
+  const terminalHeight = propTerminalHeight ?? (stdout?.rows || 24);
 
   // Read checkpoint counts from Zustand store (updated via IPC)
   const checkpointCounts = useFspecStore(state => state.checkpointCounts);
