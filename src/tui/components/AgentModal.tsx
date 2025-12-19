@@ -1,16 +1,94 @@
 /**
- * AgentModal - Modal overlay for AI agent interactions
+ * AgentModal - Full-screen modal for AI agent interactions
  *
  * Integrates codelet-napi native module into fspec's TUI to enable
  * AI-powered conversations within the terminal interface.
  *
- * Implements NAPI-002: TUI Integration for Codelet AI Agent
+ * Implements NAPI-003: Proper TUI Integration Using Existing Codelet Rust Infrastructure
+ * - Uses the same streaming loop as codelet-cli (run_agent_stream)
+ * - Supports Esc key interruption via session.interrupt()
+ * - Full-screen modal for maximum conversation space
  */
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { TextInput } from '@inkjs/ui';
-import { Dialog } from '../../components/Dialog';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+} from 'react';
+import { Box, Text, useInput, useStdout } from 'ink';
+import { VirtualList } from './VirtualList';
+
+// Custom TextInput that ignores mouse escape sequences
+const SafeTextInput: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: () => void;
+  placeholder?: string;
+  isActive?: boolean;
+}> = ({ value, onChange, onSubmit, placeholder = '', isActive = true }) => {
+  // Use ref to avoid stale closure issues with rapid typing
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
+  useInput(
+    (input, key) => {
+      // Ignore mouse escape sequences
+      if (key.mouse || input.includes('[M') || input.includes('[<')) {
+        return;
+      }
+
+      if (key.return) {
+        onSubmit();
+        return;
+      }
+
+      if (key.backspace || key.delete) {
+        const newValue = valueRef.current.slice(0, -1);
+        valueRef.current = newValue; // Update immediately to handle rapid keystrokes
+        onChange(newValue);
+        return;
+      }
+
+      // Ignore navigation keys (handled by other components)
+      if (
+        key.escape ||
+        key.tab ||
+        key.upArrow ||
+        key.downArrow ||
+        key.pageUp ||
+        key.pageDown
+      ) {
+        return;
+      }
+
+      // Filter to only printable characters, removing any escape sequence remnants
+      const clean = input
+        .split('')
+        .filter((ch) => {
+          const code = ch.charCodeAt(0);
+          // Only allow printable ASCII (space through tilde)
+          return code >= 32 && code <= 126;
+        })
+        .join('');
+
+      if (clean) {
+        const newValue = valueRef.current + clean;
+        valueRef.current = newValue; // Update immediately to handle rapid keystrokes
+        onChange(newValue);
+      }
+    },
+    { isActive }
+  );
+
+  return (
+    <Text>
+      {value || <Text dimColor>{placeholder}</Text>}
+      <Text inverse> </Text>
+    </Text>
+  );
+};
 
 // Types from codelet-napi
 interface TokenTracker {
@@ -25,6 +103,8 @@ interface StreamChunk {
   text?: string;
   toolCall?: { id: string; name: string; input: string };
   toolResult?: { toolCallId: string; content: string; isError: boolean };
+  status?: string;
+  queuedInputs?: string[];
   error?: string;
 }
 
@@ -38,9 +118,14 @@ interface CodeletSessionType {
   availableProviders: string[];
   tokenTracker: TokenTracker;
   messages: Message[];
-  prompt: (input: string, callback: (chunk: StreamChunk) => void) => Promise<void>;
+  prompt: (
+    input: string,
+    callback: (chunk: StreamChunk) => void
+  ) => Promise<void>;
   switchProvider: (providerName: string) => Promise<void>;
   clearHistory: () => void;
+  interrupt: () => void;
+  resetInterrupt: () => void;
 }
 
 export interface AgentModalProps {
@@ -55,11 +140,20 @@ interface ConversationMessage {
   isStreaming?: boolean;
 }
 
+// Line type for VirtualList (flattened from messages)
+interface ConversationLine {
+  role: 'user' | 'assistant' | 'tool';
+  content: string;
+  messageIndex: number;
+}
+
 export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
+  const { stdout } = useStdout();
   const [session, setSession] = useState<CodeletSessionType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [tokenUsage, setTokenUsage] = useState<TokenTracker>({
     inputTokens: 0,
@@ -70,6 +164,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [showProviderSelector, setShowProviderSelector] = useState(false);
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
   const sessionRef = useRef<CodeletSessionType | null>(null);
+
+  // Get terminal dimensions for full-screen layout
+  const terminalWidth = stdout?.columns ?? 80;
+  const terminalHeight = stdout?.rows ?? 24;
 
   // Initialize session when modal opens
   useEffect(() => {
@@ -98,7 +196,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         setError(null);
       } catch (err) {
         const errorMessage =
-          err instanceof Error ? err.message : 'Failed to initialize AI session';
+          err instanceof Error
+            ? err.message
+            : 'Failed to initialize AI session';
         setError(errorMessage);
         setSession(null);
         sessionRef.current = null;
@@ -126,44 +226,130 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     ]);
 
     try {
-      let streamedContent = '';
+      // Track current text segment (resets after tool calls)
+      let currentSegment = '';
 
       await sessionRef.current.prompt(userMessage, (chunk: StreamChunk) => {
         if (chunk.type === 'Text' && chunk.text) {
-          streamedContent += chunk.text;
-          // Update the streaming message
+          currentSegment += chunk.text;
+          // Update the current streaming message
           setConversation(prev => {
             const updated = [...prev];
-            const lastIdx = updated.length - 1;
-            if (updated[lastIdx]?.isStreaming) {
-              updated[lastIdx] = {
-                ...updated[lastIdx],
-                content: streamedContent,
+            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+            if (streamingIdx >= 0) {
+              updated[streamingIdx] = {
+                ...updated[streamingIdx],
+                content: currentSegment,
               };
             }
             return updated;
           });
         } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
-          // Tool calls are auto-executed, show them in conversation
-          setConversation(prev => [
-            ...prev,
-            {
+          // Finalize current streaming message and add tool call (match CLI format)
+          const toolCall = chunk.toolCall;
+          let toolContent = `[Planning to use tool: ${toolCall.name}]`;
+          // Parse and display arguments
+          try {
+            const args = JSON.parse(toolCall.input);
+            if (typeof args === 'object' && args !== null) {
+              for (const [key, value] of Object.entries(args)) {
+                const displayValue =
+                  typeof value === 'string' ? value : JSON.stringify(value);
+                toolContent += `\n  ${key}: ${displayValue}`;
+              }
+            }
+          } catch {
+            // If input isn't valid JSON, show as-is
+            if (toolCall.input) {
+              toolContent += `\n  ${toolCall.input}`;
+            }
+          }
+          setConversation(prev => {
+            const updated = [...prev];
+            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+            if (streamingIdx >= 0) {
+              // Mark current segment as complete
+              updated[streamingIdx] = {
+                ...updated[streamingIdx],
+                isStreaming: false,
+              };
+            }
+            // Add tool call message
+            updated.push({
               role: 'tool',
-              content: `Calling: ${chunk.toolCall!.name}`,
-            },
-          ]);
+              content: toolContent,
+            });
+            return updated;
+          });
         } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
-          // Show tool results
-          const resultPreview = chunk.toolResult.content.slice(0, 100);
+          // Show tool result in CLI format, then start new streaming message
+          const result = chunk.toolResult;
+          const preview = result.content.slice(0, 500);
+          const truncated = result.content.length > 500;
+          // Format like CLI: indented with separators
+          const indentedPreview = preview
+            .split('\n')
+            .map(line => `  ${line}`)
+            .join('\n');
+          const toolContent = `[Tool result preview]\n-------\n${indentedPreview}${truncated ? '...' : ''}\n-------`;
+          currentSegment = ''; // Reset for next text segment
           setConversation(prev => [
             ...prev,
             {
               role: 'tool',
-              content: `Result: ${resultPreview}${chunk.toolResult!.content.length > 100 ? '...' : ''}`,
+              content: toolContent,
+            },
+            // Add new streaming placeholder for AI continuation
+            { role: 'assistant', content: '', isStreaming: true },
+          ]);
+          // Update token usage after tool result (Rust updates tokens here)
+          if (sessionRef.current) {
+            setTokenUsage(sessionRef.current.tokenTracker);
+          }
+        } else if (chunk.type === 'Done') {
+          // Mark streaming complete and remove empty trailing assistant messages
+          setConversation(prev => {
+            const updated = [...prev];
+            // Remove empty streaming assistant messages at the end
+            while (
+              updated.length > 0 &&
+              updated[updated.length - 1].role === 'assistant' &&
+              updated[updated.length - 1].isStreaming &&
+              !updated[updated.length - 1].content
+            ) {
+              updated.pop();
+            }
+            // Mark any remaining streaming message as complete
+            const lastAssistantIdx = updated.findLastIndex(
+              m => m.role === 'assistant' && m.isStreaming
+            );
+            if (lastAssistantIdx >= 0) {
+              updated[lastAssistantIdx] = {
+                ...updated[lastAssistantIdx],
+                isStreaming: false,
+              };
+            }
+            return updated;
+          });
+        } else if (chunk.type === 'Status' && chunk.status) {
+          // Status messages (e.g., compaction notifications)
+          setConversation(prev => [
+            ...prev,
+            {
+              role: 'tool',
+              content: chunk.status!,
             },
           ]);
-        } else if (chunk.type === 'Done') {
-          // Mark streaming complete
+        } else if (chunk.type === 'Interrupted') {
+          // Agent was interrupted by user
+          setConversation(prev => [
+            ...prev,
+            {
+              role: 'tool',
+              content: '⚠️ Agent interrupted',
+            },
+          ]);
+          // Mark any streaming message as complete
           setConversation(prev => {
             const updated = [...prev];
             const lastAssistantIdx = updated.findLastIndex(
@@ -216,6 +402,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   // Handle keyboard input
   useInput(
     (input, key) => {
+      // Skip mouse events (handled by VirtualList)
+      if (input.startsWith('[M') || key.mouse) {
+        return;
+      }
+
       if (showProviderSelector) {
         if (key.escape) {
           setShowProviderSelector(false);
@@ -240,12 +431,23 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
 
+      // Esc key handling - interrupt if loading, close if not
+      if (key.escape) {
+        if (isLoading && sessionRef.current) {
+          // Interrupt the agent execution
+          sessionRef.current.interrupt();
+        } else {
+          // Close the modal
+          onClose();
+        }
+        return;
+      }
+
       // Tab to toggle provider selector
       if (key.tab && availableProviders.length > 1) {
         setShowProviderSelector(true);
-        setSelectedProviderIndex(
-          availableProviders.indexOf(currentProvider)
-        );
+        const idx = availableProviders.indexOf(currentProvider);
+        setSelectedProviderIndex(idx >= 0 ? idx : 0);
         return;
       }
     },
@@ -254,11 +456,80 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  // Error state - show setup instructions
+  // Flatten conversation messages into individual lines for VirtualList
+  // Pre-wrap lines to fit terminal width since VirtualList expects single-line items
+  const conversationLines = useMemo((): ConversationLine[] => {
+    const maxWidth = terminalWidth - 6; // Account for borders and padding
+    const lines: ConversationLine[] = [];
+
+    conversation.forEach((msg, msgIndex) => {
+      // Add role prefix to first line
+      const prefix =
+        msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? 'AI: ' : '';
+      const contentLines = msg.content.split('\n');
+
+      contentLines.forEach((lineContent, lineIndex) => {
+        let displayContent =
+          lineIndex === 0 ? `${prefix}${lineContent}` : lineContent;
+        // Add streaming indicator to last line of streaming message
+        const isLastLine = lineIndex === contentLines.length - 1;
+        if (msg.isStreaming && isLastLine) {
+          displayContent += '...';
+        }
+
+        // Wrap long lines manually to fit terminal width
+        if (displayContent.length === 0) {
+          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+        } else {
+          let remaining = displayContent;
+          while (remaining.length > 0) {
+            // Try to break at word boundary for cleaner wrapping
+            let chunk = remaining.slice(0, maxWidth);
+            if (
+              remaining.length > maxWidth &&
+              chunk.lastIndexOf(' ') > maxWidth * 0.5
+            ) {
+              const breakPoint = chunk.lastIndexOf(' ');
+              chunk = remaining.slice(0, breakPoint);
+              remaining = remaining.slice(breakPoint + 1); // Skip the space
+            } else {
+              remaining = remaining.slice(chunk.length);
+            }
+            lines.push({
+              role: msg.role,
+              content: chunk,
+              messageIndex: msgIndex,
+            });
+          }
+        }
+      });
+
+      // Add empty line after each message for spacing (use space to ensure line renders)
+      lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+    });
+
+    return lines;
+  }, [conversation, terminalWidth]);
+
+  // Error state - show setup instructions (full-screen overlay)
   if (error && !session) {
     return (
-      <Dialog onClose={onClose} borderColor="red">
-        <Box flexDirection="column" minWidth={60} padding={1}>
+      <Box
+        position="absolute"
+        flexDirection="column"
+        width={terminalWidth}
+        height={terminalHeight}
+        borderStyle="double"
+        borderColor="red"
+        backgroundColor="black"
+      >
+        <Box
+          flexDirection="column"
+          padding={2}
+          flexGrow={1}
+          justifyContent="center"
+          alignItems="center"
+        >
           <Box marginBottom={1}>
             <Text bold color="red">
               Error: AI Agent Unavailable
@@ -274,19 +545,33 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             <Text color="cyan"> OPENAI_API_KEY</Text>
             <Text color="cyan"> GOOGLE_GENERATIVE_AI_API_KEY</Text>
           </Box>
-          <Box justifyContent="center">
+          <Box>
             <Text dimColor>Press Esc to close</Text>
           </Box>
         </Box>
-      </Dialog>
+      </Box>
     );
   }
 
-  // Provider selector overlay
+  // Provider selector overlay (full-screen overlay)
   if (showProviderSelector) {
     return (
-      <Dialog onClose={() => setShowProviderSelector(false)} borderColor="cyan">
-        <Box flexDirection="column" minWidth={40} padding={1}>
+      <Box
+        position="absolute"
+        flexDirection="column"
+        width={terminalWidth}
+        height={terminalHeight}
+        borderStyle="double"
+        borderColor="cyan"
+        backgroundColor="black"
+      >
+        <Box
+          flexDirection="column"
+          padding={2}
+          flexGrow={1}
+          justifyContent="center"
+          alignItems="center"
+        >
           <Box marginBottom={1}>
             <Text bold color="cyan">
               Select Provider
@@ -295,7 +580,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           {availableProviders.map((provider, idx) => (
             <Box key={provider}>
               <Text
-                backgroundColor={idx === selectedProviderIndex ? 'cyan' : undefined}
+                backgroundColor={
+                  idx === selectedProviderIndex ? 'cyan' : undefined
+                }
                 color={idx === selectedProviderIndex ? 'black' : 'white'}
               >
                 {idx === selectedProviderIndex ? '> ' : '  '}
@@ -304,99 +591,100 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               </Text>
             </Box>
           ))}
-          <Box marginTop={1} justifyContent="center">
+          <Box marginTop={1}>
             <Text dimColor>Enter Select | Esc Cancel</Text>
           </Box>
         </Box>
-      </Dialog>
+      </Box>
     );
   }
 
-  // Main agent modal
+  // Main agent modal (full-screen overlay)
   return (
-    <Dialog onClose={onClose} borderColor="cyan">
-      <Box flexDirection="column" minWidth={70} minHeight={20}>
-        {/* Header with provider and token usage */}
-        <Box
-          borderStyle="single"
-          borderBottom={true}
-          borderTop={false}
-          borderLeft={false}
-          borderRight={false}
-          paddingX={1}
-          marginBottom={1}
-        >
-          <Box flexGrow={1}>
-            <Text bold color="cyan">
-              Agent: {currentProvider}
-            </Text>
-          </Box>
-          <Box>
-            <Text dimColor>
-              tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
-            </Text>
-          </Box>
-          {availableProviders.length > 1 && (
-            <Box marginLeft={2}>
-              <Text dimColor>[Tab] Switch</Text>
-            </Box>
-          )}
+    <Box
+      position="absolute"
+      flexDirection="column"
+      width={terminalWidth}
+      height={terminalHeight}
+      borderStyle="double"
+      borderColor="cyan"
+      backgroundColor="black"
+    >
+      {/* Header with provider and token usage */}
+      <Box
+        borderStyle="single"
+        borderBottom={true}
+        borderTop={false}
+        borderLeft={false}
+        borderRight={false}
+        paddingX={1}
+      >
+        <Box flexGrow={1}>
+          <Text bold color="cyan">
+            Agent: {currentProvider}
+          </Text>
+          {isLoading && <Text color="yellow"> (streaming...)</Text>}
         </Box>
+        <Box>
+          <Text dimColor>
+            tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
+          </Text>
+        </Box>
+        {availableProviders.length > 1 && (
+          <Box marginLeft={2}>
+            <Text dimColor>[Tab] Switch</Text>
+          </Box>
+        )}
+      </Box>
 
-        {/* Conversation area */}
-        <Box flexDirection="column" flexGrow={1} paddingX={1} overflowY="hidden">
-          {conversation.length === 0 ? (
-            <Box justifyContent="center" alignItems="center" flexGrow={1}>
-              <Text dimColor>Type a message to start...</Text>
-            </Box>
-          ) : (
-            conversation.slice(-10).map((msg, idx) => (
-              <Box key={idx} marginBottom={1}>
-                <Text
-                  color={
-                    msg.role === 'user'
-                      ? 'green'
-                      : msg.role === 'tool'
-                        ? 'yellow'
-                        : 'white'
-                  }
-                >
-                  {msg.role === 'user' ? 'You: ' : msg.role === 'tool' ? '' : 'AI: '}
-                  {msg.content}
-                  {msg.isStreaming ? '...' : ''}
-                </Text>
+      {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
+      <Box flexGrow={1} flexBasis={0}>
+        <VirtualList
+          items={conversationLines}
+          renderItem={(line, _index, isSelected) => {
+            const color =
+              line.role === 'user'
+                ? 'green'
+                : line.role === 'tool'
+                  ? 'yellow'
+                  : 'white';
+            return (
+              <Box flexGrow={1}>
+                <Text color={isSelected ? 'cyan' : color}>{line.content}</Text>
               </Box>
-            ))
-          )}
-        </Box>
+            );
+          }}
+          keyExtractor={(_line, index) => `line-${index}`}
+          emptyMessage="Type a message to start..."
+          showScrollbar={!isLoading}
+          isFocused={!isLoading && !showProviderSelector}
+          scrollToEnd={true}
+        />
+      </Box>
 
-        {/* Input area */}
-        <Box
-          borderStyle="single"
-          borderTop={true}
-          borderBottom={false}
-          borderLeft={false}
-          borderRight={false}
-          paddingX={1}
-          marginTop={1}
-        >
-          <Text color="green">&gt; </Text>
-          <Box flexGrow={1}>
-            <TextInput
+      {/* Input area */}
+      <Box
+        borderStyle="single"
+        borderTop={true}
+        borderBottom={false}
+        borderLeft={false}
+        borderRight={false}
+        paddingX={1}
+      >
+        <Text color="green">&gt; </Text>
+        <Box flexGrow={1}>
+          {isLoading ? (
+            <Text dimColor>Thinking... (Esc to stop)</Text>
+          ) : (
+            <SafeTextInput
               value={inputValue}
               onChange={setInputValue}
               onSubmit={handleSubmit}
-              placeholder={isLoading ? 'Thinking...' : 'Type your message...'}
-              isDisabled={isLoading}
+              placeholder="Type your message..."
             />
-          </Box>
-        </Box>
-
-        {/* Footer with shortcuts */}
-        <Box justifyContent="center" marginTop={1}>
-          <Text dimColor>Enter Send | Esc Close</Text>
+          )}
         </Box>
       </Box>
-    </Dialog>
+    </Box>
   );
 };

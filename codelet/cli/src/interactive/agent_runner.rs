@@ -1,3 +1,4 @@
+use super::output::CliOutput;
 use super::stream_loop::run_agent_stream_with_interruption;
 use crate::session::Session;
 use anyhow::Result;
@@ -17,6 +18,9 @@ pub(super) async fn run_agent_with_interruption(
     let provider_name = session.current_provider_name().to_string();
     let manager = session.provider_manager_mut();
 
+    // CLI output handler
+    let output = CliOutput;
+
     // Macro to eliminate code duplication across provider branches (DRY principle)
     // PROV-006: Pass preamble to enable cache_control for API key mode
     macro_rules! run_with_provider {
@@ -31,6 +35,7 @@ pub(super) async fn run_agent_with_interruption(
                 event_stream,
                 input_queue,
                 is_interrupted,
+                &output,
             )
             .await
         }};

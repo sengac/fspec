@@ -6,19 +6,29 @@
 //! - ProviderManager for consistent provider access
 //! - System-reminders for context (CLAUDE.md, environment)
 //! - RigAgent with all 9 tools for full agent capabilities
+//! - run_agent_stream for shared streaming logic
+//!
+//! Key difference from CLI: JavaScript calls interrupt() to set is_interrupted flag
 
-use crate::types::{Message, StreamChunk, TokenTracker, ToolCallInfo, ToolResultInfo};
+use crate::output::NapiOutput;
+use crate::types::{Message, StreamChunk, TokenTracker};
+use codelet_cli::interactive::run_agent_stream;
+use codelet_core::RigAgent;
 use napi::bindgen_prelude::*;
-use napi::threadsafe_function::{ErrorStrategy, ThreadsafeFunction, ThreadsafeFunctionCallMode};
-use std::sync::{Arc, Mutex};
+use napi::threadsafe_function::{ErrorStrategy, ThreadsafeFunction};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 /// CodeletSession - Main class for AI agent interactions
 ///
 /// Exposes codelet's Rust AI agent functionality to Node.js.
 #[napi]
 pub struct CodeletSession {
-    /// Inner session from codelet-cli
+    /// Inner session from codelet-cli (using tokio Mutex for async safety)
     inner: Arc<Mutex<codelet_cli::session::Session>>,
+    /// Interrupt flag - JavaScript calls interrupt() to set this
+    is_interrupted: Arc<AtomicBool>,
 }
 
 #[napi]
@@ -42,26 +52,40 @@ impl CodeletSession {
 
         Ok(Self {
             inner: Arc::new(Mutex::new(session)),
+            is_interrupted: Arc::new(AtomicBool::new(false)),
         })
+    }
+
+    /// Interrupt the current agent execution
+    ///
+    /// Call this when the user presses Esc in the TUI.
+    /// The agent will stop at the next safe point and emit a Done chunk.
+    #[napi]
+    pub fn interrupt(&self) {
+        self.is_interrupted.store(true, Ordering::Relaxed);
+    }
+
+    /// Reset the interrupt flag
+    ///
+    /// Called automatically at the start of each prompt, but can be called
+    /// manually if needed.
+    #[napi]
+    pub fn reset_interrupt(&self) {
+        self.is_interrupted.store(false, Ordering::Relaxed);
     }
 
     /// Get the current provider name
     #[napi(getter)]
     pub fn current_provider_name(&self) -> Result<String> {
-        let session = self
-            .inner
-            .lock()
-            .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
+        // Use blocking lock for sync getter
+        let session = self.inner.blocking_lock();
         Ok(session.current_provider_name().to_string())
     }
 
     /// Get list of available providers
     #[napi(getter)]
     pub fn available_providers(&self) -> Result<Vec<String>> {
-        let session = self
-            .inner
-            .lock()
-            .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
+        let session = self.inner.blocking_lock();
 
         // Get raw provider names without formatting
         let providers = session.provider_manager().list_available_providers();
@@ -86,10 +110,7 @@ impl CodeletSession {
     /// Get the token usage tracker
     #[napi(getter)]
     pub fn token_tracker(&self) -> Result<TokenTracker> {
-        let session = self
-            .inner
-            .lock()
-            .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
+        let session = self.inner.blocking_lock();
 
         Ok(TokenTracker {
             input_tokens: session.token_tracker.input_tokens as u32,
@@ -108,10 +129,7 @@ impl CodeletSession {
     /// Get conversation messages (simplified representation)
     #[napi(getter)]
     pub fn messages(&self) -> Result<Vec<Message>> {
-        let session = self
-            .inner
-            .lock()
-            .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
+        let session = self.inner.blocking_lock();
 
         let messages: Vec<Message> = session
             .messages
@@ -119,7 +137,6 @@ impl CodeletSession {
             .map(|msg| {
                 let (role, content) = match msg {
                     rig::message::Message::User { content, .. } => {
-                        // Use iter() to iterate over OneOrMany
                         let text = content
                             .iter()
                             .filter_map(|c| match c {
@@ -136,7 +153,6 @@ impl CodeletSession {
                         ("user".to_string(), text)
                     }
                     rig::message::Message::Assistant { content, .. } => {
-                        // Use iter() to iterate over OneOrMany
                         let text = content
                             .iter()
                             .filter_map(|c| match c {
@@ -163,10 +179,7 @@ impl CodeletSession {
     /// Switch to a different provider
     #[napi]
     pub async fn switch_provider(&self, provider_name: String) -> Result<()> {
-        let mut session = self
-            .inner
-            .lock()
-            .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
+        let mut session = self.inner.lock().await;
 
         session
             .switch_provider(&provider_name)
@@ -178,10 +191,7 @@ impl CodeletSession {
     /// Clear conversation history
     #[napi]
     pub fn clear_history(&self) -> Result<()> {
-        let mut session = self
-            .inner
-            .lock()
-            .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
+        let mut session = self.inner.blocking_lock();
 
         session.messages.clear();
         session.turns.clear();
@@ -199,10 +209,10 @@ impl CodeletSession {
     ///
     /// The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'
     ///
-    /// Uses the same agent infrastructure as codelet-cli:
-    /// - ProviderManager for provider access (consistent with CLI)
-    /// - System-reminders in messages provide context (CLAUDE.md, environment)
-    /// - RigAgent with all 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearch)
+    /// Uses the same streaming infrastructure as codelet-cli:
+    /// - run_agent_stream for shared streaming logic
+    /// - StreamOutput trait for polymorphic output
+    /// - is_interrupted flag for Esc key handling (set via interrupt() method)
     #[napi]
     pub async fn prompt(
         &self,
@@ -212,75 +222,58 @@ impl CodeletSession {
             ErrorStrategy::Fatal,
         >,
     ) -> Result<()> {
-        use codelet_core::RigAgent;
-        use rig::message::{Message as RigMessage, UserContent};
-        use rig::OneOrMany;
+        // Reset interrupt flag at start of each prompt
+        self.is_interrupted.store(false, Ordering::Relaxed);
 
-        // Clone Arc for use in async block
+        // Clone Arcs for use in async block
         let session_arc = Arc::clone(&self.inner);
+        let is_interrupted = Arc::clone(&self.is_interrupted);
 
-        // Get current provider name from session
-        // Note: CLAUDE.md content is in messages via system-reminders (same as CLI)
-        let current_provider = {
-            let session = session_arc
-                .lock()
-                .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
-            session.current_provider_name().to_string()
-        };
+        // Create NAPI output handler
+        let output = NapiOutput::new(&callback);
 
-        // Add user message to history
-        {
-            let mut session = session_arc
-                .lock()
-                .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
-            session.messages.push(RigMessage::User {
-                content: OneOrMany::one(UserContent::text(&input)),
-            });
-        }
+        // Lock session and run the stream
+        let mut session = session_arc.lock().await;
 
-        // Get messages for streaming
-        let mut messages = {
-            let session = session_arc
-                .lock()
-                .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
-            session.messages.clone()
-        };
+        // Get provider and create agent
+        let current_provider = session.current_provider_name().to_string();
 
-        // Macro to eliminate code duplication across provider branches
-        // Uses ProviderManager to get providers (consistent with CLI agent_runner.rs)
-        // Note: Preamble is None - CLAUDE.md context comes via system-reminders in messages
-        macro_rules! run_with_provider {
-            ($session_arc:expr, $get_method:ident, $input:expr, $messages:expr, $callback:expr) => {{
-                let provider = {
-                    let mut session = $session_arc
-                        .lock()
-                        .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
-                    session
-                        .provider_manager_mut()
-                        .$get_method()
-                        .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?
-                };
-                // Pass None for preamble - same as CLI (CLAUDE.md is in messages as system-reminder)
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = RigAgent::with_default_depth(rig_agent);
-                stream_with_agent(agent, $input, $messages, $callback).await
-            }};
-        }
-
-        // Build agent and stream based on provider
-        // Uses ProviderManager for consistent provider access (same as CLI)
         let result = match current_provider.as_str() {
             "claude" => {
-                run_with_provider!(session_arc, get_claude, &input, &mut messages, callback)
+                let provider = session
+                    .provider_manager_mut()
+                    .get_claude()
+                    .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
+                let rig_agent = provider.create_rig_agent(None);
+                let agent = RigAgent::with_default_depth(rig_agent);
+                run_agent_stream(agent, &input, &mut session, is_interrupted, &output).await
             }
             "openai" => {
-                run_with_provider!(session_arc, get_openai, &input, &mut messages, callback)
+                let provider = session
+                    .provider_manager_mut()
+                    .get_openai()
+                    .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
+                let rig_agent = provider.create_rig_agent(None);
+                let agent = RigAgent::with_default_depth(rig_agent);
+                run_agent_stream(agent, &input, &mut session, is_interrupted, &output).await
             }
             "gemini" => {
-                run_with_provider!(session_arc, get_gemini, &input, &mut messages, callback)
+                let provider = session
+                    .provider_manager_mut()
+                    .get_gemini()
+                    .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
+                let rig_agent = provider.create_rig_agent(None);
+                let agent = RigAgent::with_default_depth(rig_agent);
+                run_agent_stream(agent, &input, &mut session, is_interrupted, &output).await
             }
             "codex" => {
-                run_with_provider!(session_arc, get_codex, &input, &mut messages, callback)
+                let provider = session
+                    .provider_manager_mut()
+                    .get_codex()
+                    .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
+                let rig_agent = provider.create_rig_agent(None);
+                let agent = RigAgent::with_default_depth(rig_agent);
+                run_agent_stream(agent, &input, &mut session, is_interrupted, &output).await
             }
             _ => {
                 return Err(Error::from_reason(format!(
@@ -289,101 +282,6 @@ impl CodeletSession {
             }
         };
 
-        // Update session messages after streaming
-        {
-            let mut session = session_arc
-                .lock()
-                .map_err(|e| Error::from_reason(format!("Lock poisoned: {e}")))?;
-            session.messages = messages;
-        }
-
-        result
+        result.map_err(|e| Error::from_reason(format!("Stream error: {e}")))
     }
-}
-
-/// Stream with a specific agent type
-async fn stream_with_agent<M>(
-    agent: codelet_core::RigAgent<M>,
-    input: &str,
-    messages: &mut Vec<rig::message::Message>,
-    callback: ThreadsafeFunction<StreamChunk, ErrorStrategy::Fatal>,
-) -> Result<()>
-where
-    M: rig::completion::CompletionModel,
-    M::StreamingResponse: rig::wasm_compat::WasmCompatSend + rig::completion::GetTokenUsage,
-{
-    use futures::StreamExt;
-    use rig::agent::MultiTurnStreamItem;
-    use rig::streaming::{StreamedAssistantContent, StreamedUserContent};
-
-    let mut stream = agent.prompt_streaming_with_history(input, messages).await;
-
-    while let Some(item) = stream.next().await {
-        match item {
-            Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(text))) => {
-                callback.call(
-                    StreamChunk::text(text.text.clone()),
-                    ThreadsafeFunctionCallMode::NonBlocking,
-                );
-            }
-            Ok(MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::ToolCall(
-                tool_call,
-            ))) => {
-                let info = ToolCallInfo {
-                    id: tool_call.id.clone(),
-                    name: tool_call.function.name.clone(),
-                    input: serde_json::to_string(&tool_call.function.arguments).unwrap_or_default(),
-                };
-                callback.call(
-                    StreamChunk::tool_call(info),
-                    ThreadsafeFunctionCallMode::NonBlocking,
-                );
-            }
-            Ok(MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(
-                tool_result,
-            ))) => {
-                // Use iter() to iterate over OneOrMany content
-                let content = tool_result
-                    .content
-                    .iter()
-                    .filter_map(|c| match c {
-                        rig::message::ToolResultContent::Text(t) => Some(t.text.clone()),
-                        _ => None,
-                    })
-                    .collect::<Vec<_>>()
-                    .join("\n");
-
-                let content = if content.is_empty() {
-                    "[non-text result]".to_string()
-                } else {
-                    content
-                };
-
-                let info = ToolResultInfo {
-                    tool_call_id: tool_result.id.clone(),
-                    content,
-                    is_error: false, // ToolResult doesn't have is_error field
-                };
-                callback.call(
-                    StreamChunk::tool_result(info),
-                    ThreadsafeFunctionCallMode::NonBlocking,
-                );
-            }
-            Ok(MultiTurnStreamItem::FinalResponse(_)) => {
-                // Stream complete
-                callback.call(StreamChunk::done(), ThreadsafeFunctionCallMode::NonBlocking);
-                break;
-            }
-            Err(e) => {
-                callback.call(
-                    StreamChunk::error(e.to_string()),
-                    ThreadsafeFunctionCallMode::NonBlocking,
-                );
-                return Err(Error::from_reason(format!("Streaming error: {e}")));
-            }
-            _ => {}
-        }
-    }
-
-    Ok(())
 }

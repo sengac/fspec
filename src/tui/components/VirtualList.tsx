@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useLayoutEffect,
+} from 'react';
 import { Box, Text, useInput, measureElement, type DOMElement } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize';
 
@@ -19,6 +25,7 @@ interface VirtualListProps<T> {
   enableWrapAround?: boolean;
   reservedLines?: number; // Lines reserved for headers/footers (default: 4)
   isFocused?: boolean; // Whether this VirtualList should respond to keyboard input (default: true)
+  scrollToEnd?: boolean; // Auto-scroll to end when items change (default: false)
 }
 
 export function VirtualList<T>({
@@ -32,12 +39,11 @@ export function VirtualList<T>({
   enableWrapAround = false,
   reservedLines = 4,
   isFocused = true,
+  scrollToEnd = false,
 }: VirtualListProps<T>): React.ReactElement {
   // Enable mouse tracking mode for button events only (not mouse movement)
   useEffect(() => {
     // \x1b[?1000h enables "button event" tracking (clicks and scroll only)
-    // \x1b[?1002h would include drag events
-    // \x1b[?1003h includes all movements (too noisy)
     process.stdout.write('\x1b[?1000h');
 
     return () => {
@@ -75,9 +81,10 @@ export function VirtualList<T>({
 
   // Calculate visible window from measured container height (if available) or terminal size
   // Priority: measured container height > terminal height calculation
-  const visibleHeight = measuredHeight !== null
-    ? Math.max(1, measuredHeight)
-    : Math.max(1, terminalHeight - reservedLines);
+  const visibleHeight =
+    measuredHeight !== null
+      ? Math.max(1, measuredHeight)
+      : Math.max(1, terminalHeight - reservedLines);
   const visibleItems = useMemo(() => {
     const start = scrollOffset;
     const end = Math.min(items.length, scrollOffset + visibleHeight);
@@ -91,6 +98,17 @@ export function VirtualList<T>({
     }
   }, [items.length, selectedIndex]);
 
+  // Auto-scroll to end when items change (for chat-style interfaces)
+  useEffect(() => {
+    if (scrollToEnd && items.length > 0) {
+      const lastIndex = items.length - 1;
+      setSelectedIndex(lastIndex);
+      // Scroll to show the last item at the bottom
+      const newOffset = Math.max(0, lastIndex - visibleHeight + 1);
+      setScrollOffset(newOffset);
+    }
+  }, [scrollToEnd, items.length, visibleHeight]);
+
   // Adjust scroll offset to keep selected item visible
   useEffect(() => {
     if (selectedIndex < scrollOffset) {
@@ -102,7 +120,11 @@ export function VirtualList<T>({
 
   // Call onFocus when selection changes
   useEffect(() => {
-    if (items.length > 0 && selectedIndex >= 0 && selectedIndex < items.length) {
+    if (
+      items.length > 0 &&
+      selectedIndex >= 0 &&
+      selectedIndex < items.length
+    ) {
       onFocus?.(items[selectedIndex], selectedIndex);
     }
   }, [selectedIndex, items, onFocus]);
@@ -151,6 +173,7 @@ export function VirtualList<T>({
     }
   };
 
+  // Mouse scroll handling - always active (separate from keyboard focus)
   useInput(
     (input, key) => {
       if (items.length === 0) {
@@ -165,10 +188,12 @@ export function VirtualList<T>({
         // Button encoding for scroll wheel (standard xterm):
         // Button codes: 64 = scroll up, 65 = scroll down
         // With 32-byte offset in escape sequence: 96 = scroll up, 97 = scroll down
-        if (buttonByte === 96) { // ASCII 96 = '`' = button 64 = scroll up
+        if (buttonByte === 96) {
+          // ASCII 96 = '`' = button 64 = scroll up
           handleScroll('up');
           return;
-        } else if (buttonByte === 97) { // ASCII 97 = 'a' = button 65 = scroll down
+        } else if (buttonByte === 97) {
+          // ASCII 97 = 'a' = button 65 = scroll down
           handleScroll('down');
           return;
         }
@@ -184,6 +209,21 @@ export function VirtualList<T>({
           handleScroll('up');
           return;
         }
+      }
+    },
+    { isActive: true } // Mouse always active
+  );
+
+  // Keyboard navigation - respects isFocused
+  useInput(
+    (input, key) => {
+      if (items.length === 0) {
+        return;
+      }
+
+      // Skip mouse events (handled above)
+      if (input.startsWith('[M') || key.mouse) {
+        return;
       }
 
       // Keyboard Navigation
@@ -213,8 +253,13 @@ export function VirtualList<T>({
     }
 
     const scrollbarHeight = visibleHeight;
-    const thumbHeight = Math.max(1, Math.floor((visibleHeight / items.length) * scrollbarHeight));
-    const thumbPosition = Math.floor((scrollOffset / items.length) * scrollbarHeight);
+    const thumbHeight = Math.max(
+      1,
+      Math.floor((visibleHeight / items.length) * scrollbarHeight)
+    );
+    const thumbPosition = Math.floor(
+      (scrollOffset / items.length) * scrollbarHeight
+    );
 
     const scrollbarChars: string[] = [];
     for (let i = 0; i < scrollbarHeight; i++) {
