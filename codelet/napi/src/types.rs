@@ -50,6 +50,8 @@ pub enum ChunkType {
     Text,
     ToolCall,
     ToolResult,
+    Status,
+    Interrupted,
     Done,
     Error,
 }
@@ -63,6 +65,8 @@ pub struct StreamChunk {
     pub text: Option<String>,
     pub tool_call: Option<ToolCallInfo>,
     pub tool_result: Option<ToolResultInfo>,
+    pub status: Option<String>,
+    pub queued_inputs: Option<Vec<String>>,
     pub error: Option<String>,
 }
 
@@ -73,6 +77,8 @@ impl StreamChunk {
             text: Some(text),
             tool_call: None,
             tool_result: None,
+            status: None,
+            queued_inputs: None,
             error: None,
         }
     }
@@ -83,6 +89,8 @@ impl StreamChunk {
             text: None,
             tool_call: Some(info),
             tool_result: None,
+            status: None,
+            queued_inputs: None,
             error: None,
         }
     }
@@ -93,6 +101,32 @@ impl StreamChunk {
             text: None,
             tool_call: None,
             tool_result: Some(info),
+            status: None,
+            queued_inputs: None,
+            error: None,
+        }
+    }
+
+    pub fn status(message: String) -> Self {
+        Self {
+            chunk_type: "Status".to_string(),
+            text: None,
+            tool_call: None,
+            tool_result: None,
+            status: Some(message),
+            queued_inputs: None,
+            error: None,
+        }
+    }
+
+    pub fn interrupted(queued_inputs: Vec<String>) -> Self {
+        Self {
+            chunk_type: "Interrupted".to_string(),
+            text: None,
+            tool_call: None,
+            tool_result: None,
+            status: None,
+            queued_inputs: Some(queued_inputs),
             error: None,
         }
     }
@@ -103,6 +137,8 @@ impl StreamChunk {
             text: None,
             tool_call: None,
             tool_result: None,
+            status: None,
+            queued_inputs: None,
             error: None,
         }
     }
@@ -113,6 +149,8 @@ impl StreamChunk {
             text: None,
             tool_call: None,
             tool_result: None,
+            status: None,
+            queued_inputs: None,
             error: Some(message),
         }
     }

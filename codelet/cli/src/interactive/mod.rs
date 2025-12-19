@@ -5,9 +5,13 @@
 
 mod agent_runner;
 mod message_helpers;
+pub mod output;
 mod repl_loop;
 mod stream_handlers;
-mod stream_loop;
+pub mod stream_loop;
+
+pub use output::{CliOutput, StreamOutput};
+pub use stream_loop::run_agent_stream;
 
 use crate::session::Session;
 use anyhow::Result;

@@ -27,6 +27,8 @@ export const enum ChunkType {
   Text = 'Text',
   ToolCall = 'ToolCall',
   ToolResult = 'ToolResult',
+  Status = 'Status',
+  Interrupted = 'Interrupted',
   Done = 'Done',
   Error = 'Error',
 }
@@ -36,6 +38,8 @@ export interface StreamChunk {
   text?: string;
   toolCall?: ToolCallInfo;
   toolResult?: ToolResultInfo;
+  status?: string;
+  queuedInputs?: Array<string>;
   error?: string;
 }
 /** Message role enum */
@@ -62,6 +66,20 @@ export declare class CodeletSession {
    * Priority order: Claude > Gemini > Codex > OpenAI
    */
   constructor(providerName?: string | undefined | null);
+  /**
+   * Interrupt the current agent execution
+   *
+   * Call this when the user presses Esc in the TUI.
+   * The agent will stop at the next safe point and emit a Done chunk.
+   */
+  interrupt(): void;
+  /**
+   * Reset the interrupt flag
+   *
+   * Called automatically at the start of each prompt, but can be called
+   * manually if needed.
+   */
+  resetInterrupt(): void;
   /** Get the current provider name */
   get currentProviderName(): string;
   /** Get list of available providers */
@@ -79,10 +97,10 @@ export declare class CodeletSession {
    *
    * The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'
    *
-   * Uses the same agent infrastructure as codelet-cli:
-   * - ProviderManager for provider access (consistent with CLI)
-   * - System-reminders in messages provide context (CLAUDE.md, environment)
-   * - RigAgent with all 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearch)
+   * Uses the same streaming infrastructure as codelet-cli:
+   * - run_agent_stream for shared streaming logic
+   * - StreamOutput trait for polymorphic output
+   * - is_interrupted flag for Esc key handling (set via interrupt() method)
    */
   prompt(input: string, callback: (chunk: StreamChunk) => void): Promise<void>;
 }

@@ -1,15 +1,24 @@
+//! Stream event handlers with output abstraction
+//!
+//! Handles stream events (text, tool calls, tool results) with:
+//! - Message history management (shared between CLI and NAPI)
+//! - Debug capture (shared)
+//! - Output rendering via StreamOutput trait (polymorphic)
+
 use super::message_helpers::{add_assistant_text_message, add_assistant_tool_calls_message};
+use super::output::StreamOutput;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
-use std::io::Write;
 use tracing::debug;
 
-pub(super) fn handle_text_chunk(
+/// Handle text chunk - accumulates text and emits via output
+pub(super) fn handle_text_chunk<O: StreamOutput>(
     text: &str,
     assistant_text: &mut String,
     request_id: Option<&str>,
+    output: &O,
 ) -> Result<()> {
-    // CLI-022: Capture api.response.chunk event
+    // CLI-022: Capture api.response.chunk event (shared)
     if let Ok(manager_arc) = get_debug_capture_manager() {
         if let Ok(mut manager) = manager_arc.lock() {
             if manager.is_enabled() {
@@ -26,38 +35,36 @@ pub(super) fn handle_text_chunk(
         }
     }
 
-    // CRITICAL: Accumulate for message history (CLI-008)
+    // CRITICAL: Accumulate for message history (CLI-008) - shared
     assistant_text.push_str(text);
 
-    // Print text immediately for real-time streaming
-    // Replace \n with \r\n for proper terminal display in raw mode
-    let display_text = text.replace('\n', "\r\n");
-    print!("{display_text}");
-    std::io::stdout().flush()?;
+    // Emit via output (polymorphic - CLI prints, NAPI sends callback)
+    output.emit_text(text);
 
     Ok(())
 }
 
-pub(super) fn handle_tool_call(
+/// Handle tool call - flushes text, buffers tool call, emits via output
+pub(super) fn handle_tool_call<O: StreamOutput>(
     tool_call: &rig::message::ToolCall,
     messages: &mut Vec<rig::message::Message>,
     assistant_text: &mut String,
     tool_calls_buffer: &mut Vec<rig::message::AssistantContent>,
     last_tool_name: &mut Option<String>,
+    output: &O,
 ) -> Result<()> {
     use rig::message::AssistantContent;
 
-    // CRITICAL: Add assistant text to messages if we have any (CLI-008)
+    // CRITICAL: Add assistant text to messages if we have any (CLI-008) - shared
     if !assistant_text.is_empty() {
         add_assistant_text_message(messages, assistant_text.clone());
         assistant_text.clear();
     }
 
-    // Display tool name and arguments before execution
     let tool_name = &tool_call.function.name;
     let args = &tool_call.function.arguments;
 
-    // CLI-022: Capture tool.call event
+    // CLI-022: Capture tool.call event (shared)
     if let Ok(manager_arc) = get_debug_capture_manager() {
         if let Ok(mut manager) = manager_arc.lock() {
             if manager.is_enabled() {
@@ -74,95 +81,46 @@ pub(super) fn handle_tool_call(
         }
     }
 
-    // Store tool name for debug logging
+    // Store tool name for debug logging - shared
     *last_tool_name = Some(tool_name.clone());
 
-    // CRITICAL: Track tool call for message history (CLI-008)
+    // CRITICAL: Track tool call for message history (CLI-008) - shared
     tool_calls_buffer.push(AssistantContent::ToolCall(tool_call.clone()));
 
-    // Log full details
     debug!("Tool call: {} with args: {:?}", tool_name, args);
 
-    // Display tool name
-    print!("\r\n[Planning to use tool: {tool_name}]");
-
-    // Display arguments
-    if let Some(obj) = args.as_object() {
-        if !obj.is_empty() {
-            for (key, value) in obj.iter() {
-                // Format value based on type
-                let formatted_value = match value {
-                    serde_json::Value::String(s) => s.clone(),
-                    serde_json::Value::Number(n) => n.to_string(),
-                    serde_json::Value::Bool(b) => b.to_string(),
-                    serde_json::Value::Array(_) => format!("{value}"),
-                    serde_json::Value::Object(_) => format!("{value}"),
-                    serde_json::Value::Null => "null".to_string(),
-                };
-                print!("\r\n  {key}: {formatted_value}");
-            }
-        }
-    }
-    println!("\r\n");
-    std::io::stdout().flush()?;
+    // Emit via output (polymorphic)
+    output.emit_tool_call(&tool_call.id, tool_name, args);
 
     Ok(())
 }
 
-pub(super) fn handle_tool_result(
+/// Handle tool result - adds to messages, emits via output
+pub(super) fn handle_tool_result<O: StreamOutput>(
     tool_result: &rig::message::ToolResult,
     messages: &mut Vec<rig::message::Message>,
     tool_calls_buffer: &mut Vec<rig::message::AssistantContent>,
     last_tool_name: &Option<String>,
+    output: &O,
 ) -> Result<()> {
     use rig::message::{Message, ToolResultContent, UserContent};
     use rig::OneOrMany;
 
-    // CRITICAL: Add buffered tool calls as assistant message (CLI-008)
-    // This happens ONCE before the first tool result
+    // CRITICAL: Add buffered tool calls as assistant message (CLI-008) - shared
     if !tool_calls_buffer.is_empty() {
         add_assistant_tool_calls_message(messages, tool_calls_buffer.clone())?;
         tool_calls_buffer.clear();
     }
 
-    // CRITICAL: Add tool result to message history (CLI-008)
+    // CRITICAL: Add tool result to message history (CLI-008) - shared
     let tool_result_clone = tool_result.clone();
     messages.push(Message::User {
         content: OneOrMany::one(UserContent::ToolResult(tool_result_clone)),
     });
 
-    // Display tool result with preview (similar to codelet pattern)
     debug!("Tool result received: {:?}", tool_result);
 
-    // CLI-022: Capture tool.result event
-    // Determine success from result content (check for error indicators)
-    let is_error = tool_result.content.clone().into_iter().any(|c| match c {
-        ToolResultContent::Text(t) => t.text.contains("Error:") || t.text.contains("error:"),
-        _ => false,
-    });
-
-    if let Ok(manager_arc) = get_debug_capture_manager() {
-        if let Ok(mut manager) = manager_arc.lock() {
-            if manager.is_enabled() {
-                let event_type = if is_error {
-                    "tool.error"
-                } else {
-                    "tool.result"
-                };
-                manager.capture(
-                    event_type,
-                    serde_json::json!({
-                        "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
-                        "toolId": tool_result.id,
-                        "success": !is_error,
-                    }),
-                    None,
-                );
-            }
-        }
-    }
-
-    // Extract text content from tool result by iterating over OneOrMany
+    // Extract content for debug capture and output - shared
     let result_parts: Vec<String> = tool_result
         .content
         .clone()
@@ -188,30 +146,39 @@ pub(super) fn handle_tool_result(
         .replace("\\\"", "\"")
         .replace("\\\\", "\\");
 
-    // Truncate result if too long (like codelet does at 500 chars)
-    const MAX_PREVIEW_LENGTH: usize = 500;
-    let preview = if result_text.len() > MAX_PREVIEW_LENGTH {
-        format!("{}...", &result_text[..MAX_PREVIEW_LENGTH])
-    } else {
-        result_text
-    };
+    // Determine if error
+    let is_error = result_text.contains("Error:") || result_text.contains("error:");
 
-    // Display with proper formatting for raw mode
-    // Indent each line by 2 spaces and replace \n with \r\n
-    let indented_lines: Vec<String> = preview.lines().map(|line| format!("  {line}")).collect();
-    let formatted_preview = indented_lines.join("\r\n");
+    // CLI-022: Capture tool.result event (shared)
+    if let Ok(manager_arc) = get_debug_capture_manager() {
+        if let Ok(mut manager) = manager_arc.lock() {
+            if manager.is_enabled() {
+                let event_type = if is_error { "tool.error" } else { "tool.result" };
+                manager.capture(
+                    event_type,
+                    serde_json::json!({
+                        "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
+                        "toolId": tool_result.id,
+                        "success": !is_error,
+                    }),
+                    None,
+                );
+            }
+        }
+    }
 
-    print!("\r\n[Tool result preview]\r\n-------\r\n{formatted_preview}\r\n-------\r\n");
-    std::io::stdout().flush()?;
+    // Emit via output (polymorphic)
+    output.emit_tool_result(&tool_result.id, &result_text, is_error);
 
     Ok(())
 }
 
+/// Handle final response - adds final text to message history
 pub(super) fn handle_final_response(
     assistant_text: &str,
     messages: &mut Vec<rig::message::Message>,
 ) -> Result<()> {
-    // CRITICAL: Add final assistant text to message history (CLI-008)
+    // CRITICAL: Add final assistant text to message history (CLI-008) - shared
     if !assistant_text.is_empty() {
         add_assistant_text_message(messages, assistant_text.to_owned());
     }
