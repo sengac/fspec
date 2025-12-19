@@ -292,8 +292,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
           // Show tool result in CLI format, then start new streaming message
           const result = chunk.toolResult;
-          const preview = result.content.slice(0, 500);
-          const truncated = result.content.length > 500;
+          // Sanitize content: replace tabs with spaces (Ink can't render tabs)
+          const sanitizedContent = result.content.replace(/\t/g, '  ');
+          const preview = sanitizedContent.slice(0, 500);
+          const truncated = sanitizedContent.length > 500;
           // Format like CLI: indented with separators
           const indentedPreview = preview
             .split('\n')
