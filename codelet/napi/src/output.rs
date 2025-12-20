@@ -5,7 +5,7 @@
 //!
 //! Uses CalleeHandled=false so JS callback receives (value) not (err, value).
 
-use crate::types::{StreamChunk, ToolCallInfo, ToolResultInfo};
+use crate::types::{StreamChunk, TokenTracker, ToolCallInfo, ToolResultInfo};
 use codelet_cli::interactive::StreamOutput;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue};
 use napi::Status;
@@ -79,6 +79,19 @@ impl StreamOutput for NapiOutput<'_> {
     fn emit_status(&self, message: &str) {
         let _ = self.callback.call(
             StreamChunk::status(message.to_string()),
+            ThreadsafeFunctionCallMode::NonBlocking,
+        );
+    }
+
+    fn emit_tokens(&self, tokens: &codelet_cli::interactive::TokenInfo) {
+        let tracker = TokenTracker {
+            input_tokens: tokens.input_tokens as u32,
+            output_tokens: tokens.output_tokens as u32,
+            cache_read_input_tokens: tokens.cache_read_input_tokens.map(|t| t as u32),
+            cache_creation_input_tokens: tokens.cache_creation_input_tokens.map(|t| t as u32),
+        };
+        let _ = self.callback.call(
+            StreamChunk::token_update(tracker),
             ThreadsafeFunctionCallMode::NonBlocking,
         );
     }
