@@ -15,7 +15,9 @@ use crate::types::{Message, TokenTracker};
 use codelet_cli::interactive::run_agent_stream;
 use codelet_core::RigAgent;
 use napi::bindgen_prelude::*;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::AtomicBool;
+// Use Release ordering for stores to synchronize with Acquire loads in stream_loop
+use std::sync::atomic::Ordering::Release;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -61,7 +63,7 @@ impl CodeletSession {
     /// The agent will stop at the next safe point and emit a Done chunk.
     #[napi]
     pub fn interrupt(&self) {
-        self.is_interrupted.store(true, Ordering::Relaxed);
+        self.is_interrupted.store(true, Release);
     }
 
     /// Reset the interrupt flag
@@ -70,7 +72,7 @@ impl CodeletSession {
     /// manually if needed.
     #[napi]
     pub fn reset_interrupt(&self) {
-        self.is_interrupted.store(false, Ordering::Relaxed);
+        self.is_interrupted.store(false, Release);
     }
 
     /// Get the current provider name
@@ -219,7 +221,7 @@ impl CodeletSession {
         #[napi(ts_arg_type = "(chunk: StreamChunk) => void")] callback: StreamCallback,
     ) -> Result<()> {
         // Reset interrupt flag at start of each prompt
-        self.is_interrupted.store(false, Ordering::Relaxed);
+        self.is_interrupted.store(false, Release);
 
         // Clone Arcs for use in async block
         let session_arc = Arc::clone(&self.inner);
