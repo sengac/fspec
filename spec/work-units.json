@@ -52954,111 +52954,6 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-18T04:46:57.190Z"
-    },
-    "NAPI-003": {
-      "id": "NAPI-003",
-      "title": "Proper TUI Integration Using Existing Codelet Rust Infrastructure",
-      "type": "story",
-      "status": "specifying",
-      "createdAt": "2025-12-18T06:09:14.806Z",
-      "updatedAt": "2025-12-18T06:12:44.986Z",
-      "description": "Refactor the NAPI-002 implementation to use the existing codelet Rust TUI infrastructure (stream_loop.rs, stream_handlers.rs, etc.) instead of a JavaScript stub. The implementation should be almost entirely in Rust with minimal JavaScript/React code.",
-      "children": [],
-      "userStory": {
-        "role": "developer using fspec TUI",
-        "action": "interact with the codelet AI agent using the same infrastructure as the codelet CLI",
-        "benefit": "I get the full agent experience including Esc key interruption, proper message history, token tracking, and tool execution"
-      },
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2025-12-18T06:09:57.014Z"
-        }
-      ],
-      "rules": [
-        {
-          "id": 0,
-          "text": "Implementation must be almost entirely in Rust - the JavaScript/React component should only render what Rust sends via callbacks",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:05.148Z"
-        },
-        {
-          "id": 1,
-          "text": "Must use existing stream_loop.rs and stream_handlers.rs patterns for proper message history management",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:05.945Z"
-        },
-        {
-          "id": 2,
-          "text": "Must support Esc key interruption via an interrupt() method exposed through NAPI",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:06.708Z"
-        },
-        {
-          "id": 3,
-          "text": "Must properly update message history using handle_text_chunk, handle_tool_call, handle_tool_result, handle_final_response patterns",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:07.518Z"
-        },
-        {
-          "id": 4,
-          "text": "Must track tokens via CompactionHook like the CLI does",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:08.277Z"
-        },
-        {
-          "id": 5,
-          "text": "Must load .env files for API credentials using dotenvy",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:09.056Z"
-        },
-        {
-          "id": 6,
-          "text": "The agent modal must expand to full screen size (not a small overlay)",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:12:42.748Z"
-        }
-      ],
-      "nextRuleId": 7,
-      "examples": [
-        {
-          "id": 0,
-          "text": "User presses Esc during agent execution → agent stops immediately and shows partial response",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:20.276Z"
-        },
-        {
-          "id": 1,
-          "text": "Agent calls Read tool → tool result is properly added to message history → agent can reference file content in next response",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:22.397Z"
-        },
-        {
-          "id": 2,
-          "text": "Agent streams text → text is accumulated → final response added to messages as AssistantContent::Text",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:24.807Z"
-        },
-        {
-          "id": 3,
-          "text": "Multi-turn conversation → each turn properly persists in message history → agent maintains context across prompts",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:27.078Z"
-        },
-        {
-          "id": 4,
-          "text": "Session created → dotenvy loads .env → ANTHROPIC_API_KEY available → Claude provider works",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:10:29.026Z"
-        },
-        {
-          "id": 5,
-          "text": "User opens agent modal → modal takes full terminal width and height → user has maximum space for conversation",
-          "deleted": false,
-          "createdAt": "2025-12-18T06:12:44.986Z"
-        }
-      ],
-      "nextExampleId": 6
     }
   },
   "states": {
@@ -53121,8 +53016,7 @@
       "EXMAP-004",
       "AGENT-001",
       "BROWSE-001",
-      "BOARD-020",
-      "NAPI-003"
+      "BOARD-020"
     ],
     "testing": [],
     "implementing": [],

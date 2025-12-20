@@ -27,7 +27,11 @@ use rig::agent::MultiTurnStreamItem;
 use rig::completion::{CompletionModel, GetTokenUsage};
 use rig::streaming::{StreamedAssistantContent, StreamedUserContent};
 use rig::wasm_compat::WasmCompatSend;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::AtomicBool;
+// Use Acquire/Release ordering for proper cross-thread synchronization
+// - Acquire: Ensures subsequent reads see all writes before the Release store
+// - Release: Ensures all writes before the store are visible to Acquire loads
+use std::sync::atomic::Ordering::{Acquire, Release};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::time::interval;
@@ -238,7 +242,8 @@ where
 
     loop {
         // Check interruption at start of each iteration (works for both modes)
-        if is_interrupted.load(Ordering::Relaxed) {
+        // Use Acquire ordering to synchronize with Release store from interrupt setter
+        if is_interrupted.load(Acquire) {
             // Emit interrupted notification
             let queued = if let Some(ref mut iq) = input_queue {
                 iq.dequeue_all()
@@ -265,7 +270,7 @@ where
                     event = es.next() => {
                         if let Some(TuiEvent::Key(key)) = event {
                             if key.code == KeyCode::Esc {
-                                is_interrupted.store(true, Ordering::Relaxed);
+                                is_interrupted.store(true, Release);
                             }
                         }
                         None // No chunk, loop will check interrupted flag
@@ -453,6 +458,11 @@ where
                     // Other stream items (ignored)
                 }
             }
+
+            // Flush buffered output after processing each chunk
+            // This is a no-op for CLI (unbuffered) but triggers batched text emission for NAPI
+            // Provides ~10-50ms latency for text streaming while dramatically reducing callback count
+            output.flush();
         }
     }
 
@@ -462,7 +472,7 @@ where
         .map(|state| state.compaction_needed)
         .unwrap_or(false);
 
-    if compaction_needed && !is_interrupted.load(Ordering::Relaxed) {
+    if compaction_needed && !is_interrupted.load(Acquire) {
         // Capture compaction.triggered event
         if let Ok(manager_arc) = get_debug_capture_manager() {
             if let Ok(mut manager) = manager_arc.lock() {
@@ -531,7 +541,7 @@ where
 
     // Update session token tracker with accumulated values from this turn
     // Use turn_accumulated_* which correctly sums all API calls in this turn
-    if !is_interrupted.load(Ordering::Relaxed) {
+    if !is_interrupted.load(Acquire) {
         session.token_tracker.input_tokens += turn_accumulated_input;
         session.token_tracker.output_tokens += turn_accumulated_output;
         // Cache tokens are per-request, not cumulative (use latest values)

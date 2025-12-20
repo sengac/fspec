@@ -234,21 +234,20 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         if (!chunk) return;
 
         if (chunk.type === 'Text' && chunk.text) {
+          // Text chunks are now batched in Rust, so we receive fewer, larger updates
+          // No need for setImmediate - normal React state updates work fine
           currentSegment += chunk.text;
           const segmentSnapshot = currentSegment;
-          // Update the current streaming message - use setImmediate to break out of React batching
-          setImmediate(() => {
-            setConversation(prev => {
-              const updated = [...prev];
-              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-              if (streamingIdx >= 0) {
-                updated[streamingIdx] = {
-                  ...updated[streamingIdx],
-                  content: segmentSnapshot,
-                };
-              }
-              return updated;
-            });
+          setConversation(prev => {
+            const updated = [...prev];
+            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+            if (streamingIdx >= 0) {
+              updated[streamingIdx] = {
+                ...updated[streamingIdx],
+                content: segmentSnapshot,
+              };
+            }
+            return updated;
           });
         } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
           // Finalize current streaming message and add tool call (match CLI format)
@@ -271,24 +270,22 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             }
           }
           const toolContentSnapshot = toolContent;
-          setImmediate(() => {
-            setConversation(prev => {
-              const updated = [...prev];
-              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-              if (streamingIdx >= 0) {
-                // Mark current segment as complete
-                updated[streamingIdx] = {
-                  ...updated[streamingIdx],
-                  isStreaming: false,
-                };
-              }
-              // Add tool call message
-              updated.push({
-                role: 'tool',
-                content: toolContentSnapshot,
-              });
-              return updated;
+          setConversation(prev => {
+            const updated = [...prev];
+            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+            if (streamingIdx >= 0) {
+              // Mark current segment as complete
+              updated[streamingIdx] = {
+                ...updated[streamingIdx],
+                isStreaming: false,
+              };
+            }
+            // Add tool call message
+            updated.push({
+              role: 'tool',
+              content: toolContentSnapshot,
             });
+            return updated;
           });
         } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
           // Show tool result in CLI format, then start new streaming message
@@ -304,82 +301,69 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             .join('\n');
           const toolResultContent = `[Tool result preview]\n-------\n${indentedPreview}${truncated ? '...' : ''}\n-------`;
           currentSegment = ''; // Reset for next text segment
-          setImmediate(() => {
-            setConversation(prev => [
-              ...prev,
-              { role: 'tool' as const, content: toolResultContent },
-              // Add new streaming placeholder for AI continuation
-              { role: 'assistant' as const, content: '', isStreaming: true },
-            ]);
-          });
-          // NOTE: Don't access sessionRef.current.tokenTracker here - it would block!
-          // The session is locked during streaming. Token usage is updated after prompt completes.
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool' as const, content: toolResultContent },
+            // Add new streaming placeholder for AI continuation
+            { role: 'assistant' as const, content: '', isStreaming: true },
+          ]);
         } else if (chunk.type === 'Done') {
           // Mark streaming complete and remove empty trailing assistant messages
-          setImmediate(() => {
-            setConversation(prev => {
-              const updated = [...prev];
-              // Remove empty streaming assistant messages at the end
-              while (
-                updated.length > 0 &&
-                updated[updated.length - 1].role === 'assistant' &&
-                updated[updated.length - 1].isStreaming &&
-                !updated[updated.length - 1].content
-              ) {
-                updated.pop();
-              }
-              // Mark any remaining streaming message as complete
-              const lastAssistantIdx = updated.findLastIndex(
-                m => m.role === 'assistant' && m.isStreaming
-              );
-              if (lastAssistantIdx >= 0) {
-                updated[lastAssistantIdx] = {
-                  ...updated[lastAssistantIdx],
-                  isStreaming: false,
-                };
-              }
-              return updated;
-            });
+          setConversation(prev => {
+            const updated = [...prev];
+            // Remove empty streaming assistant messages at the end
+            while (
+              updated.length > 0 &&
+              updated[updated.length - 1].role === 'assistant' &&
+              updated[updated.length - 1].isStreaming &&
+              !updated[updated.length - 1].content
+            ) {
+              updated.pop();
+            }
+            // Mark any remaining streaming message as complete
+            const lastAssistantIdx = updated.findLastIndex(
+              m => m.role === 'assistant' && m.isStreaming
+            );
+            if (lastAssistantIdx >= 0) {
+              updated[lastAssistantIdx] = {
+                ...updated[lastAssistantIdx],
+                isStreaming: false,
+              };
+            }
+            return updated;
           });
         } else if (chunk.type === 'Status' && chunk.status) {
           const statusMessage = chunk.status;
           // Status messages (e.g., compaction notifications)
-          setImmediate(() => {
-            setConversation(prev => [
-              ...prev,
-              {
-                role: 'tool',
-                content: statusMessage,
-              },
-            ]);
-          });
+          setConversation(prev => [
+            ...prev,
+            {
+              role: 'tool',
+              content: statusMessage,
+            },
+          ]);
         } else if (chunk.type === 'Interrupted') {
           // Agent was interrupted by user
-          setImmediate(() => {
-            setConversation(prev => {
-              const updated = [
-                ...prev,
-                { role: 'tool' as const, content: '⚠️ Agent interrupted' },
-              ];
-              // Mark any streaming message as complete
-              const lastAssistantIdx = updated.findLastIndex(
-                m => m.role === 'assistant' && m.isStreaming
-              );
-              if (lastAssistantIdx >= 0) {
-                updated[lastAssistantIdx] = {
-                  ...updated[lastAssistantIdx],
-                  isStreaming: false,
-                };
-              }
-              return updated;
-            });
+          setConversation(prev => {
+            const updated = [
+              ...prev,
+              { role: 'tool' as const, content: '⚠️ Agent interrupted' },
+            ];
+            // Mark any streaming message as complete
+            const lastAssistantIdx = updated.findLastIndex(
+              m => m.role === 'assistant' && m.isStreaming
+            );
+            if (lastAssistantIdx >= 0) {
+              updated[lastAssistantIdx] = {
+                ...updated[lastAssistantIdx],
+                isStreaming: false,
+              };
+            }
+            return updated;
           });
         } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
-          // Real-time token update from streaming
-          const tokenSnapshot = chunk.tokens;
-          setImmediate(() => {
-            setTokenUsage(tokenSnapshot);
-          });
+          // Real-time token update from streaming (batched with text in Rust)
+          setTokenUsage(chunk.tokens);
         } else if (chunk.type === 'Error' && chunk.error) {
           setError(chunk.error);
         }
