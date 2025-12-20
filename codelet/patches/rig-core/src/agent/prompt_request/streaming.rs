@@ -37,6 +37,8 @@ pub enum MultiTurnStreamItem<R> {
     StreamAssistantItem(StreamedAssistantContent<R>),
     /// A streamed user content item (mostly for tool results).
     StreamUserItem(StreamedUserContent),
+    /// Early usage information (emitted at stream start with input tokens).
+    Usage(crate::completion::Usage),
     /// The final result from the stream.
     FinalResponse(FinalResponse),
 }
@@ -360,6 +362,10 @@ where
                         Ok(StreamedAssistantContent::Reasoning(rig::message::Reasoning { reasoning, id, signature })) => {
                             yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::Reasoning(rig::message::Reasoning { reasoning, id, signature })));
                             did_call_tool = false;
+                        },
+                        Ok(StreamedAssistantContent::Usage(usage)) => {
+                            // Forward usage events for real-time token streaming
+                            yield Ok(MultiTurnStreamItem::Usage(usage));
                         },
                         Ok(StreamedAssistantContent::Final(final_resp)) => {
                             if let Some(usage) = final_resp.token_usage() { aggregated_usage += usage; };

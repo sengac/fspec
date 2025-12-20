@@ -52,6 +52,7 @@ pub enum ChunkType {
     ToolResult,
     Status,
     Interrupted,
+    TokenUpdate,
     Done,
     Error,
 }
@@ -67,6 +68,7 @@ pub struct StreamChunk {
     pub tool_result: Option<ToolResultInfo>,
     pub status: Option<String>,
     pub queued_inputs: Option<Vec<String>>,
+    pub tokens: Option<TokenTracker>,
     pub error: Option<String>,
 }
 
@@ -79,6 +81,7 @@ impl StreamChunk {
             tool_result: None,
             status: None,
             queued_inputs: None,
+            tokens: None,
             error: None,
         }
     }
@@ -91,6 +94,7 @@ impl StreamChunk {
             tool_result: None,
             status: None,
             queued_inputs: None,
+            tokens: None,
             error: None,
         }
     }
@@ -103,6 +107,7 @@ impl StreamChunk {
             tool_result: Some(info),
             status: None,
             queued_inputs: None,
+            tokens: None,
             error: None,
         }
     }
@@ -115,6 +120,7 @@ impl StreamChunk {
             tool_result: None,
             status: Some(message),
             queued_inputs: None,
+            tokens: None,
             error: None,
         }
     }
@@ -127,6 +133,20 @@ impl StreamChunk {
             tool_result: None,
             status: None,
             queued_inputs: Some(queued_inputs),
+            tokens: None,
+            error: None,
+        }
+    }
+
+    pub fn token_update(tokens: TokenTracker) -> Self {
+        Self {
+            chunk_type: "TokenUpdate".to_string(),
+            text: None,
+            tool_call: None,
+            tool_result: None,
+            status: None,
+            queued_inputs: None,
+            tokens: Some(tokens),
             error: None,
         }
     }
@@ -139,6 +159,7 @@ impl StreamChunk {
             tool_result: None,
             status: None,
             queued_inputs: None,
+            tokens: None,
             error: None,
         }
     }
@@ -151,6 +172,7 @@ impl StreamChunk {
             tool_result: None,
             status: None,
             queued_inputs: None,
+            tokens: None,
             error: Some(message),
         }
     }

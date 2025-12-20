@@ -8,6 +8,15 @@
 
 use std::io::Write;
 
+/// Token usage information for streaming updates
+#[derive(Debug, Clone)]
+pub struct TokenInfo {
+    pub input_tokens: u64,
+    pub output_tokens: u64,
+    pub cache_read_input_tokens: Option<u64>,
+    pub cache_creation_input_tokens: Option<u64>,
+}
+
 /// Stream output handler trait
 ///
 /// Implementations handle rendering stream events to their target output:
@@ -34,6 +43,9 @@ pub trait StreamOutput: Send + Sync {
 
     /// Emit status message (e.g., compaction notifications)
     fn emit_status(&self, message: &str);
+
+    /// Emit token usage update (real-time token tracking)
+    fn emit_tokens(&self, tokens: &TokenInfo);
 }
 
 /// CLI output implementation - prints to stdout
@@ -113,5 +125,9 @@ impl StreamOutput for CliOutput {
         let formatted = message.replace('\n', "\r\n");
         print!("{formatted}\r\n");
         std::io::stdout().flush().ok();
+    }
+
+    fn emit_tokens(&self, _tokens: &TokenInfo) {
+        // CLI doesn't display real-time token updates (shown in status line instead)
     }
 }

@@ -59,6 +59,7 @@ export declare const enum ChunkType {
   ToolResult = 'ToolResult',
   Status = 'Status',
   Interrupted = 'Interrupted',
+  TokenUpdate = 'TokenUpdate',
   Done = 'Done',
   Error = 'Error',
 }
@@ -84,6 +85,7 @@ export interface StreamChunk {
   toolResult?: ToolResultInfo;
   status?: string;
   queuedInputs?: Array<string>;
+  tokens?: TokenTracker;
   error?: string;
 }
 

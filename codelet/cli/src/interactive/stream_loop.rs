@@ -10,7 +10,7 @@
 //! Uses rig's StreamingPromptHook to capture per-request token usage and
 //! check compaction thresholds before each internal API call.
 
-use super::output::StreamOutput;
+use super::output::{StreamOutput, TokenInfo};
 use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
@@ -221,7 +221,20 @@ where
     let mut assistant_text = String::new();
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
-    let mut turn_output_tokens: u64 = 0;
+
+    // Store previous cumulative totals for emitting running totals
+    let prev_input_tokens = session.token_tracker.input_tokens;
+    let prev_output_tokens = session.token_tracker.output_tokens;
+
+    // Track accumulated tokens within THIS run_agent_stream call
+    // (which may have multiple API calls due to tool use)
+    let mut turn_accumulated_input: u64 = 0;
+    let mut turn_accumulated_output: u64 = 0;
+    let mut turn_cache_read: u64 = 0;
+    let mut turn_cache_creation: u64 = 0;
+    // Track current API call's tokens (reset on FinalResponse for next tool call)
+    let mut current_api_input: u64 = 0;
+    let mut current_api_output: u64 = 0;
 
     loop {
         // Check interruption at start of each iteration (works for both modes)
@@ -299,48 +312,106 @@ where
                         &last_tool_name,
                         output,
                     )?;
+
+                    // Emit intermediate CUMULATIVE token update after tool result
+                    // Use accumulated values (already updated by Usage and FinalResponse handlers)
+                    output.emit_tokens(&TokenInfo {
+                        input_tokens: prev_input_tokens + turn_accumulated_input,
+                        output_tokens: prev_output_tokens + turn_accumulated_output,
+                        cache_read_input_tokens: Some(turn_cache_read),
+                        cache_creation_input_tokens: Some(turn_cache_creation),
+                    });
+                }
+                Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
+                    // Usage events come from:
+                    // 1. MessageStart (input tokens, output=0) - marks start of new API call
+                    // 2. MessageDelta (input + output tokens) - streaming updates
+
+                    if usage.output_tokens == 0 {
+                        // MessageStart - new API call starting
+                        // First, commit previous API call's tokens (if any) to accumulated totals
+                        // This handles multi-API-call turns (tool use) where FinalResponse only comes at end
+                        turn_accumulated_input += current_api_input;
+                        turn_accumulated_output += current_api_output;
+                        // Now track the new API call's input tokens
+                        current_api_input = usage.input_tokens;
+                        current_api_output = 0;
+                    } else {
+                        // MessageDelta - update current API call's output tokens
+                        current_api_output = usage.output_tokens;
+                    }
+
+                    turn_cache_read = usage.cache_read_input_tokens.unwrap_or(turn_cache_read);
+                    turn_cache_creation = usage.cache_creation_input_tokens.unwrap_or(turn_cache_creation);
+
+                    // Emit CUMULATIVE totals (previous session + accumulated + current API call)
+                    output.emit_tokens(&TokenInfo {
+                        input_tokens: prev_input_tokens + turn_accumulated_input + current_api_input,
+                        output_tokens: prev_output_tokens + turn_accumulated_output + current_api_output,
+                        cache_read_input_tokens: Some(turn_cache_read),
+                        cache_creation_input_tokens: Some(turn_cache_creation),
+                    });
                 }
                 Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
-                    // Output tokens come from FinalResponse
+                    // Get final usage directly from FinalResponse (most accurate source)
                     let usage = final_resp.usage();
-                    turn_output_tokens = usage.output_tokens;
+
+                    // For non-Anthropic providers that don't emit Usage, use FinalResponse values
+                    if current_api_input == 0 {
+                        current_api_input = usage.input_tokens;
+                    }
+                    current_api_output = usage.output_tokens;
+
+                    // Commit final API call to accumulated totals
+                    turn_accumulated_input += current_api_input;
+                    turn_accumulated_output += current_api_output;
+
+                    // Update cache tokens from FinalResponse
+                    turn_cache_read = usage.cache_read_input_tokens.unwrap_or(turn_cache_read);
+                    turn_cache_creation = usage.cache_creation_input_tokens.unwrap_or(turn_cache_creation);
+
+                    // Emit CUMULATIVE token update
+                    output.emit_tokens(&TokenInfo {
+                        input_tokens: prev_input_tokens + turn_accumulated_input,
+                        output_tokens: prev_output_tokens + turn_accumulated_output,
+                        cache_read_input_tokens: Some(turn_cache_read),
+                        cache_creation_input_tokens: Some(turn_cache_creation),
+                    });
 
                     // CLI-022: Capture api.response.end event
                     if let Ok(manager_arc) = get_debug_capture_manager() {
                         if let Ok(mut manager) = manager_arc.lock() {
                             if manager.is_enabled() {
-                                if let Ok(state) = token_state.lock() {
-                                    let duration_ms = api_start_time.elapsed().as_millis() as u64;
-                                    manager.capture(
-                                        "api.response.end",
-                                        serde_json::json!({
-                                            "duration": duration_ms,
-                                            "usage": {
-                                                "inputTokens": state.input_tokens,
-                                                "outputTokens": turn_output_tokens,
-                                                "cacheReadInputTokens": state.cache_read_input_tokens,
-                                                "cacheCreationInputTokens": state.cache_creation_input_tokens,
-                                            },
-                                            "responseLength": assistant_text.len(),
-                                        }),
-                                        Some(codelet_common::debug_capture::CaptureOptions {
-                                            request_id: Some(request_id.clone()),
-                                        }),
-                                    );
+                                let duration_ms = api_start_time.elapsed().as_millis() as u64;
+                                manager.capture(
+                                    "api.response.end",
+                                    serde_json::json!({
+                                        "duration": duration_ms,
+                                        "usage": {
+                                            "inputTokens": usage.input_tokens,
+                                            "outputTokens": usage.output_tokens,
+                                            "cacheReadInputTokens": usage.cache_read_input_tokens,
+                                            "cacheCreationInputTokens": usage.cache_creation_input_tokens,
+                                        },
+                                        "responseLength": assistant_text.len(),
+                                    }),
+                                    Some(codelet_common::debug_capture::CaptureOptions {
+                                        request_id: Some(request_id.clone()),
+                                    }),
+                                );
 
-                                    manager.capture(
-                                        "token.update",
-                                        serde_json::json!({
-                                            "inputTokens": state.input_tokens,
-                                            "outputTokens": turn_output_tokens,
-                                            "cacheReadInputTokens": state.cache_read_input_tokens,
-                                            "cacheCreationInputTokens": state.cache_creation_input_tokens,
-                                            "totalInputTokens": state.input_tokens,
-                                            "totalOutputTokens": turn_output_tokens,
-                                        }),
-                                        None,
-                                    );
-                                }
+                                manager.capture(
+                                    "token.update",
+                                    serde_json::json!({
+                                        "inputTokens": usage.input_tokens,
+                                        "outputTokens": usage.output_tokens,
+                                        "cacheReadInputTokens": usage.cache_read_input_tokens,
+                                        "cacheCreationInputTokens": usage.cache_creation_input_tokens,
+                                        "totalInputTokens": usage.input_tokens,
+                                        "totalOutputTokens": usage.output_tokens,
+                                    }),
+                                    None,
+                                );
                             }
                         }
                     }
@@ -458,16 +529,14 @@ where
         return Ok(());
     }
 
-    // Update tokens from hook's TokenState (accumulate, don't overwrite)
+    // Update session token tracker with accumulated values from this turn
+    // Use turn_accumulated_* which correctly sums all API calls in this turn
     if !is_interrupted.load(Ordering::Relaxed) {
-        if let Ok(state) = token_state.lock() {
-            session.token_tracker.input_tokens += state.input_tokens;
-            session.token_tracker.output_tokens += turn_output_tokens;
-            // Cache tokens are per-request, not cumulative
-            session.token_tracker.cache_read_input_tokens = Some(state.cache_read_input_tokens);
-            session.token_tracker.cache_creation_input_tokens =
-                Some(state.cache_creation_input_tokens);
-        }
+        session.token_tracker.input_tokens += turn_accumulated_input;
+        session.token_tracker.output_tokens += turn_accumulated_output;
+        // Cache tokens are per-request, not cumulative (use latest values)
+        session.token_tracker.cache_read_input_tokens = Some(turn_cache_read);
+        session.token_tracker.cache_creation_input_tokens = Some(turn_cache_creation);
     }
 
     Ok(())

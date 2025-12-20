@@ -86,6 +86,9 @@ where
         signature: Option<String>,
     },
 
+    /// Early usage information (emitted at stream start with input tokens)
+    Usage(crate::completion::Usage),
+
     /// The final response object, must be yielded if you want the
     /// `response` field to be populated on the `StreamingCompletionResponse`
     FinalResponse(R),
@@ -267,6 +270,9 @@ where
                         ))))
                     }
                 }
+                RawStreamingChoice::Usage(usage) => {
+                    Poll::Ready(Some(Ok(StreamedAssistantContent::Usage(usage))))
+                }
                 RawStreamingChoice::FinalResponse(response) => {
                     if stream
                         .final_response_yielded
@@ -373,6 +379,9 @@ impl<R: Clone + Unpin + GetTokenUsage> Stream for StreamingResultDyn<R> {
                     arguments,
                     call_id,
                 }))),
+                RawStreamingChoice::Usage(usage) => {
+                    Poll::Ready(Some(Ok(RawStreamingChoice::Usage(usage))))
+                }
             },
         }
     }
@@ -557,6 +566,7 @@ pub enum StreamedAssistantContent<R> {
     ToolCall(ToolCall),
     ToolCallDelta { id: String, delta: String },
     Reasoning(Reasoning),
+    Usage(crate::completion::Usage),
     Final(R),
 }
 

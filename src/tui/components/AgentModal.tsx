@@ -105,6 +105,7 @@ interface StreamChunk {
   toolResult?: { toolCallId: string; content: string; isError: boolean };
   status?: string;
   queuedInputs?: string[];
+  tokens?: TokenTracker;
   error?: string;
 }
 
@@ -372,6 +373,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               }
               return updated;
             });
+          });
+        } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
+          // Real-time token update from streaming
+          const tokenSnapshot = chunk.tokens;
+          setImmediate(() => {
+            setTokenUsage(tokenSnapshot);
           });
         } else if (chunk.type === 'Error' && chunk.error) {
           setError(chunk.error);

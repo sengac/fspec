@@ -245,8 +245,23 @@ where
                                         let span = tracing::Span::current();
                                         span.record("gen_ai.response.id", &message.id);
                                         span.record("gen_ai.response.model_name", &message.model);
+
+                                        // Emit early usage with input tokens (output_tokens = 0 at start)
+                                        let mut early_usage = crate::completion::Usage::new();
+                                        early_usage.input_tokens = message.usage.input_tokens;
+                                        early_usage.cache_read_input_tokens = message.usage.cache_read_input_tokens;
+                                        early_usage.cache_creation_input_tokens = message.usage.cache_creation_input_tokens;
+                                        yield Ok(RawStreamingChoice::Usage(early_usage));
                                     },
                                     StreamingEvent::MessageDelta { delta, usage } => {
+                                        // Emit output tokens as they stream (Anthropic provides cumulative count)
+                                        let mut streaming_usage = crate::completion::Usage::new();
+                                        streaming_usage.input_tokens = input_tokens;
+                                        streaming_usage.output_tokens = usage.output_tokens as u64;
+                                        streaming_usage.cache_read_input_tokens = cache_read_input_tokens;
+                                        streaming_usage.cache_creation_input_tokens = cache_creation_input_tokens;
+                                        yield Ok(RawStreamingChoice::Usage(streaming_usage));
+
                                         if delta.stop_reason.is_some() {
                                             let usage = PartialUsage {
                                                  output_tokens: usage.output_tokens,
