@@ -50,6 +50,7 @@ Tags that categorize features by functional area.
 | `@agent-compatibility` | Features ensuring correct behavior across all 18 supported AI agents |
 | `@agent-detection` | Agent detection and runtime configuration features |
 | `@agent-integration` | Features related to AI agent initialization, detection, and integration |
+| `@agent-modal` | Agent modal component features and interactions |
 | `@agent-support` | Multi-agent support and agent-specific configurations |
 | `@ai-assistance` | AI-assisted features for analysis and extraction |
 | `@answer-question` | Question answering operations |
@@ -654,7 +655,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-18T04:11:54.192Z_
+_Last updated: 2025-12-21T03:50:55.845Z_
 
 **Update Command**: `fspec tag-stats`
 

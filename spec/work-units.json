@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-18T06:09:24.724Z"
+    "lastUpdated": "2025-12-21T04:37:59.060Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -52954,6 +52954,130 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-18T04:46:57.190Z"
+    },
+    "TUI-031": {
+      "id": "TUI-031",
+      "title": "Real-time tokens per second display in agent modal header",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-21T03:41:10.190Z",
+      "updatedAt": "2025-12-21T04:37:59.086Z",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec agent modal",
+        "action": "see real-time tokens per second during AI streaming",
+        "benefit": "I can monitor AI response performance and compare different provider speeds"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-21T03:41:28.148Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-21T03:52:07.686Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-21T03:59:48.731Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-21T04:37:47.854Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-21T04:37:59.086Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tokens per second is calculated as outputTokens divided by elapsed seconds since streaming started",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:41:37.152Z"
+        },
+        {
+          "id": 1,
+          "text": "Tokens per second display appears only during active streaming",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:41:42.531Z"
+        },
+        {
+          "id": 2,
+          "text": "Tokens per second is displayed to the left of the token count in the header",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:41:48.149Z"
+        },
+        {
+          "id": 3,
+          "text": "Display is suppressed for the first 0.5 seconds to avoid wild fluctuations",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:41:53.284Z"
+        },
+        {
+          "id": 4,
+          "text": "Value is formatted as 'X.X tok/s' with one decimal place",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:41:58.770Z"
+        },
+        {
+          "id": 5,
+          "text": "Display updates approximately 10 times per second during streaming for real-time feedback",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:42:04.124Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User sends a prompt, after 0.5s with 50 output tokens, header shows '100.0 tok/s' to the left of token count",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:42:11.023Z"
+        },
+        {
+          "id": 1,
+          "text": "User sees nothing in the tok/s position during the first 0.5 seconds of streaming",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:42:16.844Z"
+        },
+        {
+          "id": 2,
+          "text": "When streaming ends, the tok/s display disappears and only token counts remain visible",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:42:22.334Z"
+        },
+        {
+          "id": 3,
+          "text": "Header shows: 'Agent: claude (streaming...)   12.3 tok/s   tokens: 1234↓ 567↑   [Tab] Switch'",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:42:28.716Z"
+        },
+        {
+          "id": 4,
+          "text": "With slow provider generating 10 tokens in 5 seconds, user sees '2.0 tok/s'",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:42:34.990Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "attachments": [
+        "spec/attachments/TUI-031/tokens-per-second-implementation.md",
+        "spec/attachments/TUI-031/ast-research-agent-modal-functions.json"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Modifies AgentModal.tsx component in src/tui/components/. Adds streamingStartTime state to track when streaming begins. Uses useReducer for force updates and useMemo for tokensPerSecond calculation. Adds 100ms interval during streaming for real-time updates. Display position is between streaming indicator and token count in header Box component.",
+          "deleted": false,
+          "createdAt": "2025-12-21T03:51:31.804Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-21T04:37:59.086Z"
     }
   },
   "states": {
@@ -53022,6 +53146,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-031",
       "NAPI-002",
       "NAPI-001",
       "CLEAN-005",
@@ -53447,7 +53572,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 30,
+    "TUI": 31,
     "REFAC": 5,
     "VIEW": 2,
     "DOC": 17,
