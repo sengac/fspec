@@ -22,6 +22,27 @@ import { Box, Text, useInput, useStdout } from 'ink';
 import stringWidth from 'string-width';
 import { VirtualList } from './VirtualList';
 
+/**
+ * Normalize emoji variation selectors for consistent terminal width calculation.
+ *
+ * Many characters have Emoji_Presentation=No in Unicode (they're text by default):
+ * - ⚠ ✏ 🖥 ☁ ❤ ✨ ☆ ✱ △ ⚡ and many more
+ *
+ * When U+FE0F (VS16) is added, string-width correctly reports width 2.
+ * BUT many terminals IGNORE U+FE0F and render as width 1, causing layout misalignment.
+ *
+ * FIX: Strip ALL U+FE0F variation selectors from text.
+ * - For text-default chars: removes VS16, string-width reports 1, terminal renders 1 ✓
+ * - For emoji-default chars: they're already emoji, VS16 is redundant, no effect
+ *
+ * See: border-debug.test.tsx for reproduction and explanation
+ */
+function normalizeEmojiWidth(text: string): string {
+  // Remove ALL U+FE0F (Variation Selector-16) characters
+  // This ensures string-width matches terminal rendering for text-default emojis
+  return text.replace(/\uFE0F/g, '');
+}
+
 // Custom TextInput that ignores mouse escape sequences
 const SafeTextInput: React.FC<{
   value: string;
@@ -519,7 +540,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       // Add role prefix to first line
       const prefix =
         msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? 'AI: ' : '';
-      const contentLines = msg.content.split('\n');
+      // Normalize emoji variation selectors for consistent width calculation
+      const normalizedContent = normalizeEmojiWidth(msg.content);
+      const contentLines = normalizedContent.split('\n');
 
       contentLines.forEach((lineContent, lineIndex) => {
         let displayContent =
