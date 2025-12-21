@@ -9,6 +9,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Box, Text, useInput, useStdout, useStdin } from 'ink';
 import chalk from 'chalk';
+import stringWidth from 'string-width';
 import { Logo } from './Logo';
 import { CheckpointStatus } from './CheckpointStatus';
 import { KeybindingShortcuts } from './KeybindingShortcuts';
@@ -70,32 +71,20 @@ const getColumnWidth = (columnIndex: number, baseWidth: number, remainder: numbe
   return columnIndex < remainder ? baseWidth + 1 : baseWidth;
 };
 
-// Helper: Calculate visual width accounting for emoji width
+// Helper: Calculate visual width using string-width for proper Unicode support
 const getVisualWidth = (text: string): number => {
-  let width = 0;
-  for (const char of text) {
-    const code = char.codePointAt(0) || 0;
-    // Emoji ranges that render as 2 columns:
-    // U+2300-U+27BF (Miscellaneous Technical, Dingbats) - includes ⏩ (U+23E9)
-    // U+1F000+ (Emoticons, symbols, etc.)
-    // Arrows like ↓ (U+2193) render as 1 column
-    const isWide = (code >= 0x2300 && code <= 0x27BF) || code >= 0x1F000;
-    width += isWide ? 2 : 1;
-  }
-  return width;
+  return stringWidth(text);
 };
 
 const fitToWidth = (text: string, width: number): string => {
   const visualWidth = getVisualWidth(text);
 
   if (visualWidth > width) {
-    // Truncate while being careful about emoji boundaries
+    // Truncate by iterating through codepoints and measuring width
     let result = '';
     let currentVisualWidth = 0;
     for (const char of text) {
-      const code = char.codePointAt(0) || 0;
-      const isWide = (code >= 0x2300 && code <= 0x27BF) || code >= 0x1F000;
-      const charWidth = isWide ? 2 : 1;
+      const charWidth = stringWidth(char);
       if (currentVisualWidth + charWidth > width) break;
       result += char;
       currentVisualWidth += charWidth;

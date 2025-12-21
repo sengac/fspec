@@ -18,6 +18,7 @@ import React, {
   useMemo,
 } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
+import stringWidth from 'string-width';
 import { VirtualList } from './VirtualList';
 
 // Custom TextInput that ignores mouse escape sequences
@@ -344,10 +345,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           ]);
         } else if (chunk.type === 'Interrupted') {
           // Agent was interrupted by user
+          // Use ⚠ (U+26A0) without emoji selector - width 1 in both string-width and terminal
           setConversation(prev => {
             const updated = [
               ...prev,
-              { role: 'tool' as const, content: '⚠️ Agent interrupted' },
+              { role: 'tool' as const, content: '⚠ Agent interrupted' },
             ];
             // Mark any streaming message as complete
             const lastAssistantIdx = updated.findLastIndex(
@@ -478,29 +480,70 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           displayContent += '...';
         }
 
-        // Wrap long lines manually to fit terminal width
-        if (displayContent.length === 0) {
+        // Wrap long lines manually to fit terminal width (using visual width for Unicode)
+        if (stringWidth(displayContent) === 0) {
           lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
         } else {
-          let remaining = displayContent;
-          while (remaining.length > 0) {
-            // Try to break at word boundary for cleaner wrapping
-            let chunk = remaining.slice(0, maxWidth);
-            if (
-              remaining.length > maxWidth &&
-              chunk.lastIndexOf(' ') > maxWidth * 0.5
-            ) {
-              const breakPoint = chunk.lastIndexOf(' ');
-              chunk = remaining.slice(0, breakPoint);
-              remaining = remaining.slice(breakPoint + 1); // Skip the space
-            } else {
-              remaining = remaining.slice(chunk.length);
+          // Split into words, keeping whitespace
+          const words = displayContent.split(/(\s+)/);
+          let currentLine = '';
+          let currentWidth = 0;
+
+          for (const word of words) {
+            const wordWidth = stringWidth(word);
+
+            if (wordWidth === 0) continue;
+
+            // If word alone exceeds max width, force break it character by character
+            if (wordWidth > maxWidth) {
+              // Flush current line first
+              if (currentLine) {
+                lines.push({ role: msg.role, content: currentLine, messageIndex: msgIndex });
+                currentLine = '';
+                currentWidth = 0;
+              }
+              // Break long word by visual width
+              let chunk = '';
+              let chunkWidth = 0;
+              for (const char of word) {
+                const charWidth = stringWidth(char);
+                if (chunkWidth + charWidth > maxWidth && chunk) {
+                  lines.push({ role: msg.role, content: chunk, messageIndex: msgIndex });
+                  chunk = char;
+                  chunkWidth = charWidth;
+                } else {
+                  chunk += char;
+                  chunkWidth += charWidth;
+                }
+              }
+              if (chunk) {
+                currentLine = chunk;
+                currentWidth = chunkWidth;
+              }
+              continue;
             }
-            lines.push({
-              role: msg.role,
-              content: chunk,
-              messageIndex: msgIndex,
-            });
+
+            // Check if word fits on current line
+            if (currentWidth + wordWidth > maxWidth) {
+              // Flush current line and start new one
+              if (currentLine.trim()) {
+                lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });
+              }
+              // Don't start line with whitespace
+              currentLine = word.trim() ? word : '';
+              currentWidth = word.trim() ? wordWidth : 0;
+            } else {
+              currentLine += word;
+              currentWidth += wordWidth;
+            }
+          }
+
+          // Flush remaining content
+          if (currentLine.trim()) {
+            lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });
+          } else if (lines.length === 0 || lines[lines.length - 1]?.messageIndex !== msgIndex) {
+            // Ensure at least one line per content section
+            lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
           }
         }
       });
@@ -520,34 +563,39 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         flexDirection="column"
         width={terminalWidth}
         height={terminalHeight}
-        borderStyle="double"
-        borderColor="red"
-        backgroundColor="black"
       >
         <Box
           flexDirection="column"
-          padding={2}
           flexGrow={1}
-          justifyContent="center"
-          alignItems="center"
+          borderStyle="double"
+          borderColor="red"
+          backgroundColor="black"
         >
-          <Box marginBottom={1}>
-            <Text bold color="red">
-              Error: AI Agent Unavailable
-            </Text>
-          </Box>
-          <Box marginBottom={1}>
-            <Text color="yellow">{error}</Text>
-          </Box>
-          <Box flexDirection="column" marginBottom={1}>
-            <Text dimColor>No AI provider credentials configured.</Text>
-            <Text dimColor>Set one of these environment variables:</Text>
-            <Text color="cyan"> ANTHROPIC_API_KEY</Text>
-            <Text color="cyan"> OPENAI_API_KEY</Text>
-            <Text color="cyan"> GOOGLE_GENERATIVE_AI_API_KEY</Text>
-          </Box>
-          <Box>
-            <Text dimColor>Press Esc to close</Text>
+          <Box
+            flexDirection="column"
+            padding={2}
+            flexGrow={1}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Box marginBottom={1}>
+              <Text bold color="red">
+                Error: AI Agent Unavailable
+              </Text>
+            </Box>
+            <Box marginBottom={1}>
+              <Text color="yellow">{error}</Text>
+            </Box>
+            <Box flexDirection="column" marginBottom={1}>
+              <Text dimColor>No AI provider credentials configured.</Text>
+              <Text dimColor>Set one of these environment variables:</Text>
+              <Text color="cyan"> ANTHROPIC_API_KEY</Text>
+              <Text color="cyan"> OPENAI_API_KEY</Text>
+              <Text color="cyan"> GOOGLE_GENERATIVE_AI_API_KEY</Text>
+            </Box>
+            <Box>
+              <Text dimColor>Press Esc to close</Text>
+            </Box>
           </Box>
         </Box>
       </Box>
@@ -562,38 +610,43 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         flexDirection="column"
         width={terminalWidth}
         height={terminalHeight}
-        borderStyle="double"
-        borderColor="cyan"
-        backgroundColor="black"
       >
         <Box
           flexDirection="column"
-          padding={2}
           flexGrow={1}
-          justifyContent="center"
-          alignItems="center"
+          borderStyle="double"
+          borderColor="cyan"
+          backgroundColor="black"
         >
-          <Box marginBottom={1}>
-            <Text bold color="cyan">
-              Select Provider
-            </Text>
-          </Box>
-          {availableProviders.map((provider, idx) => (
-            <Box key={provider}>
-              <Text
-                backgroundColor={
-                  idx === selectedProviderIndex ? 'cyan' : undefined
-                }
-                color={idx === selectedProviderIndex ? 'black' : 'white'}
-              >
-                {idx === selectedProviderIndex ? '> ' : '  '}
-                {provider}
-                {provider === currentProvider ? ' (current)' : ''}
+          <Box
+            flexDirection="column"
+            padding={2}
+            flexGrow={1}
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Box marginBottom={1}>
+              <Text bold color="cyan">
+                Select Provider
               </Text>
             </Box>
-          ))}
-          <Box marginTop={1}>
-            <Text dimColor>Enter Select | Esc Cancel</Text>
+            {availableProviders.map((provider, idx) => (
+              <Box key={provider}>
+                <Text
+                  backgroundColor={
+                    idx === selectedProviderIndex ? 'cyan' : undefined
+                  }
+                  color={idx === selectedProviderIndex ? 'black' : 'white'}
+                >
+                  {idx === selectedProviderIndex ? '> ' : '  '}
+                  {provider}
+                  {provider === currentProvider ? ' (current)' : ''}
+                </Text>
+              </Box>
+            ))}
+            <Box marginTop={1}>
+              <Text dimColor>Enter Select | Esc Cancel</Text>
+            </Box>
           </Box>
         </Box>
       </Box>
@@ -601,92 +654,96 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   }
 
   // Main agent modal (full-screen overlay)
-  // Subtract 2 for the double border (top + bottom rows)
-  const modalHeight = terminalHeight;
-
+  // Use two-layer structure: outer box for positioning, inner box for styling
+  // This prevents border rendering issues with position="absolute" + explicit dimensions
   return (
     <Box
       position="absolute"
       flexDirection="column"
       width={terminalWidth}
-      height={modalHeight}
-      borderStyle="double"
-      borderColor="cyan"
-      backgroundColor="black"
+      height={terminalHeight}
     >
-      {/* Header with provider and token usage */}
       <Box
-        borderStyle="single"
-        borderBottom={true}
-        borderTop={false}
-        borderLeft={false}
-        borderRight={false}
-        paddingX={1}
+        flexDirection="column"
+        flexGrow={1}
+        borderStyle="double"
+        borderColor="cyan"
+        backgroundColor="black"
       >
-        <Box flexGrow={1}>
-          <Text bold color="cyan">
-            Agent: {currentProvider}
-          </Text>
-          {isLoading && <Text color="yellow"> (streaming...)</Text>}
-        </Box>
-        <Box>
-          <Text dimColor>
-            tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
-          </Text>
-        </Box>
-        {availableProviders.length > 1 && (
-          <Box marginLeft={2}>
-            <Text dimColor>[Tab] Switch</Text>
+        {/* Header with provider and token usage */}
+        <Box
+          borderStyle="single"
+          borderBottom={true}
+          borderTop={false}
+          borderLeft={false}
+          borderRight={false}
+          paddingX={1}
+        >
+          <Box flexGrow={1}>
+            <Text bold color="cyan">
+              Agent: {currentProvider}
+            </Text>
+            {isLoading && <Text color="yellow"> (streaming...)</Text>}
           </Box>
-        )}
-      </Box>
-
-      {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
-      <Box flexGrow={1} flexBasis={0}>
-        <VirtualList
-          items={conversationLines}
-          renderItem={(line, _index, isSelected) => {
-            const color =
-              line.role === 'user'
-                ? 'green'
-                : line.role === 'tool'
-                  ? 'yellow'
-                  : 'white';
-            return (
-              <Box flexGrow={1}>
-                <Text color={isSelected ? 'cyan' : color}>{line.content}</Text>
-              </Box>
-            );
-          }}
-          keyExtractor={(_line, index) => `line-${index}`}
-          emptyMessage="Type a message to start..."
-          showScrollbar={!isLoading}
-          isFocused={!isLoading && !showProviderSelector}
-          scrollToEnd={true}
-        />
-      </Box>
-
-      {/* Input area */}
-      <Box
-        borderStyle="single"
-        borderTop={true}
-        borderBottom={false}
-        borderLeft={false}
-        borderRight={false}
-        paddingX={1}
-      >
-        <Text color="green">&gt; </Text>
-        <Box flexGrow={1}>
-          {isLoading ? (
-            <Text dimColor>Thinking... (Esc to stop)</Text>
-          ) : (
-            <SafeTextInput
-              value={inputValue}
-              onChange={setInputValue}
-              onSubmit={handleSubmit}
-              placeholder="Type your message..."
-            />
+          <Box>
+            <Text dimColor>
+              tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
+            </Text>
+          </Box>
+          {availableProviders.length > 1 && (
+            <Box marginLeft={2}>
+              <Text dimColor>[Tab] Switch</Text>
+            </Box>
           )}
+        </Box>
+
+        {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
+        <Box flexGrow={1} flexBasis={0}>
+          <VirtualList
+            items={conversationLines}
+            renderItem={(line, _index, isSelected) => {
+              const color =
+                line.role === 'user'
+                  ? 'green'
+                  : line.role === 'tool'
+                    ? 'yellow'
+                    : 'white';
+              return (
+                <Box flexGrow={1}>
+                  <Text color={isSelected ? 'cyan' : color}>{line.content}</Text>
+                </Box>
+              );
+            }}
+            keyExtractor={(_line, index) => `line-${index}`}
+            emptyMessage="Type a message to start..."
+            showScrollbar={!isLoading}
+            isFocused={!isLoading && !showProviderSelector}
+            scrollToEnd={true}
+          />
+        </Box>
+
+        {/* Input area */}
+        <Box
+          borderStyle="single"
+          borderTop={true}
+          borderBottom={false}
+          borderLeft={false}
+          borderRight={false}
+          paddingX={1}
+        >
+          <Text color="green">&gt; </Text>
+          <Box flexGrow={1}>
+            {isLoading ? (
+              <Text dimColor>Thinking... (Esc to stop)</Text>
+            ) : (
+              <SafeTextInput
+                value={inputValue}
+                onChange={setInputValue}
+                onSubmit={handleSubmit}
+                placeholder="Type your message..."
+              />
+            )}
+          </Box>
         </Box>
       </Box>
     </Box>

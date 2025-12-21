@@ -71,6 +71,19 @@ vi.mock('../../components/Dialog', () => ({
   }) => <Box flexDirection="column">{children}</Box>,
 }));
 
+// Mock Ink's Box to strip position="absolute" which doesn't work in ink-testing-library
+vi.mock('ink', async () => {
+  const actual = await vi.importActual<typeof import('ink')>('ink');
+  return {
+    ...actual,
+    Box: (props: React.ComponentProps<typeof actual.Box>) => {
+      // Strip position prop as it breaks ink-testing-library
+      const { position, ...rest } = props as { position?: string } & typeof props;
+      return <actual.Box {...rest} />;
+    },
+  };
+});
+
 // Import the component after mocks are set up
 import { AgentModal } from '../components/AgentModal';
 
