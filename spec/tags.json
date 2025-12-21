@@ -130,6 +130,10 @@
           "description": "Features related to AI agent initialization, detection, and integration"
         },
         {
+          "name": "@agent-modal",
+          "description": "Agent modal component features and interactions"
+        },
+        {
           "name": "@agent-support",
           "description": "Multi-agent support and agent-specific configurations"
         },
@@ -1650,7 +1654,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-18T04:11:54.192Z",
+    "lastUpdated": "2025-12-21T03:50:55.845Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

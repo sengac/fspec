@@ -16,6 +16,7 @@ import React, {
   useCallback,
   useRef,
   useMemo,
+  useReducer,
 } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import stringWidth from 'string-width';
@@ -167,9 +168,26 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
   const sessionRef = useRef<CodeletSessionType | null>(null);
 
+  // TUI-031: Track tok/s - calculate on each TEXT chunk for real-time updates
+  const streamingStartTimeRef = useRef<number | null>(null);
+  const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(null);
+  const [lastChunkTime, setLastChunkTime] = useState<number | null>(null);
+  const lastChunkTimeRef = useRef<number | null>(null);
+  const rateSamplesRef = useRef<number[]>([]);
+  const MAX_RATE_SAMPLES = 5; // Average last 5 samples for stability
+
   // Get terminal dimensions for full-screen layout
   const terminalWidth = stdout?.columns ?? 80;
   const terminalHeight = stdout?.rows ?? 24;
+
+  // TUI-031: Hide tok/s after 10 seconds of no chunks
+  useEffect(() => {
+    if (!isLoading || lastChunkTime === null) return;
+    const timeout = setTimeout(() => {
+      setDisplayedTokPerSec(null);
+    }, 10000);
+    return () => clearTimeout(timeout);
+  }, [isLoading, lastChunkTime]);
 
   // Initialize session when modal opens
   useEffect(() => {
@@ -180,6 +198,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setTokenUsage({ inputTokens: 0, outputTokens: 0 });
       setError(null);
       setInputValue('');
+      // TUI-031: Reset tok/s tracking
+      streamingStartTimeRef.current = null;
+      setDisplayedTokPerSec(null);
+      setLastChunkTime(null);
+      lastChunkTimeRef.current = null;
+      rateSamplesRef.current = [];
       sessionRef.current = null;
       return;
     }
@@ -217,6 +241,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     const userMessage = inputValue.trim();
     setInputValue('');
     setIsLoading(true);
+    // TUI-031: Reset tok/s tracking for new prompt
+    streamingStartTimeRef.current = Date.now();
+    setDisplayedTokPerSec(null);
+    setLastChunkTime(null);
+    lastChunkTimeRef.current = null;
+    rateSamplesRef.current = [];
 
     // Add user message to conversation
     setConversation(prev => [...prev, { role: 'user', content: userMessage }]);
@@ -235,8 +265,28 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         if (!chunk) return;
 
         if (chunk.type === 'Text' && chunk.text) {
+          // TUI-031: Calculate tok/s on each text chunk
+          const now = Date.now();
+          const chunkTokens = Math.ceil(chunk.text.length / 4); // ~4 chars per token
+
+          if (lastChunkTimeRef.current !== null && chunkTokens > 0) {
+            const deltaTime = (now - lastChunkTimeRef.current) / 1000;
+            if (deltaTime > 0.01) { // At least 10ms between samples
+              const instantRate = chunkTokens / deltaTime;
+              // Add to samples, keep last N for smoothing
+              rateSamplesRef.current.push(instantRate);
+              if (rateSamplesRef.current.length > MAX_RATE_SAMPLES) {
+                rateSamplesRef.current.shift();
+              }
+              // Display average of samples
+              const avgRate = rateSamplesRef.current.reduce((a, b) => a + b, 0) / rateSamplesRef.current.length;
+              setDisplayedTokPerSec(avgRate);
+              setLastChunkTime(now);
+            }
+          }
+          lastChunkTimeRef.current = now;
+
           // Text chunks are now batched in Rust, so we receive fewer, larger updates
-          // No need for setImmediate - normal React state updates work fine
           currentSegment += chunk.text;
           const segmentSnapshot = currentSegment;
           setConversation(prev => {
@@ -364,7 +414,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             return updated;
           });
         } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
-          // Real-time token update from streaming (batched with text in Rust)
+          // Update token usage display (tok/s is now calculated from Text chunks)
           setTokenUsage(chunk.tokens);
         } else if (chunk.type === 'Error' && chunk.error) {
           setError(chunk.error);
@@ -685,6 +735,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             </Text>
             {isLoading && <Text color="yellow"> (streaming...)</Text>}
           </Box>
+          {/* TUI-031: Tokens per second display during streaming */}
+          {isLoading && displayedTokPerSec !== null && (
+            <Box marginRight={2}>
+              <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s</Text>
+            </Box>
+          )}
           <Box>
             <Text dimColor>
               tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
