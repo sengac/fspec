@@ -111,16 +111,16 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
 
       await session.prompt('Say hello in exactly 3 words', callback);
 
-      // @step Then the callback should receive chunks with type 'text' containing streamed content
-      const textChunks = chunks.filter(c => c.type === 'text');
+      // @step Then the callback should receive chunks with type 'Text' containing streamed content
+      const textChunks = chunks.filter(c => c.type === 'Text');
       expect(textChunks.length).toBeGreaterThan(0);
       textChunks.forEach(chunk => {
         expect(typeof chunk.text).toBe('string');
       });
 
-      // @step And the final chunk should have type 'done'
+      // @step And the final chunk should have type 'Done'
       const lastChunk = chunks[chunks.length - 1];
-      expect(lastChunk.type).toBe('done');
+      expect(lastChunk.type).toBe('Done');
     });
   });
 
@@ -210,8 +210,8 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
         }
       );
 
-      // @step Then the callback should receive a chunk with type 'tool_call'
-      const toolCallChunks = chunks.filter(c => c.type === 'tool_call');
+      // @step Then the callback should receive a chunk with type 'ToolCall'
+      const toolCallChunks = chunks.filter(c => c.type === 'ToolCall');
       expect(toolCallChunks.length).toBeGreaterThan(0);
 
       // @step And the toolCall object should contain id, name, and input properties
@@ -251,8 +251,8 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
         }
       );
 
-      // @step Then the callback should receive a chunk with type 'tool_result'
-      const toolResultChunks = chunks.filter(c => c.type === 'tool_result');
+      // @step Then the callback should receive a chunk with type 'ToolResult'
+      const toolResultChunks = chunks.filter(c => c.type === 'ToolResult');
       expect(toolResultChunks.length).toBeGreaterThan(0);
 
       // @step And the toolResult object should contain toolCallId, content, and isError properties

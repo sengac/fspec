@@ -39,10 +39,10 @@ describe('Feature: Full-Screen TUI Layout', () => {
 
       const frame = frames.find(f => f.includes('┌') || f.includes('BACKLOG')) || frames[frames.length - 1];
 
-      // @step Then the BoardView should render with width 80 and height 23
+      // @step Then the BoardView should render with width 80 and height 24
       // The board should use full width (80 columns)
       const lines = frame.split('\n');
-      expect(lines.length).toBeLessThanOrEqual(23); // Height = rows - 1
+      expect(lines.length).toBeLessThanOrEqual(24); // Height = rows (full terminal)
 
       // @step And the board should fill the entire terminal space
       // Check that at least one line uses close to full width
