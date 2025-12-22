@@ -11,8 +11,8 @@
  *
  * Implements NAPI-006: Session Persistence with Fork and Merge
  * - Shift+Arrow-Up/Down for command history navigation
- * - Ctrl+R for history search
- * - Session commands: /resume, /fork, /merge, /switch, /rename, /cherry-pick, /sessions
+ * - /search command for history search
+ * - Session commands: /resume, /fork, /merge, /switch, /rename, /cherry-pick, /sessions, /search
  */
 
 import React, {
@@ -29,11 +29,10 @@ import { getFspecUserDir } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
 
-// NAPI-006: Callbacks for history navigation and search
+// NAPI-006: Callbacks for history navigation
 interface SafeTextInputCallbacks {
   onHistoryPrev?: () => void;
   onHistoryNext?: () => void;
-  onSearchMode?: () => void;
 }
 
 // Custom TextInput that ignores mouse escape sequences
@@ -51,7 +50,6 @@ const SafeTextInput: React.FC<{
   isActive = true,
   onHistoryPrev,
   onHistoryNext,
-  onSearchMode,
 }) => {
   // Use ref to avoid stale closure issues with rapid typing
   const valueRef = useRef(value);
@@ -76,11 +74,6 @@ const SafeTextInput: React.FC<{
         return;
       }
 
-      // NAPI-006: Ctrl+R for history search
-      if (key.ctrl && input === 'r') {
-        onSearchMode?.();
-        return;
-      }
 
       // NAPI-006: Shift+Arrow for history navigation (check before ignoring arrow keys)
       // Debug: log all key events to understand what's being received
@@ -417,6 +410,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         const errorMessage = err instanceof Error ? err.message : 'Failed to toggle debug mode';
         setError(errorMessage);
       }
+      return;
+    }
+
+    // NAPI-006: Handle /search command - enter history search mode
+    if (userMessage === '/search') {
+      setInputValue('');
+      handleSearchMode();
       return;
     }
 
@@ -1492,10 +1492,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 value={inputValue}
                 onChange={setInputValue}
                 onSubmit={handleSubmit}
-                placeholder="Type your message... (Shift+↑↓ history, Ctrl+R search)"
+                placeholder="Type your message... (Shift+↑↓ history)"
                 onHistoryPrev={handleHistoryPrev}
                 onHistoryNext={handleHistoryNext}
-                onSearchMode={handleSearchMode}
               />
             )}
           </Box>
