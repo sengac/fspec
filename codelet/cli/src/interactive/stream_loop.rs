@@ -563,19 +563,42 @@ where
                     metrics.compression_ratio * 100.0
                 ));
                 output.emit_status("[Please resend your message - context was compacted]\n");
+
+                // NOTE: execute_compaction already sets session.token_tracker.input_tokens
+                // to the correct new_total_tokens calculated from compacted messages.
+                // We only reset output_tokens and cache metrics here.
+                session.token_tracker.output_tokens = 0;
+                session.token_tracker.cache_read_input_tokens = None;
+                session.token_tracker.cache_creation_input_tokens = None;
+
+                return Ok(());
             }
             Err(e) => {
+                // Compaction failed - DO NOT reset token tracker!
+                // Keep the high token values so next turn will retry compaction.
                 output.emit_status(&format!("Warning: Compaction failed: {e}"));
+                output.emit_status("[Context still large - will retry compaction on next turn]\n");
+
+                // Capture compaction failure for debugging
+                if let Ok(manager_arc) = get_debug_capture_manager() {
+                    if let Ok(mut manager) = manager_arc.lock() {
+                        if manager.is_enabled() {
+                            manager.capture(
+                                "compaction.failed",
+                                serde_json::json!({
+                                    "error": e.to_string(),
+                                    "inputTokens": session.token_tracker.input_tokens,
+                                }),
+                                None,
+                            );
+                        }
+                    }
+                }
+
+                // Return error so caller knows compaction failed
+                return Err(anyhow::anyhow!("Compaction failed: {e}"));
             }
         }
-
-        // Reset token tracker after compaction
-        session.token_tracker.input_tokens = 0;
-        session.token_tracker.output_tokens = 0;
-        session.token_tracker.cache_read_input_tokens = None;
-        session.token_tracker.cache_creation_input_tokens = None;
-
-        return Ok(());
     }
 
     // Update session token tracker with accumulated values from this turn
