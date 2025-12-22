@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { config as loadDotenv } from 'dotenv';
-import os from 'os';
+import { getFspecUserDir } from './config';
 
 export type ConfigSource = 'ENV' | 'USER' | 'PROJECT' | 'DEFAULT';
 
@@ -82,8 +82,7 @@ export function resolveConfig(
 
   // Set default paths if not provided
   const userConfigPath =
-    options.userConfigPath ||
-    path.join(os.homedir(), '.fspec', 'fspec-config.json');
+    options.userConfigPath || path.join(getFspecUserDir(), 'fspec-config.json');
   const projectConfigPath =
     options.projectConfigPath ||
     path.join(process.cwd(), 'spec', 'fspec-config.json');

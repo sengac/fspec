@@ -27,6 +27,18 @@ export declare class CodeletSession {
    * manually if needed.
    */
   resetInterrupt(): void;
+  /**
+   * Toggle debug capture mode (AGENT-021)
+   *
+   * Mirrors CLI repl_loop.rs:36-67 logic.
+   * When enabling, sets session metadata (provider, model, context_window).
+   * When disabling, stops capture and returns path to saved session file.
+   *
+   * If debug_dir is provided, debug files will be written to `{debug_dir}/debug/`
+   * instead of the default directory. For fspec, pass `~/.fspec` to write to
+   * `~/.fspec/debug/`.
+   */
+  toggleDebug(debugDir?: string | undefined | null): DebugCommandResult;
   /** Get the current provider name */
   get currentProviderName(): string;
   /** Get list of available providers */
@@ -62,6 +74,19 @@ export declare const enum ChunkType {
   TokenUpdate = 'TokenUpdate',
   Done = 'Done',
   Error = 'Error',
+}
+
+/**
+ * Debug command result (AGENT-021)
+ * Returned by toggleDebug() to indicate debug capture state
+ */
+export interface DebugCommandResult {
+  /** Whether debug capture is now enabled */
+  enabled: boolean;
+  /** Path to the debug session file (if available) */
+  sessionFile?: string;
+  /** Human-readable message about the result */
+  message: string;
 }
 
 /** A conversation message (simplified for JS) */

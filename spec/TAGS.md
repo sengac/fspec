@@ -228,6 +228,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@data-integrity` | Data integrity validation and consistency checks |
 | `@data-model` | Features related to data models, schemas, and data structure transformations |
 | `@ddd` | Domain-Driven Design concepts, Event Storming, bounded contexts, aggregates |
+| `@debugging` | Debugging and diagnostic features for troubleshooting |
 | `@destructive-action` | Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.) |
 | `@development-tools` | Development tooling and utilities |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
@@ -655,7 +656,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-21T03:50:55.845Z_
+_Last updated: 2025-12-21T06:15:22.769Z_
 
 **Update Command**: `fspec tag-stats`
 

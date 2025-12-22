@@ -11,8 +11,9 @@
 //! Key difference from CLI: JavaScript calls interrupt() to set is_interrupted flag
 
 use crate::output::{NapiOutput, StreamCallback};
-use crate::types::{Message, TokenTracker};
+use crate::types::{DebugCommandResult, Message, TokenTracker};
 use codelet_cli::interactive::run_agent_stream;
+use codelet_common::debug_capture::{get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata};
 use codelet_core::RigAgent;
 use napi::bindgen_prelude::*;
 use std::sync::atomic::AtomicBool;
@@ -73,6 +74,41 @@ impl CodeletSession {
     #[napi]
     pub fn reset_interrupt(&self) {
         self.is_interrupted.store(false, Release);
+    }
+
+    /// Toggle debug capture mode (AGENT-021)
+    ///
+    /// Mirrors CLI repl_loop.rs:36-67 logic.
+    /// When enabling, sets session metadata (provider, model, context_window).
+    /// When disabling, stops capture and returns path to saved session file.
+    ///
+    /// If debug_dir is provided, debug files will be written to `{debug_dir}/debug/`
+    /// instead of the default directory. For fspec, pass `~/.fspec` to write to
+    /// `~/.fspec/debug/`.
+    #[napi]
+    pub fn toggle_debug(&self, debug_dir: Option<String>) -> Result<DebugCommandResult> {
+        let result = handle_debug_command_with_dir(debug_dir.as_deref());
+
+        // If debug was just enabled, set session metadata
+        if result.enabled {
+            let session = self.inner.blocking_lock();
+            if let Ok(manager_arc) = get_debug_capture_manager() {
+                if let Ok(mut manager) = manager_arc.lock() {
+                    manager.set_session_metadata(SessionMetadata {
+                        provider: Some(session.current_provider_name().to_string()),
+                        model: Some(session.current_provider_name().to_string()),
+                        context_window: Some(session.provider_manager().context_window()),
+                        max_output_tokens: None,
+                    });
+                }
+            }
+        }
+
+        Ok(DebugCommandResult {
+            enabled: result.enabled,
+            session_file: result.session_file,
+            message: result.message,
+        })
     }
 
     /// Get the current provider name

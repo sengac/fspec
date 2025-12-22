@@ -1,0 +1,9 @@
+{
+  "description": "AST analysis of src/tui/components/AgentModal.tsx - handleSubmit function",
+  "file": "src/tui/components/AgentModal.tsx",
+  "key_findings": {
+    "handleSubmit_location": "Line 259 - useCallback with async arrow function",
+    "intercept_point": "After 'if (!sessionRef.current || !inputValue.trim() || isLoading) return;' at line 260",
+    "pattern": "Check inputValue.trim() === '/debug' before sessionRef.current.prompt()"
+  }
+}

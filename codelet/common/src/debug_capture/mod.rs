@@ -45,6 +45,16 @@ pub fn get_debug_capture_manager(
 
 /// Handle the /debug command to toggle debug capture
 pub fn handle_debug_command() -> DebugCommandResult {
+    handle_debug_command_with_dir(None)
+}
+
+/// Handle the /debug command with a custom base directory
+///
+/// If base_dir is provided, debug files will be written to `{base_dir}/debug/`
+/// instead of the default `~/.codelet/debug/`
+pub fn handle_debug_command_with_dir(base_dir: Option<&str>) -> DebugCommandResult {
+    use std::path::PathBuf;
+
     let manager_arc = match get_debug_capture_manager() {
         Ok(m) => m,
         Err(e) => {
@@ -66,6 +76,11 @@ pub fn handle_debug_command() -> DebugCommandResult {
             }
         }
     };
+
+    // Set custom directory if provided (before starting capture)
+    if let Some(dir) = base_dir {
+        manager.set_debug_directory(PathBuf::from(dir));
+    }
 
     if manager.is_enabled() {
         // Turn off

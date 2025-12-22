@@ -9,7 +9,7 @@ import type { ResearchTool } from './types';
 import https from 'https';
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
+import { getFspecUserDir } from '../utils/config';
 
 interface PerplexityConfig {
   apiKey: string;
@@ -19,7 +19,7 @@ interface PerplexityConfig {
  * Load Perplexity configuration from ~/.fspec/fspec-config.json
  */
 function loadConfig(): PerplexityConfig {
-  const configPath = path.join(os.homedir(), '.fspec', 'fspec-config.json');
+  const configPath = path.join(getFspecUserDir(), 'fspec-config.json');
 
   if (!fs.existsSync(configPath)) {
     throw new Error(

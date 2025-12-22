@@ -814,6 +814,10 @@
           "description": "Domain-Driven Design concepts, Event Storming, bounded contexts, aggregates"
         },
         {
+          "name": "@debugging",
+          "description": "Debugging and diagnostic features for troubleshooting"
+        },
+        {
           "name": "@destructive-action",
           "description": "Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.)"
         },
@@ -1654,7 +1658,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-21T03:50:55.845Z",
+    "lastUpdated": "2025-12-21T06:15:22.769Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

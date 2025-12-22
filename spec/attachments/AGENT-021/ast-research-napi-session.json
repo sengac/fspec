@@ -1,0 +1,9 @@
+{
+  "description": "AST analysis of codelet/napi/src/session.rs - methods to extend",
+  "file": "codelet/napi/src/session.rs",
+  "key_findings": {
+    "existing_methods": ["new", "interrupt", "reset_interrupt", "current_provider_name", "available_providers", "token_tracker", "messages", "switch_provider", "clear_history", "prompt"],
+    "integration_point": "Add toggle_debug() method alongside interrupt() at line ~65",
+    "pattern": "Uses blocking_lock() for sync methods, lock().await for async methods"
+  }
+}
