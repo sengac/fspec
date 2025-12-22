@@ -9,8 +9,8 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Box, Text, useInput, useStdout, useStdin } from 'ink';
 import chalk from 'chalk';
-import stringWidth from 'string-width';
 import { Logo } from './Logo';
+import { getVisualWidth, fitToWidth } from '../utils/stringWidth';
 import { CheckpointStatus } from './CheckpointStatus';
 import { KeybindingShortcuts } from './KeybindingShortcuts';
 import { WorkUnitTitle } from './WorkUnitTitle';
@@ -69,33 +69,6 @@ const calculateColumnWidths = (terminalWidth: number): { baseWidth: number; rema
 
 const getColumnWidth = (columnIndex: number, baseWidth: number, remainder: number): number => {
   return columnIndex < remainder ? baseWidth + 1 : baseWidth;
-};
-
-// Helper: Calculate visual width using string-width for proper Unicode support
-const getVisualWidth = (text: string): number => {
-  return stringWidth(text);
-};
-
-const fitToWidth = (text: string, width: number): string => {
-  const visualWidth = getVisualWidth(text);
-
-  if (visualWidth > width) {
-    // Truncate by iterating through codepoints and measuring width
-    let result = '';
-    let currentVisualWidth = 0;
-    for (const char of text) {
-      const charWidth = stringWidth(char);
-      if (currentVisualWidth + charWidth > width) break;
-      result += char;
-      currentVisualWidth += charWidth;
-    }
-    // Pad to exact width
-    return result + ' '.repeat(width - currentVisualWidth);
-  } else if (visualWidth < width) {
-    // Pad with spaces to reach visual width
-    return text + ' '.repeat(width - visualWidth);
-  }
-  return text;
 };
 
 const buildBorderRow = (
