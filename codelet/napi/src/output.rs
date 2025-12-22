@@ -15,13 +15,16 @@
 
 use crate::types::{StreamChunk, TokenTracker, ToolCallInfo, ToolResultInfo};
 use codelet_cli::interactive::{StreamEvent, StreamOutput};
-use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue};
+use napi::threadsafe_function::{
+    ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue,
+};
 use napi::Status;
 use std::sync::Mutex;
 
 /// Type alias for our ThreadsafeFunction with CalleeHandled=false
 /// Generic params: <T, Return, CallJsBackArgs, ErrorStatus, CalleeHandled>
-pub type StreamCallback = ThreadsafeFunction<StreamChunk, UnknownReturnValue, StreamChunk, Status, false>;
+pub type StreamCallback =
+    ThreadsafeFunction<StreamChunk, UnknownReturnValue, StreamChunk, Status, false>;
 
 /// Text buffer for batching text chunks
 struct TextBuffer {
@@ -146,10 +149,9 @@ impl StreamOutput for NapiOutput<'_> {
                 // Flush any pending text first
                 self.flush_text();
 
-                let _ = self.callback.call(
-                    StreamChunk::done(),
-                    ThreadsafeFunctionCallMode::NonBlocking,
-                );
+                let _ = self
+                    .callback
+                    .call(StreamChunk::done(), ThreadsafeFunctionCallMode::NonBlocking);
             }
             StreamEvent::Error(error) => {
                 // Flush any pending text first
@@ -185,7 +187,9 @@ impl StreamOutput for NapiOutput<'_> {
                     input_tokens: tokens.input_tokens as u32,
                     output_tokens: tokens.output_tokens as u32,
                     cache_read_input_tokens: tokens.cache_read_input_tokens.map(|t| t as u32),
-                    cache_creation_input_tokens: tokens.cache_creation_input_tokens.map(|t| t as u32),
+                    cache_creation_input_tokens: tokens
+                        .cache_creation_input_tokens
+                        .map(|t| t as u32),
                 };
                 let mut buffer = self.buffer.lock().unwrap();
                 buffer.set_tokens(tracker);

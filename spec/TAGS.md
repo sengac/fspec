@@ -80,6 +80,9 @@ Tags that categorize features by functional area.
 | `@checkpoint-management` | Checkpoint creation, restoration, and management functionality |
 | `@code-analysis` | Code analysis and AST research features |
 | `@code-quality` | Code quality validation and review features |
+| `@command-history` | Command history navigation scenarios |
+| `@compaction-merge` | Merging into compacted sessions |
+| `@compaction-resume` | Resuming compacted sessions |
 | `@comparison` | Comparison operations |
 | `@completion` | Completion operations |
 | `@compound` | Compound query operations |
@@ -88,6 +91,7 @@ Tags that categorize features by functional area.
 | `@coverage` | Coverage tracking and traceability features |
 | `@coverage-tracking` | Coverage tracking and traceability from scenarios to tests to implementation code |
 | `@critical-path` | Critical path analysis |
+| `@cross-session-history` | Cross-session history access |
 | `@crud` | Create, Read, Update, Delete operations |
 | `@delete` | Delete operations |
 | `@dependencies` | Dependency management between work units |
@@ -114,6 +118,8 @@ Tags that categorize features by functional area.
 | `@generate-scenarios` | Scenario generation from examples |
 | `@help-system` | Help system and documentation features |
 | `@help-text` | Help and documentation features |
+| `@history-project-filter` | History filtering by project |
+| `@history-search` | History search scenarios |
 | `@hook-execution` | Hook execution and lifecycle management |
 | `@impact-analysis` | Impact analysis and dependency chains |
 | `@infrastructure` | Core infrastructure and shared utilities |
@@ -122,6 +128,7 @@ Tags that categorize features by functional area.
 | `@kanban` | Kanban board and workflow management |
 | `@language-support` | Programming language support and integration |
 | `@list` | List operations |
+| `@merge-preserves-references` | Merge reference preservation |
 | `@metrics` | Metrics and measurements |
 | `@metrics-estimation` | Metrics and estimation tracking |
 | `@migration` | Migration & Data Transformation |
@@ -160,6 +167,16 @@ Tags that categorize features by functional area.
 | `@scenario-generation` | Features related to generating scenarios from example mapping |
 | `@schema-design` | Schema design and data structure definition |
 | `@security` | Security-related features and bug fixes |
+| `@session-cherry-pick` | Cherry-pick message scenarios |
+| `@session-delete` | Session deletion and cleanup |
+| `@session-fork` | Session forking scenarios |
+| `@session-lineage` | Session fork lineage tracking |
+| `@session-list` | Session listing scenarios |
+| `@session-management` | Session management features including persistence, fork, and merge |
+| `@session-merge` | Session merging scenarios |
+| `@session-rename` | Session renaming |
+| `@session-resume` | Session resume and persistence scenarios |
+| `@session-switch` | Session switching between conversations |
 | `@soft-dependency` | Soft dependency relationships |
 | `@state-enforcement` | State transition enforcement |
 | `@state-history` | State history tracking |
@@ -212,6 +229,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@automation` | Automated workflow operations and state transitions |
 | `@backward-compatibility` | Features ensuring compatibility with older file formats or legacy systems |
 | `@bdd` | Behavior-Driven Development methodology |
+| `@blob-storage` | Blob storage for large content |
 | `@browser-integration` | Features requiring browser launcher integration |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -220,8 +238,11 @@ Tags for specific technical concerns or architectural patterns.
 | `@code-review` | Code review and quality analysis features |
 | `@codex` | Codex AI agent integration features |
 | `@command-registration` | CLI command registration features |
+| `@compaction-state-on-fork` | Compaction state handling on fork |
+| `@compaction-state-storage` | Compaction state persistence |
 | `@concurrency` | Concurrent access coordination and file locking mechanisms |
 | `@config` | Configuration loading and management features |
+| `@content-deduplication` | Content-addressed deduplication |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
 | `@dart` | Dart language and Flutter framework features |
@@ -272,6 +293,8 @@ Tags for specific technical concerns or architectural patterns.
 | `@markdown-formatting` | Markdown formatting and rendering features |
 | `@marked` | Marked library for markdown parsing |
 | `@mermaid` | Mermaid Diagram Support |
+| `@message-deduplication` | Message deduplication and content-addressing scenarios |
+| `@message-immutability` | Message immutability invariant |
 | `@modal` | Modal overlay and dialog components |
 | `@mouse-events` | Features that handle mouse and trackpad events |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
@@ -391,6 +414,7 @@ Tags for test-related scenarios and requirements.
 |-----|-------------|
 | `@blocking` | Operations that block workflow progression |
 | `@circular-dependency` | Circular dependency detection tests |
+| `@compaction-fork-before-compaction-point` | Edge case: fork before compaction boundary |
 | `@complex-command` | Complex command with multiple modes and options |
 | `@confirmation` | Tests confirmation messages and user feedback |
 | `@consistency` | Data consistency validation |
@@ -398,6 +422,9 @@ Tags for test-related scenarios and requirements.
 | `@e2e` | End-to-end integration tests |
 | `@e2e-test` | End-to-End Test Required |
 | `@edge-case` | Edge case tests - validation of boundary conditions and unusual scenarios |
+| `@error-cherry-pick-insufficient-context` | Error handling for cherry-pick |
+| `@error-invalid-fork-index` | Error handling for invalid fork |
+| `@error-invalid-merge-session` | Error handling for invalid merge |
 | `@happy-path` | Happy path test scenarios |
 | `@integration-test` | Integration Test Required |
 | `@main-help` | Main help menu tests |
@@ -657,7 +684,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-22T04:56:13.779Z_
+_Last updated: 2025-12-22T11:29:24.349Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -1,0 +1,81 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 55,
+      "column": 4,
+      "text": "pub fn new(provider_name: Option<&str>) -> Result<Self> {\n        let provider_manager = if let Some(name) = provider_name {\n            ProviderManager::with_provider(name)?\n        } else {\n            ProviderManager::new()?\n        };\n\n        Ok(Self {\n            provider_manager,\n            messages: Vec::new(),\n            turns: Vec::new(),\n            token_tracker: TokenTracker {\n                input_tokens: 0,\n                output_tokens: 0,\n                cache_read_input_tokens: Some(0),\n                cache_creation_input_tokens: Some(0),\n            },\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "current_provider_name",
+      "line": 76,
+      "column": 4,
+      "text": "pub fn current_provider_name(&self) -> &str {\n        self.provider_manager.current_provider_name()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "switch_provider",
+      "line": 89,
+      "column": 4,
+      "text": "pub fn switch_provider(&mut self, provider_name: &str) -> Result<()> {\n        // Clear conversation context before switching (matches codelet behavior)\n        self.messages.clear();\n        self.turns.clear();\n        self.token_tracker = TokenTracker {\n            input_tokens: 0,\n            output_tokens: 0,\n            cache_read_input_tokens: Some(0),\n            cache_creation_input_tokens: Some(0),\n        };\n\n        // Switch provider\n        self.provider_manager.switch_provider(provider_name)?;\n\n        Ok(())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider_manager",
+      "line": 107,
+      "column": 4,
+      "text": "pub fn provider_manager(&self) -> &ProviderManager {\n        &self.provider_manager\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider_manager_mut",
+      "line": 112,
+      "column": 4,
+      "text": "pub fn provider_manager_mut(&mut self) -> &mut ProviderManager {\n        &mut self.provider_manager\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "add_system_reminder",
+      "line": 133,
+      "column": 4,
+      "text": "pub fn add_system_reminder(&mut self, reminder_type: SystemReminderType, content: &str) {\n        // Use existing add_system_reminder function which implements deduplication\n        self.messages = add_system_reminder(&self.messages, reminder_type, content);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "compact_messages",
+      "line": 160,
+      "column": 4,
+      "text": "pub async fn compact_messages<F, Fut>(&mut self, llm_prompt: F) -> Result<()>\n    where\n        F: Fn(String) -> Fut,\n        Fut: std::future::Future<Output = Result<String>>,\n    {\n        use codelet_core::compaction::ContextCompactor;\n        use rig::message::{AssistantContent, Message, UserContent};\n        use rig::OneOrMany;\n        use system_reminders::partition_for_compaction;\n\n        // Step 1: Extract system-reminders from messages Vec\n        let (system_reminders, _compactable) = partition_for_compaction(&self.messages);\n\n        // Step 2: Calculate summarization budget\n        use crate::compaction_threshold::calculate_summarization_budget;\n        let context_window = self.provider_manager.context_window() as u64;\n        let budget = calculate_summarization_budget(context_window);\n\n        // Step 3: Compact turns (operates on self.turns, not messages)\n        let compactor = ContextCompactor::new();\n\n        // If we have no turns, nothing to compact\n        if self.turns.is_empty() {\n            return Ok(());\n        }\n\n        let result = compactor.compact(&self.turns, budget, llm_prompt).await?;\n\n        // Step 4: Reconstruct messages Vec:\n        //    - System-reminders FIRST (maintains prefix stability for prompt caching)\n        //    - Compacted summary as user message\n        //    - Kept turns converted back to messages\n        self.messages.clear();\n\n        // Add system-reminders FIRST (maintains stable prefix for prompt caching)\n        // This is critical: reminders must be at the START of the messages array\n        // so that the LLM's prompt cache can match the prefix on subsequent calls.\n        self.messages.extend(system_reminders);\n\n        // Add summary after reminders\n        self.messages.push(Message::User {\n            content: OneOrMany::one(UserContent::text(&result.summary)),\n        });\n\n        // Add kept turns as messages\n        for turn in result.kept_turns {\n            self.messages.push(Message::User {\n                content: OneOrMany::one(UserContent::text(&turn.user_message)),\n            });\n            self.messages.push(Message::Assistant {\n                id: Some(format!(\n                    \"compacted-{}\",\n                    turn.timestamp.elapsed().unwrap_or_default().as_secs()\n                )),\n                content: OneOrMany::one(AssistantContent::text(&turn.assistant_response)),\n            });\n        }\n\n        Ok(())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "inject_context_reminders",
+      "line": 235,
+      "column": 4,
+      "text": "pub fn inject_context_reminders(&mut self) {\n        use context_gathering::{discover_claude_md, gather_environment_info};\n\n        // Inject CLAUDE.md/AGENTS.md content if found\n        if let Some(content) = discover_claude_md(None) {\n            self.add_system_reminder(SystemReminderType::ClaudeMd, &content);\n        }\n\n        // Inject environment information\n        let env_info = gather_environment_info();\n        self.add_system_reminder(\n            SystemReminderType::Environment,\n            &env_info.to_reminder_content(),\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_session_creation",
+      "line": 259,
+      "column": 4,
+      "text": "fn test_session_creation() {\n        // This will fail if no providers configured, which is expected in test env\n        // In real usage, Session::new requires valid provider configuration\n        let _ = Session::new(None);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_message_persistence",
+      "line": 266,
+      "column": 4,
+      "text": "fn test_message_persistence() {\n        // @step Given I create a new Session\n        let session_result = Session::new(None);\n        if let Ok(mut session) = session_result {\n            // @step When I access the messages vector\n            // @step Then the messages vector should be empty initially\n            assert_eq!(session.messages.len(), 0);\n\n            // @step And I should be able to add messages to it\n            // Add a test message using rig's Message API\n            session.messages.push(Message::User {\n                content: OneOrMany::one(UserContent::text(\"test\")),\n            });\n\n            assert_eq!(session.messages.len(), 1);\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_provider_switch_clears_context",
+      "line": 285,
+      "column": 4,
+      "text": "fn test_provider_switch_clears_context() {\n        // @step Given I am in an interactive REPL session with Claude provider\n        let session_result = Session::new(None);\n        if let Ok(mut session) = session_result {\n            // @step And I have had a multi-turn conversation with message history\n            // Add messages using rig's Message API\n            session.messages.push(Message::User {\n                content: OneOrMany::one(UserContent::text(\"test\")),\n            });\n\n            // @step When I type \"/openai\" to switch providers\n            // Switch provider (may fail if provider doesn't exist, but that's OK for test)\n            let _ = session.switch_provider(\"nonexistent\");\n\n            // @step Then the message history should be cleared\n            // @step And the session should start fresh with the new provider\n            // @step And previous conversation context should not be accessible\n            assert_eq!(session.messages.len(), 0);\n        }\n    }"
+    }
+  ]
+}

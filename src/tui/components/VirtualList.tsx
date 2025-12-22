@@ -309,6 +309,11 @@ export function VirtualList<T>({
         return;
       }
 
+      // Skip Shift+Arrow (used for history navigation in AgentModal)
+      if (key.shift && (key.upArrow || key.downArrow)) {
+        return;
+      }
+
       if (selectionMode === 'scroll') {
         handleScrollNavigation(key);
       } else {

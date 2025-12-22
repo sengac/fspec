@@ -107,6 +107,7 @@ where
 /// - When event_stream is Some: Uses tokio::select! with event handling (CLI)
 /// - When event_stream is None but interrupt_notify is Some: Uses tokio::select! with Notify (NAPI)
 /// - NAPI-004: The interrupt_notify enables immediate ESC response during tool execution
+#[allow(clippy::too_many_arguments)]
 async fn run_agent_stream_internal<M, O, E>(
     agent: RigAgent<M>,
     prompt: &str,

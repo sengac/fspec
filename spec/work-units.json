@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-22T09:10:48.207Z"
+    "lastUpdated": "2025-12-22T12:20:01.798Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -53843,6 +53843,738 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-22T09:10:48.234Z"
+    },
+    "NAPI-006": {
+      "id": "NAPI-006",
+      "title": "Session Persistence with Fork and Merge",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2025-12-22T11:00:00.086Z",
+      "updatedAt": "2025-12-22T12:58:19.299Z",
+      "description": "Implement a comprehensive session management system that enables saving/restoring conversation context, command history, and git-like fork/merge operations for conversation sessions",
+      "children": [],
+      "attachments": [
+        "spec/attachments/NAPI-006/session-persistence-design.md",
+        "spec/attachments/NAPI-006/ast-research-napi-session.json",
+        "spec/attachments/NAPI-006/ast-research-cli-session.json"
+      ],
+      "userStory": {
+        "role": "developer using codelet",
+        "action": "save and restore conversation sessions, fork to try alternative approaches, and merge insights from other conversations",
+        "benefit": "I can resume interrupted work, explore alternatives without losing progress, and reuse valuable context"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-22T11:00:48.717Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T11:33:30.882Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T11:45:08.009Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T12:07:00.302Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T12:12:08.528Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-22T12:13:54.667Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-22T12:20:01.828Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T12:48:04.789Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T12:58:19.299Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Sessions are ordered lists of message references (manifests), not message copies",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:05.518Z"
+        },
+        {
+          "id": 1,
+          "text": "Fork creates a new session sharing message refs up to the fork point, then diverges independently",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:07.234Z"
+        },
+        {
+          "id": 2,
+          "text": "Merge imports message refs from source session into target session without copying message content",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:09.953Z"
+        },
+        {
+          "id": 3,
+          "text": "Cherry-pick imports a message with N preceding context messages for conversation flow",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:12.407Z"
+        },
+        {
+          "id": 4,
+          "text": "Command history is stored globally in history.jsonl for arrow up/down navigation across all sessions",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:14.500Z"
+        },
+        {
+          "id": 5,
+          "text": "Large content (file reads, tool results) is stored in blob storage, referenced by SHA-256 hash",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:16.389Z"
+        },
+        {
+          "id": 6,
+          "text": "All persistence operations are implemented in Rust and exposed to TypeScript via NAPI bindings",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:18.506Z"
+        },
+        {
+          "id": 7,
+          "text": "Compacted messages remain in storage but are not loaded into context - only the summary is used for context reconstruction",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:19:51.042Z"
+        },
+        {
+          "id": 8,
+          "text": "Message immutability means content cannot be modified, but orphaned messages (not referenced by any session) can be deleted via cleanup",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:19:54.598Z"
+        },
+        {
+          "id": 9,
+          "text": "Messages are immutable once written - content cannot be modified, only deleted if orphaned",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:22:11.160Z"
+        },
+        {
+          "id": 10,
+          "text": "Blob storage uses content-addressed deduplication - identical file content shares one blob, but each StoredMessage has unique id and timestamp",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:22:13.951Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User closes terminal with 20-message conversation, reopens next day, runs 'codelet --resume' and continues with full context",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:36.713Z"
+        },
+        {
+          "id": 1,
+          "text": "User at message 5 runs '/fork 3 Alternative approach', creates new session with messages 0-3, can now diverge",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:38.573Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs '/merge session-b 3,4' to import auth solution from session B into current session A",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:40.282Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs '/cherry-pick session-b 7 --context 1' to import Q&A pair (messages 6-7) with context",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:42.538Z"
+        },
+        {
+          "id": 4,
+          "text": "User runs '/sessions' to list all sessions for current project with names, message counts, and timestamps",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:46.655Z"
+        },
+        {
+          "id": 5,
+          "text": "User runs Ctrl+R and types 'implement' to search command history, finds matching previous commands",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:49.144Z"
+        },
+        {
+          "id": 6,
+          "text": "Forked session B and original session A both reference same message objects M1-M3 (no duplication)",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:01:50.819Z"
+        },
+        {
+          "id": 7,
+          "text": "Session with 100 messages gets compacted, summary replaces messages 0-80, session resumes with summary + messages 81-100",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:19:03.932Z"
+        },
+        {
+          "id": 8,
+          "text": "User merges messages into a compacted session, merged messages are appended after existing messages, compaction state preserved",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:19:06.439Z"
+        },
+        {
+          "id": 9,
+          "text": "Session compacted mid-conversation, CompactionState stored with summary text and compacted_before_index",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:19:08.745Z"
+        },
+        {
+          "id": 10,
+          "text": "Forking at index before compaction point includes summary, forking after compaction point includes summary plus post-compaction messages",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:19:11.200Z"
+        },
+        {
+          "id": 11,
+          "text": "User presses Shift+Arrow-Up to see previous command, Shift+Arrow-Up again to go further back in history",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:25:17.900Z"
+        },
+        {
+          "id": 12,
+          "text": "User runs '/switch Bug Fix' to switch from current session to 'Bug Fix' session",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:30:06.855Z"
+        }
+      ],
+      "nextExampleId": 13,
+      "eventStorm": {
+        "level": "process_modeling",
+        "items": [
+          {
+            "id": 0,
+            "type": "event",
+            "color": "orange",
+            "text": "SessionCreated",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:24.356Z"
+          },
+          {
+            "id": 1,
+            "type": "event",
+            "color": "orange",
+            "text": "SessionLoaded",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:26.318Z"
+          },
+          {
+            "id": 2,
+            "type": "event",
+            "color": "orange",
+            "text": "SessionResumed",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:28.333Z"
+          },
+          {
+            "id": 3,
+            "type": "event",
+            "color": "orange",
+            "text": "SessionForked",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:30.318Z"
+          },
+          {
+            "id": 4,
+            "type": "event",
+            "color": "orange",
+            "text": "SessionDeleted",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:32.449Z"
+          },
+          {
+            "id": 5,
+            "type": "event",
+            "color": "orange",
+            "text": "MessageAppended",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:33.977Z"
+          },
+          {
+            "id": 6,
+            "type": "event",
+            "color": "orange",
+            "text": "MessageStored",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:35.835Z"
+          },
+          {
+            "id": 7,
+            "type": "event",
+            "color": "orange",
+            "text": "MessagesMerged",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:37.787Z"
+          },
+          {
+            "id": 8,
+            "type": "event",
+            "color": "orange",
+            "text": "MessagesCherryPicked",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:39.534Z"
+          },
+          {
+            "id": 9,
+            "type": "event",
+            "color": "orange",
+            "text": "HistoryEntryAdded",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:41.317Z"
+          },
+          {
+            "id": 10,
+            "type": "event",
+            "color": "orange",
+            "text": "BlobStored",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:43.118Z"
+          },
+          {
+            "id": 11,
+            "type": "event",
+            "color": "orange",
+            "text": "SessionCompacted",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:44.945Z"
+          },
+          {
+            "id": 12,
+            "type": "event",
+            "color": "orange",
+            "text": "OrphanedMessagesCleanedUp",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:03:46.673Z"
+          },
+          {
+            "id": 13,
+            "type": "command",
+            "color": "blue",
+            "text": "CreateSession",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:02.434Z"
+          },
+          {
+            "id": 14,
+            "type": "command",
+            "color": "blue",
+            "text": "LoadSession",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:04.231Z"
+          },
+          {
+            "id": 15,
+            "type": "command",
+            "color": "blue",
+            "text": "ResumeLastSession",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:05.722Z"
+          },
+          {
+            "id": 16,
+            "type": "command",
+            "color": "blue",
+            "text": "ForkSession",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:07.431Z"
+          },
+          {
+            "id": 17,
+            "type": "command",
+            "color": "blue",
+            "text": "DeleteSession",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:09.426Z"
+          },
+          {
+            "id": 18,
+            "type": "command",
+            "color": "blue",
+            "text": "ListSessions",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:11.075Z"
+          },
+          {
+            "id": 19,
+            "type": "command",
+            "color": "blue",
+            "text": "AppendMessage",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:12.882Z"
+          },
+          {
+            "id": 20,
+            "type": "command",
+            "color": "blue",
+            "text": "MergeMessages",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:14.825Z"
+          },
+          {
+            "id": 21,
+            "type": "command",
+            "color": "blue",
+            "text": "CherryPickMessages",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:17.096Z"
+          },
+          {
+            "id": 22,
+            "type": "command",
+            "color": "blue",
+            "text": "NavigateHistoryUp",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:19.161Z"
+          },
+          {
+            "id": 23,
+            "type": "command",
+            "color": "blue",
+            "text": "NavigateHistoryDown",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:20.777Z"
+          },
+          {
+            "id": 24,
+            "type": "command",
+            "color": "blue",
+            "text": "SearchHistory",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:22.453Z"
+          },
+          {
+            "id": 25,
+            "type": "command",
+            "color": "blue",
+            "text": "RenameSession",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:24.699Z"
+          },
+          {
+            "id": 26,
+            "type": "command",
+            "color": "blue",
+            "text": "CleanupOrphanedMessages",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:26.487Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Auto-create session on first message",
+            "when": "MessageAppended",
+            "then": "CreateSession",
+            "id": 27,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:43.124Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Store message content in content-addressed store",
+            "when": "MessageAppended",
+            "then": "StoreMessage",
+            "id": 28,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:44.658Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Extract large content to blob storage",
+            "when": "MessageStored",
+            "then": "StoreBlobIfLarge",
+            "id": 29,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:46.415Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Add user input to command history",
+            "when": "MessageAppended",
+            "then": "AddHistoryEntry",
+            "id": 30,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:48.564Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Update session manifest on message append",
+            "when": "MessageStored",
+            "then": "UpdateManifest",
+            "id": 31,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:50.257Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Copy message refs on fork (not message content)",
+            "when": "SessionForked",
+            "then": "CopyMessageRefs",
+            "id": 32,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:51.868Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Record fork lineage in new session manifest",
+            "when": "SessionForked",
+            "then": "RecordForkPoint",
+            "id": 33,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:54.038Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Record merge history in target session",
+            "when": "MessagesMerged",
+            "then": "RecordMergeHistory",
+            "id": 34,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:55.601Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Update session index on any session change",
+            "when": "SessionCreated",
+            "then": "UpdateSessionIndex",
+            "id": 35,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:58.030Z"
+          },
+          {
+            "type": "policy",
+            "color": "purple",
+            "text": "Deduplicate messages by content hash",
+            "when": "MessageStored",
+            "then": "CheckExistingHash",
+            "id": 36,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:04:59.795Z"
+          },
+          {
+            "type": "hotspot",
+            "color": "red",
+            "text": "rig::message::Message serialization",
+            "concern": "Need to create serializable wrapper since rig types may not be directly serializable to JSON",
+            "id": 37,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:15.176Z"
+          },
+          {
+            "type": "hotspot",
+            "color": "red",
+            "text": "Concurrent session access",
+            "concern": "What happens if same session accessed from multiple processes simultaneously?",
+            "id": 38,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:16.895Z"
+          },
+          {
+            "type": "hotspot",
+            "color": "red",
+            "text": "Blob storage threshold",
+            "concern": "What size threshold triggers blob extraction vs inline storage?",
+            "id": 39,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:19.005Z"
+          },
+          {
+            "type": "hotspot",
+            "color": "red",
+            "text": "Session file corruption recovery",
+            "concern": "How to handle corrupt JSONL files - partial recovery or fail completely?",
+            "id": 40,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:20.645Z"
+          },
+          {
+            "type": "hotspot",
+            "color": "red",
+            "text": "Compaction state preservation",
+            "concern": "Should compaction summary be preserved when forking? How does it affect merged sessions?",
+            "id": 41,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:22.388Z"
+          },
+          {
+            "type": "hotspot",
+            "color": "red",
+            "text": "Session naming heuristics",
+            "concern": "How to auto-generate meaningful session names from conversation content?",
+            "id": 42,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:24.959Z"
+          },
+          {
+            "type": "hotspot",
+            "color": "red",
+            "text": "History file rotation",
+            "concern": "Should history.jsonl be rotated/truncated when it gets too large?",
+            "id": 43,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:27.562Z"
+          },
+          {
+            "type": "hotspot",
+            "color": "red",
+            "text": "Message pair integrity on merge",
+            "concern": "Merging odd number of messages might break user/assistant pairs - how to handle?",
+            "id": 44,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:29.141Z"
+          },
+          {
+            "type": "bounded_context",
+            "color": null,
+            "text": "Message Storage",
+            "description": "Content-addressed immutable message store with blob extraction",
+            "id": 45,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:44.066Z"
+          },
+          {
+            "type": "bounded_context",
+            "color": null,
+            "text": "Session Management",
+            "description": "Session manifests, fork/merge operations, lineage tracking",
+            "id": 46,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:45.624Z"
+          },
+          {
+            "type": "bounded_context",
+            "color": null,
+            "text": "Command History",
+            "description": "Arrow up/down navigation, history search, per-project filtering",
+            "id": 47,
+            "deleted": false,
+            "createdAt": "2025-12-22T11:05:47.472Z"
+          },
+          {
+            "id": 48,
+            "type": "aggregate",
+            "color": "yellow",
+            "text": "StoredMessage",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:06:16.641Z",
+            "responsibilities": [
+              "Store immutable message content",
+              "Calculate content hash",
+              "Track token count"
+            ],
+            "boundedContext": "Message Storage"
+          },
+          {
+            "id": 49,
+            "type": "aggregate",
+            "color": "yellow",
+            "text": "Blob",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:06:18.292Z",
+            "responsibilities": [
+              "Store large content",
+              "Provide hash-based lookup",
+              "Track file size"
+            ],
+            "boundedContext": "Message Storage"
+          },
+          {
+            "id": 50,
+            "type": "aggregate",
+            "color": "yellow",
+            "text": "SessionManifest",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:06:19.858Z",
+            "responsibilities": [
+              "Track ordered message refs",
+              "Record fork/merge lineage",
+              "Store compaction state"
+            ],
+            "boundedContext": "Session Management"
+          },
+          {
+            "id": 51,
+            "type": "aggregate",
+            "color": "yellow",
+            "text": "HistoryEntry",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:06:21.586Z",
+            "responsibilities": [
+              "Store user input text",
+              "Track timestamp and project",
+              "Enable search and navigation"
+            ],
+            "boundedContext": "Command History"
+          },
+          {
+            "id": 52,
+            "type": "event",
+            "color": "orange",
+            "text": "SessionSwitched",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:30:01.935Z",
+            "boundedContext": "Session Management"
+          },
+          {
+            "id": 53,
+            "type": "command",
+            "color": "blue",
+            "text": "SwitchSession",
+            "deleted": false,
+            "createdAt": "2025-12-22T11:30:04.339Z"
+          }
+        ],
+        "nextItemId": 54
+      },
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "All persistence operations implemented in Rust, exposed to TypeScript via NAPI-RS bindings",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:13:18.037Z"
+        },
+        {
+          "id": 1,
+          "text": "Uses content-addressed storage with SHA-256 hashing for message deduplication",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:13:20.464Z"
+        },
+        {
+          "id": 2,
+          "text": "JSONL format for history.jsonl ensures append-only crash-safe writes",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:13:23.221Z"
+        },
+        {
+          "id": 3,
+          "text": "File layout: ~/.fspec/messages/ for content store, ~/.fspec/sessions/ for manifests, ~/.fspec/blobs/ for large content",
+          "deleted": false,
+          "createdAt": "2025-12-22T11:13:25.828Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-22T12:20:01.827Z"
     }
   },
   "states": {
@@ -53908,7 +54640,9 @@
       "BOARD-020"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "NAPI-006"
+    ],
     "validating": [],
     "done": [
       "NAPI-005",
@@ -54370,6 +55104,6 @@
     "FOUND": 43,
     "DOCS": 3,
     "CLEAN": 5,
-    "NAPI": 5
+    "NAPI": 6
   }
 }
