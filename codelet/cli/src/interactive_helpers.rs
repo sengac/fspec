@@ -90,7 +90,7 @@ fn extract_tool_calls(message: &Message) -> Vec<CoreToolCall> {
             AssistantContent::ToolCall(tc) => Some(CoreToolCall {
                 tool: tc.function.name.clone(),
                 id: tc.id.clone(),
-                parameters: tc.function.arguments.clone(),
+                parameters: tc.function.arguments,
             }),
             _ => None,
         })

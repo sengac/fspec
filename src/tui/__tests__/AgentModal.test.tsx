@@ -28,6 +28,14 @@ const mockState = vi.hoisted(() => ({
       sessionFile: '~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
       message: 'Debug capture started. Writing to: ~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
     }),
+    // NAPI-005: Manual compaction command
+    compact: vi.fn().mockReturnValue({
+      originalTokens: 150000,
+      compactedTokens: 40000,
+      compressionRatio: 73.3,
+      turnsSummarized: 12,
+      turnsKept: 3,
+    }),
   },
   shouldThrow: false,
   errorMessage: 'No AI provider credentials configured',
@@ -45,6 +53,7 @@ vi.mock('codelet-napi', () => ({
     clearHistory: ReturnType<typeof vi.fn>;
     interrupt: ReturnType<typeof vi.fn>;
     toggleDebug: ReturnType<typeof vi.fn>;
+    compact: ReturnType<typeof vi.fn>; // NAPI-005
 
     constructor() {
       if (mockState.shouldThrow) {
@@ -59,6 +68,7 @@ vi.mock('codelet-napi', () => ({
       this.clearHistory = mockState.session.clearHistory;
       this.interrupt = mockState.session.interrupt;
       this.toggleDebug = mockState.session.toggleDebug;
+      this.compact = mockState.session.compact; // NAPI-005
     }
   },
   ChunkType: {
@@ -116,6 +126,14 @@ const resetMockSession = (overrides = {}) => {
       enabled: true,
       sessionFile: '~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
       message: 'Debug capture started. Writing to: ~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+    }),
+    // NAPI-005: Manual compaction command
+    compact: vi.fn().mockReturnValue({
+      originalTokens: 150000,
+      compactedTokens: 40000,
+      compressionRatio: 73.3,
+      turnsSummarized: 12,
+      turnsKept: 3,
     }),
     ...overrides,
   };
@@ -574,6 +592,142 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       // Note: Compaction events are captured by the Rust compaction hook
       // This test verifies the TUI correctly displays status messages from compaction
       expect(lastFrame()).toContain('compaction');
+    });
+  });
+
+  // ============================================================================
+  // Feature: spec/features/manual-compaction-command.feature
+  // NAPI-005: Manual Compaction Command
+  // ============================================================================
+
+  describe('Scenario: Successful manual compaction with compression feedback', () => {
+    it('should compact context and show compression metrics when /compact is entered', async () => {
+      // @step Given I am in AgentModal with a conversation that has approximately 150k tokens
+      const mockCompact = vi.fn().mockReturnValue({
+        originalTokens: 150000,
+        compactedTokens: 40000,
+        compressionRatio: 73.3,
+        turnsSummarized: 12,
+        turnsKept: 3,
+      });
+      resetMockSession({
+        tokenTracker: { inputTokens: 150000, outputTokens: 5000 },
+        messages: [
+          { role: 'user', content: 'hello' },
+          { role: 'assistant', content: 'hi there' },
+        ],
+        compact: mockCompact,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      // Wait for async session initialization
+      await waitForFrame();
+
+      // Verify modal is open with high token count
+      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('150000');
+
+      // @step When I type '/compact' and press Enter
+      stdin.write('/compact');
+      await waitForFrame();
+      stdin.write('\r'); // Enter key
+      await waitForFrame(100);
+
+      // @step Then I see 'Compacting context...' message in the conversation area
+      // Note: The "Compacting context..." message is transient, but the result should be shown
+
+      // @step And I see a result message showing original tokens, compacted tokens, and compression percentage
+      expect(mockCompact).toHaveBeenCalledTimes(1);
+      expect(lastFrame()).toContain('150000');
+      expect(lastFrame()).toContain('40000');
+      expect(lastFrame()).toContain('73');
+
+      // @step And the token display in the header updates to reflect the reduced context size
+      // The token tracker should be updated after compaction
+    });
+  });
+
+  describe('Scenario: Empty session shows nothing to compact', () => {
+    it('should show nothing to compact message when session has no messages', async () => {
+      // @step Given I am in AgentModal with no messages in the conversation
+      const mockCompact = vi.fn();
+      resetMockSession({
+        tokenTracker: { inputTokens: 0, outputTokens: 0 },
+        messages: [], // Empty conversation
+        compact: mockCompact,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      // Wait for async session initialization
+      await waitForFrame();
+
+      // Verify modal is open with empty conversation
+      expect(lastFrame()).toContain('Agent');
+
+      // @step When I type '/compact' and press Enter
+      stdin.write('/compact');
+      await waitForFrame();
+      stdin.write('\r'); // Enter key
+      await waitForFrame(100);
+
+      // @step Then I see 'Nothing to compact - no messages yet' in the conversation area
+      expect(lastFrame()).toContain('Nothing to compact');
+
+      // @step And the input field returns to normal and I can type my next message
+      // compact() should NOT be called when messages are empty
+      expect(mockCompact).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Scenario: Compaction failure preserves context', () => {
+    it('should show error message and preserve context when compaction fails', async () => {
+      // @step Given I am in AgentModal with an active conversation
+      const mockCompact = vi.fn().mockImplementation(() => {
+        throw new Error('API rate limit exceeded');
+      });
+      resetMockSession({
+        tokenTracker: { inputTokens: 100000, outputTokens: 5000 },
+        messages: [
+          { role: 'user', content: 'test message' },
+          { role: 'assistant', content: 'test response' },
+        ],
+        compact: mockCompact,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      // Wait for async session initialization
+      await waitForFrame();
+
+      // Verify modal is open with conversation
+      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('100000');
+
+      // @step When I type '/compact' and press Enter
+      stdin.write('/compact');
+      await waitForFrame();
+      stdin.write('\r'); // Enter key
+      await waitForFrame(100);
+
+      // @step Then I see 'Compaction failed: [error message]' in the conversation area
+      expect(mockCompact).toHaveBeenCalledTimes(1);
+      expect(lastFrame()).toContain('Compaction failed');
+      expect(lastFrame()).toContain('API rate limit exceeded');
+
+      // @step And the compaction API returns an error
+      // Already verified by mockCompact throwing
+
+      // @step And my conversation context remains unchanged
+      // Token count should remain the same (100000)
+      expect(lastFrame()).toContain('100000');
     });
   });
 });

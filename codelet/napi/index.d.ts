@@ -46,6 +46,16 @@ export declare class CodeletSession {
    * `~/.fspec/debug/`.
    */
   toggleDebug(debugDir?: string | undefined | null): DebugCommandResult;
+  /**
+   * Manually trigger context compaction (NAPI-005)
+   *
+   * Mirrors CLI repl_loop.rs /compact command logic.
+   * Calls execute_compaction from interactive_helpers to compress context.
+   *
+   * Returns CompactionResult with metrics about the compaction operation.
+   * Returns error if session is empty (nothing to compact).
+   */
+  compact(): Promise<CompactionResult>;
   /** Get the current provider name */
   get currentProviderName(): string;
   /** Get list of available providers */
@@ -81,6 +91,23 @@ export declare const enum ChunkType {
   TokenUpdate = 'TokenUpdate',
   Done = 'Done',
   Error = 'Error',
+}
+
+/**
+ * Compaction result (NAPI-005)
+ * Returned by compact() with metrics about the compaction operation
+ */
+export interface CompactionResult {
+  /** Original token count before compaction */
+  originalTokens: number;
+  /** Token count after compaction */
+  compactedTokens: number;
+  /** Compression ratio as percentage (0-100) */
+  compressionRatio: number;
+  /** Number of turns summarized */
+  turnsSummarized: number;
+  /** Number of turns kept */
+  turnsKept: number;
 }
 
 /**

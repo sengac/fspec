@@ -48,6 +48,41 @@ pub fn handle_debug_command() -> DebugCommandResult {
     handle_debug_command_with_dir(None)
 }
 
+/// Capture a debug event if debug capture is enabled
+///
+/// This is a convenience function that handles the boilerplate of:
+/// 1. Getting the debug capture manager
+/// 2. Locking the mutex
+/// 3. Checking if capture is enabled
+/// 4. Calling capture with the event data
+///
+/// Failures are silently ignored since debug capture is optional.
+pub fn capture_event(event_type: &str, data: serde_json::Value) {
+    if let Ok(manager_arc) = get_debug_capture_manager() {
+        if let Ok(mut manager) = manager_arc.lock() {
+            if manager.is_enabled() {
+                manager.capture(event_type, data, None);
+            }
+        }
+    }
+}
+
+/// Increment the turn counter if debug capture is enabled
+///
+/// This is a convenience function for incrementing the turn counter.
+/// Should be called once per user input to track conversation turns.
+///
+/// Failures are silently ignored since debug capture is optional.
+pub fn increment_debug_turn() {
+    if let Ok(manager_arc) = get_debug_capture_manager() {
+        if let Ok(mut manager) = manager_arc.lock() {
+            if manager.is_enabled() {
+                manager.increment_turn();
+            }
+        }
+    }
+}
+
 /// Handle the /debug command with a custom base directory
 ///
 /// If base_dir is provided, debug files will be written to `{base_dir}/debug/`

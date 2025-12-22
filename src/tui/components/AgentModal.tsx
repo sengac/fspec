@@ -124,6 +124,15 @@ interface DebugCommandResult {
   message: string;
 }
 
+// NAPI-005: Compaction result from compact()
+interface CompactionResult {
+  originalTokens: number;
+  compactedTokens: number;
+  compressionRatio: number;
+  turnsSummarized: number;
+  turnsKept: number;
+}
+
 interface CodeletSessionType {
   currentProviderName: string;
   availableProviders: string[];
@@ -138,6 +147,7 @@ interface CodeletSessionType {
   interrupt: () => void;
   resetInterrupt: () => void;
   toggleDebug: (debugDir?: string) => DebugCommandResult; // AGENT-021
+  compact: () => Promise<CompactionResult>; // NAPI-005
 }
 
 export interface AgentModalProps {
@@ -266,6 +276,46 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to toggle debug mode';
         setError(errorMessage);
+      }
+      return;
+    }
+
+    // NAPI-005: Handle /compact command - manual context compaction
+    if (userMessage === '/compact') {
+      setInputValue('');
+
+      // Check if there's anything to compact - use session's messages, not React state
+      if (sessionRef.current.messages.length === 0) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'Nothing to compact - no messages yet' },
+        ]);
+        return;
+      }
+
+      // Show compacting message
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: '[Compacting context...]' },
+      ]);
+
+      try {
+        const result = await sessionRef.current.compact();
+        // Show success message with metrics
+        const compressionPct = result.compressionRatio.toFixed(0);
+        const message = `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression]\n[Summarized ${result.turnsSummarized} turns, kept ${result.turnsKept} turns]`;
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: message },
+        ]);
+        // Update token tracker to reflect reduced context
+        setTokenUsage(sessionRef.current.tokenTracker);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to compact context';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Compaction failed: ${errorMessage}` },
+        ]);
       }
       return;
     }

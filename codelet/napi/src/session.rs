@@ -11,8 +11,9 @@
 //! Key difference from CLI: JavaScript calls interrupt() to set is_interrupted flag
 
 use crate::output::{NapiOutput, StreamCallback};
-use crate::types::{DebugCommandResult, Message, TokenTracker};
+use crate::types::{CompactionResult, DebugCommandResult, Message, TokenTracker};
 use codelet_cli::interactive::run_agent_stream;
+use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata};
 use codelet_core::RigAgent;
 use napi::bindgen_prelude::*;
@@ -122,6 +123,91 @@ impl CodeletSession {
             enabled: result.enabled,
             session_file: result.session_file,
             message: result.message,
+        })
+    }
+
+    /// Manually trigger context compaction (NAPI-005)
+    ///
+    /// Mirrors CLI repl_loop.rs /compact command logic.
+    /// Calls execute_compaction from interactive_helpers to compress context.
+    ///
+    /// Returns CompactionResult with metrics about the compaction operation.
+    /// Returns error if session is empty (nothing to compact).
+    #[napi]
+    pub async fn compact(&self) -> Result<CompactionResult> {
+        let mut session = self.inner.lock().await;
+
+        // Check if there's anything to compact
+        if session.messages.is_empty() {
+            return Err(Error::from_reason("Nothing to compact - no messages yet"));
+        }
+
+        // Get current token count for reporting
+        let original_tokens = session.token_tracker.input_tokens;
+
+        // Capture compaction.manual.start event
+        if let Ok(manager_arc) = get_debug_capture_manager() {
+            if let Ok(mut manager) = manager_arc.lock() {
+                if manager.is_enabled() {
+                    manager.capture(
+                        "compaction.manual.start",
+                        serde_json::json!({
+                            "command": "/compact",
+                            "originalTokens": original_tokens,
+                            "messageCount": session.messages.len(),
+                        }),
+                        None,
+                    );
+                }
+            }
+        }
+
+        // Execute compaction
+        let metrics = execute_compaction(&mut session).await.map_err(|e| {
+            // Capture compaction.manual.failed event
+            if let Ok(manager_arc) = get_debug_capture_manager() {
+                if let Ok(mut manager) = manager_arc.lock() {
+                    if manager.is_enabled() {
+                        manager.capture(
+                            "compaction.manual.failed",
+                            serde_json::json!({
+                                "command": "/compact",
+                                "error": e.to_string(),
+                            }),
+                            None,
+                        );
+                    }
+                }
+            }
+            Error::from_reason(format!("Compaction failed: {e}"))
+        })?;
+
+        // Capture compaction.manual.complete event
+        if let Ok(manager_arc) = get_debug_capture_manager() {
+            if let Ok(mut manager) = manager_arc.lock() {
+                if manager.is_enabled() {
+                    manager.capture(
+                        "compaction.manual.complete",
+                        serde_json::json!({
+                            "command": "/compact",
+                            "originalTokens": metrics.original_tokens,
+                            "compactedTokens": metrics.compacted_tokens,
+                            "compressionRatio": metrics.compression_ratio,
+                            "turnsSummarized": metrics.turns_summarized,
+                            "turnsKept": metrics.turns_kept,
+                        }),
+                        None,
+                    );
+                }
+            }
+        }
+
+        Ok(CompactionResult {
+            original_tokens: metrics.original_tokens as u32,
+            compacted_tokens: metrics.compacted_tokens as u32,
+            compression_ratio: metrics.compression_ratio * 100.0, // Convert to percentage
+            turns_summarized: metrics.turns_summarized as u32,
+            turns_kept: metrics.turns_kept as u32,
         })
     }
 

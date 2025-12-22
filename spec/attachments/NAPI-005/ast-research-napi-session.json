@@ -1,0 +1,29 @@
+{
+  "description": "AST analysis of codelet-napi/src/session.rs and cli/src/interactive_helpers.rs",
+  "files": {
+    "session.rs": "codelet/napi/src/session.rs",
+    "interactive_helpers.rs": "codelet/cli/src/interactive_helpers.rs"
+  },
+  "key_findings": {
+    "session_methods": [
+      {"name": "new", "line": 46, "purpose": "Create new CodeletSession"},
+      {"name": "toggle_debug", "line": 103, "purpose": "Toggle debug mode - PATTERN TO FOLLOW"},
+      {"name": "token_tracker", "line": 163, "purpose": "Get current token usage"},
+      {"name": "prompt", "line": 268, "purpose": "Send prompt with streaming callback"}
+    ],
+    "execute_compaction": {
+      "location": "codelet/cli/src/interactive_helpers.rs:179",
+      "signature": "pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetrics>",
+      "description": "Main compaction function that: 1) creates LLM prompt function, 2) calculates budget, 3) converts messages to turns, 4) runs compaction, 5) reconstructs messages, 6) updates token tracker"
+    },
+    "compaction_metrics": {
+      "note": "Returns CompactionMetrics from codelet_core::compaction",
+      "fields": ["original_tokens", "compacted_tokens", "compression_ratio", "turns_summarized", "turns_kept"]
+    }
+  },
+  "integration_notes": {
+    "pattern": "Follow toggle_debug pattern: use blocking_lock() for sync access to session",
+    "async_handling": "execute_compaction is async - need to wrap in tokio runtime or use async NAPI method",
+    "session_access": "inner: Arc<Mutex<Session>> provides access to underlying cli Session"
+  }
+}
