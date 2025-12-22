@@ -448,14 +448,31 @@ where
                     break;
                 }
                 Some(Err(e)) => {
-                    // CLI-022: Capture api.error event
+                    // Check if this error is due to compaction hook cancellation
+                    // PromptCancelled means the hook cancelled the request because tokens > threshold
+                    let error_str = e.to_string();
+                    let is_compaction_cancel = error_str.contains("PromptCancelled");
+
+                    // Check if compaction was actually triggered by the hook
+                    let compaction_triggered = token_state
+                        .lock()
+                        .map(|state| state.compaction_needed)
+                        .unwrap_or(false);
+
+                    if is_compaction_cancel && compaction_triggered {
+                        // This is a compaction cancellation - break to run compaction logic
+                        // Don't log as error, this is expected behavior
+                        break;
+                    }
+
+                    // CLI-022: Capture api.error event (for real errors, not compaction)
                     if let Ok(manager_arc) = get_debug_capture_manager() {
                         if let Ok(mut manager) = manager_arc.lock() {
                             if manager.is_enabled() {
                                 manager.capture(
                                     "api.error",
                                     serde_json::json!({
-                                        "error": e.to_string(),
+                                        "error": error_str,
                                         "duration": api_start_time.elapsed().as_millis() as u64,
                                     }),
                                     Some(codelet_common::debug_capture::CaptureOptions {
@@ -465,7 +482,7 @@ where
                             }
                         }
                     }
-                    output.emit_error(&e.to_string());
+                    output.emit_error(&error_str);
                     return Err(anyhow::anyhow!("Agent error: {e}"));
                 }
                 None => {
