@@ -17,7 +17,14 @@ export declare class CodeletSession {
    * Interrupt the current agent execution
    *
    * Call this when the user presses Esc in the TUI.
-   * The agent will stop at the next safe point and emit a Done chunk.
+   * The agent will stop immediately via tokio::sync::Notify (NAPI-004).
+   * The notify_one() call wakes the tokio::select! in stream_loop,
+   * allowing immediate response to ESC even during blocking operations.
+   *
+   * IMPORTANT: Uses notify_one() instead of notify_waiters() because:
+   * - notify_waiters() only wakes CURRENTLY waiting tasks (notification lost if none waiting)
+   * - notify_one() stores a permit if no one waiting, so next notified() returns immediately
+   * This eliminates the race condition between flag check and entering tokio::select!
    */
   interrupt(): void;
   /**
