@@ -236,3 +236,43 @@ async fn test_cli_mode_interrupt_unchanged() {
         elapsed
     );
 }
+
+/// Test that notify_one() stores a permit when called before select is entered
+///
+/// This test validates the fix for the race condition:
+/// - With notify_waiters(): notification lost if called before notified() future exists
+/// - With notify_one(): permit is stored, next notified() returns immediately
+///
+/// This is a regression test for the NAPI-004 race condition fix.
+#[tokio::test]
+async fn test_notify_before_select_stores_permit() {
+    let interrupt_notify = Arc::new(Notify::new());
+
+    // Call notify BEFORE creating the notified() future
+    // With notify_waiters(), this would be lost
+    // With notify_one(), this stores a permit
+    interrupt_notify.notify_one();
+
+    let start = Instant::now();
+
+    // Now create the future and select - should return immediately due to stored permit
+    let interrupt_fut = interrupt_notify.notified();
+    tokio::select! {
+        _ = tokio::time::sleep(Duration::from_secs(5)) => {
+            panic!("Bug: notify permit was lost, waited for timeout instead of returning immediately");
+        }
+        _ = interrupt_fut => {
+            // This branch should win because notify_one() stored the permit
+        }
+    }
+
+    let elapsed = start.elapsed();
+
+    // With notify_one(), this should be nearly instant (< 10ms)
+    // With notify_waiters() (the bug), this would take 5 seconds
+    assert!(
+        elapsed < Duration::from_millis(50),
+        "notify_one() should store permit for immediate return, but took {:?}",
+        elapsed
+    );
+}

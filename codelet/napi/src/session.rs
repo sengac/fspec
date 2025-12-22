@@ -66,13 +66,19 @@ impl CodeletSession {
     ///
     /// Call this when the user presses Esc in the TUI.
     /// The agent will stop immediately via tokio::sync::Notify (NAPI-004).
-    /// The notify_waiters() call wakes the tokio::select! in stream_loop,
+    /// The notify_one() call wakes the tokio::select! in stream_loop,
     /// allowing immediate response to ESC even during blocking operations.
+    ///
+    /// IMPORTANT: Uses notify_one() instead of notify_waiters() because:
+    /// - notify_waiters() only wakes CURRENTLY waiting tasks (notification lost if none waiting)
+    /// - notify_one() stores a permit if no one waiting, so next notified() returns immediately
+    /// This eliminates the race condition between flag check and entering tokio::select!
     #[napi]
     pub fn interrupt(&self) {
         self.is_interrupted.store(true, Release);
         // Wake any waiting stream loop immediately (NAPI-004)
-        self.interrupt_notify.notify_waiters();
+        // Uses notify_one() to store permit if not currently waiting in select
+        self.interrupt_notify.notify_one();
     }
 
     /// Reset the interrupt flag
