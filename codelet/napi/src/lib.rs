@@ -10,8 +10,10 @@
 extern crate napi_derive;
 
 mod output;
+pub mod persistence;
 mod session;
 mod types;
 
+pub use persistence::*;
 pub use session::CodeletSession;
 pub use types::*;

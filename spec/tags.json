@@ -250,6 +250,18 @@
           "description": "Code quality validation and review features"
         },
         {
+          "name": "@command-history",
+          "description": "Command history navigation scenarios"
+        },
+        {
+          "name": "@compaction-merge",
+          "description": "Merging into compacted sessions"
+        },
+        {
+          "name": "@compaction-resume",
+          "description": "Resuming compacted sessions"
+        },
+        {
           "name": "@comparison",
           "description": "Comparison operations"
         },
@@ -280,6 +292,10 @@
         {
           "name": "@critical-path",
           "description": "Critical path analysis"
+        },
+        {
+          "name": "@cross-session-history",
+          "description": "Cross-session history access"
         },
         {
           "name": "@crud",
@@ -386,6 +402,14 @@
           "description": "Help and documentation features"
         },
         {
+          "name": "@history-project-filter",
+          "description": "History filtering by project"
+        },
+        {
+          "name": "@history-search",
+          "description": "History search scenarios"
+        },
+        {
           "name": "@hook-execution",
           "description": "Hook execution and lifecycle management"
         },
@@ -416,6 +440,10 @@
         {
           "name": "@list",
           "description": "List operations"
+        },
+        {
+          "name": "@merge-preserves-references",
+          "description": "Merge reference preservation"
         },
         {
           "name": "@metrics",
@@ -568,6 +596,46 @@
         {
           "name": "@security",
           "description": "Security-related features and bug fixes"
+        },
+        {
+          "name": "@session-cherry-pick",
+          "description": "Cherry-pick message scenarios"
+        },
+        {
+          "name": "@session-delete",
+          "description": "Session deletion and cleanup"
+        },
+        {
+          "name": "@session-fork",
+          "description": "Session forking scenarios"
+        },
+        {
+          "name": "@session-lineage",
+          "description": "Session fork lineage tracking"
+        },
+        {
+          "name": "@session-list",
+          "description": "Session listing scenarios"
+        },
+        {
+          "name": "@session-management",
+          "description": "Session management features including persistence, fork, and merge"
+        },
+        {
+          "name": "@session-merge",
+          "description": "Session merging scenarios"
+        },
+        {
+          "name": "@session-rename",
+          "description": "Session renaming"
+        },
+        {
+          "name": "@session-resume",
+          "description": "Session resume and persistence scenarios"
+        },
+        {
+          "name": "@session-switch",
+          "description": "Session switching between conversations"
         },
         {
           "name": "@soft-dependency",
@@ -750,6 +818,10 @@
           "description": "Behavior-Driven Development methodology"
         },
         {
+          "name": "@blob-storage",
+          "description": "Blob storage for large content"
+        },
+        {
           "name": "@browser-integration",
           "description": "Features requiring browser launcher integration"
         },
@@ -782,12 +854,24 @@
           "description": "CLI command registration features"
         },
         {
+          "name": "@compaction-state-on-fork",
+          "description": "Compaction state handling on fork"
+        },
+        {
+          "name": "@compaction-state-storage",
+          "description": "Compaction state persistence"
+        },
+        {
           "name": "@concurrency",
           "description": "Concurrent access coordination and file locking mechanisms"
         },
         {
           "name": "@config",
           "description": "Configuration loading and management features"
+        },
+        {
+          "name": "@content-deduplication",
+          "description": "Content-addressed deduplication"
         },
         {
           "name": "@cucumber-parser",
@@ -988,6 +1072,14 @@
         {
           "name": "@mermaid",
           "description": "Mermaid Diagram Support"
+        },
+        {
+          "name": "@message-deduplication",
+          "description": "Message deduplication and content-addressing scenarios"
+        },
+        {
+          "name": "@message-immutability",
+          "description": "Message immutability invariant"
         },
         {
           "name": "@modal",
@@ -1354,6 +1446,10 @@
           "description": "Circular dependency detection tests"
         },
         {
+          "name": "@compaction-fork-before-compaction-point",
+          "description": "Edge case: fork before compaction boundary"
+        },
+        {
           "name": "@complex-command",
           "description": "Complex command with multiple modes and options"
         },
@@ -1380,6 +1476,18 @@
         {
           "name": "@edge-case",
           "description": "Edge case tests - validation of boundary conditions and unusual scenarios"
+        },
+        {
+          "name": "@error-cherry-pick-insufficient-context",
+          "description": "Error handling for cherry-pick"
+        },
+        {
+          "name": "@error-invalid-fork-index",
+          "description": "Error handling for invalid fork"
+        },
+        {
+          "name": "@error-invalid-merge-session",
+          "description": "Error handling for invalid merge"
         },
         {
           "name": "@happy-path",
@@ -1662,7 +1770,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-22T04:56:13.779Z",
+    "lastUpdated": "2025-12-22T11:29:24.349Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

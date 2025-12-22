@@ -8,6 +8,11 @@
  * - Uses the same streaming loop as codelet-cli (run_agent_stream)
  * - Supports Esc key interruption via session.interrupt()
  * - Full-screen modal for maximum conversation space
+ *
+ * Implements NAPI-006: Session Persistence with Fork and Merge
+ * - Shift+Arrow-Up/Down for command history navigation
+ * - Ctrl+R for history search
+ * - Session commands: /resume, /fork, /merge, /switch, /rename, /cherry-pick, /sessions
  */
 
 import React, {
@@ -21,7 +26,15 @@ import React, {
 import { Box, Text, useInput, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { getFspecUserDir } from '../../utils/config';
+import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
+
+// NAPI-006: Callbacks for history navigation and search
+interface SafeTextInputCallbacks {
+  onHistoryPrev?: () => void;
+  onHistoryNext?: () => void;
+  onSearchMode?: () => void;
+}
 
 // Custom TextInput that ignores mouse escape sequences
 const SafeTextInput: React.FC<{
@@ -30,7 +43,16 @@ const SafeTextInput: React.FC<{
   onSubmit: () => void;
   placeholder?: string;
   isActive?: boolean;
-}> = ({ value, onChange, onSubmit, placeholder = '', isActive = true }) => {
+} & SafeTextInputCallbacks> = ({
+  value,
+  onChange,
+  onSubmit,
+  placeholder = '',
+  isActive = true,
+  onHistoryPrev,
+  onHistoryNext,
+  onSearchMode,
+}) => {
   // Use ref to avoid stale closure issues with rapid typing
   const valueRef = useRef(value);
   valueRef.current = value;
@@ -51,6 +73,35 @@ const SafeTextInput: React.FC<{
         const newValue = valueRef.current.slice(0, -1);
         valueRef.current = newValue; // Update immediately to handle rapid keystrokes
         onChange(newValue);
+        return;
+      }
+
+      // NAPI-006: Ctrl+R for history search
+      if (key.ctrl && input === 'r') {
+        onSearchMode?.();
+        return;
+      }
+
+      // NAPI-006: Shift+Arrow for history navigation (check before ignoring arrow keys)
+      // Debug: log all key events to understand what's being received
+      // console.error('useInput:', JSON.stringify({ input: input.split('').map(c => c.charCodeAt(0)), key }));
+
+      // Check raw escape sequences first (most reliable for Shift+Arrow)
+      if (input.includes('[1;2A') || input.includes('\x1b[1;2A')) {
+        onHistoryPrev?.();
+        return;
+      }
+      if (input.includes('[1;2B') || input.includes('\x1b[1;2B')) {
+        onHistoryNext?.();
+        return;
+      }
+      // ink may set key.shift when shift is held
+      if (key.shift && key.upArrow) {
+        onHistoryPrev?.();
+        return;
+      }
+      if (key.shift && key.downArrow) {
+        onHistoryNext?.();
         return;
       }
 
@@ -133,6 +184,26 @@ interface CompactionResult {
   turnsKept: number;
 }
 
+// NAPI-006: History entry from persistence
+interface HistoryEntry {
+  display: string;
+  timestamp: string;
+  project: string;
+  sessionId: string;
+  hasPastedContent: boolean;
+}
+
+// NAPI-006: Session manifest from persistence
+interface SessionManifest {
+  id: string;
+  name: string;
+  project: string;
+  provider: string;
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+}
+
 interface CodeletSessionType {
   currentProviderName: string;
   availableProviders: string[];
@@ -188,6 +259,21 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021
   const sessionRef = useRef<CodeletSessionType | null>(null);
 
+  // NAPI-006: History navigation state
+  const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
+  const [historyIndex, setHistoryIndex] = useState(-1); // -1 means not navigating history
+  const [savedInput, setSavedInput] = useState(''); // Save current input when navigating history
+
+  // NAPI-006: Search mode state (Ctrl+R)
+  const [isSearchMode, setIsSearchMode] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<HistoryEntry[]>([]);
+  const [searchResultIndex, setSearchResultIndex] = useState(0);
+
+  // NAPI-006: Session persistence state
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const currentProjectRef = useRef<string>(process.cwd());
+
   // TUI-031: Track tok/s - calculate on each TEXT chunk for real-time updates
   const streamingStartTimeRef = useRef<number | null>(null);
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(null);
@@ -226,13 +312,32 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       lastChunkTimeRef.current = null;
       rateSamplesRef.current = [];
       sessionRef.current = null;
+      // NAPI-006: Reset history and search state
+      setHistoryEntries([]);
+      setHistoryIndex(-1);
+      setSavedInput('');
+      setIsSearchMode(false);
+      setSearchQuery('');
+      setSearchResults([]);
+      setSearchResultIndex(0);
+      setCurrentSessionId(null);
       return;
     }
 
     const initSession = async () => {
       try {
         // Dynamic import to handle ESM
-        const { CodeletSession } = await import('codelet-napi');
+        const codeletNapi = await import('codelet-napi');
+        const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory, persistenceCreateSessionWithProvider } = codeletNapi;
+
+        // NAPI-006: Set up persistence data directory
+        const fspecDir = getFspecUserDir();
+        try {
+          persistenceSetDataDirectory(fspecDir);
+        } catch {
+          // Ignore if already set
+        }
+
         // Default to Claude as the primary AI provider
         const newSession = new CodeletSession('claude');
         setSession(newSession);
@@ -240,6 +345,41 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         setCurrentProvider(newSession.currentProviderName);
         setAvailableProviders(newSession.availableProviders);
         setTokenUsage(newSession.tokenTracker);
+
+        // NAPI-006: Create or resume a persistence session
+        try {
+          const project = currentProjectRef.current;
+          const sessionName = `Session ${new Date().toLocaleDateString()}`;
+          logger.info(`Creating persistence session: ${sessionName} for project: ${project}`);
+          const persistedSession = persistenceCreateSessionWithProvider(
+            sessionName,
+            project,
+            newSession.currentProviderName
+          );
+          logger.info(`Session created with ID: ${persistedSession.id}`);
+          setCurrentSessionId(persistedSession.id);
+        } catch (err) {
+          logger.error(`Failed to create persistence session: ${err instanceof Error ? err.message : String(err)}`);
+        }
+
+        // NAPI-006: Load history for current project
+        try {
+          logger.info(`Loading history for project: ${currentProjectRef.current}`);
+          const history = persistenceGetHistory(currentProjectRef.current, 100);
+          logger.info(`Loaded ${history.length} history entries`);
+          // Convert NAPI history entries (camelCase from NAPI-RS) to our interface
+          const entries: HistoryEntry[] = history.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({
+            display: h.display,
+            timestamp: h.timestamp,
+            project: h.project,
+            sessionId: h.sessionId,
+            hasPastedContent: h.hasPastedContent ?? false,
+          }));
+          setHistoryEntries(entries);
+        } catch (err) {
+          logger.error(`Failed to load history: ${err instanceof Error ? err.message : String(err)}`);
+        }
+
         setError(null);
       } catch (err) {
         const errorMessage =
@@ -276,6 +416,281 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to toggle debug mode';
         setError(errorMessage);
+      }
+      return;
+    }
+
+    // NAPI-006: Handle /history command - show command history
+    if (userMessage === '/history' || userMessage.startsWith('/history ')) {
+      setInputValue('');
+      const allProjects = userMessage.includes('--all-projects');
+      try {
+        const { persistenceGetHistory } = await import('codelet-napi');
+        const history = persistenceGetHistory(allProjects ? null : currentProjectRef.current, 20);
+        if (history.length === 0) {
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool', content: 'No history entries found' },
+          ]);
+        } else {
+          const historyList = history.map((h: { display: string; timestamp: string }) =>
+            `- ${h.display}`
+          ).join('\n');
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool', content: `Command history:\n${historyList}` },
+          ]);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to get history';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `History failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+
+    // NAPI-006: Handle /resume command - resume last session
+    if (userMessage === '/resume') {
+      setInputValue('');
+      try {
+        const { persistenceResumeLastSession } = await import('codelet-napi');
+        const session = persistenceResumeLastSession(currentProjectRef.current);
+        setCurrentSessionId(session.id);
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Session resumed: "${session.name}" (${session.messageCount} messages)` },
+        ]);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to resume session';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Resume failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+
+    // NAPI-006: Handle /sessions command - list all sessions
+    if (userMessage === '/sessions') {
+      setInputValue('');
+      try {
+        const { persistenceListSessions } = await import('codelet-napi');
+        const sessions = persistenceListSessions(currentProjectRef.current);
+        if (sessions.length === 0) {
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool', content: 'No sessions found for this project' },
+          ]);
+        } else {
+          const sessionList = sessions.map((s: SessionManifest) =>
+            `- ${s.name} (${s.messageCount} messages, ${s.id.slice(0, 8)}...)`
+          ).join('\n');
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool', content: `Sessions:\n${sessionList}` },
+          ]);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to list sessions';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `List sessions failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+
+    // NAPI-006: Handle /switch <name> command - switch to another session
+    if (userMessage.startsWith('/switch ')) {
+      setInputValue('');
+      const targetName = userMessage.slice(8).trim();
+      try {
+        const { persistenceListSessions, persistenceLoadSession } = await import('codelet-napi');
+        const sessions = persistenceListSessions(currentProjectRef.current);
+        const target = sessions.find((s: SessionManifest) => s.name === targetName);
+        if (target) {
+          setCurrentSessionId(target.id);
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool', content: `Switched to session: "${target.name}"` },
+          ]);
+        } else {
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool', content: `Session not found: "${targetName}"` },
+          ]);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to switch session';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Switch failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+
+    // NAPI-006: Handle /rename <new-name> command - rename current session
+    if (userMessage.startsWith('/rename ')) {
+      setInputValue('');
+      const newName = userMessage.slice(8).trim();
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'No active session to rename' },
+        ]);
+        return;
+      }
+      try {
+        const { persistenceRenameSession } = await import('codelet-napi');
+        persistenceRenameSession(currentSessionId, newName);
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Session renamed to: "${newName}"` },
+        ]);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to rename session';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Rename failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+
+    // NAPI-006: Handle /fork <index> <name> command - fork session at index
+    if (userMessage.startsWith('/fork ')) {
+      setInputValue('');
+      const parts = userMessage.slice(6).trim().split(/\s+/);
+      const index = parseInt(parts[0], 10);
+      const name = parts.slice(1).join(' ');
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'No active session to fork' },
+        ]);
+        return;
+      }
+      if (isNaN(index) || !name) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'Usage: /fork <index> <name>' },
+        ]);
+        return;
+      }
+      try {
+        const { persistenceForkSession } = await import('codelet-napi');
+        const forkedSession = persistenceForkSession(currentSessionId, index, name);
+        setCurrentSessionId(forkedSession.id);
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Session forked at index ${index}: "${name}"` },
+        ]);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fork session';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Fork failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+
+    // NAPI-006: Handle /merge <session> <indices> command - merge messages from another session
+    if (userMessage.startsWith('/merge ')) {
+      setInputValue('');
+      const parts = userMessage.slice(7).trim().split(/\s+/);
+      const sourceName = parts[0];
+      const indicesStr = parts[1];
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'No active session to merge into' },
+        ]);
+        return;
+      }
+      if (!sourceName || !indicesStr) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'Usage: /merge <session-name> <indices> (e.g., /merge session-b 3,4)' },
+        ]);
+        return;
+      }
+      try {
+        const { persistenceListSessions, persistenceMergeMessages } = await import('codelet-napi');
+        const sessions = persistenceListSessions(currentProjectRef.current);
+        const source = sessions.find((s: SessionManifest) => s.name === sourceName || s.id === sourceName);
+        if (!source) {
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool', content: `Source session not found: "${sourceName}"` },
+          ]);
+          return;
+        }
+        const indices = indicesStr.split(',').map((s: string) => parseInt(s.trim(), 10));
+        const result = persistenceMergeMessages(currentSessionId, source.id, indices);
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Merged ${indices.length} messages from "${source.name}"` },
+        ]);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to merge messages';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Merge failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+
+    // NAPI-006: Handle /cherry-pick <session> <index> --context <n> command
+    if (userMessage.startsWith('/cherry-pick ')) {
+      setInputValue('');
+      const args = userMessage.slice(13).trim();
+      const contextMatch = args.match(/--context\s+(\d+)/);
+      const context = contextMatch ? parseInt(contextMatch[1], 10) : 0;
+      const cleanArgs = args.replace(/--context\s+\d+/, '').trim();
+      const parts = cleanArgs.split(/\s+/);
+      const sourceName = parts[0];
+      const index = parseInt(parts[1], 10);
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'No active session for cherry-pick' },
+        ]);
+        return;
+      }
+      if (!sourceName || isNaN(index)) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'Usage: /cherry-pick <session> <index> [--context N]' },
+        ]);
+        return;
+      }
+      try {
+        const { persistenceListSessions, persistenceCherryPick } = await import('codelet-napi');
+        const sessions = persistenceListSessions(currentProjectRef.current);
+        const source = sessions.find((s: SessionManifest) => s.name === sourceName || s.id === sourceName);
+        if (!source) {
+          setConversation(prev => [
+            ...prev,
+            { role: 'tool', content: `Source session not found: "${sourceName}"` },
+          ]);
+          return;
+        }
+        const result = persistenceCherryPick(currentSessionId, source.id, index, context);
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Cherry-picked message ${index} with ${context} context messages from "${source.name}"` },
+        ]);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to cherry-pick';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Cherry-pick failed: ${errorMessage}` },
+        ]);
       }
       return;
     }
@@ -321,6 +736,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     }
 
     setInputValue('');
+    setHistoryIndex(-1); // Reset history navigation
+    setSavedInput('');
     setIsLoading(true);
     // TUI-031: Reset tok/s tracking for new prompt
     streamingStartTimeRef.current = Date.now();
@@ -328,6 +745,27 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     setLastChunkTime(null);
     lastChunkTimeRef.current = null;
     rateSamplesRef.current = [];
+
+    // NAPI-006: Save command to history
+    if (currentSessionId) {
+      try {
+        const { persistenceAddHistory } = await import('codelet-napi');
+        logger.info(`Saving to history: "${userMessage.slice(0, 50)}..." session: ${currentSessionId}`);
+        persistenceAddHistory(userMessage, currentProjectRef.current, currentSessionId);
+        // Update local history entries
+        setHistoryEntries(prev => [{
+          display: userMessage,
+          timestamp: new Date().toISOString(),
+          project: currentProjectRef.current,
+          sessionId: currentSessionId,
+          hasPastedContent: false,
+        }, ...prev]);
+      } catch (err) {
+        logger.error(`Failed to save history: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    } else {
+      logger.warn('No currentSessionId - history will not be saved');
+    }
 
     // Add user message to conversation
     setConversation(prev => [...prev, { role: 'user', content: userMessage }]);
@@ -533,11 +971,131 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     }
   }, []);
 
+  // NAPI-006: Navigate to previous history entry (Shift+Arrow-Up)
+  const handleHistoryPrev = useCallback(() => {
+    // Debug: uncomment to see history state
+    // console.error('handleHistoryPrev called, entries:', historyEntries.length, 'index:', historyIndex);
+    if (historyEntries.length === 0) {
+      // console.error('No history entries');
+      return;
+    }
+
+    // Save current input if we're starting navigation
+    if (historyIndex === -1) {
+      setSavedInput(inputValue);
+    }
+
+    const newIndex = historyIndex === -1 ? 0 : Math.min(historyIndex + 1, historyEntries.length - 1);
+    setHistoryIndex(newIndex);
+    setInputValue(historyEntries[newIndex].display);
+  }, [historyEntries, historyIndex, inputValue]);
+
+  // NAPI-006: Navigate to next history entry (Shift+Arrow-Down)
+  const handleHistoryNext = useCallback(() => {
+    if (historyIndex === -1) return;
+
+    if (historyIndex === 0) {
+      // Return to saved input
+      setHistoryIndex(-1);
+      setInputValue(savedInput);
+    } else {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setInputValue(historyEntries[newIndex].display);
+    }
+  }, [historyEntries, historyIndex, savedInput]);
+
+  // NAPI-006: Enter search mode (Ctrl+R)
+  const handleSearchMode = useCallback(() => {
+    setIsSearchMode(true);
+    setSearchQuery('');
+    setSearchResults([]);
+    setSearchResultIndex(0);
+  }, []);
+
+  // NAPI-006: Handle search input
+  const handleSearchInput = useCallback(async (query: string) => {
+    setSearchQuery(query);
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const { persistenceSearchHistory } = await import('codelet-napi');
+      const results = persistenceSearchHistory(query, currentProjectRef.current);
+      const entries: HistoryEntry[] = results.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({
+        display: h.display,
+        timestamp: h.timestamp,
+        project: h.project,
+        sessionId: h.sessionId,
+        hasPastedContent: h.hasPastedContent ?? false,
+      }));
+      setSearchResults(entries);
+      setSearchResultIndex(0);
+    } catch {
+      // Search is optional - continue without it
+    }
+  }, []);
+
+  // NAPI-006: Select search result and exit search mode
+  const handleSearchSelect = useCallback(() => {
+    if (searchResults.length > 0 && searchResultIndex < searchResults.length) {
+      setInputValue(searchResults[searchResultIndex].display);
+    }
+    setIsSearchMode(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  }, [searchResults, searchResultIndex]);
+
+  // NAPI-006: Cancel search mode
+  const handleSearchCancel = useCallback(() => {
+    setIsSearchMode(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  }, []);
+
   // Handle keyboard input
   useInput(
     (input, key) => {
       // Skip mouse events (handled by VirtualList)
       if (input.startsWith('[M') || key.mouse) {
+        return;
+      }
+
+      // NAPI-006: Search mode keyboard handling
+      if (isSearchMode) {
+        if (key.escape) {
+          handleSearchCancel();
+          return;
+        }
+        if (key.return) {
+          handleSearchSelect();
+          return;
+        }
+        if (key.upArrow) {
+          setSearchResultIndex(prev => Math.max(0, prev - 1));
+          return;
+        }
+        if (key.downArrow) {
+          setSearchResultIndex(prev => Math.min(searchResults.length - 1, prev + 1));
+          return;
+        }
+        if (key.backspace || key.delete) {
+          void handleSearchInput(searchQuery.slice(0, -1));
+          return;
+        }
+        // Accept printable characters for search query
+        const clean = input
+          .split('')
+          .filter((ch) => {
+            const code = ch.charCodeAt(0);
+            return code >= 32 && code <= 126;
+          })
+          .join('');
+        if (clean) {
+          void handleSearchInput(searchQuery + clean);
+        }
         return;
       }
 
@@ -786,6 +1344,58 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     );
   }
 
+  // NAPI-006: Search mode overlay (Ctrl+R history search)
+  if (isSearchMode) {
+    return (
+      <Box
+        position="absolute"
+        flexDirection="column"
+        width={terminalWidth}
+        height={terminalHeight}
+      >
+        <Box
+          flexDirection="column"
+          flexGrow={1}
+          borderStyle="double"
+          borderColor="magenta"
+          backgroundColor="black"
+        >
+          <Box
+            flexDirection="column"
+            padding={2}
+            flexGrow={1}
+          >
+            <Box marginBottom={1}>
+              <Text bold color="magenta">
+                (search): {searchQuery}
+                <Text inverse> </Text>
+              </Text>
+            </Box>
+            {searchResults.length === 0 && searchQuery && (
+              <Box>
+                <Text dimColor>No matching history entries</Text>
+              </Box>
+            )}
+            {searchResults.slice(0, 10).map((entry, idx) => (
+              <Box key={`${entry.sessionId}-${entry.timestamp}`}>
+                <Text
+                  backgroundColor={idx === searchResultIndex ? 'magenta' : undefined}
+                  color={idx === searchResultIndex ? 'black' : 'white'}
+                >
+                  {idx === searchResultIndex ? '> ' : '  '}
+                  {entry.display.slice(0, terminalWidth - 10)}
+                </Text>
+              </Box>
+            ))}
+            <Box marginTop={1}>
+              <Text dimColor>Enter Select | ↑↓ Navigate | Esc Cancel</Text>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
   // Main agent modal (full-screen overlay)
   // Use two-layer structure: outer box for positioning, inner box for styling
   // This prevents border rendering issues with position="absolute" + explicit dimensions
@@ -882,7 +1492,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 value={inputValue}
                 onChange={setInputValue}
                 onSubmit={handleSubmit}
-                placeholder="Type your message..."
+                placeholder="Type your message... (Shift+↑↓ history, Ctrl+R search)"
+                onHistoryPrev={handleHistoryPrev}
+                onHistoryNext={handleHistoryNext}
+                onSearchMode={handleSearchMode}
               />
             )}
           </Box>

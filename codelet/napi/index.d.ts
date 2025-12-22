@@ -136,6 +136,213 @@ export declare const enum MessageRole {
   Assistant = 'Assistant',
 }
 
+export interface NapiAppendResult {
+  messageId: string;
+  session: NapiSessionManifest;
+}
+
+export interface NapiCherryPickResult {
+  session: NapiSessionManifest;
+  importedIndices: Array<number>;
+}
+
+export interface NapiCompactionState {
+  summary: string;
+  compactedBeforeIndex: number;
+  compactedAt: string;
+}
+
+export interface NapiForkPoint {
+  sourceSessionId: string;
+  forkAfterIndex: number;
+  forkedAt: string;
+}
+
+export interface NapiHistoryEntry {
+  display: string;
+  timestamp: string;
+  project: string;
+  sessionId: string;
+  hasPastedContent: boolean;
+}
+
+export interface NapiMergeRecord {
+  sourceSessionId: string;
+  sourceIndices: Array<number>;
+  insertedAt?: number;
+  mergedAt: string;
+}
+
+export interface NapiSessionManifest {
+  id: string;
+  name: string;
+  project: string;
+  provider: string;
+  createdAt: string;
+  updatedAt: string;
+  messageCount: number;
+  forkedFrom?: NapiForkPoint;
+  mergedFrom: Array<NapiMergeRecord>;
+  compaction?: NapiCompactionState;
+  tokenUsage: NapiTokenUsage;
+}
+
+export interface NapiStoredMessage {
+  id: string;
+  contentHash: string;
+  createdAt: string;
+  role: string;
+  content: string;
+  tokenCount?: number;
+  blobRefs: Array<string>;
+  /** Metadata as a JSON string */
+  metadataJson: string;
+}
+
+export interface NapiTokenUsage {
+  totalInputTokens: number;
+  totalOutputTokens: number;
+  cacheReadTokens: number;
+  cacheCreationTokens: number;
+}
+
+/** Add a history entry */
+export declare function persistenceAddHistory(
+  display: string,
+  project: string,
+  sessionId: string
+): void;
+
+/** Append a message to a session */
+export declare function persistenceAppendMessage(
+  sessionId: string,
+  role: string,
+  content: string
+): NapiAppendResult;
+
+/**
+ * Append a message with metadata to a session
+ *
+ * metadata_json should be a JSON object string, e.g. '{"model": "claude-3", "stop_reason": "end_turn"}'
+ */
+export declare function persistenceAppendMessageWithMetadata(
+  sessionId: string,
+  role: string,
+  content: string,
+  metadataJson: string
+): NapiAppendResult;
+
+/** Check if a blob exists */
+export declare function persistenceBlobExists(hash: string): boolean;
+
+/** Cherry-pick messages with context */
+export declare function persistenceCherryPick(
+  targetId: string,
+  sourceId: string,
+  index: number,
+  context: number
+): NapiCherryPickResult;
+
+/** Cleanup orphaned messages */
+export declare function persistenceCleanupOrphanedMessages(): number;
+
+/** Create a new session */
+export declare function persistenceCreateSession(
+  name: string,
+  project: string
+): NapiSessionManifest;
+
+/** Create a new session with a specific provider */
+export declare function persistenceCreateSessionWithProvider(
+  name: string,
+  project: string,
+  provider: string
+): NapiSessionManifest;
+
+/** Delete a session */
+export declare function persistenceDeleteSession(id: string): void;
+
+/** Fork a session at a specific message index */
+export declare function persistenceForkSession(
+  sessionId: string,
+  atIndex: number,
+  name: string
+): NapiSessionManifest;
+
+/** Get content from blob storage */
+export declare function persistenceGetBlob(hash: string): Buffer;
+
+/** Get the current data directory */
+export declare function persistenceGetDataDirectory(): string;
+
+/** Get history entries */
+export declare function persistenceGetHistory(
+  project?: string | undefined | null,
+  limit?: number | undefined | null
+): Array<NapiHistoryEntry>;
+
+/** Get a message by ID */
+export declare function persistenceGetMessage(
+  id: string
+): NapiStoredMessage | null;
+
+/** Get all messages for a session */
+export declare function persistenceGetSessionMessages(
+  sessionId: string
+): Array<NapiStoredMessage>;
+
+/** List all sessions for a project */
+export declare function persistenceListSessions(
+  project: string
+): Array<NapiSessionManifest>;
+
+/** Load a session by ID */
+export declare function persistenceLoadSession(id: string): NapiSessionManifest;
+
+/** Merge messages from another session */
+export declare function persistenceMergeMessages(
+  targetId: string,
+  sourceId: string,
+  indices: Array<number>
+): NapiSessionManifest;
+
+/** Rename a session */
+export declare function persistenceRenameSession(
+  id: string,
+  newName: string
+): void;
+
+/** Resume the last session for a project */
+export declare function persistenceResumeLastSession(
+  project: string
+): NapiSessionManifest;
+
+/** Search history entries */
+export declare function persistenceSearchHistory(
+  query: string,
+  project?: string | undefined | null
+): Array<NapiHistoryEntry>;
+
+/**
+ * Set the data directory for persistence (e.g., ~/.fspec or ~/.codelet)
+ *
+ * This must be called before any other persistence operations if you want
+ * to use a custom directory instead of the default ~/.fspec.
+ */
+export declare function persistenceSetDataDirectory(dir: string): void;
+
+/** Store content in blob storage */
+export declare function persistenceStoreBlob(content: Buffer): string;
+
+/** Update session token usage */
+export declare function persistenceUpdateSessionTokens(
+  sessionId: string,
+  input: number,
+  output: number,
+  cacheRead: number,
+  cacheCreate: number
+): NapiSessionManifest;
+
 /** A chunk of streaming response */
 export interface StreamChunk {
   type: string;

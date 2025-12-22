@@ -14,7 +14,9 @@ use crate::output::{NapiOutput, StreamCallback};
 use crate::types::{CompactionResult, DebugCommandResult, Message, TokenTracker};
 use codelet_cli::interactive::run_agent_stream;
 use codelet_cli::interactive_helpers::execute_compaction;
-use codelet_common::debug_capture::{get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata};
+use codelet_common::debug_capture::{
+    get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
+};
 use codelet_core::RigAgent;
 use napi::bindgen_prelude::*;
 use std::sync::atomic::AtomicBool;
@@ -381,7 +383,15 @@ impl CodeletSession {
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 let rig_agent = provider.create_rig_agent(None);
                 let agent = RigAgent::with_default_depth(rig_agent);
-                run_agent_stream(agent, &input, &mut session, is_interrupted, Arc::clone(&interrupt_notify), &output).await
+                run_agent_stream(
+                    agent,
+                    &input,
+                    &mut session,
+                    is_interrupted,
+                    Arc::clone(&interrupt_notify),
+                    &output,
+                )
+                .await
             }
             "openai" => {
                 let provider = session
@@ -390,7 +400,15 @@ impl CodeletSession {
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 let rig_agent = provider.create_rig_agent(None);
                 let agent = RigAgent::with_default_depth(rig_agent);
-                run_agent_stream(agent, &input, &mut session, is_interrupted, Arc::clone(&interrupt_notify), &output).await
+                run_agent_stream(
+                    agent,
+                    &input,
+                    &mut session,
+                    is_interrupted,
+                    Arc::clone(&interrupt_notify),
+                    &output,
+                )
+                .await
             }
             "gemini" => {
                 let provider = session
@@ -399,7 +417,15 @@ impl CodeletSession {
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 let rig_agent = provider.create_rig_agent(None);
                 let agent = RigAgent::with_default_depth(rig_agent);
-                run_agent_stream(agent, &input, &mut session, is_interrupted, Arc::clone(&interrupt_notify), &output).await
+                run_agent_stream(
+                    agent,
+                    &input,
+                    &mut session,
+                    is_interrupted,
+                    Arc::clone(&interrupt_notify),
+                    &output,
+                )
+                .await
             }
             "codex" => {
                 let provider = session
@@ -408,7 +434,15 @@ impl CodeletSession {
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 let rig_agent = provider.create_rig_agent(None);
                 let agent = RigAgent::with_default_depth(rig_agent);
-                run_agent_stream(agent, &input, &mut session, is_interrupted, interrupt_notify, &output).await
+                run_agent_stream(
+                    agent,
+                    &input,
+                    &mut session,
+                    is_interrupted,
+                    interrupt_notify,
+                    &output,
+                )
+                .await
             }
             _ => {
                 return Err(Error::from_reason(format!(
