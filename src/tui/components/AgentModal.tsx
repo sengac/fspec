@@ -19,30 +19,9 @@ import React, {
   useReducer,
 } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
-import stringWidth from 'string-width';
 import { VirtualList } from './VirtualList';
 import { getFspecUserDir } from '../../utils/config';
-
-/**
- * Normalize emoji variation selectors for consistent terminal width calculation.
- *
- * Many characters have Emoji_Presentation=No in Unicode (they're text by default):
- * - ⚠ ✏ 🖥 ☁ ❤ ✨ ☆ ✱ △ ⚡ and many more
- *
- * When U+FE0F (VS16) is added, string-width correctly reports width 2.
- * BUT many terminals IGNORE U+FE0F and render as width 1, causing layout misalignment.
- *
- * FIX: Strip ALL U+FE0F variation selectors from text.
- * - For text-default chars: removes VS16, string-width reports 1, terminal renders 1 ✓
- * - For emoji-default chars: they're already emoji, VS16 is redundant, no effect
- *
- * See: border-debug.test.tsx for reproduction and explanation
- */
-function normalizeEmojiWidth(text: string): string {
-  // Remove ALL U+FE0F (Variation Selector-16) characters
-  // This ensures string-width matches terminal rendering for text-default emojis
-  return text.replace(/\uFE0F/g, '');
-}
+import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
 
 // Custom TextInput that ignores mouse escape sequences
 const SafeTextInput: React.FC<{
@@ -585,7 +564,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         }
 
         // Wrap long lines manually to fit terminal width (using visual width for Unicode)
-        if (stringWidth(displayContent) === 0) {
+        if (getVisualWidth(displayContent) === 0) {
           lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
         } else {
           // Split into words, keeping whitespace
@@ -594,7 +573,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           let currentWidth = 0;
 
           for (const word of words) {
-            const wordWidth = stringWidth(word);
+            const wordWidth = getVisualWidth(word);
 
             if (wordWidth === 0) continue;
 
@@ -610,7 +589,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               let chunk = '';
               let chunkWidth = 0;
               for (const char of word) {
-                const charWidth = stringWidth(char);
+                const charWidth = getVisualWidth(char);
                 if (chunkWidth + charWidth > maxWidth && chunk) {
                   lines.push({ role: msg.role, content: chunk, messageIndex: msgIndex });
                   chunk = char;
