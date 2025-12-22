@@ -562,7 +562,7 @@ where
                     metrics.compacted_tokens,
                     metrics.compression_ratio * 100.0
                 ));
-                output.emit_status("[Please resend your message - context was compacted]\n");
+                output.emit_status("[Continuing with compacted context...]\n");
 
                 // NOTE: execute_compaction already sets session.token_tracker.input_tokens
                 // to the correct new_total_tokens calculated from compacted messages.
@@ -570,6 +570,111 @@ where
                 session.token_tracker.output_tokens = 0;
                 session.token_tracker.cache_read_input_tokens = None;
                 session.token_tracker.cache_creation_input_tokens = None;
+
+                // Re-add the user's original prompt to session.messages so the agent
+                // can continue processing it with the compacted context
+                session.messages.push(Message::User {
+                    content: OneOrMany::one(UserContent::text(prompt)),
+                });
+
+                // Create fresh hook and token state for the retry
+                let retry_token_state = Arc::new(Mutex::new(TokenState {
+                    input_tokens: session.token_tracker.input_tokens,
+                    cache_read_input_tokens: session
+                        .token_tracker
+                        .cache_read_input_tokens
+                        .unwrap_or(0),
+                    cache_creation_input_tokens: session
+                        .token_tracker
+                        .cache_creation_input_tokens
+                        .unwrap_or(0),
+                    compaction_needed: false,
+                }));
+                let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
+
+                // Start new stream with compacted context
+                let mut retry_stream = agent
+                    .prompt_streaming_with_history_and_hook(prompt, &mut session.messages, retry_hook)
+                    .await;
+
+                // Reset tracking for this retry
+                let mut retry_assistant_text = String::new();
+                let mut retry_tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
+                let mut retry_last_tool_name: Option<String> = None;
+
+                // Process retry stream
+                loop {
+                    if is_interrupted.load(Acquire) {
+                        let queued = if let Some(ref mut iq) = input_queue {
+                            iq.dequeue_all()
+                        } else {
+                            vec![]
+                        };
+                        output.emit_interrupted(&queued);
+                        if !retry_assistant_text.is_empty() {
+                            handle_final_response(&retry_assistant_text, &mut session.messages)?;
+                        }
+                        output.emit_done();
+                        break;
+                    }
+
+                    match retry_stream.next().await {
+                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                            StreamedAssistantContent::Text(text),
+                        ))) => {
+                            handle_text_chunk(&text.text, &mut retry_assistant_text, None, output)?;
+                        }
+                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                            StreamedAssistantContent::ToolCall(tool_call),
+                        ))) => {
+                            handle_tool_call(
+                                &tool_call,
+                                &mut session.messages,
+                                &mut retry_assistant_text,
+                                &mut retry_tool_calls_buffer,
+                                &mut retry_last_tool_name,
+                                output,
+                            )?;
+                        }
+                        Some(Ok(MultiTurnStreamItem::StreamUserItem(
+                            StreamedUserContent::ToolResult(tool_result),
+                        ))) => {
+                            handle_tool_result(
+                                &tool_result,
+                                &mut session.messages,
+                                &mut retry_tool_calls_buffer,
+                                &retry_last_tool_name,
+                                output,
+                            )?;
+                        }
+                        Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
+                            output.emit_tokens(&TokenInfo {
+                                input_tokens: usage.input_tokens,
+                                output_tokens: usage.output_tokens,
+                                cache_read_input_tokens: usage.cache_read_input_tokens,
+                                cache_creation_input_tokens: usage.cache_creation_input_tokens,
+                            });
+                        }
+                        Some(Ok(MultiTurnStreamItem::FinalResponse(_))) => {
+                            handle_final_response(&retry_assistant_text, &mut session.messages)?;
+                            output.emit_done();
+                            break;
+                        }
+                        Some(Err(e)) => {
+                            output.emit_error(&e.to_string());
+                            return Err(anyhow::anyhow!("Agent error after compaction: {e}"));
+                        }
+                        None => {
+                            if !retry_assistant_text.is_empty() {
+                                handle_final_response(&retry_assistant_text, &mut session.messages)?;
+                            }
+                            output.emit_done();
+                            break;
+                        }
+                        _ => {}
+                    }
+                    output.flush();
+                }
 
                 return Ok(());
             }
