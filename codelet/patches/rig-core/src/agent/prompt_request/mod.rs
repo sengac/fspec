@@ -144,15 +144,18 @@ where
 pub struct CancelSignal(Arc<AtomicBool>);
 
 impl CancelSignal {
-    fn new() -> Self {
+    /// Create a new CancelSignal (public for testing)
+    pub fn new() -> Self {
         Self(Arc::new(AtomicBool::new(false)))
     }
 
+    /// Cancel the signal
     pub fn cancel(&self) {
         self.0.store(true, Ordering::SeqCst);
     }
 
-    fn is_cancelled(&self) -> bool {
+    /// Check if cancelled (public for testing)
+    pub fn is_cancelled(&self) -> bool {
         self.0.load(Ordering::SeqCst)
     }
 }
