@@ -1,0 +1,116 @@
+{
+  "scenarios": [
+    {
+      "name": "Interrupt agent during slow tool execution",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/napi_interrupt_test.rs",
+          "lines": "21-62",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupt agent during text streaming",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/napi_interrupt_test.rs",
+          "lines": "72-111",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Interrupt agent waiting for API response",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/napi_interrupt_test.rs",
+          "lines": "120-155",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                34,
+                35,
+                36,
+                37
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI mode interrupt behavior unchanged",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/napi_interrupt_test.rs",
+          "lines": "187-238",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/napi_interrupt_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session.rs",
+      "codelet/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 205
+  }
+}
