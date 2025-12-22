@@ -10,7 +10,7 @@ import https from 'https';
 import { URL } from 'url';
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
+import { getFspecUserDir } from '../utils/config';
 
 interface ConfluenceConfig {
   confluenceUrl: string;
@@ -22,7 +22,7 @@ interface ConfluenceConfig {
  * Load Confluence configuration from ~/.fspec/fspec-config.json
  */
 function loadConfig(): ConfluenceConfig {
-  const configPath = path.join(os.homedir(), '.fspec', 'fspec-config.json');
+  const configPath = path.join(getFspecUserDir(), 'fspec-config.json');
 
   if (!fs.existsSync(configPath)) {
     throw new Error(

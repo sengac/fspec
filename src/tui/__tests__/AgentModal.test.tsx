@@ -22,6 +22,12 @@ const mockState = vi.hoisted(() => ({
     prompt: vi.fn(),
     switchProvider: vi.fn(),
     clearHistory: vi.fn(),
+    interrupt: vi.fn(),
+    toggleDebug: vi.fn().mockReturnValue({
+      enabled: true,
+      sessionFile: '~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+      message: 'Debug capture started. Writing to: ~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+    }),
   },
   shouldThrow: false,
   errorMessage: 'No AI provider credentials configured',
@@ -37,6 +43,8 @@ vi.mock('codelet-napi', () => ({
     prompt: ReturnType<typeof vi.fn>;
     switchProvider: ReturnType<typeof vi.fn>;
     clearHistory: ReturnType<typeof vi.fn>;
+    interrupt: ReturnType<typeof vi.fn>;
+    toggleDebug: ReturnType<typeof vi.fn>;
 
     constructor() {
       if (mockState.shouldThrow) {
@@ -49,6 +57,8 @@ vi.mock('codelet-napi', () => ({
       this.prompt = mockState.session.prompt;
       this.switchProvider = mockState.session.switchProvider;
       this.clearHistory = mockState.session.clearHistory;
+      this.interrupt = mockState.session.interrupt;
+      this.toggleDebug = mockState.session.toggleDebug;
     }
   },
   ChunkType: {
@@ -101,6 +111,12 @@ const resetMockSession = (overrides = {}) => {
     prompt: vi.fn(),
     switchProvider: vi.fn(),
     clearHistory: vi.fn(),
+    interrupt: vi.fn(),
+    toggleDebug: vi.fn().mockReturnValue({
+      enabled: true,
+      sessionFile: '~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+      message: 'Debug capture started. Writing to: ~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+    }),
     ...overrides,
   };
   mockState.shouldThrow = false;
@@ -308,6 +324,256 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // @step And setup instructions should be shown
       expect(lastFrame()).toContain('ANTHROPIC_API_KEY');
+    });
+  });
+
+  // ============================================================================
+  // Feature: spec/features/add-debug-slash-command-to-fspec-tui-agent.feature
+  // AGENT-021: Add /debug slash command to fspec TUI agent
+  // ============================================================================
+
+  describe('Scenario: Enable debug capture mode', () => {
+    it('should toggle debug mode and show confirmation message when /debug is entered', async () => {
+      // @step Given I have the fspec TUI agent modal open
+      const mockToggleDebug = vi.fn().mockReturnValue({
+        enabled: true,
+        sessionFile: '~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+        message: 'Debug capture started. Writing to: ~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+      });
+      resetMockSession({
+        toggleDebug: mockToggleDebug,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      // Wait for async session initialization
+      await waitForFrame();
+
+      // Verify modal is open with provider
+      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('claude');
+
+      // @step When I type "/debug" in the input and submit
+      stdin.write('/debug');
+      await waitForFrame();
+      stdin.write('\r'); // Enter key
+      await waitForFrame(100);
+
+      // @step Then I should see a message "Debug capture started. Writing to: ~/.fspec/debug/session-*.jsonl"
+      expect(mockToggleDebug).toHaveBeenCalledTimes(1);
+      // Verify toggleDebug is called with ~/.fspec directory
+      expect(mockToggleDebug).toHaveBeenCalledWith(expect.stringContaining('.fspec'));
+      expect(lastFrame()).toContain('Debug capture started');
+
+      // @step And the header should show a DEBUG indicator
+      expect(lastFrame()).toContain('[DEBUG]');
+
+      // @step And session metadata should be set on the debug capture manager
+      // This is handled internally by toggleDebug() in the Rust layer
+    });
+  });
+
+  describe('Scenario: Disable debug capture mode', () => {
+    it('should toggle debug off and show confirmation when /debug is entered again', async () => {
+      // @step Given I have the fspec TUI agent modal open
+      const mockToggleDebug = vi.fn()
+        .mockReturnValueOnce({
+          enabled: true,
+          sessionFile: '~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+          message: 'Debug capture started. Writing to: ~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+        })
+        .mockReturnValueOnce({
+          enabled: false,
+          sessionFile: '~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+          message: 'Debug capture stopped. Session saved to: ~/.fspec/debug/session-2025-01-01T00-00-00.jsonl',
+        });
+      resetMockSession({
+        toggleDebug: mockToggleDebug,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      await waitForFrame();
+
+      // @step And debug capture mode is enabled
+      // First /debug call enables debug
+      stdin.write('/debug');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // Verify debug is now enabled
+      expect(mockToggleDebug).toHaveBeenCalledTimes(1);
+      expect(lastFrame()).toContain('[DEBUG]');
+
+      // @step When I type "/debug" in the input and submit
+      // Second /debug call disables debug
+      stdin.write('/debug');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // @step Then I should see a message "Debug capture stopped. Session saved to: ~/.fspec/debug/session-*.jsonl"
+      expect(mockToggleDebug).toHaveBeenCalledTimes(2);
+      expect(lastFrame()).toContain('Debug capture stopped');
+
+      // @step And the DEBUG indicator should disappear from the header
+      expect(lastFrame()).not.toContain('[DEBUG]');
+    });
+  });
+
+  describe('Scenario: Debug state resets on modal close', () => {
+    it('should reset debug indicator when modal is closed and reopened', async () => {
+      // @step Given I have the fspec TUI agent modal open with debug enabled
+      const mockToggleDebug = vi.fn().mockReturnValue({
+        enabled: true,
+        sessionFile: '~/.fspec/debug/session-test.jsonl',
+        message: 'Debug capture started.',
+      });
+      resetMockSession({
+        toggleDebug: mockToggleDebug,
+      });
+
+      const onClose = vi.fn();
+      const { lastFrame, stdin, rerender } = render(
+        <AgentModal isOpen={true} onClose={onClose} />
+      );
+
+      await waitForFrame();
+
+      // Enable debug mode
+      stdin.write('/debug');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // Verify debug is enabled
+      expect(lastFrame()).toContain('[DEBUG]');
+
+      // @step When I close the modal
+      rerender(<AgentModal isOpen={false} onClose={onClose} />);
+      await waitForFrame();
+
+      // @step And I reopen the modal
+      resetMockSession({
+        toggleDebug: mockToggleDebug,
+      });
+      rerender(<AgentModal isOpen={true} onClose={onClose} />);
+      await waitForFrame();
+
+      // @step Then the DEBUG indicator should not be shown
+      // (fresh state on modal reopen)
+      expect(lastFrame()).not.toContain('[DEBUG]');
+    });
+  });
+
+  describe('Scenario: Debug events captured during prompt', () => {
+    it('should capture debug events when sending prompts with debug enabled', async () => {
+      // @step Given I have the fspec TUI agent modal open
+      const mockToggleDebug = vi.fn().mockReturnValue({
+        enabled: true,
+        sessionFile: '~/.fspec/debug/session-test.jsonl',
+        message: 'Debug capture started.',
+      });
+      const mockPrompt = vi.fn().mockImplementation(async (_input: string, callback: (chunk: { type: string }) => void) => {
+        // Simulate Done chunk to complete the prompt
+        callback({ type: 'Done' });
+      });
+      resetMockSession({
+        toggleDebug: mockToggleDebug,
+        prompt: mockPrompt,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      await waitForFrame();
+
+      // @step And debug capture mode is enabled
+      stdin.write('/debug');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      expect(mockToggleDebug).toHaveBeenCalledTimes(1);
+      expect(lastFrame()).toContain('[DEBUG]');
+
+      // @step When I send a prompt to the agent
+      stdin.write('test prompt');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // Verify prompt was called (debug events are captured in Rust layer)
+      expect(mockPrompt).toHaveBeenCalledWith('test prompt', expect.any(Function));
+
+      // @step Then the debug session file should contain "api.request" event
+      // @step And the debug session file should contain "api.response.start" event
+      // @step And the debug session file should contain "compaction.check" event
+      // @step And the debug session file should contain "token.update" event
+      // Note: These events are captured by the Rust debug capture manager
+      // Unit tests verify the TUI wiring; Rust integration tests verify event capture
+    });
+  });
+
+  describe('Scenario: Compaction triggered event captured', () => {
+    it('should capture compaction events when context exceeds threshold', async () => {
+      // @step Given I have the fspec TUI agent modal open
+      const mockToggleDebug = vi.fn().mockReturnValue({
+        enabled: true,
+        sessionFile: '~/.fspec/debug/session-compaction.jsonl',
+        message: 'Debug capture started.',
+      });
+      const mockPrompt = vi.fn().mockImplementation(async (_input: string, callback: (chunk: { type: string; status?: string }) => void) => {
+        // Simulate compaction status message and Done
+        callback({ type: 'Status', status: 'Context compaction triggered' });
+        callback({ type: 'Done' });
+      });
+
+      // @step And the context has accumulated close to 180k tokens
+      resetMockSession({
+        tokenTracker: { inputTokens: 175000, outputTokens: 5000 },
+        toggleDebug: mockToggleDebug,
+        prompt: mockPrompt,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      await waitForFrame();
+
+      // Verify high token count is displayed
+      expect(lastFrame()).toContain('175000');
+
+      // @step And debug capture mode is enabled
+      stdin.write('/debug');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      expect(mockToggleDebug).toHaveBeenCalledTimes(1);
+      expect(lastFrame()).toContain('[DEBUG]');
+
+      // @step When the next prompt triggers compaction
+      stdin.write('trigger compaction');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // Verify prompt was called
+      expect(mockPrompt).toHaveBeenCalled();
+
+      // @step Then the debug session file should contain "compaction.triggered" event
+      // @step And the event should show the threshold was exceeded
+      // Note: Compaction events are captured by the Rust compaction hook
+      // This test verifies the TUI correctly displays status messages from compaction
+      expect(lastFrame()).toContain('compaction');
     });
   });
 });

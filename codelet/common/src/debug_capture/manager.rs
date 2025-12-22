@@ -74,6 +74,15 @@ impl DebugCaptureManager {
         })
     }
 
+    /// Set a custom debug directory
+    ///
+    /// This should be called before starting capture if you want to use
+    /// a directory other than the default ~/.codelet/debug/
+    pub fn set_debug_directory(&mut self, base_dir: PathBuf) {
+        self.codelet_dir = base_dir.clone();
+        self.debug_dir = base_dir.join("debug");
+    }
+
     /// Check if debug capture is currently enabled
     pub fn is_enabled(&self) -> bool {
         self.enabled

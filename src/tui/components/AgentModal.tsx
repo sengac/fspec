@@ -21,6 +21,7 @@ import React, {
 import { Box, Text, useInput, useStdout } from 'ink';
 import stringWidth from 'string-width';
 import { VirtualList } from './VirtualList';
+import { getFspecUserDir } from '../../utils/config';
 
 /**
  * Normalize emoji variation selectors for consistent terminal width calculation.
@@ -137,6 +138,13 @@ interface Message {
   content: string;
 }
 
+// AGENT-021: Debug command result from toggleDebug()
+interface DebugCommandResult {
+  enabled: boolean;
+  sessionFile: string | null;
+  message: string;
+}
+
 interface CodeletSessionType {
   currentProviderName: string;
   availableProviders: string[];
@@ -150,6 +158,7 @@ interface CodeletSessionType {
   clearHistory: () => void;
   interrupt: () => void;
   resetInterrupt: () => void;
+  toggleDebug: (debugDir?: string) => DebugCommandResult; // AGENT-021
 }
 
 export interface AgentModalProps {
@@ -187,6 +196,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [showProviderSelector, setShowProviderSelector] = useState(false);
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
+  const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021
   const sessionRef = useRef<CodeletSessionType | null>(null);
 
   // TUI-031: Track tok/s - calculate on each TEXT chunk for real-time updates
@@ -219,6 +229,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setTokenUsage({ inputTokens: 0, outputTokens: 0 });
       setError(null);
       setInputValue('');
+      setIsDebugEnabled(false); // AGENT-021: Reset debug state on modal close
       // TUI-031: Reset tok/s tracking
       streamingStartTimeRef.current = null;
       setDisplayedTokPerSec(null);
@@ -260,6 +271,26 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     if (!sessionRef.current || !inputValue.trim() || isLoading) return;
 
     const userMessage = inputValue.trim();
+
+    // AGENT-021: Handle /debug command - toggle debug capture mode
+    if (userMessage === '/debug') {
+      setInputValue('');
+      try {
+        // Pass ~/.fspec as the debug directory
+        const result = sessionRef.current.toggleDebug(getFspecUserDir());
+        setIsDebugEnabled(result.enabled);
+        // Add the result message to conversation
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: result.message },
+        ]);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to toggle debug mode';
+        setError(errorMessage);
+      }
+      return;
+    }
+
     setInputValue('');
     setIsLoading(true);
     // TUI-031: Reset tok/s tracking for new prompt
@@ -757,6 +788,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               Agent: {currentProvider}
             </Text>
             {isLoading && <Text color="yellow"> (streaming...)</Text>}
+            {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
+            {isDebugEnabled && <Text color="red" bold> [DEBUG]</Text>}
           </Box>
           {/* TUI-031: Tokens per second display during streaming */}
           {isLoading && displayedTokPerSec !== null && (

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-21T04:37:59.060Z"
+    "lastUpdated": "2025-12-21T07:32:31.783Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -53078,6 +53078,166 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-21T04:37:59.086Z"
+    },
+    "AGENT-021": {
+      "id": "AGENT-021",
+      "title": "Add /debug slash command to fspec TUI agent",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-21T05:51:43.777Z",
+      "updatedAt": "2025-12-21T07:32:31.809Z",
+      "description": "Add a /debug slash command to the AgentModal that enables debug capture mode, matching the codelet CLI's debug functionality. This will help diagnose why compaction isn't triggering at 180k tokens.",
+      "children": [],
+      "userStory": {
+        "role": "developer debugging the fspec TUI agent",
+        "action": "enable debug capture mode via /debug command",
+        "benefit": "I can see compaction events and token tracking to diagnose why compaction isn't triggering"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-21T05:52:13.659Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-21T06:00:44.537Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-21T06:03:51.100Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-21T06:08:58.029Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-21T06:20:53.506Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-21T07:25:02.545Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-21T07:32:15.246Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-21T07:32:24.678Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-21T07:32:31.809Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Typing /debug in the input toggles debug capture mode on/off",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:52:24.474Z"
+        },
+        {
+          "id": 1,
+          "text": "Debug events are written to .codelet/debug-capture-*.json files (same as CLI)",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:52:25.155Z"
+        },
+        {
+          "id": 2,
+          "text": "Debug mode captures compaction.check, compaction.triggered, token.update, and api.* events",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:52:25.838Z"
+        },
+        {
+          "id": 3,
+          "text": "A visual indicator shows when debug mode is active (e.g., in header)",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:52:27.535Z"
+        },
+        {
+          "id": 4,
+          "text": "NAPI session must expose toggleDebug() method that calls handle_debug_command() and sets session metadata",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:57:22.235Z"
+        },
+        {
+          "id": 5,
+          "text": "AgentModal must intercept /debug input before sending to agent (same pattern as CLI repl_loop.rs:35-68)",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:57:23.734Z"
+        },
+        {
+          "id": 6,
+          "text": "When debug enabled, session metadata (provider, model, context_window) must be set on the debug capture manager",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:57:25.414Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /debug, sees 'Debug capture enabled' message, header shows DEBUG indicator",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:52:38.105Z"
+        },
+        {
+          "id": 1,
+          "text": "User types /debug again, sees 'Debug capture disabled' message, DEBUG indicator disappears",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:52:39.886Z"
+        },
+        {
+          "id": 2,
+          "text": "With debug enabled, user sends prompt, .codelet/debug-capture-*.json is created with api.request, api.response.start, compaction.check events",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:52:41.553Z"
+        },
+        {
+          "id": 3,
+          "text": "When context approaches 180k tokens with debug on, compaction.triggered event is captured showing threshold exceeded",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:52:43.065Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "NAPI session.rs: Add #[napi] pub fn toggle_debug(&self) -> Result<DebugCommandResultJs> that mirrors CLI repl_loop.rs:36-67 logic",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:57:36.487Z"
+        },
+        {
+          "id": 1,
+          "text": "NAPI types.rs: Add DebugCommandResultJs struct with enabled: bool, sessionFile: Option<String>, message: String",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:57:38.268Z"
+        },
+        {
+          "id": 2,
+          "text": "AgentModal.tsx handleSubmit: Before session.prompt(), check if inputValue.trim() === '/debug' and call session.toggleDebug() instead",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:57:39.887Z"
+        },
+        {
+          "id": 3,
+          "text": "AgentModal.tsx state: Add isDebugEnabled state, update header to show DEBUG indicator when true",
+          "deleted": false,
+          "createdAt": "2025-12-21T05:57:42.985Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "estimate": 3,
+      "attachments": [
+        "spec/attachments/AGENT-021/ast-research-napi-session.json",
+        "spec/attachments/AGENT-021/ast-research-agent-modal.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-21T07:32:31.809Z"
     }
   },
   "states": {
@@ -53146,6 +53306,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "AGENT-021",
       "TUI-031",
       "NAPI-002",
       "NAPI-001",
@@ -53580,7 +53741,7 @@
     "FEAT": 20,
     "REMIND": 15,
     "CODEX": 1,
-    "AGENT": 20,
+    "AGENT": 21,
     "GRAPH": 3,
     "NAV": 3,
     "DOMAIN": 5,

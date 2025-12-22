@@ -1,0 +1,264 @@
+{
+  "scenarios": [
+    {
+      "name": "Enable debug capture mode",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal.test.tsx",
+          "lines": "335-370",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Disable debug capture mode",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal.test.tsx",
+          "lines": "373-408",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Debug events captured during prompt",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal.test.tsx",
+          "lines": "411-440",
+          "implMappings": [
+            {
+              "file": "codelet/common/src/debug_capture/mod.rs",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction triggered event captured",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal.test.tsx",
+          "lines": "443-471",
+          "implMappings": [
+            {
+              "file": "codelet/core/src/compaction_hook.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/AgentModal.test.tsx"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session.rs",
+      "src/tui/components/AgentModal.tsx",
+      "codelet/common/src/debug_capture/mod.rs",
+      "codelet/core/src/compaction_hook.rs"
+    ],
+    "totalLinesCovered": 302
+  }
+}

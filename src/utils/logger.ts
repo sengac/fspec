@@ -8,9 +8,9 @@
  */
 
 import winston from 'winston';
-import { homedir } from 'os';
 import { join } from 'path';
 import { mkdirSync, existsSync } from 'fs';
+import { getFspecUserDir } from './config';
 
 // Lazy initialization to respect mocked environment in tests
 let loggerInstance: winston.Logger | null = null;
@@ -22,7 +22,7 @@ function initializeLogger(): winston.Logger {
   }
 
   // Platform-agnostic log file path
-  const logDir = join(homedir(), '.fspec');
+  const logDir = getFspecUserDir();
   logFilePathCache = join(logDir, 'fspec.log');
 
   // Ensure .fspec directory exists

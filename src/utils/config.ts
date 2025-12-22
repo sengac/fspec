@@ -3,6 +3,18 @@ import { join } from 'path';
 import { homedir } from 'os';
 
 /**
+ * Get the user-level fspec directory path (~/.fspec)
+ *
+ * This is the standard location for user-level fspec data:
+ * - fspec-config.json (user config)
+ * - fspec.log (log file)
+ * - debug/ (debug capture sessions)
+ */
+export function getFspecUserDir(): string {
+  return join(homedir(), '.fspec');
+}
+
+/**
  * Deep merge two objects recursively
  * Project-level values override user-level values
  */
@@ -66,7 +78,7 @@ async function loadConfigFile(path: string): Promise<any> {
  */
 export async function loadConfig(cwd: string = process.cwd()): Promise<any> {
   // Load user-level config from ~/.fspec/fspec-config.json
-  const userConfigPath = join(homedir(), '.fspec', 'fspec-config.json');
+  const userConfigPath = join(getFspecUserDir(), 'fspec-config.json');
   const userConfig = await loadConfigFile(userConfigPath);
 
   // Load project-level config from <cwd>/spec/fspec-config.json
@@ -93,7 +105,7 @@ export async function writeConfig(
   let configDir: string;
 
   if (scope === 'user') {
-    configDir = join(homedir(), '.fspec');
+    configDir = getFspecUserDir();
     configPath = join(configDir, 'fspec-config.json');
   } else {
     configDir = join(cwd, 'spec');

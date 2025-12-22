@@ -25,6 +25,19 @@ impl Default for TokenTracker {
     }
 }
 
+/// Debug command result (AGENT-021)
+/// Returned by toggleDebug() to indicate debug capture state
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct DebugCommandResult {
+    /// Whether debug capture is now enabled
+    pub enabled: bool,
+    /// Path to the debug session file (if available)
+    pub session_file: Option<String>,
+    /// Human-readable message about the result
+    pub message: String,
+}
+
 /// Tool call information
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]

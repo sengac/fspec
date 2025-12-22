@@ -8,6 +8,7 @@
 import { join } from 'path';
 import { pathToFileURL } from 'url';
 import type { ResearchTool, ResearchToolModule } from './types';
+import { getFspecUserDir } from '../utils/config';
 
 // Import bundled tools
 import astTool from './ast';
@@ -158,11 +159,7 @@ async function loadConfigIfExists(cwd: string): Promise<any> {
   const fs = await import('fs/promises');
   const configPaths = [
     join(cwd, 'spec', 'fspec-config.json'),
-    join(
-      process.env.HOME || process.env.USERPROFILE || '',
-      '.fspec',
-      'fspec-config.json'
-    ),
+    join(getFspecUserDir(), 'fspec-config.json'),
   ];
 
   for (const configPath of configPaths) {
