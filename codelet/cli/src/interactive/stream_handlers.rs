@@ -153,7 +153,11 @@ pub(super) fn handle_tool_result<O: StreamOutput>(
     if let Ok(manager_arc) = get_debug_capture_manager() {
         if let Ok(mut manager) = manager_arc.lock() {
             if manager.is_enabled() {
-                let event_type = if is_error { "tool.error" } else { "tool.result" };
+                let event_type = if is_error {
+                    "tool.error"
+                } else {
+                    "tool.result"
+                };
                 manager.capture(
                     event_type,
                     serde_json::json!({

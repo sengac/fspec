@@ -5,7 +5,7 @@
 pub mod compaction_threshold; // CLI-020: Autocompact buffer for compaction threshold
 pub mod context; // Context management - token tracking
 pub mod interactive;
-mod interactive_helpers; // Compaction helpers for interactive mode (CLI-010)
+pub mod interactive_helpers; // Compaction helpers for interactive mode (CLI-010)
 pub mod large_write_intent; // CLI-019: Large write intent detection and chunking guidance
 pub mod session; // Session management
 

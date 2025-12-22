@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-22T05:12:45.115Z"
+    "lastUpdated": "2025-12-22T07:02:09.905Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -53657,6 +53657,93 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-22T05:12:45.145Z"
+    },
+    "NAPI-005": {
+      "id": "NAPI-005",
+      "title": "Manual Compaction Command",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-12-22T07:02:00.358Z",
+      "updatedAt": "2025-12-22T07:03:07.259Z",
+      "description": "Add a /compact slash command that allows users to manually trigger context compaction at any time",
+      "children": [],
+      "userStory": {
+        "role": "codelet user",
+        "action": "manually trigger context compaction using /compact",
+        "benefit": "I can proactively manage context size before hitting automatic thresholds"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-22T07:02:27.897Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The /compact command must be available as a slash command in interactive mode",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:02:39.296Z"
+        },
+        {
+          "id": 1,
+          "text": "Compaction must use the same logic as automatic compaction (summarize conversation history)",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:02:41.076Z"
+        },
+        {
+          "id": 2,
+          "text": "The command must show progress feedback during compaction",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:02:43.069Z"
+        },
+        {
+          "id": 3,
+          "text": "After compaction completes, the session must continue seamlessly without requiring user to resend their last message",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:02:44.729Z"
+        },
+        {
+          "id": 4,
+          "text": "Token counts must be updated after manual compaction to reflect the reduced context size",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:02:46.513Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /compact, compaction runs immediately and shows 'Compacting context...' followed by 'Context compacted successfully'",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:03:00.083Z"
+        },
+        {
+          "id": 1,
+          "text": "User types /compact when context is already small (under threshold), compaction still runs but may show minimal reduction",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:03:01.876Z"
+        },
+        {
+          "id": 2,
+          "text": "After /compact completes, user can immediately type a new message and get a response using the compacted context",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:03:03.701Z"
+        },
+        {
+          "id": 3,
+          "text": "User types /compact during a long session with 150k tokens, context is reduced to ~40k tokens, compression ratio is displayed",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:03:05.707Z"
+        },
+        {
+          "id": 4,
+          "text": "If compaction fails (e.g., API error), user sees error message and context remains unchanged",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:03:07.259Z"
+        }
+      ],
+      "nextExampleId": 5
     }
   },
   "states": {
@@ -53719,7 +53806,8 @@
       "EXMAP-004",
       "AGENT-001",
       "BROWSE-001",
-      "BOARD-020"
+      "BOARD-020",
+      "NAPI-005"
     ],
     "testing": [],
     "implementing": [],
@@ -54183,6 +54271,6 @@
     "FOUND": 43,
     "DOCS": 3,
     "CLEAN": 5,
-    "NAPI": 4
+    "NAPI": 5
   }
 }

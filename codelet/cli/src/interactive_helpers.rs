@@ -2,7 +2,10 @@
 
 use crate::session::Session;
 use anyhow::Result;
-use codelet_core::compaction::{CompactionMetrics, ContextCompactor, ConversationTurn};
+use codelet_core::compaction::{
+    CompactionMetrics, ContextCompactor, ConversationTurn, ToolCall as CoreToolCall,
+    ToolResult as CoreToolResult,
+};
 use rig::message::{Message, UserContent};
 use rig::OneOrMany;
 use std::time::SystemTime;
@@ -22,7 +25,7 @@ fn estimate_tokens(text: &str) -> u64 {
 ///
 /// This follows the TypeScript implementation in compaction.ts:100-141
 /// - Forward iteration through message pairs
-/// - Simple content extraction (just text)
+/// - Content extraction including tool calls and results
 /// - Token estimation matching TypeScript (sum of user + assistant)
 /// - No complex backward iteration or content extraction failures
 pub fn convert_messages_to_turns(messages: &[Message]) -> Vec<ConversationTurn> {
@@ -35,20 +38,26 @@ pub fn convert_messages_to_turns(messages: &[Message]) -> Vec<ConversationTurn> 
             if matches!(user_msg, Message::User { .. }) {
                 if let Some(assistant_msg) = messages.get(i + 1) {
                     if matches!(assistant_msg, Message::Assistant { .. }) {
-                        // Extract simple text content (like TypeScript)
+                        // Extract text content
                         let user_text = extract_message_text(user_msg);
                         let assistant_text = extract_message_text(assistant_msg);
+
+                        // Extract tool calls from assistant message
+                        let tool_calls = extract_tool_calls(assistant_msg);
+
+                        // Extract tool results from user message (tool results appear in next user message)
+                        let tool_results = extract_tool_results(user_msg);
 
                         // Calculate tokens like TypeScript: userMsg.tokens + assistantMsg.tokens
                         let user_tokens = estimate_tokens(&user_text);
                         let assistant_tokens = estimate_tokens(&assistant_text);
                         let total_tokens = user_tokens + assistant_tokens;
 
-                        // Create turn (simple approach like TypeScript)
+                        // Create turn with full content extraction
                         turns.push(ConversationTurn {
                             user_message: user_text,
-                            tool_calls: vec![],   // Simplified for now
-                            tool_results: vec![], // Simplified for now
+                            tool_calls,
+                            tool_results,
                             assistant_response: assistant_text,
                             tokens: total_tokens, // Match TypeScript: sum of user + assistant tokens
                             timestamp: SystemTime::now(),
@@ -65,6 +74,62 @@ pub fn convert_messages_to_turns(messages: &[Message]) -> Vec<ConversationTurn> 
     }
 
     turns
+}
+
+/// Extract tool calls from an assistant message
+fn extract_tool_calls(message: &Message) -> Vec<CoreToolCall> {
+    use rig::message::AssistantContent;
+
+    let Message::Assistant { content, .. } = message else {
+        return vec![];
+    };
+
+    collect_items(content)
+        .into_iter()
+        .filter_map(|item| match item {
+            AssistantContent::ToolCall(tc) => Some(CoreToolCall {
+                tool: tc.function.name.clone(),
+                id: tc.id.clone(),
+                parameters: tc.function.arguments.clone(),
+            }),
+            _ => None,
+        })
+        .collect()
+}
+
+/// Extract tool results from a user message
+fn extract_tool_results(message: &Message) -> Vec<CoreToolResult> {
+    let Message::User { content } = message else {
+        return vec![];
+    };
+
+    collect_items(content)
+        .into_iter()
+        .filter_map(|item| match item {
+            UserContent::ToolResult(tr) => Some(CoreToolResult {
+                success: true, // Assume success if present (errors would have different handling)
+                output: extract_tool_result_text(&tr),
+                error: None,
+            }),
+            _ => None,
+        })
+        .collect()
+}
+
+/// Extract text content from a tool result
+fn extract_tool_result_text(tr: &rig::message::ToolResult) -> String {
+    use rig::message::ToolResultContent;
+
+    // Check for single text item (fast path)
+    if tr.content.rest().is_empty() {
+        if let ToolResultContent::Text(ref t) = tr.content.first() {
+            return t.text.clone();
+        }
+    }
+
+    // Multiple items: collect and serialize
+    let items = collect_items(&tr.content);
+    serde_json::to_string(&items).unwrap_or_else(|_| "[]".to_string())
 }
 
 /// Extract/serialize message content to string (matches TypeScript toCompactionMessages)
@@ -117,38 +182,10 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
     let provider_name = provider_manager.current_provider_name();
 
     // Create a closure that prompts the LLM
+    // PROV-006: Pass None for preamble - compaction uses separate summarization prompt
     let llm_prompt = |prompt: String| async move {
         let manager = codelet_providers::ProviderManager::with_provider(provider_name)?;
-
-        // Call appropriate provider
-        // PROV-006: Pass None for preamble - compaction uses separate summarization prompt
-        match provider_name {
-            "claude" => {
-                let provider = manager.get_claude()?;
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
-                agent.prompt(&prompt).await
-            }
-            "openai" => {
-                let provider = manager.get_openai()?;
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
-                agent.prompt(&prompt).await
-            }
-            "codex" => {
-                let provider = manager.get_codex()?;
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
-                agent.prompt(&prompt).await
-            }
-            "gemini" => {
-                let provider = manager.get_gemini()?;
-                let rig_agent = provider.create_rig_agent(None);
-                let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
-                agent.prompt(&prompt).await
-            }
-            _ => Err(anyhow::anyhow!("Unknown provider: {provider_name}")),
-        }
+        prompt_provider(&manager, &prompt).await
     };
 
     // Step 2: Calculate summarization budget
@@ -225,4 +262,45 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
     }
 
     Ok(result.metrics)
+}
+
+/// Prompt a provider with a simple text prompt (no preamble, no tools)
+///
+/// This centralizes the provider dispatch logic to avoid DRY violations.
+/// Each provider requires its own type handling, but the pattern is identical.
+/// PROV-006: Pass None for preamble - used by compaction and other internal operations.
+pub async fn prompt_provider(
+    manager: &codelet_providers::ProviderManager,
+    prompt: &str,
+) -> anyhow::Result<String> {
+    match manager.current_provider_name() {
+        "claude" => {
+            let provider = manager.get_claude()?;
+            let rig_agent = provider.create_rig_agent(None);
+            let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
+            agent.prompt(prompt).await
+        }
+        "openai" => {
+            let provider = manager.get_openai()?;
+            let rig_agent = provider.create_rig_agent(None);
+            let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
+            agent.prompt(prompt).await
+        }
+        "codex" => {
+            let provider = manager.get_codex()?;
+            let rig_agent = provider.create_rig_agent(None);
+            let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
+            agent.prompt(prompt).await
+        }
+        "gemini" => {
+            let provider = manager.get_gemini()?;
+            let rig_agent = provider.create_rig_agent(None);
+            let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
+            agent.prompt(prompt).await
+        }
+        _ => Err(anyhow::anyhow!(
+            "Unknown provider: {}",
+            manager.current_provider_name()
+        )),
+    }
 }

@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-18T01:26:00.583Z"
+    "lastUpdated": "2025-12-22T07:42:37.984Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -7474,6 +7474,177 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-18T00:30:01.573Z"
+    },
+    "NAPI-001": {
+      "id": "NAPI-001",
+      "title": "Manual Compaction Command",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-22T07:09:42.928Z",
+      "updatedAt": "2025-12-22T07:42:37.997Z",
+      "description": "Add a /compact slash command that allows users to manually trigger context compaction at any time",
+      "children": [],
+      "userStory": {
+        "role": "codelet user",
+        "action": "manually trigger context compaction using /compact",
+        "benefit": "I can proactively manage context size before hitting automatic thresholds"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-22T07:10:02.261Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T07:17:09.026Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T07:19:35.886Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-22T07:25:33.315Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-22T07:26:45.196Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T07:34:52.315Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T07:42:00.252Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-22T07:42:18.060Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-22T07:42:37.997Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The /compact command must be available as a slash command in interactive mode",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:19.078Z"
+        },
+        {
+          "id": 1,
+          "text": "Compaction must use the same logic as automatic compaction (summarize conversation history)",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:20.652Z"
+        },
+        {
+          "id": 2,
+          "text": "The command must show progress feedback during compaction",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:22.526Z"
+        },
+        {
+          "id": 3,
+          "text": "After compaction completes, session continues seamlessly without requiring user to resend message",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:24.437Z"
+        },
+        {
+          "id": 4,
+          "text": "Token counts must be updated after manual compaction to reflect reduced context size",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:26.070Z"
+        },
+        {
+          "id": 5,
+          "text": "If session is empty, command should inform user there is nothing to compact",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:27.503Z"
+        },
+        {
+          "id": 6,
+          "text": "If compaction fails, context must remain unchanged and user informed of error",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:29.108Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /compact, sees 'Compacting context...' followed by 'Context compacted: 150000→40000 tokens, 73% compression'",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:45.274Z"
+        },
+        {
+          "id": 1,
+          "text": "User types /compact on empty session, sees 'Nothing to compact - session is empty'",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:46.901Z"
+        },
+        {
+          "id": 2,
+          "text": "User types /compact, compaction fails due to API error, sees 'Compaction failed: API error' and 'Context remains unchanged'",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:49.747Z"
+        },
+        {
+          "id": 3,
+          "text": "After successful /compact, user can immediately type next message and get response using compacted context",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:51.555Z"
+        },
+        {
+          "id": 4,
+          "text": "User types /compact with small context (under threshold), compaction still runs and shows actual compression achieved",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:53.111Z"
+        },
+        {
+          "id": 5,
+          "text": "Debug capture records compaction.manual.start, compaction.manual.complete, and compaction.manual.failed events for diagnostics",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:10:56.019Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: Integrates with repl_loop.rs slash command dispatch pattern (pattern match on /compact before provider switch check)",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:16:06.582Z"
+        },
+        {
+          "id": 1,
+          "text": "Dependency: Calls execute_compaction() from interactive_helpers.rs which uses ContextCompactor",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:16:08.312Z"
+        },
+        {
+          "id": 2,
+          "text": "Implementation: Debug events captured via get_debug_capture_manager() matching existing /debug command pattern",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:16:10.346Z"
+        },
+        {
+          "id": 3,
+          "text": "Implementation: Token tracker updated via session.token_tracker after successful compaction",
+          "deleted": false,
+          "createdAt": "2025-12-22T07:16:12.041Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/NAPI-001/ast-research-repl-loop.json",
+        "spec/attachments/NAPI-001/ast-research-interactive-helpers.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-22T07:42:37.997Z"
     }
   },
   "states": {
@@ -7483,62 +7654,63 @@
     "implementing": [],
     "validating": [],
     "done": [
-      "FOUND-001",
-      "CORE-001",
-      "CORE-002",
-      "CORE-003",
-      "CORE-004",
-      "CORE-005",
-      "PROV-001",
-      "AGENT-001",
-      "CORE-006",
-      "PROV-002",
-      "PROV-003",
-      "REFAC-002",
-      "REFAC-003",
-      "REFAC-004",
-      "REFAC-005",
-      "REFAC-006",
-      "REFAC-007",
-      "CORE-007",
-      "PROV-004",
-      "CLI-001",
-      "PROV-005",
-      "CLI-002",
-      "CLI-003",
-      "CLI-004",
-      "CLI-005",
-      "CLI-006",
-      "CLI-007",
-      "CLI-008",
-      "CLI-009",
-      "CLI-010",
-      "CLI-012",
-      "CLI-013",
-      "CLI-014",
-      "CLI-015",
-      "CLI-016",
-      "CLI-017",
-      "CLI-018",
-      "CLI-019",
-      "CLI-020",
-      "CLI-021",
-      "CLI-022",
-      "CLI-023",
-      "REFAC-008",
-      "REFAC-009",
-      "CORE-008",
-      "CTX-002",
+      "NAPI-001",
+      "WEB-001",
+      "WEB-002",
+      "REFAC-015",
+      "PROV-006",
+      "REFAC-014",
+      "REFAC-012",
       "REFAC-010",
       "REFAC-011",
-      "CORE-009",
       "CORE-010",
-      "PROV-006",
-      "REFAC-012",
-      "REFAC-014",
-      "REFAC-015",
-      "WEB-001",
-      "WEB-002"
+      "CORE-009",
+      "CTX-002",
+      "CORE-008",
+      "REFAC-009",
+      "REFAC-008",
+      "CLI-023",
+      "CLI-022",
+      "CLI-020",
+      "CLI-019",
+      "CLI-018",
+      "CLI-014",
+      "CLI-017",
+      "CLI-015",
+      "CLI-021",
+      "CLI-016",
+      "CLI-013",
+      "CLI-012",
+      "CLI-010",
+      "CLI-009",
+      "CLI-008",
+      "CLI-007",
+      "CLI-006",
+      "CLI-005",
+      "CLI-004",
+      "CLI-003",
+      "CLI-002",
+      "CLI-001",
+      "PROV-005",
+      "PROV-004",
+      "PROV-003",
+      "CORE-007",
+      "REFAC-007",
+      "REFAC-006",
+      "REFAC-005",
+      "REFAC-004",
+      "REFAC-003",
+      "REFAC-002",
+      "CORE-006",
+      "PROV-002",
+      "AGENT-001",
+      "PROV-001",
+      "CORE-005",
+      "CORE-004",
+      "CORE-003",
+      "CORE-002",
+      "CORE-001",
+      "FOUND-001"
     ],
     "blocked": []
   },
@@ -7549,6 +7721,7 @@
     "CTX": 2,
     "REFAC": 15,
     "CLI": 24,
-    "WEB": 2
+    "WEB": 2,
+    "NAPI": 1
   }
 }
