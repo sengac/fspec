@@ -1,0 +1,892 @@
+{
+  "scenarios": [
+    {
+      "name": "Scroll down with arrow key in scroll mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "41-73",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "41-73",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scroll up with arrow key in scroll mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "75-109",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "75-109",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Page down scrolls by visible height",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "111-138",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "111-138",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Page up scrolls by visible height",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "140-170",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "140-170",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Home key scrolls to top",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "172-201",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "172-201",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "End key scrolls to bottom",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "203-226",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "203-226",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270,
+                271
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Mouse scroll with acceleration",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "481-505",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "481-505",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "isSelected is always false in scroll mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "228-253",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                370
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "228-253",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                370
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "onFocus callback is never invoked in scroll mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "255-282",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "255-282",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "scrollToEnd auto-scrolls to last item",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "284-309",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "284-309",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scroll offset clamped at top boundary",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "311-335",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "311-335",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scroll offset clamped at bottom boundary",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "337-363",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "337-363",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Arrow keys move selection in item mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "369-400",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "369-400",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295,
+                296,
+                297,
+                298
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CheckpointViewer uses item mode by default",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "402-428",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                44
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "402-428",
+          "implMappings": [
+            {
+              "file": "src/tui/components/VirtualList.tsx",
+              "lines": [
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AgentModal uses scroll mode for conversation",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "434-475",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx",
+          "lines": "434-475",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/VirtualList-scroll-mode.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/VirtualList.tsx",
+      "src/tui/components/AgentModal.tsx"
+    ],
+    "totalLinesCovered": 1348
+  }
+}

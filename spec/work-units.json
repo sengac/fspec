@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-21T07:32:31.783Z"
+    "lastUpdated": "2025-12-22T02:28:57.176Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -53238,6 +53238,298 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-21T07:32:31.809Z"
+    },
+    "TUI-032": {
+      "id": "TUI-032",
+      "title": "VirtualList scroll-only mode for AgentModal",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2025-12-22T02:23:09.711Z",
+      "updatedAt": "2025-12-22T03:44:29.359Z",
+      "description": "Add a selectionMode prop to VirtualList that supports pure viewport scrolling without item selection, for use in chat-style interfaces like AgentModal",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "scroll through chat content in AgentModal without individual line selection",
+        "benefit": "I get a natural chat-reading experience where content scrolls as a unit"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-22T02:24:04.684Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T02:29:03.563Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T02:43:05.783Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-22T03:44:29.359Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "VirtualList must support two selection modes: 'item' (default, current behavior) and 'scroll' (new, viewport-only scrolling)",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:17.801Z"
+        },
+        {
+          "id": 1,
+          "text": "In 'scroll' mode, arrow keys (up/down) directly adjust scrollOffset by 1 line without changing selectedIndex",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:18.488Z"
+        },
+        {
+          "id": 2,
+          "text": "In 'scroll' mode, PageUp/PageDown directly adjust scrollOffset by visibleHeight lines",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:19.168Z"
+        },
+        {
+          "id": 3,
+          "text": "In 'scroll' mode, Home/End scroll to top/bottom of content",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:19.852Z"
+        },
+        {
+          "id": 4,
+          "text": "In 'scroll' mode, mouse scroll directly adjusts scrollOffset (with acceleration) without changing selectedIndex",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:20.551Z"
+        },
+        {
+          "id": 5,
+          "text": "In 'scroll' mode, isSelected parameter passed to renderItem must always be false",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:21.235Z"
+        },
+        {
+          "id": 6,
+          "text": "In 'scroll' mode, onFocus callback must never be called since no item is focused",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:43.060Z"
+        },
+        {
+          "id": 7,
+          "text": "In 'scroll' mode, scrollToEnd prop must still work by setting scrollOffset to show the last item",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:43.750Z"
+        },
+        {
+          "id": 8,
+          "text": "In 'scroll' mode, scrollOffset must be clamped to valid range [0, max(0, items.length - visibleHeight)]",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:45.412Z"
+        },
+        {
+          "id": 9,
+          "text": "In 'item' mode (default), all existing VirtualList behavior must remain unchanged for backwards compatibility",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:47.302Z"
+        },
+        {
+          "id": 10,
+          "text": "AgentModal must use selectionMode='scroll' for the conversation VirtualList",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:49.300Z"
+        },
+        {
+          "id": 11,
+          "text": "CheckpointViewer and FileDiffViewer must continue using default 'item' mode for file/checkpoint selection",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:24:51.052Z"
+        }
+      ],
+      "nextRuleId": 12,
+      "examples": [
+        {
+          "id": 0,
+          "text": "VirtualList with selectionMode='scroll' and 100 lines, user presses down arrow, scrollOffset increases by 1 and no line is highlighted",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:06.600Z"
+        },
+        {
+          "id": 1,
+          "text": "VirtualList with selectionMode='scroll', user presses 'j' key (vim), scrollOffset increases by 1",
+          "deleted": true,
+          "createdAt": "2025-12-22T02:25:08.170Z"
+        },
+        {
+          "id": 2,
+          "text": "VirtualList with selectionMode='scroll' showing 20 lines, user presses PageDown, scrollOffset increases by 20",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:09.847Z"
+        },
+        {
+          "id": 3,
+          "text": "VirtualList with selectionMode='scroll' and scrollOffset=50, user presses Home, scrollOffset becomes 0",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:11.465Z"
+        },
+        {
+          "id": 4,
+          "text": "VirtualList with selectionMode='scroll' and 100 items, user presses End, scrollOffset becomes max position to show last item",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:13.191Z"
+        },
+        {
+          "id": 5,
+          "text": "VirtualList with selectionMode='scroll', user scrolls mouse wheel down rapidly, scrollOffset increases with acceleration (up to 5 lines per scroll)",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:15.226Z"
+        },
+        {
+          "id": 6,
+          "text": "VirtualList with selectionMode='scroll', renderItem receives isSelected=false for every item regardless of scroll position",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:30.364Z"
+        },
+        {
+          "id": 7,
+          "text": "VirtualList with selectionMode='scroll' and onFocus callback provided, callback is never invoked during scrolling",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:32.055Z"
+        },
+        {
+          "id": 8,
+          "text": "VirtualList with selectionMode='scroll' and scrollToEnd=true, when new items are added the view auto-scrolls to show the last item",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:33.616Z"
+        },
+        {
+          "id": 9,
+          "text": "VirtualList with selectionMode='scroll' at scrollOffset=0, user presses up arrow, scrollOffset remains 0 (clamped)",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:35.444Z"
+        },
+        {
+          "id": 10,
+          "text": "VirtualList with selectionMode='scroll' at max scrollOffset, user presses down arrow, scrollOffset remains at max (clamped)",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:37.110Z"
+        },
+        {
+          "id": 11,
+          "text": "AgentModal conversation area uses VirtualList with selectionMode='scroll', chat messages scroll smoothly without individual line selection",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:39.501Z"
+        },
+        {
+          "id": 12,
+          "text": "VirtualList with default selectionMode (item mode), arrow keys move selection through items one by one with cyan highlighting (existing behavior preserved)",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:50.334Z"
+        },
+        {
+          "id": 13,
+          "text": "CheckpointViewer uses VirtualList without selectionMode prop (defaults to item mode), file selection works as before",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:25:52.276Z"
+        }
+      ],
+      "nextExampleId": 14,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: Add selectionMode?: 'item' | 'scroll' prop to VirtualListProps interface with default value 'item'",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:06.241Z"
+        },
+        {
+          "id": 1,
+          "text": "Implementation: Create scrollTo(offset: number) function for direct scrollOffset manipulation in scroll mode",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:07.851Z"
+        },
+        {
+          "id": 2,
+          "text": "Implementation: In scroll mode, keyboard handler uses scrollTo() instead of navigateTo() for arrow/page keys",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:09.517Z"
+        },
+        {
+          "id": 3,
+          "text": "Implementation: In scroll mode, mouse scroll handler calls scrollTo() directly instead of navigateTo()",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:11.168Z"
+        },
+        {
+          "id": 4,
+          "text": "Implementation: Compute maxScrollOffset = Math.max(0, items.length - visibleHeight) for scroll clamping",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:12.575Z"
+        },
+        {
+          "id": 5,
+          "text": "Implementation: In render loop, pass isSelected = (selectionMode === 'item' && actualIndex === selectedIndex) to renderItem",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:14.800Z"
+        },
+        {
+          "id": 6,
+          "text": "Implementation: Disable onFocus effect in scroll mode by adding condition: if (selectionMode === 'item') { onFocus?.(...) }",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:29.982Z"
+        },
+        {
+          "id": 7,
+          "text": "Implementation: Update scrollToEnd effect to only set scrollOffset (not selectedIndex) when selectionMode === 'scroll'",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:31.733Z"
+        },
+        {
+          "id": 8,
+          "text": "Implementation: Remove the 'adjust scroll offset to keep selected item visible' effect in scroll mode (selection drives scroll in item mode only)",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:33.525Z"
+        },
+        {
+          "id": 9,
+          "text": "Refactoring: Extract navigation logic into two separate handlers: handleItemNavigation() for item mode, handleScrollNavigation() for scroll mode",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:35.354Z"
+        },
+        {
+          "id": 10,
+          "text": "Testing: Existing VirtualList tests must continue passing (no changes to item mode behavior)",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:37.109Z"
+        },
+        {
+          "id": 11,
+          "text": "Testing: Add new test file VirtualList-scroll-mode.test.tsx for scroll mode specific behavior",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:38.814Z"
+        },
+        {
+          "id": 12,
+          "text": "UI/UX: In AgentModal, remove cyan highlighting since isSelected is always false in scroll mode - use role-based colors only",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:49.050Z"
+        },
+        {
+          "id": 13,
+          "text": "Dependency: Files to modify: src/tui/components/VirtualList.tsx, src/tui/components/AgentModal.tsx",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:50.537Z"
+        },
+        {
+          "id": 14,
+          "text": "Dependency: Files that must NOT change behavior: CheckpointViewer.tsx, FileDiffViewer.tsx, ChangedFilesViewer.tsx (use default item mode)",
+          "deleted": false,
+          "createdAt": "2025-12-22T02:26:52.037Z"
+        }
+      ],
+      "nextNoteId": 15,
+      "estimate": 5,
+      "attachments": [
+        "spec/attachments/TUI-032/ast-research-virtuallist-functions.json"
+      ]
     }
   },
   "states": {
@@ -53304,7 +53596,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "TUI-032"
+    ],
     "done": [
       "AGENT-021",
       "TUI-031",
@@ -53733,7 +54027,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 31,
+    "TUI": 32,
     "REFAC": 5,
     "VIEW": 2,
     "DOC": 17,
