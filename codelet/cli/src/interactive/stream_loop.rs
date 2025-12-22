@@ -34,6 +34,7 @@ use std::sync::atomic::AtomicBool;
 use std::sync::atomic::Ordering::{Acquire, Release};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
+use tokio::sync::Notify;
 use tokio::time::interval;
 
 /// Run agent stream with CLI event handling
@@ -61,6 +62,7 @@ where
         Some(event_stream),
         Some(input_queue),
         is_interrupted,
+        None, // CLI mode doesn't use Notify - uses keyboard event stream
         output,
     )
     .await
@@ -70,11 +72,15 @@ where
 ///
 /// This is the NAPI entry point - JavaScript handles keyboard input and sets
 /// is_interrupted via the interrupt() method.
+///
+/// NAPI-004: The interrupt_notify parameter allows immediate wake-up of the
+/// stream loop when interrupt() is called, via tokio::select! with notified().
 pub async fn run_agent_stream<M, O>(
     agent: RigAgent<M>,
     prompt: &str,
     session: &mut Session,
     is_interrupted: Arc<AtomicBool>,
+    interrupt_notify: Arc<Notify>,
     output: &O,
 ) -> Result<()>
 where
@@ -89,6 +95,7 @@ where
         None,
         None,
         is_interrupted,
+        Some(interrupt_notify),
         output,
     )
     .await
@@ -98,7 +105,8 @@ where
 ///
 /// Core streaming logic shared between CLI and NAPI modes.
 /// - When event_stream is Some: Uses tokio::select! with event handling (CLI)
-/// - When event_stream is None: Direct stream processing with interrupt check (NAPI)
+/// - When event_stream is None but interrupt_notify is Some: Uses tokio::select! with Notify (NAPI)
+/// - NAPI-004: The interrupt_notify enables immediate ESC response during tool execution
 async fn run_agent_stream_internal<M, O, E>(
     agent: RigAgent<M>,
     prompt: &str,
@@ -106,6 +114,7 @@ async fn run_agent_stream_internal<M, O, E>(
     mut event_stream: Option<&mut E>,
     mut input_queue: Option<&mut InputQueue>,
     is_interrupted: Arc<AtomicBool>,
+    interrupt_notify: Option<Arc<Notify>>,
     output: &O,
 ) -> Result<()>
 where
@@ -282,8 +291,21 @@ where
                 }
             }
             _ => {
-                // NAPI mode: Direct stream processing (no event handling)
-                Some(stream.next().await)
+                // NAPI mode: Use tokio::select! with interrupt notification (NAPI-004)
+                // This allows immediate ESC response even during blocking operations
+                match &interrupt_notify {
+                    Some(notify) => {
+                        let interrupt_fut = notify.notified();
+                        tokio::select! {
+                            c = stream.next() => Some(c),
+                            _ = interrupt_fut => None, // Wakes immediately when interrupt() called
+                        }
+                    }
+                    None => {
+                        // Fallback for any mode without notify (shouldn't happen in practice)
+                        Some(stream.next().await)
+                    }
+                }
             }
         };
 

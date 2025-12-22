@@ -922,6 +922,10 @@
           "description": "Internal Utility"
         },
         {
+          "name": "@interrupt",
+          "description": "Interrupt and cancellation handling features"
+        },
+        {
           "name": "@investigation",
           "description": "Investigation and research tasks for evaluating technical approaches"
         },
@@ -1658,7 +1662,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-21T06:15:22.769Z",
+    "lastUpdated": "2025-12-22T04:56:13.779Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

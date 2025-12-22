@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-22T04:02:14.861Z"
+    "lastUpdated": "2025-12-22T05:12:45.115Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -53531,6 +53531,132 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-22T04:02:14.893Z"
+    },
+    "NAPI-004": {
+      "id": "NAPI-004",
+      "title": "Immediate ESC interrupt during tool execution",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-22T04:54:04.998Z",
+      "updatedAt": "2025-12-22T05:12:45.145Z",
+      "description": "ESC key should immediately stop agent execution even when a tool call is in progress, using tokio::sync::Notify to wake the blocked stream loop",
+      "children": [],
+      "attachments": [
+        "spec/attachments/NAPI-004/napi-interrupt-fix.md",
+        "spec/attachments/NAPI-004/ast-research-interrupt-mechanism.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI agent",
+        "action": "press ESC to immediately stop agent execution during tool calls",
+        "benefit": "I don't have to wait for slow operations to finish before regaining control"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-22T04:54:43.281Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T04:57:50.681Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T05:10:32.361Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-22T05:12:03.064Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-22T05:12:45.145Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "ESC key must interrupt agent execution within 100ms regardless of current operation",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:54:55.062Z"
+        },
+        {
+          "id": 1,
+          "text": "Interrupt mechanism must use tokio::sync::Notify to wake blocked stream awaits",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:54:55.744Z"
+        },
+        {
+          "id": 2,
+          "text": "CLI mode interrupt behavior must remain unchanged (uses keyboard event stream)",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:54:56.418Z"
+        },
+        {
+          "id": 3,
+          "text": "Interrupted agent must emit Interrupted chunk and preserve partial response in history",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:54:57.097Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User starts agent, agent calls slow file-read tool (5s), user presses ESC after 1s, agent stops within 100ms",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:55:08.043Z"
+        },
+        {
+          "id": 1,
+          "text": "User starts agent, agent streams text response, user presses ESC, agent stops immediately and partial text is preserved",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:55:09.632Z"
+        },
+        {
+          "id": 2,
+          "text": "User starts agent, agent is waiting for API response, user presses ESC, tokio::select! wakes via Notify and breaks loop",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:55:11.366Z"
+        },
+        {
+          "id": 3,
+          "text": "CLI mode: User starts codelet CLI, presses ESC during streaming, existing keyboard event handling still works unchanged",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:55:13.019Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add tokio::sync::Notify field to CodeletSession in session.rs",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:56:57.019Z"
+        },
+        {
+          "id": 1,
+          "text": "interrupt() method calls notify_waiters() to wake blocked stream loop",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:56:58.612Z"
+        },
+        {
+          "id": 2,
+          "text": "run_agent_stream takes optional Notify parameter, uses tokio::select! in NAPI mode",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:57:00.491Z"
+        },
+        {
+          "id": 3,
+          "text": "CLI mode unchanged - continues to use keyboard event stream via tokio::select!",
+          "deleted": false,
+          "createdAt": "2025-12-22T04:57:02.099Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-22T05:12:45.145Z"
     }
   },
   "states": {
@@ -53599,6 +53725,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "NAPI-004",
       "TUI-032",
       "AGENT-021",
       "TUI-031",
@@ -54056,6 +54183,6 @@
     "FOUND": 43,
     "DOCS": 3,
     "CLEAN": 5,
-    "NAPI": 3
+    "NAPI": 4
   }
 }

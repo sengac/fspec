@@ -20,7 +20,7 @@ use std::sync::atomic::AtomicBool;
 // Use Release ordering for stores to synchronize with Acquire loads in stream_loop
 use std::sync::atomic::Ordering::Release;
 use std::sync::Arc;
-use tokio::sync::Mutex;
+use tokio::sync::{Mutex, Notify};
 
 /// CodeletSession - Main class for AI agent interactions
 ///
@@ -31,6 +31,9 @@ pub struct CodeletSession {
     inner: Arc<Mutex<codelet_cli::session::Session>>,
     /// Interrupt flag - JavaScript calls interrupt() to set this
     is_interrupted: Arc<AtomicBool>,
+    /// Notify for immediate interrupt wake-up (NAPI-004)
+    /// When interrupt() is called, this wakes the tokio::select! in stream_loop
+    interrupt_notify: Arc<Notify>,
 }
 
 #[napi]
@@ -55,16 +58,21 @@ impl CodeletSession {
         Ok(Self {
             inner: Arc::new(Mutex::new(session)),
             is_interrupted: Arc::new(AtomicBool::new(false)),
+            interrupt_notify: Arc::new(Notify::new()),
         })
     }
 
     /// Interrupt the current agent execution
     ///
     /// Call this when the user presses Esc in the TUI.
-    /// The agent will stop at the next safe point and emit a Done chunk.
+    /// The agent will stop immediately via tokio::sync::Notify (NAPI-004).
+    /// The notify_waiters() call wakes the tokio::select! in stream_loop,
+    /// allowing immediate response to ESC even during blocking operations.
     #[napi]
     pub fn interrupt(&self) {
         self.is_interrupted.store(true, Release);
+        // Wake any waiting stream loop immediately (NAPI-004)
+        self.interrupt_notify.notify_waiters();
     }
 
     /// Reset the interrupt flag
@@ -262,6 +270,7 @@ impl CodeletSession {
         // Clone Arcs for use in async block
         let session_arc = Arc::clone(&self.inner);
         let is_interrupted = Arc::clone(&self.is_interrupted);
+        let interrupt_notify = Arc::clone(&self.interrupt_notify);
 
         // Create NAPI output handler
         let output = NapiOutput::new(&callback);
@@ -280,7 +289,7 @@ impl CodeletSession {
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 let rig_agent = provider.create_rig_agent(None);
                 let agent = RigAgent::with_default_depth(rig_agent);
-                run_agent_stream(agent, &input, &mut session, is_interrupted, &output).await
+                run_agent_stream(agent, &input, &mut session, is_interrupted, Arc::clone(&interrupt_notify), &output).await
             }
             "openai" => {
                 let provider = session
@@ -289,7 +298,7 @@ impl CodeletSession {
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 let rig_agent = provider.create_rig_agent(None);
                 let agent = RigAgent::with_default_depth(rig_agent);
-                run_agent_stream(agent, &input, &mut session, is_interrupted, &output).await
+                run_agent_stream(agent, &input, &mut session, is_interrupted, Arc::clone(&interrupt_notify), &output).await
             }
             "gemini" => {
                 let provider = session
@@ -298,7 +307,7 @@ impl CodeletSession {
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 let rig_agent = provider.create_rig_agent(None);
                 let agent = RigAgent::with_default_depth(rig_agent);
-                run_agent_stream(agent, &input, &mut session, is_interrupted, &output).await
+                run_agent_stream(agent, &input, &mut session, is_interrupted, Arc::clone(&interrupt_notify), &output).await
             }
             "codex" => {
                 let provider = session
@@ -307,7 +316,7 @@ impl CodeletSession {
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 let rig_agent = provider.create_rig_agent(None);
                 let agent = RigAgent::with_default_depth(rig_agent);
-                run_agent_stream(agent, &input, &mut session, is_interrupted, &output).await
+                run_agent_stream(agent, &input, &mut session, is_interrupted, interrupt_notify, &output).await
             }
             _ => {
                 return Err(Error::from_reason(format!(
