@@ -205,7 +205,7 @@ export function VirtualList<T>({
     }
   };
 
-  // Mouse scroll handling - always active (separate from keyboard focus)
+  // Mouse scroll handling - respects isFocused to only scroll the focused list
   useInput(
     (input, key) => {
       if (items.length === 0) {
@@ -243,7 +243,7 @@ export function VirtualList<T>({
         }
       }
     },
-    { isActive: true } // Mouse always active
+    { isActive: isFocused }
   );
 
   // Scroll mode navigation handler (TUI-032)
