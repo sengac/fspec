@@ -813,7 +813,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         <Box flexGrow={1} flexBasis={0}>
           <VirtualList
             items={conversationLines}
-            renderItem={(line, _index, isSelected) => {
+            renderItem={(line) => {
               const color =
                 line.role === 'user'
                   ? 'green'
@@ -822,7 +822,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                     : 'white';
               return (
                 <Box flexGrow={1}>
-                  <Text color={isSelected ? 'cyan' : color}>{line.content}</Text>
+                  <Text color={color}>{line.content}</Text>
                 </Box>
               );
             }}
@@ -831,6 +831,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             showScrollbar={!isLoading}
             isFocused={!isLoading && !showProviderSelector}
             scrollToEnd={true}
+            selectionMode="scroll"
           />
         </Box>
 

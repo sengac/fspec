@@ -1,0 +1,121 @@
+{
+  "matches": [
+    {
+      "type": "function_declaration",
+      "name": "VirtualList",
+      "line": 31,
+      "column": 7,
+      "text": "function VirtualList<T>({\n  items,\n  renderItem,\n  onSelect,\n  onFocus,\n  keyExtractor = (_item: T, index: number) => String(index),\n  emptyMessage = 'No items',\n  showScrollbar = true,\n  enableWrapAround = false,\n  reservedLines = 4,\n  isFocused = true,\n  scrollToEnd = false,\n}: VirtualListProps<T>): React.ReactElement {\n  // Enable mouse tracking mode for button events only (not mouse movement)\n  useEffect(() => {\n    // \\x1b[?1000h enables \"button event\" tracking (clicks and scroll only)\n    process.stdout.write('\\x1b[?1000h');\n\n    return () => {\n      // Disable mouse tracking mode on unmount\n      process.stdout.write('\\x1b[?1000l');\n    };\n  }, []);\n\n  const [selectedIndex, setSelectedIndex] = useState(0);\n  const [scrollOffset, setScrollOffset] = useState(0);\n  const { height: terminalHeight } = useTerminalSize();\n\n  // Measure actual container height after flexbox layout\n  const containerRef = useRef<DOMElement>(null);\n  const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);\n\n  // Track last scroll time for acceleration\n  const lastScrollTime = useRef<number>(0);\n  const scrollVelocity = useRef<number>(0);\n\n  // Measure container height after layout using Yoga layout engine\n  useLayoutEffect(() => {\n    if (containerRef.current) {\n      const dimensions = measureElement(containerRef.current);\n      // Use measured height (lines = height, since each item is 1 line in terminal)\n      // This respects flexbox layout and gives us the ACTUAL allocated space\n      // Floor first to handle fractional heights, then subtract 2 for safety margin\n      // This prevents overflow from accumulated rounding errors in nested flexbox containers\n      // with borders that may consume partial lines\n      if (dimensions.height > 0) {\n        setMeasuredHeight(Math.max(1, Math.floor(dimensions.height) - 2));\n      }\n    }\n  }, [items.length, terminalHeight]); // Re-measure when items or terminal changes\n\n  // Calculate visible window from measured container height (if available) or terminal size\n  // Priority: measured container height > terminal height calculation\n  const visibleHeight =\n    measuredHeight !== null\n      ? Math.max(1, measuredHeight)\n      : Math.max(1, terminalHeight - reservedLines);\n  const visibleItems = useMemo(() => {\n    const start = scrollOffset;\n    const end = Math.min(items.length, scrollOffset + visibleHeight);\n    return items.slice(start, end);\n  }, [items, scrollOffset, visibleHeight]);\n\n  // Reset selection if items change\n  useEffect(() => {\n    if (items.length > 0 && selectedIndex >= items.length) {\n      setSelectedIndex(Math.max(0, items.length - 1));\n    }\n  }, [items.length, selectedIndex]);\n\n  // Auto-scroll to end when items change (for chat-style interfaces)\n  useEffect(() => {\n    if (scrollToEnd && items.length > 0) {\n      const lastIndex = items.length - 1;\n      setSelectedIndex(lastIndex);\n      // Scroll to show the last item at the bottom\n      const newOffset = Math.max(0, lastIndex - visibleHeight + 1);\n      setScrollOffset(newOffset);\n    }\n  }, [scrollToEnd, items.length, visibleHeight]);\n\n  // Adjust scroll offset to keep selected item visible\n  useEffect(() => {\n    if (selectedIndex < scrollOffset) {\n      setScrollOffset(selectedIndex);\n    } else if (selectedIndex >= scrollOffset + visibleHeight) {\n      setScrollOffset(selectedIndex - visibleHeight + 1);\n    }\n  }, [selectedIndex, scrollOffset, visibleHeight]);\n\n  // Call onFocus when selection changes\n  useEffect(() => {\n    if (\n      items.length > 0 &&\n      selectedIndex >= 0 &&\n      selectedIndex < items.length\n    ) {\n      onFocus?.(items[selectedIndex], selectedIndex);\n    }\n  }, [selectedIndex, items, onFocus]);\n\n  const navigateTo = (newIndex: number): void => {\n    if (items.length === 0) {\n      return;\n    }\n\n    let targetIndex = newIndex;\n\n    if (enableWrapAround) {\n      if (targetIndex < 0) {\n        targetIndex = items.length - 1;\n      } else if (targetIndex >= items.length) {\n        targetIndex = 0;\n      }\n    } else {\n      targetIndex = Math.max(0, Math.min(items.length - 1, targetIndex));\n    }\n\n    setSelectedIndex(targetIndex);\n  };\n\n  // Mouse scroll handler with acceleration\n  // Scroll faster when scrolling rapidly, slower for precise positioning\n  const handleScroll = (direction: 'up' | 'down'): void => {\n    const now = Date.now();\n    const timeDelta = now - lastScrollTime.current;\n\n    // If scrolling within 150ms, increase velocity (acceleration)\n    // If paused longer, reset to base speed for precise control\n    if (timeDelta < 150) {\n      scrollVelocity.current = Math.min(scrollVelocity.current + 1, 5); // Max 5 items\n    } else {\n      scrollVelocity.current = 1; // Reset to 1 item for precise control\n    }\n\n    lastScrollTime.current = now;\n    const scrollAmount = scrollVelocity.current;\n\n    if (direction === 'down') {\n      navigateTo(selectedIndex + scrollAmount);\n    } else if (direction === 'up') {\n      navigateTo(selectedIndex - scrollAmount);\n    }\n  };\n\n  // Mouse scroll handling - always active (separate from keyboard focus)\n  useInput(\n    (input, key) => {\n      if (items.length === 0) {\n        return;\n      }\n\n      // Parse raw mouse escape sequences manually (for terminals where Ink doesn't parse them)\n      // Format: ESC[M<btn><x><y> where btn encodes button and action\n      if (input.startsWith('[M')) {\n        const buttonByte = input.charCodeAt(2);\n\n        // Button encoding for scroll wheel (standard xterm):\n        // Button codes: 64 = scroll up, 65 = scroll down\n        // With 32-byte offset in escape sequence: 96 = scroll up, 97 = scroll down\n        if (buttonByte === 96) {\n          // ASCII 96 = '`' = button 64 = scroll up\n          handleScroll('up');\n          return;\n        } else if (buttonByte === 97) {\n          // ASCII 97 = 'a' = button 65 = scroll down\n          handleScroll('down');\n          return;\n        }\n      }\n\n      // Mouse scroll handling (key.mouse exists for mouse events - when Ink parses them)\n      if (key.mouse) {\n        // Traditional scrolling: scroll down shows items below, scroll up shows items above\n        if (key.mouse.button === 'wheelDown') {\n          handleScroll('down');\n          return;\n        } else if (key.mouse.button === 'wheelUp') {\n          handleScroll('up');\n          return;\n        }\n      }\n    },\n    { isActive: true } // Mouse always active\n  );\n\n  // Keyboard navigation - respects isFocused\n  useInput(\n    (input, key) => {\n      if (items.length === 0) {\n        return;\n      }\n\n      // Skip mouse events (handled above)\n      if (input.startsWith('[M') || key.mouse) {\n        return;\n      }\n\n      // Keyboard Navigation\n      if (key.upArrow || input === 'k') {\n        navigateTo(selectedIndex - 1);\n      } else if (key.downArrow || input === 'j') {\n        navigateTo(selectedIndex + 1);\n      } else if (key.pageUp) {\n        navigateTo(Math.max(0, selectedIndex - visibleHeight));\n      } else if (key.pageDown) {\n        navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));\n      } else if (key.home || input === 'g') {\n        navigateTo(0);\n      } else if (key.end || input === 'G') {\n        navigateTo(items.length - 1);\n      } else if (key.return && onSelect) {\n        onSelect(items[selectedIndex], selectedIndex);\n      }\n    },\n    { isActive: isFocused }\n  );\n\n  // Render scrollbar\n  const renderScrollbar = (): React.ReactNode => {\n    if (!showScrollbar || items.length <= visibleHeight) {\n      return null;\n    }\n\n    const scrollbarHeight = visibleHeight;\n    const thumbHeight = Math.max(\n      1,\n      Math.floor((visibleHeight / items.length) * scrollbarHeight)\n    );\n    const thumbPosition = Math.floor(\n      (scrollOffset / items.length) * scrollbarHeight\n    );\n\n    const scrollbarChars: string[] = [];\n    for (let i = 0; i < scrollbarHeight; i++) {\n      if (i >= thumbPosition && i < thumbPosition + thumbHeight) {\n        scrollbarChars.push(SCROLLBAR_CHARS.square);\n      } else {\n        scrollbarChars.push(SCROLLBAR_CHARS.line);\n      }\n    }\n\n    return (\n      <Box flexDirection=\"column\" marginLeft={1}>\n        {scrollbarChars.map((char, i) => (\n          <Text key={i} dimColor>\n            {char}\n          </Text>\n        ))}\n      </Box>\n    );\n  };\n\n  if (items.length === 0) {\n    return (\n      <Box ref={containerRef} flexGrow={1} flexDirection=\"column\">\n        <Text dimColor>{emptyMessage}</Text>\n      </Box>\n    );\n  }\n\n  return (\n    <Box ref={containerRef} flexDirection=\"row\" flexGrow={1}>\n      <Box flexDirection=\"column\" flexGrow={1}>\n        {visibleItems.map((item, visibleIndex) => {\n          const actualIndex = scrollOffset + visibleIndex;\n          const isSelected = actualIndex === selectedIndex;\n          return (\n            <Box key={keyExtractor(item, actualIndex)}>\n              {renderItem(item, actualIndex, isSelected)}\n            </Box>\n          );\n        })}\n      </Box>\n      {renderScrollbar()}\n    </Box>\n  );\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 36,
+      "column": 17,
+      "text": "(_item: T, index: number) => String(index)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 45,
+      "column": 12,
+      "text": "() => {\n    // \\x1b[?1000h enables \"button event\" tracking (clicks and scroll only)\n    process.stdout.write('\\x1b[?1000h');\n\n    return () => {\n      // Disable mouse tracking mode on unmount\n      process.stdout.write('\\x1b[?1000l');\n    };\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 49,
+      "column": 11,
+      "text": "() => {\n      // Disable mouse tracking mode on unmount\n      process.stdout.write('\\x1b[?1000l');\n    }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 68,
+      "column": 18,
+      "text": "() => {\n    if (containerRef.current) {\n      const dimensions = measureElement(containerRef.current);\n      // Use measured height (lines = height, since each item is 1 line in terminal)\n      // This respects flexbox layout and gives us the ACTUAL allocated space\n      // Floor first to handle fractional heights, then subtract 2 for safety margin\n      // This prevents overflow from accumulated rounding errors in nested flexbox containers\n      // with borders that may consume partial lines\n      if (dimensions.height > 0) {\n        setMeasuredHeight(Math.max(1, Math.floor(dimensions.height) - 2));\n      }\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 88,
+      "column": 31,
+      "text": "() => {\n    const start = scrollOffset;\n    const end = Math.min(items.length, scrollOffset + visibleHeight);\n    return items.slice(start, end);\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 95,
+      "column": 12,
+      "text": "() => {\n    if (items.length > 0 && selectedIndex >= items.length) {\n      setSelectedIndex(Math.max(0, items.length - 1));\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 102,
+      "column": 12,
+      "text": "() => {\n    if (scrollToEnd && items.length > 0) {\n      const lastIndex = items.length - 1;\n      setSelectedIndex(lastIndex);\n      // Scroll to show the last item at the bottom\n      const newOffset = Math.max(0, lastIndex - visibleHeight + 1);\n      setScrollOffset(newOffset);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 113,
+      "column": 12,
+      "text": "() => {\n    if (selectedIndex < scrollOffset) {\n      setScrollOffset(selectedIndex);\n    } else if (selectedIndex >= scrollOffset + visibleHeight) {\n      setScrollOffset(selectedIndex - visibleHeight + 1);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 122,
+      "column": 12,
+      "text": "() => {\n    if (\n      items.length > 0 &&\n      selectedIndex >= 0 &&\n      selectedIndex < items.length\n    ) {\n      onFocus?.(items[selectedIndex], selectedIndex);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 132,
+      "column": 21,
+      "text": "(newIndex: number): void => {\n    if (items.length === 0) {\n      return;\n    }\n\n    let targetIndex = newIndex;\n\n    if (enableWrapAround) {\n      if (targetIndex < 0) {\n        targetIndex = items.length - 1;\n      } else if (targetIndex >= items.length) {\n        targetIndex = 0;\n      }\n    } else {\n      targetIndex = Math.max(0, Math.min(items.length - 1, targetIndex));\n    }\n\n    setSelectedIndex(targetIndex);\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 154,
+      "column": 23,
+      "text": "(direction: 'up' | 'down'): void => {\n    const now = Date.now();\n    const timeDelta = now - lastScrollTime.current;\n\n    // If scrolling within 150ms, increase velocity (acceleration)\n    // If paused longer, reset to base speed for precise control\n    if (timeDelta < 150) {\n      scrollVelocity.current = Math.min(scrollVelocity.current + 1, 5); // Max 5 items\n    } else {\n      scrollVelocity.current = 1; // Reset to 1 item for precise control\n    }\n\n    lastScrollTime.current = now;\n    const scrollAmount = scrollVelocity.current;\n\n    if (direction === 'down') {\n      navigateTo(selectedIndex + scrollAmount);\n    } else if (direction === 'up') {\n      navigateTo(selectedIndex - scrollAmount);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 178,
+      "column": 4,
+      "text": "(input, key) => {\n      if (items.length === 0) {\n        return;\n      }\n\n      // Parse raw mouse escape sequences manually (for terminals where Ink doesn't parse them)\n      // Format: ESC[M<btn><x><y> where btn encodes button and action\n      if (input.startsWith('[M')) {\n        const buttonByte = input.charCodeAt(2);\n\n        // Button encoding for scroll wheel (standard xterm):\n        // Button codes: 64 = scroll up, 65 = scroll down\n        // With 32-byte offset in escape sequence: 96 = scroll up, 97 = scroll down\n        if (buttonByte === 96) {\n          // ASCII 96 = '`' = button 64 = scroll up\n          handleScroll('up');\n          return;\n        } else if (buttonByte === 97) {\n          // ASCII 97 = 'a' = button 65 = scroll down\n          handleScroll('down');\n          return;\n        }\n      }\n\n      // Mouse scroll handling (key.mouse exists for mouse events - when Ink parses them)\n      if (key.mouse) {\n        // Traditional scrolling: scroll down shows items below, scroll up shows items above\n        if (key.mouse.button === 'wheelDown') {\n          handleScroll('down');\n          return;\n        } else if (key.mouse.button === 'wheelUp') {\n          handleScroll('up');\n          return;\n        }\n      }\n    }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 219,
+      "column": 4,
+      "text": "(input, key) => {\n      if (items.length === 0) {\n        return;\n      }\n\n      // Skip mouse events (handled above)\n      if (input.startsWith('[M') || key.mouse) {\n        return;\n      }\n\n      // Keyboard Navigation\n      if (key.upArrow || input === 'k') {\n        navigateTo(selectedIndex - 1);\n      } else if (key.downArrow || input === 'j') {\n        navigateTo(selectedIndex + 1);\n      } else if (key.pageUp) {\n        navigateTo(Math.max(0, selectedIndex - visibleHeight));\n      } else if (key.pageDown) {\n        navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));\n      } else if (key.home || input === 'g') {\n        navigateTo(0);\n      } else if (key.end || input === 'G') {\n        navigateTo(items.length - 1);\n      } else if (key.return && onSelect) {\n        onSelect(items[selectedIndex], selectedIndex);\n      }\n    }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 250,
+      "column": 26,
+      "text": "(): React.ReactNode => {\n    if (!showScrollbar || items.length <= visibleHeight) {\n      return null;\n    }\n\n    const scrollbarHeight = visibleHeight;\n    const thumbHeight = Math.max(\n      1,\n      Math.floor((visibleHeight / items.length) * scrollbarHeight)\n    );\n    const thumbPosition = Math.floor(\n      (scrollOffset / items.length) * scrollbarHeight\n    );\n\n    const scrollbarChars: string[] = [];\n    for (let i = 0; i < scrollbarHeight; i++) {\n      if (i >= thumbPosition && i < thumbPosition + thumbHeight) {\n        scrollbarChars.push(SCROLLBAR_CHARS.square);\n      } else {\n        scrollbarChars.push(SCROLLBAR_CHARS.line);\n      }\n    }\n\n    return (\n      <Box flexDirection=\"column\" marginLeft={1}>\n        {scrollbarChars.map((char, i) => (\n          <Text key={i} dimColor>\n            {char}\n          </Text>\n        ))}\n      </Box>\n    );\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 275,
+      "column": 28,
+      "text": "(char, i) => (\n          <Text key={i} dimColor>\n            {char}\n          </Text>\n        )"
+    },
+    {
+      "type": "arrow_function",
+      "line": 295,
+      "column": 26,
+      "text": "(item, visibleIndex) => {\n          const actualIndex = scrollOffset + visibleIndex;\n          const isSelected = actualIndex === selectedIndex;\n          return (\n            <Box key={keyExtractor(item, actualIndex)}>\n              {renderItem(item, actualIndex, isSelected)}\n            </Box>\n          );\n        }"
+    },
+    {
+      "type": "method_signature",
+      "name": "keyExtractor",
+      "line": 299,
+      "column": 22,
+      "text": "keyExtractor(item, actualIndex)"
+    },
+    {
+      "type": "method_signature",
+      "name": "renderScrollbar",
+      "line": 305,
+      "column": 7,
+      "text": "renderScrollbar()"
+    }
+  ]
+}

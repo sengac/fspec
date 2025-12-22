@@ -26,6 +26,7 @@ interface VirtualListProps<T> {
   reservedLines?: number; // Lines reserved for headers/footers (default: 4)
   isFocused?: boolean; // Whether this VirtualList should respond to keyboard input (default: true)
   scrollToEnd?: boolean; // Auto-scroll to end when items change (default: false)
+  selectionMode?: 'item' | 'scroll'; // 'item' = individual item selection (default), 'scroll' = pure viewport scrolling (TUI-032)
 }
 
 export function VirtualList<T>({
@@ -40,6 +41,7 @@ export function VirtualList<T>({
   reservedLines = 4,
   isFocused = true,
   scrollToEnd = false,
+  selectionMode = 'item',
 }: VirtualListProps<T>): React.ReactElement {
   // Enable mouse tracking mode for button events only (not mouse movement)
   useEffect(() => {
@@ -98,36 +100,56 @@ export function VirtualList<T>({
     }
   }, [items.length, selectedIndex]);
 
+  // Compute max scroll offset for scroll mode (TUI-032)
+  const maxScrollOffset = Math.max(0, items.length - visibleHeight);
+
+  // Direct scroll offset manipulation for scroll mode (TUI-032)
+  // This bypasses selection tracking and directly moves the viewport
+  const scrollTo = (offset: number): void => {
+    const clampedOffset = Math.max(0, Math.min(maxScrollOffset, offset));
+    setScrollOffset(clampedOffset);
+  };
+
   // Auto-scroll to end when items change (for chat-style interfaces)
   useEffect(() => {
     if (scrollToEnd && items.length > 0) {
       const lastIndex = items.length - 1;
-      setSelectedIndex(lastIndex);
+      // In scroll mode, only update scrollOffset (TUI-032)
+      // In item mode, also update selectedIndex
+      if (selectionMode === 'item') {
+        setSelectedIndex(lastIndex);
+      }
       // Scroll to show the last item at the bottom
       const newOffset = Math.max(0, lastIndex - visibleHeight + 1);
       setScrollOffset(newOffset);
     }
-  }, [scrollToEnd, items.length, visibleHeight]);
+  }, [scrollToEnd, items.length, visibleHeight, selectionMode]);
 
-  // Adjust scroll offset to keep selected item visible
+  // Adjust scroll offset to keep selected item visible (TUI-032: only in item mode)
+  // In scroll mode, selection doesn't drive scrolling - viewport scrolls independently
   useEffect(() => {
-    if (selectedIndex < scrollOffset) {
-      setScrollOffset(selectedIndex);
-    } else if (selectedIndex >= scrollOffset + visibleHeight) {
-      setScrollOffset(selectedIndex - visibleHeight + 1);
+    if (selectionMode === 'item') {
+      if (selectedIndex < scrollOffset) {
+        setScrollOffset(selectedIndex);
+      } else if (selectedIndex >= scrollOffset + visibleHeight) {
+        setScrollOffset(selectedIndex - visibleHeight + 1);
+      }
     }
-  }, [selectedIndex, scrollOffset, visibleHeight]);
+  }, [selectedIndex, scrollOffset, visibleHeight, selectionMode]);
 
-  // Call onFocus when selection changes
+  // Call onFocus when selection changes (TUI-032: only in item mode)
+  // In scroll mode, no item is ever focused so onFocus is never called
   useEffect(() => {
-    if (
-      items.length > 0 &&
-      selectedIndex >= 0 &&
-      selectedIndex < items.length
-    ) {
-      onFocus?.(items[selectedIndex], selectedIndex);
+    if (selectionMode === 'item') {
+      if (
+        items.length > 0 &&
+        selectedIndex >= 0 &&
+        selectedIndex < items.length
+      ) {
+        onFocus?.(items[selectedIndex], selectedIndex);
+      }
     }
-  }, [selectedIndex, items, onFocus]);
+  }, [selectedIndex, items, onFocus, selectionMode]);
 
   const navigateTo = (newIndex: number): void => {
     if (items.length === 0) {
@@ -149,7 +171,7 @@ export function VirtualList<T>({
     setSelectedIndex(targetIndex);
   };
 
-  // Mouse scroll handler with acceleration
+  // Mouse scroll handler with acceleration (TUI-032: uses scrollTo in scroll mode)
   // Scroll faster when scrolling rapidly, slower for precise positioning
   const handleScroll = (direction: 'up' | 'down'): void => {
     const now = Date.now();
@@ -166,10 +188,20 @@ export function VirtualList<T>({
     lastScrollTime.current = now;
     const scrollAmount = scrollVelocity.current;
 
-    if (direction === 'down') {
-      navigateTo(selectedIndex + scrollAmount);
-    } else if (direction === 'up') {
-      navigateTo(selectedIndex - scrollAmount);
+    if (selectionMode === 'scroll') {
+      // In scroll mode, directly adjust scrollOffset (TUI-032)
+      if (direction === 'down') {
+        scrollTo(scrollOffset + scrollAmount);
+      } else if (direction === 'up') {
+        scrollTo(scrollOffset - scrollAmount);
+      }
+    } else {
+      // In item mode, navigate through items (original behavior)
+      if (direction === 'down') {
+        navigateTo(selectedIndex + scrollAmount);
+      } else if (direction === 'up') {
+        navigateTo(selectedIndex - scrollAmount);
+      }
     }
   };
 
@@ -214,6 +246,57 @@ export function VirtualList<T>({
     { isActive: true } // Mouse always active
   );
 
+  // Scroll mode navigation handler (TUI-032)
+  const handleScrollNavigation = (key: {
+    upArrow?: boolean;
+    downArrow?: boolean;
+    pageUp?: boolean;
+    pageDown?: boolean;
+    home?: boolean;
+    end?: boolean;
+  }): void => {
+    if (key.upArrow) {
+      scrollTo(scrollOffset - 1);
+    } else if (key.downArrow) {
+      scrollTo(scrollOffset + 1);
+    } else if (key.pageUp) {
+      scrollTo(scrollOffset - visibleHeight);
+    } else if (key.pageDown) {
+      scrollTo(scrollOffset + visibleHeight);
+    } else if (key.home) {
+      scrollTo(0);
+    } else if (key.end) {
+      scrollTo(maxScrollOffset);
+    }
+  };
+
+  // Item mode navigation handler
+  const handleItemNavigation = (key: {
+    upArrow?: boolean;
+    downArrow?: boolean;
+    pageUp?: boolean;
+    pageDown?: boolean;
+    home?: boolean;
+    end?: boolean;
+    return?: boolean;
+  }): void => {
+    if (key.upArrow) {
+      navigateTo(selectedIndex - 1);
+    } else if (key.downArrow) {
+      navigateTo(selectedIndex + 1);
+    } else if (key.pageUp) {
+      navigateTo(Math.max(0, selectedIndex - visibleHeight));
+    } else if (key.pageDown) {
+      navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));
+    } else if (key.home) {
+      navigateTo(0);
+    } else if (key.end) {
+      navigateTo(items.length - 1);
+    } else if (key.return && onSelect) {
+      onSelect(items[selectedIndex], selectedIndex);
+    }
+  };
+
   // Keyboard navigation - respects isFocused
   useInput(
     (input, key) => {
@@ -226,21 +309,10 @@ export function VirtualList<T>({
         return;
       }
 
-      // Keyboard Navigation
-      if (key.upArrow || input === 'k') {
-        navigateTo(selectedIndex - 1);
-      } else if (key.downArrow || input === 'j') {
-        navigateTo(selectedIndex + 1);
-      } else if (key.pageUp) {
-        navigateTo(Math.max(0, selectedIndex - visibleHeight));
-      } else if (key.pageDown) {
-        navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));
-      } else if (key.home || input === 'g') {
-        navigateTo(0);
-      } else if (key.end || input === 'G') {
-        navigateTo(items.length - 1);
-      } else if (key.return && onSelect) {
-        onSelect(items[selectedIndex], selectedIndex);
+      if (selectionMode === 'scroll') {
+        handleScrollNavigation(key);
+      } else {
+        handleItemNavigation(key);
       }
     },
     { isActive: isFocused }
@@ -294,7 +366,8 @@ export function VirtualList<T>({
       <Box flexDirection="column" flexGrow={1}>
         {visibleItems.map((item, visibleIndex) => {
           const actualIndex = scrollOffset + visibleIndex;
-          const isSelected = actualIndex === selectedIndex;
+          // In scroll mode, isSelected is always false (TUI-032)
+          const isSelected = selectionMode === 'item' && actualIndex === selectedIndex;
           return (
             <Box key={keyExtractor(item, actualIndex)}>
               {renderItem(item, actualIndex, isSelected)}
