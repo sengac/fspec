@@ -207,3 +207,20 @@ pub struct Message {
     pub role: String,
     pub content: String,
 }
+
+/// Compaction result (NAPI-005)
+/// Returned by compact() with metrics about the compaction operation
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct CompactionResult {
+    /// Original token count before compaction
+    pub original_tokens: u32,
+    /// Token count after compaction
+    pub compacted_tokens: u32,
+    /// Compression ratio as percentage (0-100)
+    pub compression_ratio: f64,
+    /// Number of turns summarized
+    pub turns_summarized: u32,
+    /// Number of turns kept
+    pub turns_kept: u32,
+}

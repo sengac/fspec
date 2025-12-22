@@ -3,7 +3,8 @@ use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::{
-    get_debug_capture_manager, handle_debug_command, SessionMetadata,
+    capture_event, get_debug_capture_manager, handle_debug_command, increment_debug_turn,
+    SessionMetadata,
 };
 use codelet_tui::{create_event_stream, InputQueue};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode};
@@ -50,20 +51,13 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                 }
             }
             // CLI-022: Capture command.executed event
-            if let Ok(manager_arc) = get_debug_capture_manager() {
-                if let Ok(mut manager) = manager_arc.lock() {
-                    if manager.is_enabled() {
-                        manager.capture(
-                            "command.executed",
-                            serde_json::json!({
-                                "command": "/debug",
-                                "result": if result.enabled { "enabled" } else { "disabled" },
-                            }),
-                            None,
-                        );
-                    }
-                }
-            }
+            capture_event(
+                "command.executed",
+                serde_json::json!({
+                    "command": "/debug",
+                    "result": if result.enabled { "enabled" } else { "disabled" },
+                }),
+            );
             println!("{}\n", result.message);
             continue;
         }
@@ -80,21 +74,14 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
             let original_tokens = session.token_tracker.input_tokens;
 
             // Capture compaction.manual.start event
-            if let Ok(manager_arc) = get_debug_capture_manager() {
-                if let Ok(mut manager) = manager_arc.lock() {
-                    if manager.is_enabled() {
-                        manager.capture(
-                            "compaction.manual.start",
-                            serde_json::json!({
-                                "command": "/compact",
-                                "originalTokens": original_tokens,
-                                "messageCount": session.messages.len(),
-                            }),
-                            None,
-                        );
-                    }
-                }
-            }
+            capture_event(
+                "compaction.manual.start",
+                serde_json::json!({
+                    "command": "/compact",
+                    "originalTokens": original_tokens,
+                    "messageCount": session.messages.len(),
+                }),
+            );
 
             println!("[Compacting context...]");
 
@@ -104,24 +91,17 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                     let compression_pct = metrics.compression_ratio * 100.0;
 
                     // Capture compaction.manual.complete event
-                    if let Ok(manager_arc) = get_debug_capture_manager() {
-                        if let Ok(mut manager) = manager_arc.lock() {
-                            if manager.is_enabled() {
-                                manager.capture(
-                                    "compaction.manual.complete",
-                                    serde_json::json!({
-                                        "command": "/compact",
-                                        "originalTokens": metrics.original_tokens,
-                                        "compactedTokens": metrics.compacted_tokens,
-                                        "compressionRatio": metrics.compression_ratio,
-                                        "turnsSummarized": metrics.turns_summarized,
-                                        "turnsKept": metrics.turns_kept,
-                                    }),
-                                    None,
-                                );
-                            }
-                        }
-                    }
+                    capture_event(
+                        "compaction.manual.complete",
+                        serde_json::json!({
+                            "command": "/compact",
+                            "originalTokens": metrics.original_tokens,
+                            "compactedTokens": metrics.compacted_tokens,
+                            "compressionRatio": metrics.compression_ratio,
+                            "turnsSummarized": metrics.turns_summarized,
+                            "turnsKept": metrics.turns_kept,
+                        }),
+                    );
 
                     println!(
                         "[Context compacted: {}→{} tokens, {:.0}% compression]",
@@ -138,20 +118,13 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                 }
                 Err(e) => {
                     // Capture compaction.manual.failed event
-                    if let Ok(manager_arc) = get_debug_capture_manager() {
-                        if let Ok(mut manager) = manager_arc.lock() {
-                            if manager.is_enabled() {
-                                manager.capture(
-                                    "compaction.manual.failed",
-                                    serde_json::json!({
-                                        "command": "/compact",
-                                        "error": e.to_string(),
-                                    }),
-                                    None,
-                                );
-                            }
-                        }
-                    }
+                    capture_event(
+                        "compaction.manual.failed",
+                        serde_json::json!({
+                            "command": "/compact",
+                            "error": e.to_string(),
+                        }),
+                    );
 
                     eprintln!("Compaction failed: {e}");
                     eprintln!("[Context remains unchanged]\n");
@@ -165,20 +138,13 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
         if input.starts_with('/') {
             let provider = input.trim_start_matches('/');
             // Capture provider.switch event - CLI-022
-            if let Ok(manager_arc) = get_debug_capture_manager() {
-                if let Ok(mut manager) = manager_arc.lock() {
-                    if manager.is_enabled() {
-                        manager.capture(
-                            "provider.switch",
-                            serde_json::json!({
-                                "from": session.current_provider_name(),
-                                "to": provider,
-                            }),
-                            None,
-                        );
-                    }
-                }
-            }
+            capture_event(
+                "provider.switch",
+                serde_json::json!({
+                    "from": session.current_provider_name(),
+                    "to": provider,
+                }),
+            );
             match session.switch_provider(provider) {
                 Ok(()) => {
                     info!("Provider switched to: {}", provider);
@@ -198,22 +164,15 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
         }
 
         // Capture user.input event - CLI-022
-        if let Ok(manager_arc) = get_debug_capture_manager() {
-            if let Ok(mut manager) = manager_arc.lock() {
-                if manager.is_enabled() {
-                    manager.capture(
-                        "user.input",
-                        serde_json::json!({
-                            "input": input,
-                            "inputLength": input.len(),
-                        }),
-                        None,
-                    );
-                    // Increment turn for each user input
-                    manager.increment_turn();
-                }
-            }
-        }
+        capture_event(
+            "user.input",
+            serde_json::json!({
+                "input": input,
+                "inputLength": input.len(),
+            }),
+        );
+        // Increment turn for each user input
+        increment_debug_turn();
 
         // Run agent with interruption support and persistent context (CLI-008)
         // Enable raw mode only during agent execution for ESC key detection

@@ -7479,9 +7479,9 @@
       "id": "NAPI-001",
       "title": "Manual Compaction Command",
       "type": "story",
-      "status": "done",
+      "status": "specifying",
       "createdAt": "2025-12-22T07:09:42.928Z",
-      "updatedAt": "2025-12-22T07:42:37.997Z",
+      "updatedAt": "2025-12-22T08:41:18.889Z",
       "description": "Add a /compact slash command that allows users to manually trigger context compaction at any time",
       "children": [],
       "userStory": {
@@ -7525,6 +7525,10 @@
         {
           "state": "done",
           "timestamp": "2025-12-22T07:42:37.997Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-22T08:41:18.889Z"
         }
       ],
       "rules": [
@@ -7649,12 +7653,13 @@
   },
   "states": {
     "backlog": [],
-    "specifying": [],
+    "specifying": [
+      "NAPI-001"
+    ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
-      "NAPI-001",
       "WEB-001",
       "WEB-002",
       "REFAC-015",

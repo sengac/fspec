@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-22T07:02:09.905Z"
+    "lastUpdated": "2025-12-22T09:10:48.207Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -53662,88 +53662,187 @@
       "id": "NAPI-005",
       "title": "Manual Compaction Command",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-12-22T07:02:00.358Z",
-      "updatedAt": "2025-12-22T07:03:07.259Z",
+      "updatedAt": "2025-12-22T09:10:48.234Z",
       "description": "Add a /compact slash command that allows users to manually trigger context compaction at any time",
       "children": [],
       "userStory": {
-        "role": "codelet user",
-        "action": "manually trigger context compaction using /compact",
-        "benefit": "I can proactively manage context size before hitting automatic thresholds"
+        "role": "fspec TUI user",
+        "action": "trigger context compaction with /compact command in AgentModal",
+        "benefit": "I can reduce context window usage without leaving the TUI"
       },
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-12-22T07:02:27.897Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T08:56:25.998Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T09:00:34.231Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-22T09:05:21.926Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-22T09:10:48.235Z"
         }
       ],
       "rules": [
         {
           "id": 0,
-          "text": "The /compact command must be available as a slash command in interactive mode",
-          "deleted": false,
-          "createdAt": "2025-12-22T07:02:39.296Z"
-        },
-        {
-          "id": 1,
-          "text": "Compaction must use the same logic as automatic compaction (summarize conversation history)",
-          "deleted": false,
-          "createdAt": "2025-12-22T07:02:41.076Z"
-        },
-        {
-          "id": 2,
           "text": "The command must show progress feedback during compaction",
           "deleted": false,
           "createdAt": "2025-12-22T07:02:43.069Z"
         },
         {
-          "id": 3,
+          "id": 1,
           "text": "After compaction completes, the session must continue seamlessly without requiring user to resend their last message",
           "deleted": false,
           "createdAt": "2025-12-22T07:02:44.729Z"
         },
         {
-          "id": 4,
+          "id": 2,
           "text": "Token counts must be updated after manual compaction to reflect the reduced context size",
           "deleted": false,
           "createdAt": "2025-12-22T07:02:46.513Z"
+        },
+        {
+          "id": 3,
+          "text": "AgentModal.tsx handleSubmit must intercept /compact input BEFORE calling session.prompt() (same pattern as /debug at lines 254-271)",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:05.540Z"
+        },
+        {
+          "id": 4,
+          "text": "CodeletSession in codelet-napi/src/session.rs must expose a compact() method that calls execute_compaction from cli/src/interactive_helpers.rs",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:07.310Z"
+        },
+        {
+          "id": 5,
+          "text": "compact() must return CompactionResult with metrics (originalTokens, compactedTokens, compressionRatio, turnsSummarized, turnsKept)",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:09.749Z"
+        },
+        {
+          "id": 6,
+          "text": "Compaction result message must be displayed in conversation area as a tool role message (yellow text)",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:11.690Z"
+        },
+        {
+          "id": 7,
+          "text": "Token tracker display in header must update immediately after successful compaction",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:13.343Z"
+        },
+        {
+          "id": 8,
+          "text": "If conversation is empty, display 'Nothing to compact - no messages yet' and return early",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:15.600Z"
         }
       ],
-      "nextRuleId": 5,
+      "nextRuleId": 9,
       "examples": [
         {
           "id": 0,
-          "text": "User types /compact, compaction runs immediately and shows 'Compacting context...' followed by 'Context compacted successfully'",
-          "deleted": false,
-          "createdAt": "2025-12-22T07:03:00.083Z"
-        },
-        {
-          "id": 1,
-          "text": "User types /compact when context is already small (under threshold), compaction still runs but may show minimal reduction",
-          "deleted": false,
-          "createdAt": "2025-12-22T07:03:01.876Z"
-        },
-        {
-          "id": 2,
           "text": "After /compact completes, user can immediately type a new message and get a response using the compacted context",
           "deleted": false,
           "createdAt": "2025-12-22T07:03:03.701Z"
         },
         {
-          "id": 3,
+          "id": 1,
           "text": "User types /compact during a long session with 150k tokens, context is reduced to ~40k tokens, compression ratio is displayed",
           "deleted": false,
           "createdAt": "2025-12-22T07:03:05.707Z"
         },
         {
-          "id": 4,
+          "id": 2,
           "text": "If compaction fails (e.g., API error), user sees error message and context remains unchanged",
           "deleted": false,
           "createdAt": "2025-12-22T07:03:07.259Z"
+        },
+        {
+          "id": 3,
+          "text": "User types /compact in AgentModal, sees 'Compacting context...' message, then 'Context compacted: 150000→40000 tokens, 73% compression, summarized 12 turns, kept 3 turns'",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:34.438Z"
+        },
+        {
+          "id": 4,
+          "text": "User types /compact with no messages in session, sees 'Nothing to compact - no messages yet' and input returns to normal",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:36.456Z"
+        },
+        {
+          "id": 5,
+          "text": "User types /compact, compaction fails due to API error, sees 'Compaction failed: [error message]' and context remains unchanged",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:39.951Z"
+        },
+        {
+          "id": 6,
+          "text": "After successful /compact, token display in header updates from '150000↓ 5000↑' to '40000↓ 0↑' immediately",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:41.725Z"
+        },
+        {
+          "id": 7,
+          "text": "User types /compact, conversation continues seamlessly - user can immediately type next message without resending anything",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:45:43.590Z"
         }
       ],
-      "nextExampleId": 5
+      "nextExampleId": 8,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Integration: AgentModal.tsx handleSubmit intercepts /compact before session.prompt() (pattern from /debug lines 254-271)",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:53:26.390Z"
+        },
+        {
+          "id": 1,
+          "text": "Dependency: CodeletSession in codelet-napi/src/session.rs exposes compact() method",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:53:35.162Z"
+        },
+        {
+          "id": 2,
+          "text": "Dependency: compact() calls execute_compaction from codelet/cli/src/interactive_helpers.rs",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:53:44.495Z"
+        },
+        {
+          "id": 3,
+          "text": "Type: CompactionResult contains metrics (originalTokens, compactedTokens, compressionRatio, turnsSummarized, turnsKept)",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:53:52.621Z"
+        },
+        {
+          "id": 4,
+          "text": "Display: Result shown as tool role message (yellow) in conversation. Update: Token tracker in header refreshes immediately after compaction.",
+          "deleted": false,
+          "createdAt": "2025-12-22T08:54:02.229Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "attachments": [
+        "spec/attachments/NAPI-005/ast-research-agent-modal.json",
+        "spec/attachments/NAPI-005/ast-research-napi-session.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-22T09:10:48.234Z"
     }
   },
   "states": {
@@ -53806,13 +53905,13 @@
       "EXMAP-004",
       "AGENT-001",
       "BROWSE-001",
-      "BOARD-020",
-      "NAPI-005"
+      "BOARD-020"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "NAPI-005",
       "NAPI-004",
       "TUI-032",
       "AGENT-021",

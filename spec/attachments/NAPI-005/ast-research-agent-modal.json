@@ -1,0 +1,17 @@
+{
+  "description": "AST analysis of src/tui/components/AgentModal.tsx - handleSubmit function",
+  "file": "src/tui/components/AgentModal.tsx",
+  "key_findings": {
+    "handleSubmit_location": "Line 249 - useCallback with async arrow function",
+    "debug_handler_location": "Lines 254-271 - Pattern for /debug command interception",
+    "intercept_point": "After 'if (!sessionRef.current || !inputValue.trim() || isLoading) return;' at line 250",
+    "pattern": "Check inputValue.trim() === '/debug' before sessionRef.current.prompt()",
+    "debug_handler_code": "if (userMessage === '/debug') { setInputValue(''); try { const result = sessionRef.current.toggleDebug(getFspecUserDir()); setIsDebugEnabled(result.enabled); setConversation(prev => [...prev, { role: 'tool', content: result.message }]); } catch (err) { const errorMessage = err instanceof Error ? err.message : 'Failed to toggle debug mode'; setError(errorMessage); } return; }"
+  },
+  "integration_notes": {
+    "session_ref": "sessionRef.current provides access to CodeletSession",
+    "state_updates": "Use setConversation to add tool messages, setError for errors, setInputValue('') to clear input",
+    "message_format": "Tool role messages displayed in yellow - use { role: 'tool', content: '...' }",
+    "token_usage": "setTokenUsage can be called to update header display"
+  }
+}
