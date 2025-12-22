@@ -369,12 +369,18 @@ where
                     }
 
                     turn_cache_read = usage.cache_read_input_tokens.unwrap_or(turn_cache_read);
-                    turn_cache_creation = usage.cache_creation_input_tokens.unwrap_or(turn_cache_creation);
+                    turn_cache_creation = usage
+                        .cache_creation_input_tokens
+                        .unwrap_or(turn_cache_creation);
 
                     // Emit CUMULATIVE totals (previous session + accumulated + current API call)
                     output.emit_tokens(&TokenInfo {
-                        input_tokens: prev_input_tokens + turn_accumulated_input + current_api_input,
-                        output_tokens: prev_output_tokens + turn_accumulated_output + current_api_output,
+                        input_tokens: prev_input_tokens
+                            + turn_accumulated_input
+                            + current_api_input,
+                        output_tokens: prev_output_tokens
+                            + turn_accumulated_output
+                            + current_api_output,
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
                     });
@@ -395,7 +401,9 @@ where
 
                     // Update cache tokens from FinalResponse
                     turn_cache_read = usage.cache_read_input_tokens.unwrap_or(turn_cache_read);
-                    turn_cache_creation = usage.cache_creation_input_tokens.unwrap_or(turn_cache_creation);
+                    turn_cache_creation = usage
+                        .cache_creation_input_tokens
+                        .unwrap_or(turn_cache_creation);
 
                     // Emit CUMULATIVE token update
                     output.emit_tokens(&TokenInfo {
@@ -594,7 +602,11 @@ where
 
                 // Start new stream with compacted context
                 let mut retry_stream = agent
-                    .prompt_streaming_with_history_and_hook(prompt, &mut session.messages, retry_hook)
+                    .prompt_streaming_with_history_and_hook(
+                        prompt,
+                        &mut session.messages,
+                        retry_hook,
+                    )
                     .await;
 
                 // Reset tracking for this retry
@@ -666,7 +678,10 @@ where
                         }
                         None => {
                             if !retry_assistant_text.is_empty() {
-                                handle_final_response(&retry_assistant_text, &mut session.messages)?;
+                                handle_final_response(
+                                    &retry_assistant_text,
+                                    &mut session.messages,
+                                )?;
                             }
                             output.emit_done();
                             break;

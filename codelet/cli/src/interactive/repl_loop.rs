@@ -1,4 +1,5 @@
 use super::agent_runner::run_agent_with_interruption;
+use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::{
@@ -64,6 +65,99 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
                 }
             }
             println!("{}\n", result.message);
+            continue;
+        }
+
+        // Handle /compact command - NAPI-001: Manual compaction trigger
+        if input == "/compact" {
+            // Check if there's anything to compact
+            if session.messages.is_empty() {
+                println!("Nothing to compact - session is empty.\n");
+                continue;
+            }
+
+            // Get current token count for reporting
+            let original_tokens = session.token_tracker.input_tokens;
+
+            // Capture compaction.manual.start event
+            if let Ok(manager_arc) = get_debug_capture_manager() {
+                if let Ok(mut manager) = manager_arc.lock() {
+                    if manager.is_enabled() {
+                        manager.capture(
+                            "compaction.manual.start",
+                            serde_json::json!({
+                                "command": "/compact",
+                                "originalTokens": original_tokens,
+                                "messageCount": session.messages.len(),
+                            }),
+                            None,
+                        );
+                    }
+                }
+            }
+
+            println!("[Compacting context...]");
+
+            match execute_compaction(session).await {
+                Ok(metrics) => {
+                    // Calculate compression percentage
+                    let compression_pct = metrics.compression_ratio * 100.0;
+
+                    // Capture compaction.manual.complete event
+                    if let Ok(manager_arc) = get_debug_capture_manager() {
+                        if let Ok(mut manager) = manager_arc.lock() {
+                            if manager.is_enabled() {
+                                manager.capture(
+                                    "compaction.manual.complete",
+                                    serde_json::json!({
+                                        "command": "/compact",
+                                        "originalTokens": metrics.original_tokens,
+                                        "compactedTokens": metrics.compacted_tokens,
+                                        "compressionRatio": metrics.compression_ratio,
+                                        "turnsSummarized": metrics.turns_summarized,
+                                        "turnsKept": metrics.turns_kept,
+                                    }),
+                                    None,
+                                );
+                            }
+                        }
+                    }
+
+                    println!(
+                        "[Context compacted: {}→{} tokens, {:.0}% compression]",
+                        metrics.original_tokens, metrics.compacted_tokens, compression_pct
+                    );
+                    println!(
+                        "[Summarized {} turns, kept {} turns]\n",
+                        metrics.turns_summarized, metrics.turns_kept
+                    );
+                    info!(
+                        "/compact: {}→{} tokens ({:.0}% compression)",
+                        metrics.original_tokens, metrics.compacted_tokens, compression_pct
+                    );
+                }
+                Err(e) => {
+                    // Capture compaction.manual.failed event
+                    if let Ok(manager_arc) = get_debug_capture_manager() {
+                        if let Ok(mut manager) = manager_arc.lock() {
+                            if manager.is_enabled() {
+                                manager.capture(
+                                    "compaction.manual.failed",
+                                    serde_json::json!({
+                                        "command": "/compact",
+                                        "error": e.to_string(),
+                                    }),
+                                    None,
+                                );
+                            }
+                        }
+                    }
+
+                    eprintln!("Compaction failed: {e}");
+                    eprintln!("[Context remains unchanged]\n");
+                    debug!("/compact failed: {}", e);
+                }
+            }
             continue;
         }
 
