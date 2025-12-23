@@ -329,7 +329,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     const initSession = async () => {
       try {
         // Dynamic import to handle ESM
-        const codeletNapi = await import('codelet-napi');
+        const codeletNapi = await import('@sengac/codelet-napi');
         const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory, persistenceCreateSessionWithProvider } = codeletNapi;
 
         // NAPI-006: Set up persistence data directory
@@ -451,7 +451,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setInputValue('');
       const allProjects = userMessage.includes('--all-projects');
       try {
-        const { persistenceGetHistory } = await import('codelet-napi');
+        const { persistenceGetHistory } = await import('@sengac/codelet-napi');
         const history = persistenceGetHistory(allProjects ? null : currentProjectRef.current, 20);
         if (history.length === 0) {
           setConversation(prev => [
@@ -488,7 +488,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     if (userMessage === '/sessions') {
       setInputValue('');
       try {
-        const { persistenceListSessions } = await import('codelet-napi');
+        const { persistenceListSessions } = await import('@sengac/codelet-napi');
         const sessions = persistenceListSessions(currentProjectRef.current);
         if (sessions.length === 0) {
           setConversation(prev => [
@@ -519,7 +519,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setInputValue('');
       const targetName = userMessage.slice(8).trim();
       try {
-        const { persistenceListSessions, persistenceLoadSession } = await import('codelet-napi');
+        const { persistenceListSessions, persistenceLoadSession } = await import('@sengac/codelet-napi');
         const sessions = persistenceListSessions(currentProjectRef.current);
         const target = sessions.find((s: SessionManifest) => s.name === targetName);
         if (target) {
@@ -556,7 +556,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
       try {
-        const { persistenceRenameSession } = await import('codelet-napi');
+        const { persistenceRenameSession } = await import('@sengac/codelet-napi');
         persistenceRenameSession(currentSessionId, newName);
         setConversation(prev => [
           ...prev,
@@ -593,7 +593,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
       try {
-        const { persistenceForkSession } = await import('codelet-napi');
+        const { persistenceForkSession } = await import('@sengac/codelet-napi');
         const forkedSession = persistenceForkSession(currentSessionId, index, name);
         setCurrentSessionId(forkedSession.id);
         setConversation(prev => [
@@ -631,7 +631,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
       try {
-        const { persistenceListSessions, persistenceMergeMessages } = await import('codelet-napi');
+        const { persistenceListSessions, persistenceMergeMessages } = await import('@sengac/codelet-napi');
         const sessions = persistenceListSessions(currentProjectRef.current);
         const source = sessions.find((s: SessionManifest) => s.name === sourceName || s.id === sourceName);
         if (!source) {
@@ -682,7 +682,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
       try {
-        const { persistenceListSessions, persistenceCherryPick } = await import('codelet-napi');
+        const { persistenceListSessions, persistenceCherryPick } = await import('@sengac/codelet-napi');
         const sessions = persistenceListSessions(currentProjectRef.current);
         const source = sessions.find((s: SessionManifest) => s.name === sourceName || s.id === sourceName);
         if (!source) {
@@ -761,7 +761,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     // NAPI-006: Save command to history
     if (currentSessionId) {
       try {
-        const { persistenceAddHistory } = await import('codelet-napi');
+        const { persistenceAddHistory } = await import('@sengac/codelet-napi');
         persistenceAddHistory(userMessage, currentProjectRef.current, currentSessionId);
         // Update local history entries
         setHistoryEntries(prev => [{
@@ -784,7 +784,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     // Persist user message to session
     if (currentSessionId) {
       try {
-        const { persistenceAppendMessage, persistenceRenameSession } = await import('codelet-napi');
+        const { persistenceAppendMessage, persistenceRenameSession } = await import('@sengac/codelet-napi');
         persistenceAppendMessage(currentSessionId, 'user', userMessage);
 
         // Auto-rename session with first user message (truncated to 50 chars)
@@ -974,7 +974,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       // Persist assistant response to session
       if (currentSessionId && fullAssistantResponse) {
         try {
-          const { persistenceAppendMessage } = await import('codelet-napi');
+          const { persistenceAppendMessage } = await import('@sengac/codelet-napi');
           persistenceAppendMessage(currentSessionId, 'assistant', fullAssistantResponse);
         } catch (err) {
           logger.error(`Failed to persist assistant response: ${err instanceof Error ? err.message : String(err)}`);
@@ -1060,7 +1060,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     }
 
     try {
-      const { persistenceSearchHistory } = await import('codelet-napi');
+      const { persistenceSearchHistory } = await import('@sengac/codelet-napi');
       const results = persistenceSearchHistory(query, currentProjectRef.current);
       const entries: HistoryEntry[] = results.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({
         display: h.display,
@@ -1120,7 +1120,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   // NAPI-003: Enter resume mode (show session selection overlay)
   const handleResumeMode = useCallback(async () => {
     try {
-      const { persistenceListSessions } = await import('codelet-napi');
+      const { persistenceListSessions } = await import('@sengac/codelet-napi');
       const sessions = persistenceListSessions(currentProjectRef.current);
 
       // Sort by updatedAt descending (most recent first)
@@ -1149,7 +1149,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     const selectedSession = availableSessions[resumeSessionIndex];
 
     try {
-      const { persistenceGetSessionMessages } = await import('codelet-napi');
+      const { persistenceGetSessionMessages } = await import('@sengac/codelet-napi');
       const messages = persistenceGetSessionMessages(selectedSession.id);
 
       // CRITICAL: Restore messages to CodeletSession for LLM context

@@ -11,7 +11,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: [
-        'codelet-napi',
+        '@sengac/codelet-napi',
         'chalk',
         'commander',
         'child_process',

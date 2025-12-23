@@ -42,7 +42,7 @@ const mockState = vi.hoisted(() => ({
 }));
 
 // Mock codelet-napi module
-vi.mock('codelet-napi', () => ({
+vi.mock('@sengac/codelet-napi', () => ({
   CodeletSession: class MockCodeletSession {
     currentProviderName: string;
     availableProviders: string[];
@@ -78,6 +78,23 @@ vi.mock('codelet-napi', () => ({
     Done: 'Done',
     Error: 'Error',
   },
+  // Persistence NAPI bindings required by AgentModal
+  persistenceSetDataDirectory: vi.fn(),
+  persistenceGetHistory: vi.fn(() => []),
+  persistenceCreateSessionWithProvider: vi.fn(() => ({
+    id: 'mock-session-id',
+    name: 'Mock Session',
+    project: '/test/project',
+    provider: 'claude',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    messageCount: 0,
+  })),
+  persistenceAddHistory: vi.fn(),
+  persistenceSearchHistory: vi.fn(() => []),
+  persistenceListSessions: vi.fn(() => []),
+  persistenceAppendMessage: vi.fn(),
+  persistenceRenameSession: vi.fn(),
 }));
 
 // Mock Dialog to render children without position="absolute" which breaks ink-testing-library

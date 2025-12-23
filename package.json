@@ -3,6 +3,9 @@
   "version": "0.9.3",
   "description": "Feature Specification & Project Management for AI Agents - Manage Gherkin specs and work units with ACDD workflow",
   "type": "module",
+  "workspaces": [
+    "codelet/napi"
+  ],
   "main": "./dist/index.js",
   "bin": {
     "fspec": "./dist/index.js"
@@ -89,7 +92,7 @@
     "ajv-formats": "^3.0.1",
     "chalk": "^5.6.2",
     "chokidar": "^4.0.3",
-    "codelet-napi": "file:codelet/napi",
+    "@sengac/codelet-napi": "^0.1.0",
     "commander": "^14.0.1",
     "diff": "^8.0.2",
     "dompurify": "^3.3.0",
