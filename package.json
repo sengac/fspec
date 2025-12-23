@@ -14,7 +14,7 @@
     "install:local": "./scripts/install-local.sh",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
-    "format": "prettier --write 'src/**/*.ts'",
+    "format": "prettier --write 'src/**/*.ts' 'codelet/**/*.ts'",
     "format:spec": "fspec format",
     "test": "npm run build && vitest run",
     "test:watch": "vitest --watch",
