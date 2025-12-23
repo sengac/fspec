@@ -8,13 +8,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { CodeletSession as CodeletSessionType } from 'codelet-napi';
+import type { CodeletSession as CodeletSessionType } from '@sengac/codelet-napi';
 
 // Dynamic import for native module to handle ESM compatibility
 const getCodeletNapi = async (): Promise<{
   CodeletSession: typeof CodeletSessionType;
 }> => {
-  return await import('codelet-napi');
+  return await import('@sengac/codelet-napi');
 };
 
 describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {

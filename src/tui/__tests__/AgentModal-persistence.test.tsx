@@ -52,7 +52,7 @@ const mockState = vi.hoisted(() => ({
 }));
 
 // Mock codelet-napi module with persistence functions
-vi.mock('codelet-napi', () => ({
+vi.mock('@sengac/codelet-napi', () => ({
   CodeletSession: class MockCodeletSession {
     currentProviderName: string;
     availableProviders: string[];
@@ -414,7 +414,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       ];
 
       // Get the mock function to verify calls
-      const { persistenceGetHistory } = await import('codelet-napi');
+      const { persistenceGetHistory } = await import('@sengac/codelet-napi');
       vi.mocked(persistenceGetHistory).mockClear();
 
       const { lastFrame, stdin } = render(

@@ -322,7 +322,10 @@ describe('Feature: Implement file locking for concurrent access safety', () => {
         data.value = 1;
       });
 
-      // And another write attempts to acquire the lock
+      // Wait a bit to ensure longWrite acquires lock first
+      await new Promise(resolve => setTimeout(resolve, 10));
+
+      // And another write attempts to acquire the lock (will wait for longWrite)
       const shortWrite = fileManager.transaction(
         testFile,
         async (data: any) => {
@@ -333,7 +336,7 @@ describe('Feature: Implement file locking for concurrent access safety', () => {
       // Then both operations should complete
       await Promise.all([longWrite, shortWrite]);
 
-      // And final value should be from the second write (sequential execution)
+      // And final value should be from the second write (which waited for the first)
       const finalData = JSON.parse(await readFile(testFile, 'utf-8'));
       expect(finalData.value).toBe(2);
     });

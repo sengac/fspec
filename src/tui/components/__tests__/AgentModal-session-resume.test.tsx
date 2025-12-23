@@ -14,7 +14,7 @@ const mockPersistenceListSessions = vi.fn();
 const mockPersistenceGetSessionMessages = vi.fn();
 const mockRestoreMessages = vi.fn();
 
-vi.mock('codelet-napi', () => ({
+vi.mock('@sengac/codelet-napi', () => ({
   persistenceListSessions: mockPersistenceListSessions,
   persistenceGetSessionMessages: mockPersistenceGetSessionMessages,
   persistenceSetDataDirectory: vi.fn(),
@@ -99,7 +99,7 @@ describe('Feature: Resume command for session restoration', () => {
       mockPersistenceListSessions.mockReturnValue(mockSessions);
 
       // @step When I type /resume in the input field
-      const { persistenceListSessions } = await import('codelet-napi');
+      const { persistenceListSessions } = await import('@sengac/codelet-napi');
       const sessions = persistenceListSessions('/test/project');
 
       // @step Then I should see a full-screen overlay with header "Resume Session (3 available)"
@@ -120,7 +120,7 @@ describe('Feature: Resume command for session restoration', () => {
       mockPersistenceListSessions.mockReturnValue(mockSessions);
 
       // @step When I open resume mode
-      const { persistenceListSessions } = await import('codelet-napi');
+      const { persistenceListSessions } = await import('@sengac/codelet-napi');
       const sessions = persistenceListSessions('/test/project');
 
       // @step Then sessions are sorted by updatedAt descending
@@ -143,7 +143,7 @@ describe('Feature: Resume command for session restoration', () => {
       mockPersistenceGetSessionMessages.mockReturnValue(mockMessages);
 
       // @step When I press Enter
-      const { persistenceGetSessionMessages } = await import('codelet-napi');
+      const { persistenceGetSessionMessages } = await import('@sengac/codelet-napi');
       const messages = persistenceGetSessionMessages('session-id');
 
       // @step Then the overlay should close and the conversation should show 8 messages with a confirmation
@@ -160,7 +160,7 @@ describe('Feature: Resume command for session restoration', () => {
       mockPersistenceListSessions.mockReturnValue([]);
 
       // @step When I type /resume in the input field
-      const { persistenceListSessions } = await import('codelet-napi');
+      const { persistenceListSessions } = await import('@sengac/codelet-napi');
       const sessions = persistenceListSessions('/test/project');
 
       // @step Then I should see the message "No sessions found for this project"
@@ -219,7 +219,7 @@ describe('Feature: Resume command for session restoration', () => {
       mockPersistenceListSessions.mockReturnValue(mockSessions);
 
       // @step When I type /resume in the input field
-      const { persistenceListSessions } = await import('codelet-napi');
+      const { persistenceListSessions } = await import('@sengac/codelet-napi');
       const sessions = persistenceListSessions('/test/project');
 
       // @step Then only the 15 most recent sessions should be displayed
@@ -239,7 +239,7 @@ describe('Feature: Resume command for session restoration', () => {
       });
 
       // @step When I type /resume in the input field
-      const { persistenceListSessions } = await import('codelet-napi');
+      const { persistenceListSessions } = await import('@sengac/codelet-napi');
       const sessionsA = persistenceListSessions('/projectA');
       const sessionsB = persistenceListSessions('/projectB');
 
@@ -257,7 +257,7 @@ describe('Feature: Resume command for session restoration', () => {
       mockPersistenceListSessions.mockReturnValue(mockSessions);
 
       // @step When I type /resume in the input field
-      const { persistenceListSessions } = await import('codelet-napi');
+      const { persistenceListSessions } = await import('@sengac/codelet-napi');
       const sessions = persistenceListSessions('/test/project');
 
       // @step Then the session should display "unknown" as the provider
@@ -358,7 +358,7 @@ describe('Feature: Resume command for session restoration', () => {
         metadataJson: '{}',
       }));
       mockPersistenceGetSessionMessages.mockReturnValue(restoredMessages);
-      const { persistenceGetSessionMessages } = await import('codelet-napi');
+      const { persistenceGetSessionMessages } = await import('@sengac/codelet-napi');
       const messages = persistenceGetSessionMessages('session-id');
 
       // Restore logic: replace current messages entirely

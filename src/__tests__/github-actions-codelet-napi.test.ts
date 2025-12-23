@@ -54,6 +54,7 @@ interface WorkflowConfig {
     pull_request?: {
       paths?: string[];
     };
+    workflow_dispatch?: Record<string, unknown>;
   };
   concurrency?: {
     group?: string;
@@ -64,7 +65,7 @@ interface WorkflowConfig {
   jobs?: {
     build?: WorkflowJob;
     test?: WorkflowJob;
-    publish?: WorkflowJob;
+    'commit-binaries'?: WorkflowJob;
   };
 }
 
@@ -140,7 +141,7 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
     });
   });
 
-  describe('Scenario: Workflow triggers npm publish on version tags', () => {
+  describe('Scenario: Workflow commits binaries to repo after successful build', () => {
     let workflow: WorkflowConfig;
 
     beforeAll(() => {
@@ -150,10 +151,11 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
       workflow = yaml.parse(content) as WorkflowConfig;
     });
 
-    it('should trigger build, test, and publish jobs on version tags', () => {
-      // @step When a tag matching "codelet-napi-v*" is pushed
-      const tagPatterns = workflow.on?.push?.tags ?? [];
-      expect(tagPatterns).toContain('codelet-napi-v*');
+    it('should trigger build, test, and commit-binaries jobs on push', () => {
+      // @step When a push to main or codelet-integration occurs
+      const branches = workflow.on?.push?.branches ?? [];
+      expect(branches).toContain('main');
+      expect(branches).toContain('codelet-integration');
 
       // @step Then the workflow should trigger build job
       expect(workflow.jobs?.build).toBeDefined();
@@ -165,25 +167,18 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
         'build'
       );
 
-      // @step And trigger publish job after test succeeds
-      expect(workflow.jobs?.publish).toBeDefined();
-      const publishNeeds = workflow.jobs?.publish?.needs;
+      // @step And trigger commit-binaries job after test succeeds
+      expect(workflow.jobs?.['commit-binaries']).toBeDefined();
+      const commitNeeds = workflow.jobs?.['commit-binaries']?.needs;
       expect(
-        Array.isArray(publishNeeds) ? publishNeeds : [publishNeeds]
+        Array.isArray(commitNeeds) ? commitNeeds : [commitNeeds]
       ).toContain('test');
     });
 
-    it('should verify version matches tag before publishing', () => {
-      // @step And the publish job should verify version matches tag
-      const publishJob = workflow.jobs?.publish;
-      const steps = publishJob?.steps ?? [];
-      const verifyStep = steps.find(
-        s =>
-          s.name?.toLowerCase().includes('verify') &&
-          s.run?.includes('TAG_VERSION')
-      );
-      expect(verifyStep).toBeDefined();
-      expect(verifyStep?.run).toContain('package.json');
+    it('should commit binaries only on push events (not PRs)', () => {
+      // @step And the commit-binaries job should only run on push events
+      const commitJob = workflow.jobs?.['commit-binaries'];
+      expect(commitJob?.if).toContain('push');
     });
   });
 
@@ -199,7 +194,7 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
       workflow = yaml.parse(content) as WorkflowConfig;
     });
 
-    it('should run x86_64-apple-darwin on macos-13 with correct napi build command', () => {
+    it('should run x86_64-apple-darwin on macos-15-intel with correct napi build command', () => {
       // @step Given the build job runs with matrix strategy
       const buildJob = workflow.jobs?.build;
       expect(buildJob?.strategy?.matrix).toBeDefined();
@@ -210,8 +205,8 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
       );
       expect(macosX64Config).toBeDefined();
 
-      // @step Then it should run on macos-13 runner
-      expect(macosX64Config?.os).toBe('macos-13');
+      // @step Then it should run on macos-15-intel runner (native Intel runner)
+      expect(macosX64Config?.os).toBe('macos-15-intel');
 
       // @step And use "napi build --platform --release --target x86_64-apple-darwin"
       // This is verified by checking the build steps use the target
@@ -271,7 +266,7 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
     });
   });
 
-  describe('Scenario: Cross-compilation for Linux ARM64', () => {
+  describe('Scenario: Native build for Linux ARM64', () => {
     let workflow: WorkflowConfig;
 
     beforeAll(() => {
@@ -279,7 +274,7 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
       workflow = yaml.parse(content) as WorkflowConfig;
     });
 
-    it('should use Docker for aarch64-unknown-linux-gnu on ubuntu-latest', () => {
+    it('should use native ARM64 runner for aarch64-unknown-linux-gnu', () => {
       // @step Given the build job runs with matrix strategy
       const buildJob = workflow.jobs?.build;
       expect(buildJob?.strategy?.matrix).toBeDefined();
@@ -290,16 +285,13 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
       );
       expect(linuxArm64Config).toBeDefined();
 
-      // @step Then it should run on ubuntu-latest runner
-      expect(linuxArm64Config?.os).toBe('ubuntu-latest');
+      // @step Then it should run on ubuntu-24.04-arm runner (native ARM64)
+      expect(linuxArm64Config?.os).toBe('ubuntu-24.04-arm');
 
-      // @step And use Docker image "ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64"
-      // Check for docker or use-cross configuration
-      expect(
-        linuxArm64Config?.docker ||
-          linuxArm64Config?.['use-cross'] ||
-          linuxArm64Config?.container
-      ).toBeDefined();
+      // @step And NOT use Docker cross-compilation (native build instead)
+      expect(linuxArm64Config?.docker).toBeUndefined();
+      expect(linuxArm64Config?.['use-cross']).toBeUndefined();
+      expect(linuxArm64Config?.container).toBeUndefined();
 
       // @step And upload artifact "codelet-napi.linux-arm64-gnu.node"
       const steps = buildJob?.steps ?? [];
@@ -405,7 +397,7 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
   // PUBLISH JOB SCENARIOS
   // ============================================================
 
-  describe('Scenario: Publish generates platform-specific packages', () => {
+  describe('Scenario: Commit-binaries job saves artifacts to repo', () => {
     let workflow: WorkflowConfig;
 
     beforeAll(() => {
@@ -413,31 +405,27 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
       workflow = yaml.parse(content) as WorkflowConfig;
     });
 
-    it('should download artifacts and run napi prepublish', () => {
+    it('should download artifacts and commit them to repo', () => {
       // @step Given all 6 build artifacts are downloaded
-      const publishJob = workflow.jobs?.publish;
-      expect(publishJob).toBeDefined();
-      const steps = publishJob?.steps ?? [];
+      const commitJob = workflow.jobs?.['commit-binaries'];
+      expect(commitJob).toBeDefined();
+      const steps = commitJob?.steps ?? [];
       const downloadStep = steps.find(s =>
         s.uses?.includes('actions/download-artifact')
       );
       expect(downloadStep).toBeDefined();
 
-      // @step And NPM_TOKEN secret is configured
-      // Verify using NODE_AUTH_TOKEN env var (setup-node pattern, not manual npmrc writing)
-      const publishSteps = steps.filter(s => s.run?.includes('npm publish'));
-      expect(publishSteps.length).toBeGreaterThan(0);
-      const hasNodeAuthToken = publishSteps.every(s => s.env?.NODE_AUTH_TOKEN);
-      expect(hasNodeAuthToken).toBe(true);
+      // @step When the commit-binaries job runs
+      // @step Then it should move binaries to codelet/napi/
+      const moveStep = steps.find(s => s.run && s.run.includes('codelet/napi'));
+      expect(moveStep).toBeDefined();
 
-      // @step When the publish job runs "napi prepublish -t npm"
-      const prepublishStep = steps.find(
-        s => s.run && s.run.includes('napi') && s.run.includes('prepublish')
+      // @step And commit and push with [skip ci] to avoid recursive triggers
+      const commitStep = steps.find(
+        s =>
+          s.run && s.run.includes('git commit') && s.run.includes('[skip ci]')
       );
-      expect(prepublishStep).toBeDefined();
-
-      // @step Then it should generate 7 npm packages:
-      // (Verified by napi prepublish command - actual packages checked in package.json test)
+      expect(commitStep).toBeDefined();
     });
   });
 
