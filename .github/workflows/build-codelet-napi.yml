@@ -145,9 +145,10 @@ jobs:
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
 
     steps:
-      - name: Checkout
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
+          ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Download all artifacts
@@ -174,5 +175,5 @@ jobs:
             echo "No changes to commit - binaries are up to date"
           else
             git commit -m "build: update codelet-napi binaries [skip ci]"
-            git push
+            git push origin main
           fi
