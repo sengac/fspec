@@ -21,7 +21,6 @@
     "artifacts": "napi artifacts",
     "build": "napi build --platform --release --esm",
     "build:debug": "napi build --platform --esm",
-    "prepublishOnly": "napi prepublish -t npm",
     "universal": "napi universal -t codelet-napi",
     "version": "napi version"
   },
@@ -40,13 +39,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "optionalDependencies": {
-    "@sengac/codelet-napi-darwin-arm64": "0.1.0",
-    "@sengac/codelet-napi-darwin-x64": "0.1.0",
-    "@sengac/codelet-napi-linux-arm64-gnu": "0.1.0",
-    "@sengac/codelet-napi-linux-x64-gnu": "0.1.0",
-    "@sengac/codelet-napi-win32-arm64-msvc": "0.1.0",
-    "@sengac/codelet-napi-win32-x64-msvc": "0.1.0"
   }
 }
