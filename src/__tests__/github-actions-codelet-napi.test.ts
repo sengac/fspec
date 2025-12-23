@@ -98,7 +98,7 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
   // WORKFLOW CONFIGURATION SCENARIOS
   // ============================================================
 
-  describe('Scenario: Workflow triggers on codelet directory changes', () => {
+  describe('Scenario: Workflow triggers on tag push or manual dispatch', () => {
     let workflow: WorkflowConfig;
 
     beforeAll(() => {
@@ -108,13 +108,13 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
       workflow = yaml.parse(content) as WorkflowConfig;
     });
 
-    it('should trigger on push/PR to codelet/** and build all 6 platform targets', () => {
-      // @step When a push or PR modifies any file in "codelet/**"
-      const pushPaths = workflow.on?.push?.paths ?? [];
-      const prPaths = workflow.on?.pull_request?.paths ?? [];
+    it('should trigger on codelet-napi tag push and build all 6 platform targets', () => {
+      // @step When a tag matching codelet-napi-v* is pushed
+      const pushTags = workflow.on?.push?.tags ?? [];
+      expect(pushTags).toContain('codelet-napi-v*');
 
-      expect(pushPaths).toContain('codelet/**');
-      expect(prPaths).toContain('codelet/**');
+      // @step Or workflow is manually dispatched
+      expect(workflow.on?.workflow_dispatch).toBeDefined();
 
       // @step Then the workflow should trigger
       expect(workflow.on).toBeDefined();
@@ -151,11 +151,10 @@ describe('Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds',
       workflow = yaml.parse(content) as WorkflowConfig;
     });
 
-    it('should trigger build, test, and commit-binaries jobs on push', () => {
-      // @step When a push to main or codelet-integration occurs
-      const branches = workflow.on?.push?.branches ?? [];
-      expect(branches).toContain('main');
-      expect(branches).toContain('codelet-integration');
+    it('should trigger build, test, and commit-binaries jobs on tag push', () => {
+      // @step When a tag matching codelet-napi-v* is pushed
+      const tags = workflow.on?.push?.tags ?? [];
+      expect(tags).toContain('codelet-napi-v*');
 
       // @step Then the workflow should trigger build job
       expect(workflow.jobs?.build).toBeDefined();
