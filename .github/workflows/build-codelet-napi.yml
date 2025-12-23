@@ -73,7 +73,7 @@ jobs:
           shared-key: ${{ matrix.target }}
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
         working-directory: codelet/napi
 
       - name: Build
@@ -124,7 +124,7 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
         working-directory: codelet/napi
 
       - name: Download artifact
