@@ -74,6 +74,14 @@
           "description": "Gherkin Parser Integration"
         },
         {
+          "name": "@persistence",
+          "description": "Session persistence and storage functionality"
+        },
+        {
+          "name": "@session",
+          "description": "Session management and state tracking"
+        },
+        {
           "name": "@templates",
           "description": "Template generation and transformation system"
         },
@@ -822,12 +830,24 @@
           "description": "Features ensuring compatibility with older file formats or legacy systems"
         },
         {
+          "name": "@base64",
+          "description": "Base64 encoded content scenarios"
+        },
+        {
           "name": "@bdd",
           "description": "Behavior-Driven Development methodology"
         },
         {
+          "name": "@blob",
+          "description": "Blob storage scenarios"
+        },
+        {
           "name": "@blob-storage",
           "description": "Blob storage for large content"
+        },
+        {
+          "name": "@boundary",
+          "description": "Boundary condition scenarios"
         },
         {
           "name": "@browser-integration",
@@ -866,6 +886,10 @@
           "description": "CLI command registration features"
         },
         {
+          "name": "@compaction",
+          "description": "Compaction scenarios"
+        },
+        {
           "name": "@compaction-state-on-fork",
           "description": "Compaction state handling on fork"
         },
@@ -884,6 +908,14 @@
         {
           "name": "@content-deduplication",
           "description": "Content-addressed deduplication"
+        },
+        {
+          "name": "@content-type",
+          "description": "Content type classification for message persistence"
+        },
+        {
+          "name": "@context",
+          "description": "Context preservation scenarios"
         },
         {
           "name": "@cross-compile",
@@ -918,6 +950,10 @@
           "description": "Debugging and diagnostic features for troubleshooting"
         },
         {
+          "name": "@deduplication",
+          "description": "Content deduplication scenarios"
+        },
+        {
           "name": "@destructive-action",
           "description": "Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.)"
         },
@@ -930,8 +966,16 @@
           "description": "BDD discovery technique used before writing Gherkin scenarios"
         },
         {
+          "name": "@document",
+          "description": "Document content type scenarios"
+        },
+        {
           "name": "@email",
           "description": "Email-related functionality"
+        },
+        {
+          "name": "@envelope",
+          "description": "Message envelope metadata scenarios"
         },
         {
           "name": "@error-handling",
@@ -1004,6 +1048,10 @@
         {
           "name": "@idempotent",
           "description": "Operations that can be safely repeated without changing results"
+        },
+        {
+          "name": "@image",
+          "description": "Image content type scenarios"
         },
         {
           "name": "@initialization",
@@ -1086,12 +1134,20 @@
           "description": "Marked library for markdown parsing"
         },
         {
+          "name": "@max-tokens",
+          "description": "Max tokens limit scenarios"
+        },
+        {
           "name": "@mermaid",
           "description": "Mermaid Diagram Support"
         },
         {
           "name": "@message-deduplication",
           "description": "Message deduplication and content-addressing scenarios"
+        },
+        {
+          "name": "@message-id",
+          "description": "Message ID preservation scenarios"
         },
         {
           "name": "@message-immutability",
@@ -1102,12 +1158,28 @@
           "description": "Modal overlay and dialog components"
         },
         {
+          "name": "@model",
+          "description": "Model identifier scenarios"
+        },
+        {
           "name": "@mouse-events",
           "description": "Features that handle mouse and trackpad events"
         },
         {
           "name": "@multi-agent",
           "description": "Multi-agent compatibility features and agent-specific customizations"
+        },
+        {
+          "name": "@multi-model",
+          "description": "Multi-model session scenarios"
+        },
+        {
+          "name": "@multi-part",
+          "description": "Multi-part message scenarios"
+        },
+        {
+          "name": "@multi-provider",
+          "description": "Multi-provider session support for sessions using different LLM providers"
         },
         {
           "name": "@napi",
@@ -1126,8 +1198,16 @@
           "description": "npm package configuration"
         },
         {
+          "name": "@parallel-tools",
+          "description": "Parallel tool execution scenarios"
+        },
+        {
           "name": "@pattern-detection",
           "description": "Features involving pattern detection and analysis from historical data"
+        },
+        {
+          "name": "@per-message",
+          "description": "Per-message metadata scenarios"
         },
         {
           "name": "@performance",
@@ -1146,12 +1226,20 @@
           "description": "Prettier configuration and code formatting"
         },
         {
+          "name": "@provider",
+          "description": "Provider-related functionality for LLM provider identification"
+        },
+        {
           "name": "@push",
           "description": "Push notification functionality"
         },
         {
           "name": "@query-api",
           "description": "Tree-sitter Query API features using S-expression pattern matching"
+        },
+        {
+          "name": "@raw-output",
+          "description": "Raw tool output metadata scenarios"
         },
         {
           "name": "@react",
@@ -1162,12 +1250,20 @@
           "description": "Features with real-time data synchronization and live updates"
         },
         {
+          "name": "@request-id",
+          "description": "API request ID scenarios"
+        },
+        {
           "name": "@resilience",
           "description": "Error handling and graceful degradation features"
         },
         {
           "name": "@responsive",
           "description": "Components that respond to viewport or terminal dimension changes"
+        },
+        {
+          "name": "@restore",
+          "description": "Session restore scenarios"
         },
         {
           "name": "@reverse-engineering",
@@ -1226,12 +1322,24 @@
           "description": "Stable indices system for maintaining unique IDs across soft-delete operations"
         },
         {
+          "name": "@state",
+          "description": "Session state scenarios"
+        },
+        {
           "name": "@step-validation",
           "description": "Step-level validation and Gherkin step matching"
         },
         {
+          "name": "@stop-reason",
+          "description": "Response stop reason scenarios"
+        },
+        {
           "name": "@strategy-planning",
           "description": "Strategy planning and decision-making features that guide user choices"
+        },
+        {
+          "name": "@structure",
+          "description": "Message structure preservation scenarios"
         },
         {
           "name": "@system-reminder",
@@ -1250,8 +1358,44 @@
           "description": "Testing framework and infrastructure features"
         },
         {
+          "name": "@text",
+          "description": "Text content type scenarios"
+        },
+        {
+          "name": "@thinking",
+          "description": "Thinking content type scenarios"
+        },
+        {
+          "name": "@threading",
+          "description": "Message threading and lineage scenarios"
+        },
+        {
+          "name": "@threshold",
+          "description": "Threshold boundary scenarios"
+        },
+        {
+          "name": "@timestamp",
+          "description": "Timestamp-related functionality for temporal ordering and history"
+        },
+        {
+          "name": "@tokens",
+          "description": "Token tracking scenarios"
+        },
+        {
           "name": "@toml",
           "description": "TOML configuration file parsing and manipulation"
+        },
+        {
+          "name": "@tool-call",
+          "description": "Tool call content type scenarios"
+        },
+        {
+          "name": "@tool-result",
+          "description": "Tool result content type scenarios"
+        },
+        {
+          "name": "@tool-use",
+          "description": "Tool use content type scenarios"
         },
         {
           "name": "@traceability",
@@ -1270,6 +1414,14 @@
           "description": "CI/CD trigger configuration"
         },
         {
+          "name": "@turn-sequence",
+          "description": "Message turn sequence scenarios"
+        },
+        {
+          "name": "@turns",
+          "description": "Turn boundary scenarios"
+        },
+        {
           "name": "@type-system",
           "description": "Work unit type system features for categorizing work (story, task, bug)"
         },
@@ -1284,6 +1436,14 @@
         {
           "name": "@ui-rendering",
           "description": "UI rendering and layout issues"
+        },
+        {
+          "name": "@url",
+          "description": "URL reference content scenarios"
+        },
+        {
+          "name": "@uuid",
+          "description": "UUID-related functionality for message identification and threading"
         },
         {
           "name": "@versioning",
@@ -1514,6 +1674,18 @@
           "description": "Edge case tests - validation of boundary conditions and unusual scenarios"
         },
         {
+          "name": "@empty",
+          "description": "Empty state scenarios"
+        },
+        {
+          "name": "@equivalence",
+          "description": "Functional equivalence scenarios"
+        },
+        {
+          "name": "@error",
+          "description": "Error handling and error state scenarios"
+        },
+        {
           "name": "@error-cherry-pick-insufficient-context",
           "description": "Error handling for cherry-pick"
         },
@@ -1534,6 +1706,14 @@
           "description": "Integration Test Required"
         },
         {
+          "name": "@interrupted-tool",
+          "description": "Interrupted tool execution scenarios"
+        },
+        {
+          "name": "@large-session",
+          "description": "Large session edge case scenarios"
+        },
+        {
           "name": "@main-help",
           "description": "Main help menu tests"
         },
@@ -1544,6 +1724,10 @@
         {
           "name": "@medium-command",
           "description": "Medium complexity command with multiple options"
+        },
+        {
+          "name": "@no-message-id",
+          "description": "Missing message ID edge case scenarios"
         },
         {
           "name": "@overwrite",
@@ -1560,6 +1744,10 @@
         {
           "name": "@simple-command",
           "description": "Simple command with minimal options"
+        },
+        {
+          "name": "@single-message",
+          "description": "Single message edge case scenarios"
         },
         {
           "name": "@smoke",
@@ -1810,7 +1998,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-23T02:45:05.817Z",
+    "lastUpdated": "2025-12-23T11:03:04.026Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

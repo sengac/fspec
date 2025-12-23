@@ -276,6 +276,11 @@ export declare function persistenceCherryPick(
 /** Cleanup orphaned messages */
 export declare function persistenceCleanupOrphanedMessages(): number;
 
+/** Clear compaction state for a session */
+export declare function persistenceClearCompactionState(
+  sessionId: string
+): NapiSessionManifest;
+
 /** Create a new session */
 export declare function persistenceCreateSession(
   name: string,
@@ -316,6 +321,29 @@ export declare function persistenceGetMessage(
   id: string
 ): NapiStoredMessage | null;
 
+/** Get a message as a full envelope JSON with blob content rehydrated */
+export declare function persistenceGetMessageEnvelope(
+  id: string
+): string | null;
+
+/**
+ * Get a message envelope WITHOUT blob rehydration (returns blob references as-is)
+ * Use this when you want to inspect the raw stored format with blob:sha256: references.
+ */
+export declare function persistenceGetMessageEnvelopeRaw(
+  id: string
+): string | null;
+
+/** Get all messages for a session as envelope JSON array with blob content rehydrated */
+export declare function persistenceGetSessionMessageEnvelopes(
+  sessionId: string
+): Array<string>;
+
+/** Get all messages for a session WITHOUT blob rehydration (returns blob references as-is) */
+export declare function persistenceGetSessionMessageEnvelopesRaw(
+  sessionId: string
+): Array<string>;
+
 /** Get all messages for a session */
 export declare function persistenceGetSessionMessages(
   sessionId: string
@@ -353,6 +381,13 @@ export declare function persistenceSearchHistory(
   project?: string | undefined | null
 ): Array<NapiHistoryEntry>;
 
+/** Set compaction state for a session (after manual or automatic compaction) */
+export declare function persistenceSetCompactionState(
+  sessionId: string,
+  summary: string,
+  compactedBeforeIndex: number
+): NapiSessionManifest;
+
 /**
  * Set the data directory for persistence (e.g., ~/.fspec or ~/.codelet)
  *
@@ -361,10 +396,30 @@ export declare function persistenceSearchHistory(
  */
 export declare function persistenceSetDataDirectory(dir: string): void;
 
+/** Set session token usage (REPLACES existing - use for cumulative totals) */
+export declare function persistenceSetSessionTokens(
+  sessionId: string,
+  input: number,
+  output: number,
+  cacheRead: number,
+  cacheCreate: number
+): NapiSessionManifest;
+
 /** Store content in blob storage */
 export declare function persistenceStoreBlob(content: Buffer): string;
 
-/** Update session token usage */
+/**
+ * Store a message envelope as JSON
+ *
+ * This is the primary function for storing Claude Code format messages.
+ * It handles blob storage for large content automatically.
+ */
+export declare function persistenceStoreMessageEnvelope(
+  sessionId: string,
+  envelopeJson: string
+): NapiAppendResult;
+
+/** Update session token usage (ADDS to existing) */
 export declare function persistenceUpdateSessionTokens(
   sessionId: string,
   input: number,

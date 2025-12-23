@@ -29,6 +29,8 @@ Tags that identify which architectural component a feature belongs to.
 | `@integration` | Cross-Component Integration |
 | `@npm` | npm package management and dependency resolution |
 | `@parser` | Gherkin Parser Integration |
+| `@persistence` | Session persistence and storage functionality |
+| `@session` | Session management and state tracking |
 | `@templates` | Template generation and transformation system |
 | `@tui` | Terminal User Interface components and infrastructure |
 | `@tui-component` | Terminal User Interface components |
@@ -230,8 +232,11 @@ Tags for specific technical concerns or architectural patterns.
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |
 | `@automation` | Automated workflow operations and state transitions |
 | `@backward-compatibility` | Features ensuring compatibility with older file formats or legacy systems |
+| `@base64` | Base64 encoded content scenarios |
 | `@bdd` | Behavior-Driven Development methodology |
+| `@blob` | Blob storage scenarios |
 | `@blob-storage` | Blob storage for large content |
+| `@boundary` | Boundary condition scenarios |
 | `@browser-integration` | Features requiring browser launcher integration |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
@@ -241,11 +246,14 @@ Tags for specific technical concerns or architectural patterns.
 | `@code-review` | Code review and quality analysis features |
 | `@codex` | Codex AI agent integration features |
 | `@command-registration` | CLI command registration features |
+| `@compaction` | Compaction scenarios |
 | `@compaction-state-on-fork` | Compaction state handling on fork |
 | `@compaction-state-storage` | Compaction state persistence |
 | `@concurrency` | Concurrent access coordination and file locking mechanisms |
 | `@config` | Configuration loading and management features |
 | `@content-deduplication` | Content-addressed deduplication |
+| `@content-type` | Content type classification for message persistence |
+| `@context` | Context preservation scenarios |
 | `@cross-compile` | Cross-compilation builds |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
@@ -254,10 +262,13 @@ Tags for specific technical concerns or architectural patterns.
 | `@data-model` | Features related to data models, schemas, and data structure transformations |
 | `@ddd` | Domain-Driven Design concepts, Event Storming, bounded contexts, aggregates |
 | `@debugging` | Debugging and diagnostic features for troubleshooting |
+| `@deduplication` | Content deduplication scenarios |
 | `@destructive-action` | Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.) |
 | `@development-tools` | Development tooling and utilities |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
+| `@document` | Document content type scenarios |
 | `@email` | Email-related functionality |
+| `@envelope` | Message envelope metadata scenarios |
 | `@error-handling` | Error Handling |
 | `@eslint` | ESLint configuration and linting |
 | `@file-discovery` | File discovery and pattern matching functionality |
@@ -276,6 +287,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
 | `@http-server` | HTTP server implementation and lifecycle management |
 | `@idempotent` | Operations that can be safely repeated without changing results |
+| `@image` | Image content type scenarios |
 | `@initialization` | File and system initialization features |
 | `@ink` | Ink (React for CLIs) rendering engine |
 | `@interactive` | Interactive terminal UI features using Ink |
@@ -296,27 +308,39 @@ Tags for specific technical concerns or architectural patterns.
 | `@markdown` | Markdown rendering and processing |
 | `@markdown-formatting` | Markdown formatting and rendering features |
 | `@marked` | Marked library for markdown parsing |
+| `@max-tokens` | Max tokens limit scenarios |
 | `@mermaid` | Mermaid Diagram Support |
 | `@message-deduplication` | Message deduplication and content-addressing scenarios |
+| `@message-id` | Message ID preservation scenarios |
 | `@message-immutability` | Message immutability invariant |
 | `@modal` | Modal overlay and dialog components |
+| `@model` | Model identifier scenarios |
 | `@mouse-events` | Features that handle mouse and trackpad events |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
+| `@multi-model` | Multi-model session scenarios |
+| `@multi-part` | Multi-part message scenarios |
+| `@multi-provider` | Multi-provider session support for sessions using different LLM providers |
 | `@napi` | NAPI-RS native module bindings for Node.js |
 | `@native` | Native platform builds |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@package` | npm package configuration |
+| `@parallel-tools` | Parallel tool execution scenarios |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
+| `@per-message` | Per-message metadata scenarios |
 | `@performance` | Performance optimization and efficiency features |
 | `@platform-agnostic` | Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.) |
 | `@plugin-system` | Plugin architecture and dynamic module loading |
 | `@prettier` | Prettier configuration and code formatting |
+| `@provider` | Provider-related functionality for LLM provider identification |
 | `@push` | Push notification functionality |
 | `@query-api` | Tree-sitter Query API features using S-expression pattern matching |
+| `@raw-output` | Raw tool output metadata scenarios |
 | `@react` | React framework and component lifecycle features |
 | `@real-time` | Features with real-time data synchronization and live updates |
+| `@request-id` | API request ID scenarios |
 | `@resilience` | Error handling and graceful degradation features |
 | `@responsive` | Components that respond to viewport or terminal dimension changes |
+| `@restore` | Session restore scenarios |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
 | `@runtime` | Runtime behavior and dynamic configuration |
@@ -331,21 +355,37 @@ Tags for specific technical concerns or architectural patterns.
 | `@slash-commands` | Claude Code slash command implementations |
 | `@sms` | SMS-related functionality |
 | `@stable-indices` | Stable indices system for maintaining unique IDs across soft-delete operations |
+| `@state` | Session state scenarios |
 | `@step-validation` | Step-level validation and Gherkin step matching |
+| `@stop-reason` | Response stop reason scenarios |
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
+| `@structure` | Message structure preservation scenarios |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
 | `@template-generation` | Template and documentation generation |
 | `@testing-framework` | Testing framework and infrastructure features |
+| `@text` | Text content type scenarios |
+| `@thinking` | Thinking content type scenarios |
+| `@threading` | Message threading and lineage scenarios |
+| `@threshold` | Threshold boundary scenarios |
+| `@timestamp` | Timestamp-related functionality for temporal ordering and history |
+| `@tokens` | Token tracking scenarios |
 | `@toml` | TOML configuration file parsing and manipulation |
+| `@tool-call` | Tool call content type scenarios |
+| `@tool-result` | Tool result content type scenarios |
+| `@tool-use` | Tool use content type scenarios |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@trackpad` | Trackpad and touchpad input handling with smoothing and gesture support |
 | `@tree-sitter` | Tree-sitter library for language-agnostic AST parsing |
 | `@triggers` | CI/CD trigger configuration |
+| `@turn-sequence` | Message turn sequence scenarios |
+| `@turns` | Turn boundary scenarios |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@typescript` | TypeScript-specific features and configuration |
 | `@ui-formatting` | UI formatting and layout features |
 | `@ui-rendering` | UI rendering and layout issues |
+| `@url` | URL reference content scenarios |
+| `@uuid` | UUID-related functionality for message identification and threading |
 | `@versioning` | Version management and migration features |
 | `@vitest` | Vitest testing framework related features |
 | `@web` | Web-based features and browser functionality |
@@ -431,18 +471,25 @@ Tags for test-related scenarios and requirements.
 | `@e2e` | End-to-end integration tests |
 | `@e2e-test` | End-to-End Test Required |
 | `@edge-case` | Edge case tests - validation of boundary conditions and unusual scenarios |
+| `@empty` | Empty state scenarios |
+| `@equivalence` | Functional equivalence scenarios |
+| `@error` | Error handling and error state scenarios |
 | `@error-cherry-pick-insufficient-context` | Error handling for cherry-pick |
 | `@error-invalid-fork-index` | Error handling for invalid fork |
 | `@error-invalid-merge-session` | Error handling for invalid merge |
 | `@happy-path` | Happy path test scenarios |
 | `@integration-test` | Integration Test Required |
+| `@interrupted-tool` | Interrupted tool execution scenarios |
+| `@large-session` | Large session edge case scenarios |
 | `@main-help` | Main help menu tests |
 | `@manual-test` | Requires Manual Testing |
 | `@medium-command` | Medium complexity command with multiple options |
+| `@no-message-id` | Missing message ID edge case scenarios |
 | `@overwrite` | Tests overwrite behavior (file replacement without prompts) |
 | `@prerequisites` | Prerequisite validation scenarios |
 | `@regression` | Regression tests - comprehensive validation of existing functionality |
 | `@simple-command` | Simple command with minimal options |
+| `@single-message` | Single message edge case scenarios |
 | `@smoke` | Smoke tests - quick validation of critical functionality |
 | `@test` | Test-related scenarios |
 | `@test-infrastructure` | Test infrastructure and framework code |
@@ -694,7 +741,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-23T02:45:05.817Z_
+_Last updated: 2025-12-23T11:03:04.026Z_
 
 **Update Command**: `fspec tag-stats`
 

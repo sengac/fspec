@@ -821,3 +821,881 @@ fn test_fork_before_compaction_rejected() {
         assert!(result.is_ok());
     }
 }
+
+// ============================================================================
+// NAPI-008: Message Envelope Blob Storage Integration Tests
+// ============================================================================
+
+#[test]
+fn test_blob_reference_format() {
+    // Test the blob reference format helper functions
+    use super::blob_processing::{is_blob_reference, extract_blob_hash, make_blob_reference};
+
+    // Valid blob reference
+    let hash = "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9";
+    let blob_ref = make_blob_reference(hash);
+    assert_eq!(blob_ref, format!("blob:sha256:{}", hash));
+    assert!(is_blob_reference(&blob_ref));
+    assert_eq!(extract_blob_hash(&blob_ref), Some(hash));
+
+    // Invalid references
+    assert!(!is_blob_reference("not a blob reference"));
+    assert!(!is_blob_reference("blob:sha256:tooshort"));
+    assert!(!is_blob_reference("blob:md5:b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"));
+    assert_eq!(extract_blob_hash("not a reference"), None);
+}
+
+#[test]
+fn test_tool_result_blob_storage_and_rehydration() {
+    // Test that large tool result content is stored in blob and rehydrated correctly
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    // Create a large tool result content (>10KB)
+    let large_content = "x".repeat(15_000);
+
+    // Create envelope with large tool result
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::ToolResult {
+                tool_use_id: "toolu_test123".to_string(),
+                content: large_content.clone(),
+                is_error: false,
+                tool_use_result: None,
+            }],
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process_envelope_for_blob_storage should succeed");
+
+    // Verify blob was created
+    assert!(!blob_refs.is_empty(), "Should have blob references");
+    let (key, hash) = &blob_refs[0];
+    assert!(key.starts_with("tool_result:"), "Key should indicate tool_result");
+    assert_eq!(hash.len(), 64, "Hash should be SHA-256 (64 hex chars)");
+
+    // Verify content was replaced with blob reference
+    match &processed.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::ToolResult { content, .. } => {
+                    assert!(content.starts_with("blob:sha256:"), "Content should be blob reference");
+                    assert_ne!(*content, large_content, "Content should NOT be the original large content");
+                }
+                _ => panic!("Expected ToolResult"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+
+    // Verify blob can be retrieved
+    let blob_data = get_blob(hash).expect("get_blob should succeed");
+    assert_eq!(String::from_utf8_lossy(&blob_data), large_content, "Blob content should match original");
+
+    // Verify rehydration works
+    let processed_json = serde_json::to_string(&processed).unwrap();
+    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+        .expect("rehydrate should succeed");
+
+    let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
+    match &rehydrated_envelope.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::ToolResult { content, .. } => {
+                    assert_eq!(*content, large_content, "Rehydrated content should match original");
+                }
+                _ => panic!("Expected ToolResult"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+}
+
+#[test]
+fn test_image_blob_storage_and_rehydration() {
+    // Test that large base64 image data is stored in blob and rehydrated correctly
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    // Create large base64 image data (>10KB)
+    let large_image_data = "A".repeat(20_000); // Simulates base64 encoded image
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::Image {
+                source: ImageSource::Base64 {
+                    media_type: "image/png".to_string(),
+                    data: large_image_data.clone(),
+                },
+            }],
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify blob was created
+    assert!(!blob_refs.is_empty(), "Should have blob references for image");
+
+    // Verify image data was replaced with blob reference
+    match &processed.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::Image { source: ImageSource::Base64 { data, media_type } } => {
+                    assert!(data.starts_with("blob:sha256:"), "Image data should be blob reference");
+                    assert_eq!(media_type, "image/png", "Media type should be preserved");
+                }
+                _ => panic!("Expected Base64 Image"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+
+    // Verify rehydration restores original data
+    let processed_json = serde_json::to_string(&processed).unwrap();
+    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+        .expect("rehydrate should succeed");
+
+    let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
+    match &rehydrated_envelope.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::Image { source: ImageSource::Base64 { data, .. } } => {
+                    assert_eq!(*data, large_image_data, "Rehydrated image data should match original");
+                }
+                _ => panic!("Expected Base64 Image"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+}
+
+#[test]
+fn test_document_blob_storage_and_rehydration() {
+    // Test that large base64 document data is stored in blob and rehydrated correctly
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    // Create large base64 document data (>10KB)
+    let large_doc_data = "B".repeat(25_000); // Simulates base64 encoded PDF
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::Document {
+                source: DocumentSource::Base64 {
+                    media_type: "application/pdf".to_string(),
+                    data: large_doc_data.clone(),
+                },
+                title: Some("report.pdf".to_string()),
+                context: Some("Q4 Report".to_string()),
+                cache_control: None,
+            }],
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify blob was created
+    assert!(!blob_refs.is_empty(), "Should have blob references for document");
+
+    // Verify document data was replaced with blob reference and metadata preserved
+    match &processed.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::Document { source: DocumentSource::Base64 { data, media_type }, title, context, .. } => {
+                    assert!(data.starts_with("blob:sha256:"), "Document data should be blob reference");
+                    assert_eq!(media_type, "application/pdf", "Media type should be preserved");
+                    assert_eq!(title, &Some("report.pdf".to_string()), "Title should be preserved");
+                    assert_eq!(context, &Some("Q4 Report".to_string()), "Context should be preserved");
+                }
+                _ => panic!("Expected Base64 Document"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+
+    // Verify rehydration restores original data
+    let processed_json = serde_json::to_string(&processed).unwrap();
+    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+        .expect("rehydrate should succeed");
+
+    let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
+    match &rehydrated_envelope.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::Document { source: DocumentSource::Base64 { data, .. }, .. } => {
+                    assert_eq!(*data, large_doc_data, "Rehydrated document data should match original");
+                }
+                _ => panic!("Expected Base64 Document"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+}
+
+#[test]
+fn test_thinking_blob_storage_and_rehydration() {
+    // Test that large thinking content is stored in blob and rehydrated correctly
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    // Create large thinking content (>10KB)
+    let large_thinking = "Let me think about this problem step by step... ".repeat(500);
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "assistant".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::Assistant(AssistantMessage {
+            role: "assistant".to_string(),
+            id: Some("msg_test".to_string()),
+            model: Some("claude-opus-4-5-20251101".to_string()),
+            content: vec![AssistantContent::Thinking {
+                thinking: large_thinking.clone(),
+                signature: Some("sig_test123".to_string()),
+            }],
+            stop_reason: Some("end_turn".to_string()),
+            usage: None,
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify blob was created
+    assert!(!blob_refs.is_empty(), "Should have blob references for thinking");
+
+    // Verify thinking content was replaced with blob reference and signature preserved
+    match &processed.message {
+        MessagePayload::Assistant(assistant_msg) => {
+            match &assistant_msg.content[0] {
+                AssistantContent::Thinking { thinking, signature } => {
+                    assert!(thinking.starts_with("blob:sha256:"), "Thinking should be blob reference");
+                    assert_eq!(signature, &Some("sig_test123".to_string()), "Signature should be preserved");
+                }
+                _ => panic!("Expected Thinking"),
+            }
+        }
+        _ => panic!("Expected Assistant message"),
+    }
+
+    // Verify rehydration restores original thinking
+    let processed_json = serde_json::to_string(&processed).unwrap();
+    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+        .expect("rehydrate should succeed");
+
+    let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
+    match &rehydrated_envelope.message {
+        MessagePayload::Assistant(assistant_msg) => {
+            match &assistant_msg.content[0] {
+                AssistantContent::Thinking { thinking, .. } => {
+                    assert_eq!(*thinking, large_thinking, "Rehydrated thinking should match original");
+                }
+                _ => panic!("Expected Thinking"),
+            }
+        }
+        _ => panic!("Expected Assistant message"),
+    }
+}
+
+#[test]
+fn test_small_content_not_blobified() {
+    // Test that content under 10KB threshold stays inline (not stored in blob)
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    let small_content = "This is small content under 10KB threshold";
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::ToolResult {
+                tool_use_id: "toolu_small".to_string(),
+                content: small_content.to_string(),
+                is_error: false,
+                tool_use_result: None,
+            }],
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify NO blob was created (content too small)
+    assert!(blob_refs.is_empty(), "Should NOT have blob references for small content");
+
+    // Verify content remains inline
+    match &processed.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::ToolResult { content, .. } => {
+                    assert_eq!(*content, small_content, "Small content should remain inline");
+                    assert!(!content.starts_with("blob:sha256:"), "Should NOT be blob reference");
+                }
+                _ => panic!("Expected ToolResult"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+}
+
+#[test]
+fn test_url_sources_not_blobified() {
+    // Test that URL image/document sources are NOT stored in blob (only base64 is)
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![
+                UserContent::Image {
+                    source: ImageSource::Url {
+                        url: "https://example.com/image.png".to_string(),
+                    },
+                },
+                UserContent::Document {
+                    source: DocumentSource::Url {
+                        url: "https://example.com/doc.pdf".to_string(),
+                    },
+                    title: None,
+                    context: None,
+                    cache_control: None,
+                },
+            ],
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify NO blob was created (URL sources stay inline)
+    assert!(blob_refs.is_empty(), "URL sources should NOT create blobs");
+
+    // Verify URLs remain unchanged
+    match &processed.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::Image { source: ImageSource::Url { url } } => {
+                    assert_eq!(url, "https://example.com/image.png", "Image URL should remain unchanged");
+                }
+                _ => panic!("Expected URL Image"),
+            }
+            match &user_msg.content[1] {
+                UserContent::Document { source: DocumentSource::Url { url }, .. } => {
+                    assert_eq!(url, "https://example.com/doc.pdf", "Document URL should remain unchanged");
+                }
+                _ => panic!("Expected URL Document"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+}
+
+#[test]
+fn test_blob_deduplication_across_envelopes() {
+    // Test that identical content in different envelopes uses same blob hash
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    let identical_content = "x".repeat(15_000);
+
+    let envelope1 = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::ToolResult {
+                tool_use_id: "toolu_1".to_string(),
+                content: identical_content.clone(),
+                is_error: false,
+                tool_use_result: None,
+            }],
+        }),
+        request_id: None,
+    };
+
+    let envelope2 = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: Some(envelope1.uuid),
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::ToolResult {
+                tool_use_id: "toolu_2".to_string(),
+                content: identical_content.clone(),
+                is_error: false,
+                tool_use_result: None,
+            }],
+        }),
+        request_id: None,
+    };
+
+    // Process both envelopes
+    let (_, blob_refs1) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope1)
+            .expect("process should succeed");
+    let (_, blob_refs2) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope2)
+            .expect("process should succeed");
+
+    // Verify both have blob refs with SAME hash (deduplication)
+    assert!(!blob_refs1.is_empty() && !blob_refs2.is_empty());
+    let hash1 = &blob_refs1[0].1;
+    let hash2 = &blob_refs2[0].1;
+    assert_eq!(hash1, hash2, "Identical content should produce same blob hash");
+}
+
+#[test]
+fn test_multi_part_message_blob_storage() {
+    // Test that a message with multiple content parts handles blobs correctly
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    let large_content1 = "A".repeat(15_000);
+    let large_content2 = "B".repeat(20_000);
+    let small_content = "small text";
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![
+                UserContent::Text { text: small_content.to_string() },
+                UserContent::ToolResult {
+                    tool_use_id: "toolu_large1".to_string(),
+                    content: large_content1.clone(),
+                    is_error: false,
+                    tool_use_result: None,
+                },
+                UserContent::ToolResult {
+                    tool_use_id: "toolu_large2".to_string(),
+                    content: large_content2.clone(),
+                    is_error: false,
+                    tool_use_result: None,
+                },
+            ],
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify we have 2 blob refs (for the 2 large tool results)
+    assert_eq!(blob_refs.len(), 2, "Should have 2 blob references");
+
+    // Verify text content unchanged, large contents replaced
+    match &processed.message {
+        MessagePayload::User(user_msg) => {
+            // Text should be unchanged
+            match &user_msg.content[0] {
+                UserContent::Text { text } => {
+                    assert_eq!(text, small_content);
+                }
+                _ => panic!("Expected Text"),
+            }
+            // Large tool results should be blob references
+            match &user_msg.content[1] {
+                UserContent::ToolResult { content, .. } => {
+                    assert!(content.starts_with("blob:sha256:"));
+                }
+                _ => panic!("Expected ToolResult"),
+            }
+            match &user_msg.content[2] {
+                UserContent::ToolResult { content, .. } => {
+                    assert!(content.starts_with("blob:sha256:"));
+                }
+                _ => panic!("Expected ToolResult"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+
+    // Verify full rehydration works
+    let processed_json = serde_json::to_string(&processed).unwrap();
+    let rehydrated = super::blob_processing::rehydrate_envelope_blobs(&processed_json)
+        .expect("rehydrate should succeed");
+
+    let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
+    match &rehydrated_envelope.message {
+        MessagePayload::User(user_msg) => {
+            // Text unchanged
+            match &user_msg.content[0] {
+                UserContent::Text { text } => assert_eq!(text, small_content),
+                _ => panic!("Expected Text"),
+            }
+            // Large contents restored
+            match &user_msg.content[1] {
+                UserContent::ToolResult { content, .. } => assert_eq!(*content, large_content1),
+                _ => panic!("Expected ToolResult"),
+            }
+            match &user_msg.content[2] {
+                UserContent::ToolResult { content, .. } => assert_eq!(*content, large_content2),
+                _ => panic!("Expected ToolResult"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+}
+
+#[test]
+fn test_exact_10kb_threshold_not_blobified() {
+    // Test that content at exactly 10KB (10240 bytes) stays inline
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    // Exactly 10KB = 10 * 1024 = 10240 bytes
+    let exactly_10kb = "x".repeat(10_240);
+    assert_eq!(exactly_10kb.len(), 10_240);
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::ToolResult {
+                tool_use_id: "toolu_exact".to_string(),
+                content: exactly_10kb.clone(),
+                is_error: false,
+                tool_use_result: None,
+            }],
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify NO blob was created (threshold is >10KB, not >=10KB)
+    assert!(blob_refs.is_empty(), "Exactly 10KB should NOT create blob (threshold is >10KB)");
+
+    // Verify content remains inline
+    match &processed.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::ToolResult { content, .. } => {
+                    assert_eq!(*content, exactly_10kb, "10KB content should remain inline");
+                }
+                _ => panic!("Expected ToolResult"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+}
+
+#[test]
+fn test_one_byte_over_threshold_blobified() {
+    // Test that content at 10KB + 1 byte IS stored in blob
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    // 10KB + 1 = 10241 bytes
+    let just_over_10kb = "x".repeat(10_241);
+    assert_eq!(just_over_10kb.len(), 10_241);
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::ToolResult {
+                tool_use_id: "toolu_over".to_string(),
+                content: just_over_10kb.clone(),
+                is_error: false,
+                tool_use_result: None,
+            }],
+        }),
+        request_id: None,
+    };
+
+    // Process for blob storage
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify blob WAS created
+    assert!(!blob_refs.is_empty(), "10KB+1 should create blob");
+
+    // Verify content was replaced with blob reference
+    match &processed.message {
+        MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                UserContent::ToolResult { content, .. } => {
+                    assert!(content.starts_with("blob:sha256:"), "Should be blob reference");
+                }
+                _ => panic!("Expected ToolResult"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+}
+
+#[test]
+fn test_tool_use_storage_and_retrieval() {
+    // Test that a simple ToolUse (no blob needed) is stored and retrieved correctly
+    use chrono::Utc;
+    use uuid::Uuid;
+
+    let envelope = MessageEnvelope {
+        uuid: Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "assistant".to_string(),
+        provider: "claude".to_string(),
+        message: MessagePayload::Assistant(AssistantMessage {
+            role: "assistant".to_string(),
+            id: Some("msg_test".to_string()),
+            model: Some("claude-opus-4-5-20251101".to_string()),
+            content: vec![AssistantContent::ToolUse {
+                id: "toolu_bash123".to_string(),
+                name: "Bash".to_string(),
+                input: serde_json::json!({
+                    "command": "ls -la",
+                    "description": "List files"
+                }),
+            }],
+            stop_reason: Some("tool_use".to_string()),
+            usage: None,
+        }),
+        request_id: Some("req_test123".to_string()),
+    };
+
+    // Process for blob storage (should NOT create blobs for small content)
+    let (processed, blob_refs) =
+        super::blob_processing::process_envelope_for_blob_storage(&envelope)
+            .expect("process should succeed");
+
+    // Verify NO blob was created (content is small)
+    assert!(blob_refs.is_empty(), "Small ToolUse should NOT create blobs");
+
+    // Verify ToolUse content is preserved
+    match &processed.message {
+        MessagePayload::Assistant(assistant_msg) => {
+            match &assistant_msg.content[0] {
+                AssistantContent::ToolUse { id, name, input } => {
+                    assert_eq!(id, "toolu_bash123");
+                    assert_eq!(name, "Bash");
+                    assert_eq!(input["command"], "ls -la");
+                    assert_eq!(input["description"], "List files");
+                }
+                _ => panic!("Expected ToolUse"),
+            }
+        }
+        _ => panic!("Expected Assistant message"),
+    }
+
+    // Verify round-trip through JSON serialization works
+    let json = serde_json::to_string(&processed).unwrap();
+    let restored: MessageEnvelope = serde_json::from_str(&json).unwrap();
+    
+    match &restored.message {
+        MessagePayload::Assistant(assistant_msg) => {
+            match &assistant_msg.content[0] {
+                AssistantContent::ToolUse { id, name, input } => {
+                    assert_eq!(id, "toolu_bash123");
+                    assert_eq!(name, "Bash");
+                    assert_eq!(input["command"], "ls -la");
+                    assert_eq!(input["description"], "List files");
+                }
+                _ => panic!("Expected ToolUse after restore"),
+            }
+        }
+        _ => panic!("Expected Assistant message after restore"),
+    }
+}
+
+// ============================================================================
+// NAPI-008: Token Usage and Compaction State Persistence Tests
+// ============================================================================
+
+#[test]
+fn test_set_session_tokens() {
+    let project = PathBuf::from("/test/project/token_set");
+
+    // @step Given I have a session
+    let mut session = create_session("Token Test", &project).expect("create");
+    let session_id = session.id;
+
+    // @step And the session has some initial token usage from messages
+    append_message(&mut session, "user", "Hello").expect("append");
+    append_message(&mut session, "assistant", "Hi there!").expect("append");
+
+    // @step When I set the cumulative token usage to specific values
+    set_session_tokens(&mut session, 1000, 500, 100, 50).expect("set tokens");
+
+    // @step Then the session should have exactly those token values (not added)
+    assert_eq!(session.token_usage.total_input_tokens, 1000);
+    assert_eq!(session.token_usage.total_output_tokens, 500);
+    assert_eq!(session.token_usage.cache_read_tokens, 100);
+    assert_eq!(session.token_usage.cache_creation_tokens, 50);
+
+    // @step And when I reload the session from storage
+    let reloaded = load_session(session_id).expect("reload");
+
+    // @step Then the token values should be persisted
+    assert_eq!(reloaded.token_usage.total_input_tokens, 1000);
+    assert_eq!(reloaded.token_usage.total_output_tokens, 500);
+    assert_eq!(reloaded.token_usage.cache_read_tokens, 100);
+    assert_eq!(reloaded.token_usage.cache_creation_tokens, 50);
+}
+
+#[test]
+fn test_set_compaction_state() {
+    let project = PathBuf::from("/test/project/compaction_set");
+
+    // @step Given I have a session with messages
+    let mut session = create_session("Compaction Test", &project).expect("create");
+    let session_id = session.id;
+    for i in 0..10 {
+        let role = if i % 2 == 0 { "user" } else { "assistant" };
+        append_message(&mut session, role, &format!("Msg {}", i)).expect("append");
+    }
+
+    // @step And the session has no compaction state initially
+    assert!(session.compaction.is_none());
+
+    // @step When I set the compaction state after context compaction
+    let summary = "Compacted 8 turns (5000→1500 tokens, 70% compression)".to_string();
+    set_compaction_state(&mut session, summary.clone(), 8).expect("set compaction");
+
+    // @step Then the session should have the compaction state
+    assert!(session.compaction.is_some());
+    let compaction = session.compaction.as_ref().unwrap();
+    assert_eq!(compaction.summary, summary);
+    assert_eq!(compaction.compacted_before_index, 8);
+
+    // @step And when I reload the session from storage
+    let reloaded = load_session(session_id).expect("reload");
+
+    // @step Then the compaction state should be persisted
+    assert!(reloaded.compaction.is_some());
+    let reloaded_compaction = reloaded.compaction.as_ref().unwrap();
+    assert_eq!(reloaded_compaction.summary, summary);
+    assert_eq!(reloaded_compaction.compacted_before_index, 8);
+}
+
+#[test]
+fn test_clear_compaction_state() {
+    let project = PathBuf::from("/test/project/compaction_clear");
+
+    // @step Given I have a session with compaction state
+    let mut session = create_session("Compaction Clear Test", &project).expect("create");
+    let session_id = session.id;
+    for i in 0..10 {
+        let role = if i % 2 == 0 { "user" } else { "assistant" };
+        append_message(&mut session, role, &format!("Msg {}", i)).expect("append");
+    }
+    set_compaction_state(&mut session, "Test summary".to_string(), 5).expect("set compaction");
+    assert!(session.compaction.is_some());
+
+    // @step When I clear the compaction state
+    clear_compaction_state(&mut session).expect("clear compaction");
+
+    // @step Then the session should have no compaction state
+    assert!(session.compaction.is_none());
+
+    // @step And when I reload the session from storage
+    let reloaded = load_session(session_id).expect("reload");
+
+    // @step Then the compaction should still be cleared
+    assert!(reloaded.compaction.is_none());
+}
+
+#[test]
+fn test_token_and_compaction_state_persist_together() {
+    let project = PathBuf::from("/test/project/full_state");
+
+    // @step Given I have a session
+    let mut session = create_session("Full State Test", &project).expect("create");
+    let session_id = session.id;
+    for i in 0..20 {
+        let role = if i % 2 == 0 { "user" } else { "assistant" };
+        append_message(&mut session, role, &format!("Msg {}", i)).expect("append");
+    }
+
+    // @step When I set both token usage and compaction state
+    set_session_tokens(&mut session, 2000, 1000, 200, 100).expect("set tokens");
+    set_compaction_state(&mut session, "Compacted 15 turns".to_string(), 15).expect("set compaction");
+
+    // @step And I reload the session
+    let reloaded = load_session(session_id).expect("reload");
+
+    // @step Then both token usage and compaction state should be restored
+    assert_eq!(reloaded.token_usage.total_input_tokens, 2000);
+    assert_eq!(reloaded.token_usage.total_output_tokens, 1000);
+    assert!(reloaded.compaction.is_some());
+    assert_eq!(reloaded.compaction.as_ref().unwrap().compacted_before_index, 15);
+
+    // @step And the message count should still be correct
+    assert_eq!(reloaded.messages.len(), 20);
+}

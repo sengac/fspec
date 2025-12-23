@@ -1,0 +1,95 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 19,
+      "column": 4,
+      "text": "pub fn new() -> Result<Self, String> {\n        ensure_directories()?;\n        let blobs_dir = get_data_dir()?.join(\"blobs\");\n        Ok(Self { blobs_dir })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "store",
+      "line": 28,
+      "column": 4,
+      "text": "pub fn store(&self, content: &[u8]) -> Result<String, String> {\n        let hash = compute_sha256(content);\n        let blob_path = self.get_blob_path(&hash);\n\n        // If blob already exists, skip writing (deduplication)\n        if !blob_path.exists() {\n            // Write to temp file first, then rename for atomicity\n            let temp_path = self.blobs_dir.join(format!(\"{}.tmp\", hash));\n\n            let mut file = File::create(&temp_path)\n                .map_err(|e| format!(\"Failed to create blob temp file: {}\", e))?;\n\n            file.write_all(content)\n                .map_err(|e| format!(\"Failed to write blob content: {}\", e))?;\n\n            file.sync_all()\n                .map_err(|e| format!(\"Failed to sync blob file: {}\", e))?;\n\n            fs::rename(&temp_path, &blob_path)\n                .map_err(|e| format!(\"Failed to rename blob temp file: {}\", e))?;\n        }\n\n        Ok(hash)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get",
+      "line": 54,
+      "column": 4,
+      "text": "pub fn get(&self, hash: &str) -> Result<Vec<u8>, String> {\n        // Validate hash format\n        if hash.len() != 64 || !hash.chars().all(|c| c.is_ascii_hexdigit()) {\n            return Err(format!(\"Invalid blob hash: {}\", hash));\n        }\n\n        let blob_path = self.get_blob_path(hash);\n\n        if !blob_path.exists() {\n            return Err(format!(\"Blob not found: {}\", hash));\n        }\n\n        let mut file =\n            File::open(&blob_path).map_err(|e| format!(\"Failed to open blob file: {}\", e))?;\n\n        let mut content = Vec::new();\n        file.read_to_end(&mut content)\n            .map_err(|e| format!(\"Failed to read blob content: {}\", e))?;\n\n        // Verify hash\n        let actual_hash = compute_sha256(&content);\n        if actual_hash != hash {\n            return Err(format!(\n                \"Blob hash mismatch: expected {}, got {}\",\n                hash, actual_hash\n            ));\n        }\n\n        Ok(content)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "exists",
+      "line": 86,
+      "column": 4,
+      "text": "pub fn exists(&self, hash: &str) -> bool {\n        self.get_blob_path(hash).exists()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "delete",
+      "line": 91,
+      "column": 4,
+      "text": "pub fn delete(&self, hash: &str) -> Result<(), String> {\n        let blob_path = self.get_blob_path(hash);\n        if blob_path.exists() {\n            fs::remove_file(&blob_path).map_err(|e| format!(\"Failed to delete blob: {}\", e))?;\n        }\n        Ok(())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_blob_path",
+      "line": 100,
+      "column": 4,
+      "text": "fn get_blob_path(&self, hash: &str) -> PathBuf {\n        // Use first 2 chars as subdirectory for better filesystem distribution\n        let subdir = &hash[0..2];\n        let dir = self.blobs_dir.join(subdir);\n\n        // Create subdirectory if it doesn't exist\n        let _ = fs::create_dir_all(&dir);\n\n        dir.join(hash)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "total_size",
+      "line": 112,
+      "column": 4,
+      "text": "pub fn total_size(&self) -> Result<u64, String> {\n        let mut total = 0u64;\n\n        for entry in\n            fs::read_dir(&self.blobs_dir).map_err(|e| format!(\"Failed to read blobs dir: {}\", e))?\n        {\n            let entry = entry.map_err(|e| format!(\"Failed to read entry: {}\", e))?;\n            let path = entry.path();\n\n            if path.is_dir() {\n                for sub_entry in\n                    fs::read_dir(&path).map_err(|e| format!(\"Failed to read subdir: {}\", e))?\n                {\n                    let sub_entry =\n                        sub_entry.map_err(|e| format!(\"Failed to read entry: {}\", e))?;\n                    if let Ok(meta) = sub_entry.metadata() {\n                        total += meta.len();\n                    }\n                }\n            }\n        }\n\n        Ok(total)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "compute_sha256",
+      "line": 139,
+      "column": 0,
+      "text": "fn compute_sha256(content: &[u8]) -> String {\n    let mut hasher = Sha256::new();\n    hasher.update(content);\n    let result = hasher.finalize();\n    hex::encode(result)\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "should_use_blob_storage",
+      "line": 149,
+      "column": 0,
+      "text": "pub fn should_use_blob_storage(content: &[u8]) -> bool {\n    // Threshold: 10KB\n    const BLOB_THRESHOLD: usize = 10 * 1024;\n    content.len() > BLOB_THRESHOLD\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "create_preview",
+      "line": 156,
+      "column": 0,
+      "text": "pub fn create_preview(content: &[u8], max_len: usize) -> String {\n    let s = String::from_utf8_lossy(content);\n    if s.len() <= max_len {\n        s.to_string()\n    } else {\n        format!(\n            \"{}... [truncated, {} bytes total]\",\n            &s[..max_len],\n            content.len()\n        )\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "test_compute_sha256",
+      "line": 174,
+      "column": 4,
+      "text": "fn test_compute_sha256() {\n        let hash = compute_sha256(b\"hello world\");\n        assert_eq!(hash.len(), 64);\n        // Known hash for \"hello world\"\n        assert_eq!(\n            hash,\n            \"b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_should_use_blob_storage",
+      "line": 185,
+      "column": 4,
+      "text": "fn test_should_use_blob_storage() {\n        let small = vec![0u8; 100];\n        let large = vec![0u8; 20_000];\n\n        assert!(!should_use_blob_storage(&small));\n        assert!(should_use_blob_storage(&large));\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_create_preview",
+      "line": 194,
+      "column": 4,
+      "text": "fn test_create_preview() {\n        let content = b\"Hello, this is a test message with some content.\";\n        let preview = create_preview(content, 20);\n        assert!(preview.starts_with(\"Hello, this is a tes\"));\n        assert!(preview.contains(\"truncated\"));\n    }"
+    }
+  ]
+}

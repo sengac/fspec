@@ -360,8 +360,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           );
 
           setCurrentSessionId(persistedSession.id);
-        } catch (err) {
-          logger.error(`Failed to create persistence session: ${err instanceof Error ? err.message : String(err)}`);
+        } catch {
+          // Session creation failed - continue without persistence
         }
 
         // NAPI-006: Load history for current project
@@ -736,7 +736,22 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           { role: 'tool', content: message },
         ]);
         // Update token tracker to reflect reduced context
-        setTokenUsage(sessionRef.current.tokenTracker);
+        const finalTokens = sessionRef.current.tokenTracker;
+        setTokenUsage(finalTokens);
+
+        // Persist compaction state and token usage
+        if (currentSessionId) {
+          try {
+            const { persistenceSetCompactionState, persistenceSetSessionTokens } = await import('@sengac/codelet-napi');
+            // Create summary for persistence (includes key metrics)
+            const summary = `Compacted ${result.turnsSummarized} turns (${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression)`;
+            // compacted_before_index = turnsSummarized (messages 0 to turnsSummarized-1 were compacted)
+            persistenceSetCompactionState(currentSessionId, summary, result.turnsSummarized);
+            persistenceSetSessionTokens(currentSessionId, finalTokens.inputTokens, finalTokens.outputTokens, 0, 0);
+          } catch {
+            // Compaction state persistence failed - continue
+          }
+        }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to compact context';
         setConversation(prev => [
@@ -781,11 +796,25 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     // Add user message to conversation
     setConversation(prev => [...prev, { role: 'user', content: userMessage }]);
 
-    // Persist user message to session
+    // Persist user message as full envelope
     if (currentSessionId) {
       try {
-        const { persistenceAppendMessage, persistenceRenameSession } = await import('@sengac/codelet-napi');
-        persistenceAppendMessage(currentSessionId, 'user', userMessage);
+        const { persistenceStoreMessageEnvelope, persistenceRenameSession } = await import('@sengac/codelet-napi');
+
+        // Create proper user message envelope
+        // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
+        const userEnvelope = {
+          uuid: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          type: 'user',
+          provider: currentProvider,
+          message: {
+            role: 'user',
+            content: [{ type: 'text', text: userMessage }],
+          },
+        };
+        const envelopeJson = JSON.stringify(userEnvelope);
+        const result = persistenceStoreMessageEnvelope(currentSessionId, envelopeJson);
 
         // Auto-rename session with first user message (truncated to 50 chars)
         if (isFirstMessageRef.current) {
@@ -793,8 +822,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           const sessionName = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
           persistenceRenameSession(currentSessionId, sessionName);
         }
-      } catch (err) {
-        logger.error(`Failed to persist user message: ${err instanceof Error ? err.message : String(err)}`);
+      } catch {
+        // User message persistence failed - continue
       }
     }
 
@@ -807,8 +836,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     try {
       // Track current text segment (resets after tool calls)
       let currentSegment = '';
-      // Track full assistant response for persistence
+      // Track full assistant response for persistence (includes ALL content blocks)
       let fullAssistantResponse = '';
+      // Track assistant message content blocks for envelope storage
+      const assistantContentBlocks: Array<{ type: string; text?: string; id?: string; name?: string; input?: unknown }> = [];
+      // Track pending tool results to store as user message
+      const pendingToolResults: Array<{ type: string; tool_use_id: string; content: string; is_error?: boolean }> = [];
 
       await sessionRef.current.prompt(userMessage, (chunk: StreamChunk) => {
         if (!chunk) return;
@@ -837,7 +870,14 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
           // Text chunks are now batched in Rust, so we receive fewer, larger updates
           currentSegment += chunk.text;
-          fullAssistantResponse += chunk.text; // Accumulate for persistence
+          fullAssistantResponse += chunk.text; // Accumulate for display persistence
+          // Add to content blocks for envelope storage
+          const lastBlock = assistantContentBlocks[assistantContentBlocks.length - 1];
+          if (lastBlock && lastBlock.type === 'text') {
+            lastBlock.text = (lastBlock.text || '') + chunk.text;
+          } else {
+            assistantContentBlocks.push({ type: 'text', text: chunk.text });
+          }
           const segmentSnapshot = currentSegment;
           setConversation(prev => {
             const updated = [...prev];
@@ -853,22 +893,31 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
           // Finalize current streaming message and add tool call (match CLI format)
           const toolCall = chunk.toolCall;
+
+          // Add tool_use block to content blocks for envelope storage
+          let parsedInput: unknown;
+          try {
+            parsedInput = JSON.parse(toolCall.input);
+          } catch {
+            parsedInput = toolCall.input;
+          }
+          assistantContentBlocks.push({
+            type: 'tool_use',
+            id: toolCall.id,
+            name: toolCall.name,
+            input: parsedInput,
+          });
+
           let toolContent = `[Planning to use tool: ${toolCall.name}]`;
           // Parse and display arguments
-          try {
-            const args = JSON.parse(toolCall.input);
-            if (typeof args === 'object' && args !== null) {
-              for (const [key, value] of Object.entries(args)) {
-                const displayValue =
-                  typeof value === 'string' ? value : JSON.stringify(value);
-                toolContent += `\n  ${key}: ${displayValue}`;
-              }
+          if (typeof parsedInput === 'object' && parsedInput !== null) {
+            for (const [key, value] of Object.entries(parsedInput as Record<string, unknown>)) {
+              const displayValue =
+                typeof value === 'string' ? value : JSON.stringify(value);
+              toolContent += `\n  ${key}: ${displayValue}`;
             }
-          } catch {
-            // If input isn't valid JSON, show as-is
-            if (toolCall.input) {
-              toolContent += `\n  ${toolCall.input}`;
-            }
+          } else if (toolCall.input) {
+            toolContent += `\n  ${toolCall.input}`;
           }
           const toolContentSnapshot = toolContent;
           setConversation(prev => {
@@ -891,6 +940,15 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
           // Show tool result in CLI format, then start new streaming message
           const result = chunk.toolResult;
+
+          // Add tool_result to pending list (will be stored as user message)
+          pendingToolResults.push({
+            type: 'tool_result',
+            tool_use_id: result.toolCallId,
+            content: result.content,
+            is_error: result.isError,
+          });
+
           // Sanitize content: replace tabs with spaces (Ink can't render tabs)
           const sanitizedContent = result.content.replace(/\t/g, '  ');
           const preview = sanitizedContent.slice(0, 500);
@@ -971,19 +1029,68 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         }
       });
 
-      // Persist assistant response to session
-      if (currentSessionId && fullAssistantResponse) {
+      // Persist full envelopes to session (includes tool calls and results)
+      if (currentSessionId) {
         try {
-          const { persistenceAppendMessage } = await import('@sengac/codelet-napi');
-          persistenceAppendMessage(currentSessionId, 'assistant', fullAssistantResponse);
-        } catch (err) {
-          logger.error(`Failed to persist assistant response: ${err instanceof Error ? err.message : String(err)}`);
+          const { persistenceStoreMessageEnvelope } = await import('@sengac/codelet-napi');
+
+          // Store assistant message with ALL content blocks (text + tool_use)
+          // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
+          if (assistantContentBlocks.length > 0) {
+            const assistantEnvelope = {
+              uuid: crypto.randomUUID(),
+              timestamp: new Date().toISOString(),
+              type: 'assistant',
+              provider: currentProvider,
+              message: {
+                role: 'assistant',
+                content: assistantContentBlocks,
+              },
+            };
+            const assistantJson = JSON.stringify(assistantEnvelope);
+            persistenceStoreMessageEnvelope(currentSessionId, assistantJson);
+          }
+
+          // Store tool results as user message (if any)
+          if (pendingToolResults.length > 0) {
+            const toolResultEnvelope = {
+              uuid: crypto.randomUUID(),
+              timestamp: new Date().toISOString(),
+              type: 'user',
+              provider: currentProvider,
+              message: {
+                role: 'user',
+                content: pendingToolResults,
+              },
+            };
+            const toolResultJson = JSON.stringify(toolResultEnvelope);
+            persistenceStoreMessageEnvelope(currentSessionId, toolResultJson);
+          }
+        } catch {
+          // Message persistence failed - continue
         }
       }
 
       // Update token usage after prompt completes (safe to access now - session unlocked)
       if (sessionRef.current) {
-        setTokenUsage(sessionRef.current.tokenTracker);
+        const finalTokens = sessionRef.current.tokenTracker;
+        setTokenUsage(finalTokens);
+
+        // Persist token usage to session manifest (for restore)
+        if (currentSessionId) {
+          try {
+            const { persistenceSetSessionTokens } = await import('@sengac/codelet-napi');
+            persistenceSetSessionTokens(
+              currentSessionId,
+              finalTokens.inputTokens,
+              finalTokens.outputTokens,
+              0, // cache read - not tracked separately yet
+              0  // cache create - not tracked separately yet
+            );
+          } catch {
+            // Token usage persistence failed - continue
+          }
+        }
       }
     } catch (err) {
       const errorMessage =
@@ -1149,7 +1256,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     const selectedSession = availableSessions[resumeSessionIndex];
 
     try {
-      const { persistenceGetSessionMessages } = await import('@sengac/codelet-napi');
+      const { persistenceGetSessionMessages, persistenceGetSessionMessageEnvelopes } = await import('@sengac/codelet-napi');
       const messages = persistenceGetSessionMessages(selectedSession.id);
 
       // CRITICAL: Restore messages to CodeletSession for LLM context
@@ -1159,12 +1266,124 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         sessionRef.current.restoreMessages(messages);
       }
 
-      // Convert stored messages to conversation format for UI display
-      const restored: ConversationMessage[] = messages.map((m: { role: string; content: string }) => ({
-        role: m.role === 'user' ? 'user' : 'assistant',
-        content: m.content,
-        isStreaming: false,
-      }));
+      // Get FULL envelopes with all content blocks (ToolUse, ToolResult, Text, etc.)
+      const envelopes: string[] = persistenceGetSessionMessageEnvelopes(selectedSession.id);
+
+      // Convert full envelopes to conversation format for UI display
+      // This properly restores tool calls, tool results, thinking, etc.
+      //
+      // CRITICAL: Tool results are stored in separate user envelopes after assistant
+      // messages, but we need to interleave them correctly by matching tool_use_id.
+      const restored: ConversationMessage[] = [];
+
+      // First pass: collect all tool results by their tool_use_id
+      const toolResultsByUseId = new Map<string, { content: string; isError: boolean }>();
+      for (const envelopeJson of envelopes) {
+        try {
+          const envelope = JSON.parse(envelopeJson);
+          const messageType = envelope.type || envelope.message_type || envelope.messageType;
+          const message = envelope.message;
+          if (!message) continue;
+
+          if (messageType === 'user') {
+            const contents = message.content || [];
+            for (const content of contents) {
+              if (content.type === 'tool_result' && content.tool_use_id) {
+                toolResultsByUseId.set(content.tool_use_id, {
+                  content: content.content || '',
+                  isError: content.is_error || false,
+                });
+              }
+            }
+          }
+        } catch {
+          // Skip malformed envelopes in first pass
+        }
+      }
+
+      // Second pass: process envelopes and interleave tool results
+      for (const envelopeJson of envelopes) {
+        try {
+          const envelope = JSON.parse(envelopeJson);
+          const messageType = envelope.type || envelope.message_type || envelope.messageType;
+          const message = envelope.message;
+
+          if (!message) continue;
+
+          if (messageType === 'user') {
+            // User messages - extract text only (tool results handled via interleaving)
+            const contents = message.content || [];
+            for (const content of contents) {
+              if (content.type === 'text' && content.text) {
+                restored.push({ role: 'user', content: `${content.text}`, isStreaming: false });
+              }
+              // Skip tool_result here - they're interleaved with tool_use below
+            }
+          } else if (messageType === 'assistant') {
+            // Assistant messages - extract text, tool use, and thinking
+            // Interleave tool results immediately after their corresponding tool_use
+            const contents = message.content || [];
+            let textContent = '';
+
+            for (const content of contents) {
+              if (content.type === 'text' && content.text) {
+                textContent += content.text;
+              } else if (content.type === 'tool_use') {
+                // Flush accumulated text first
+                if (textContent) {
+                  restored.push({ role: 'assistant', content: textContent, isStreaming: false });
+                  textContent = '';
+                }
+                // Tool call
+                let toolContent = `[Planning to use tool: ${content.name}]`;
+                const input = content.input;
+                if (typeof input === 'object' && input !== null) {
+                  for (const [key, value] of Object.entries(input)) {
+                    const displayValue = typeof value === 'string' ? value : JSON.stringify(value);
+                    toolContent += `\n  ${key}: ${displayValue}`;
+                  }
+                }
+                restored.push({ role: 'tool', content: toolContent, isStreaming: false });
+
+                // Immediately show the tool result (interleaved)
+                const toolResult = toolResultsByUseId.get(content.id);
+                if (toolResult) {
+                  const preview = toolResult.content.slice(0, 500);
+                  const truncated = toolResult.content.length > 500;
+                  const indentedPreview = preview.split('\n').map((line: string) => `  ${line}`).join('\n');
+                  restored.push({
+                    role: 'tool',
+                    content: `[Tool result preview]\n-------\n${indentedPreview}${truncated ? '...' : ''}\n-------`,
+                    isStreaming: false,
+                  });
+                }
+              } else if (content.type === 'thinking' && content.thinking) {
+                // Thinking block (could show or hide based on preference)
+                // For now, skip thinking blocks in restore (like Claude Code does)
+              }
+            }
+
+            // Flush remaining text
+            if (textContent) {
+              restored.push({ role: 'assistant', content: textContent, isStreaming: false });
+            }
+          }
+        } catch {
+          // If envelope parsing fails, fall back to simple format
+          logger.warn('Failed to parse envelope, falling back to simple format');
+        }
+      }
+
+      // If envelope parsing yielded nothing, fall back to simple messages
+      if (restored.length === 0) {
+        for (const m of messages) {
+          restored.push({
+            role: m.role === 'user' ? 'user' : 'assistant',
+            content: m.content,
+            isStreaming: false,
+          });
+        }
+      }
 
       // Update state - replace current conversation entirely
       setCurrentSessionId(selectedSession.id);
@@ -1175,10 +1394,24 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       // Don't rename resumed sessions with their first new message
       isFirstMessageRef.current = false;
 
+      // Restore token usage from session manifest
+      if (selectedSession.tokenUsage) {
+        setTokenUsage({
+          inputTokens: selectedSession.tokenUsage.totalInputTokens,
+          outputTokens: selectedSession.tokenUsage.totalOutputTokens,
+        });
+      }
+
+      // Build confirmation message with compaction info
+      let confirmationMsg = `Session resumed: "${selectedSession.name}" (${selectedSession.messageCount} messages)`;
+      if (selectedSession.compaction) {
+        confirmationMsg += `\n[Compaction: ${selectedSession.compaction.summary}]`;
+      }
+
       // Add confirmation message
       setConversation(prev => [
         ...prev,
-        { role: 'tool', content: `Session resumed: "${selectedSession.name}" (${selectedSession.messageCount} messages)` },
+        { role: 'tool', content: confirmationMsg },
       ]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to restore session';

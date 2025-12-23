@@ -7,7 +7,12 @@ license = "MIT"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+# cdylib for Node.js native module, rlib for Rust tests to import types
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# Enable noop feature for cargo test - stubs out NAPI symbols so tests can link
+noop = ["napi/noop", "napi-derive/noop"]
 
 [dependencies]
 # NAPI-RS v3 with async support for proper streaming
@@ -50,6 +55,8 @@ dirs = "6"
 lazy_static = "1.4"
 
 [dev-dependencies]
+sha2 = "0.10"
+hex = "0.4"
 
 [build-dependencies]
 napi-build = "2"
