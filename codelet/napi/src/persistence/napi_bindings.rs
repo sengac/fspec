@@ -278,7 +278,7 @@ pub fn persistence_search_history(
 // Token Usage
 // ============================================================================
 
-/// Update session token usage
+/// Update session token usage (ADDS to existing)
 #[napi]
 pub fn persistence_update_session_tokens(
     session_id: String,
@@ -297,6 +297,55 @@ pub fn persistence_update_session_tokens(
         cache_create as u64,
     )
     .map_err(Error::from_reason)?;
+    Ok(session.into())
+}
+
+/// Set session token usage (REPLACES existing - use for cumulative totals)
+#[napi]
+pub fn persistence_set_session_tokens(
+    session_id: String,
+    input: u32,
+    output: u32,
+    cache_read: u32,
+    cache_create: u32,
+) -> Result<NapiSessionManifest> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let mut session = load_session(uuid).map_err(Error::from_reason)?;
+    set_session_tokens(
+        &mut session,
+        input as u64,
+        output as u64,
+        cache_read as u64,
+        cache_create as u64,
+    )
+    .map_err(Error::from_reason)?;
+    Ok(session.into())
+}
+
+// ============================================================================
+// Compaction State
+// ============================================================================
+
+/// Set compaction state for a session (after manual or automatic compaction)
+#[napi]
+pub fn persistence_set_compaction_state(
+    session_id: String,
+    summary: String,
+    compacted_before_index: u32,
+) -> Result<NapiSessionManifest> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let mut session = load_session(uuid).map_err(Error::from_reason)?;
+    set_compaction_state(&mut session, summary, compacted_before_index as usize)
+        .map_err(Error::from_reason)?;
+    Ok(session.into())
+}
+
+/// Clear compaction state for a session
+#[napi]
+pub fn persistence_clear_compaction_state(session_id: String) -> Result<NapiSessionManifest> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let mut session = load_session(uuid).map_err(Error::from_reason)?;
+    clear_compaction_state(&mut session).map_err(Error::from_reason)?;
     Ok(session.into())
 }
 
@@ -485,4 +534,204 @@ pub struct NapiAppendResult {
 pub struct NapiCherryPickResult {
     pub session: NapiSessionManifest,
     pub imported_indices: Vec<u32>,
+}
+
+// ============================================================================
+// Message Envelope Types (NAPI-008: Claude Code Format)
+// ============================================================================
+
+// Re-export blob processing functions from the pure Rust module for use in this module
+use super::blob_processing::{
+    process_envelope_for_blob_storage as process_envelope_impl,
+    rehydrate_envelope_blobs as rehydrate_envelope_impl,
+};
+
+/// Store a message envelope as JSON
+///
+/// This is the primary function for storing Claude Code format messages.
+/// It handles blob storage for large content automatically.
+#[napi]
+pub fn persistence_store_message_envelope(
+    session_id: String,
+    envelope_json: String,
+) -> Result<NapiAppendResult> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let mut session = load_session(uuid).map_err(Error::from_reason)?;
+
+    // Parse and validate the envelope
+    let envelope: super::MessageEnvelope = serde_json::from_str(&envelope_json)
+        .map_err(|e| Error::from_reason(format!("Invalid message envelope JSON: {}", e)))?;
+
+    // Process envelope for blob storage (extracts large content)
+    let (processed_envelope, blob_refs) = process_envelope_impl(&envelope).map_err(Error::from_reason)?;
+
+    // Determine role from envelope
+    let role = processed_envelope.message_type.clone();
+
+    // Store the message with the full envelope as metadata
+    let mut metadata_map: HashMap<String, serde_json::Value> =
+        serde_json::from_str(&serde_json::to_string(&processed_envelope).unwrap())
+            .map_err(|e| Error::from_reason(format!("Failed to serialize envelope: {}", e)))?;
+
+    // Add blob references to metadata if any content was stored in blobs
+    if !blob_refs.is_empty() {
+        let blob_refs_json: serde_json::Value = blob_refs
+            .into_iter()
+            .map(|(k, v)| serde_json::json!({"key": k, "hash": v}))
+            .collect();
+        metadata_map.insert("_blobRefs".to_string(), blob_refs_json);
+    }
+
+    // Extract a text summary for the content field
+    let content_summary = extract_content_summary(&processed_envelope);
+
+    let msg_id = append_message_with_metadata(&mut session, &role, &content_summary, metadata_map)
+        .map_err(Error::from_reason)?;
+
+    Ok(NapiAppendResult {
+        message_id: msg_id.to_string(),
+        session: session.into(),
+    })
+}
+
+/// Get a message as a full envelope JSON with blob content rehydrated
+#[napi]
+pub fn persistence_get_message_envelope(id: String) -> Result<Option<String>> {
+    let uuid = uuid::Uuid::parse_str(&id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let msg = get_message(uuid).map_err(Error::from_reason)?;
+
+    match msg {
+        Some(stored_msg) => {
+            // Reconstruct envelope from stored metadata
+            let metadata_value = serde_json::Value::Object(
+                stored_msg
+                    .metadata
+                    .into_iter()
+                    .collect::<serde_json::Map<String, serde_json::Value>>(),
+            );
+            let envelope_json = serde_json::to_string(&metadata_value).unwrap_or_default();
+
+            // Rehydrate blob references to restore original content
+            let rehydrated = rehydrate_envelope_impl(&envelope_json).map_err(Error::from_reason)?;
+            Ok(Some(rehydrated))
+        }
+        None => Ok(None),
+    }
+}
+
+/// Get a message envelope WITHOUT blob rehydration (returns blob references as-is)
+/// Use this when you want to inspect the raw stored format with blob:sha256: references.
+#[napi]
+pub fn persistence_get_message_envelope_raw(id: String) -> Result<Option<String>> {
+    let uuid = uuid::Uuid::parse_str(&id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let msg = get_message(uuid).map_err(Error::from_reason)?;
+
+    match msg {
+        Some(stored_msg) => {
+            // Reconstruct envelope from stored metadata (no rehydration)
+            let metadata_value = serde_json::Value::Object(
+                stored_msg
+                    .metadata
+                    .into_iter()
+                    .collect::<serde_json::Map<String, serde_json::Value>>(),
+            );
+            Ok(Some(serde_json::to_string(&metadata_value).unwrap_or_default()))
+        }
+        None => Ok(None),
+    }
+}
+
+/// Get all messages for a session as envelope JSON array with blob content rehydrated
+#[napi]
+pub fn persistence_get_session_message_envelopes(session_id: String) -> Result<Vec<String>> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let session = load_session(uuid).map_err(Error::from_reason)?;
+    let messages = get_session_messages(&session).map_err(Error::from_reason)?;
+
+    let mut envelopes: Vec<String> = Vec::with_capacity(messages.len());
+    for stored_msg in messages {
+        let metadata_value = serde_json::Value::Object(
+            stored_msg
+                .metadata
+                .into_iter()
+                .collect::<serde_json::Map<String, serde_json::Value>>(),
+        );
+        let envelope_json = serde_json::to_string(&metadata_value).unwrap_or_default();
+
+        // Rehydrate blob references to restore original content
+        let rehydrated = rehydrate_envelope_impl(&envelope_json).map_err(Error::from_reason)?;
+        envelopes.push(rehydrated);
+    }
+
+    Ok(envelopes)
+}
+
+/// Get all messages for a session WITHOUT blob rehydration (returns blob references as-is)
+#[napi]
+pub fn persistence_get_session_message_envelopes_raw(session_id: String) -> Result<Vec<String>> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let session = load_session(uuid).map_err(Error::from_reason)?;
+    let messages = get_session_messages(&session).map_err(Error::from_reason)?;
+
+    let envelopes: Vec<String> = messages
+        .into_iter()
+        .map(|stored_msg| {
+            let metadata_value = serde_json::Value::Object(
+                stored_msg
+                    .metadata
+                    .into_iter()
+                    .collect::<serde_json::Map<String, serde_json::Value>>(),
+            );
+            serde_json::to_string(&metadata_value).unwrap_or_default()
+        })
+        .collect();
+
+    Ok(envelopes)
+}
+
+/// Truncate a string to a maximum number of characters (UTF-8 safe)
+fn truncate_chars(s: &str, max_chars: usize) -> String {
+    if s.chars().count() <= max_chars {
+        s.to_string()
+    } else {
+        let truncated: String = s.chars().take(max_chars).collect();
+        format!("{}...", truncated)
+    }
+}
+
+/// Helper function to extract a text summary from a message envelope
+fn extract_content_summary(envelope: &super::MessageEnvelope) -> String {
+    match &envelope.message {
+        super::MessagePayload::User(user_msg) => {
+            for content in &user_msg.content {
+                match content {
+                    super::UserContent::Text { text } => return text.clone(),
+                    super::UserContent::ToolResult { content, .. } => {
+                        return truncate_chars(content, 200);
+                    }
+                    super::UserContent::Image { .. } => return "[image]".to_string(),
+                    super::UserContent::Document { .. } => return "[document]".to_string(),
+                }
+            }
+            "[empty user message]".to_string()
+        }
+        super::MessagePayload::Assistant(assistant_msg) => {
+            for content in &assistant_msg.content {
+                match content {
+                    super::AssistantContent::Text { text } => return text.clone(),
+                    super::AssistantContent::ToolUse { name, .. } => {
+                        return format!("[tool_use: {}]", name);
+                    }
+                    super::AssistantContent::Thinking { thinking, .. } => {
+                        let summary = truncate_chars(thinking, 200);
+                        if summary.ends_with("...") {
+                            return format!("[thinking: {}]", summary);
+                        }
+                        return format!("[thinking: {}]", thinking);
+                    }
+                }
+            }
+            "[empty assistant message]".to_string()
+        }
+    }
 }

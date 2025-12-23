@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { CodeletSession, ChunkType, MessageRole, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetSessionMessages, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetDataDirectory, persistenceStoreBlob, persistenceUpdateSessionTokens } = nativeBinding
+const { CodeletSession, ChunkType, MessageRole, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessages, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens } = nativeBinding
 export { CodeletSession }
 export { ChunkType }
 export { MessageRole }
@@ -585,6 +585,7 @@ export { persistenceAppendMessageWithMetadata }
 export { persistenceBlobExists }
 export { persistenceCherryPick }
 export { persistenceCleanupOrphanedMessages }
+export { persistenceClearCompactionState }
 export { persistenceCreateSession }
 export { persistenceCreateSessionWithProvider }
 export { persistenceDeleteSession }
@@ -593,6 +594,10 @@ export { persistenceGetBlob }
 export { persistenceGetDataDirectory }
 export { persistenceGetHistory }
 export { persistenceGetMessage }
+export { persistenceGetMessageEnvelope }
+export { persistenceGetMessageEnvelopeRaw }
+export { persistenceGetSessionMessageEnvelopes }
+export { persistenceGetSessionMessageEnvelopesRaw }
 export { persistenceGetSessionMessages }
 export { persistenceListSessions }
 export { persistenceLoadSession }
@@ -600,6 +605,9 @@ export { persistenceMergeMessages }
 export { persistenceRenameSession }
 export { persistenceResumeLastSession }
 export { persistenceSearchHistory }
+export { persistenceSetCompactionState }
 export { persistenceSetDataDirectory }
+export { persistenceSetSessionTokens }
 export { persistenceStoreBlob }
+export { persistenceStoreMessageEnvelope }
 export { persistenceUpdateSessionTokens }

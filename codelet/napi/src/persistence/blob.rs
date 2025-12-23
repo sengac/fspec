@@ -152,20 +152,6 @@ pub fn should_use_blob_storage(content: &[u8]) -> bool {
     content.len() > BLOB_THRESHOLD
 }
 
-/// Create a preview of content for inline storage
-pub fn create_preview(content: &[u8], max_len: usize) -> String {
-    let s = String::from_utf8_lossy(content);
-    if s.len() <= max_len {
-        s.to_string()
-    } else {
-        format!(
-            "{}... [truncated, {} bytes total]",
-            &s[..max_len],
-            content.len()
-        )
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -188,13 +174,5 @@ mod tests {
 
         assert!(!should_use_blob_storage(&small));
         assert!(should_use_blob_storage(&large));
-    }
-
-    #[test]
-    fn test_create_preview() {
-        let content = b"Hello, this is a test message with some content.";
-        let preview = create_preview(content, 20);
-        assert!(preview.starts_with("Hello, this is a tes"));
-        assert!(preview.contains("truncated"));
     }
 }

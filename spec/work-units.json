@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-23T03:11:57.380Z"
+    "lastUpdated": "2025-12-23T11:44:24.206Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -54753,6 +54753,254 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-23T03:11:57.408Z"
+    },
+    "NAPI-008": {
+      "id": "NAPI-008",
+      "title": "Complete Session State Persistence and Restoration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-23T10:19:52.755Z",
+      "updatedAt": "2025-12-23T11:44:24.232Z",
+      "description": "Refactor session persistence to capture and restore ALL conversation state including tool calls, tool results, thinking content, turn boundaries, and token tracking - enabling seamless session resumption and proper compaction behavior",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-23T10:21:22.236Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-23T11:06:14.953Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-23T11:35:24.792Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-23T11:42:28.944Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-23T11:44:24.232Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer resuming a coding session",
+        "action": "have ALL conversation context restored including tool calls, tool results, and thinking content",
+        "benefit": "the LLM can continue seamlessly from where we left off with full context, and compaction works correctly"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "ALL message content types MUST be persisted: Text, ToolCall, ToolResult, Thinking, Image, Document",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:21:48.983Z"
+        },
+        {
+          "id": 1,
+          "text": "Multi-part messages MUST preserve their structure (e.g., Text + ToolCall + Text in single assistant message)",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:21:51.703Z"
+        },
+        {
+          "id": 2,
+          "text": "Tool calls MUST preserve: id, name, and args (as JSON)",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:21:53.269Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool results MUST preserve: tool_call_id linkage, content, and is_error flag",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:21:54.874Z"
+        },
+        {
+          "id": 4,
+          "text": "Turn boundaries MUST be preserved or reconstructible for compaction to work correctly",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:21:56.764Z"
+        },
+        {
+          "id": 5,
+          "text": "Token tracker state (input_tokens, output_tokens, cache_read, cache_creation) MUST be restored",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:21:58.311Z"
+        },
+        {
+          "id": 6,
+          "text": "Restored sessions MUST be indistinguishable from continuous sessions to the LLM",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:01.241Z"
+        },
+        {
+          "id": 7,
+          "text": "Compaction after restore MUST work correctly using restored turn boundaries and token counts",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:02.912Z"
+        },
+        {
+          "id": 8,
+          "text": "Large content (>10KB) MUST use existing blob storage (content-addressed SHA-256 with deduplication), storing hash reference in message",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:26:09.107Z"
+        },
+        {
+          "id": 9,
+          "text": "Images and documents MUST be persisted as blobs (not URL references) for complete offline restoration",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:26:40.688Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Single tool call: User asks 'read config.json', assistant calls read_file tool, result returns file contents, assistant summarizes. After resume, LLM knows file was read and what it contained.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:29.853Z"
+        },
+        {
+          "id": 1,
+          "text": "Multiple parallel tool calls: Assistant calls read_file, grep, and bash in parallel (3 tool calls in one message). All 3 calls and their results are persisted and restored.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:31.812Z"
+        },
+        {
+          "id": 2,
+          "text": "Tool error handling: Tool call fails with is_error=true. After resume, LLM knows the tool failed and what the error was.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:34.185Z"
+        },
+        {
+          "id": 3,
+          "text": "Interleaved text and tools: Assistant says 'Let me check...', calls tool, says 'Found it, now checking...', calls another tool, says 'Done'. All 5 parts (text-tool-text-tool-text) preserved in order.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:35.894Z"
+        },
+        {
+          "id": 4,
+          "text": "Extended thinking: Claude uses extended thinking feature. Thinking content is persisted and restored so LLM has reasoning context.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:37.730Z"
+        },
+        {
+          "id": 5,
+          "text": "Compaction after resume: Session had 50 turns and 150k tokens before save. After resume, token tracker shows ~150k tokens, compaction triggers at correct threshold and summarizes turns correctly.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:39.459Z"
+        },
+        {
+          "id": 6,
+          "text": "Tool call ID linkage: After resume, tool_result messages are correctly linked to their tool_call messages via matching IDs, so LLM can trace which result corresponds to which call.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:42.896Z"
+        },
+        {
+          "id": 7,
+          "text": "Context continuation: User asks 'what else was in that file?' after resume. LLM can answer because it has the full tool result content, not just summary text.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:44.640Z"
+        },
+        {
+          "id": 8,
+          "text": "Turn boundary restoration: Session had 10 user-assistant exchanges. After resume, session.turns has 10 entries so compaction can summarize by turn boundaries.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:46.366Z"
+        },
+        {
+          "id": 9,
+          "text": "Image in conversation: User pastes screenshot, assistant analyzes it. After resume, the actual image data is restored from blob storage, not just a broken URL reference.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:26:48.388Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should we migrate existing sessions to the new format, or only support new format going forward?",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:22:58.018Z",
+          "selected": true,
+          "answered": true,
+          "answer": "New format only. Completely disregard old format - no migration, no backward compatibility, no mention of old implementation."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should thinking content be persisted? It can be large and may have privacy implications.",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:23:00.272Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, 100% - always persist thinking content."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should large tool results (e.g., file contents >10KB) be compressed or truncated in storage?",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:23:01.919Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Store complete results. Use existing blob storage (content-addressed, SHA-256, auto-deduplication) for content >10KB. Reference by hash in message, retrieve on restore."
+        },
+        {
+          "id": 3,
+          "text": "@human: Should images and documents be persisted as blobs, or just reference URLs?",
+          "deleted": false,
+          "createdAt": "2025-12-23T10:23:03.569Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Everything persisted as blobs. Images, documents, all binary content stored in blob storage for complete restoration."
+        }
+      ],
+      "nextQuestionId": 4,
+      "estimate": 13,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Messages stored as JSONL matching Claude Code format in ~/.claude/projects/{project}/{session}.jsonl",
+          "deleted": false,
+          "createdAt": "2025-12-23T11:04:45.572Z"
+        },
+        {
+          "id": 1,
+          "text": "Each message wrapped in envelope with: uuid, parentUuid, timestamp, type, provider, message, requestId",
+          "deleted": false,
+          "createdAt": "2025-12-23T11:04:47.328Z"
+        },
+        {
+          "id": 2,
+          "text": "Assistant messages include: id (msg_...), model, content[], stop_reason, usage (with cache breakdown)",
+          "deleted": false,
+          "createdAt": "2025-12-23T11:04:49.075Z"
+        },
+        {
+          "id": 3,
+          "text": "Content types use Anthropic API naming: text, tool_use, tool_result, thinking, image, document",
+          "deleted": false,
+          "createdAt": "2025-12-23T11:04:51.091Z"
+        },
+        {
+          "id": 4,
+          "text": "Tool results include toolUseResult metadata: stdout, stderr, interrupted, isImage",
+          "deleted": false,
+          "createdAt": "2025-12-23T11:04:53.192Z"
+        },
+        {
+          "id": 5,
+          "text": "Large content (>10KB) uses blob storage with SHA-256 hash reference, content-addressed and deduplicated",
+          "deleted": false,
+          "createdAt": "2025-12-23T11:04:55.329Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "attachments": [
+        "spec/attachments/NAPI-008/ast-research-session-functions.json",
+        "spec/attachments/NAPI-008/ast-research-persistence-types.json",
+        "spec/attachments/NAPI-008/ast-research-blob-storage.json"
+      ],
+      "updated": "2025-12-23T11:44:24.232Z"
     }
   },
   "states": {
@@ -54822,6 +55070,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "NAPI-008",
       "NAPI-007",
       "NAPI-006",
       "NAPI-005",
@@ -55283,6 +55532,6 @@
     "FOUND": 43,
     "DOCS": 3,
     "CLEAN": 5,
-    "NAPI": 7
+    "NAPI": 8
   }
 }

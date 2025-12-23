@@ -1,0 +1,95 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 139,
+      "column": 4,
+      "text": "pub fn new(name: &str, project: PathBuf) -> Self {\n        let now = Utc::now();\n        Self {\n            id: Uuid::new_v4(),\n            name: name.to_string(),\n            project,\n            provider: String::new(),\n            created_at: now,\n            updated_at: now,\n            messages: Vec::new(),\n            forked_from: None,\n            merged_from: Vec::new(),\n            compaction: None,\n            token_usage: TokenUsage::default(),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_provider",
+      "line": 157,
+      "column": 4,
+      "text": "pub fn with_provider(name: &str, project: PathBuf, provider: &str) -> Self {\n        let mut session = Self::new(name, project);\n        session.provider = provider.to_string();\n        session\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "add_message",
+      "line": 164,
+      "column": 4,
+      "text": "pub fn add_message(&mut self, message_id: Uuid, source: MessageSource) {\n        self.messages.push(MessageRef { message_id, source });\n        self.updated_at = Utc::now();\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "record_merge",
+      "line": 170,
+      "column": 4,
+      "text": "pub fn record_merge(&mut self, record: MergeRecord) {\n        self.merged_from.push(record);\n        self.updated_at = Utc::now();\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "message_count",
+      "line": 176,
+      "column": 4,
+      "text": "pub fn message_count(&self) -> usize {\n        self.messages.len()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "update_token_usage",
+      "line": 181,
+      "column": 4,
+      "text": "pub fn update_token_usage(\n        &mut self,\n        input: u64,\n        output: u64,\n        cache_read: u64,\n        cache_create: u64,\n    ) {\n        self.token_usage.total_input_tokens += input;\n        self.token_usage.total_output_tokens += output;\n        self.token_usage.cache_read_tokens += cache_read;\n        self.token_usage.cache_creation_tokens += cache_create;\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 213,
+      "column": 4,
+      "text": "pub fn new(display: String, project: PathBuf, session_id: Uuid) -> Self {\n        Self {\n            display,\n            timestamp: Utc::now(),\n            project,\n            session_id,\n            pasted_content: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_pasted_content",
+      "line": 224,
+      "column": 4,
+      "text": "pub fn with_pasted_content(\n        display: String,\n        project: PathBuf,\n        session_id: Uuid,\n        pasted: PastedContent,\n    ) -> Self {\n        Self {\n            display,\n            timestamp: Utc::now(),\n            project,\n            session_id,\n            pasted_content: Some(pasted),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_session_manifest_new",
+      "line": 245,
+      "column": 4,
+      "text": "fn test_session_manifest_new() {\n        let session = SessionManifest::new(\"Test\", PathBuf::from(\"/test\"));\n        assert_eq!(session.name, \"Test\");\n        assert_eq!(session.project, PathBuf::from(\"/test\"));\n        assert!(session.messages.is_empty());\n        assert!(session.forked_from.is_none());\n        assert!(session.compaction.is_none());\n        assert!(session.merged_from.is_empty());\n        assert_eq!(session.token_usage.total_input_tokens, 0);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_session_with_provider",
+      "line": 257,
+      "column": 4,
+      "text": "fn test_session_with_provider() {\n        let session = SessionManifest::with_provider(\"Test\", PathBuf::from(\"/test\"), \"claude\");\n        assert_eq!(session.provider, \"claude\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_session_add_message",
+      "line": 263,
+      "column": 4,
+      "text": "fn test_session_add_message() {\n        let mut session = SessionManifest::new(\"Test\", PathBuf::from(\"/test\"));\n        let msg_id = Uuid::new_v4();\n        session.add_message(msg_id, MessageSource::Native);\n        assert_eq!(session.message_count(), 1);\n        assert_eq!(session.messages[0].message_id, msg_id);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_token_usage_update",
+      "line": 272,
+      "column": 4,
+      "text": "fn test_token_usage_update() {\n        let mut session = SessionManifest::new(\"Test\", PathBuf::from(\"/test\"));\n        session.update_token_usage(100, 50, 10, 5);\n        assert_eq!(session.token_usage.total_input_tokens, 100);\n        assert_eq!(session.token_usage.total_output_tokens, 50);\n        session.update_token_usage(100, 50, 10, 5);\n        assert_eq!(session.token_usage.total_input_tokens, 200);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_merge_record",
+      "line": 282,
+      "column": 4,
+      "text": "fn test_merge_record() {\n        let mut session = SessionManifest::new(\"Test\", PathBuf::from(\"/test\"));\n        let record = MergeRecord {\n            source_session_id: Uuid::new_v4(),\n            source_indices: vec![1, 2, 3],\n            inserted_at: None,\n            merged_at: Utc::now(),\n        };\n        session.record_merge(record.clone());\n        assert_eq!(session.merged_from.len(), 1);\n        assert_eq!(session.merged_from[0].source_indices, vec![1, 2, 3]);\n    }"
+    }
+  ]
+}

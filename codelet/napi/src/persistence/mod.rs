@@ -10,19 +10,28 @@
 //! - {data_dir}/history.jsonl - Command history (append-only JSONL)
 
 mod blob;
+mod blob_processing;
 mod history;
-mod napi_bindings;
+mod message_envelope;
 mod storage;
 mod types;
+
+// NAPI bindings are only available in production mode (not with noop feature)
+#[cfg(not(feature = "noop"))]
+mod napi_bindings;
 
 #[cfg(test)]
 mod tests;
 
 pub use blob::*;
+pub use blob_processing::*;
 pub use history::*;
-pub use napi_bindings::*;
+pub use message_envelope::*;
 pub use storage::*;
 pub use types::*;
+
+#[cfg(not(feature = "noop"))]
+pub use napi_bindings::*;
 
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -536,7 +545,7 @@ pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessa
     Ok(messages)
 }
 
-/// Update session token usage
+/// Update session token usage (ADDS to existing)
 pub fn update_session_tokens(
     session: &mut SessionManifest,
     input: u64,
@@ -545,6 +554,65 @@ pub fn update_session_tokens(
     cache_create: u64,
 ) -> Result<(), String> {
     session.update_token_usage(input, output, cache_read, cache_create);
+
+    init_stores()?;
+    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    store
+        .as_mut()
+        .ok_or("Session store not initialized")?
+        .save(session)?;
+
+    Ok(())
+}
+
+/// Set session token usage (REPLACES existing - for restore scenarios)
+pub fn set_session_tokens(
+    session: &mut SessionManifest,
+    input: u64,
+    output: u64,
+    cache_read: u64,
+    cache_create: u64,
+) -> Result<(), String> {
+    session.token_usage.total_input_tokens = input;
+    session.token_usage.total_output_tokens = output;
+    session.token_usage.cache_read_tokens = cache_read;
+    session.token_usage.cache_creation_tokens = cache_create;
+
+    init_stores()?;
+    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    store
+        .as_mut()
+        .ok_or("Session store not initialized")?
+        .save(session)?;
+
+    Ok(())
+}
+
+/// Set compaction state for a session
+pub fn set_compaction_state(
+    session: &mut SessionManifest,
+    summary: String,
+    compacted_before_index: usize,
+) -> Result<(), String> {
+    session.compaction = Some(CompactionState {
+        summary,
+        compacted_before_index,
+        compacted_at: chrono::Utc::now(),
+    });
+
+    init_stores()?;
+    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    store
+        .as_mut()
+        .ok_or("Session store not initialized")?
+        .save(session)?;
+
+    Ok(())
+}
+
+/// Clear compaction state for a session (e.g., when messages are added after compaction)
+pub fn clear_compaction_state(session: &mut SessionManifest) -> Result<(), String> {
+    session.compaction = None;
 
     init_stores()?;
     let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
