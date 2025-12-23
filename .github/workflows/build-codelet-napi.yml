@@ -192,12 +192,24 @@ jobs:
         with:
           path: codelet/napi/artifacts
 
+      - name: List downloaded artifacts
+        run: find artifacts -name "*.node" -type f
+        working-directory: codelet/napi
+
+      - name: Create npm directories
+        run: mkdir -p npm/darwin-arm64 npm/darwin-x64 npm/linux-arm64-gnu npm/linux-x64-gnu npm/win32-arm64-msvc npm/win32-x64-msvc
+        working-directory: codelet/napi
+
       - name: Move artifacts
         run: npm run artifacts
         working-directory: codelet/napi
 
+      - name: List moved artifacts
+        run: find . -name "*.node" -type f | head -20
+        working-directory: codelet/napi
+
       - name: Generate platform packages
-        run: napi prepublish -t npm
+        run: npx napi prepublish -t npm --skip-npm-publish
         working-directory: codelet/napi
 
       - name: List packages
