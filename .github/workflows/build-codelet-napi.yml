@@ -95,6 +95,10 @@ jobs:
           image: ${{ matrix.docker }}
           options: --user 0:0 -v ${{ github.workspace }}:/build -w /build/codelet/napi
           run: |
+            # Update Rust to latest stable (needed for edition 2024)
+            rustup update stable
+            rustup default stable
+            rustc --version
             npm ci
             npm run build -- --target ${{ matrix.target }}
 

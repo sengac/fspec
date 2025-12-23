@@ -11,10 +11,13 @@ use crate::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
-/// Permission bit masks and their corresponding characters
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+
+/// Permission bit masks and their corresponding characters (Unix only)
+#[cfg(unix)]
 const PERMISSION_BITS: &[(u32, char)] = &[
     (0o400, 'r'),
     (0o200, 'w'),
@@ -37,12 +40,22 @@ impl LsTool {
     }
 
     /// Format file mode as permission string (e.g., drwxr-xr-x or -rw-r--r--)
+    #[cfg(unix)]
     fn format_mode(mode: u32, is_directory: bool) -> String {
         let type_char = if is_directory { 'd' } else { '-' };
         let permissions: String = PERMISSION_BITS
             .iter()
             .map(|(bit, ch)| if mode & bit != 0 { *ch } else { '-' })
             .collect();
+        format!("{type_char}{permissions}")
+    }
+
+    /// Format file mode as permission string (Windows version - simplified)
+    #[cfg(windows)]
+    fn format_mode(is_readonly: bool, is_directory: bool) -> String {
+        let type_char = if is_directory { 'd' } else { '-' };
+        // Windows doesn't have Unix-style permissions, show simplified view
+        let permissions = if is_readonly { "r--r--r--" } else { "rw-rw-rw-" };
         format!("{type_char}{permissions}")
     }
 
@@ -208,10 +221,12 @@ impl rig::tool::Tool for LsTool {
 
         for (name, metadata) in &dirs {
             let line = if let Some(meta) = metadata {
-                let mode = meta.permissions().mode();
                 let size = meta.len();
                 let mtime = meta.modified().unwrap_or(std::time::UNIX_EPOCH);
-                let permissions = Self::format_mode(mode, true);
+                #[cfg(unix)]
+                let permissions = Self::format_mode(meta.permissions().mode(), true);
+                #[cfg(windows)]
+                let permissions = Self::format_mode(meta.permissions().readonly(), true);
                 let date = Self::format_date(mtime);
                 format!("{permissions}  {size:>8}  {date}  {name}/")
             } else {
@@ -223,10 +238,12 @@ impl rig::tool::Tool for LsTool {
 
         for (name, metadata) in &files {
             let line = if let Some(meta) = metadata {
-                let mode = meta.permissions().mode();
                 let size = meta.len();
                 let mtime = meta.modified().unwrap_or(std::time::UNIX_EPOCH);
-                let permissions = Self::format_mode(mode, false);
+                #[cfg(unix)]
+                let permissions = Self::format_mode(meta.permissions().mode(), false);
+                #[cfg(windows)]
+                let permissions = Self::format_mode(meta.permissions().readonly(), false);
                 let date = Self::format_date(mtime);
                 format!("{permissions}  {size:>8}  {date}  {name}")
             } else {
