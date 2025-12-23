@@ -76,8 +76,6 @@ const SafeTextInput: React.FC<{
 
 
       // NAPI-006: Shift+Arrow for history navigation (check before ignoring arrow keys)
-      // Debug: log all key events to understand what's being received
-      // console.error('useInput:', JSON.stringify({ input: input.split('').map(c => c.charCodeAt(0)), key }));
 
       // Check raw escape sequences first (most reliable for Shift+Arrow)
       if (input.includes('[1;2A') || input.includes('\x1b[1;2A')) {
@@ -354,13 +352,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         try {
           const project = currentProjectRef.current;
           const sessionName = `Session ${new Date().toLocaleDateString()}`;
-          logger.info(`Creating persistence session: ${sessionName} for project: ${project}`);
+
           const persistedSession = persistenceCreateSessionWithProvider(
             sessionName,
             project,
             newSession.currentProviderName
           );
-          logger.info(`Session created with ID: ${persistedSession.id}`);
+
           setCurrentSessionId(persistedSession.id);
         } catch (err) {
           logger.error(`Failed to create persistence session: ${err instanceof Error ? err.message : String(err)}`);
@@ -368,9 +366,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
         // NAPI-006: Load history for current project
         try {
-          logger.info(`Loading history for project: ${currentProjectRef.current}`);
+
           const history = persistenceGetHistory(currentProjectRef.current, 100);
-          logger.info(`Loaded ${history.length} history entries`);
+
           // Convert NAPI history entries (camelCase from NAPI-RS) to our interface
           const entries: HistoryEntry[] = history.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({
             display: h.display,
@@ -764,7 +762,6 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     if (currentSessionId) {
       try {
         const { persistenceAddHistory } = await import('codelet-napi');
-        logger.info(`Saving to history: "${userMessage.slice(0, 50)}..." session: ${currentSessionId}`);
         persistenceAddHistory(userMessage, currentProjectRef.current, currentSessionId);
         // Update local history entries
         setHistoryEntries(prev => [{
@@ -789,14 +786,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       try {
         const { persistenceAppendMessage, persistenceRenameSession } = await import('codelet-napi');
         persistenceAppendMessage(currentSessionId, 'user', userMessage);
-        logger.info(`Persisted user message to session ${currentSessionId}`);
 
         // Auto-rename session with first user message (truncated to 50 chars)
         if (isFirstMessageRef.current) {
           isFirstMessageRef.current = false;
           const sessionName = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
           persistenceRenameSession(currentSessionId, sessionName);
-          logger.info(`Auto-renamed session to: ${sessionName}`);
         }
       } catch (err) {
         logger.error(`Failed to persist user message: ${err instanceof Error ? err.message : String(err)}`);
@@ -981,7 +976,6 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         try {
           const { persistenceAppendMessage } = await import('codelet-napi');
           persistenceAppendMessage(currentSessionId, 'assistant', fullAssistantResponse);
-          logger.info(`Persisted assistant response (${fullAssistantResponse.length} chars) to session ${currentSessionId}`);
         } catch (err) {
           logger.error(`Failed to persist assistant response: ${err instanceof Error ? err.message : String(err)}`);
         }
@@ -1020,10 +1014,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
   // NAPI-006: Navigate to previous history entry (Shift+Arrow-Up)
   const handleHistoryPrev = useCallback(() => {
-    // Debug: uncomment to see history state
-    // console.error('handleHistoryPrev called, entries:', historyEntries.length, 'index:', historyIndex);
     if (historyEntries.length === 0) {
-      // console.error('No history entries');
       return;
     }
 
