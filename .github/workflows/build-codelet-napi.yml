@@ -209,7 +209,7 @@ jobs:
         working-directory: codelet/napi
 
       - name: Generate platform packages
-        run: npx napi prepublish -t npm --skip-npm-publish
+        run: npx napi prepublish -t npm
         working-directory: codelet/napi
 
       - name: List packages
