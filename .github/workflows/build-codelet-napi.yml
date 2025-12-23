@@ -209,18 +209,17 @@ jobs:
         working-directory: codelet/napi
 
       - name: Generate platform packages
-        run: npx napi prepublish -t npm
+        run: npx napi prepublish -t npm --skip-optional-publish
         working-directory: codelet/napi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: List packages
         run: ls -la npm
         working-directory: codelet/napi
 
       - name: Publish main package
-        run: npm publish --access public
+        run: npm publish --access public --provenance
         working-directory: codelet/napi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -231,7 +230,7 @@ jobs:
             if [ -d "$pkg" ]; then
               echo "Publishing $pkg..."
               cd "$pkg"
-              npm publish --access public
+              npm publish --access public --provenance
               cd ../..
             fi
           done
