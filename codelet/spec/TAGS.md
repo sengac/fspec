@@ -26,6 +26,7 @@ Architectural component tags
 | `@cli-interface` | CLI interface bounded context - command parsing, config loading |
 | `@context-management` | Context management bounded context - token tracking, compaction, caching |
 | `@core` | Core bounded context - agent execution, message history, streaming |
+| `@persistence` | Features related to session and data persistence |
 | `@provider-management` | Provider management bounded context - multi-provider LLM abstraction |
 | `@session` | Session management and state handling |
 | `@tool-execution` | Tool execution bounded context - bash, read, write, edit, grep, glob tools |
@@ -117,7 +118,7 @@ Automation integration tags
 
 ## Tag Statistics
 
-_Last updated: 2025-12-18T00:04:08.902Z_
+_Last updated: 2025-12-23T00:19:40.368Z_
 
 **Update Command**: `fspec tag-stats`
 

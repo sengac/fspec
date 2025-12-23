@@ -41,6 +41,10 @@
           "description": "Core bounded context - agent execution, message history, streaming"
         },
         {
+          "name": "@persistence",
+          "description": "Features related to session and data persistence"
+        },
+        {
           "name": "@provider-management",
           "description": "Provider management bounded context - multi-provider LLM abstraction"
         },
@@ -253,7 +257,7 @@
     "examples": []
   },
   "statistics": {
-    "lastUpdated": "2025-12-18T00:04:08.902Z",
+    "lastUpdated": "2025-12-23T00:19:40.368Z",
     "phaseStats": [],
     "componentStats": [],
     "featureGroupStats": [],

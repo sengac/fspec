@@ -1,0 +1,709 @@
+{
+  "scenarios": [
+    {
+      "name": "Display session list when resume command is entered",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "73-89",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                270,
+                271,
+                272,
+                273
+              ]
+            }
+          ]
+        },
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "84-98",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                270,
+                271,
+                272,
+                273
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate down through session list with arrow keys",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "252-271",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1202,
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208,
+                1209,
+                1210,
+                1211,
+                1212,
+                1213,
+                1214,
+                1215,
+                1216,
+                1217,
+                1218,
+                1219,
+                1220,
+                1221,
+                1222
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate up through session list with arrow keys",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "273-291",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1202,
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208,
+                1209,
+                1210,
+                1211,
+                1212,
+                1213,
+                1214,
+                1215,
+                1216,
+                1217,
+                1218,
+                1219,
+                1220,
+                1221,
+                1222
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select and restore a session with Enter key",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "125-144",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129,
+                1130,
+                1131,
+                1132,
+                1133,
+                1134,
+                1135,
+                1136,
+                1137,
+                1138,
+                1139,
+                1140,
+                1141,
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151,
+                1152,
+                1153,
+                1154,
+                1155,
+                1156,
+                1157,
+                1158,
+                1159,
+                1160,
+                1161,
+                1162,
+                1163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display empty state when no sessions exist",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "146-158",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1521,
+                1522,
+                1523,
+                1524,
+                1525,
+                1526,
+                1527,
+                1528,
+                1529,
+                1530,
+                1531,
+                1532,
+                1533,
+                1534,
+                1535,
+                1536,
+                1537,
+                1538,
+                1539,
+                1540,
+                1541,
+                1542,
+                1543,
+                1544,
+                1545,
+                1546,
+                1547,
+                1548,
+                1549,
+                1550,
+                1551,
+                1552,
+                1553,
+                1554,
+                1555,
+                1556,
+                1557,
+                1558,
+                1559,
+                1560,
+                1561,
+                1562,
+                1563,
+                1564,
+                1565,
+                1566,
+                1567,
+                1568,
+                1569,
+                1570,
+                1571,
+                1572,
+                1573,
+                1574,
+                1575,
+                1576,
+                1577,
+                1578,
+                1579,
+                1580,
+                1581,
+                1582,
+                1583,
+                1584
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel resume mode with Escape key",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "293-314",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1165,
+                1166,
+                1167,
+                1168,
+                1169,
+                1170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display relative time in human-readable format",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "160-190",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090,
+                1091,
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Limit displayed sessions to maximum of 15",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "192-207",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1521,
+                1522,
+                1523,
+                1524,
+                1525,
+                1526,
+                1527,
+                1528,
+                1529,
+                1530,
+                1531,
+                1532,
+                1533,
+                1534,
+                1535,
+                1536,
+                1537,
+                1538,
+                1539,
+                1540,
+                1541,
+                1542,
+                1543,
+                1544,
+                1545,
+                1546,
+                1547,
+                1548,
+                1549,
+                1550,
+                1551,
+                1552,
+                1553,
+                1554,
+                1555,
+                1556,
+                1557,
+                1558,
+                1559,
+                1560,
+                1561,
+                1562,
+                1563,
+                1564,
+                1565,
+                1566,
+                1567,
+                1568,
+                1569,
+                1570,
+                1571,
+                1572,
+                1573,
+                1574,
+                1575,
+                1576,
+                1577,
+                1578,
+                1579,
+                1580,
+                1581,
+                1582,
+                1583,
+                1584
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter sessions by current project directory",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "209-227",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1099,
+                1100,
+                1101,
+                1102,
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108,
+                1109,
+                1110,
+                1111,
+                1112,
+                1113,
+                1114,
+                1115,
+                1116,
+                1117,
+                1118,
+                1119,
+                1120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Replace current conversation when restoring session",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "316-353",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129,
+                1130,
+                1131,
+                1132,
+                1133,
+                1134,
+                1135,
+                1136,
+                1137,
+                1138,
+                1139,
+                1140,
+                1141,
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151,
+                1152,
+                1153,
+                1154,
+                1155,
+                1156,
+                1157,
+                1158,
+                1159,
+                1160,
+                1161,
+                1162,
+                1163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display session entry with proper two-line format",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "355-380",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1521,
+                1522,
+                1523,
+                1524,
+                1525,
+                1526,
+                1527,
+                1528,
+                1529,
+                1530,
+                1531,
+                1532,
+                1533,
+                1534,
+                1535,
+                1536,
+                1537,
+                1538,
+                1539,
+                1540,
+                1541,
+                1542,
+                1543,
+                1544,
+                1545,
+                1546,
+                1547,
+                1548,
+                1549,
+                1550,
+                1551,
+                1552,
+                1553,
+                1554,
+                1555,
+                1556,
+                1557,
+                1558,
+                1559,
+                1560,
+                1561,
+                1562,
+                1563,
+                1564,
+                1565,
+                1566,
+                1567,
+                1568,
+                1569,
+                1570,
+                1571,
+                1572,
+                1573,
+                1574,
+                1575,
+                1576,
+                1577,
+                1578,
+                1579,
+                1580,
+                1581,
+                1582,
+                1583,
+                1584
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Continue conversation in restored session",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "382-406",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129,
+                1130,
+                1131,
+                1132,
+                1133,
+                1134,
+                1135,
+                1136,
+                1137,
+                1138,
+                1139,
+                1140,
+                1141,
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151,
+                1152,
+                1153,
+                1154,
+                1155,
+                1156,
+                1157,
+                1158,
+                1159,
+                1160,
+                1161,
+                1162,
+                1163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display unknown for sessions without provider",
+      "testMappings": [
+        {
+          "file": "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx",
+          "lines": "229-245",
+          "implMappings": [
+            {
+              "file": "../src/tui/components/AgentModal.tsx",
+              "lines": [
+                1521,
+                1522,
+                1523,
+                1524,
+                1525,
+                1526,
+                1527,
+                1528,
+                1529,
+                1530,
+                1531,
+                1532,
+                1533,
+                1534,
+                1535,
+                1536,
+                1537,
+                1538,
+                1539,
+                1540,
+                1541,
+                1542,
+                1543,
+                1544,
+                1545,
+                1546,
+                1547,
+                1548,
+                1549,
+                1550,
+                1551,
+                1552,
+                1553,
+                1554,
+                1555,
+                1556,
+                1557,
+                1558,
+                1559,
+                1560,
+                1561,
+                1562,
+                1563,
+                1564,
+                1565,
+                1566,
+                1567,
+                1568,
+                1569,
+                1570,
+                1571,
+                1572,
+                1573,
+                1574,
+                1575,
+                1576,
+                1577,
+                1578,
+                1579,
+                1580,
+                1581,
+                1582,
+                1583,
+                1584
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "../src/tui/components/__tests__/AgentModal-session-resume.test.tsx"
+    ],
+    "implFiles": [
+      "../src/tui/components/AgentModal.tsx"
+    ],
+    "totalLinesCovered": 787
+  }
+}

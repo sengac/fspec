@@ -355,6 +355,64 @@ impl CodeletSession {
         Ok(())
     }
 
+    /// Restore messages from a persisted session (NAPI-003)
+    ///
+    /// Restores conversation history from persistence into the CodeletSession's
+    /// internal message array, enabling the LLM to have context of the restored
+    /// conversation.
+    ///
+    /// CRITICAL: This method must be called when resuming a session to ensure
+    /// the AI has context of the previous conversation. Without this, the AI
+    /// would start fresh despite the UI showing historical messages.
+    ///
+    /// # Arguments
+    /// * `messages` - Array of messages to restore (from persistenceGetSessionMessages)
+    ///
+    /// # Process
+    /// 1. Clears existing messages, turns, and token tracker
+    /// 2. Converts each persistence message to rig::message::Message format
+    /// 3. Injects context reminders (CLAUDE.md, environment info)
+    /// 4. Messages are ready for use in next prompt
+    #[napi]
+    pub fn restore_messages(&self, messages: Vec<Message>) -> Result<()> {
+        use rig::message::{AssistantContent, Message as RigMessage, UserContent};
+        use rig::OneOrMany;
+
+        let mut session = self.inner.blocking_lock();
+
+        // Clear existing state before restoring
+        session.messages.clear();
+        session.turns.clear();
+        session.token_tracker = codelet_core::compaction::TokenTracker {
+            input_tokens: 0,
+            output_tokens: 0,
+            cache_read_input_tokens: Some(0),
+            cache_creation_input_tokens: Some(0),
+        };
+
+        // Convert persistence messages to rig messages
+        for msg in messages {
+            let rig_msg = match msg.role.as_str() {
+                "user" => RigMessage::User {
+                    content: OneOrMany::one(UserContent::text(&msg.content)),
+                },
+                "assistant" => RigMessage::Assistant {
+                    id: None,
+                    content: OneOrMany::one(AssistantContent::text(&msg.content)),
+                },
+                // Skip unknown roles (e.g., "tool" messages from persistence)
+                _ => continue,
+            };
+            session.messages.push(rig_msg);
+        }
+
+        // Re-inject context reminders to ensure CLAUDE.md and environment info
+        // are present after restoration
+        session.inject_context_reminders();
+
+        Ok(())
+    }
+
     /// Send a prompt and stream the response
     ///
     /// The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'

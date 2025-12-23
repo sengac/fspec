@@ -265,7 +265,14 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
   // NAPI-006: Session persistence state
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  // Track if first message has been sent (for auto-renaming session)
+  const isFirstMessageRef = useRef(true);
   const currentProjectRef = useRef<string>(process.cwd());
+
+  // NAPI-003: Resume mode state (session selection overlay)
+  const [isResumeMode, setIsResumeMode] = useState(false);
+  const [availableSessions, setAvailableSessions] = useState<SessionManifest[]>([]);
+  const [resumeSessionIndex, setResumeSessionIndex] = useState(0);
 
   // TUI-031: Track tok/s - calculate on each TEXT chunk for real-time updates
   const streamingStartTimeRef = useRef<number | null>(null);
@@ -314,6 +321,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setSearchResults([]);
       setSearchResultIndex(0);
       setCurrentSessionId(null);
+      // NAPI-003: Reset resume mode state
+      setIsResumeMode(false);
+      setAvailableSessions([]);
+      setResumeSessionIndex(0);
       return;
     }
 
@@ -468,24 +479,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
-    // NAPI-006: Handle /resume command - resume last session
+    // NAPI-003: Handle /resume command - show session selection overlay
     if (userMessage === '/resume') {
       setInputValue('');
-      try {
-        const { persistenceResumeLastSession } = await import('codelet-napi');
-        const session = persistenceResumeLastSession(currentProjectRef.current);
-        setCurrentSessionId(session.id);
-        setConversation(prev => [
-          ...prev,
-          { role: 'tool', content: `Session resumed: "${session.name}" (${session.messageCount} messages)` },
-        ]);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to resume session';
-        setConversation(prev => [
-          ...prev,
-          { role: 'tool', content: `Resume failed: ${errorMessage}` },
-        ]);
-      }
+      void handleResumeMode();
       return;
     }
 
@@ -787,6 +784,25 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     // Add user message to conversation
     setConversation(prev => [...prev, { role: 'user', content: userMessage }]);
 
+    // Persist user message to session
+    if (currentSessionId) {
+      try {
+        const { persistenceAppendMessage, persistenceRenameSession } = await import('codelet-napi');
+        persistenceAppendMessage(currentSessionId, 'user', userMessage);
+        logger.info(`Persisted user message to session ${currentSessionId}`);
+
+        // Auto-rename session with first user message (truncated to 50 chars)
+        if (isFirstMessageRef.current) {
+          isFirstMessageRef.current = false;
+          const sessionName = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
+          persistenceRenameSession(currentSessionId, sessionName);
+          logger.info(`Auto-renamed session to: ${sessionName}`);
+        }
+      } catch (err) {
+        logger.error(`Failed to persist user message: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+
     // Add streaming assistant message placeholder
     setConversation(prev => [
       ...prev,
@@ -796,6 +812,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     try {
       // Track current text segment (resets after tool calls)
       let currentSegment = '';
+      // Track full assistant response for persistence
+      let fullAssistantResponse = '';
 
       await sessionRef.current.prompt(userMessage, (chunk: StreamChunk) => {
         if (!chunk) return;
@@ -824,6 +842,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
           // Text chunks are now batched in Rust, so we receive fewer, larger updates
           currentSegment += chunk.text;
+          fullAssistantResponse += chunk.text; // Accumulate for persistence
           const segmentSnapshot = currentSegment;
           setConversation(prev => {
             const updated = [...prev];
@@ -957,6 +976,17 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         }
       });
 
+      // Persist assistant response to session
+      if (currentSessionId && fullAssistantResponse) {
+        try {
+          const { persistenceAppendMessage } = await import('codelet-napi');
+          persistenceAppendMessage(currentSessionId, 'assistant', fullAssistantResponse);
+          logger.info(`Persisted assistant response (${fullAssistantResponse.length} chars) to session ${currentSessionId}`);
+        } catch (err) {
+          logger.error(`Failed to persist assistant response: ${err instanceof Error ? err.message : String(err)}`);
+        }
+      }
+
       // Update token usage after prompt completes (safe to access now - session unlocked)
       if (sessionRef.current) {
         setTokenUsage(sessionRef.current.tokenTracker);
@@ -1072,6 +1102,112 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     setSearchResults([]);
   }, []);
 
+  // NAPI-003: Format relative time in human-readable format
+  const formatTimeAgo = useCallback((date: Date): string => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    // Format time as HH:MM
+    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return `yesterday ${timeStr}`;
+    if (diffDays < 7) {
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      return `${dayName} ${timeStr}`;
+    }
+    // For older sessions, show date and time
+    const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `${monthDay} ${timeStr}`;
+  }, []);
+
+  // NAPI-003: Enter resume mode (show session selection overlay)
+  const handleResumeMode = useCallback(async () => {
+    try {
+      const { persistenceListSessions } = await import('codelet-napi');
+      const sessions = persistenceListSessions(currentProjectRef.current);
+
+      // Sort by updatedAt descending (most recent first)
+      const sorted = [...sessions].sort((a: SessionManifest, b: SessionManifest) =>
+        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      );
+
+      setAvailableSessions(sorted);
+      setResumeSessionIndex(0);
+      setIsResumeMode(true);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to list sessions';
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `Resume failed: ${errorMessage}` },
+      ]);
+    }
+  }, []);
+
+  // NAPI-003: Select session and restore conversation
+  const handleResumeSelect = useCallback(async () => {
+    if (availableSessions.length === 0 || resumeSessionIndex >= availableSessions.length) {
+      return;
+    }
+
+    const selectedSession = availableSessions[resumeSessionIndex];
+
+    try {
+      const { persistenceGetSessionMessages } = await import('codelet-napi');
+      const messages = persistenceGetSessionMessages(selectedSession.id);
+
+      // CRITICAL: Restore messages to CodeletSession for LLM context
+      // Without this, the AI would have no context of the restored conversation
+      // even though the UI shows historical messages
+      if (sessionRef.current) {
+        sessionRef.current.restoreMessages(messages);
+      }
+
+      // Convert stored messages to conversation format for UI display
+      const restored: ConversationMessage[] = messages.map((m: { role: string; content: string }) => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content,
+        isStreaming: false,
+      }));
+
+      // Update state - replace current conversation entirely
+      setCurrentSessionId(selectedSession.id);
+      setConversation(restored);
+      setIsResumeMode(false);
+      setAvailableSessions([]);
+      setResumeSessionIndex(0);
+      // Don't rename resumed sessions with their first new message
+      isFirstMessageRef.current = false;
+
+      // Add confirmation message
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `Session resumed: "${selectedSession.name}" (${selectedSession.messageCount} messages)` },
+      ]);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to restore session';
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `Resume failed: ${errorMessage}` },
+      ]);
+      setIsResumeMode(false);
+      setAvailableSessions([]);
+      setResumeSessionIndex(0);
+    }
+  }, [availableSessions, resumeSessionIndex]);
+
+  // NAPI-003: Cancel resume mode
+  const handleResumeCancel = useCallback(() => {
+    setIsResumeMode(false);
+    setAvailableSessions([]);
+    setResumeSessionIndex(0);
+  }, []);
+
   // Handle keyboard input
   useInput(
     (input, key) => {
@@ -1113,6 +1249,28 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         if (clean) {
           void handleSearchInput(searchQuery + clean);
         }
+        return;
+      }
+
+      // NAPI-003: Resume mode keyboard handling
+      if (isResumeMode) {
+        if (key.escape) {
+          handleResumeCancel();
+          return;
+        }
+        if (key.return) {
+          void handleResumeSelect();
+          return;
+        }
+        if (key.upArrow) {
+          setResumeSessionIndex(prev => Math.max(0, prev - 1));
+          return;
+        }
+        if (key.downArrow) {
+          setResumeSessionIndex(prev => Math.min(availableSessions.length - 1, prev + 1));
+          return;
+        }
+        // No text input in resume mode - just navigation
         return;
       }
 
@@ -1406,6 +1564,71 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             ))}
             <Box marginTop={1}>
               <Text dimColor>Enter Select | ↑↓ Navigate | Esc Cancel</Text>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
+  // NAPI-003: Resume mode overlay (session selection)
+  if (isResumeMode) {
+    return (
+      <Box
+        position="absolute"
+        flexDirection="column"
+        width={terminalWidth}
+        height={terminalHeight}
+      >
+        <Box
+          flexDirection="column"
+          flexGrow={1}
+          borderStyle="double"
+          borderColor="blue"
+          backgroundColor="black"
+        >
+          <Box
+            flexDirection="column"
+            padding={2}
+            flexGrow={1}
+          >
+            <Box marginBottom={1}>
+              <Text bold color="blue">
+                Resume Session ({availableSessions.length} available)
+              </Text>
+            </Box>
+            {availableSessions.length === 0 && (
+              <Box>
+                <Text dimColor>No sessions found for this project</Text>
+              </Box>
+            )}
+            {availableSessions.slice(0, 15).map((session, idx) => {
+              const isSelected = idx === resumeSessionIndex;
+              const updatedAt = new Date(session.updatedAt);
+              const timeAgo = formatTimeAgo(updatedAt);
+              const provider = session.provider || 'unknown';
+              return (
+                <Box key={session.id} flexDirection="column">
+                  <Text
+                    backgroundColor={isSelected ? 'blue' : undefined}
+                    color={isSelected ? 'black' : 'white'}
+                  >
+                    {isSelected ? '> ' : '  '}
+                    {session.name}
+                  </Text>
+                  <Text
+                    backgroundColor={isSelected ? 'blue' : undefined}
+                    color={isSelected ? 'black' : 'gray'}
+                    dimColor={!isSelected}
+                  >
+                    {'    '}
+                    {session.messageCount} messages | {provider} | {timeAgo}
+                  </Text>
+                </Box>
+              );
+            })}
+            <Box marginTop={1}>
+              <Text dimColor>Enter Select | Arrow Navigate | Esc Cancel</Text>
             </Box>
           </Box>
         </Box>
