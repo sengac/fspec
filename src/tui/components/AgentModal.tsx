@@ -420,6 +420,23 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       return;
     }
 
+    // AGENT-003: Handle /clear command - clear context and reset session
+    if (userMessage === '/clear') {
+      setInputValue('');
+      try {
+        // Clear history in the Rust session (includes reinjecting context reminders)
+        sessionRef.current.clearHistory();
+        // Reset React state
+        setConversation([]);
+        setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+        // Note: currentProvider, isDebugEnabled, and historyEntries are preserved
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to clear session';
+        setError(errorMessage);
+      }
+      return;
+    }
+
     // NAPI-006: Handle /history command - show command history
     if (userMessage === '/history' || userMessage.startsWith('/history ')) {
       setInputValue('');

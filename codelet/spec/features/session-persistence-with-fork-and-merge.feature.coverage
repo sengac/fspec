@@ -1,0 +1,116 @@
+{
+  "scenarios": [
+    {
+      "name": "Resume session after closing terminal",
+      "testMappings": []
+    },
+    {
+      "name": "Fork session at specific message to try alternative approach",
+      "testMappings": []
+    },
+    {
+      "name": "Merge messages from another session",
+      "testMappings": []
+    },
+    {
+      "name": "Cherry-pick message with preceding context",
+      "testMappings": []
+    },
+    {
+      "name": "Navigate command history with keyboard shortcuts",
+      "testMappings": []
+    },
+    {
+      "name": "List all sessions for current project",
+      "testMappings": []
+    },
+    {
+      "name": "Switch to a different session",
+      "testMappings": []
+    },
+    {
+      "name": "Search command history with Ctrl+R",
+      "testMappings": []
+    },
+    {
+      "name": "Forked sessions share message references without duplication",
+      "testMappings": []
+    },
+    {
+      "name": "Large content stored in blob storage with hash reference",
+      "testMappings": []
+    },
+    {
+      "name": "Command history accessible across different sessions",
+      "testMappings": []
+    },
+    {
+      "name": "Identical content in different sessions shares blob storage",
+      "testMappings": []
+    },
+    {
+      "name": "Delete session and cleanup orphaned messages",
+      "testMappings": []
+    },
+    {
+      "name": "Session list shows fork lineage",
+      "testMappings": []
+    },
+    {
+      "name": "Merge imports references without duplicating message content",
+      "testMappings": []
+    },
+    {
+      "name": "Fork with invalid index returns clear error",
+      "testMappings": []
+    },
+    {
+      "name": "Merge from non-existent session returns clear error",
+      "testMappings": []
+    },
+    {
+      "name": "Cherry-pick with context exceeding available messages",
+      "testMappings": []
+    },
+    {
+      "name": "Stored messages cannot be modified",
+      "testMappings": []
+    },
+    {
+      "name": "History can be filtered by project",
+      "testMappings": []
+    },
+    {
+      "name": "Rename session for better organization",
+      "testMappings": []
+    },
+    {
+      "name": "Forking preserves compaction state appropriately",
+      "testMappings": []
+    },
+    {
+      "name": "Resuming a compacted session reconstructs context correctly",
+      "testMappings": []
+    },
+    {
+      "name": "Compaction state persisted in session manifest",
+      "testMappings": []
+    },
+    {
+      "name": "Merging into a compacted session preserves compaction",
+      "testMappings": []
+    },
+    {
+      "name": "Forking at index before compaction point is rejected",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 26,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

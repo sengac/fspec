@@ -327,7 +327,14 @@ impl CodeletSession {
         Ok(())
     }
 
-    /// Clear conversation history
+    /// Clear conversation history and reinject context reminders
+    ///
+    /// Clears messages, turns, and token tracker, then reinjects context reminders
+    /// (CLAUDE.md discovery, environment info) to maintain project context.
+    ///
+    /// CRITICAL (AGENT-003): Must call inject_context_reminders() after clearing
+    /// to restore project context (CLAUDE.md, environment info). Without this,
+    /// the AI loses CLAUDE.md context on the next prompt after /clear.
     #[napi]
     pub fn clear_history(&self) -> Result<()> {
         let mut session = self.inner.blocking_lock();
@@ -340,6 +347,10 @@ impl CodeletSession {
             cache_read_input_tokens: Some(0),
             cache_creation_input_tokens: Some(0),
         };
+
+        // Reinject context reminders to restore CLAUDE.md and environment info
+        // This ensures the AI retains project context after clearing history
+        session.inject_context_reminders();
 
         Ok(())
     }
