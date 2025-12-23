@@ -1,181 +1,160 @@
-# /publish-codelet-napi - Push Tag to Trigger CI Publishing
+# /publish-codelet-napi - Publish codelet-napi to npm
 
-You are implementing the `/publish-codelet-napi` slash command for publishing `@sengac/codelet-napi` to npm via GitHub Actions CI.
+You are implementing the `/publish-codelet-napi` slash command for publishing `@sengac/codelet-napi` to npm.
 
-**Note:** Unlike fspec, codelet-napi publishing is handled by CI. This command pushes the tag which triggers the build and publish workflow.
+**Note:** This publishes from the local machine where the user is authenticated with npm. The binaries must already be built and committed to the repo by CI.
+
+## Prerequisites
+
+1. User must be logged in to npm (`npm whoami` should return their username)
+2. Binaries must exist in `codelet/napi/*.node` (built by CI)
+3. Version should be bumped via `/release-codelet-napi` first
 
 ## Critical Requirements
 
 ### Pre-Publish Validation (MUST CHECK FIRST)
 
-1. **Verify codelet-napi tag exists locally:**
-   - Run `git describe --tags --match "codelet-napi-v*" --exact-match 2>/dev/null`
-   - Parse version from tag (e.g., `codelet-napi-v0.2.0` → `0.2.0`)
-   - If no tag, ABORT with error: "No codelet-napi tag found. Run /release-codelet-napi first."
+1. **Verify npm authentication:**
+   - Run `npm whoami`
+   - If not logged in, ABORT with error: "Not logged in to npm. Run `npm login` first."
 
-2. **Verify package.json version matches:**
-   - Read `codelet/napi/package.json`
-   - Compare git tag version with package.json version
-   - If mismatch, ABORT with error
+2. **Verify binaries exist:**
+   - Check that `codelet/napi/*.node` files exist for all 6 platforms
+   - Required: darwin-arm64, darwin-x64, linux-arm64-gnu, linux-x64-gnu, win32-arm64-msvc, win32-x64-msvc
+   - If missing, ABORT with error: "Binaries missing. Wait for CI to build and commit them."
 
 3. **Check if already published to npm:**
-   - Run `npm view @sengac/codelet-napi version 2>/dev/null || echo ""`
-   - If npm version equals tag version:
-     - Display: `Version {version} already published to npm. Skipping.`
-     - Exit successfully (no action needed)
+   - Run `npm view @sengac/codelet-napi version 2>/dev/null || echo "not-published"`
+   - Compare with `codelet/napi/package.json` version
+   - If versions match: Display "Version {version} already published. Skipping." and exit successfully
 
-4. **Check if tag already pushed:**
-   - Run `git ls-remote --tags origin | grep "codelet-napi-v{version}"`
-   - If tag exists on remote, check CI status instead of pushing again
+### Publishing
 
-### Publishing (Push Tag)
+1. **Navigate to codelet/napi directory**
 
-1. **Push commits:**
-   - Run `git push`
+2. **Run npm publish:**
+   ```bash
+   cd codelet/napi
+   npm publish --access public
+   ```
 
-2. **Push tag:**
-   - Run `git push origin codelet-napi-v{version}`
+3. **Verify publication:**
+   - Run `npm view @sengac/codelet-napi version`
+   - Confirm it matches the published version
 
-3. **Display CI link:**
-   - Show GitHub Actions URL: `https://github.com/sengac/fspec/actions`
-   - Explain what will happen
+### Post-Publish
 
-### Post-Push Monitoring (Optional)
-
-After pushing, optionally check CI status:
-- Run `gh run list --workflow=build-codelet-napi.yml --limit=1`
-- Display current status
+1. **Display success message** with the published version
+2. **Remind user** to update fspec's package.json if this is the first publish:
+   - Change `"codelet-napi": "file:codelet/napi"` to `"@sengac/codelet-napi": "^{version}"`
 
 ## Workflow Summary
 
 ```bash
-# 1. Version verification
-git describe --tags --match "codelet-napi-v*" --exact-match  # Get current tag
-# Parse version from tag (codelet-napi-v0.2.0 → 0.2.0)
-# Read codelet/napi/package.json version
-# Compare (ABORT if mismatch)
+# 1. Verify authentication
+npm whoami
 
-# 2. Check npm registry
-npm view @sengac/codelet-napi version  # Get published version
-# If already published, skip
+# 2. Verify binaries exist
+ls codelet/napi/*.node
 
-# 3. Check if tag already on remote
-git ls-remote --tags origin | grep "codelet-napi-v{version}"
+# 3. Check current npm version
+npm view @sengac/codelet-napi version 2>/dev/null || echo "not-published"
 
-# 4. Push to trigger CI
-git push
-git push origin codelet-napi-v{version}
+# 4. Check local version
+node -p "require('./codelet/napi/package.json').version"
 
-# 5. Display CI link
-echo "Monitor CI: https://github.com/sengac/fspec/actions"
+# 5. Publish
+cd codelet/napi && npm publish --access public
+
+# 6. Verify
+npm view @sengac/codelet-napi version
 ```
 
 ## Example Scenarios
 
-### Scenario 1: Fresh release ready to publish
+### Scenario 1: First publish
 ```
 $ /publish-codelet-napi
 
-Checking versions...
-  Git tag: codelet-napi-v0.2.0
-  package.json: 0.2.0
-  npm registry: 0.1.0
+Checking npm authentication...
+  Logged in as: sengac
 
-✓ Versions match locally
-✓ New version detected (0.2.0 > 0.1.0)
+Checking binaries...
+  ✓ codelet-napi.darwin-arm64.node
+  ✓ codelet-napi.darwin-x64.node
+  ✓ codelet-napi.linux-arm64-gnu.node
+  ✓ codelet-napi.linux-x64-gnu.node
+  ✓ codelet-napi.win32-arm64-msvc.node
+  ✓ codelet-napi.win32-x64-msvc.node
 
-Pushing to remote...
-  git push
-  git push origin codelet-napi-v0.2.0
+Checking npm registry...
+  Package not yet published
 
-✓ Tag pushed successfully!
+Publishing @sengac/codelet-napi@0.1.0...
+  npm publish --access public
+  ✓ Published successfully!
+
+Verification:
+  npm view @sengac/codelet-napi version → 0.1.0
 
 ═══════════════════════════════════════════════════════════
-  CI Build Triggered: @sengac/codelet-napi v0.2.0
+  Successfully published @sengac/codelet-napi v0.1.0 to npm
 ═══════════════════════════════════════════════════════════
 
-GitHub Actions is now:
-  1. Building native binaries for 6 platforms (~5-10 min)
-  2. Running smoke tests on each platform
-  3. Publishing all packages to npm
-
-Monitor progress:
-  https://github.com/sengac/fspec/actions
-
-Once complete, verify:
-  npm view @sengac/codelet-napi version
+IMPORTANT: This is the first publish. Update fspec's package.json:
+  Change: "codelet-napi": "file:codelet/napi"
+  To:     "@sengac/codelet-napi": "^0.1.0"
 ```
 
 ### Scenario 2: Already published
 ```
 $ /publish-codelet-napi
 
+Checking npm authentication...
+  Logged in as: sengac
+
 Checking versions...
-  Git tag: codelet-napi-v0.2.0
-  package.json: 0.2.0
-  npm registry: 0.2.0
+  Local version: 0.1.0
+  npm version: 0.1.0
 
-✓ Versions match locally
-⚠ Version 0.2.0 already published to npm. Skipping.
-
-No action needed. Package is up to date.
+✓ Version 0.1.0 already published to npm. No action needed.
 ```
 
-### Scenario 3: No tag found
+### Scenario 3: Missing binaries
 ```
 $ /publish-codelet-napi
 
-Checking versions...
-✗ No codelet-napi tag found on current commit.
+Checking binaries...
+  ✗ Missing: codelet-napi.linux-x64-gnu.node
 
-Run /release-codelet-napi first to create a release.
+Binaries are missing. Please wait for CI to build and commit them.
+Check: https://github.com/sengac/fspec/actions
 ```
 
-### Scenario 4: Version mismatch
-```
-$ /publish-codelet-napi
-
-Checking versions...
-  Git tag: codelet-napi-v0.2.0
-  package.json: 0.1.0
-
-✗ Version mismatch detected!
-
-Git tag (codelet-napi-v0.2.0) does not match package.json (0.1.0).
-Run /release-codelet-napi first to ensure versions are synchronized.
-```
-
-### Scenario 5: Tag already pushed, CI in progress
+### Scenario 4: Not logged in
 ```
 $ /publish-codelet-napi
 
-Checking versions...
-  Git tag: codelet-napi-v0.2.0
-  package.json: 0.2.0
-  npm registry: 0.1.0
+Checking npm authentication...
+  ✗ Not logged in to npm
 
-✓ Versions match locally
-✓ Tag already pushed to remote
-
-Checking CI status...
-  Workflow: Build codelet-napi
-  Status: in_progress
-  Started: 3 minutes ago
-
-CI is still running. Monitor progress:
-  https://github.com/sengac/fspec/actions
+Please run `npm login` first, then retry.
 ```
 
 ## Error Handling
 
-- **No git tag:** ABORT with error "No codelet-napi tag found. Run /release-codelet-napi first."
-- **Version mismatch:** ABORT with detailed error showing git tag vs package.json
-- **Push fails:** Display git error output, explain potential causes
+- **Not logged in:** ABORT with instructions to run `npm login`
+- **Missing binaries:** ABORT with link to GitHub Actions
+- **Publish fails:** Display npm error output, suggest checking npm status
 - **Network issues:** Catch and display connection errors
 
-## Implementation Notes
+## After First Publish: Setting Up Trusted Publishing (Optional)
 
-- This command triggers CI, it doesn't publish directly
-- The actual npm publish happens in GitHub Actions after all 6 platforms build
-- Use `gh` CLI if available for checking CI status
-- Always display the Actions URL for manual monitoring
+After the first publish succeeds, you can set up Trusted Publishing for future CI releases:
+
+1. Go to https://www.npmjs.com/package/@sengac/codelet-napi/access
+2. Click "Configure Trusted Publishing"
+3. Add GitHub Actions:
+   - Repository: sengac/fspec
+   - Workflow: build-codelet-napi.yml
+4. Future releases can then be published from CI without tokens
