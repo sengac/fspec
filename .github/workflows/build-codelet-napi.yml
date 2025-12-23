@@ -85,6 +85,9 @@ jobs:
         if: ${{ !matrix.docker }}
         run: npm run build -- --target ${{ matrix.target }}
         working-directory: codelet/napi
+        env:
+          # Prevent rustc stack overflow during LTO on some platforms
+          RUST_MIN_STACK: 16777216
 
       # Docker builds for Linux ARM64
       - name: Build (Docker)
