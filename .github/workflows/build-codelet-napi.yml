@@ -2,14 +2,8 @@ name: Build codelet-napi
 
 on:
   push:
-    branches:
-      - main
-      - codelet-integration
-    paths:
-      - 'codelet/**'
-  pull_request:
-    paths:
-      - 'codelet/**'
+    tags:
+      - 'codelet-napi-v*'
   workflow_dispatch:
 
 concurrency:
