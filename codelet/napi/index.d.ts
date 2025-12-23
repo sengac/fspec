@@ -78,6 +78,27 @@ export declare class CodeletSession {
    */
   clearHistory(): void;
   /**
+   * Restore messages from a persisted session (NAPI-003)
+   *
+   * Restores conversation history from persistence into the CodeletSession's
+   * internal message array, enabling the LLM to have context of the restored
+   * conversation.
+   *
+   * CRITICAL: This method must be called when resuming a session to ensure
+   * the AI has context of the previous conversation. Without this, the AI
+   * would start fresh despite the UI showing historical messages.
+   *
+   * # Arguments
+   * * `messages` - Array of messages to restore (from persistenceGetSessionMessages)
+   *
+   * # Process
+   * 1. Clears existing messages, turns, and token tracker
+   * 2. Converts each persistence message to rig::message::Message format
+   * 3. Injects context reminders (CLAUDE.md, environment info)
+   * 4. Messages are ready for use in next prompt
+   */
+  restoreMessages(messages: Array<Message>): void;
+  /**
    * Send a prompt and stream the response
    *
    * The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'

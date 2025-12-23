@@ -1,0 +1,6 @@
+<system-reminder>
+RESEARCH TOOL ERROR
+
+Tool: ast
+Error: ENOENT: no such file or directory, open '/Users/rquast/projects/fspec/codelet/src/tui/components/AgentModal.tsx'
+</system-reminder>

@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-22T23:46:49.069Z"
+    "lastUpdated": "2025-12-23T00:47:54.408Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -8120,6 +8120,258 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-22T23:46:49.082Z"
+    },
+    "NAPI-003": {
+      "id": "NAPI-003",
+      "title": "Resume command for session restoration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-23T00:08:51.722Z",
+      "updatedAt": "2025-12-23T00:47:54.419Z",
+      "description": "A /resume command that shows a list of sessions ordered by most recently modified first, allowing users to restore sessions into the current context. Similar to /search UI but for session selection.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/NAPI-003/resume-command-implementation-plan.md",
+        "spec/attachments/NAPI-003/ast-research-agentmodal-functions.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-23T00:12:20.242Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-23T00:21:52.625Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-23T00:25:17.619Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-23T00:39:23.411Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-23T00:47:54.419Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the AI agent modal",
+        "action": "see a list of previous sessions and select one to restore",
+        "benefit": "I can continue work from where I left off in a previous conversation"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Sessions MUST be filtered to show only sessions belonging to the current project directory",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:29.872Z"
+        },
+        {
+          "id": 1,
+          "text": "Sessions MUST be sorted by updatedAt timestamp in descending order (most recently modified first)",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:31.258Z"
+        },
+        {
+          "id": 2,
+          "text": "Each session entry MUST display: session name, message count, provider name, and relative time since last update",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:32.991Z"
+        },
+        {
+          "id": 3,
+          "text": "The /resume command MUST open a full-screen overlay with a blue double-line border (similar to /search which uses magenta)",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:34.428Z"
+        },
+        {
+          "id": 4,
+          "text": "Arrow Up/Down keys MUST navigate through the session list with visual highlighting of the selected item",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:36.080Z"
+        },
+        {
+          "id": 5,
+          "text": "Enter key MUST select the highlighted session and restore its conversation",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:37.640Z"
+        },
+        {
+          "id": 6,
+          "text": "Escape key MUST cancel the resume mode and return to normal input without making any changes",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:40.318Z"
+        },
+        {
+          "id": 7,
+          "text": "When a session is selected, all messages from that session MUST be loaded and displayed in the conversation view",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:56.574Z"
+        },
+        {
+          "id": 8,
+          "text": "When a session is selected, the currentSessionId state MUST be updated to the selected session's ID for future message persistence",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:58.250Z"
+        },
+        {
+          "id": 9,
+          "text": "After successful restoration, a confirmation message MUST be shown indicating the session name and message count",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:13:59.812Z"
+        },
+        {
+          "id": 10,
+          "text": "The session list MUST display a maximum of 15 sessions to fit within typical terminal heights",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:01.629Z"
+        },
+        {
+          "id": 11,
+          "text": "When no sessions exist for the current project, a helpful message MUST be displayed instead of an empty list",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:03.240Z"
+        },
+        {
+          "id": 12,
+          "text": "Restoring a session MUST replace the current conversation view entirely (not append to it)",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:04.841Z"
+        },
+        {
+          "id": 13,
+          "text": "Relative time display MUST use human-readable format: 'just now', 'Xm ago', 'Xh ago', 'Xd ago', or date for older sessions",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:08.412Z"
+        },
+        {
+          "id": 14,
+          "text": "The header MUST show the total count of available sessions (e.g., 'Resume Session (5 available)')",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:09.989Z"
+        }
+      ],
+      "nextRuleId": 15,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /resume, sees overlay with 'Resume Session (3 available)' header, showing: 'Feature work' (12 messages, claude, 5m ago), 'Bug investigation' (8 messages, claude, 2h ago), 'Code review' (23 messages, gemini, 1d ago)",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:28.423Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses Arrow Down twice from first item, highlight moves from 'Feature work' to 'Bug investigation' to 'Code review', wrapping is disabled (cannot go past last item)",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:30.094Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses Arrow Up from 'Code review', highlight moves to 'Bug investigation', pressing Up again moves to 'Feature work', pressing Up again stays at 'Feature work' (no wrap)",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:31.797Z"
+        },
+        {
+          "id": 3,
+          "text": "User highlights 'Bug investigation' and presses Enter, overlay closes, conversation view shows 8 messages from that session, tool message appears: 'Session resumed: \"Bug investigation\" (8 messages)'",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:33.711Z"
+        },
+        {
+          "id": 4,
+          "text": "User types /resume in a project with no previous sessions, sees overlay with 'Resume Session (0 available)' header and message 'No sessions found for this project'",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:35.771Z"
+        },
+        {
+          "id": 5,
+          "text": "User presses Escape while in resume mode, overlay closes immediately, returns to normal input mode, no changes made to conversation",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:37.811Z"
+        },
+        {
+          "id": 6,
+          "text": "Session updated 30 seconds ago displays as 'just now', session updated 45 minutes ago displays as '45m ago', session updated 3 hours ago displays as '3h ago', session updated 2 days ago displays as '2d ago', session updated 10 days ago displays as '12/13/2025'",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:58.174Z"
+        },
+        {
+          "id": 7,
+          "text": "User has 20 sessions for current project, only the 15 most recent are displayed in the list, older sessions are not shown",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:14:59.976Z"
+        },
+        {
+          "id": 8,
+          "text": "User has sessions from /Users/dev/projectA and /Users/dev/projectB, when in projectA directory, only projectA sessions appear in the resume list",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:15:02.460Z"
+        },
+        {
+          "id": 9,
+          "text": "User has current conversation with 5 messages, selects a session with 10 messages, conversation view now shows only the 10 restored messages (previous 5 are replaced, not appended)",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:15:04.001Z"
+        },
+        {
+          "id": 10,
+          "text": "Session entry displays on two lines: first line shows '> Feature work' (with selection indicator), second line indented shows '12 messages | claude | 5m ago'",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:15:05.955Z"
+        },
+        {
+          "id": 11,
+          "text": "Footer of overlay displays keyboard hints: 'Enter Select | Arrow Navigate | Esc Cancel'",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:15:08.352Z"
+        },
+        {
+          "id": 12,
+          "text": "User restores session, sends new prompt, new message is saved to the restored session (not a new session), session's updatedAt timestamp updates",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:15:09.979Z"
+        },
+        {
+          "id": 13,
+          "text": "Session with no provider set displays 'unknown' in the provider field, e.g., '8 messages | unknown | 2h ago'",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:15:12.012Z"
+        }
+      ],
+      "nextExampleId": 14,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implements resume mode in AgentModal.tsx using React state variables (isResumeMode, availableSessions, resumeSessionIndex) following the existing /search mode pattern",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:20:32.270Z"
+        },
+        {
+          "id": 1,
+          "text": "Uses existing NAPI persistence functions: persistenceListSessions() to fetch sessions, persistenceGetSessionMessages() to load conversation history",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:20:34.497Z"
+        },
+        {
+          "id": 2,
+          "text": "UI follows full-screen overlay pattern with Box component, VirtualList-style navigation via state index, and keyboard handling via Ink useInput hook",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:20:36.099Z"
+        },
+        {
+          "id": 3,
+          "text": "Sessions sorted client-side by updatedAt descending using Array.sort() with Date comparison",
+          "deleted": false,
+          "createdAt": "2025-12-23T00:20:37.717Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-23T00:47:54.419Z"
     }
   },
   "states": {
@@ -8133,6 +8385,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "NAPI-003",
       "AGENT-003",
       "WEB-001",
       "WEB-002",
@@ -8201,6 +8454,6 @@
     "REFAC": 15,
     "CLI": 24,
     "WEB": 2,
-    "NAPI": 2
+    "NAPI": 3
   }
 }
