@@ -4,6 +4,13 @@ You are implementing the `/release-codelet-napi` slash command for creating tagg
 
 **Note:** This is separate from the main fspec release. codelet-napi has its own version and release cycle.
 
+## Flow Overview
+
+1. `/release-codelet-napi` - bumps version, creates tag (this command)
+2. Push changes - triggers CI to build binaries and commit them
+3. Pull the committed binaries
+4. `/publish-codelet-napi` - publishes to npm from local machine
+
 ## Critical Requirements
 
 ### Git Commit Author
@@ -18,10 +25,9 @@ You are implementing the `/release-codelet-napi` slash command for creating tagg
    - If changes exist in `codelet/` directory, stage them: `git add codelet/`
    - Create commit with analyzed message and author `Roland Quast <rquast@rolandquast.com>`
 
-2. **Run E2E publish test:**
-   - Execute `npm run test:napi-publish`
-   - This tests the full publish → install → load flow locally
-   - If test fails, ABORT release with error message
+2. **Verify binaries are up to date (optional but recommended):**
+   - Check if CI has recently built binaries
+   - If binaries are stale, warn user to push and wait for CI
 
 ### Version Determination
 
@@ -47,17 +53,6 @@ You are implementing the `/release-codelet-napi` slash command for creating tagg
 
 1. **Update codelet/napi/package.json:**
    - Update `"version"` field to new version
-   - Update ALL versions in `optionalDependencies` to match:
-     ```json
-     "optionalDependencies": {
-       "@sengac/codelet-napi-darwin-arm64": "{new-version}",
-       "@sengac/codelet-napi-darwin-x64": "{new-version}",
-       "@sengac/codelet-napi-linux-arm64-gnu": "{new-version}",
-       "@sengac/codelet-napi-linux-x64-gnu": "{new-version}",
-       "@sengac/codelet-napi-win32-arm64-msvc": "{new-version}",
-       "@sengac/codelet-napi-win32-x64-msvc": "{new-version}"
-     }
-     ```
 
 2. **Stage and commit:**
    - Run `git add codelet/napi/package.json`
@@ -74,8 +69,7 @@ You are implementing the `/release-codelet-napi` slash command for creating tagg
 - Display success message with:
   - New version number
   - Tag name created
-  - Reminder to push: `git push && git push origin codelet-napi-v{version}`
-  - Explanation that CI will build all 6 platforms and publish to npm
+  - Next steps
 
 ## Workflow Summary
 
@@ -83,7 +77,6 @@ You are implementing the `/release-codelet-napi` slash command for creating tagg
 # 1. Pre-release validation
 git status --porcelain
 git add codelet/  # Stage codelet changes if any
-npm run test:napi-publish  # E2E test (ABORT if fails)
 
 # 2. Version determination
 git describe --tags --match "codelet-napi-v*" --abbrev=0  # Get last tag
@@ -91,7 +84,7 @@ git log <last-tag>..HEAD --oneline -- codelet/  # Get codelet commits
 # Parse conventional commits, determine semver bump
 
 # 3. Version update
-# Update codelet/napi/package.json version AND optionalDependencies
+# Update codelet/napi/package.json version
 git add codelet/napi/package.json
 git commit -m "chore(codelet-napi): release v{version}" --author="Roland Quast <rquast@rolandquast.com>"
 
@@ -106,8 +99,8 @@ git tag -a codelet-napi-v{version} -m "Release @sengac/codelet-napi v{version}"
 ```
 $ /release-codelet-napi
 
-Running E2E publish test...
-✓ E2E TEST PASSED
+Checking for uncommitted changes...
+  ✓ Working directory clean
 
 Analyzing commits since codelet-napi-v0.1.0...
   - feat: add new persistence API
@@ -117,7 +110,6 @@ Determined version bump: minor (0.1.0 → 0.2.0)
 
 Updating codelet/napi/package.json...
   - version: 0.2.0
-  - optionalDependencies: all updated to 0.2.0
 
 Creating release commit...
 ✓ Committed: chore(codelet-napi): release v0.2.0
@@ -129,24 +121,22 @@ Creating tag...
   Release Ready: @sengac/codelet-napi v0.2.0
 ═══════════════════════════════════════════════════════════
 
-To publish, run:
-  git push && git push origin codelet-napi-v0.2.0
+Next steps:
 
-This will trigger GitHub Actions to:
-  1. Build native binaries for all 6 platforms
-  2. Run smoke tests on each platform
-  3. Publish to npm:
-     - @sengac/codelet-napi@0.2.0
-     - @sengac/codelet-napi-darwin-arm64@0.2.0
-     - @sengac/codelet-napi-darwin-x64@0.2.0
-     - @sengac/codelet-napi-linux-arm64-gnu@0.2.0
-     - @sengac/codelet-napi-linux-x64-gnu@0.2.0
-     - @sengac/codelet-napi-win32-arm64-msvc@0.2.0
-     - @sengac/codelet-napi-win32-x64-msvc@0.2.0
+1. Push to trigger CI build:
+   git push && git push origin codelet-napi-v0.2.0
+
+2. Wait for CI to build binaries and commit them (~10 min)
+   Monitor: https://github.com/sengac/fspec/actions
+
+3. Pull the committed binaries:
+   git pull
+
+4. Publish to npm:
+   /publish-codelet-napi
 ```
 
 ## Error Handling
 
-- If E2E test fails: Display error, ABORT release
 - If no codelet commits since last tag: Warn user, ask for confirmation
 - If cannot determine version: Display error with guidance
