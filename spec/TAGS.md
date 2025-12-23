@@ -123,6 +123,7 @@ Tags that categorize features by functional area.
 | `@hook-execution` | Hook execution and lifecycle management |
 | `@impact-analysis` | Impact analysis and dependency chains |
 | `@infrastructure` | Core infrastructure and shared utilities |
+| `@install` | Installation and setup functionality |
 | `@interaction` | User interaction and input handling features |
 | `@interactive-cli` | Interactive CLI features and TUI workflows |
 | `@kanban` | Kanban board and workflow management |
@@ -144,6 +145,7 @@ Tags that categorize features by functional area.
 | `@priority` | Priority management and reordering |
 | `@progress` | Progress tracking and reporting |
 | `@project-management` | Project management features including work units, epics, and workflow |
+| `@publish` | npm publishing functionality |
 | `@quality-assurance` | Quality assurance and code review features |
 | `@query` | Query operations for searching and filtering |
 | `@query-reporting` | Query and reporting features |
@@ -234,6 +236,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
 | `@checkpoints` | Git checkpoint and state restoration features |
+| `@ci` | Continuous integration and build automation |
 | `@cleanup` | Cleanup and resource management features |
 | `@code-review` | Code review and quality analysis features |
 | `@codex` | Codex AI agent integration features |
@@ -243,6 +246,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@concurrency` | Concurrent access coordination and file locking mechanisms |
 | `@config` | Configuration loading and management features |
 | `@content-deduplication` | Content-addressed deduplication |
+| `@cross-compile` | Cross-compilation builds |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
 | `@dart` | Dart language and Flutter framework features |
@@ -299,7 +303,9 @@ Tags for specific technical concerns or architectural patterns.
 | `@mouse-events` | Features that handle mouse and trackpad events |
 | `@multi-agent` | Multi-agent compatibility features and agent-specific customizations |
 | `@napi` | NAPI-RS native module bindings for Node.js |
+| `@native` | Native platform builds |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
+| `@package` | npm package configuration |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@performance` | Performance optimization and efficiency features |
 | `@platform-agnostic` | Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.) |
@@ -335,6 +341,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
 | `@trackpad` | Trackpad and touchpad input handling with smoothing and gesture support |
 | `@tree-sitter` | Tree-sitter library for language-agnostic AST parsing |
+| `@triggers` | CI/CD trigger configuration |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
 | `@typescript` | TypeScript-specific features and configuration |
 | `@ui-formatting` | UI formatting and layout features |
@@ -343,6 +350,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@vitest` | Vitest testing framework related features |
 | `@web` | Web-based features and browser functionality |
 | `@worker-threads` | Features involving Node.js worker threads for parallel processing |
+| `@workspace` | Cargo workspace configuration |
 | `@zoom` | Zoom and scaling functionality for diagrams and visualizations |
 | `@zoom-pan` | Zoom and pan interaction features |
 | `@zustand` | Zustand state management library |
@@ -412,6 +420,7 @@ Tags for test-related scenarios and requirements.
 
 | Tag | Description |
 |-----|-------------|
+| `@acceptance` | Acceptance criteria validation |
 | `@blocking` | Operations that block workflow progression |
 | `@circular-dependency` | Circular dependency detection tests |
 | `@compaction-fork-before-compaction-point` | Edge case: fork before compaction boundary |
@@ -435,6 +444,7 @@ Tags for test-related scenarios and requirements.
 | `@regression` | Regression tests - comprehensive validation of existing functionality |
 | `@simple-command` | Simple command with minimal options |
 | `@smoke` | Smoke tests - quick validation of critical functionality |
+| `@test` | Test-related scenarios |
 | `@test-infrastructure` | Test infrastructure and framework code |
 | `@test-isolation` | Test isolation and concurrent execution |
 | `@unit-test` | Unit Test Coverage Required |
@@ -684,7 +694,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-22T11:29:24.349Z_
+_Last updated: 2025-12-23T02:45:05.817Z_
 
 **Update Command**: `fspec tag-stats`
 

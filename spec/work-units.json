@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-22T20:53:36.796Z"
+    "lastUpdated": "2025-12-23T03:11:57.380Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -54601,6 +54601,158 @@
         "action": "clear the context window and reset the session",
         "benefit": "I can start a fresh conversation without closing and reopening the modal"
       }
+    },
+    "NAPI-007": {
+      "id": "NAPI-007",
+      "title": "GitHub Actions CI/CD for codelet-napi cross-platform builds",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-23T02:30:56.007Z",
+      "updatedAt": "2025-12-23T03:11:57.408Z",
+      "children": [],
+      "userStory": {
+        "role": "maintainer of @sengac/fspec",
+        "action": "have automated cross-platform builds and npm publishing",
+        "benefit": "users on any platform can install fspec without compiling Rust"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-23T02:31:37.695Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-23T02:47:30.793Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-23T02:51:21.444Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-23T02:56:32.844Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-23T03:01:46.446Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-23T03:05:59.868Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-23T03:11:37.412Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-23T03:11:57.409Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "GitHub Actions must build codelet-napi for 6 platform targets: aarch64-apple-darwin, x86_64-apple-darwin, aarch64-unknown-linux-gnu, x86_64-unknown-linux-gnu, aarch64-pc-windows-msvc, x86_64-pc-windows-msvc",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:31:54.820Z"
+        },
+        {
+          "id": 1,
+          "text": "CI must trigger on every push/PR affecting codelet/** directory",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:31:55.582Z"
+        },
+        {
+          "id": 2,
+          "text": "Automatic npm publish to @sengac scope when version tag (codelet-napi-v*) is pushed",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:31:56.312Z"
+        },
+        {
+          "id": 3,
+          "text": "Use NAPI-RS optional dependencies pattern: main package @sengac/codelet-napi with platform-specific packages (@sengac/codelet-napi-darwin-arm64, etc.)",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:31:57.025Z"
+        },
+        {
+          "id": 4,
+          "text": "Must handle patched rig-core dependency from codelet/patches/rig-core",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:31:57.751Z"
+        },
+        {
+          "id": 5,
+          "text": "Build must use Cargo workspace from codelet/ directory (7 crates: cli, common, core, napi, providers, tools, tui)",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:31:58.472Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer on macOS ARM runs 'npm install -g @sengac/fspec' → npm auto-installs @sengac/codelet-napi-darwin-arm64 (~49MB) → fspec CLI works",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:32:13.263Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer on Linux x64 runs 'npm install -g @sengac/fspec' → npm auto-installs @sengac/codelet-napi-linux-x64-gnu (~49MB) → fspec CLI works",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:32:15.399Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer pushes PR changing codelet/core/src/agent.rs → GitHub Actions builds all 6 platform binaries → PR shows build status",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:32:17.306Z"
+        },
+        {
+          "id": 3,
+          "text": "Maintainer pushes tag 'codelet-napi-v0.2.0' → GitHub Actions builds + publishes 7 packages to npm (@sengac/codelet-napi + 6 platform packages)",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:32:21.479Z"
+        },
+        {
+          "id": 4,
+          "text": "fspec package.json dependency changes from 'codelet-napi: file:codelet/napi' to '@sengac/codelet-napi: ^0.1.0'",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:32:23.411Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "dependsOn": [
+        "NAPI-001"
+      ],
+      "attachments": [
+        "spec/attachments/NAPI-007/existing-setup-analysis.md",
+        "spec/attachments/NAPI-007/ast-research-napi-session.json"
+      ],
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create .github/workflows/build-codelet-napi.yml based on official NAPI-RS template (github.com/napi-rs/package-template). Adapt matrix for our 6 targets, add test job for smoke testing, configure publish job with NPM_TOKEN secret.",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:46:34.756Z"
+        },
+        {
+          "id": 1,
+          "text": "Update codelet/napi/package.json: rename to @sengac/codelet-napi, set private:false. Run 'napi prepublish -t npm' to generate platform package structure with optionalDependencies.",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:46:36.702Z"
+        },
+        {
+          "id": 2,
+          "text": "Update root package.json dependency from file:codelet/napi to @sengac/codelet-napi. This change only applies to published package - local dev continues using workspace link.",
+          "deleted": false,
+          "createdAt": "2025-12-23T02:46:38.550Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-23T03:11:57.408Z"
     }
   },
   "states": {
@@ -54670,6 +54822,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "NAPI-007",
       "NAPI-006",
       "NAPI-005",
       "NAPI-004",
@@ -55130,6 +55283,6 @@
     "FOUND": 43,
     "DOCS": 3,
     "CLEAN": 5,
-    "NAPI": 6
+    "NAPI": 7
   }
 }
