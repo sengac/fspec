@@ -213,6 +213,7 @@ jobs:
         working-directory: codelet/napi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: List packages
         run: ls -la npm
