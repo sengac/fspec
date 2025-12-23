@@ -240,7 +240,10 @@ mod tests {
         // First API call - under threshold
         let cancel_sig1 = CancelSignal::new();
         hook.check_compaction(&cancel_sig1);
-        assert!(!cancel_sig1.is_cancelled(), "First call should not trigger compaction");
+        assert!(
+            !cancel_sig1.is_cancelled(),
+            "First call should not trigger compaction"
+        );
 
         // Simulate API response updating token state (this is what on_stream_completion_response_finish does)
         // Tool results added significant tokens
@@ -252,7 +255,10 @@ mod tests {
         // Second API call - should trigger compaction
         let cancel_sig2 = CancelSignal::new();
         hook.check_compaction(&cancel_sig2);
-        assert!(cancel_sig2.is_cancelled(), "Second call should trigger compaction");
+        assert!(
+            cancel_sig2.is_cancelled(),
+            "Second call should trigger compaction"
+        );
         assert!(
             state.lock().unwrap().compaction_needed,
             "compaction_needed should be set"

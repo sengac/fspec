@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-22T12:20:01.798Z"
+    "lastUpdated": "2025-12-22T20:53:36.796Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -20960,14 +20960,17 @@
       "type": "story",
       "status": "backlog",
       "createdAt": "2025-10-22T13:55:11.528Z",
-      "updatedAt": "2025-10-22T13:55:11.528Z",
+      "updatedAt": "2025-12-22T20:53:36.796Z",
       "description": "Verify fspec init --agent=cline works correctly: creates .cline/commands/fspec.md, creates spec/CLINE.md, shows correct activation instructions, and supports full ACDD workflow",
       "epic": "agent-testing",
       "children": [],
       "nextRuleId": 0,
       "nextExampleId": 0,
       "nextQuestionId": 0,
-      "nextNoteId": 0
+      "nextNoteId": 0,
+      "attachments": [
+        "spec/attachments/AGENT-002/ast-research-napi-session.json"
+      ]
     },
     "AGENT-003": {
       "id": "AGENT-003",
@@ -53848,9 +53851,9 @@
       "id": "NAPI-006",
       "title": "Session Persistence with Fork and Merge",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-12-22T11:00:00.086Z",
-      "updatedAt": "2025-12-22T12:58:19.299Z",
+      "updatedAt": "2025-12-22T20:39:53.070Z",
       "description": "Implement a comprehensive session management system that enables saving/restoring conversation context, command history, and git-like fork/merge operations for conversation sessions",
       "children": [],
       "attachments": [
@@ -53899,6 +53902,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-12-22T12:58:19.299Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-22T20:39:50.824Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-22T20:39:53.070Z"
         }
       ],
       "rules": [
@@ -54574,7 +54585,22 @@
       "nextNoteId": 4,
       "questions": [],
       "nextQuestionId": 0,
-      "updated": "2025-12-22T12:20:01.827Z"
+      "updated": "2025-12-22T20:39:53.070Z"
+    },
+    "AGENT-022": {
+      "id": "AGENT-022",
+      "title": "Clear context command for session reset",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-12-22T20:41:45.366Z",
+      "updatedAt": "2025-12-22T20:41:54.717Z",
+      "description": "Add a /clear command to the AgentModal that clears the context window and resets the session, allowing users to start fresh without closing and reopening the modal",
+      "children": [],
+      "userStory": {
+        "role": "developer using the AI agent",
+        "action": "clear the context window and reset the session",
+        "benefit": "I can start a fresh conversation without closing and reopening the modal"
+      }
     }
   },
   "states": {
@@ -54630,7 +54656,8 @@
       "DOC-012",
       "DOC-013",
       "DOC-014",
-      "DOC-017"
+      "DOC-017",
+      "AGENT-022"
     ],
     "specifying": [
       "LANG-001",
@@ -54640,11 +54667,10 @@
       "BOARD-020"
     ],
     "testing": [],
-    "implementing": [
-      "NAPI-006"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "NAPI-006",
       "NAPI-005",
       "NAPI-004",
       "TUI-032",
@@ -55083,7 +55109,7 @@
     "FEAT": 20,
     "REMIND": 15,
     "CODEX": 1,
-    "AGENT": 21,
+    "AGENT": 22,
     "GRAPH": 3,
     "NAV": 3,
     "DOMAIN": 5,

@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-22T12:00:34.539Z"
+    "lastUpdated": "2025-12-22T23:46:49.069Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -7935,18 +7935,205 @@
         }
       ],
       "nextExampleId": 3
+    },
+    "AGENT-002": {
+      "id": "AGENT-002",
+      "title": "Clear context command for session reset",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-12-22T20:43:43.631Z",
+      "updatedAt": "2025-12-22T20:48:28.793Z",
+      "description": "Add a /clear command to the AgentModal that clears the context window and resets the session, allowing users to start fresh without closing and reopening the modal",
+      "children": [],
+      "userStory": {
+        "role": "developer using the AI agent",
+        "action": "clear the context window and reset the session",
+        "benefit": "I can start a fresh conversation without closing and reopening the modal"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-22T20:43:57.247Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "/clear resets the session to a fresh state - clears displayed conversation, message history, and token counters",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:44:05.230Z"
+        },
+        {
+          "id": 1,
+          "text": "/clear preserves current provider selection, debug mode state, and command history",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:44:06.867Z"
+        },
+        {
+          "id": 2,
+          "text": "/clear executes immediately without confirmation prompt",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:44:09.175Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User has 20-message conversation with 5000 tokens, types /clear, conversation becomes empty and tokens show 0↓ 0↑",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:44:20.673Z"
+        },
+        {
+          "id": 1,
+          "text": "User switches to OpenAI provider, types /clear, provider remains OpenAI after clear",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:44:22.536Z"
+        },
+        {
+          "id": 2,
+          "text": "User enables debug mode with /debug, types /clear, [DEBUG] indicator remains visible",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:44:24.112Z"
+        },
+        {
+          "id": 3,
+          "text": "User has command history from previous prompts, types /clear, Shift+↑ still shows previous commands",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:44:26.656Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "clear_history() currently destroys system reminders (CLAUDE.md, environment). Must call inject_context_reminders() after clearing to restore project context. Pattern: clear → reinject reminders = fresh session with context.",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:47:49.007Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 2
+    },
+    "AGENT-003": {
+      "id": "AGENT-003",
+      "title": "Clear context command for session reset",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-22T20:55:41.388Z",
+      "updatedAt": "2025-12-22T23:46:49.082Z",
+      "description": "Add /clear command to reset the session context to a fresh state",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-22T20:55:49.983Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-22T20:58:34.863Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-22T23:32:59.702Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-22T23:35:56.631Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-22T23:46:49.082Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the AI agent",
+        "action": "clear the context window and reset the session",
+        "benefit": "I can start a fresh conversation without closing and reopening the modal"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "/clear resets the session to a fresh state - clears displayed conversation, message history, and token counters",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:56:13.638Z"
+        },
+        {
+          "id": 1,
+          "text": "/clear preserves current provider selection, debug mode state, and command history",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:56:16.481Z"
+        },
+        {
+          "id": 2,
+          "text": "/clear executes immediately without confirmation prompt",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:56:19.555Z"
+        },
+        {
+          "id": 3,
+          "text": "CRITICAL: clear_history() must call inject_context_reminders() after clearing to restore CLAUDE.md and environment info",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:57:28.129Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User has 20-message conversation with 5000 tokens, types /clear, conversation becomes empty and tokens show 0↓ 0↑",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:56:34.152Z"
+        },
+        {
+          "id": 1,
+          "text": "User switches to OpenAI provider, types /clear, provider remains OpenAI after clear",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:56:37.012Z"
+        },
+        {
+          "id": 2,
+          "text": "User enables debug mode with /debug, types /clear, [DEBUG] indicator remains visible",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:56:39.736Z"
+        },
+        {
+          "id": 3,
+          "text": "User has command history from previous prompts, types /clear, Shift+↑ still shows previous commands",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:56:42.630Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "attachments": [
+        "spec/attachments/AGENT-003/ast-research-napi-session.json"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "NAPI layer: Modify clear_history() in napi/src/session.rs to call session.inject_context_reminders() after clearing messages/turns/tokens. React layer: Add /clear command handler in AgentModal.tsx that calls session.clearHistory() and resets local state (conversation, tokenUsage).",
+          "deleted": false,
+          "createdAt": "2025-12-22T20:58:26.269Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-22T23:46:49.082Z"
     }
   },
   "states": {
     "backlog": [],
     "specifying": [
       "NAPI-001",
-      "NAPI-002"
+      "NAPI-002",
+      "AGENT-002"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "AGENT-003",
       "WEB-001",
       "WEB-002",
       "REFAC-015",
@@ -8009,7 +8196,7 @@
   "prefixCounters": {
     "CORE": 10,
     "PROV": 6,
-    "AGENT": 1,
+    "AGENT": 3,
     "CTX": 2,
     "REFAC": 15,
     "CLI": 24,

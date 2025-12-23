@@ -66,7 +66,16 @@ export declare class CodeletSession {
   get messages(): Array<Message>;
   /** Switch to a different provider */
   switchProvider(providerName: string): Promise<void>;
-  /** Clear conversation history */
+  /**
+   * Clear conversation history and reinject context reminders
+   *
+   * Clears messages, turns, and token tracker, then reinjects context reminders
+   * (CLAUDE.md discovery, environment info) to maintain project context.
+   *
+   * CRITICAL (AGENT-003): Must call inject_context_reminders() after clearing
+   * to restore project context (CLAUDE.md, environment info). Without this,
+   * the AI loses CLAUDE.md context on the next prompt after /clear.
+   */
   clearHistory(): void;
   /**
    * Send a prompt and stream the response

@@ -1,0 +1,152 @@
+{
+  "scenarios": [
+    {
+      "name": "Clear conversation and reset tokens to fresh state",
+      "testMappings": [
+        {
+          "file": "napi/tests/clear_history_context_test.rs",
+          "lines": "49-101",
+          "implMappings": [
+            {
+              "file": "napi/src/session.rs",
+              "lines": [
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve provider selection after clear",
+      "testMappings": [
+        {
+          "file": "napi/tests/clear_history_context_test.rs",
+          "lines": "159-198",
+          "implMappings": [
+            {
+              "file": "napi/src/session.rs",
+              "lines": [
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve debug mode after clear",
+      "testMappings": [
+        {
+          "file": "napi/tests/clear_history_context_test.rs",
+          "lines": "214-250",
+          "implMappings": [
+            {
+              "file": "napi/src/session.rs",
+              "lines": [
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve command history after clear",
+      "testMappings": [
+        {
+          "file": "napi/tests/clear_history_context_test.rs",
+          "lines": "264-305",
+          "implMappings": [
+            {
+              "file": "napi/src/session.rs",
+              "lines": [
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "napi/tests/clear_history_context_test.rs"
+    ],
+    "implFiles": [
+      "napi/src/session.rs"
+    ],
+    "totalLinesCovered": 244
+  }
+}
