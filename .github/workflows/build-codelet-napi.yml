@@ -27,21 +27,27 @@ jobs:
           # macOS Apple Silicon (M1/M2)
           - target: aarch64-apple-darwin
             os: macos-14
+            node-file: codelet-napi.darwin-arm64.node
           # macOS Intel
           - target: x86_64-apple-darwin
             os: macos-15-intel
+            node-file: codelet-napi.darwin-x64.node
           # Linux x64
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
+            node-file: codelet-napi.linux-x64-gnu.node
           # Linux ARM64 (native ARM64 runner)
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-24.04-arm
+            node-file: codelet-napi.linux-arm64-gnu.node
           # Windows x64
           - target: x86_64-pc-windows-msvc
             os: windows-latest
+            node-file: codelet-napi.win32-x64-msvc.node
           # Windows ARM64 (cross-compile)
           - target: aarch64-pc-windows-msvc
             os: windows-latest
+            node-file: codelet-napi.win32-arm64-msvc.node
 
     name: Build - ${{ matrix.target }}
     runs-on: ${{ matrix.os }}
@@ -80,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: bindings-${{ matrix.target }}
-          path: codelet/napi/*.node
+          path: codelet/napi/${{ matrix.node-file }}
           if-no-files-found: error
 
   test:
@@ -92,14 +98,19 @@ jobs:
         include:
           - os: macos-14
             target: aarch64-apple-darwin
+            node-file: codelet-napi.darwin-arm64.node
           - os: macos-15-intel
             target: x86_64-apple-darwin
+            node-file: codelet-napi.darwin-x64.node
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+            node-file: codelet-napi.linux-x64-gnu.node
           - os: ubuntu-24.04-arm
             target: aarch64-unknown-linux-gnu
+            node-file: codelet-napi.linux-arm64-gnu.node
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            node-file: codelet-napi.win32-x64-msvc.node
 
     runs-on: ${{ matrix.os }}
 
