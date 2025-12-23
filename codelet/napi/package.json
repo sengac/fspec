@@ -1,5 +1,5 @@
 {
-  "name": "codelet-napi",
+  "name": "@sengac/codelet-napi",
   "version": "0.1.0",
   "description": "NAPI-RS bindings for codelet AI agent",
   "main": "index.js",
@@ -13,7 +13,8 @@
       "x86_64-unknown-linux-gnu",
       "aarch64-pc-windows-msvc",
       "x86_64-pc-windows-msvc"
-    ]
+    ],
+    "packageName": "@sengac/codelet-napi"
   },
   "scripts": {
     "artifacts": "napi artifacts",
@@ -33,7 +34,17 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/rquast/fspec"
+    "url": "https://github.com/sengac/fspec"
   },
-  "private": true
+  "publishConfig": {
+    "access": "public"
+  },
+  "optionalDependencies": {
+    "@sengac/codelet-napi-darwin-arm64": "0.1.0",
+    "@sengac/codelet-napi-darwin-x64": "0.1.0",
+    "@sengac/codelet-napi-linux-arm64-gnu": "0.1.0",
+    "@sengac/codelet-napi-linux-x64-gnu": "0.1.0",
+    "@sengac/codelet-napi-win32-arm64-msvc": "0.1.0",
+    "@sengac/codelet-napi-win32-x64-msvc": "0.1.0"
+  }
 }

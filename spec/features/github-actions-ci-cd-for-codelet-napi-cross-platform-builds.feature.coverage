@@ -1,0 +1,522 @@
+{
+  "scenarios": [
+    {
+      "name": "Workflow triggers on codelet directory changes",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "23-56",
+          "implMappings": [
+            {
+              "file": ".github/workflows/build-codelet-napi.yml",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Workflow triggers npm publish on version tags",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "58-87",
+          "implMappings": [
+            {
+              "file": ".github/workflows/build-codelet-napi.yml",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Native builds for x64 platforms",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "90-122",
+          "implMappings": [
+            {
+              "file": ".github/workflows/build-codelet-napi.yml",
+              "lines": [
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Native build for Apple Silicon",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "124-153",
+          "implMappings": [
+            {
+              "file": ".github/workflows/build-codelet-napi.yml",
+              "lines": [
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cross-compilation for Linux ARM64",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "156-190",
+          "implMappings": [
+            {
+              "file": ".github/workflows/build-codelet-napi.yml",
+              "lines": [
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cross-compilation for Windows ARM64",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "193-227",
+          "implMappings": [
+            {
+              "file": ".github/workflows/build-codelet-napi.yml",
+              "lines": [
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Build includes patched rig-core dependency",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "229-251",
+          "implMappings": [
+            {
+              "file": "codelet/napi/package.json",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Smoke test verifies binary loads correctly",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "253-282",
+          "implMappings": [
+            {
+              "file": ".github/workflows/build-codelet-napi.yml",
+              "lines": [
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Publish generates platform-specific packages",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "284-318",
+          "implMappings": [
+            {
+              "file": ".github/workflows/build-codelet-napi.yml",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Main package has correct optionalDependencies",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "321-342",
+          "implMappings": [
+            {
+              "file": "codelet/napi/package.json",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users on any platform get correct binary automatically",
+      "testMappings": [
+        {
+          "file": "src/__tests__/github-actions-codelet-napi.test.ts",
+          "lines": "393-428",
+          "implMappings": [
+            {
+              "file": "codelet/napi/package.json",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/github-actions-codelet-napi.test.ts"
+    ],
+    "implFiles": [
+      ".github/workflows/build-codelet-napi.yml",
+      "codelet/napi/package.json"
+    ],
+    "totalLinesCovered": 672
+  }
+}

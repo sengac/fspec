@@ -12,13 +12,15 @@
     "build": "npm run build:codelet-napi && vite build && npx esbuild src/git/diff-worker.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/git/diff-worker.js --external:worker_threads --external:isomorphic-git && chmod +x dist/index.js",
     "dev": "vite build --watch",
     "install:local": "./scripts/install-local.sh",
+    "test:napi-publish": "./scripts/test-napi-publish.sh",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts' 'codelet/**/*.ts'",
     "format:spec": "fspec format",
     "test": "npm run build && vitest run",
     "test:watch": "vitest --watch",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublishOnly": "node scripts/check-publish-deps.js"
   },
   "keywords": [
     "spec-driven-development",

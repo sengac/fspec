@@ -422,6 +422,10 @@
           "description": "Core infrastructure and shared utilities"
         },
         {
+          "name": "@install",
+          "description": "Installation and setup functionality"
+        },
+        {
           "name": "@interaction",
           "description": "User interaction and input handling features"
         },
@@ -504,6 +508,10 @@
         {
           "name": "@project-management",
           "description": "Project management features including work units, epics, and workflow"
+        },
+        {
+          "name": "@publish",
+          "description": "npm publishing functionality"
         },
         {
           "name": "@quality-assurance",
@@ -838,6 +846,10 @@
           "description": "Git checkpoint and state restoration features"
         },
         {
+          "name": "@ci",
+          "description": "Continuous integration and build automation"
+        },
+        {
           "name": "@cleanup",
           "description": "Cleanup and resource management features"
         },
@@ -872,6 +884,10 @@
         {
           "name": "@content-deduplication",
           "description": "Content-addressed deduplication"
+        },
+        {
+          "name": "@cross-compile",
+          "description": "Cross-compilation builds"
         },
         {
           "name": "@cucumber-parser",
@@ -1098,8 +1114,16 @@
           "description": "NAPI-RS native module bindings for Node.js"
         },
         {
+          "name": "@native",
+          "description": "Native platform builds"
+        },
+        {
           "name": "@outside-in-bdd",
           "description": "Outside-in BDD approach using personas and behavior-first thinking"
+        },
+        {
+          "name": "@package",
+          "description": "npm package configuration"
         },
         {
           "name": "@pattern-detection",
@@ -1242,6 +1266,10 @@
           "description": "Tree-sitter library for language-agnostic AST parsing"
         },
         {
+          "name": "@triggers",
+          "description": "CI/CD trigger configuration"
+        },
+        {
           "name": "@type-system",
           "description": "Work unit type system features for categorizing work (story, task, bug)"
         },
@@ -1272,6 +1300,10 @@
         {
           "name": "@worker-threads",
           "description": "Features involving Node.js worker threads for parallel processing"
+        },
+        {
+          "name": "@workspace",
+          "description": "Cargo workspace configuration"
         },
         {
           "name": "@zoom",
@@ -1438,6 +1470,10 @@
       "required": false,
       "tags": [
         {
+          "name": "@acceptance",
+          "description": "Acceptance criteria validation"
+        },
+        {
           "name": "@blocking",
           "description": "Operations that block workflow progression"
         },
@@ -1528,6 +1564,10 @@
         {
           "name": "@smoke",
           "description": "Smoke tests - quick validation of critical functionality"
+        },
+        {
+          "name": "@test",
+          "description": "Test-related scenarios"
         },
         {
           "name": "@test-infrastructure",
@@ -1770,7 +1810,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-22T11:29:24.349Z",
+    "lastUpdated": "2025-12-23T02:45:05.817Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
