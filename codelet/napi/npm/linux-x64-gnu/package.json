@@ -1,0 +1,26 @@
+{
+  "name": "@sengac/codelet-napi-linux-x64-gnu",
+  "version": "0.1.0",
+  "cpu": [
+    "x64"
+  ],
+  "main": "codelet-napi.linux-x64-gnu.node",
+  "files": [
+    "codelet-napi.linux-x64-gnu.node"
+  ],
+  "description": "NAPI-RS bindings for codelet AI agent",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sengac/fspec"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "linux"
+  ],
+  "libc": [
+    "glibc"
+  ]
+}

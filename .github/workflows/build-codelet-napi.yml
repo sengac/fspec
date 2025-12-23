@@ -211,6 +211,8 @@ jobs:
       - name: Generate platform packages
         run: npx napi prepublish -t npm
         working-directory: codelet/napi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: List packages
         run: ls -la npm

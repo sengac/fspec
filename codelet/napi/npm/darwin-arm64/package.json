@@ -1,0 +1,23 @@
+{
+  "name": "@sengac/codelet-napi-darwin-arm64",
+  "version": "0.1.0",
+  "cpu": [
+    "arm64"
+  ],
+  "main": "codelet-napi.darwin-arm64.node",
+  "files": [
+    "codelet-napi.darwin-arm64.node"
+  ],
+  "description": "NAPI-RS bindings for codelet AI agent",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sengac/fspec"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "os": [
+    "darwin"
+  ]
+}
