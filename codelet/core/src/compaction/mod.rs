@@ -14,6 +14,9 @@ mod metrics;
 mod model;
 mod selector;
 
+#[cfg(test)]
+mod ctx001_tests;
+
 // Re-export public types from model
 pub use model::{ConversationTurn, TokenTracker, ToolCall, ToolResult};
 

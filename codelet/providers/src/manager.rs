@@ -251,4 +251,17 @@ impl ProviderManager {
             ProviderType::Codex => codex::CONTEXT_WINDOW,
         }
     }
+
+    /// Get max output tokens for the current provider (CTX-002)
+    ///
+    /// Returns the maximum output tokens for the currently selected provider.
+    /// Used for calculating usable context in the optimized compaction algorithm.
+    pub fn max_output_tokens(&self) -> usize {
+        match self.current_provider {
+            ProviderType::Claude => claude::MAX_OUTPUT_TOKENS,
+            ProviderType::OpenAI => openai::MAX_OUTPUT_TOKENS,
+            ProviderType::Gemini => gemini::MAX_OUTPUT_TOKENS,
+            ProviderType::Codex => codex::MAX_OUTPUT_TOKENS,
+        }
+    }
 }

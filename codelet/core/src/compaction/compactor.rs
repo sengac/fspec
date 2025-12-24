@@ -4,9 +4,9 @@
 
 use anyhow::Result;
 
-use super::anchor::{AnchorDetector, AnchorPoint};
+use super::anchor::{AnchorDetector, AnchorPoint, AnchorType};
 use super::metrics::{CompactionMetrics, CompactionResult};
-use super::model::{ConversationTurn, ToolCall};
+use super::model::{ConversationTurn, PreservationContext, ToolCall};
 use super::selector::TurnSelector;
 
 // ==========================================
@@ -113,6 +113,23 @@ impl ContextCompactor {
             }
         }
 
+        // Step 1b: Create synthetic anchor if no natural anchors found
+        // CTX-001 Rule [3]: When no natural anchors are detected, create a synthetic
+        // UserCheckpoint at conversation end. This ensures compaction always has a
+        // reference point, even for non-coding conversations.
+        if anchors.is_empty() && !turns.is_empty() {
+            let last_idx = turns.len() - 1;
+            let last_turn = &turns[last_idx];
+            anchors.push(AnchorPoint {
+                turn_index: last_idx,
+                anchor_type: AnchorType::UserCheckpoint,
+                weight: 0.7,
+                confidence: 1.0, // Synthetic anchors have full confidence
+                description: "Synthetic checkpoint (no natural anchors detected)".to_string(),
+                timestamp: last_turn.timestamp,
+            });
+        }
+
         // Step 2: Select turns using TypeScript-matching logic
         let selector = TurnSelector::new();
         let selection = selector.select_turns_with_recent(turns, &anchors)?;
@@ -127,21 +144,23 @@ impl ContextCompactor {
             .map(|info| &turns[info.turn_index])
             .collect();
 
+        // Step 5: Collect kept turns (moved up - needed for summary generation)
+        let kept_turns: Vec<ConversationTurn> = selection
+            .kept_turns
+            .iter()
+            .map(|info| turns[info.turn_index].clone())
+            .collect();
+
+        // Generate summary - extract context from KEPT turns only (not all turns)
+        // This prevents completed tasks from appearing as current goals
         let summary = if !summarized_turns.is_empty() {
-            self.generate_weighted_summary(&summarized_turns, &anchors)
+            self.generate_weighted_summary(&summarized_turns, &anchors, &kept_turns)
         } else {
             "No turns summarized.".to_string()
         };
 
         // Estimate summary tokens (rough approximation: 1 token ≈ 4 characters)
         let summary_tokens = summary.len().div_ceil(4) as u64;
-
-        // Step 5: Collect kept turns
-        let kept_turns: Vec<ConversationTurn> = selection
-            .kept_turns
-            .iter()
-            .map(|info| turns[info.turn_index].clone())
-            .collect();
 
         let kept_tokens: u64 = kept_turns.iter().map(|t| t.tokens).sum();
         let compacted_tokens = summary_tokens + kept_tokens;
@@ -171,34 +190,44 @@ impl ContextCompactor {
             ));
         }
 
+        // Use selector's anchor if it found one in older turns,
+        // otherwise use the most recent anchor (which may be synthetic)
+        // This ensures synthetic anchors are returned even when in "recent" turns
+        let result_anchor = selection.preserved_anchor.or_else(|| anchors.last().cloned());
+
         Ok(CompactionResult {
             kept_turns,
             warnings,
             summary,
             metrics,
-            anchor: selection.preserved_anchor,
+            anchor: result_anchor,
         })
     }
 
     /// Generate template-based summary (matches TypeScript WeightedSummaryProvider.generateWeightedSummary)
     ///
     /// This is a fast, synchronous, template-based summary - NO LLM CALL.
-    /// Matches TypeScript behavior exactly.
+    /// CTX-001 Rule [9]: Uses dynamic PreservationContext.format_for_summary() - NO hardcoded text.
+    ///
+    /// # Arguments
+    /// * `summarized_turns` - Turns being compressed into outcomes (older turns)
+    /// * `anchors` - Detected anchor points
+    /// * `kept_turns` - Recent turns being preserved (used for context extraction)
     fn generate_weighted_summary(
         &self,
-        turns: &[&ConversationTurn],
+        summarized_turns: &[&ConversationTurn],
         anchors: &[AnchorPoint],
+        kept_turns: &[ConversationTurn],
     ) -> String {
-        // Transform turns to outcome descriptions (matches TypeScript turnToOutcome)
-        let outcomes: Vec<String> = turns
+        // Transform summarized turns to outcome descriptions (matches TypeScript turnToOutcome)
+        let outcomes: Vec<String> = summarized_turns
             .iter()
             .map(|turn| self.turn_to_outcome(turn, anchors))
             .collect();
 
-        // Build context summary (matches TypeScript preserveContext)
-        // Note: We don't have full PreservationContext, so we use a simplified version
-        let context_summary =
-            "Active files: [from conversation]\nGoals: Continue development\nBuild: unknown";
+        // Extract context from KEPT turns only - prevents completed tasks from appearing as current goals
+        let preservation_context = PreservationContext::extract_from_turns(kept_turns);
+        let context_summary = preservation_context.format_for_summary();
 
         format!(
             "{}\n\nKey outcomes:\n{}",

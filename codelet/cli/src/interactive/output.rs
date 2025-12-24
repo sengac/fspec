@@ -43,7 +43,7 @@ pub struct ContextFillInfo {
     pub fill_percentage: u32,
     /// Effective tokens (after cache discount)
     pub effective_tokens: u64,
-    /// Compaction threshold (context_window * 0.9)
+    /// Compaction threshold (usable context after output reservation)
     pub threshold: u64,
     /// Provider's context window size
     pub context_window: u64,

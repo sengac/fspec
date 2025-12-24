@@ -80,7 +80,7 @@ pub struct ContextFillInfo {
     pub fill_percentage: u32,
     /// Effective tokens (after cache discount) - using f64 for NAPI compatibility
     pub effective_tokens: f64,
-    /// Compaction threshold (context_window * 0.9) - using f64 for NAPI compatibility
+    /// Compaction threshold (usable context after output reservation) - using f64 for NAPI compatibility
     pub threshold: f64,
     /// Provider's context window size - using f64 for NAPI compatibility
     pub context_window: f64,

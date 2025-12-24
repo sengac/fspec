@@ -133,6 +133,95 @@ impl AnchorDetector {
             }
         }
 
+        // CTX-001: Bash milestone pattern - successful install/build/compile
+        if let Some(anchor) = self.detect_bash_milestone(turn, turn_index)? {
+            return Ok(Some(anchor));
+        }
+
+        // CTX-001: Web search pattern - successful search with synthesis
+        if let Some(anchor) = self.detect_successful_search(turn, turn_index)? {
+            return Ok(Some(anchor));
+        }
+
+        Ok(None)
+    }
+
+    /// CTX-001: Detect bash command milestones (successful installs, builds, etc.)
+    fn detect_bash_milestone(
+        &self,
+        turn: &ConversationTurn,
+        turn_index: usize,
+    ) -> Result<Option<AnchorPoint>> {
+        let has_bash = turn
+            .tool_calls
+            .iter()
+            .any(|call| call.tool == "bash" || call.tool == "Bash");
+
+        let bash_success = turn.tool_results.iter().any(|r| r.success);
+
+        // Look for milestone indicators in output
+        let is_milestone = turn.tool_results.iter().any(|r| {
+            let output_lower = r.output.to_lowercase();
+            output_lower.contains("successfully")
+                || output_lower.contains("installed")
+                || output_lower.contains("built")
+                || output_lower.contains("compiled")
+                || output_lower.contains("completed")
+        });
+
+        if has_bash && bash_success && is_milestone {
+            let confidence = 0.92;
+            if confidence >= self.confidence_threshold {
+                return Ok(Some(AnchorPoint {
+                    turn_index,
+                    anchor_type: AnchorType::TaskCompletion,
+                    weight: 0.8,
+                    confidence,
+                    description: "Bash command milestone completed".to_string(),
+                    timestamp: turn.timestamp,
+                }));
+            }
+        }
+
+        Ok(None)
+    }
+
+    /// CTX-001: Detect successful web search that answered user's question
+    fn detect_successful_search(
+        &self,
+        turn: &ConversationTurn,
+        turn_index: usize,
+    ) -> Result<Option<AnchorPoint>> {
+        let has_web_search = turn
+            .tool_calls
+            .iter()
+            .any(|call| call.tool == "web_search" || call.tool == "WebSearch");
+
+        let search_succeeded = turn
+            .tool_results
+            .iter()
+            .any(|r| r.success && r.output.len() > 100); // Non-trivial results
+
+        // Look for synthesis indicators in assistant response
+        let has_synthesis = turn.assistant_response.contains("Based on")
+            || turn.assistant_response.contains("According to")
+            || turn.assistant_response.contains("search results show")
+            || turn.assistant_response.contains("search results,");
+
+        if has_web_search && search_succeeded && has_synthesis {
+            let confidence = 0.91;
+            if confidence >= self.confidence_threshold {
+                return Ok(Some(AnchorPoint {
+                    turn_index,
+                    anchor_type: AnchorType::UserCheckpoint,
+                    weight: 0.7,
+                    confidence,
+                    description: "Web search completed with synthesized results".to_string(),
+                    timestamp: turn.timestamp,
+                }));
+            }
+        }
+
         Ok(None)
     }
 }

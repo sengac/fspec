@@ -24,8 +24,8 @@ const DEFAULT_MODEL: &str = "claude-sonnet-4-20250514";
 /// Claude Sonnet 4 context window size
 pub const CONTEXT_WINDOW: usize = 200_000;
 
-/// Claude Sonnet 4 max output tokens
-const MAX_OUTPUT_TOKENS: usize = 8192;
+/// Claude Sonnet 4 max output tokens (CTX-002)
+pub const MAX_OUTPUT_TOKENS: usize = 8192;
 
 /// Claude Code system prompt prefix (required for OAuth authentication)
 const CLAUDE_CODE_PROMPT_PREFIX: &str = "You are Claude Code, Anthropic's official CLI for Claude.";

@@ -23,8 +23,8 @@ const DEFAULT_MODEL: &str = "gpt-5.1-codex";
 /// GPT-5.1 Codex context window size (272K tokens)
 pub const CONTEXT_WINDOW: usize = 272_000;
 
-/// GPT-5.1 Codex max output tokens (assumption: same as GPT-4)
-const MAX_OUTPUT_TOKENS: usize = 4096;
+/// GPT-5.1 Codex max output tokens (CTX-002) (assumption: same as GPT-4)
+pub const MAX_OUTPUT_TOKENS: usize = 4096;
 
 /// Codex Provider for ChatGPT Backend API (using rig with OAuth)
 #[derive(Clone)]

@@ -14,7 +14,7 @@ use super::output::{ContextFillInfo, StreamOutput, TokenInfo};
 use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
-use crate::compaction_threshold::{calculate_compaction_threshold, CACHE_READ_DISCOUNT_FACTOR};
+use crate::compaction_threshold::calculate_usable_context;
 use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
@@ -140,28 +140,31 @@ where
         content: OneOrMany::one(UserContent::text(prompt)),
     });
 
-    // HOOK-BASED COMPACTION
+    // HOOK-BASED COMPACTION (CTX-002: Optimized compaction trigger)
     let context_window = session.provider_manager().context_window() as u64;
-    let threshold = calculate_compaction_threshold(context_window);
+    let max_output_tokens = session.provider_manager().max_output_tokens() as u64;
+    // CTX-002: Use usable_context (context_window - output_reservation) instead of 90% threshold
+    let threshold = calculate_usable_context(context_window, max_output_tokens);
 
     // TUI-033: Helper to emit context fill percentage after token updates
+    // CTX-002: Uses simple sum (input + cache_read + output) for token calculation
     let emit_context_fill = |output: &O,
                              input_tokens: u64,
                              cache_read_tokens: u64,
+                             output_tokens: u64,
                              threshold: u64,
                              context_window: u64| {
-        // Calculate effective tokens with cache discount (cached tokens cost less)
-        let cache_discount = (cache_read_tokens as f64 * CACHE_READ_DISCOUNT_FACTOR) as u64;
-        let effective_tokens = input_tokens.saturating_sub(cache_discount);
+        // CTX-002: Simple sum of all token types
+        let total_tokens = input_tokens + cache_read_tokens + output_tokens;
         // Calculate fill percentage (can exceed 100% near compaction)
         let fill_percentage = if threshold > 0 {
-            ((effective_tokens as f64 / threshold as f64) * 100.0) as u32
+            ((total_tokens as f64 / threshold as f64) * 100.0) as u32
         } else {
             0
         };
         output.emit_context_fill(&ContextFillInfo {
             fill_percentage,
-            effective_tokens,
+            effective_tokens: total_tokens,
             threshold,
             context_window,
         });
@@ -174,6 +177,8 @@ where
             .token_tracker
             .cache_creation_input_tokens
             .unwrap_or(0),
+        // CTX-002: Include output tokens in TokenState for accurate total calculation
+        output_tokens: session.token_tracker.output_tokens,
         compaction_needed: false,
     }));
 
@@ -379,6 +384,7 @@ where
                         output,
                         prev_input_tokens + turn_accumulated_input,
                         turn_cache_read,
+                        prev_output_tokens + turn_accumulated_output,
                         threshold,
                         context_window,
                     );
@@ -423,6 +429,7 @@ where
                         output,
                         prev_input_tokens + turn_accumulated_input + current_api_input,
                         turn_cache_read,
+                        prev_output_tokens + turn_accumulated_output + current_api_output,
                         threshold,
                         context_window,
                     );
@@ -459,6 +466,7 @@ where
                         output,
                         prev_input_tokens + turn_accumulated_input,
                         turn_cache_read,
+                        prev_output_tokens + turn_accumulated_output,
                         threshold,
                         context_window,
                     );
@@ -661,6 +669,8 @@ where
                         .token_tracker
                         .cache_creation_input_tokens
                         .unwrap_or(0),
+                    // CTX-002: Include output tokens for accurate total calculation
+                    output_tokens: session.token_tracker.output_tokens,
                     compaction_needed: false,
                 }));
                 let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
@@ -736,6 +746,7 @@ where
                                 output,
                                 usage.input_tokens,
                                 usage.cache_read_input_tokens.unwrap_or(0),
+                                usage.output_tokens,
                                 threshold,
                                 context_window,
                             );

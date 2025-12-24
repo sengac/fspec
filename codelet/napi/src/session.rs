@@ -12,7 +12,7 @@
 
 use crate::output::{NapiOutput, StreamCallback};
 use crate::types::{CompactionResult, ContextFillInfo, DebugCommandResult, Message, TokenTracker};
-use codelet_cli::compaction_threshold::{calculate_compaction_threshold, CACHE_READ_DISCOUNT_FACTOR};
+use codelet_cli::compaction_threshold::calculate_usable_context;
 use codelet_cli::interactive::run_agent_stream;
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{
@@ -584,21 +584,24 @@ impl CodeletSession {
     pub fn get_context_fill_info(&self) -> Result<ContextFillInfo> {
         let session = self.inner.blocking_lock();
         let context_window = session.provider_manager().context_window() as u64;
-        let threshold = calculate_compaction_threshold(context_window);
+        let max_output_tokens = session.provider_manager().max_output_tokens() as u64;
+        // CTX-002: Use usable_context (context_window - output_reservation)
+        let threshold = calculate_usable_context(context_window, max_output_tokens);
         let input_tokens = session.token_tracker.input_tokens;
         let cache_read_tokens = session.token_tracker.cache_read_input_tokens.unwrap_or(0);
+        let output_tokens = session.token_tracker.output_tokens;
 
-        let cache_discount = (cache_read_tokens as f64 * CACHE_READ_DISCOUNT_FACTOR) as u64;
-        let effective_tokens = input_tokens.saturating_sub(cache_discount);
+        // CTX-002: Simple sum of all token types
+        let total_tokens = input_tokens + cache_read_tokens + output_tokens;
         let fill_percentage = if threshold > 0 {
-            ((effective_tokens as f64 / threshold as f64) * 100.0) as u32
+            ((total_tokens as f64 / threshold as f64) * 100.0) as u32
         } else {
             0
         };
 
         Ok(ContextFillInfo {
             fill_percentage,
-            effective_tokens: effective_tokens as f64,
+            effective_tokens: total_tokens as f64,
             threshold: threshold as f64,
             context_window: context_window as f64,
         })
