@@ -11,7 +11,8 @@
 //! Key difference from CLI: JavaScript calls interrupt() to set is_interrupted flag
 
 use crate::output::{NapiOutput, StreamCallback};
-use crate::types::{CompactionResult, DebugCommandResult, Message, TokenTracker};
+use crate::types::{CompactionResult, ContextFillInfo, DebugCommandResult, Message, TokenTracker};
+use codelet_cli::compaction_threshold::{calculate_compaction_threshold, CACHE_READ_DISCOUNT_FACTOR};
 use codelet_cli::interactive::run_agent_stream;
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{
@@ -411,6 +412,56 @@ impl CodeletSession {
         session.inject_context_reminders();
 
         Ok(())
+    }
+
+    /// Restore token state from persisted session (TUI-033)
+    ///
+    /// Call this after restoreMessages() to restore the token counts from
+    /// the persisted session manifest. This ensures getContextFillInfo()
+    /// returns accurate context fill percentage after session restoration.
+    ///
+    /// # Arguments
+    /// * `input_tokens` - Total input tokens from session manifest
+    /// * `output_tokens` - Total output tokens from session manifest
+    #[napi]
+    pub fn restore_token_state(&self, input_tokens: u32, output_tokens: u32) {
+        let mut session = self.inner.blocking_lock();
+        session.token_tracker.input_tokens = input_tokens as u64;
+        session.token_tracker.output_tokens = output_tokens as u64;
+        // Cache tokens are not persisted in session manifest, so leave them at 0
+        // The next streaming response will update these values accurately
+    }
+
+    /// Get current context fill info (TUI-033)
+    ///
+    /// Returns the current context fill percentage and related metrics.
+    /// Call this after restoreMessages() to get initial context fill state,
+    /// since restoring messages doesn't trigger streaming events.
+    ///
+    /// # Returns
+    /// * `ContextFillInfo` with fill_percentage, effective_tokens, threshold, context_window
+    #[napi]
+    pub fn get_context_fill_info(&self) -> Result<ContextFillInfo> {
+        let session = self.inner.blocking_lock();
+        let context_window = session.provider_manager().context_window() as u64;
+        let threshold = calculate_compaction_threshold(context_window);
+        let input_tokens = session.token_tracker.input_tokens;
+        let cache_read_tokens = session.token_tracker.cache_read_input_tokens.unwrap_or(0);
+
+        let cache_discount = (cache_read_tokens as f64 * CACHE_READ_DISCOUNT_FACTOR) as u64;
+        let effective_tokens = input_tokens.saturating_sub(cache_discount);
+        let fill_percentage = if threshold > 0 {
+            ((effective_tokens as f64 / threshold as f64) * 100.0) as u32
+        } else {
+            0
+        };
+
+        Ok(ContextFillInfo {
+            fill_percentage,
+            effective_tokens: effective_tokens as f64,
+            threshold: threshold as f64,
+            context_window: context_window as f64,
+        })
     }
 
     /// Send a prompt and stream the response

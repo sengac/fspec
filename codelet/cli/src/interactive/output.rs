@@ -36,6 +36,19 @@ pub struct ToolResultEvent {
     pub is_error: bool,
 }
 
+/// Context window fill percentage information (TUI-033)
+#[derive(Debug, Clone)]
+pub struct ContextFillInfo {
+    /// Fill percentage (0-100+, can exceed 100 near compaction)
+    pub fill_percentage: u32,
+    /// Effective tokens (after cache discount)
+    pub effective_tokens: u64,
+    /// Compaction threshold (context_window * 0.9)
+    pub threshold: u64,
+    /// Provider's context window size
+    pub context_window: u64,
+}
+
 /// Stream event enum - all possible events in a single type
 ///
 /// Using an enum instead of multiple trait methods:
@@ -60,6 +73,8 @@ pub enum StreamEvent {
     Status(String),
     /// Token usage update
     Tokens(TokenInfo),
+    /// Context window fill percentage (TUI-033)
+    ContextFill(ContextFillInfo),
 }
 
 /// Stream output handler trait
@@ -133,6 +148,12 @@ pub trait StreamOutput: Send + Sync {
     #[inline]
     fn emit_tokens(&self, tokens: &TokenInfo) {
         self.emit(StreamEvent::Tokens(tokens.clone()));
+    }
+
+    /// Emit context fill percentage (TUI-033)
+    #[inline]
+    fn emit_context_fill(&self, info: &ContextFillInfo) {
+        self.emit(StreamEvent::ContextFill(info.clone()));
     }
 }
 
@@ -218,6 +239,9 @@ impl StreamOutput for CliOutput {
             }
             StreamEvent::Tokens(_) => {
                 // CLI doesn't display real-time token updates (shown in status line instead)
+            }
+            StreamEvent::ContextFill(_) => {
+                // CLI doesn't display context fill percentage (TUI-only feature)
             }
         }
     }
