@@ -194,7 +194,7 @@ export interface ContextFillInfo {
   fillPercentage: number;
   /** Effective tokens (after cache discount) - using f64 for NAPI compatibility */
   effectiveTokens: number;
-  /** Compaction threshold (context_window * 0.9) - using f64 for NAPI compatibility */
+  /** Compaction threshold (usable context after output reservation) - using f64 for NAPI compatibility */
   threshold: number;
   /** Provider's context window size - using f64 for NAPI compatibility */
   contextWindow: number;

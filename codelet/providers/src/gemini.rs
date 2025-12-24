@@ -22,8 +22,8 @@ const DEFAULT_MODEL: &str = "gemini-2.0-flash-exp";
 /// Gemini 2.0 Flash context window size
 pub const CONTEXT_WINDOW: usize = 1_000_000;
 
-/// Gemini 2.0 Flash max output tokens
-const MAX_OUTPUT_TOKENS: usize = 8192;
+/// Gemini 2.0 Flash max output tokens (CTX-002)
+pub const MAX_OUTPUT_TOKENS: usize = 8192;
 
 /// Gemini Provider for Google Generative AI API (using rig)
 #[derive(Clone, Debug)]

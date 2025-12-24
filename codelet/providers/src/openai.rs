@@ -21,8 +21,8 @@ const DEFAULT_MODEL: &str = "gpt-4-turbo";
 /// GPT-4 Turbo context window size
 pub const CONTEXT_WINDOW: usize = 128_000;
 
-/// GPT-4 Turbo max output tokens
-const MAX_OUTPUT_TOKENS: usize = 4096;
+/// GPT-4 Turbo max output tokens (CTX-002)
+pub const MAX_OUTPUT_TOKENS: usize = 4096;
 
 /// OpenAI Provider for OpenAI API (using rig)
 #[derive(Clone)]

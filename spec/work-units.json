@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-24T02:53:34.157Z"
+    "lastUpdated": "2025-12-24T05:21:50.045Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -55161,19 +55161,67 @@
       "id": "CTX-001",
       "title": "Complete Anchor-Based Context Compaction",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-12-24T02:52:03.080Z",
-      "updatedAt": "2025-12-24T02:53:34.157Z",
+      "updatedAt": "2025-12-24T03:57:50.943Z",
       "children": [],
       "userStory": {
         "role": "AI agent using codelet",
-        "action": "have meaningful context preserved after compaction",
-        "benefit": "I can continue conversations effectively without losing important information"
+        "action": "have meaningful context preserved after compaction with dynamic extraction of active files, goals, error states, and build status into summaries",
+        "benefit": "I can continue working effectively after context compaction without losing critical information about what files I was editing, what goals I was pursuing, and what the build state was"
       },
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-12-24T02:52:54.813Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-24T03:01:55.203Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-24T03:12:01.952Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-24T03:16:33.063Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-24T03:16:57.804Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-24T03:23:39.148Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-24T03:27:29.085Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-24T03:33:08.599Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-24T03:41:56.065Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-24T03:43:42.635Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-24T03:48:22.057Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-24T03:54:06.400Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-24T03:57:50.944Z"
         }
       ],
       "rules": [
@@ -55212,9 +55260,45 @@
           "text": "Extract active files, goals, error states, and build status from conversation into PreservationContext",
           "deleted": false,
           "createdAt": "2025-12-24T02:53:08.030Z"
+        },
+        {
+          "id": 6,
+          "text": "PreservationContext struct MUST contain: active_files (Vec<String>), current_goals (Vec<String>), error_states (Vec<String>), build_status (BuildStatus enum), last_user_intent (String)",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:24:32.551Z"
+        },
+        {
+          "id": 7,
+          "text": "BuildStatus enum MUST have variants: Passing, Failing, Unknown",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:24:34.213Z"
+        },
+        {
+          "id": 8,
+          "text": "PreservationContext::extract_from_turns() MUST extract active files from Edit/Write/Read tool calls, goals from user messages, error states from failed tool results, and build status from test outputs",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:24:36.013Z"
+        },
+        {
+          "id": 9,
+          "text": "Summary generation MUST use dynamic PreservationContext.format_for_summary() - NO hardcoded placeholder text like '[from conversation]' or 'Continue development' or 'unknown'",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:24:37.891Z"
+        },
+        {
+          "id": 10,
+          "text": "detect_bash_milestone() MUST create TaskCompletion anchor (weight 0.8) when bash tool succeeds with output containing: 'successfully', 'installed', 'built', 'compiled', or 'completed'",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:24:40.078Z"
+        },
+        {
+          "id": 11,
+          "text": "detect_successful_search() MUST create UserCheckpoint anchor (weight 0.7) when web_search tool succeeds with >100 chars output AND assistant response contains synthesis indicators ('Based on', 'According to', 'search results')",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:24:41.921Z"
         }
       ],
-      "nextRuleId": 6,
+      "nextRuleId": 12,
       "examples": [
         {
           "id": 0,
@@ -55245,12 +55329,270 @@
           "text": "Synthetic anchor fallback: 10 turns with only web_search tools → UserCheckpoint at turn 9 with weight 0.7",
           "deleted": false,
           "createdAt": "2025-12-24T02:53:24.359Z"
+        },
+        {
+          "id": 5,
+          "text": "PreservationContext extraction with 5 turns: Edit auth.rs, Edit login.ts, Read config.json, failed build, then passing tests → active_files=['auth.rs','login.ts','config.json'], build_status=Passing, error_states contains build error",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:24:57.044Z"
+        },
+        {
+          "id": 6,
+          "text": "Dynamic summary with PreservationContext: After compacting 8 turns, summary contains 'Active files: auth.rs, login.ts' and 'Goals: Fix authentication bug' and 'Build: passing' - NOT '[from conversation]' or 'Continue development'",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:24:59.256Z"
+        },
+        {
+          "id": 7,
+          "text": "Goal extraction: User messages 'Please fix the auth bug', 'Help me implement OAuth' → current_goals=['Fix the auth bug', 'Implement OAuth']",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:25:00.911Z"
+        },
+        {
+          "id": 8,
+          "text": "Build status detection: Tool result contains 'All 15 tests passed' → build_status=Passing; Tool result contains 'FAILED: 3 tests' → build_status=Failing",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:25:02.780Z"
+        },
+        {
+          "id": 9,
+          "text": "Error state extraction: Failed Bash tool with 'error: cannot find module xyz' → error_states contains 'error: cannot find module xyz'",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:25:04.792Z"
         }
       ],
-      "nextExampleId": 5,
+      "nextExampleId": 10,
       "attachments": [
-        "spec/attachments/CTX-001/anchor-compaction-implementation-spec.md"
-      ]
+        "spec/attachments/CTX-001/anchor-compaction-implementation-spec.md",
+        "spec/attachments/CTX-001/ast-research-compaction-module.md"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation approach: Add PreservationContext struct to codelet/core/src/compaction/model.rs for tracking active files, goals, error states, and build status. Extend AnchorDetector in anchor.rs with detect_successful_search() and detect_bash_milestone() methods for broader anchor detection. Update ContextCompactor in compactor.rs to use dynamic PreservationContext instead of hardcoded template. Add synthetic anchor creation in ConversationFlow::from_turns() when no natural anchors found.",
+          "deleted": false,
+          "createdAt": "2025-12-24T03:00:41.421Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-24T03:57:50.943Z"
+    },
+    "CTX-002": {
+      "id": "CTX-002",
+      "title": "OpenCode-Style Compaction Window Limit Trigger",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2025-12-24T04:23:45.474Z",
+      "updatedAt": "2025-12-24T05:25:22.058Z",
+      "description": "Implement OpenCode's compaction TRIGGER logic (when to compact, not how to compact).\n\n**Issue 1: Token Counting (BROKEN)**\nCurrent: `effective = input - (cache_read * 0.9)` - discounts cache, ignores output\nOpenCode: `count = input + cache_read + output` - includes ALL tokens\n\n**Issue 2: Threshold Calculation (SUBOPTIMAL)**  \nCurrent: `threshold = context_window * 0.9` - static percentage\nOpenCode: `usable = context_window - min(model_max_output, 32000)` - reserves output space\n\n**Required Changes:**\n1. Token count = input + cache_read + output (include all, no discount)\n2. Threshold = context_window - min(model_max_output, SESSION_OUTPUT_MAX)\n3. Add SESSION_OUTPUT_TOKEN_MAX = 32,000 constant\n4. Add max_output_tokens to provider trait\n5. Trigger when: count > usable\n\n**Files to modify:**\n- codelet/core/src/compaction_hook.rs (token calculation)\n- codelet/cli/src/compaction_threshold.rs (threshold calculation)\n- codelet/providers/src/lib.rs (add max_output_tokens trait method)",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CTX-002/compaction-limits.md",
+        "spec/attachments/CTX-002/ast-research-compaction-trigger.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-24T04:28:35.335Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-24T04:46:52.279Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-24T04:55:46.355Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-24T04:56:12.839Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-24T04:56:38.974Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-24T04:58:02.305Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-24T04:59:41.642Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-24T05:03:01.607Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-24T05:14:59.162Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-24T05:21:50.073Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-24T05:25:22.058Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI coding agent using codelet",
+        "action": "have compaction triggered at the correct token threshold",
+        "benefit": "I maximize usable context while reserving space for model output and avoid premature or late compaction triggers"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Token count MUST include input_tokens + cache_read_tokens + output_tokens (all three summed, no discounting)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:28:59.304Z"
+        },
+        {
+          "id": 1,
+          "text": "Usable context MUST be calculated as: context_window - min(model_max_output, SESSION_OUTPUT_MAX)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:01.161Z"
+        },
+        {
+          "id": 2,
+          "text": "SESSION_OUTPUT_TOKEN_MAX constant MUST be 32,000 tokens",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:03.725Z"
+        },
+        {
+          "id": 3,
+          "text": "Compaction MUST trigger when: (input + cache_read + output) > usable_context",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:05.427Z"
+        },
+        {
+          "id": 4,
+          "text": "Provider trait MUST expose max_output_tokens() method returning the model's maximum output token limit",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:07.431Z"
+        },
+        {
+          "id": 5,
+          "text": "When model_max_output is 0, MUST use SESSION_OUTPUT_TOKEN_MAX (32k) as fallback reservation",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:39:15.842Z"
+        },
+        {
+          "id": 6,
+          "text": "When context_window is 0, compaction MUST NOT trigger (return false immediately)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:39:17.520Z"
+        },
+        {
+          "id": 7,
+          "text": "A configurable disable flag MUST allow skipping compaction entirely",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:39:20.250Z"
+        },
+        {
+          "id": 8,
+          "text": "Comparison MUST use strictly greater than (>), not greater-or-equal (>=)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:39:22.058Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Claude Sonnet (200k context, 8k max output): usable = 200,000 - min(8,192, 32,000) = 200,000 - 8,192 = 191,808 tokens",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:28.927Z"
+        },
+        {
+          "id": 1,
+          "text": "GPT-4 (128k context, 4k max output): usable = 128,000 - min(4,096, 32,000) = 128,000 - 4,096 = 123,904 tokens",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:30.522Z"
+        },
+        {
+          "id": 2,
+          "text": "High-output model (200k context, 64k max output): usable = 200,000 - min(64,000, 32,000) = 200,000 - 32,000 = 168,000 tokens (SESSION_OUTPUT_MAX caps it)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:32.518Z"
+        },
+        {
+          "id": 3,
+          "text": "Token counting: input=150,000 + cache_read=20,000 + output=5,000 = 175,000 total (NOT 150,000 - 18,000 = 132,000 as current code does)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:34.167Z"
+        },
+        {
+          "id": 4,
+          "text": "Trigger check for Claude: total=175,000, usable=191,808 → 175,000 < 191,808 → NO compaction (current code would trigger at 180,000)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:36.212Z"
+        },
+        {
+          "id": 5,
+          "text": "Trigger check for Claude: total=195,000, usable=191,808 → 195,000 > 191,808 → TRIGGER compaction",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:37.857Z"
+        },
+        {
+          "id": 6,
+          "text": "Current bug: input=180,000, cache=50,000, output=10,000 → current calculates 180,000-(50,000*0.9)=135,000 but should be 180,000+50,000+10,000=240,000",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:29:42.208Z"
+        },
+        {
+          "id": 7,
+          "text": "Unknown model (context=100k, max_output=0): min(0, 32000)=0, fallback to 32000 → usable = 100,000 - 32,000 = 68,000 tokens",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:39:33.310Z"
+        },
+        {
+          "id": 8,
+          "text": "Zero context window: context=0 → compaction returns false immediately (no context = no compaction)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:39:35.172Z"
+        },
+        {
+          "id": 9,
+          "text": "Disable flag set: DISABLE_AUTOCOMPACT=true → compaction returns false immediately regardless of token count",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:39:36.820Z"
+        },
+        {
+          "id": 10,
+          "text": "Edge case: total exactly equals usable (191,808 == 191,808) → NO trigger (OpenCode uses > not >=)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:39:38.402Z"
+        }
+      ],
+      "nextExampleId": 11,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implements OpenCode's isOverflow() algorithm from compaction.ts:30-38. Short-circuit evaluation: disable flag → zero context → calculation.",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:45:06.589Z"
+        },
+        {
+          "id": 1,
+          "text": "Files: compaction_hook.rs (replace calculate_effective_tokens with simple sum), compaction_threshold.rs (add SESSION_OUTPUT_TOKEN_MAX and should_trigger_compaction), providers/lib.rs (add max_output_tokens to trait)",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:45:08.419Z"
+        },
+        {
+          "id": 2,
+          "text": "Type considerations: All token counts are u64. Use saturating_sub for usable_context calculation. max_output_tokens() returns u64 (0 means unknown/use fallback).",
+          "deleted": false,
+          "createdAt": "2025-12-24T04:45:10.027Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-24T05:21:50.072Z"
     }
   },
   "states": {
@@ -55314,13 +55656,15 @@
       "EXMAP-004",
       "AGENT-001",
       "BROWSE-001",
-      "BOARD-020",
-      "CTX-001"
+      "BOARD-020"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "CTX-002"
+    ],
     "validating": [],
     "done": [
+      "CTX-001",
       "TUI-033",
       "NAPI-008",
       "NAPI-007",
@@ -55785,6 +56129,6 @@
     "DOCS": 3,
     "CLEAN": 5,
     "NAPI": 8,
-    "CTX": 1
+    "CTX": 2
   }
 }
