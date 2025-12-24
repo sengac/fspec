@@ -438,6 +438,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Reset React state
         setConversation([]);
         setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+        setContextFillPercentage(0);
         // Note: currentProvider, isDebugEnabled, and historyEntries are preserved
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to clear session';
