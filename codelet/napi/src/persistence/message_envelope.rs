@@ -549,9 +549,9 @@ mod tests {
         let restored: AssistantMessage = serde_json::from_str(&json).unwrap();
 
         assert_eq!(restored.content.len(), 3);
-        matches!(&restored.content[0], AssistantContent::Text { .. });
-        matches!(&restored.content[1], AssistantContent::ToolUse { .. });
-        matches!(&restored.content[2], AssistantContent::Text { .. });
+        assert!(matches!(&restored.content[0], AssistantContent::Text { .. }));
+        assert!(matches!(&restored.content[1], AssistantContent::ToolUse { .. }));
+        assert!(matches!(&restored.content[2], AssistantContent::Text { .. }));
     }
 
     #[test]

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-24T00:06:13.843Z"
+    "lastUpdated": "2025-12-24T02:53:34.157Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -55156,6 +55156,101 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-24T00:06:13.871Z"
+    },
+    "CTX-001": {
+      "id": "CTX-001",
+      "title": "Complete Anchor-Based Context Compaction",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-12-24T02:52:03.080Z",
+      "updatedAt": "2025-12-24T02:53:34.157Z",
+      "children": [],
+      "userStory": {
+        "role": "AI agent using codelet",
+        "action": "have meaningful context preserved after compaction",
+        "benefit": "I can continue conversations effectively without losing important information"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-24T02:52:54.813Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Anchors are only created when detection confidence >= 0.9 (90%)",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:05.244Z"
+        },
+        {
+          "id": 1,
+          "text": "ErrorResolution anchors have weight 0.9 (highest), TaskCompletion 0.8, FeatureMilestone 0.75, UserCheckpoint 0.7",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:05.803Z"
+        },
+        {
+          "id": 2,
+          "text": "Always preserve last 2-3 conversation turns regardless of anchors",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:06.357Z"
+        },
+        {
+          "id": 3,
+          "text": "When no natural anchors are detected, create a synthetic UserCheckpoint at conversation end",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:06.912Z"
+        },
+        {
+          "id": 4,
+          "text": "Warn when compression ratio < 60%",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:07.473Z"
+        },
+        {
+          "id": 5,
+          "text": "Extract active files, goals, error states, and build status from conversation into PreservationContext",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:08.030Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Coding conversation: User fixes bug in auth.rs, runs tests pass → TaskCompletion anchor at turn 3, summarizes turns 0-2, keeps turns 3+",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:22.129Z"
+        },
+        {
+          "id": 1,
+          "text": "Web search conversation: User asks about Brisbane job market, no Edit/Write tools → synthetic UserCheckpoint created at last turn",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:22.691Z"
+        },
+        {
+          "id": 2,
+          "text": "Mixed conversation: npm install success creates bash milestone anchor, test pass creates TaskCompletion anchor",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:23.250Z"
+        },
+        {
+          "id": 3,
+          "text": "PreservationContext extraction: 'Active files: auth.rs, README.md; Goals: Fix auth bug; Build: passing'",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:23.806Z"
+        },
+        {
+          "id": 4,
+          "text": "Synthetic anchor fallback: 10 turns with only web_search tools → UserCheckpoint at turn 9 with weight 0.7",
+          "deleted": false,
+          "createdAt": "2025-12-24T02:53:24.359Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "attachments": [
+        "spec/attachments/CTX-001/anchor-compaction-implementation-spec.md"
+      ]
     }
   },
   "states": {
@@ -55219,7 +55314,8 @@
       "EXMAP-004",
       "AGENT-001",
       "BROWSE-001",
-      "BOARD-020"
+      "BOARD-020",
+      "CTX-001"
     ],
     "testing": [],
     "implementing": [],
@@ -55688,6 +55784,7 @@
     "FOUND": 43,
     "DOCS": 3,
     "CLEAN": 5,
-    "NAPI": 8
+    "NAPI": 8,
+    "CTX": 1
   }
 }
