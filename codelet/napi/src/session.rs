@@ -414,22 +414,147 @@ impl CodeletSession {
         Ok(())
     }
 
-    /// Restore token state from persisted session (TUI-033)
+    /// Restore messages from full envelope JSON strings (NAPI-008)
     ///
-    /// Call this after restoreMessages() to restore the token counts from
-    /// the persisted session manifest. This ensures getContextFillInfo()
+    /// This is the preferred method for restoring sessions as it preserves:
+    /// - Structured tool_use and tool_result blocks (not just text summaries)
+    /// - Multi-part message content (text + tool calls)
+    /// - Turn boundaries for compaction (rebuilt via convert_messages_to_turns)
+    ///
+    /// Call restoreTokenState() after this to restore token counts.
+    ///
+    /// # Arguments
+    /// * `envelopes` - Array of envelope JSON strings from persistenceGetSessionMessageEnvelopes
+    #[napi]
+    pub fn restore_messages_from_envelopes(&self, envelopes: Vec<String>) -> Result<()> {
+        use crate::persistence::{AssistantContent as EnvAssistantContent, MessageEnvelope, MessagePayload, UserContent as EnvUserContent};
+        use codelet_cli::interactive_helpers::convert_messages_to_turns;
+        use rig::message::{AssistantContent, Message as RigMessage, Text, ToolCall, ToolFunction, ToolResult, ToolResultContent, UserContent};
+        use rig::OneOrMany;
+
+        let mut session = self.inner.blocking_lock();
+
+        // Clear existing state before restoring
+        session.messages.clear();
+        session.turns.clear();
+        session.token_tracker = codelet_core::compaction::TokenTracker {
+            input_tokens: 0,
+            output_tokens: 0,
+            cache_read_input_tokens: Some(0),
+            cache_creation_input_tokens: Some(0),
+        };
+
+        for envelope_json in envelopes {
+            let envelope: MessageEnvelope = match serde_json::from_str(&envelope_json) {
+                Ok(e) => e,
+                Err(e) => {
+                    tracing::warn!("Failed to parse envelope during restore: {}", e);
+                    continue;
+                }
+            };
+
+            match envelope.message {
+                MessagePayload::User(user_msg) => {
+                    // Convert user content blocks
+                    let mut rig_contents: Vec<UserContent> = Vec::new();
+                    for content in user_msg.content {
+                        match content {
+                            EnvUserContent::Text { text } => {
+                                rig_contents.push(UserContent::Text(Text { text }));
+                            }
+                            EnvUserContent::ToolResult { tool_use_id, content, .. } => {
+                                // Create proper ToolResult for rig
+                                // Note: rig's ToolResult uses 'id' for the call reference
+                                rig_contents.push(UserContent::ToolResult(ToolResult {
+                                    id: tool_use_id,
+                                    call_id: None,
+                                    content: OneOrMany::one(ToolResultContent::Text(Text { text: content })),
+                                }));
+                            }
+                            EnvUserContent::Image { .. } | EnvUserContent::Document { .. } => {
+                                // Skip images/documents for now - they don't affect LLM context directly
+                                // The blob references are preserved in persistence
+                            }
+                        }
+                    }
+
+                    if !rig_contents.is_empty() {
+                        session.messages.push(RigMessage::User {
+                            content: OneOrMany::many(rig_contents)
+                                .unwrap_or_else(|_| OneOrMany::one(UserContent::text(""))),
+                        });
+                    }
+                }
+                MessagePayload::Assistant(assistant_msg) => {
+                    // Convert assistant content blocks
+                    let mut rig_contents: Vec<AssistantContent> = Vec::new();
+                    for content in assistant_msg.content {
+                        match content {
+                            EnvAssistantContent::Text { text } => {
+                                rig_contents.push(AssistantContent::Text(Text { text }));
+                            }
+                            EnvAssistantContent::ToolUse { id, name, input } => {
+                                // Create proper ToolCall for rig
+                                rig_contents.push(AssistantContent::ToolCall(ToolCall {
+                                    id,
+                                    call_id: None,
+                                    function: ToolFunction {
+                                        name,
+                                        arguments: input, // Already serde_json::Value
+                                    },
+                                }));
+                            }
+                            EnvAssistantContent::Thinking { .. } => {
+                                // Skip thinking blocks - they don't need to be in message history
+                            }
+                        }
+                    }
+
+                    if !rig_contents.is_empty() {
+                        session.messages.push(RigMessage::Assistant {
+                            id: assistant_msg.id,
+                            content: OneOrMany::many(rig_contents)
+                                .unwrap_or_else(|_| OneOrMany::one(AssistantContent::text(""))),
+                        });
+                    }
+                }
+            }
+        }
+
+        // Rebuild turns from restored messages for compaction support
+        session.turns = convert_messages_to_turns(&session.messages);
+
+        // Re-inject context reminders to ensure CLAUDE.md and environment info
+        // are present after restoration
+        session.inject_context_reminders();
+
+        Ok(())
+    }
+
+    /// Restore token state from persisted session (TUI-033, NAPI-008)
+    ///
+    /// Call this after restoreMessages() or restoreMessagesFromEnvelopes() to restore
+    /// the token counts from the persisted session manifest. This ensures getContextFillInfo()
     /// returns accurate context fill percentage after session restoration.
     ///
     /// # Arguments
     /// * `input_tokens` - Total input tokens from session manifest
     /// * `output_tokens` - Total output tokens from session manifest
+    /// * `cache_read_tokens` - Cache read tokens from session manifest
+    /// * `cache_creation_tokens` - Cache creation tokens from session manifest
     #[napi]
-    pub fn restore_token_state(&self, input_tokens: u32, output_tokens: u32) {
+    pub fn restore_token_state(
+        &self,
+        input_tokens: u32,
+        output_tokens: u32,
+        cache_read_tokens: u32,
+        cache_creation_tokens: u32,
+    ) {
         let mut session = self.inner.blocking_lock();
         session.token_tracker.input_tokens = input_tokens as u64;
         session.token_tracker.output_tokens = output_tokens as u64;
-        // Cache tokens are not persisted in session manifest, so leave them at 0
-        // The next streaming response will update these values accurately
+        session.token_tracker.cache_read_input_tokens = Some(cache_read_tokens as u64);
+        session.token_tracker.cache_creation_input_tokens = Some(cache_creation_tokens as u64);
     }
 
     /// Get current context fill info (TUI-033)

@@ -99,17 +99,38 @@ export declare class CodeletSession {
    */
   restoreMessages(messages: Array<Message>): void;
   /**
-   * Restore token state from persisted session (TUI-033)
+   * Restore messages from full envelope JSON strings (NAPI-008)
    *
-   * Call this after restoreMessages() to restore the token counts from
-   * the persisted session manifest. This ensures getContextFillInfo()
+   * This is the preferred method for restoring sessions as it preserves:
+   * - Structured tool_use and tool_result blocks (not just text summaries)
+   * - Multi-part message content (text + tool calls)
+   * - Turn boundaries for compaction (rebuilt via convert_messages_to_turns)
+   *
+   * Call restoreTokenState() after this to restore token counts.
+   *
+   * # Arguments
+   * * `envelopes` - Array of envelope JSON strings from persistenceGetSessionMessageEnvelopes
+   */
+  restoreMessagesFromEnvelopes(envelopes: Array<string>): void;
+  /**
+   * Restore token state from persisted session (TUI-033, NAPI-008)
+   *
+   * Call this after restoreMessages() or restoreMessagesFromEnvelopes() to restore
+   * the token counts from the persisted session manifest. This ensures getContextFillInfo()
    * returns accurate context fill percentage after session restoration.
    *
    * # Arguments
    * * `input_tokens` - Total input tokens from session manifest
    * * `output_tokens` - Total output tokens from session manifest
+   * * `cache_read_tokens` - Cache read tokens from session manifest
+   * * `cache_creation_tokens` - Cache creation tokens from session manifest
    */
-  restoreTokenState(inputTokens: number, outputTokens: number): void;
+  restoreTokenState(
+    inputTokens: number,
+    outputTokens: number,
+    cacheReadTokens: number,
+    cacheCreationTokens: number
+  ): void;
   /**
    * Get current context fill info (TUI-033)
    *
