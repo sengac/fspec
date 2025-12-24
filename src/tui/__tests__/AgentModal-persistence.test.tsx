@@ -66,6 +66,9 @@ vi.mock('@sengac/codelet-napi', () => ({
     toggleDebug: ReturnType<typeof vi.fn>;
     compact: ReturnType<typeof vi.fn>;
     restoreMessages: ReturnType<typeof vi.fn>;
+    restoreMessagesFromEnvelopes: ReturnType<typeof vi.fn>;
+    restoreTokenState: ReturnType<typeof vi.fn>;
+    getContextFillInfo: ReturnType<typeof vi.fn>;
 
     constructor() {
       if (mockState.shouldThrow) {
@@ -83,6 +86,9 @@ vi.mock('@sengac/codelet-napi', () => ({
       this.toggleDebug = mockState.session.toggleDebug;
       this.compact = mockState.session.compact;
       this.restoreMessages = vi.fn();
+      this.restoreMessagesFromEnvelopes = vi.fn();
+      this.restoreTokenState = vi.fn();
+      this.getContextFillInfo = vi.fn().mockReturnValue({ fillPercentage: 0 });
     }
   },
   // Persistence NAPI bindings (camelCase as exported by NAPI-RS)

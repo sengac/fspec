@@ -13,6 +13,9 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 const mockPersistenceListSessions = vi.fn();
 const mockPersistenceGetSessionMessages = vi.fn();
 const mockRestoreMessages = vi.fn();
+const mockRestoreMessagesFromEnvelopes = vi.fn();
+const mockRestoreTokenState = vi.fn();
+const mockGetContextFillInfo = vi.fn().mockReturnValue({ fillPercentage: 0 });
 
 vi.mock('@sengac/codelet-napi', () => ({
   persistenceListSessions: mockPersistenceListSessions,
@@ -34,6 +37,9 @@ vi.mock('@sengac/codelet-napi', () => ({
     toggleDebug: vi.fn(),
     compact: vi.fn(),
     restoreMessages: mockRestoreMessages,
+    restoreMessagesFromEnvelopes: mockRestoreMessagesFromEnvelopes,
+    restoreTokenState: mockRestoreTokenState,
+    getContextFillInfo: mockGetContextFillInfo,
   })),
 }));
 

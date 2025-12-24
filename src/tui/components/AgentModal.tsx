@@ -747,7 +747,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             const summary = `Compacted ${result.turnsSummarized} turns (${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression)`;
             // compacted_before_index = turnsSummarized (messages 0 to turnsSummarized-1 were compacted)
             persistenceSetCompactionState(currentSessionId, summary, result.turnsSummarized);
-            persistenceSetSessionTokens(currentSessionId, finalTokens.inputTokens, finalTokens.outputTokens, 0, 0);
+            persistenceSetSessionTokens(
+              currentSessionId,
+              finalTokens.inputTokens,
+              finalTokens.outputTokens,
+              finalTokens.cacheReadInputTokens ?? 0,
+              finalTokens.cacheCreationInputTokens ?? 0
+            );
           } catch {
             // Compaction state persistence failed - continue
           }
@@ -1062,6 +1068,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           // Store assistant message with ALL content blocks (text + tool_use)
           // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
           if (assistantContentBlocks.length > 0) {
+            // Per-message cumulative token usage for analytics/debugging (NAPI-008)
+            // Note: This is cumulative session usage at time of message, stored for
+            // historical analysis. Not used during restore (session totals are in manifest).
+            const currentTokens = sessionRef.current?.tokenTracker;
             const assistantEnvelope = {
               uuid: crypto.randomUUID(),
               timestamp: new Date().toISOString(),
@@ -1071,6 +1081,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 role: 'assistant',
                 content: assistantContentBlocks,
               },
+              usage: currentTokens ? {
+                input_tokens: currentTokens.inputTokens,
+                output_tokens: currentTokens.outputTokens,
+                cache_read_input_tokens: currentTokens.cacheReadInputTokens ?? 0,
+                cache_creation_input_tokens: currentTokens.cacheCreationInputTokens ?? 0,
+              } : undefined,
             };
             const assistantJson = JSON.stringify(assistantEnvelope);
             persistenceStoreMessageEnvelope(activeSessionId, assistantJson);
@@ -1109,8 +1125,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               activeSessionId,
               finalTokens.inputTokens,
               finalTokens.outputTokens,
-              0, // cache read - not tracked separately yet
-              0  // cache create - not tracked separately yet
+              finalTokens.cacheReadInputTokens ?? 0,
+              finalTokens.cacheCreationInputTokens ?? 0
             );
           } catch {
             // Token usage persistence failed - continue
@@ -1284,30 +1300,6 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       const { persistenceGetSessionMessages, persistenceGetSessionMessageEnvelopes } = await import('@sengac/codelet-napi');
       const messages = persistenceGetSessionMessages(selectedSession.id);
 
-      // CRITICAL: Restore messages to CodeletSession for LLM context
-      // Without this, the AI would have no context of the restored conversation
-      // even though the UI shows historical messages
-      if (sessionRef.current) {
-        sessionRef.current.restoreMessages(messages);
-
-        // TUI-033: Restore token state from persisted session before getting context fill
-        // The token tracker is reset during restoreMessages, so we need to restore it
-        if (selectedSession.tokenUsage && sessionRef.current.restoreTokenState) {
-          sessionRef.current.restoreTokenState(
-            selectedSession.tokenUsage.totalInputTokens,
-            selectedSession.tokenUsage.totalOutputTokens
-          );
-        }
-
-        // TUI-033: Update context fill percentage after restoring messages and tokens
-        // Since restoreMessages doesn't trigger streaming, we need to manually
-        // fetch and update the context fill state
-        if (sessionRef.current.getContextFillInfo) {
-          const contextFillInfo = sessionRef.current.getContextFillInfo();
-          setContextFillPercentage(contextFillInfo.fillPercentage);
-        }
-      }
-
       // Get FULL envelopes with all content blocks (ToolUse, ToolResult, Text, etc.)
       const envelopes: string[] = persistenceGetSessionMessageEnvelopes(selectedSession.id);
 
@@ -1427,6 +1419,27 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         }
       }
 
+      // NAPI-008: Restore messages to CodeletSession for LLM context using full envelopes
+      // This preserves structured tool_use/tool_result blocks (not just text summaries)
+      // and rebuilds turn boundaries for proper compaction after restore
+      if (sessionRef.current) {
+        sessionRef.current.restoreMessagesFromEnvelopes(envelopes);
+
+        // Restore token state from persisted session (including cache tokens for TUI-033)
+        if (selectedSession.tokenUsage) {
+          sessionRef.current.restoreTokenState(
+            selectedSession.tokenUsage.totalInputTokens,
+            selectedSession.tokenUsage.totalOutputTokens,
+            selectedSession.tokenUsage.cacheReadTokens ?? 0,
+            selectedSession.tokenUsage.cacheCreationTokens ?? 0
+          );
+        }
+
+        // Update context fill percentage after restoring messages and tokens
+        const contextFillInfo = sessionRef.current.getContextFillInfo();
+        setContextFillPercentage(contextFillInfo.fillPercentage);
+      }
+
       // Update state - replace current conversation entirely
       setCurrentSessionId(selectedSession.id);
       setConversation(restored);
@@ -1436,11 +1449,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       // Don't rename resumed sessions with their first new message
       isFirstMessageRef.current = false;
 
-      // Restore token usage from session manifest
+      // Restore token usage from session manifest (including cache tokens)
       if (selectedSession.tokenUsage) {
         setTokenUsage({
           inputTokens: selectedSession.tokenUsage.totalInputTokens,
           outputTokens: selectedSession.tokenUsage.totalOutputTokens,
+          cacheReadInputTokens: selectedSession.tokenUsage.cacheReadTokens,
+          cacheCreationInputTokens: selectedSession.tokenUsage.cacheCreationTokens,
         });
       }
 
