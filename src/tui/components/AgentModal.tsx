@@ -756,9 +756,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           ...prev,
           { role: 'tool', content: message },
         ]);
-        // Update token tracker to reflect reduced context
+        // Update token tracker and context fill to reflect reduced context
         const finalTokens = sessionRef.current.tokenTracker;
         setTokenUsage(finalTokens);
+        const contextFillInfo = sessionRef.current.getContextFillInfo();
+        setContextFillPercentage(contextFillInfo.fillPercentage);
 
         // Persist compaction state and token usage
         if (currentSessionId) {
