@@ -28,6 +28,7 @@ import { VirtualList } from './VirtualList';
 import { getFspecUserDir } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
+import { persistenceStoreMessageEnvelope } from '@sengac/codelet-napi';
 
 // NAPI-006: Callbacks for history navigation
 interface SafeTextInputCallbacks {
@@ -349,6 +350,25 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           persistenceSetDataDirectory(fspecDir);
         } catch {
           // Ignore if already set
+        }
+
+        // Wire up Rust tracing to TypeScript logger
+        try {
+          const { setRustLogCallback } = await import('@sengac/codelet-napi');
+          setRustLogCallback((msg: string) => {
+            // Route Rust logs through TypeScript logger
+            if (msg.includes('[RUST:ERROR]')) {
+              logger.error(msg);
+            } else if (msg.includes('[RUST:WARN]')) {
+              logger.warn(msg);
+            } else if (msg.includes('[RUST:DEBUG]')) {
+              logger.debug(msg);
+            } else {
+              logger.info(msg);
+            }
+          });
+        } catch (err) {
+          logger.warn('Failed to set up Rust log callback', { error: err });
         }
 
         // Default to Claude as the primary AI provider
@@ -832,8 +852,6 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     // Persist user message as full envelope
     if (activeSessionId) {
       try {
-        const { persistenceStoreMessageEnvelope } = await import('@sengac/codelet-napi');
-
         // Create proper user message envelope
         // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
         const userEnvelope = {
@@ -869,9 +887,6 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       let fullAssistantResponse = '';
       // Track assistant message content blocks for envelope storage
       const assistantContentBlocks: Array<{ type: string; text?: string; id?: string; name?: string; input?: unknown }> = [];
-      // Track pending tool results to store as user message
-      const pendingToolResults: Array<{ type: string; tool_use_id: string; content: string; is_error?: boolean }> = [];
-
       await sessionRef.current.prompt(userMessage, (chunk: StreamChunk) => {
         if (!chunk) return;
 
@@ -970,13 +985,51 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           // Show tool result in CLI format, then start new streaming message
           const result = chunk.toolResult;
 
-          // Add tool_result to pending list (will be stored as user message)
-          pendingToolResults.push({
-            type: 'tool_result',
-            tool_use_id: result.toolCallId,
-            content: result.content,
-            is_error: result.isError,
-          });
+          // NAPI-008: Store current assistant envelope BEFORE the tool_result
+          // This ensures the assistant message with tool_use is separate from the continuation
+          if (activeSessionId && assistantContentBlocks.length > 0) {
+            try {
+              const assistantEnvelope = {
+                uuid: crypto.randomUUID(),
+                timestamp: new Date().toISOString(),
+                type: 'assistant',
+                provider: currentProvider,
+                message: {
+                  role: 'assistant',
+                  content: [...assistantContentBlocks], // Clone before clearing
+                },
+              };
+              persistenceStoreMessageEnvelope(activeSessionId, JSON.stringify(assistantEnvelope));
+              // Clear for continuation after tool_result
+              assistantContentBlocks.length = 0;
+            } catch {
+              // Persistence failed - continue
+            }
+          }
+
+          // Store tool_result as user message immediately
+          if (activeSessionId) {
+            try {
+              const toolResultEnvelope = {
+                uuid: crypto.randomUUID(),
+                timestamp: new Date().toISOString(),
+                type: 'user',
+                provider: currentProvider,
+                message: {
+                  role: 'user',
+                  content: [{
+                    type: 'tool_result',
+                    tool_use_id: result.toolCallId,
+                    content: result.content,
+                    is_error: result.isError,
+                  }],
+                },
+              };
+              persistenceStoreMessageEnvelope(activeSessionId, JSON.stringify(toolResultEnvelope));
+            } catch {
+              // Persistence failed - continue
+            }
+          }
 
           // Sanitize content: replace tabs with spaces (Ink can't render tabs)
           const sanitizedContent = result.content.replace(/\t/g, '  ');
@@ -1064,8 +1117,6 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       // Persist full envelopes to session (includes tool calls and results)
       if (activeSessionId) {
         try {
-          const { persistenceStoreMessageEnvelope } = await import('@sengac/codelet-napi');
-
           // Store assistant message with ALL content blocks (text + tool_use)
           // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
           if (assistantContentBlocks.length > 0) {
@@ -1092,22 +1143,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             const assistantJson = JSON.stringify(assistantEnvelope);
             persistenceStoreMessageEnvelope(activeSessionId, assistantJson);
           }
-
-          // Store tool results as user message (if any)
-          if (pendingToolResults.length > 0) {
-            const toolResultEnvelope = {
-              uuid: crypto.randomUUID(),
-              timestamp: new Date().toISOString(),
-              type: 'user',
-              provider: currentProvider,
-              message: {
-                role: 'user',
-                content: pendingToolResults,
-              },
-            };
-            const toolResultJson = JSON.stringify(toolResultEnvelope);
-            persistenceStoreMessageEnvelope(activeSessionId, toolResultJson);
-          }
+          // Note: Tool results are stored immediately in ToolResult handler (NAPI-008)
         } catch {
           // Message persistence failed - continue
         }

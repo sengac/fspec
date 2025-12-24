@@ -18,6 +18,7 @@ use crate::compaction_threshold::{calculate_compaction_threshold, CACHE_READ_DIS
 use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
+use std::error::Error as StdError;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_core::{CompactionHook, RigAgent, TokenState};
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
@@ -36,6 +37,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::Notify;
 use tokio::time::interval;
+use tracing::error;
 
 /// Run agent stream with CLI event handling
 ///
@@ -521,6 +523,21 @@ where
                         break;
                     }
 
+                    // NAPI-008: Log error with full details (include in message for TypeScript layer)
+                    error!(
+                        "API error received from provider: {} (messages={}, provider={})",
+                        error_str,
+                        session.messages.len(),
+                        session.current_provider_name()
+                    );
+                    // Log the full error chain for debugging
+                    let err_ref: &dyn StdError = e.as_ref();
+                    let mut source = err_ref.source();
+                    while let Some(cause) = source {
+                        error!("Caused by: {}", cause);
+                        source = cause.source();
+                    }
+
                     // CLI-022: Capture api.error event (for real errors, not compaction)
                     if let Ok(manager_arc) = get_debug_capture_manager() {
                         if let Ok(mut manager) = manager_arc.lock() {
@@ -542,7 +559,7 @@ where
                     return Err(anyhow::anyhow!("Agent error: {e}"));
                 }
                 None => {
-                    // Stream ended unexpectedly
+                    // Stream ended
                     if !assistant_text.is_empty() {
                         handle_final_response(&assistant_text, &mut session.messages)?;
                     }

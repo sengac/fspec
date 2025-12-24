@@ -444,11 +444,15 @@ impl CodeletSession {
             cache_creation_input_tokens: Some(0),
         };
 
-        for envelope_json in envelopes {
-            let envelope: MessageEnvelope = match serde_json::from_str(&envelope_json) {
+        tracing::info!("restore_messages_from_envelopes: processing {} envelopes", envelopes.len());
+
+        for (idx, envelope_json) in envelopes.iter().enumerate() {
+            tracing::debug!("Processing envelope {}: {}", idx, &envelope_json[..std::cmp::min(200, envelope_json.len())]);
+
+            let envelope: MessageEnvelope = match serde_json::from_str(envelope_json) {
                 Ok(e) => e,
                 Err(e) => {
-                    tracing::warn!("Failed to parse envelope during restore: {}", e);
+                    tracing::warn!("Failed to parse envelope {} during restore: {} - json: {}", idx, e, &envelope_json[..std::cmp::min(500, envelope_json.len())]);
                     continue;
                 }
             };
@@ -524,9 +528,20 @@ impl CodeletSession {
         // Rebuild turns from restored messages for compaction support
         session.turns = convert_messages_to_turns(&session.messages);
 
+        tracing::info!(
+            "restore_messages_from_envelopes: restored {} messages, {} turns",
+            session.messages.len(),
+            session.turns.len()
+        );
+
         // Re-inject context reminders to ensure CLAUDE.md and environment info
         // are present after restoration
         session.inject_context_reminders();
+
+        tracing::info!(
+            "restore_messages_from_envelopes: after context injection, {} total messages",
+            session.messages.len()
+        );
 
         Ok(())
     }
