@@ -330,7 +330,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       try {
         // Dynamic import to handle ESM
         const codeletNapi = await import('@sengac/codelet-napi');
-        const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory, persistenceCreateSessionWithProvider } = codeletNapi;
+        const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory } = codeletNapi;
 
         // NAPI-006: Set up persistence data directory
         const fspecDir = getFspecUserDir();
@@ -348,21 +348,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         setAvailableProviders(newSession.availableProviders);
         setTokenUsage(newSession.tokenTracker);
 
-        // NAPI-006: Create or resume a persistence session
-        try {
-          const project = currentProjectRef.current;
-          const sessionName = `Session ${new Date().toLocaleDateString()}`;
-
-          const persistedSession = persistenceCreateSessionWithProvider(
-            sessionName,
-            project,
-            newSession.currentProviderName
-          );
-
-          setCurrentSessionId(persistedSession.id);
-        } catch {
-          // Session creation failed - continue without persistence
-        }
+        // NAPI-006: Session creation is deferred until first message is sent
+        // This prevents empty sessions from being persisted when user opens
+        // the modal but doesn't send any messages. See handleSubmit() for
+        // the actual session creation logic.
 
         // NAPI-006: Load history for current project
         try {
@@ -773,33 +762,59 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     lastChunkTimeRef.current = null;
     rateSamplesRef.current = [];
 
+    // NAPI-006: Deferred session creation - only create session on first message
+    // This prevents empty sessions from being persisted when user opens modal
+    // but doesn't send any messages
+    let activeSessionId = currentSessionId;
+    if (!activeSessionId && isFirstMessageRef.current) {
+      try {
+        const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+        const project = currentProjectRef.current;
+        // Use first message as session name (truncated to 50 chars)
+        const sessionName = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
+
+        const persistedSession = persistenceCreateSessionWithProvider(
+          sessionName,
+          project,
+          currentProvider
+        );
+
+        activeSessionId = persistedSession.id;
+        setCurrentSessionId(activeSessionId);
+        // Mark first message as processed (session already named with message content)
+        isFirstMessageRef.current = false;
+      } catch {
+        // Session creation failed - continue without persistence
+      }
+    }
+
     // NAPI-006: Save command to history
-    if (currentSessionId) {
+    if (activeSessionId) {
       try {
         const { persistenceAddHistory } = await import('@sengac/codelet-napi');
-        persistenceAddHistory(userMessage, currentProjectRef.current, currentSessionId);
+        persistenceAddHistory(userMessage, currentProjectRef.current, activeSessionId);
         // Update local history entries
         setHistoryEntries(prev => [{
           display: userMessage,
           timestamp: new Date().toISOString(),
           project: currentProjectRef.current,
-          sessionId: currentSessionId,
+          sessionId: activeSessionId,
           hasPastedContent: false,
         }, ...prev]);
       } catch (err) {
         logger.error(`Failed to save history: ${err instanceof Error ? err.message : String(err)}`);
       }
     } else {
-      logger.warn('No currentSessionId - history will not be saved');
+      logger.warn('No activeSessionId - history will not be saved');
     }
 
     // Add user message to conversation
     setConversation(prev => [...prev, { role: 'user', content: userMessage }]);
 
     // Persist user message as full envelope
-    if (currentSessionId) {
+    if (activeSessionId) {
       try {
-        const { persistenceStoreMessageEnvelope, persistenceRenameSession } = await import('@sengac/codelet-napi');
+        const { persistenceStoreMessageEnvelope } = await import('@sengac/codelet-napi');
 
         // Create proper user message envelope
         // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
@@ -814,14 +829,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           },
         };
         const envelopeJson = JSON.stringify(userEnvelope);
-        const result = persistenceStoreMessageEnvelope(currentSessionId, envelopeJson);
+        persistenceStoreMessageEnvelope(activeSessionId, envelopeJson);
 
-        // Auto-rename session with first user message (truncated to 50 chars)
-        if (isFirstMessageRef.current) {
-          isFirstMessageRef.current = false;
-          const sessionName = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
-          persistenceRenameSession(currentSessionId, sessionName);
-        }
+        // Note: Session naming now happens at creation time (deferred session creation above)
+        // so we don't need to rename here
       } catch {
         // User message persistence failed - continue
       }
@@ -1030,7 +1041,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       });
 
       // Persist full envelopes to session (includes tool calls and results)
-      if (currentSessionId) {
+      if (activeSessionId) {
         try {
           const { persistenceStoreMessageEnvelope } = await import('@sengac/codelet-napi');
 
@@ -1048,7 +1059,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               },
             };
             const assistantJson = JSON.stringify(assistantEnvelope);
-            persistenceStoreMessageEnvelope(currentSessionId, assistantJson);
+            persistenceStoreMessageEnvelope(activeSessionId, assistantJson);
           }
 
           // Store tool results as user message (if any)
@@ -1064,7 +1075,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               },
             };
             const toolResultJson = JSON.stringify(toolResultEnvelope);
-            persistenceStoreMessageEnvelope(currentSessionId, toolResultJson);
+            persistenceStoreMessageEnvelope(activeSessionId, toolResultJson);
           }
         } catch {
           // Message persistence failed - continue
@@ -1077,11 +1088,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         setTokenUsage(finalTokens);
 
         // Persist token usage to session manifest (for restore)
-        if (currentSessionId) {
+        if (activeSessionId) {
           try {
             const { persistenceSetSessionTokens } = await import('@sengac/codelet-napi');
             persistenceSetSessionTokens(
-              currentSessionId,
+              activeSessionId,
               finalTokens.inputTokens,
               finalTokens.outputTokens,
               0, // cache read - not tracked separately yet

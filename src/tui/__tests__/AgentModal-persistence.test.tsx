@@ -65,6 +65,7 @@ vi.mock('@sengac/codelet-napi', () => ({
     resetInterrupt: ReturnType<typeof vi.fn>;
     toggleDebug: ReturnType<typeof vi.fn>;
     compact: ReturnType<typeof vi.fn>;
+    restoreMessages: ReturnType<typeof vi.fn>;
 
     constructor() {
       if (mockState.shouldThrow) {
@@ -81,6 +82,7 @@ vi.mock('@sengac/codelet-napi', () => ({
       this.resetInterrupt = mockState.session.resetInterrupt;
       this.toggleDebug = mockState.session.toggleDebug;
       this.compact = mockState.session.compact;
+      this.restoreMessages = vi.fn();
     }
   },
   // Persistence NAPI bindings (camelCase as exported by NAPI-RS)
@@ -129,9 +131,17 @@ vi.mock('@sengac/codelet-napi', () => ({
     messageCount: 20,
   })),
   persistenceListSessions: vi.fn().mockImplementation(() => [
-    { id: 'session-1', name: 'Auth Work', project: '/test/project', provider: 'claude', messageCount: 10 },
-    { id: 'session-2', name: 'Bug Fix', project: '/test/project', provider: 'claude', messageCount: 5 },
-    { id: 'session-b', name: 'session-b', project: '/test/project', provider: 'claude', messageCount: 8 },
+    { id: 'session-1', name: 'Auth Work', project: '/test/project', provider: 'claude', messageCount: 10, updatedAt: new Date().toISOString() },
+    { id: 'session-2', name: 'Bug Fix', project: '/test/project', provider: 'claude', messageCount: 5, updatedAt: new Date().toISOString() },
+    { id: 'session-b', name: 'session-b', project: '/test/project', provider: 'claude', messageCount: 8, updatedAt: new Date().toISOString() },
+  ]),
+  persistenceGetSessionMessages: vi.fn().mockImplementation(() => [
+    { id: '1', role: 'user', content: 'Hello', contentHash: '', createdAt: '', tokenCount: 10, blobRefs: [], metadataJson: '{}' },
+    { id: '2', role: 'assistant', content: 'Hi there!', contentHash: '', createdAt: '', tokenCount: 20, blobRefs: [], metadataJson: '{}' },
+  ]),
+  persistenceGetSessionMessageEnvelopes: vi.fn().mockImplementation(() => [
+    JSON.stringify({ uuid: '1', timestamp: new Date().toISOString(), type: 'user', provider: 'claude', message: { role: 'user', content: [{ type: 'text', text: 'Hello' }] } }),
+    JSON.stringify({ uuid: '2', timestamp: new Date().toISOString(), type: 'assistant', provider: 'claude', message: { role: 'assistant', content: [{ type: 'text', text: 'Hi there!' }] } }),
   ]),
   persistenceLoadSession: vi.fn().mockImplementation((id: string) => ({
     id,
@@ -318,11 +328,11 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
   });
 
   // ============================================================================
-  // @history-search - Search command history with Ctrl+R
+  // @history-search - Search command history with /search command
   // ============================================================================
 
-  describe('Scenario: Search command history with Ctrl+R', () => {
-    it('should search history when Ctrl+R is pressed and query is typed', async () => {
+  describe('Scenario: Search command history with /search command', () => {
+    it('should enter search mode when /search command is used', async () => {
       // @step Given I have command history containing "implement" keyword
       mockState.persistence.historyEntries = [
         { display: 'implement feature X', timestamp: '2025-01-15T11:00:00Z', project: '/test/project', sessionId: 'session-1' },
@@ -334,17 +344,20 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
         <AgentModal isOpen={true} onClose={() => {}} />
       );
 
-      await waitForFrame();
+      await waitForFrame(150);
 
-      // @step When I press Ctrl+R and type "implement"
-      stdin.write('\x12'); // Ctrl+R
+      // @step When I run /search command
+      stdin.write('/search');
       await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
 
       // Should show search mode indicator
       expect(lastFrame()).toContain('search');
 
+      // @step And I type "implement"
       stdin.write('implement');
-      await waitForFrame();
+      await waitForFrame(100);
 
       // @step Then I should see matching previous commands
       expect(mockState.persistence.searchHistoryCalled).toBe(true);
@@ -471,18 +484,24 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
         <AgentModal isOpen={true} onClose={() => {}} />
       );
 
-      await waitForFrame();
+      await waitForFrame(150);
 
+      // Enter /resume command to open session selection overlay
       stdin.write('/resume');
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame(100);
 
+      // Should show resume overlay with session list
+      expect(lastFrame()).toContain('Resume Session');
+
+      // @step When I press Enter to select a session
+      stdin.write('\r'); // Select first session
+      await waitForFrame(150);
+
       // @step Then the session should be restored with all 20 messages
       // @step And I can continue the conversation with full context
-      // The implementation should call persistence_resume_last_session
-      // and restore the conversation state
-      expect(lastFrame()).toContain('Session resumed'); // Should show resume confirmation
+      expect(lastFrame()).toContain('Session resumed');
     });
   });
 
@@ -505,7 +524,13 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
         <AgentModal isOpen={true} onClose={() => {}} />
       );
 
+      await waitForFrame(150);
+
+      // First send a message to create a session (deferred session creation)
+      stdin.write('Initial message');
       await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(150);
 
       // @step When I run "/fork 3 Alternative approach"
       stdin.write('/fork 3 Alternative approach');
@@ -533,7 +558,13 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
         <AgentModal isOpen={true} onClose={() => {}} />
       );
 
+      await waitForFrame(150);
+
+      // First send a message to create a session (deferred session creation)
+      stdin.write('Initial message');
       await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(150);
 
       // @step When I run "/merge session-b 3,4"
       stdin.write('/merge session-b 3,4');
@@ -614,7 +645,13 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
         <AgentModal isOpen={true} onClose={() => {}} />
       );
 
+      await waitForFrame(150);
+
+      // First send a message to create a session (deferred session creation)
+      stdin.write('Initial message');
       await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(150);
 
       // @step When I run "/rename Authentication Implementation"
       stdin.write('/rename Authentication Implementation');
@@ -641,7 +678,13 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
         <AgentModal isOpen={true} onClose={() => {}} />
       );
 
+      await waitForFrame(150);
+
+      // First send a message to create a session (deferred session creation)
+      stdin.write('Initial message');
       await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(150);
 
       // @step When I run "/cherry-pick session-b 7 --context 1"
       stdin.write('/cherry-pick session-b 7 --context 1');
@@ -652,6 +695,148 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step Then both messages 6 and 7 should be imported as a Q&A pair
       // @step And the conversation flow should be preserved
       expect(lastFrame()).toContain('Cherry-picked message');
+    });
+  });
+
+  // ============================================================================
+  // @deferred-session-creation - Session not persisted until first message
+  // ============================================================================
+
+  describe('Scenario: Session not persisted until first message is sent', () => {
+    it('should NOT create a session when modal opens without sending a message', async () => {
+      // @step Given the agent modal is closed
+      // @step And no session exists for the current project
+      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      vi.mocked(persistenceCreateSessionWithProvider).mockClear();
+
+      // @step When I open the agent modal
+      const { unmount } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      await waitForFrame(150); // Allow time for async initSession
+
+      // @step Then NO session should be created in persistence
+      // @step Because no message has been sent yet
+      expect(vi.mocked(persistenceCreateSessionWithProvider)).not.toHaveBeenCalled();
+
+      unmount();
+    });
+
+    it('should create session with first message as name when first message is sent', async () => {
+      // @step Given I have the agent modal open
+      // @step And no session has been created yet
+      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      vi.mocked(persistenceCreateSessionWithProvider).mockClear();
+
+      const { stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      await waitForFrame(150);
+
+      // Verify no session created on modal open
+      expect(vi.mocked(persistenceCreateSessionWithProvider)).not.toHaveBeenCalled();
+
+      // @step When I type "Help me implement authentication" and press Enter
+      stdin.write('Help me implement authentication');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(150);
+
+      // @step Then a session should be created
+      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledTimes(1);
+
+      // @step And the session name should be the first message content (truncated to 50 chars)
+      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledWith(
+        'Help me implement authentication',
+        expect.any(String), // project path
+        expect.any(String)  // provider name
+      );
+    });
+
+    it('should NOT create additional sessions for subsequent messages', async () => {
+      // @step Given I have sent my first message and a session was created
+      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      vi.mocked(persistenceCreateSessionWithProvider).mockClear();
+
+      const { stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      await waitForFrame(150);
+
+      // Send first message - creates session
+      stdin.write('First message');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(150);
+
+      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledTimes(1);
+
+      // @step When I send a second message "Now add password validation"
+      stdin.write('Now add password validation');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(150);
+
+      // @step Then NO new session should be created
+      // @step And the message should be added to the existing session
+      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledTimes(1);
+    });
+
+    it('should truncate long first messages to 50 characters for session name', async () => {
+      // @step Given the agent modal is open
+      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      vi.mocked(persistenceCreateSessionWithProvider).mockClear();
+
+      const { stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      await waitForFrame(150);
+
+      // @step When I send a message longer than 50 characters
+      const longMessage = 'This is a very long message that exceeds fifty characters and should be truncated';
+      stdin.write(longMessage);
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(150);
+
+      // @step Then the session name should be truncated to 50 characters with "..."
+      // Note: slice(0, 50) gives exactly 50 chars, then "..." is appended
+      expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledWith(
+        'This is a very long message that exceeds fifty cha...',
+        expect.any(String),
+        expect.any(String)
+      );
+    });
+
+    it('should not persist commands-only usage (no session for /debug, /clear, etc.)', async () => {
+      // @step Given the agent modal is open
+      const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+      vi.mocked(persistenceCreateSessionWithProvider).mockClear();
+
+      const { stdin } = render(
+        <AgentModal isOpen={true} onClose={() => {}} />
+      );
+
+      await waitForFrame(150);
+
+      // @step When I only use commands like /debug or /clear
+      stdin.write('/debug');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      stdin.write('/clear');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // @step Then NO session should be created
+      // @step Because no actual conversation message was sent
+      expect(vi.mocked(persistenceCreateSessionWithProvider)).not.toHaveBeenCalled();
     });
   });
 });
