@@ -264,6 +264,11 @@
       "prefix": "NAPI",
       "description": "NAPI-RS native bindings for codelet integration",
       "createdAt": "2025-12-18T03:29:21.233Z"
+    },
+    "CTX": {
+      "prefix": "CTX",
+      "description": "Context management and compaction",
+      "createdAt": "2025-12-24T02:52:02.548Z"
     }
   }
 }

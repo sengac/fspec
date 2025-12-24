@@ -84,11 +84,19 @@ impl BlobStore {
 
     /// Check if a blob exists
     pub fn exists(&self, hash: &str) -> bool {
+        // Validate hash format to prevent slice panic
+        if hash.len() != 64 || !hash.chars().all(|c| c.is_ascii_hexdigit()) {
+            return false;
+        }
         self.get_blob_path(hash).exists()
     }
 
     /// Delete a blob by hash
     pub fn delete(&self, hash: &str) -> Result<(), String> {
+        // Validate hash format to prevent slice panic
+        if hash.len() != 64 || !hash.chars().all(|c| c.is_ascii_hexdigit()) {
+            return Err(format!("Invalid blob hash: {}", hash));
+        }
         let blob_path = self.get_blob_path(hash);
         if blob_path.exists() {
             fs::remove_file(&blob_path).map_err(|e| format!("Failed to delete blob: {}", e))?;
