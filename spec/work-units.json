@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-23T11:44:24.206Z"
+    "lastUpdated": "2025-12-24T00:06:13.843Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -55001,6 +55001,161 @@
         "spec/attachments/NAPI-008/ast-research-blob-storage.json"
       ],
       "updated": "2025-12-23T11:44:24.232Z"
+    },
+    "TUI-033": {
+      "id": "TUI-033",
+      "title": "Context Window Fill Percentage Indicator",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-23T23:30:42.200Z",
+      "updatedAt": "2025-12-24T00:06:13.871Z",
+      "description": "Add a color-coded context window fill percentage indicator to the right of the token display in the AgentModal header, showing how full the context window is before compaction triggers",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-033/TUI-033-implementation-plan.md",
+        "spec/attachments/TUI-033/ast-research-context-fill.md"
+      ],
+      "userStory": {
+        "role": "developer using Claude Code",
+        "action": "see how full the context window is at a glance",
+        "benefit": "I know when compaction is approaching and can plan accordingly"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-23T23:34:59.888Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-23T23:39:46.815Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-23T23:42:36.751Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-24T00:00:58.619Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-24T00:06:13.872Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Display shows just the percentage in brackets, e.g. [43%]",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:14.374Z"
+        },
+        {
+          "id": 1,
+          "text": "Display is always visible, starting at [0%] before any tokens are used",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:15.072Z"
+        },
+        {
+          "id": 2,
+          "text": "Color coding: green (0-49%), yellow (50-69%), magenta (70-84%), red (85%+)",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:15.758Z"
+        },
+        {
+          "id": 3,
+          "text": "Percentage is calculated from effective tokens (cache-aware): effective = input_tokens - (cache_read_tokens * 0.9)",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:17.625Z"
+        },
+        {
+          "id": 4,
+          "text": "Threshold for 100% is 90% of context window (compaction trigger point)",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:20.536Z"
+        },
+        {
+          "id": 5,
+          "text": "Position: right of token count display, left of [Tab] Switch",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:22.084Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Fresh conversation: displays [0%] in green",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:39.278Z"
+        },
+        {
+          "id": 1,
+          "text": "45% fill: 81k effective tokens / 180k threshold = displays [45%] in green",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:41.401Z"
+        },
+        {
+          "id": 2,
+          "text": "60% fill: displays [60%] in yellow (warning approaching)",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:43.713Z"
+        },
+        {
+          "id": 3,
+          "text": "75% fill: displays [75%] in magenta (compaction warning)",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:46.029Z"
+        },
+        {
+          "id": 4,
+          "text": "90% fill: displays [90%] in red (compaction imminent)",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:47.732Z"
+        },
+        {
+          "id": 5,
+          "text": "Cache effect: 150k raw input + 80k cached = 78k effective = [43%] not [83%]",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:49.475Z"
+        },
+        {
+          "id": 6,
+          "text": "After compaction: percentage resets based on new effective token count",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:35:50.974Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Backend: Add ContextFillUpdate event type to codelet/core/src/stream/types.rs",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:38:30.103Z"
+        },
+        {
+          "id": 1,
+          "text": "Stream Loop: Emit context fill data in codelet/cli/src/interactive/stream_loop.rs after token tracking updates",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:38:31.551Z"
+        },
+        {
+          "id": 2,
+          "text": "NAPI: Expose ContextFillUpdate via codelet/napi/src/streaming.rs to TypeScript",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:38:33.253Z"
+        },
+        {
+          "id": 3,
+          "text": "Frontend: Handle event in src/tui/components/AgentModal.tsx, add color-coded [X%] display between token count and Tab Switch",
+          "deleted": false,
+          "createdAt": "2025-12-23T23:38:35.033Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-24T00:06:13.871Z"
     }
   },
   "states": {
@@ -55070,6 +55225,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-033",
       "NAPI-008",
       "NAPI-007",
       "NAPI-006",
@@ -55503,7 +55659,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 32,
+    "TUI": 33,
     "REFAC": 5,
     "VIEW": 2,
     "DOC": 17,

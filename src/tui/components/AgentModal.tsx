@@ -280,6 +280,17 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const rateSamplesRef = useRef<number[]>([]);
   const MAX_RATE_SAMPLES = 5; // Average last 5 samples for stability
 
+  // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
+  const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
+
+  // TUI-033: Get color based on fill percentage
+  const getContextFillColor = (percentage: number): string => {
+    if (percentage < 50) return 'green';
+    if (percentage < 70) return 'yellow';
+    if (percentage < 85) return 'magenta';
+    return 'red';
+  };
+
   // Get terminal dimensions for full-screen layout
   const terminalWidth = stdout?.columns ?? 80;
   const terminalHeight = stdout?.rows ?? 24;
@@ -1035,6 +1046,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
           // Update token usage display (tok/s is now calculated from Text chunks)
           setTokenUsage(chunk.tokens);
+        } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
+          // TUI-033: Update context fill percentage from Rust
+          setContextFillPercentage(chunk.contextFill.fillPercentage);
         } else if (chunk.type === 'Error' && chunk.error) {
           setError(chunk.error);
         }
@@ -1275,6 +1289,23 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       // even though the UI shows historical messages
       if (sessionRef.current) {
         sessionRef.current.restoreMessages(messages);
+
+        // TUI-033: Restore token state from persisted session before getting context fill
+        // The token tracker is reset during restoreMessages, so we need to restore it
+        if (selectedSession.tokenUsage && sessionRef.current.restoreTokenState) {
+          sessionRef.current.restoreTokenState(
+            selectedSession.tokenUsage.totalInputTokens,
+            selectedSession.tokenUsage.totalOutputTokens
+          );
+        }
+
+        // TUI-033: Update context fill percentage after restoring messages and tokens
+        // Since restoreMessages doesn't trigger streaming, we need to manually
+        // fetch and update the context fill state
+        if (sessionRef.current.getContextFillInfo) {
+          const contextFillInfo = sessionRef.current.getContextFillInfo();
+          setContextFillPercentage(contextFillInfo.fillPercentage);
+        }
       }
 
       // Get FULL envelopes with all content blocks (ToolUse, ToolResult, Text, etc.)
@@ -1914,6 +1945,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           <Box>
             <Text dimColor>
               tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
+            </Text>
+          </Box>
+          {/* TUI-033: Context window fill percentage indicator */}
+          <Box marginLeft={2}>
+            <Text color={getContextFillColor(contextFillPercentage)}>
+              [{contextFillPercentage}%]
             </Text>
           </Box>
           {availableProviders.length > 1 && (

@@ -66,8 +66,24 @@ pub enum ChunkType {
     Status,
     Interrupted,
     TokenUpdate,
+    ContextFillUpdate,
     Done,
     Error,
+}
+
+/// Context window fill information (TUI-033)
+/// Sent with each token update to show context window usage
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContextFillInfo {
+    /// Fill percentage (0-100+, can exceed 100 near compaction)
+    pub fill_percentage: u32,
+    /// Effective tokens (after cache discount) - using f64 for NAPI compatibility
+    pub effective_tokens: f64,
+    /// Compaction threshold (context_window * 0.9) - using f64 for NAPI compatibility
+    pub threshold: f64,
+    /// Provider's context window size - using f64 for NAPI compatibility
+    pub context_window: f64,
 }
 
 /// A chunk of streaming response
@@ -82,6 +98,7 @@ pub struct StreamChunk {
     pub status: Option<String>,
     pub queued_inputs: Option<Vec<String>>,
     pub tokens: Option<TokenTracker>,
+    pub context_fill: Option<ContextFillInfo>,
     pub error: Option<String>,
 }
 
@@ -95,6 +112,7 @@ impl StreamChunk {
             status: None,
             queued_inputs: None,
             tokens: None,
+            context_fill: None,
             error: None,
         }
     }
@@ -108,6 +126,7 @@ impl StreamChunk {
             status: None,
             queued_inputs: None,
             tokens: None,
+            context_fill: None,
             error: None,
         }
     }
@@ -121,6 +140,7 @@ impl StreamChunk {
             status: None,
             queued_inputs: None,
             tokens: None,
+            context_fill: None,
             error: None,
         }
     }
@@ -134,6 +154,7 @@ impl StreamChunk {
             status: Some(message),
             queued_inputs: None,
             tokens: None,
+            context_fill: None,
             error: None,
         }
     }
@@ -147,6 +168,7 @@ impl StreamChunk {
             status: None,
             queued_inputs: Some(queued_inputs),
             tokens: None,
+            context_fill: None,
             error: None,
         }
     }
@@ -160,6 +182,22 @@ impl StreamChunk {
             status: None,
             queued_inputs: None,
             tokens: Some(tokens),
+            context_fill: None,
+            error: None,
+        }
+    }
+
+    /// Context fill percentage update (TUI-033)
+    pub fn context_fill_update(info: ContextFillInfo) -> Self {
+        Self {
+            chunk_type: "ContextFillUpdate".to_string(),
+            text: None,
+            tool_call: None,
+            tool_result: None,
+            status: None,
+            queued_inputs: None,
+            tokens: None,
+            context_fill: Some(info),
             error: None,
         }
     }
@@ -173,6 +211,7 @@ impl StreamChunk {
             status: None,
             queued_inputs: None,
             tokens: None,
+            context_fill: None,
             error: None,
         }
     }
@@ -186,6 +225,7 @@ impl StreamChunk {
             status: None,
             queued_inputs: None,
             tokens: None,
+            context_fill: None,
             error: Some(message),
         }
     }

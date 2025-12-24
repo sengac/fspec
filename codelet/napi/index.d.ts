@@ -99,6 +99,29 @@ export declare class CodeletSession {
    */
   restoreMessages(messages: Array<Message>): void;
   /**
+   * Restore token state from persisted session (TUI-033)
+   *
+   * Call this after restoreMessages() to restore the token counts from
+   * the persisted session manifest. This ensures getContextFillInfo()
+   * returns accurate context fill percentage after session restoration.
+   *
+   * # Arguments
+   * * `input_tokens` - Total input tokens from session manifest
+   * * `output_tokens` - Total output tokens from session manifest
+   */
+  restoreTokenState(inputTokens: number, outputTokens: number): void;
+  /**
+   * Get current context fill info (TUI-033)
+   *
+   * Returns the current context fill percentage and related metrics.
+   * Call this after restoreMessages() to get initial context fill state,
+   * since restoring messages doesn't trigger streaming events.
+   *
+   * # Returns
+   * * `ContextFillInfo` with fill_percentage, effective_tokens, threshold, context_window
+   */
+  getContextFillInfo(): ContextFillInfo;
+  /**
    * Send a prompt and stream the response
    *
    * The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'
@@ -119,6 +142,7 @@ export declare const enum ChunkType {
   Status = 'Status',
   Interrupted = 'Interrupted',
   TokenUpdate = 'TokenUpdate',
+  ContextFillUpdate = 'ContextFillUpdate',
   Done = 'Done',
   Error = 'Error',
 }
@@ -138,6 +162,21 @@ export interface CompactionResult {
   turnsSummarized: number;
   /** Number of turns kept */
   turnsKept: number;
+}
+
+/**
+ * Context window fill information (TUI-033)
+ * Sent with each token update to show context window usage
+ */
+export interface ContextFillInfo {
+  /** Fill percentage (0-100+, can exceed 100 near compaction) */
+  fillPercentage: number;
+  /** Effective tokens (after cache discount) - using f64 for NAPI compatibility */
+  effectiveTokens: number;
+  /** Compaction threshold (context_window * 0.9) - using f64 for NAPI compatibility */
+  threshold: number;
+  /** Provider's context window size - using f64 for NAPI compatibility */
+  contextWindow: number;
 }
 
 /**
@@ -437,6 +476,7 @@ export interface StreamChunk {
   status?: string;
   queuedInputs?: Array<string>;
   tokens?: TokenTracker;
+  contextFill?: ContextFillInfo;
   error?: string;
 }
 

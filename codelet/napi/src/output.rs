@@ -13,7 +13,7 @@
 //! This dramatically reduces React state update frequency and eliminates
 //! the need for setImmediate workarounds in the JavaScript callback handler.
 
-use crate::types::{StreamChunk, TokenTracker, ToolCallInfo, ToolResultInfo};
+use crate::types::{ContextFillInfo, StreamChunk, TokenTracker, ToolCallInfo, ToolResultInfo};
 use codelet_cli::interactive::{StreamEvent, StreamOutput};
 use napi::threadsafe_function::{
     ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue,
@@ -193,6 +193,21 @@ impl StreamOutput for NapiOutput<'_> {
                 };
                 let mut buffer = self.buffer.lock().unwrap();
                 buffer.set_tokens(tracker);
+            }
+            StreamEvent::ContextFill(info) => {
+                // TUI-033: Send context fill percentage to JavaScript
+                // Don't need to flush text - this is independent data
+                // Convert u64 to f64 for NAPI compatibility
+                let fill_info = ContextFillInfo {
+                    fill_percentage: info.fill_percentage,
+                    effective_tokens: info.effective_tokens as f64,
+                    threshold: info.threshold as f64,
+                    context_window: info.context_window as f64,
+                };
+                let _ = self.callback.call(
+                    StreamChunk::context_fill_update(fill_info),
+                    ThreadsafeFunctionCallMode::NonBlocking,
+                );
             }
         }
     }

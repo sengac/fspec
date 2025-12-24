@@ -10,11 +10,11 @@
 //! Uses rig's StreamingPromptHook to capture per-request token usage and
 //! check compaction thresholds before each internal API call.
 
-use super::output::{StreamOutput, TokenInfo};
+use super::output::{ContextFillInfo, StreamOutput, TokenInfo};
 use super::stream_handlers::{
     handle_final_response, handle_text_chunk, handle_tool_call, handle_tool_result,
 };
-use crate::compaction_threshold::calculate_compaction_threshold;
+use crate::compaction_threshold::{calculate_compaction_threshold, CACHE_READ_DISCOUNT_FACTOR};
 use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
@@ -141,6 +141,29 @@ where
     // HOOK-BASED COMPACTION
     let context_window = session.provider_manager().context_window() as u64;
     let threshold = calculate_compaction_threshold(context_window);
+
+    // TUI-033: Helper to emit context fill percentage after token updates
+    let emit_context_fill = |output: &O,
+                             input_tokens: u64,
+                             cache_read_tokens: u64,
+                             threshold: u64,
+                             context_window: u64| {
+        // Calculate effective tokens with cache discount (cached tokens cost less)
+        let cache_discount = (cache_read_tokens as f64 * CACHE_READ_DISCOUNT_FACTOR) as u64;
+        let effective_tokens = input_tokens.saturating_sub(cache_discount);
+        // Calculate fill percentage (can exceed 100% near compaction)
+        let fill_percentage = if threshold > 0 {
+            ((effective_tokens as f64 / threshold as f64) * 100.0) as u32
+        } else {
+            0
+        };
+        output.emit_context_fill(&ContextFillInfo {
+            fill_percentage,
+            effective_tokens,
+            threshold,
+            context_window,
+        });
+    };
 
     let token_state = Arc::new(Mutex::new(TokenState {
         input_tokens: session.token_tracker.input_tokens,
@@ -349,6 +372,14 @@ where
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
                     });
+                    // TUI-033: Emit context fill percentage
+                    emit_context_fill(
+                        output,
+                        prev_input_tokens + turn_accumulated_input,
+                        turn_cache_read,
+                        threshold,
+                        context_window,
+                    );
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
                     // Usage events come from:
@@ -385,6 +416,14 @@ where
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
                     });
+                    // TUI-033: Emit context fill percentage
+                    emit_context_fill(
+                        output,
+                        prev_input_tokens + turn_accumulated_input + current_api_input,
+                        turn_cache_read,
+                        threshold,
+                        context_window,
+                    );
                 }
                 Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
                     // Get final usage directly from FinalResponse (most accurate source)
@@ -413,6 +452,14 @@ where
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
                     });
+                    // TUI-033: Emit context fill percentage
+                    emit_context_fill(
+                        output,
+                        prev_input_tokens + turn_accumulated_input,
+                        turn_cache_read,
+                        threshold,
+                        context_window,
+                    );
 
                     // CLI-022: Capture api.response.end event
                     if let Ok(manager_arc) = get_debug_capture_manager() {
@@ -667,6 +714,14 @@ where
                                 cache_read_input_tokens: usage.cache_read_input_tokens,
                                 cache_creation_input_tokens: usage.cache_creation_input_tokens,
                             });
+                            // TUI-033: Emit context fill percentage
+                            emit_context_fill(
+                                output,
+                                usage.input_tokens,
+                                usage.cache_read_input_tokens.unwrap_or(0),
+                                threshold,
+                                context_window,
+                            );
                         }
                         Some(Ok(MultiTurnStreamItem::FinalResponse(_))) => {
                             handle_final_response(&retry_assistant_text, &mut session.messages)?;

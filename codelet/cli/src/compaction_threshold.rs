@@ -42,6 +42,19 @@ pub const AUTOCOMPACT_BUFFER: u64 = 50_000;
 /// - Budget = 200k - 50k = 150k tokens (target size after compaction)
 pub const COMPACTION_THRESHOLD_RATIO: f64 = 0.9;
 
+/// Cache read token discount factor (TUI-033)
+///
+/// When calculating effective tokens for context fill percentage,
+/// cache read tokens are discounted by this factor because Claude's
+/// prompt caching makes cached content significantly cheaper.
+///
+/// Effective tokens = input_tokens - (cache_read_tokens * CACHE_READ_DISCOUNT_FACTOR)
+///
+/// Example: 150k input tokens with 80k cached
+/// - Cache discount = 80k * 0.9 = 72k
+/// - Effective tokens = 150k - 72k = 78k
+pub const CACHE_READ_DISCOUNT_FACTOR: f64 = 0.9;
+
 /// Calculate the compaction threshold for a given context window
 ///
 /// Matches TypeScript implementation in runner.ts:getCompactionThreshold()

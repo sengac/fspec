@@ -24,6 +24,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@git` | Git operations and version control integration |
 | `@git-integration` | Git integration and version control features |
 | `@git-ops` | Git operations and version control features |
+| `@header` | UI header components and status bar elements |
 | `@hooks` | Hooks system and execution engine |
 | `@init` | Initialization and setup features |
 | `@integration` | Cross-Component Integration |
@@ -90,6 +91,7 @@ Tags that categorize features by functional area.
 | `@compound` | Compound query operations |
 | `@config-management` | Configuration management and settings features |
 | `@configuration` | Configuration loading and validation |
+| `@context-window` | Context window management and monitoring features |
 | `@coverage` | Coverage tracking and traceability features |
 | `@coverage-tracking` | Coverage tracking and traceability from scenarios to tests to implementation code |
 | `@critical-path` | Critical path analysis |
@@ -741,7 +743,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-23T11:03:04.026Z_
+_Last updated: 2025-12-23T23:37:55.483Z_
 
 **Update Command**: `fspec tag-stats`
 
