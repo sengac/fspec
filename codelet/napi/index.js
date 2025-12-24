@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { CodeletSession, ChunkType, MessageRole, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessages, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens } = nativeBinding
+const { CodeletSession, ChunkType, MessageRole, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessages, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, setRustLogCallback } = nativeBinding
 export { CodeletSession }
 export { ChunkType }
 export { MessageRole }
@@ -611,3 +611,4 @@ export { persistenceSetSessionTokens }
 export { persistenceStoreBlob }
 export { persistenceStoreMessageEnvelope }
 export { persistenceUpdateSessionTokens }
+export { setRustLogCallback }

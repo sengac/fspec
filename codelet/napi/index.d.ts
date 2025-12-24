@@ -488,6 +488,9 @@ export declare function persistenceUpdateSessionTokens(
   cacheCreate: number
 ): NapiSessionManifest;
 
+/** Set the logging callback from TypeScript and initialize the tracing subscriber */
+export declare function setRustLogCallback(callback: LogCallback): void;
+
 /** A chunk of streaming response */
 export interface StreamChunk {
   type: string;
