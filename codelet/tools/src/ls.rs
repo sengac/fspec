@@ -55,7 +55,11 @@ impl LsTool {
     fn format_mode(is_readonly: bool, is_directory: bool) -> String {
         let type_char = if is_directory { 'd' } else { '-' };
         // Windows doesn't have Unix-style permissions, show simplified view
-        let permissions = if is_readonly { "r--r--r--" } else { "rw-rw-rw-" };
+        let permissions = if is_readonly {
+            "r--r--r--"
+        } else {
+            "rw-rw-rw-"
+        };
         format!("{type_char}{permissions}")
     }
 

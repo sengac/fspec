@@ -145,7 +145,10 @@ fn test_detect_task_completion_anchor() {
     let result = detector.detect(&turn, 3).unwrap();
 
     // @step Then a TaskCompletion anchor should be detected with confidence >= 0.9
-    assert!(result.is_some(), "Expected TaskCompletion anchor to be detected");
+    assert!(
+        result.is_some(),
+        "Expected TaskCompletion anchor to be detected"
+    );
     let anchor = result.unwrap();
     assert!(anchor.confidence >= 0.9, "Confidence should be >= 0.9");
 
@@ -170,7 +173,10 @@ fn test_detect_error_resolution_anchor() {
     let result = detector.detect(&turn, 3).unwrap();
 
     // @step Then an ErrorResolution anchor should be detected with confidence >= 0.9
-    assert!(result.is_some(), "Expected ErrorResolution anchor to be detected");
+    assert!(
+        result.is_some(),
+        "Expected ErrorResolution anchor to be detected"
+    );
     let anchor = result.unwrap();
     assert!(anchor.confidence >= 0.9, "Confidence should be >= 0.9");
 
@@ -192,7 +198,10 @@ fn test_detect_bash_milestone_anchor() {
     let result = detector.detect(&turn, 0).unwrap();
 
     // @step Then a TaskCompletion anchor should be detected with weight 0.8
-    assert!(result.is_some(), "Expected TaskCompletion anchor for bash milestone");
+    assert!(
+        result.is_some(),
+        "Expected TaskCompletion anchor for bash milestone"
+    );
     let anchor = result.unwrap();
     assert_eq!(anchor.anchor_type, AnchorType::TaskCompletion);
     assert_eq!(anchor.weight, 0.8);
@@ -214,7 +223,8 @@ fn test_detect_web_search_anchor_with_synthesis() {
     let search_output = "Brisbane has a strong tech sector with growing opportunities in software development, data science, and cloud engineering. The average salary for senior developers is around $150,000 AUD.";
 
     // @step And the assistant response contains "Based on the search results"
-    let assistant_response = "Based on the search results, Brisbane has excellent job opportunities in tech.";
+    let assistant_response =
+        "Based on the search results, Brisbane has excellent job opportunities in tech.";
 
     let turn = make_web_search_turn(search_output, assistant_response);
 
@@ -223,7 +233,10 @@ fn test_detect_web_search_anchor_with_synthesis() {
     let result = detector.detect(&turn, 0).unwrap();
 
     // @step Then a UserCheckpoint anchor should be detected with weight 0.7
-    assert!(result.is_some(), "Expected UserCheckpoint anchor for web search");
+    assert!(
+        result.is_some(),
+        "Expected UserCheckpoint anchor for web search"
+    );
     let anchor = result.unwrap();
     assert_eq!(anchor.anchor_type, AnchorType::UserCheckpoint);
     assert_eq!(anchor.weight, 0.7);
@@ -442,7 +455,10 @@ fn test_extract_error_states() {
     let ctx = PreservationContext::extract_from_turns(&turns);
 
     // @step Then error_states should contain "cannot find module xyz"
-    let has_error = ctx.error_states.iter().any(|e| e.contains("cannot find module xyz"));
+    let has_error = ctx
+        .error_states
+        .iter()
+        .any(|e| e.contains("cannot find module xyz"));
     assert!(
         has_error,
         "error_states should contain 'cannot find module xyz', got: {:?}",
@@ -490,7 +506,11 @@ async fn test_generate_dynamic_summary_not_hardcoded() {
         .collect();
 
     // Add turns with file edits to create context
-    turns.push(make_turn_with_tool("Edit", "src/auth.rs", "Fix authentication bug"));
+    turns.push(make_turn_with_tool(
+        "Edit",
+        "src/auth.rs",
+        "Fix authentication bug",
+    ));
     turns.push(make_turn_with_tool("Edit", "src/login.ts", "Update login"));
     turns.push(make_turn_with_edit_and_test_pass("src/auth.rs", false));
 
@@ -635,9 +655,17 @@ fn test_preserve_last_3_turns() {
     assert!(kept_indices.contains(&9), "Turn 9 should be kept");
 
     // @step And turns 0 through 4 should be in the summarized_turns list
-    let summarized_indices: Vec<usize> = selection.summarized_turns.iter().map(|t| t.turn_index).collect();
+    let summarized_indices: Vec<usize> = selection
+        .summarized_turns
+        .iter()
+        .map(|t| t.turn_index)
+        .collect();
     for i in 0..5 {
-        assert!(summarized_indices.contains(&i), "Turn {} should be summarized", i);
+        assert!(
+            summarized_indices.contains(&i),
+            "Turn {} should be summarized",
+            i
+        );
     }
 }
 
@@ -694,7 +722,11 @@ async fn test_compactor_creates_synthetic_anchor_when_no_natural_anchors() {
     let detector = AnchorDetector::new(0.9);
     for (idx, turn) in turns.iter().enumerate() {
         let result = detector.detect(turn, idx).unwrap();
-        assert!(result.is_none(), "Turn {} should not have natural anchor", idx);
+        assert!(
+            result.is_none(),
+            "Turn {} should not have natural anchor",
+            idx
+        );
     }
 
     // @step When I run compaction on the conversation

@@ -829,7 +829,7 @@ fn test_fork_before_compaction_rejected() {
 #[test]
 fn test_blob_reference_format() {
     // Test the blob reference format helper functions
-    use super::blob_processing::{is_blob_reference, extract_blob_hash, make_blob_reference};
+    use super::blob_processing::{extract_blob_hash, is_blob_reference, make_blob_reference};
 
     // Valid blob reference
     let hash = "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9";
@@ -841,7 +841,9 @@ fn test_blob_reference_format() {
     // Invalid references
     assert!(!is_blob_reference("not a blob reference"));
     assert!(!is_blob_reference("blob:sha256:tooshort"));
-    assert!(!is_blob_reference("blob:md5:b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"));
+    assert!(!is_blob_reference(
+        "blob:md5:b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
+    ));
     assert_eq!(extract_blob_hash("not a reference"), None);
 }
 
@@ -881,26 +883,37 @@ fn test_tool_result_blob_storage_and_rehydration() {
     // Verify blob was created
     assert!(!blob_refs.is_empty(), "Should have blob references");
     let (key, hash) = &blob_refs[0];
-    assert!(key.starts_with("tool_result:"), "Key should indicate tool_result");
+    assert!(
+        key.starts_with("tool_result:"),
+        "Key should indicate tool_result"
+    );
     assert_eq!(hash.len(), 64, "Hash should be SHA-256 (64 hex chars)");
 
     // Verify content was replaced with blob reference
     match &processed.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::ToolResult { content, .. } => {
-                    assert!(content.starts_with("blob:sha256:"), "Content should be blob reference");
-                    assert_ne!(*content, large_content, "Content should NOT be the original large content");
-                }
-                _ => panic!("Expected ToolResult"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::ToolResult { content, .. } => {
+                assert!(
+                    content.starts_with("blob:sha256:"),
+                    "Content should be blob reference"
+                );
+                assert_ne!(
+                    *content, large_content,
+                    "Content should NOT be the original large content"
+                );
             }
-        }
+            _ => panic!("Expected ToolResult"),
+        },
         _ => panic!("Expected User message"),
     }
 
     // Verify blob can be retrieved
     let blob_data = get_blob(hash).expect("get_blob should succeed");
-    assert_eq!(String::from_utf8_lossy(&blob_data), large_content, "Blob content should match original");
+    assert_eq!(
+        String::from_utf8_lossy(&blob_data),
+        large_content,
+        "Blob content should match original"
+    );
 
     // Verify rehydration works
     let processed_json = serde_json::to_string(&processed).unwrap();
@@ -909,14 +922,15 @@ fn test_tool_result_blob_storage_and_rehydration() {
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::ToolResult { content, .. } => {
-                    assert_eq!(*content, large_content, "Rehydrated content should match original");
-                }
-                _ => panic!("Expected ToolResult"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::ToolResult { content, .. } => {
+                assert_eq!(
+                    *content, large_content,
+                    "Rehydrated content should match original"
+                );
             }
-        }
+            _ => panic!("Expected ToolResult"),
+        },
         _ => panic!("Expected User message"),
     }
 }
@@ -954,19 +968,25 @@ fn test_image_blob_storage_and_rehydration() {
             .expect("process should succeed");
 
     // Verify blob was created
-    assert!(!blob_refs.is_empty(), "Should have blob references for image");
+    assert!(
+        !blob_refs.is_empty(),
+        "Should have blob references for image"
+    );
 
     // Verify image data was replaced with blob reference
     match &processed.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::Image { source: ImageSource::Base64 { data, media_type } } => {
-                    assert!(data.starts_with("blob:sha256:"), "Image data should be blob reference");
-                    assert_eq!(media_type, "image/png", "Media type should be preserved");
-                }
-                _ => panic!("Expected Base64 Image"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::Image {
+                source: ImageSource::Base64 { data, media_type },
+            } => {
+                assert!(
+                    data.starts_with("blob:sha256:"),
+                    "Image data should be blob reference"
+                );
+                assert_eq!(media_type, "image/png", "Media type should be preserved");
             }
-        }
+            _ => panic!("Expected Base64 Image"),
+        },
         _ => panic!("Expected User message"),
     }
 
@@ -977,14 +997,17 @@ fn test_image_blob_storage_and_rehydration() {
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::Image { source: ImageSource::Base64 { data, .. } } => {
-                    assert_eq!(*data, large_image_data, "Rehydrated image data should match original");
-                }
-                _ => panic!("Expected Base64 Image"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::Image {
+                source: ImageSource::Base64 { data, .. },
+            } => {
+                assert_eq!(
+                    *data, large_image_data,
+                    "Rehydrated image data should match original"
+                );
             }
-        }
+            _ => panic!("Expected Base64 Image"),
+        },
         _ => panic!("Expected User message"),
     }
 }
@@ -1025,21 +1048,41 @@ fn test_document_blob_storage_and_rehydration() {
             .expect("process should succeed");
 
     // Verify blob was created
-    assert!(!blob_refs.is_empty(), "Should have blob references for document");
+    assert!(
+        !blob_refs.is_empty(),
+        "Should have blob references for document"
+    );
 
     // Verify document data was replaced with blob reference and metadata preserved
     match &processed.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::Document { source: DocumentSource::Base64 { data, media_type }, title, context, .. } => {
-                    assert!(data.starts_with("blob:sha256:"), "Document data should be blob reference");
-                    assert_eq!(media_type, "application/pdf", "Media type should be preserved");
-                    assert_eq!(title, &Some("report.pdf".to_string()), "Title should be preserved");
-                    assert_eq!(context, &Some("Q4 Report".to_string()), "Context should be preserved");
-                }
-                _ => panic!("Expected Base64 Document"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::Document {
+                source: DocumentSource::Base64 { data, media_type },
+                title,
+                context,
+                ..
+            } => {
+                assert!(
+                    data.starts_with("blob:sha256:"),
+                    "Document data should be blob reference"
+                );
+                assert_eq!(
+                    media_type, "application/pdf",
+                    "Media type should be preserved"
+                );
+                assert_eq!(
+                    title,
+                    &Some("report.pdf".to_string()),
+                    "Title should be preserved"
+                );
+                assert_eq!(
+                    context,
+                    &Some("Q4 Report".to_string()),
+                    "Context should be preserved"
+                );
             }
-        }
+            _ => panic!("Expected Base64 Document"),
+        },
         _ => panic!("Expected User message"),
     }
 
@@ -1050,14 +1093,18 @@ fn test_document_blob_storage_and_rehydration() {
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::Document { source: DocumentSource::Base64 { data, .. }, .. } => {
-                    assert_eq!(*data, large_doc_data, "Rehydrated document data should match original");
-                }
-                _ => panic!("Expected Base64 Document"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::Document {
+                source: DocumentSource::Base64 { data, .. },
+                ..
+            } => {
+                assert_eq!(
+                    *data, large_doc_data,
+                    "Rehydrated document data should match original"
+                );
             }
-        }
+            _ => panic!("Expected Base64 Document"),
+        },
         _ => panic!("Expected User message"),
     }
 }
@@ -1097,19 +1144,30 @@ fn test_thinking_blob_storage_and_rehydration() {
             .expect("process should succeed");
 
     // Verify blob was created
-    assert!(!blob_refs.is_empty(), "Should have blob references for thinking");
+    assert!(
+        !blob_refs.is_empty(),
+        "Should have blob references for thinking"
+    );
 
     // Verify thinking content was replaced with blob reference and signature preserved
     match &processed.message {
-        MessagePayload::Assistant(assistant_msg) => {
-            match &assistant_msg.content[0] {
-                AssistantContent::Thinking { thinking, signature } => {
-                    assert!(thinking.starts_with("blob:sha256:"), "Thinking should be blob reference");
-                    assert_eq!(signature, &Some("sig_test123".to_string()), "Signature should be preserved");
-                }
-                _ => panic!("Expected Thinking"),
+        MessagePayload::Assistant(assistant_msg) => match &assistant_msg.content[0] {
+            AssistantContent::Thinking {
+                thinking,
+                signature,
+            } => {
+                assert!(
+                    thinking.starts_with("blob:sha256:"),
+                    "Thinking should be blob reference"
+                );
+                assert_eq!(
+                    signature,
+                    &Some("sig_test123".to_string()),
+                    "Signature should be preserved"
+                );
             }
-        }
+            _ => panic!("Expected Thinking"),
+        },
         _ => panic!("Expected Assistant message"),
     }
 
@@ -1120,14 +1178,15 @@ fn test_thinking_blob_storage_and_rehydration() {
 
     let rehydrated_envelope: MessageEnvelope = serde_json::from_str(&rehydrated).unwrap();
     match &rehydrated_envelope.message {
-        MessagePayload::Assistant(assistant_msg) => {
-            match &assistant_msg.content[0] {
-                AssistantContent::Thinking { thinking, .. } => {
-                    assert_eq!(*thinking, large_thinking, "Rehydrated thinking should match original");
-                }
-                _ => panic!("Expected Thinking"),
+        MessagePayload::Assistant(assistant_msg) => match &assistant_msg.content[0] {
+            AssistantContent::Thinking { thinking, .. } => {
+                assert_eq!(
+                    *thinking, large_thinking,
+                    "Rehydrated thinking should match original"
+                );
             }
-        }
+            _ => panic!("Expected Thinking"),
+        },
         _ => panic!("Expected Assistant message"),
     }
 }
@@ -1164,19 +1223,26 @@ fn test_small_content_not_blobified() {
             .expect("process should succeed");
 
     // Verify NO blob was created (content too small)
-    assert!(blob_refs.is_empty(), "Should NOT have blob references for small content");
+    assert!(
+        blob_refs.is_empty(),
+        "Should NOT have blob references for small content"
+    );
 
     // Verify content remains inline
     match &processed.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::ToolResult { content, .. } => {
-                    assert_eq!(*content, small_content, "Small content should remain inline");
-                    assert!(!content.starts_with("blob:sha256:"), "Should NOT be blob reference");
-                }
-                _ => panic!("Expected ToolResult"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::ToolResult { content, .. } => {
+                assert_eq!(
+                    *content, small_content,
+                    "Small content should remain inline"
+                );
+                assert!(
+                    !content.starts_with("blob:sha256:"),
+                    "Should NOT be blob reference"
+                );
             }
-        }
+            _ => panic!("Expected ToolResult"),
+        },
         _ => panic!("Expected User message"),
     }
 }
@@ -1226,14 +1292,25 @@ fn test_url_sources_not_blobified() {
     match &processed.message {
         MessagePayload::User(user_msg) => {
             match &user_msg.content[0] {
-                UserContent::Image { source: ImageSource::Url { url } } => {
-                    assert_eq!(url, "https://example.com/image.png", "Image URL should remain unchanged");
+                UserContent::Image {
+                    source: ImageSource::Url { url },
+                } => {
+                    assert_eq!(
+                        url, "https://example.com/image.png",
+                        "Image URL should remain unchanged"
+                    );
                 }
                 _ => panic!("Expected URL Image"),
             }
             match &user_msg.content[1] {
-                UserContent::Document { source: DocumentSource::Url { url }, .. } => {
-                    assert_eq!(url, "https://example.com/doc.pdf", "Document URL should remain unchanged");
+                UserContent::Document {
+                    source: DocumentSource::Url { url },
+                    ..
+                } => {
+                    assert_eq!(
+                        url, "https://example.com/doc.pdf",
+                        "Document URL should remain unchanged"
+                    );
                 }
                 _ => panic!("Expected URL Document"),
             }
@@ -1287,18 +1364,19 @@ fn test_blob_deduplication_across_envelopes() {
     };
 
     // Process both envelopes
-    let (_, blob_refs1) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope1)
-            .expect("process should succeed");
-    let (_, blob_refs2) =
-        super::blob_processing::process_envelope_for_blob_storage(&envelope2)
-            .expect("process should succeed");
+    let (_, blob_refs1) = super::blob_processing::process_envelope_for_blob_storage(&envelope1)
+        .expect("process should succeed");
+    let (_, blob_refs2) = super::blob_processing::process_envelope_for_blob_storage(&envelope2)
+        .expect("process should succeed");
 
     // Verify both have blob refs with SAME hash (deduplication)
     assert!(!blob_refs1.is_empty() && !blob_refs2.is_empty());
     let hash1 = &blob_refs1[0].1;
     let hash2 = &blob_refs2[0].1;
-    assert_eq!(hash1, hash2, "Identical content should produce same blob hash");
+    assert_eq!(
+        hash1, hash2,
+        "Identical content should produce same blob hash"
+    );
 }
 
 #[test]
@@ -1320,7 +1398,9 @@ fn test_multi_part_message_blob_storage() {
         message: MessagePayload::User(UserMessage {
             role: "user".to_string(),
             content: vec![
-                UserContent::Text { text: small_content.to_string() },
+                UserContent::Text {
+                    text: small_content.to_string(),
+                },
                 UserContent::ToolResult {
                     tool_use_id: "toolu_large1".to_string(),
                     content: large_content1.clone(),
@@ -1434,18 +1514,19 @@ fn test_exact_10kb_threshold_not_blobified() {
             .expect("process should succeed");
 
     // Verify NO blob was created (threshold is >10KB, not >=10KB)
-    assert!(blob_refs.is_empty(), "Exactly 10KB should NOT create blob (threshold is >10KB)");
+    assert!(
+        blob_refs.is_empty(),
+        "Exactly 10KB should NOT create blob (threshold is >10KB)"
+    );
 
     // Verify content remains inline
     match &processed.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::ToolResult { content, .. } => {
-                    assert_eq!(*content, exactly_10kb, "10KB content should remain inline");
-                }
-                _ => panic!("Expected ToolResult"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::ToolResult { content, .. } => {
+                assert_eq!(*content, exactly_10kb, "10KB content should remain inline");
             }
-        }
+            _ => panic!("Expected ToolResult"),
+        },
         _ => panic!("Expected User message"),
     }
 }
@@ -1488,14 +1569,15 @@ fn test_one_byte_over_threshold_blobified() {
 
     // Verify content was replaced with blob reference
     match &processed.message {
-        MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                UserContent::ToolResult { content, .. } => {
-                    assert!(content.starts_with("blob:sha256:"), "Should be blob reference");
-                }
-                _ => panic!("Expected ToolResult"),
+        MessagePayload::User(user_msg) => match &user_msg.content[0] {
+            UserContent::ToolResult { content, .. } => {
+                assert!(
+                    content.starts_with("blob:sha256:"),
+                    "Should be blob reference"
+                );
             }
-        }
+            _ => panic!("Expected ToolResult"),
+        },
         _ => panic!("Expected User message"),
     }
 }
@@ -1536,40 +1618,39 @@ fn test_tool_use_storage_and_retrieval() {
             .expect("process should succeed");
 
     // Verify NO blob was created (content is small)
-    assert!(blob_refs.is_empty(), "Small ToolUse should NOT create blobs");
+    assert!(
+        blob_refs.is_empty(),
+        "Small ToolUse should NOT create blobs"
+    );
 
     // Verify ToolUse content is preserved
     match &processed.message {
-        MessagePayload::Assistant(assistant_msg) => {
-            match &assistant_msg.content[0] {
-                AssistantContent::ToolUse { id, name, input } => {
-                    assert_eq!(id, "toolu_bash123");
-                    assert_eq!(name, "Bash");
-                    assert_eq!(input["command"], "ls -la");
-                    assert_eq!(input["description"], "List files");
-                }
-                _ => panic!("Expected ToolUse"),
+        MessagePayload::Assistant(assistant_msg) => match &assistant_msg.content[0] {
+            AssistantContent::ToolUse { id, name, input } => {
+                assert_eq!(id, "toolu_bash123");
+                assert_eq!(name, "Bash");
+                assert_eq!(input["command"], "ls -la");
+                assert_eq!(input["description"], "List files");
             }
-        }
+            _ => panic!("Expected ToolUse"),
+        },
         _ => panic!("Expected Assistant message"),
     }
 
     // Verify round-trip through JSON serialization works
     let json = serde_json::to_string(&processed).unwrap();
     let restored: MessageEnvelope = serde_json::from_str(&json).unwrap();
-    
+
     match &restored.message {
-        MessagePayload::Assistant(assistant_msg) => {
-            match &assistant_msg.content[0] {
-                AssistantContent::ToolUse { id, name, input } => {
-                    assert_eq!(id, "toolu_bash123");
-                    assert_eq!(name, "Bash");
-                    assert_eq!(input["command"], "ls -la");
-                    assert_eq!(input["description"], "List files");
-                }
-                _ => panic!("Expected ToolUse after restore"),
+        MessagePayload::Assistant(assistant_msg) => match &assistant_msg.content[0] {
+            AssistantContent::ToolUse { id, name, input } => {
+                assert_eq!(id, "toolu_bash123");
+                assert_eq!(name, "Bash");
+                assert_eq!(input["command"], "ls -la");
+                assert_eq!(input["description"], "List files");
             }
-        }
+            _ => panic!("Expected ToolUse after restore"),
+        },
         _ => panic!("Expected Assistant message after restore"),
     }
 }
@@ -1594,8 +1675,10 @@ fn test_set_session_tokens() {
     set_session_tokens(&mut session, 1000, 500, 100, 50).expect("set tokens");
 
     // @step Then the session should have exactly those token values (not added)
-    assert_eq!(session.token_usage.total_input_tokens, 1000);
-    assert_eq!(session.token_usage.total_output_tokens, 500);
+    // CTX-003: Now uses dual-metric fields
+    assert_eq!(session.token_usage.current_context_tokens, 1000);
+    assert_eq!(session.token_usage.cumulative_billed_input, 1000);
+    assert_eq!(session.token_usage.cumulative_billed_output, 500);
     assert_eq!(session.token_usage.cache_read_tokens, 100);
     assert_eq!(session.token_usage.cache_creation_tokens, 50);
 
@@ -1603,8 +1686,10 @@ fn test_set_session_tokens() {
     let reloaded = load_session(session_id).expect("reload");
 
     // @step Then the token values should be persisted
-    assert_eq!(reloaded.token_usage.total_input_tokens, 1000);
-    assert_eq!(reloaded.token_usage.total_output_tokens, 500);
+    // CTX-003: Now uses dual-metric fields
+    assert_eq!(reloaded.token_usage.current_context_tokens, 1000);
+    assert_eq!(reloaded.token_usage.cumulative_billed_input, 1000);
+    assert_eq!(reloaded.token_usage.cumulative_billed_output, 500);
     assert_eq!(reloaded.token_usage.cache_read_tokens, 100);
     assert_eq!(reloaded.token_usage.cache_creation_tokens, 50);
 }
@@ -1685,16 +1770,22 @@ fn test_token_and_compaction_state_persist_together() {
 
     // @step When I set both token usage and compaction state
     set_session_tokens(&mut session, 2000, 1000, 200, 100).expect("set tokens");
-    set_compaction_state(&mut session, "Compacted 15 turns".to_string(), 15).expect("set compaction");
+    set_compaction_state(&mut session, "Compacted 15 turns".to_string(), 15)
+        .expect("set compaction");
 
     // @step And I reload the session
     let reloaded = load_session(session_id).expect("reload");
 
     // @step Then both token usage and compaction state should be restored
-    assert_eq!(reloaded.token_usage.total_input_tokens, 2000);
-    assert_eq!(reloaded.token_usage.total_output_tokens, 1000);
+    // CTX-003: Now uses dual-metric fields
+    assert_eq!(reloaded.token_usage.current_context_tokens, 2000);
+    assert_eq!(reloaded.token_usage.cumulative_billed_input, 2000);
+    assert_eq!(reloaded.token_usage.cumulative_billed_output, 1000);
     assert!(reloaded.compaction.is_some());
-    assert_eq!(reloaded.compaction.as_ref().unwrap().compacted_before_index, 15);
+    assert_eq!(
+        reloaded.compaction.as_ref().unwrap().compacted_before_index,
+        15
+    );
 
     // @step And the message count should still be correct
     assert_eq!(reloaded.messages.len(), 20);

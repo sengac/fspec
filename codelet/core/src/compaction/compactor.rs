@@ -193,7 +193,9 @@ impl ContextCompactor {
         // Use selector's anchor if it found one in older turns,
         // otherwise use the most recent anchor (which may be synthetic)
         // This ensures synthetic anchors are returned even when in "recent" turns
-        let result_anchor = selection.preserved_anchor.or_else(|| anchors.last().cloned());
+        let result_anchor = selection
+            .preserved_anchor
+            .or_else(|| anchors.last().cloned());
 
         Ok(CompactionResult {
             kept_turns,

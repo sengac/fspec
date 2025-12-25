@@ -30,7 +30,9 @@ pub use types::*;
 // Logging callback infrastructure for routing Rust tracing logs to TypeScript
 #[cfg(not(feature = "noop"))]
 mod logging {
-    use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue};
+    use napi::threadsafe_function::{
+        ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue,
+    };
     use napi::Status;
     use std::sync::Mutex;
     use tracing_subscriber::layer::SubscriberExt;

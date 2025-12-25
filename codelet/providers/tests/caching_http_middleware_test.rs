@@ -117,6 +117,7 @@ fn test_effective_tokens_with_cache_discount() {
         output_tokens: 0,
         cache_read_input_tokens: Some(5000),
         cache_creation_input_tokens: None,
+        ..Default::default()
     };
 
     // @step When effective_tokens() is called
@@ -347,12 +348,7 @@ fn test_cache_tokens_flow_to_session_token_tracker() {
     use codelet_core::compaction::TokenTracker;
 
     // @step Given an interactive session with a token tracker
-    let mut token_tracker = TokenTracker {
-        input_tokens: 0,
-        output_tokens: 0,
-        cache_read_input_tokens: None,
-        cache_creation_input_tokens: None,
-    };
+    let mut token_tracker = TokenTracker::default();
 
     // @step And a streaming response completes with cache_read_input_tokens of 5000
     // Simulate what interactive.rs should do after extracting cache tokens
@@ -386,12 +382,7 @@ fn test_multiple_turns_accumulate_cache_tokens() {
     use codelet_core::compaction::TokenTracker;
 
     // @step Given an interactive session with a token tracker
-    let mut token_tracker = TokenTracker {
-        input_tokens: 0,
-        output_tokens: 0,
-        cache_read_input_tokens: None,
-        cache_creation_input_tokens: None,
-    };
+    let mut token_tracker = TokenTracker::default();
 
     // @step And a first turn completes with cache_read_input_tokens of 3000
     let first_turn_cache_read: u64 = 3000;
@@ -418,12 +409,7 @@ fn test_non_anthropic_providers_no_cache_tokens() {
     use codelet_core::compaction::TokenTracker;
 
     // @step Given an interactive session using OpenAI provider
-    let token_tracker = TokenTracker {
-        input_tokens: 0,
-        output_tokens: 0,
-        cache_read_input_tokens: None,
-        cache_creation_input_tokens: None,
-    };
+    let token_tracker = TokenTracker::default();
 
     // @step And a streaming response completes
     // OpenAI doesn't send cache tokens, so they remain None

@@ -13,12 +13,27 @@ use std::time::SystemTime;
 ///
 /// Based on rig's anthropic::completion::Usage but preserves cache granularity
 /// that is lost in the generic crate::completion::Usage conversion.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+///
+/// CTX-003: This struct distinguishes between current context size and cumulative billing:
+/// - `input_tokens`: Current context size (latest value - for display and threshold checks)
+/// - `cumulative_billed_input`: Sum of all API calls (for billing analytics)
+///
+/// The Anthropic API reports input_tokens as the TOTAL context size per call (absolute),
+/// not incremental tokens added. Display should use input_tokens (current context).
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct TokenTracker {
-    /// Total input tokens (including cached)
+    /// Current context input tokens (latest from API - overwritten, not accumulated)
+    /// CTX-003: This is what should be displayed to users and used for threshold checks
     pub input_tokens: u64,
-    /// Total output tokens
+    /// Current context output tokens (latest from API)
     pub output_tokens: u64,
+    /// Cumulative billed input tokens (sum of all API calls - for billing analytics)
+    /// CTX-003: This is the total billed by Anthropic across all API calls
+    #[serde(default)]
+    pub cumulative_billed_input: u64,
+    /// Cumulative billed output tokens (sum of all API calls)
+    #[serde(default)]
+    pub cumulative_billed_output: u64,
     /// Cache read tokens (from Anthropic API)
     pub cache_read_input_tokens: Option<u64>,
     /// Cache creation tokens (from Anthropic API)
@@ -26,6 +41,11 @@ pub struct TokenTracker {
 }
 
 impl TokenTracker {
+    /// Create a new empty TokenTracker
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     /// Calculate effective tokens accounting for 90% cache discount
     ///
     /// Effective tokens = input_tokens - (cache_read_tokens * 0.9)
@@ -40,6 +60,31 @@ impl TokenTracker {
     /// Get total tokens (input + output)
     pub fn total_tokens(&self) -> u64 {
         self.input_tokens + self.output_tokens
+    }
+
+    /// Update token tracker with API response (CTX-003)
+    ///
+    /// - `input_tokens` is OVERWRITTEN with the latest value (for display)
+    /// - `cumulative_billed_input` is ACCUMULATED (for billing analytics)
+    ///
+    /// The Anthropic API reports input_tokens as TOTAL context size per call (absolute),
+    /// not incremental tokens added.
+    pub fn update(
+        &mut self,
+        input: u64,
+        output: u64,
+        cache_read: Option<u64>,
+        cache_creation: Option<u64>,
+    ) {
+        // CTX-003: Overwrite current context (for display and threshold checks)
+        self.input_tokens = input;
+        self.output_tokens = output;
+        // CTX-003: Accumulate for billing analytics
+        self.cumulative_billed_input += input;
+        self.cumulative_billed_output += output;
+        // Cache tokens are per-request values
+        self.cache_read_input_tokens = cache_read;
+        self.cache_creation_input_tokens = cache_creation;
     }
 }
 
@@ -116,20 +161,15 @@ pub struct ToolResult {
 /// Build/test status for PreservationContext
 ///
 /// CTX-001 Rule [7]: BuildStatus enum MUST have variants: Passing, Failing, Unknown
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
 pub enum BuildStatus {
     /// Tests are passing
     Passing,
     /// Tests are failing
     Failing,
     /// Build status unknown
+    #[default]
     Unknown,
-}
-
-impl Default for BuildStatus {
-    fn default() -> Self {
-        Self::Unknown
-    }
 }
 
 impl std::fmt::Display for BuildStatus {
@@ -237,8 +277,20 @@ impl PreservationContext {
 
         // Keywords that indicate a goal
         let action_verbs = [
-            "fix", "implement", "add", "update", "create", "build", "deploy", "refactor", "remove",
-            "delete", "change", "modify", "help me", "please",
+            "fix",
+            "implement",
+            "add",
+            "update",
+            "create",
+            "build",
+            "deploy",
+            "refactor",
+            "remove",
+            "delete",
+            "change",
+            "modify",
+            "help me",
+            "please",
         ];
 
         for verb in &action_verbs {
@@ -249,7 +301,11 @@ impl PreservationContext {
                     // Capitalize first letter
                     let mut chars = trimmed.chars();
                     if let Some(first) = chars.next() {
-                        return Some(format!("{}{}", first.to_uppercase(), chars.collect::<String>()));
+                        return Some(format!(
+                            "{}{}",
+                            first.to_uppercase(),
+                            chars.collect::<String>()
+                        ));
                     }
                 }
             }

@@ -104,6 +104,10 @@
           "description": "Session and context management features including message persistence and state handling"
         },
         {
+          "name": "@token-tracking",
+          "description": "Features related to token usage tracking and display"
+        },
+        {
           "name": "@tool-display",
           "description": "Features related to displaying tool execution information"
         },
@@ -199,6 +203,10 @@
       "required": false,
       "tags": [
         {
+          "name": "@bug-fix",
+          "description": "Bug fix work units addressing defects in existing functionality"
+        },
+        {
           "name": "@done",
           "description": "Completed features"
         },
@@ -216,6 +224,10 @@
         {
           "name": "@integration",
           "description": "Integration test scenarios that verify end-to-end wiring"
+        },
+        {
+          "name": "@unit-test",
+          "description": "Scenarios that should be implemented as unit tests"
         }
       ]
     },
@@ -257,7 +269,7 @@
     "examples": []
   },
   "statistics": {
-    "lastUpdated": "2025-12-23T00:19:40.368Z",
+    "lastUpdated": "2025-12-25T01:12:06.196Z",
     "phaseStats": [],
     "componentStats": [],
     "featureGroupStats": [],

@@ -18,7 +18,6 @@ use crate::compaction_threshold::calculate_usable_context;
 use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
-use std::error::Error as StdError;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_core::{CompactionHook, RigAgent, TokenState};
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
@@ -28,6 +27,7 @@ use rig::agent::MultiTurnStreamItem;
 use rig::completion::{CompletionModel, GetTokenUsage};
 use rig::streaming::{StreamedAssistantContent, StreamedUserContent};
 use rig::wasm_compat::WasmCompatSend;
+use std::error::Error as StdError;
 use std::sync::atomic::AtomicBool;
 // Use Acquire/Release ordering for proper cross-thread synchronization
 // - Acquire: Ensures subsequent reads see all writes before the Release store
@@ -266,19 +266,17 @@ where
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
 
-    // Store previous cumulative totals for emitting running totals
-    let prev_input_tokens = session.token_tracker.input_tokens;
-    let prev_output_tokens = session.token_tracker.output_tokens;
+    // CTX-003: Previous tokens are no longer needed for cumulative display
+    // (we now show current context, not cumulative sum)
+    let _prev_input_tokens = session.token_tracker.input_tokens;
+    let _prev_output_tokens = session.token_tracker.output_tokens;
 
-    // Track accumulated tokens within THIS run_agent_stream call
-    // (which may have multiple API calls due to tool use)
-    let mut turn_accumulated_input: u64 = 0;
-    let mut turn_accumulated_output: u64 = 0;
-    let mut turn_cache_read: u64 = 0;
-    let mut turn_cache_creation: u64 = 0;
-    // Track current API call's tokens (reset on FinalResponse for next tool call)
+    // CTX-003: Track CURRENT CONTEXT tokens (overwritten with each API call, not accumulated)
+    // Anthropic's input_tokens represents TOTAL context per call (absolute, not incremental)
     let mut current_api_input: u64 = 0;
     let mut current_api_output: u64 = 0;
+    let mut turn_cache_read: u64 = 0;
+    let mut turn_cache_creation: u64 = 0;
 
     loop {
         // Check interruption at start of each iteration (works for both modes)
@@ -371,20 +369,19 @@ where
                         output,
                     )?;
 
-                    // Emit intermediate CUMULATIVE token update after tool result
-                    // Use accumulated values (already updated by Usage and FinalResponse handlers)
+                    // CTX-003: Emit CURRENT CONTEXT tokens after tool result
                     output.emit_tokens(&TokenInfo {
-                        input_tokens: prev_input_tokens + turn_accumulated_input,
-                        output_tokens: prev_output_tokens + turn_accumulated_output,
+                        input_tokens: current_api_input,
+                        output_tokens: current_api_output,
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
                     });
-                    // TUI-033: Emit context fill percentage
+                    // TUI-033: Emit context fill percentage (uses current context)
                     emit_context_fill(
                         output,
-                        prev_input_tokens + turn_accumulated_input,
+                        current_api_input,
                         turn_cache_read,
-                        prev_output_tokens + turn_accumulated_output,
+                        current_api_output,
                         threshold,
                         context_window,
                     );
@@ -396,11 +393,9 @@ where
 
                     if usage.output_tokens == 0 {
                         // MessageStart - new API call starting
-                        // First, commit previous API call's tokens (if any) to accumulated totals
-                        // This handles multi-API-call turns (tool use) where FinalResponse only comes at end
-                        turn_accumulated_input += current_api_input;
-                        turn_accumulated_output += current_api_output;
-                        // Now track the new API call's input tokens
+                        // CTX-003: DON'T accumulate here! FinalResponse already commits to turn_accumulated.
+                        // Accumulating here causes DOUBLE-COUNTING (same tokens added in FinalResponse AND MessageStart).
+                        // Just track the new API call's input tokens (overwrite, not accumulate)
                         current_api_input = usage.input_tokens;
                         current_api_output = 0;
                     } else {
@@ -413,23 +408,21 @@ where
                         .cache_creation_input_tokens
                         .unwrap_or(turn_cache_creation);
 
-                    // Emit CUMULATIVE totals (previous session + accumulated + current API call)
+                    // CTX-003: Emit CURRENT CONTEXT tokens, not cumulative sum
+                    // Anthropic's input_tokens is the TOTAL context size per API call (absolute),
+                    // not incremental tokens added. Display should show current context window usage.
                     output.emit_tokens(&TokenInfo {
-                        input_tokens: prev_input_tokens
-                            + turn_accumulated_input
-                            + current_api_input,
-                        output_tokens: prev_output_tokens
-                            + turn_accumulated_output
-                            + current_api_output,
+                        input_tokens: current_api_input,
+                        output_tokens: current_api_output,
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
                     });
-                    // TUI-033: Emit context fill percentage
+                    // TUI-033: Emit context fill percentage (uses current context, not cumulative)
                     emit_context_fill(
                         output,
-                        prev_input_tokens + turn_accumulated_input + current_api_input,
+                        current_api_input,
                         turn_cache_read,
-                        prev_output_tokens + turn_accumulated_output + current_api_output,
+                        current_api_output,
                         threshold,
                         context_window,
                     );
@@ -444,9 +437,7 @@ where
                     }
                     current_api_output = usage.output_tokens;
 
-                    // Commit final API call to accumulated totals
-                    turn_accumulated_input += current_api_input;
-                    turn_accumulated_output += current_api_output;
+                    // CTX-003: No accumulation needed - we track current context, not cumulative
 
                     // Update cache tokens from FinalResponse
                     turn_cache_read = usage.cache_read_input_tokens.unwrap_or(turn_cache_read);
@@ -454,19 +445,21 @@ where
                         .cache_creation_input_tokens
                         .unwrap_or(turn_cache_creation);
 
-                    // Emit CUMULATIVE token update
+                    // CTX-003: Emit CURRENT CONTEXT tokens (not cumulative)
+                    // current_api_input contains the final input_tokens for this API call,
+                    // which represents the total context size (absolute, not incremental)
                     output.emit_tokens(&TokenInfo {
-                        input_tokens: prev_input_tokens + turn_accumulated_input,
-                        output_tokens: prev_output_tokens + turn_accumulated_output,
+                        input_tokens: current_api_input,
+                        output_tokens: current_api_output,
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
                     });
-                    // TUI-033: Emit context fill percentage
+                    // TUI-033: Emit context fill percentage (uses current context)
                     emit_context_fill(
                         output,
-                        prev_input_tokens + turn_accumulated_input,
+                        current_api_input,
                         turn_cache_read,
-                        prev_output_tokens + turn_accumulated_output,
+                        current_api_output,
                         threshold,
                         context_window,
                     );
@@ -805,11 +798,21 @@ where
         }
     }
 
-    // Update session token tracker with accumulated values from this turn
-    // Use turn_accumulated_* which correctly sums all API calls in this turn
+    // CTX-003: Update session token tracker with BOTH current context AND cumulative billing
+    // Anthropic's input_tokens represents the TOTAL context size (absolute, not incremental).
+    //
+    // Two distinct metrics:
+    // - input_tokens/output_tokens: CURRENT context size (for display and threshold checks)
+    // - cumulative_billed_input/output: Sum of all API calls (for billing analytics)
+    //
+    // This matches CompactionHook behavior which correctly OVERWRITES (not accumulates) for context.
     if !is_interrupted.load(Acquire) {
-        session.token_tracker.input_tokens += turn_accumulated_input;
-        session.token_tracker.output_tokens += turn_accumulated_output;
+        // Overwrite current context values (for display and threshold checks)
+        session.token_tracker.input_tokens = current_api_input;
+        session.token_tracker.output_tokens = current_api_output;
+        // Accumulate for billing analytics (sum of all API calls in session)
+        session.token_tracker.cumulative_billed_input += current_api_input;
+        session.token_tracker.cumulative_billed_output += current_api_output;
         // Cache tokens are per-request, not cumulative (use latest values)
         session.token_tracker.cache_read_input_tokens = Some(turn_cache_read);
         session.token_tracker.cache_creation_input_tokens = Some(turn_cache_creation);

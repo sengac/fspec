@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-23T00:47:54.408Z"
+    "lastUpdated": "2025-12-25T23:38:48.701Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -8372,6 +8372,246 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-23T00:47:54.419Z"
+    },
+    "CTX-003": {
+      "id": "CTX-003",
+      "title": "Fix Token Inflation Bug (15.7x Overcounting)",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-25T01:07:03.380Z",
+      "updatedAt": "2025-12-25T23:38:48.714Z",
+      "description": "Token tracking system displays and persists token counts 15.7x higher than actual context size due to summing Anthropic per-request input_tokens (full context) as incremental additions",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CTX-003/TOKEN-INFLATION-BUG.md",
+        "spec/attachments/CTX-003/ast-research-token-tracking.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-25T01:08:12.161Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-25T01:21:05.488Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-25T01:31:37.292Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-25T01:44:01.126Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-25T01:45:42.755Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-25T03:10:11.234Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-25T03:35:45.003Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-25T03:44:59.315Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-25T03:55:52.212Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-25T03:56:19.789Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-25T17:43:39.951Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-25T17:45:31.932Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-25T17:45:44.467Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-25T23:38:48.714Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using codelet CLI",
+        "action": "see accurate token counts that reflect my current context size",
+        "benefit": "I can trust the displayed metrics and make informed decisions about context management"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Anthropic API input_tokens represents the TOTAL context size for each API call, not incremental tokens added",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:08:46.577Z"
+        },
+        {
+          "id": 1,
+          "text": "Display token count MUST show the current context size (latest input_tokens value), not cumulative sum of all API calls",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:08:48.158Z"
+        },
+        {
+          "id": 2,
+          "text": "Session persistence MUST distinguish between current_context_tokens (latest value) and cumulative_billed_tokens (sum for billing)",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:08:49.783Z"
+        },
+        {
+          "id": 3,
+          "text": "Compaction threshold checking MUST use per-request token values, not cumulative sums",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:08:51.374Z"
+        },
+        {
+          "id": 4,
+          "text": "Multi-API-call turns (tool use) MUST NOT multiply token counts - each API call reports full context, not incremental",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:08:53.314Z"
+        },
+        {
+          "id": 5,
+          "text": "Token display inflation ratio MUST be 1:1 (actual context to displayed) regardless of number of API calls",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:08:56.187Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Single API call: User sends message, API reports input_tokens=50,000 and output_tokens=2,000. Display shows 'Input: 50,000 tokens'. Session stores current_context=50,000.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:31.801Z"
+        },
+        {
+          "id": 1,
+          "text": "Multi-API turn with 3 tool calls: API Call 1 reports input=50,000, API Call 2 reports input=55,000, API Call 3 reports input=60,000. CORRECT display shows 'Input: 60,000 tokens' (latest). BUGGY display shows 'Input: 165,000 tokens' (sum).",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:34.082Z"
+        },
+        {
+          "id": 2,
+          "text": "Real-world session with 15.7x inflation: Session has 142 messages, actual context=105,000 tokens, but session shows total_input_tokens=1,658,550. This means approximately 15.8 API calls occurred (1,658,550/105,000), each reporting full context that got summed.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:36.035Z"
+        },
+        {
+          "id": 3,
+          "text": "Compaction threshold check: threshold=180,000, actual context=105,000. CORRECT: no compaction triggered (105k < 180k). BUGGY with cumulative tracking: 1,658,550 > 180k would always trigger compaction.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:39.547Z"
+        },
+        {
+          "id": 4,
+          "text": "CompactionHook behavior (currently correct): on_stream_completion_response_finish OVERWRITES state.input_tokens with per-request value, so compaction checks use actual context size. This is why compaction still works despite the display bug.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:42.224Z"
+        },
+        {
+          "id": 5,
+          "text": "Session persistence after fix: session.json stores {current_context_tokens: 105000, cumulative_billed_input: 1658550, cumulative_billed_output: 9733}. Display shows current context (105k), billing analytics show cumulative (1.65M).",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:45.604Z"
+        },
+        {
+          "id": 6,
+          "text": "Stream display during multi-call turn: As each API call completes, display updates to show CURRENT context size. User sees: 50k -> 55k -> 60k (correct progression). Not: 50k -> 105k -> 165k (cumulative bug).",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:49.575Z"
+        },
+        {
+          "id": 7,
+          "text": "Billing vs Context distinction: After 5 API calls with context at 100k, billing total is 500k (5*100k for cost calculation), but context display shows 100k (for user understanding of window usage).",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:53.060Z"
+        },
+        {
+          "id": 8,
+          "text": "Context fill percentage: With context_window=200k and threshold=180k, fill should show 58% when context is 105k (105/180). NOT 920% (1658550/180000) from cumulative bug.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:09:57.068Z"
+        },
+        {
+          "id": 9,
+          "text": "Turn with 10 tool calls: Initial context 100k, each call adds ~1k. API reports 100k, 101k, 102k... 109k (progressive). BUGGY: sums all (100+101+...+109)=1,045k with double-counting even higher. CORRECT: shows final 109k.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:17:21.852Z"
+        },
+        {
+          "id": 10,
+          "text": "Double-counting bug trace: 3 API calls at 50k, 55k, 60k. API 1 FinalResponse adds 50k. API 2 MessageStart adds 50k AGAIN (double!), then FinalResponse adds 55k. API 2 MessageStart adds 55k AGAIN. Total: 270k instead of 60k (4.5x inflation for just 3 calls).",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:17:23.335Z"
+        }
+      ],
+      "nextExampleId": 11,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "AFFECTED FILE 1: cli/src/interactive/stream_loop.rs - Lines 401-404 accumulate current_api_input to turn_accumulated_input on MessageStart. Line 811 adds turn_accumulated_input to session.token_tracker.input_tokens. This treats per-request ABSOLUTE context sizes as INCREMENTAL additions.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:10:29.448Z"
+        },
+        {
+          "id": 1,
+          "text": "AFFECTED FILE 2: napi/src/persistence/types.rs - Line 188 has add_tokens() that does self.token_usage.total_input_tokens += input. This persists the cumulative sum to session.json, causing inflated values in session files.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:10:31.528Z"
+        },
+        {
+          "id": 2,
+          "text": "WORKING CORRECTLY: core/src/compaction_hook.rs - Line 134 OVERWRITES state.input_tokens = usage.input_tokens (not +=). This is why compaction threshold checking works correctly - it uses per-request values.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:10:33.172Z"
+        },
+        {
+          "id": 3,
+          "text": "BUG CHAIN: stream_loop.rs turn_accumulated_input sums ALL API calls -> session.token_tracker.input_tokens += turn_accumulated -> types.rs total_input_tokens += -> persisted to session.json. Each link multiplies the error.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:10:34.722Z"
+        },
+        {
+          "id": 4,
+          "text": "FIX STRATEGY: Introduce two distinct fields: current_context_tokens (overwrite with latest input_tokens) and cumulative_billed_input (sum for billing analytics). Display uses current_context_tokens. Session persists both.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:10:36.247Z"
+        },
+        {
+          "id": 5,
+          "text": "DISPLAY FIX: stream_loop.rs lines 417-420 emit_tokens() should emit current_api_input only (not prev + accumulated + current). Context fill percentage calculation at lines 428-434 needs same fix.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:10:37.881Z"
+        },
+        {
+          "id": 6,
+          "text": "PERSISTENCE SCHEMA CHANGE: TokenUsage struct needs fields: current_context_tokens (u64), cumulative_billed_input (u64), cumulative_billed_output (u64). Backward compatibility: migrate old total_input_tokens to cumulative_billed_input.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:10:39.740Z"
+        },
+        {
+          "id": 7,
+          "text": "INTEGRATION POINTS: TokenInfo struct emitted via output.emit_tokens() consumed by NAPI bindings for TUI display. TokenUsage persisted via SessionStore. Both need updates to support new field semantics.",
+          "deleted": false,
+          "createdAt": "2025-12-25T01:10:42.513Z"
+        }
+      ],
+      "nextNoteId": 8,
+      "estimate": 5,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-25T23:38:48.714Z"
     }
   },
   "states": {
@@ -8385,6 +8625,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "CTX-003",
       "NAPI-003",
       "AGENT-003",
       "WEB-001",
@@ -8450,7 +8691,7 @@
     "CORE": 10,
     "PROV": 6,
     "AGENT": 3,
-    "CTX": 2,
+    "CTX": 3,
     "REFAC": 15,
     "CLI": 24,
     "WEB": 2,

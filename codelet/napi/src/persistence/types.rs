@@ -7,11 +7,31 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 /// Token usage tracking for a session
+///
+/// CTX-003: This struct distinguishes between current context size and cumulative billing:
+/// - `current_context_tokens`: Latest context size (for display and threshold checks)
+/// - `cumulative_billed_input`: Sum of all API calls (for billing analytics)
+///
+/// The Anthropic API reports input_tokens as the TOTAL context size per call (absolute),
+/// not incremental tokens added. Display should show current_context_tokens.
 #[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq)]
 pub struct TokenUsage {
-    pub total_input_tokens: u64,
-    pub total_output_tokens: u64,
+    /// Current context size (latest input_tokens from API - overwritten, not accumulated)
+    /// CTX-003: This is what should be displayed to users and used for threshold checks
+    #[serde(default)]
+    pub current_context_tokens: u64,
+    /// Cumulative billed input tokens (sum of all API calls - for billing analytics)
+    /// CTX-003: This is the total billed by Anthropic across all API calls in the session
+    #[serde(default)]
+    pub cumulative_billed_input: u64,
+    /// Cumulative billed output tokens (sum of all API calls)
+    #[serde(default)]
+    pub cumulative_billed_output: u64,
+    /// Cache read tokens from current API call
+    #[serde(default)]
     pub cache_read_tokens: u64,
+    /// Cache creation tokens from current API call
+    #[serde(default)]
     pub cache_creation_tokens: u64,
 }
 
@@ -177,7 +197,13 @@ impl SessionManifest {
         self.messages.len()
     }
 
-    /// Update token usage
+    /// Update token usage with dual metrics (CTX-003)
+    ///
+    /// - `current_context_tokens` is OVERWRITTEN with the latest input value (for display)
+    /// - `cumulative_billed_input` is ACCUMULATED (for billing analytics)
+    ///
+    /// The Anthropic API reports input_tokens as TOTAL context size per call (absolute),
+    /// not incremental tokens added. Display should use current_context_tokens.
     pub fn update_token_usage(
         &mut self,
         input: u64,
@@ -185,10 +211,14 @@ impl SessionManifest {
         cache_read: u64,
         cache_create: u64,
     ) {
-        self.token_usage.total_input_tokens += input;
-        self.token_usage.total_output_tokens += output;
-        self.token_usage.cache_read_tokens += cache_read;
-        self.token_usage.cache_creation_tokens += cache_create;
+        // CTX-003: Overwrite current context (for display and threshold checks)
+        self.token_usage.current_context_tokens = input;
+        // CTX-003: Accumulate for billing analytics
+        self.token_usage.cumulative_billed_input += input;
+        self.token_usage.cumulative_billed_output += output;
+        // Cache tokens are per-request values
+        self.token_usage.cache_read_tokens = cache_read;
+        self.token_usage.cache_creation_tokens = cache_create;
     }
 }
 
@@ -250,7 +280,7 @@ mod tests {
         assert!(session.forked_from.is_none());
         assert!(session.compaction.is_none());
         assert!(session.merged_from.is_empty());
-        assert_eq!(session.token_usage.total_input_tokens, 0);
+        assert_eq!(session.token_usage.current_context_tokens, 0);
     }
 
     #[test]
@@ -272,10 +302,15 @@ mod tests {
     fn test_token_usage_update() {
         let mut session = SessionManifest::new("Test", PathBuf::from("/test"));
         session.update_token_usage(100, 50, 10, 5);
-        assert_eq!(session.token_usage.total_input_tokens, 100);
-        assert_eq!(session.token_usage.total_output_tokens, 50);
+        // CTX-003: current_context_tokens is OVERWRITTEN with latest value
+        assert_eq!(session.token_usage.current_context_tokens, 100);
+        // CTX-003: cumulative_billed_input ACCUMULATES for billing
+        assert_eq!(session.token_usage.cumulative_billed_input, 100);
+        assert_eq!(session.token_usage.cumulative_billed_output, 50);
         session.update_token_usage(100, 50, 10, 5);
-        assert_eq!(session.token_usage.total_input_tokens, 200);
+        // After second call: current_context stays at 100, cumulative grows to 200
+        assert_eq!(session.token_usage.current_context_tokens, 100);
+        assert_eq!(session.token_usage.cumulative_billed_input, 200);
     }
 
     #[test]
