@@ -160,6 +160,12 @@ interface Message {
   content: string;
 }
 
+// TUI-031: Token sample for time-window based tok/s calculation
+interface TokenSample {
+  timestamp: number;
+  cumulativeTokens: number;
+}
+
 // AGENT-021: Debug command result from toggleDebug()
 interface DebugCommandResult {
   enabled: boolean;
@@ -273,13 +279,17 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [availableSessions, setAvailableSessions] = useState<SessionManifest[]>([]);
   const [resumeSessionIndex, setResumeSessionIndex] = useState(0);
 
-  // TUI-031: Track tok/s - calculate on each TEXT chunk for real-time updates
-  const streamingStartTimeRef = useRef<number | null>(null);
+  // TUI-031: Track tok/s using time-window based calculation
+  // Uses cumulative tokens over a sliding time window for stable, accurate rate display
+  const tokenSamplesRef = useRef<TokenSample[]>([]);
+  const TIME_WINDOW_MS = 3000; // 3-second sliding window
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(null);
   const [lastChunkTime, setLastChunkTime] = useState<number | null>(null);
-  const lastChunkTimeRef = useRef<number | null>(null);
-  const rateSamplesRef = useRef<number[]>([]);
-  const MAX_RATE_SAMPLES = 5; // Average last 5 samples for stability
+  // EMA smoothing and display throttling for stable display
+  const smoothedRateRef = useRef<number | null>(null);
+  const lastDisplayUpdateRef = useRef<number>(0);
+  const EMA_ALPHA = 0.3; // Lower = smoother (0.3 means 30% new, 70% old)
+  const DISPLAY_THROTTLE_MS = 500; // Only update display every 500ms
 
   // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
   const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
@@ -316,11 +326,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setInputValue('');
       setIsDebugEnabled(false); // AGENT-021: Reset debug state on modal close
       // TUI-031: Reset tok/s tracking
-      streamingStartTimeRef.current = null;
+      tokenSamplesRef.current = [];
+      smoothedRateRef.current = null;
+      lastDisplayUpdateRef.current = 0;
       setDisplayedTokPerSec(null);
       setLastChunkTime(null);
-      lastChunkTimeRef.current = null;
-      rateSamplesRef.current = [];
       sessionRef.current = null;
       // NAPI-006: Reset history and search state
       setHistoryEntries([]);
@@ -796,11 +806,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     setSavedInput('');
     setIsLoading(true);
     // TUI-031: Reset tok/s tracking for new prompt
-    streamingStartTimeRef.current = Date.now();
+    tokenSamplesRef.current = [];
+    smoothedRateRef.current = null;
+    lastDisplayUpdateRef.current = 0;
     setDisplayedTokPerSec(null);
     setLastChunkTime(null);
-    lastChunkTimeRef.current = null;
-    rateSamplesRef.current = [];
 
     // NAPI-006: Deferred session creation - only create session on first message
     // This prevents empty sessions from being persisted when user opens modal
@@ -893,26 +903,45 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         if (!chunk) return;
 
         if (chunk.type === 'Text' && chunk.text) {
-          // TUI-031: Calculate tok/s on each text chunk
+          // TUI-031: Calculate tok/s using time-window based approach
+          // This provides stable, accurate rate by measuring total tokens over a time window
           const now = Date.now();
           const chunkTokens = Math.ceil(chunk.text.length / 4); // ~4 chars per token
 
-          if (lastChunkTimeRef.current !== null && chunkTokens > 0) {
-            const deltaTime = (now - lastChunkTimeRef.current) / 1000;
-            if (deltaTime > 0.01) { // At least 10ms between samples
-              const instantRate = chunkTokens / deltaTime;
-              // Add to samples, keep last N for smoothing
-              rateSamplesRef.current.push(instantRate);
-              if (rateSamplesRef.current.length > MAX_RATE_SAMPLES) {
-                rateSamplesRef.current.shift();
+          // Add sample with cumulative token count
+          const lastSample = tokenSamplesRef.current[tokenSamplesRef.current.length - 1];
+          const cumulative = (lastSample?.cumulativeTokens ?? 0) + chunkTokens;
+          tokenSamplesRef.current.push({ timestamp: now, cumulativeTokens: cumulative });
+
+          // Remove samples older than TIME_WINDOW_MS
+          const cutoff = now - TIME_WINDOW_MS;
+          tokenSamplesRef.current = tokenSamplesRef.current.filter(s => s.timestamp >= cutoff);
+
+          // Calculate rate from window (need at least 2 samples spanning 100ms)
+          if (tokenSamplesRef.current.length >= 2) {
+            const oldest = tokenSamplesRef.current[0];
+            const newest = tokenSamplesRef.current[tokenSamplesRef.current.length - 1];
+            const tokenDelta = newest.cumulativeTokens - oldest.cumulativeTokens;
+            const timeDelta = (newest.timestamp - oldest.timestamp) / 1000;
+
+            if (timeDelta >= 0.1) { // At least 100ms of data for stable rate
+              const rawRate = tokenDelta / timeDelta;
+
+              // Apply EMA smoothing to reduce jitter
+              if (smoothedRateRef.current === null) {
+                smoothedRateRef.current = rawRate;
+              } else {
+                smoothedRateRef.current = EMA_ALPHA * rawRate + (1 - EMA_ALPHA) * smoothedRateRef.current;
               }
-              // Display average of samples
-              const avgRate = rateSamplesRef.current.reduce((a, b) => a + b, 0) / rateSamplesRef.current.length;
-              setDisplayedTokPerSec(avgRate);
-              setLastChunkTime(now);
+
+              // Throttle display updates to reduce visual noise
+              if (now - lastDisplayUpdateRef.current >= DISPLAY_THROTTLE_MS) {
+                setDisplayedTokPerSec(smoothedRateRef.current);
+                setLastChunkTime(now);
+                lastDisplayUpdateRef.current = now;
+              }
             }
           }
-          lastChunkTimeRef.current = now;
 
           // Text chunks are now batched in Rust, so we receive fewer, larger updates
           currentSegment += chunk.text;
