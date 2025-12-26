@@ -1,0 +1,27 @@
+{
+  "file": "providers/src/claude.rs",
+  "operation": "list-functions",
+  "key_findings": {
+    "create_rig_agent": {
+      "line": 288,
+      "tools_used": [
+        "ReadTool::new()",
+        "WriteTool::new()",
+        "EditTool::new()",
+        "BashTool::new()",
+        "GrepTool::new()",
+        "GlobTool::new()",
+        "LsTool::new()",
+        "AstGrepTool::new()",
+        "WebSearchTool::new()"
+      ],
+      "needs_update": "WebSearchTool::new() should be replaced with FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade))"
+    }
+  },
+  "total_functions": 23,
+  "important_functions": [
+    {"name": "new", "line": 146, "purpose": "Create ClaudeProvider from env"},
+    {"name": "from_api_key", "line": 165, "purpose": "Create from explicit API key"},
+    {"name": "create_rig_agent", "line": 288, "purpose": "Build rig agent with tools - NEEDS FACADE UPDATE"}
+  ]
+}

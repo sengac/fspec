@@ -1,0 +1,107 @@
+{
+  "scenarios": [
+    {
+      "name": "Map Gemini run_shell_command parameters to internal BashTool format",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "443-466",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/bash.rs",
+              "lines": [
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GeminiRunShellCommandFacade provides flat JSON schema",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "468-486",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/bash.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "BashToolFacadeWrapper integrates with rig Tool trait",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "488-507",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/tool_facade_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/facade/bash.rs",
+      "codelet/tools/src/facade/wrapper.rs"
+    ],
+    "totalLinesCovered": 105
+  }
+}

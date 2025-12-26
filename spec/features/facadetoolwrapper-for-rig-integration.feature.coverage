@@ -1,0 +1,78 @@
+{
+  "scenarios": [
+    {
+      "name": "FacadeToolWrapper returns facade tool name for web search",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "164-185",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FacadeToolWrapper returns facade tool name for web fetch",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "188-208",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "FacadeToolWrapper returns facade definition with flat schema",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "190-206",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/tool_facade_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/facade/wrapper.rs"
+    ],
+    "totalLinesCovered": 74
+  }
+}

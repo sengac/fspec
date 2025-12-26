@@ -1,0 +1,113 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "from_str",
+      "line": 38,
+      "column": 4,
+      "text": "fn from_str(s: &str) -> Self {\n        match s {\n            \"content\" => Self::Content,\n            \"count\" => Self::Count,\n            _ => Self::FilesWithMatches,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 52,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "build_matcher",
+      "line": 57,
+      "column": 4,
+      "text": "fn build_matcher(\n        pattern: &str,\n        case_insensitive: bool,\n        multiline: bool,\n    ) -> Result<grep_regex::RegexMatcher, ToolOutput> {\n        let mut builder = RegexMatcherBuilder::new();\n        builder.case_insensitive(case_insensitive);\n\n        if multiline {\n            builder.multi_line(true);\n            builder.dot_matches_new_line(true);\n        }\n\n        builder\n            .build(pattern)\n            .map_err(|e| ToolOutput::error(format!(\"Error: Invalid regex pattern: {e}\")))\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "search_file",
+      "line": 76,
+      "column": 4,
+      "text": "fn search_file(\n        &self,\n        path: &Path,\n        matcher: &grep_regex::RegexMatcher,\n        output_mode: OutputMode,\n        context_before: usize,\n        context_after: usize,\n        multiline: bool,\n    ) -> Result<FileSearchResult, ToolOutput> {\n        let mut result = FileSearchResult {\n            path: path.to_string_lossy().to_string(),\n            matches: Vec::new(),\n            count: 0,\n        };\n\n        let mut searcher = SearcherBuilder::new()\n            .before_context(context_before)\n            .after_context(context_after)\n            .line_number(true)\n            .multi_line(multiline)\n            .build();\n\n        // Custom sink that captures both matches and context\n        struct ContentSink<'a> {\n            result: &'a mut FileSearchResult,\n            output_mode: OutputMode,\n        }\n\n        impl Sink for ContentSink<'_> {\n            type Error = std::io::Error;\n\n            fn matched(\n                &mut self,\n                _searcher: &grep_searcher::Searcher,\n                mat: &SinkMatch<'_>,\n            ) -> std::result::Result<bool, Self::Error> {\n                self.result.count += 1;\n                if self.output_mode == OutputMode::Content {\n                    if let Ok(line) = std::str::from_utf8(mat.bytes()) {\n                        self.result.matches.push(MatchLine {\n                            line_num: mat.line_number().unwrap_or(0),\n                            content: line.trim_end().to_string(),\n                            is_context: false,\n                        });\n                    }\n                }\n                Ok(true)\n            }\n\n            fn context(\n                &mut self,\n                _searcher: &grep_searcher::Searcher,\n                ctx: &SinkContext<'_>,\n            ) -> std::result::Result<bool, Self::Error> {\n                if self.output_mode == OutputMode::Content {\n                    // Only capture before/after context, not other types\n                    if matches!(ctx.kind(), SinkContextKind::Before | SinkContextKind::After) {\n                        if let Ok(line) = std::str::from_utf8(ctx.bytes()) {\n                            self.result.matches.push(MatchLine {\n                                line_num: ctx.line_number().unwrap_or(0),\n                                content: line.trim_end().to_string(),\n                                is_context: true,\n                            });\n                        }\n                    }\n                }\n                Ok(true)\n            }\n        }\n\n        let mut sink = ContentSink {\n            result: &mut result,\n            output_mode,\n        };\n\n        let search_result = searcher.search_path(matcher, path, &mut sink);\n\n        match search_result {\n            Ok(()) => Ok(result),\n            Err(_) => {\n                // Binary files or read errors - skip silently\n                Ok(result)\n            }\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "matched",
+      "line": 107,
+      "column": 12,
+      "text": "fn matched(\n                &mut self,\n                _searcher: &grep_searcher::Searcher,\n                mat: &SinkMatch<'_>,\n            ) -> std::result::Result<bool, Self::Error> {\n                self.result.count += 1;\n                if self.output_mode == OutputMode::Content {\n                    if let Ok(line) = std::str::from_utf8(mat.bytes()) {\n                        self.result.matches.push(MatchLine {\n                            line_num: mat.line_number().unwrap_or(0),\n                            content: line.trim_end().to_string(),\n                            is_context: false,\n                        });\n                    }\n                }\n                Ok(true)\n            }"
+    },
+    {
+      "type": "function_item",
+      "name": "context",
+      "line": 125,
+      "column": 12,
+      "text": "fn context(\n                &mut self,\n                _searcher: &grep_searcher::Searcher,\n                ctx: &SinkContext<'_>,\n            ) -> std::result::Result<bool, Self::Error> {\n                if self.output_mode == OutputMode::Content {\n                    // Only capture before/after context, not other types\n                    if matches!(ctx.kind(), SinkContextKind::Before | SinkContextKind::After) {\n                        if let Ok(line) = std::str::from_utf8(ctx.bytes()) {\n                            self.result.matches.push(MatchLine {\n                                line_num: ctx.line_number().unwrap_or(0),\n                                content: line.trim_end().to_string(),\n                                is_context: true,\n                            });\n                        }\n                    }\n                }\n                Ok(true)\n            }"
+    },
+    {
+      "type": "function_item",
+      "name": "execute",
+      "line": 163,
+      "column": 4,
+      "text": "async fn execute(&self, args: Value) -> Result<ToolOutput> {\n        // Extract parameters\n        let pattern = args.get(\"pattern\").and_then(|v| v.as_str()).unwrap_or(\"\");\n\n        if pattern.is_empty() {\n            return Ok(ToolOutput::error(\n                \"Error: pattern parameter is required\".to_string(),\n            ));\n        }\n\n        let path = args.get(\"path\").and_then(|v| v.as_str()).unwrap_or(\".\");\n\n        let output_mode = args\n            .get(\"output_mode\")\n            .and_then(|v| v.as_str())\n            .map(OutputMode::from_str)\n            .unwrap_or(OutputMode::FilesWithMatches);\n\n        let case_insensitive = args\n            .get(\"-i\")\n            .and_then(serde_json::Value::as_bool)\n            .unwrap_or(false);\n\n        let multiline = args\n            .get(\"multiline\")\n            .and_then(serde_json::Value::as_bool)\n            .unwrap_or(false);\n\n        // Context lines (only used in content mode)\n        let context_c = args\n            .get(\"-C\")\n            .and_then(serde_json::Value::as_u64)\n            .map(|v| v as usize)\n            .unwrap_or(0);\n        let context_before = args\n            .get(\"-B\")\n            .and_then(serde_json::Value::as_u64)\n            .map(|v| v as usize)\n            .unwrap_or(context_c);\n        let context_after = args\n            .get(\"-A\")\n            .and_then(serde_json::Value::as_u64)\n            .map(|v| v as usize)\n            .unwrap_or(context_c);\n\n        let glob_pattern = args.get(\"glob\").and_then(|v| v.as_str());\n        let file_type = args.get(\"type\").and_then(|v| v.as_str());\n\n        // Build matcher\n        let matcher = match Self::build_matcher(pattern, case_insensitive, multiline) {\n            Ok(m) => m,\n            Err(e) => return Ok(e),\n        };\n\n        // Build walker with gitignore support\n        let mut walker_builder = WalkBuilder::new(path);\n        walker_builder.hidden(false).git_ignore(true);\n\n        // Add glob filter if specified\n        if let Some(glob) = glob_pattern {\n            let glob_matcher = globset::GlobBuilder::new(glob)\n                .literal_separator(true)\n                .build()\n                .map(|g| g.compile_matcher());\n\n            if let Ok(glob_matcher) = glob_matcher {\n                walker_builder.filter_entry(move |entry| {\n                    if entry.file_type().is_some_and(|ft| ft.is_dir()) {\n                        return true; // Always descend into directories\n                    }\n                    // Match against full path or filename\n                    let matches_full = glob_matcher.is_match(entry.path());\n                    let matches_name = entry\n                        .path()\n                        .file_name()\n                        .map(|n| glob_matcher.is_match(n))\n                        .unwrap_or(false);\n                    matches_full || matches_name\n                });\n            }\n        }\n\n        // Add type filter if specified\n        if let Some(file_type) = file_type {\n            let mut types_builder = ignore::types::TypesBuilder::new();\n            types_builder.add_defaults();\n            types_builder.select(file_type);\n            if let Ok(types) = types_builder.build() {\n                walker_builder.types(types);\n            }\n        }\n\n        let walker = walker_builder.build();\n\n        // Collect results\n        let mut results: Vec<FileSearchResult> = Vec::new();\n\n        for entry in walker.flatten() {\n            if !entry.file_type().is_some_and(|ft| ft.is_file()) {\n                continue;\n            }\n\n            let file_path = entry.path();\n            if let Ok(result) = self.search_file(\n                file_path,\n                &matcher,\n                output_mode,\n                context_before,\n                context_after,\n                multiline,\n            ) {\n                if result.count > 0 {\n                    results.push(result);\n                }\n            }\n        }\n\n        // Format output based on mode\n        if results.is_empty() {\n            return Ok(ToolOutput::success(\"No matches found\".to_string()));\n        }\n\n        let output = match output_mode {\n            OutputMode::FilesWithMatches => results\n                .iter()\n                .map(|r| r.path.clone())\n                .collect::<Vec<_>>()\n                .join(\"\\n\"),\n            OutputMode::Content => {\n                let mut lines = Vec::new();\n                for result in &results {\n                    for m in &result.matches {\n                        lines.push(format!(\"{}:{}:{}\", result.path, m.line_num, m.content));\n                    }\n                }\n                lines.join(\"\\n\")\n            }\n            OutputMode::Count => results\n                .iter()\n                .map(|r| format!(\"{}:{}\", r.path, r.count))\n                .collect::<Vec<_>>()\n                .join(\"\\n\"),\n        };\n\n        // Apply truncation\n        let lines = process_output_lines(&output);\n        let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);\n\n        let mut final_output = truncate_result.output;\n        let was_truncated = truncate_result.char_truncated || truncate_result.remaining_count > 0;\n\n        if was_truncated {\n            let warning = format_truncation_warning(\n                truncate_result.remaining_count,\n                \"lines\",\n                truncate_result.char_truncated,\n                OutputLimits::MAX_OUTPUT_CHARS,\n            );\n            final_output.push_str(&warning);\n        }\n\n        Ok(ToolOutput {\n            content: final_output,\n            truncated: was_truncated,\n            is_error: false,\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 333,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::new()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 375,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {\n        rig::completion::ToolDefinition {\n            name: \"grep\".to_string(),\n            description: \"Search for text patterns using ripgrep. Use for searching file contents by regex pattern. \\\n                Returns file paths by default, or matching lines with line numbers in content mode. \\\n                Supports glob filters, file type filters, case-insensitive search, multiline patterns, and context lines. \\\n                Respects .gitignore.\".to_string(),\n            parameters: serde_json::to_value(schemars::schema_for!(GrepArgs))\n                .unwrap_or_else(|_| json!({\"type\": \"object\"})),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 387,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        // Delegate to existing execute method by converting args to Value\n        let mut value_map = serde_json::Map::new();\n        value_map.insert(\n            \"pattern\".to_string(),\n            serde_json::Value::String(args.pattern),\n        );\n        if let Some(path) = args.path {\n            value_map.insert(\"path\".to_string(), serde_json::Value::String(path));\n        }\n        if let Some(mode) = args.output_mode {\n            value_map.insert(\"output_mode\".to_string(), serde_json::Value::String(mode));\n        }\n\n        let result = self\n            .execute(serde_json::Value::Object(value_map))\n            .await\n            .map_err(|e| ToolError::Execution {\n                tool: \"grep\",\n                message: e.to_string(),\n            })?;\n\n        if result.is_error {\n            Err(ToolError::Execution {\n                tool: \"grep\",\n                message: result.content,\n            })\n        } else {\n            Ok(result.content)\n        }\n    }"
+    }
+  ]
+}
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 25,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_mtime",
+      "line": 30,
+      "column": 4,
+      "text": "async fn get_mtime(path: &PathBuf) -> SystemTime {\n        tokio::fs::metadata(path)\n            .await\n            .and_then(|m| m.modified())\n            .unwrap_or(SystemTime::UNIX_EPOCH)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 39,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::new()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 63,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {\n        rig::completion::ToolDefinition {\n            name: \"glob\".to_string(),\n            description: \"Fast file pattern matching tool that works with any codebase size. \\\n                Supports glob patterns like \\\"**/*.js\\\" or \\\"src/**/*.ts\\\". \\\n                Returns matching file paths one per line.\\n\\n\\\n                Usage:\\n\\\n                - Pattern supports glob syntax: *, **, ?, {a,b}, [abc]\\n\\\n                - Respects .gitignore by default\\n\\\n                - Returns \\\"No matches found\\\" for patterns with no matching files\\n\\\n                - Output is truncated at 30000 characters with truncation warning\"\n                .to_string(),\n            parameters: serde_json::to_value(schemars::schema_for!(GlobArgs))\n                .unwrap_or_else(|_| json!({\"type\": \"object\"})),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 80,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        // Build glob matcher\n        let matcher = GlobBuilder::new(&args.pattern)\n            .literal_separator(false)\n            .build()\n            .map(|g| g.compile_matcher())\n            .map_err(|e| ToolError::Pattern {\n                tool: \"glob\",\n                message: e.to_string(),\n            })?;\n\n        // Get search path\n        let search_path = args.path.as_deref().unwrap_or(\".\");\n        let path = PathBuf::from(search_path);\n\n        // Check if path exists (async, non-blocking)\n        match tokio::fs::try_exists(&path).await {\n            Ok(true) => {}\n            Ok(false) => {\n                return Err(ToolError::NotFound {\n                    tool: \"glob\",\n                    message: format!(\"Path does not exist: {search_path}\"),\n                });\n            }\n            Err(e) => {\n                return Err(ToolError::File {\n                    tool: \"glob\",\n                    message: format!(\"Error checking path: {e}\"),\n                });\n            }\n        }\n\n        // Collect matching files (sync walker is fast for directory traversal)\n        let mut matches: Vec<PathBuf> = Vec::new();\n        for entry in WalkBuilder::new(&path)\n            .hidden(false)\n            .git_ignore(true)\n            .build()\n            .flatten()\n        {\n            if entry.file_type().is_some_and(|ft| ft.is_file()) && matcher.is_match(entry.path()) {\n                matches.push(entry.path().to_path_buf());\n            }\n        }\n\n        // Fetch modification times asynchronously for all files\n        let mut files_with_mtime: Vec<(PathBuf, SystemTime)> = Vec::with_capacity(matches.len());\n        for path in matches {\n            let mtime = Self::get_mtime(&path).await;\n            files_with_mtime.push((path, mtime));\n        }\n\n        // Sort by modification time (newest first)\n        files_with_mtime.sort_by(|a, b| b.1.cmp(&a.1));\n\n        // Format output\n        let lines: Vec<String> = files_with_mtime\n            .iter()\n            .map(|(p, _)| p.display().to_string())\n            .collect();\n\n        // Process and truncate output\n        let output_lines = process_output_lines(&lines.join(\"\\n\"));\n        let truncate_result = truncate_output(&output_lines, OutputLimits::MAX_OUTPUT_CHARS);\n\n        let mut final_output = truncate_result.output;\n        let was_truncated = truncate_result.char_truncated || truncate_result.remaining_count > 0;\n\n        if was_truncated {\n            let warning = format_truncation_warning(\n                truncate_result.remaining_count,\n                \"files\",\n                truncate_result.char_truncated,\n                OutputLimits::MAX_OUTPUT_CHARS,\n            );\n            final_output.push_str(&warning);\n        }\n\n        Ok(final_output)\n    }"
+    }
+  ]
+}

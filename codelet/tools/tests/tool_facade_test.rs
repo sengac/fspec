@@ -1,9 +1,18 @@
 // Feature: spec/features/provider-specific-tool-facades.feature
+// Feature: spec/features/file-operation-facades.feature
+// Feature: spec/features/bash-facade.feature
+// Feature: spec/features/search-facades.feature
+// Feature: spec/features/directory-listing-facade.feature
 
 use anyhow::Result;
 use codelet_tools::facade::{
-    ClaudeWebSearchFacade, FacadeToolWrapper, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
-    InternalWebSearchParams, ProviderToolRegistry, ToolFacade,
+    BashToolFacade, BashToolFacadeWrapper, ClaudeWebSearchFacade, FacadeToolWrapper,
+    FileToolFacade, FileToolFacadeWrapper, GeminiGlobFacade, GeminiGoogleWebSearchFacade,
+    GeminiListDirectoryFacade, GeminiReadFileFacade, GeminiReplaceFacade,
+    GeminiRunShellCommandFacade, GeminiSearchFileContentFacade, GeminiWebFetchFacade,
+    GeminiWriteFileFacade, InternalBashParams, InternalFileParams, InternalLsParams,
+    InternalSearchParams, InternalWebSearchParams, LsToolFacade, LsToolFacadeWrapper,
+    ProviderToolRegistry, SearchToolFacade, SearchToolFacadeWrapper, ToolFacade,
 };
 use rig::tool::Tool;
 use serde_json::json;
@@ -181,6 +190,27 @@ async fn test_facade_wrapper_integrates_with_rig_tool_trait() -> Result<()> {
     Ok(())
 }
 
+// Feature: spec/features/facadetoolwrapper-for-rig-integration.feature
+// Scenario: FacadeToolWrapper returns facade definition with flat schema
+#[tokio::test]
+async fn test_facade_wrapper_returns_definition_with_flat_schema() -> Result<()> {
+    // @step Given a FacadeToolWrapper wrapping GeminiGoogleWebSearchFacade
+    let facade = Arc::new(GeminiGoogleWebSearchFacade);
+    let wrapper = FacadeToolWrapper::new(facade);
+
+    // @step When I call definition() on the wrapper
+    let def = wrapper.definition(String::new()).await;
+
+    // @step Then it returns a flat schema without oneOf
+    assert!(def.parameters.get("oneOf").is_none());
+    assert!(def.parameters["properties"].get("action").is_none());
+
+    // @step And the schema has name "google_web_search"
+    assert_eq!(def.name, "google_web_search");
+
+    Ok(())
+}
+
 /// Test that web_fetch wrapper also works correctly
 #[tokio::test]
 async fn test_facade_wrapper_web_fetch_integrates_with_rig() -> Result<()> {
@@ -200,6 +230,528 @@ async fn test_facade_wrapper_web_fetch_integrates_with_rig() -> Result<()> {
     // @step Then it returns a flat schema with prompt parameter
     assert_eq!(def.name, "web_fetch");
     assert!(def.parameters["properties"]["prompt"]["type"] == "string");
+
+    Ok(())
+}
+
+// ============================================================================
+// File Operation Facades Tests (TOOL-003)
+// Feature: spec/features/file-operation-facades.feature
+// ============================================================================
+
+#[tokio::test]
+async fn test_map_gemini_read_file_parameters_to_internal_format() -> Result<()> {
+    // @step Given a GeminiReadFileFacade is registered
+    let facade = GeminiReadFileFacade;
+
+    // @step When Gemini sends parameters {path: '/tmp/file.txt'} to tool 'read_file'
+    let gemini_params = json!({
+        "path": "/tmp/file.txt"
+    });
+
+    // @step Then the facade maps to InternalFileParams::Read with file_path '/tmp/file.txt'
+    let internal = facade.map_params(gemini_params)?;
+    assert_eq!(
+        internal,
+        InternalFileParams::Read {
+            file_path: "/tmp/file.txt".to_string(),
+            offset: None,
+            limit: None,
+        }
+    );
+
+    // @step And the same base ReadTool executes with the mapped parameters
+    // The base tool execution is handled by the existing ReadTool
+    // This test verifies the facade correctly maps the parameters
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_map_gemini_write_file_parameters_to_internal_format() -> Result<()> {
+    // @step Given a GeminiWriteFileFacade is registered
+    let facade = GeminiWriteFileFacade;
+
+    // @step When Gemini sends parameters {path: '/tmp/file.txt', content: 'hello'} to tool 'write_file'
+    let gemini_params = json!({
+        "path": "/tmp/file.txt",
+        "content": "hello"
+    });
+
+    // @step Then the facade maps to InternalFileParams::Write with file_path '/tmp/file.txt' and content 'hello'
+    let internal = facade.map_params(gemini_params)?;
+    assert_eq!(
+        internal,
+        InternalFileParams::Write {
+            file_path: "/tmp/file.txt".to_string(),
+            content: "hello".to_string(),
+        }
+    );
+
+    // @step And the same base WriteTool executes with the mapped parameters
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_map_gemini_replace_parameters_to_internal_format() -> Result<()> {
+    // @step Given a GeminiReplaceFacade is registered
+    let facade = GeminiReplaceFacade;
+
+    // @step When Gemini sends parameters {path: '/tmp/file.txt', old_text: 'foo', new_text: 'bar'} to tool 'replace'
+    let gemini_params = json!({
+        "path": "/tmp/file.txt",
+        "old_text": "foo",
+        "new_text": "bar"
+    });
+
+    // @step Then the facade maps to InternalFileParams::Edit with file_path '/tmp/file.txt', old_string 'foo', new_string 'bar'
+    let internal = facade.map_params(gemini_params)?;
+    assert_eq!(
+        internal,
+        InternalFileParams::Edit {
+            file_path: "/tmp/file.txt".to_string(),
+            old_string: "foo".to_string(),
+            new_string: "bar".to_string(),
+        }
+    );
+
+    // @step And the same base EditTool executes with the mapped parameters
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_gemini_read_file_facade_provides_flat_schema() -> Result<()> {
+    // @step Given a GeminiReadFileFacade is created
+    let facade = GeminiReadFileFacade;
+
+    // @step When I request the tool definition
+    let definition = facade.definition();
+
+    // @step Then the schema has type 'object' with properties containing only {path: {type: 'string'}}
+    let params = &definition.parameters;
+    assert_eq!(params["type"], "object");
+    assert!(params["properties"]["path"]["type"] == "string");
+
+    // @step And the schema does not contain 'oneOf' or nested action objects
+    assert!(params.get("oneOf").is_none());
+    assert!(params["properties"].get("action").is_none());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_gemini_write_file_facade_provides_flat_schema() -> Result<()> {
+    // @step Given a GeminiWriteFileFacade is created
+    let facade = GeminiWriteFileFacade;
+
+    // @step When I request the tool definition
+    let definition = facade.definition();
+
+    // @step Then the schema has type 'object' with properties containing {path: {type: 'string'}, content: {type: 'string'}}
+    let params = &definition.parameters;
+    assert_eq!(params["type"], "object");
+    assert!(params["properties"]["path"]["type"] == "string");
+    assert!(params["properties"]["content"]["type"] == "string");
+
+    // @step And the schema does not contain 'oneOf' or nested action objects
+    assert!(params.get("oneOf").is_none());
+    assert!(params["properties"].get("action").is_none());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_gemini_replace_facade_provides_flat_schema() -> Result<()> {
+    // @step Given a GeminiReplaceFacade is created
+    let facade = GeminiReplaceFacade;
+
+    // @step When I request the tool definition
+    let definition = facade.definition();
+
+    // @step Then the schema has type 'object' with properties containing {path: {type: 'string'}, old_text: {type: 'string'}, new_text: {type: 'string'}}
+    let params = &definition.parameters;
+    assert_eq!(params["type"], "object");
+    assert!(params["properties"]["path"]["type"] == "string");
+    assert!(params["properties"]["old_text"]["type"] == "string");
+    assert!(params["properties"]["new_text"]["type"] == "string");
+
+    // @step And the schema does not contain 'oneOf' or nested action objects
+    assert!(params.get("oneOf").is_none());
+    assert!(params["properties"].get("action").is_none());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_facade_wrapper_read_file_integrates_with_rig() -> Result<()> {
+    // @step Given a FileToolFacadeWrapper wrapping GeminiReadFileFacade
+    let facade = Arc::new(GeminiReadFileFacade) as Arc<dyn FileToolFacade>;
+    let wrapper = FileToolFacadeWrapper::new(facade);
+
+    // @step When I call name() on the wrapper
+    let name = wrapper.name();
+
+    // @step Then it returns "read_file"
+    assert_eq!(name, "read_file");
+
+    // @step And when I call definition() it returns a flat schema with path parameter
+    let def = wrapper.definition(String::new()).await;
+    assert_eq!(def.name, "read_file");
+    assert!(def.parameters["properties"]["path"]["type"] == "string");
+    assert!(def.parameters.get("oneOf").is_none());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_file_facades_available_for_gemini_provider() -> Result<()> {
+    // @step Given a GeminiProvider is configured
+    // File facades are created separately from web search facades
+    let read_facade = GeminiReadFileFacade;
+    let write_facade = GeminiWriteFileFacade;
+    let replace_facade = GeminiReplaceFacade;
+
+    // @step When create_rig_agent() is called
+    // The facades are wrapped with FileToolFacadeWrapper for rig integration
+    let read_wrapper =
+        FileToolFacadeWrapper::new(Arc::new(read_facade) as Arc<dyn FileToolFacade>);
+    let write_wrapper =
+        FileToolFacadeWrapper::new(Arc::new(write_facade) as Arc<dyn FileToolFacade>);
+    let replace_wrapper =
+        FileToolFacadeWrapper::new(Arc::new(replace_facade) as Arc<dyn FileToolFacade>);
+
+    // @step Then the agent has tool 'read_file' backed by GeminiReadFileFacade
+    assert_eq!(read_wrapper.name(), "read_file");
+
+    // @step And the agent has tool 'write_file' backed by GeminiWriteFileFacade
+    assert_eq!(write_wrapper.name(), "write_file");
+
+    // @step And the agent has tool 'replace' backed by GeminiReplaceFacade
+    assert_eq!(replace_wrapper.name(), "replace");
+
+    // @step And all file operation tools use FacadeToolWrapper instead of raw tools
+    // All facades report "gemini" as their provider
+    assert_eq!(read_wrapper.provider(), "gemini");
+    assert_eq!(write_wrapper.provider(), "gemini");
+    assert_eq!(replace_wrapper.provider(), "gemini");
+
+    Ok(())
+}
+
+// ============================================================================
+// Bash Facade Tests (TOOL-004)
+// Feature: spec/features/bash-facade.feature
+// ============================================================================
+
+#[tokio::test]
+async fn test_map_gemini_run_shell_command_parameters_to_internal_format() -> Result<()> {
+    // @step Given a GeminiRunShellCommandFacade is registered
+    let facade = GeminiRunShellCommandFacade;
+
+    // @step When Gemini sends parameters {command: 'ls -la'} to tool 'run_shell_command'
+    let gemini_params = json!({
+        "command": "ls -la"
+    });
+
+    // @step Then the facade maps to BashArgs with command 'ls -la'
+    let internal = facade.map_params(gemini_params)?;
+    assert_eq!(
+        internal,
+        InternalBashParams::Execute {
+            command: "ls -la".to_string()
+        }
+    );
+
+    // @step And the base BashTool executes with the mapped parameters
+    // The base tool execution is handled by the existing BashTool
+    // This test verifies the facade correctly maps the parameters
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_gemini_run_shell_command_facade_provides_flat_schema() -> Result<()> {
+    // @step Given a GeminiRunShellCommandFacade is created
+    let facade = GeminiRunShellCommandFacade;
+
+    // @step When I request the tool definition
+    let definition = facade.definition();
+
+    // @step Then the schema has type 'object' with properties containing {command: {type: 'string'}}
+    let params = &definition.parameters;
+    assert_eq!(params["type"], "object");
+    assert!(params["properties"]["command"]["type"] == "string");
+
+    // @step And the schema does not contain 'oneOf' or nested action objects
+    assert!(params.get("oneOf").is_none());
+    assert!(params["properties"].get("action").is_none());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_bash_facade_wrapper_integrates_with_rig() -> Result<()> {
+    // @step Given a BashToolFacadeWrapper wrapping GeminiRunShellCommandFacade
+    let facade = Arc::new(GeminiRunShellCommandFacade) as Arc<dyn BashToolFacade>;
+    let wrapper = BashToolFacadeWrapper::new(facade);
+
+    // @step When I call name() on the wrapper
+    let name = wrapper.name();
+
+    // @step Then it returns "run_shell_command"
+    assert_eq!(name, "run_shell_command");
+
+    // @step And when I call definition() it returns a flat schema with command parameter
+    let def = wrapper.definition(String::new()).await;
+    assert_eq!(def.name, "run_shell_command");
+    assert!(def.parameters["properties"]["command"]["type"] == "string");
+    assert!(def.parameters.get("oneOf").is_none());
+
+    Ok(())
+}
+
+// ============================================================================
+// Search Facades Tests (TOOL-005)
+// Feature: spec/features/search-facades.feature
+// ============================================================================
+
+#[tokio::test]
+async fn test_map_gemini_search_file_content_parameters_to_internal_format() -> Result<()> {
+    // @step Given a GeminiSearchFileContentFacade is registered
+    let facade = GeminiSearchFileContentFacade;
+
+    // @step When Gemini sends parameters {pattern: 'TODO', path: 'src'} to tool 'search_file_content'
+    let gemini_params = json!({
+        "pattern": "TODO",
+        "path": "src"
+    });
+
+    // @step Then the facade maps to InternalSearchParams::Grep with pattern 'TODO' and path 'src'
+    let internal = facade.map_params(gemini_params)?;
+    assert_eq!(
+        internal,
+        InternalSearchParams::Grep {
+            pattern: "TODO".to_string(),
+            path: Some("src".to_string())
+        }
+    );
+
+    // @step And the base GrepTool executes with the mapped parameters
+    // The base tool execution is handled by the existing GrepTool
+    // This test verifies the facade correctly maps the parameters
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_gemini_search_file_content_facade_provides_flat_schema() -> Result<()> {
+    // @step Given a GeminiSearchFileContentFacade is created
+    let facade = GeminiSearchFileContentFacade;
+
+    // @step When I request the tool definition
+    let definition = facade.definition();
+
+    // @step Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, path: {type: 'string'}}
+    let params = &definition.parameters;
+    assert_eq!(params["type"], "object");
+    assert!(params["properties"]["pattern"]["type"] == "string");
+    assert!(params["properties"]["path"]["type"] == "string");
+
+    // @step And the schema does not contain 'oneOf' or nested action objects
+    assert!(params.get("oneOf").is_none());
+    assert!(params["properties"].get("action").is_none());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_map_gemini_find_files_parameters_to_internal_format() -> Result<()> {
+    // @step Given a GeminiGlobFacade is registered
+    let facade = GeminiGlobFacade;
+
+    // @step When Gemini sends parameters {pattern: '**/*.rs', path: 'src'} to tool 'find_files'
+    let gemini_params = json!({
+        "pattern": "**/*.rs",
+        "path": "src"
+    });
+
+    // @step Then the facade maps to InternalSearchParams::Glob with pattern '**/*.rs' and path 'src'
+    let internal = facade.map_params(gemini_params)?;
+    assert_eq!(
+        internal,
+        InternalSearchParams::Glob {
+            pattern: "**/*.rs".to_string(),
+            path: Some("src".to_string())
+        }
+    );
+
+    // @step And the base GlobTool executes with the mapped parameters
+    // The base tool execution is handled by the existing GlobTool
+    // This test verifies the facade correctly maps the parameters
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_gemini_glob_facade_provides_flat_schema() -> Result<()> {
+    // @step Given a GeminiGlobFacade is created
+    let facade = GeminiGlobFacade;
+
+    // @step When I request the tool definition
+    let definition = facade.definition();
+
+    // @step Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, path: {type: 'string'}}
+    let params = &definition.parameters;
+    assert_eq!(params["type"], "object");
+    assert!(params["properties"]["pattern"]["type"] == "string");
+    assert!(params["properties"]["path"]["type"] == "string");
+
+    // @step And the schema does not contain 'oneOf' or nested action objects
+    assert!(params.get("oneOf").is_none());
+    assert!(params["properties"].get("action").is_none());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_search_facade_wrapper_integrates_with_rig_for_search_file_content() -> Result<()> {
+    // @step Given a SearchToolFacadeWrapper wrapping GeminiSearchFileContentFacade
+    let facade = Arc::new(GeminiSearchFileContentFacade) as Arc<dyn SearchToolFacade>;
+    let wrapper = SearchToolFacadeWrapper::new(facade);
+
+    // @step When I call name() on the wrapper
+    let name = wrapper.name();
+
+    // @step Then it returns "search_file_content"
+    assert_eq!(name, "search_file_content");
+
+    // @step And when I call definition() it returns a flat schema with pattern and path parameters
+    let def = wrapper.definition(String::new()).await;
+    assert_eq!(def.name, "search_file_content");
+    assert!(def.parameters["properties"]["pattern"]["type"] == "string");
+    assert!(def.parameters["properties"]["path"]["type"] == "string");
+    assert!(def.parameters.get("oneOf").is_none());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_search_facade_wrapper_integrates_with_rig_for_find_files() -> Result<()> {
+    // @step Given a SearchToolFacadeWrapper wrapping GeminiGlobFacade
+    let facade = Arc::new(GeminiGlobFacade) as Arc<dyn SearchToolFacade>;
+    let wrapper = SearchToolFacadeWrapper::new(facade);
+
+    // @step When I call name() on the wrapper
+    let name = wrapper.name();
+
+    // @step Then it returns "find_files"
+    assert_eq!(name, "find_files");
+
+    // @step And when I call definition() it returns a flat schema with pattern and path parameters
+    let def = wrapper.definition(String::new()).await;
+    assert_eq!(def.name, "find_files");
+    assert!(def.parameters["properties"]["pattern"]["type"] == "string");
+    assert!(def.parameters["properties"]["path"]["type"] == "string");
+    assert!(def.parameters.get("oneOf").is_none());
+
+    Ok(())
+}
+
+// ============================================================================
+// Directory Listing Facade Tests (TOOL-006)
+// Feature: spec/features/directory-listing-facade.feature
+// ============================================================================
+
+#[tokio::test]
+async fn test_map_gemini_list_directory_parameters_with_path() -> Result<()> {
+    // @step Given a GeminiListDirectoryFacade is registered
+    let facade = GeminiListDirectoryFacade;
+
+    // @step When Gemini sends parameters {path: 'src'} to tool 'list_directory'
+    let gemini_params = json!({
+        "path": "src"
+    });
+
+    // @step Then the facade maps to InternalLsParams::List with path 'src'
+    let internal = facade.map_params(gemini_params)?;
+    assert_eq!(
+        internal,
+        InternalLsParams::List {
+            path: Some("src".to_string())
+        }
+    );
+
+    // @step And the base LsTool executes with the mapped parameters
+    // The base tool execution is handled by the existing LsTool
+    // This test verifies the facade correctly maps the parameters
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_map_gemini_list_directory_with_empty_parameters() -> Result<()> {
+    // @step Given a GeminiListDirectoryFacade is registered
+    let facade = GeminiListDirectoryFacade;
+
+    // @step When Gemini sends empty parameters {} to tool 'list_directory'
+    let gemini_params = json!({});
+
+    // @step Then the facade maps to InternalLsParams::List with path None
+    let internal = facade.map_params(gemini_params)?;
+    assert_eq!(
+        internal,
+        InternalLsParams::List { path: None }
+    );
+
+    // @step And the base LsTool lists the current directory
+    // The base tool execution is handled by the existing LsTool
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_gemini_list_directory_facade_provides_flat_schema() -> Result<()> {
+    // @step Given a GeminiListDirectoryFacade is created
+    let facade = GeminiListDirectoryFacade;
+
+    // @step When I request the tool definition
+    let definition = facade.definition();
+
+    // @step Then the schema has type 'object' with properties containing {path: {type: 'string'}}
+    let params = &definition.parameters;
+    assert_eq!(params["type"], "object");
+    assert!(params["properties"]["path"]["type"] == "string");
+
+    // @step And the schema does not contain 'oneOf' or nested action objects
+    assert!(params.get("oneOf").is_none());
+    assert!(params["properties"].get("action").is_none());
+
+    // @step And the 'path' parameter is optional (not in required array)
+    let required = params.get("required").and_then(|r: &serde_json::Value| r.as_array());
+    assert!(required.is_none() || required.unwrap().is_empty());
+
+    Ok(())
+}
+
+#[tokio::test]
+async fn test_ls_tool_facade_wrapper_integrates_with_rig() -> Result<()> {
+    // @step Given a LsToolFacadeWrapper wrapping GeminiListDirectoryFacade
+    let facade = Arc::new(GeminiListDirectoryFacade) as Arc<dyn LsToolFacade>;
+    let wrapper = LsToolFacadeWrapper::new(facade);
+
+    // @step When I call name() on the wrapper
+    let name = wrapper.name();
+
+    // @step Then it returns "list_directory"
+    assert_eq!(name, "list_directory");
+
+    // @step And when I call definition() it returns a flat schema with path parameter
+    let def = wrapper.definition(String::new()).await;
+    assert_eq!(def.name, "list_directory");
+    assert!(def.parameters["properties"]["path"]["type"] == "string");
+    assert!(def.parameters.get("oneOf").is_none());
 
     Ok(())
 }

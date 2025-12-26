@@ -1,0 +1,54 @@
+{
+  "tool": "LsTool",
+  "file": "codelet/tools/src/ls.rs",
+  "analysis": {
+    "struct_definition": {
+      "LsTool": {
+        "line": 34,
+        "description": "LS tool for listing directory contents",
+        "methods": ["new()", "format_mode()", "format_date()", "days_to_ymd()"]
+      },
+      "LsArgs": {
+        "line": 113,
+        "fields": {
+          "path": {
+            "type": "Option<String>",
+            "description": "Directory to list (optional, defaults to current directory)"
+          }
+        }
+      }
+    },
+    "tool_implementation": {
+      "NAME": "ls",
+      "Error": "ToolError",
+      "Args": "LsArgs",
+      "Output": "String"
+    },
+    "key_behaviors": [
+      "Lists directory contents with file metadata (permissions, size, modification time)",
+      "Uses tokio::fs for non-blocking async I/O",
+      "Returns formatted output showing permissions, size, modification time, and name",
+      "Directories listed first, then files, alphabetically within each group",
+      "Returns 'Directory not found' for non-existent paths",
+      "Output is truncated at 30000 characters with truncation warning"
+    ]
+  },
+  "facade_requirements": {
+    "tool_name": "list_directory",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Directory to list (optional, defaults to current directory)"
+        }
+      },
+      "required": []
+    },
+    "internal_params": {
+      "enum_name": "InternalLsParams",
+      "variant": "List { path: Option<String> }"
+    },
+    "wrapper": "LsToolFacadeWrapper"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-26T07:27:22.237Z"
+    "lastUpdated": "2025-12-26T10:21:22.702Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -55750,79 +55750,576 @@
       "id": "TOOL-002",
       "title": "FacadeToolWrapper for Rig Integration",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-12-26T07:07:18.464Z",
-      "updatedAt": "2025-12-26T07:08:11.099Z",
+      "updatedAt": "2025-12-26T08:32:21.523Z",
       "description": "Create FacadeToolWrapper that wraps ToolFacade implementations to integrate with rig's tool system, enabling facades to be used with builder.tool(...). This wrapper implements rig::tool::Tool trait and delegates to the underlying facade.",
       "epic": "tool-facades",
       "children": [],
       "dependsOn": [
         "TOOL-001"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T07:55:31.415Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T08:27:46.905Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T08:30:58.866Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T08:32:05.796Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T08:32:21.524Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the facade system",
+        "action": "use FacadeToolWrapper to integrate facades with rig's agent builder",
+        "benefit": "facades can be added to agents using .tool() method"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "FacadeToolWrapper MUST implement rig::tool::Tool trait",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:55:49.404Z"
+        },
+        {
+          "id": 1,
+          "text": "FacadeToolWrapper MUST delegate name() to facade.tool_name()",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:55:49.973Z"
+        },
+        {
+          "id": 2,
+          "text": "FacadeToolWrapper MUST delegate definition() to facade.definition()",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:55:50.539Z"
+        }
+      ],
+      "nextRuleId": 3,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Wrapping GeminiGoogleWebSearchFacade returns tool name 'google_web_search'",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:55:51.116Z"
+        },
+        {
+          "id": 1,
+          "text": "Wrapping GeminiWebFetchFacade returns tool name 'web_fetch'",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:55:51.683Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "FacadeToolWrapper in codelet/tools/src/facade/wrapper.rs implements rig::tool::Tool trait. Overrides name() and definition() to return facade-specific values. call() maps params via facade then executes base tool.",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:56:05.556Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 2,
+      "attachments": [
+        "spec/attachments/TOOL-002/ast-research-wrapper.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-26T08:32:21.523Z"
     },
     "TOOL-003": {
       "id": "TOOL-003",
       "title": "File Operation Facades",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-12-26T07:07:34.451Z",
-      "updatedAt": "2025-12-26T07:08:12.532Z",
+      "updatedAt": "2025-12-26T08:12:24.474Z",
       "description": "Create Gemini-compatible facades for file operations: GeminiReadFileFacade (read_file), GeminiWriteFileFacade (write_file), GeminiReplaceFacade (replace/edit). Maps Gemini's flat parameter schemas to internal file operation parameters.",
       "epic": "tool-facades",
       "children": [],
       "dependsOn": [
-        "TOOL-002"
-      ]
+        "TOOL-001"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T07:56:51.578Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T08:00:56.811Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T08:04:46.328Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T08:11:50.653Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T08:12:24.474Z"
+        }
+      ],
+      "userStory": {
+        "role": "LLM agent using Gemini provider",
+        "action": "use file operations with Gemini-native tool names and flat schemas",
+        "benefit": "Gemini understands my tool calls without schema compatibility issues"
+      },
+      "attachments": [
+        "spec/attachments/TOOL-003/ast-research-file-tools.md"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "GeminiReadFileFacade MUST use tool name 'read_file' and map to internal ReadTool",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:08.268Z"
+        },
+        {
+          "id": 1,
+          "text": "GeminiWriteFileFacade MUST use tool name 'write_file' and map to internal WriteTool",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:08.839Z"
+        },
+        {
+          "id": 2,
+          "text": "GeminiReplaceFacade MUST use tool name 'replace' and map to internal EditTool",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:09.419Z"
+        },
+        {
+          "id": 3,
+          "text": "All file operation facades MUST use flat JSON schemas without nested objects",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:10.002Z"
+        },
+        {
+          "id": 4,
+          "text": "All file operation facades MUST be wrapped with FacadeToolWrapper and added to GeminiProvider.create_rig_agent()",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:10.566Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Gemini sends {path: '/tmp/file.txt'} to read_file → facade maps to ReadArgs{file_path: '/tmp/file.txt'} → ReadTool executes",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:19.637Z"
+        },
+        {
+          "id": 1,
+          "text": "Gemini sends {path: '/tmp/file.txt', content: 'hello'} to write_file → facade maps to WriteArgs → WriteTool executes",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:20.208Z"
+        },
+        {
+          "id": 2,
+          "text": "Gemini sends {path: '/tmp/file.txt', old_text: 'foo', new_text: 'bar'} to replace → facade maps to EditArgs → EditTool executes",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:20.773Z"
+        },
+        {
+          "id": 3,
+          "text": "GeminiProvider.create_rig_agent() adds read_file, write_file, replace tools using FacadeToolWrapper instead of raw ReadTool, WriteTool, EditTool",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:21.349Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create GeminiReadFileFacade, GeminiWriteFileFacade, GeminiReplaceFacade in codelet/tools/src/facade/file_ops.rs. Each implements ToolFacade trait. Add InternalFileParams enum to traits.rs. Wrap with FacadeToolWrapper and add to GeminiProvider.create_rig_agent(). Follow pattern from web_search.rs facades.",
+          "deleted": false,
+          "createdAt": "2025-12-26T07:58:30.026Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-26T08:12:24.474Z"
     },
     "TOOL-004": {
       "id": "TOOL-004",
       "title": "Bash Facade",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-12-26T07:07:36.713Z",
-      "updatedAt": "2025-12-26T07:08:14.453Z",
+      "updatedAt": "2025-12-26T08:51:43.737Z",
       "description": "Create Gemini-compatible facade for shell execution: GeminiRunShellCommandFacade (run_shell_command). Maps Gemini's {command} schema to internal BashTool parameters.",
       "epic": "tool-facades",
       "children": [],
       "dependsOn": [
         "TOOL-002"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T08:32:39.225Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T08:35:36.665Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T08:38:52.382Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T08:41:39.205Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T08:41:54.429Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T08:50:58.384Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T08:51:27.576Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T08:51:38.589Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T08:51:41.198Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T08:51:43.737Z"
+        }
+      ],
+      "userStory": {
+        "role": "LLM agent using Gemini provider",
+        "action": "execute shell commands with Gemini-native tool names and flat schemas",
+        "benefit": "Gemini understands my tool calls without schema compatibility issues"
+      },
+      "attachments": [
+        "spec/attachments/TOOL-004/ast-research-bash-tool.json"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "GeminiRunShellCommandFacade MUST use tool name 'run_shell_command'",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:33:38.153Z"
+        },
+        {
+          "id": 1,
+          "text": "GeminiRunShellCommandFacade MUST use flat JSON schema with {command: {type: 'string'}}",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:33:46.624Z"
+        },
+        {
+          "id": 2,
+          "text": "GeminiRunShellCommandFacade MUST map Gemini {command} to BashArgs {command}",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:33:55.456Z"
+        },
+        {
+          "id": 3,
+          "text": "GeminiRunShellCommandFacade MUST be wrapped with BashToolFacadeWrapper for rig integration",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:51:07.636Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Gemini sends {command: 'ls -la'} to tool 'run_shell_command' → facade maps to BashArgs{command: 'ls -la'} → BashTool executes",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:34:02.748Z"
+        },
+        {
+          "id": 1,
+          "text": "GeminiRunShellCommandFacade provides flat schema {type: 'object', properties: {command: {type: 'string'}}, required: ['command']} - no oneOf",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:34:10.314Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "estimate": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "GeminiRunShellCommandFacade in codelet/tools/src/facade/bash.rs implements ToolFacade trait. Uses tool name 'run_shell_command'. Maps {command} to InternalBashParams. Wrapped with BashToolFacadeWrapper and added to GeminiProvider.create_rig_agent().",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:35:30.206Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-26T08:51:43.737Z"
     },
     "TOOL-005": {
       "id": "TOOL-005",
       "title": "Search Facades",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-12-26T07:07:38.914Z",
-      "updatedAt": "2025-12-26T07:08:16.226Z",
+      "updatedAt": "2025-12-26T09:07:30.342Z",
       "description": "Create Gemini-compatible facades for search operations: GeminiSearchFileContentFacade (search_file_content for Grep) and GeminiGlobFacade (glob). Maps Gemini's flat parameter schemas to internal search parameters.",
       "epic": "tool-facades",
       "children": [],
       "dependsOn": [
         "TOOL-002"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T08:46:03.927Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T08:57:49.890Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T09:00:47.924Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T09:05:47.339Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T09:07:30.342Z"
+        }
+      ],
+      "userStory": {
+        "role": "LLM agent using Gemini provider",
+        "action": "execute search operations with Gemini-native tool names and flat schemas",
+        "benefit": "Gemini understands my tool calls without schema compatibility issues"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "GeminiSearchFileContentFacade MUST use tool name 'search_file_content'",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:46:29.973Z"
+        },
+        {
+          "id": 1,
+          "text": "GeminiSearchFileContentFacade MUST use flat JSON schema with {pattern, path} parameters",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:00.073Z"
+        },
+        {
+          "id": 2,
+          "text": "GeminiSearchFileContentFacade MUST map Gemini params to internal GrepArgs",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:01.575Z"
+        },
+        {
+          "id": 3,
+          "text": "GeminiGlobFacade MUST use tool name 'find_files'",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:03.457Z"
+        },
+        {
+          "id": 4,
+          "text": "GeminiGlobFacade MUST use flat JSON schema with {pattern, path} parameters",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:05.271Z"
+        },
+        {
+          "id": 5,
+          "text": "GeminiGlobFacade MUST map Gemini params to internal GlobArgs",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:07.174Z"
+        },
+        {
+          "id": 6,
+          "text": "Search facades MUST be wrapped with SearchToolFacadeWrapper for rig integration",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:09.089Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Gemini sends {pattern: 'TODO', path: 'src'} to tool 'search_file_content' → facade maps to GrepArgs{pattern: 'TODO', path: Some('src')} → GrepTool executes",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:24.636Z"
+        },
+        {
+          "id": 1,
+          "text": "GeminiSearchFileContentFacade provides flat schema {type: 'object', properties: {pattern: {type: 'string'}, path: {type: 'string'}}, required: ['pattern']} - no oneOf",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:26.509Z"
+        },
+        {
+          "id": 2,
+          "text": "Gemini sends {pattern: '**/*.rs', path: 'src'} to tool 'find_files' → facade maps to GlobArgs{pattern: '**/*.rs', path: Some('src')} → GlobTool executes",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:28.275Z"
+        },
+        {
+          "id": 3,
+          "text": "GeminiGlobFacade provides flat schema {type: 'object', properties: {pattern: {type: 'string'}, path: {type: 'string'}}, required: ['pattern']} - no oneOf",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:55:30.109Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "GeminiSearchFileContentFacade in codelet/tools/src/facade/search.rs implements SearchToolFacade trait. Uses tool name 'search_file_content'. Maps {pattern, path} to InternalSearchParams::Grep. GeminiGlobFacade uses tool name 'find_files'. Maps {pattern, path} to InternalSearchParams::Glob. Both wrapped with SearchToolFacadeWrapper and added to GeminiProvider.create_rig_agent().",
+          "deleted": false,
+          "createdAt": "2025-12-26T08:56:25.719Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 3,
+      "attachments": [
+        "spec/attachments/TOOL-005/ast-research-grep-tool.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-26T09:07:30.342Z"
     },
     "TOOL-006": {
       "id": "TOOL-006",
       "title": "Directory Listing Facade",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-12-26T07:07:40.802Z",
-      "updatedAt": "2025-12-26T07:08:18.361Z",
+      "updatedAt": "2025-12-26T09:59:28.733Z",
       "description": "Create Gemini-compatible facade for directory listing: GeminiListDirectoryFacade (list_directory). Maps Gemini's {path} schema to internal LsTool parameters.",
       "epic": "tool-facades",
       "children": [],
       "dependsOn": [
         "TOOL-002"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T09:36:48.224Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T09:40:20.096Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T09:42:35.306Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T09:51:13.241Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T09:59:28.733Z"
+        }
+      ],
+      "userStory": {
+        "role": "LLM agent using Gemini provider",
+        "action": "execute directory listing operations with Gemini-native tool name and flat schema",
+        "benefit": "Gemini understands my tool calls without schema compatibility issues"
+      },
+      "attachments": [
+        "spec/attachments/TOOL-006/ast-research-ls-tool.json"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "GeminiListDirectoryFacade MUST use tool name 'list_directory'",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:38:07.931Z"
+        },
+        {
+          "id": 1,
+          "text": "GeminiListDirectoryFacade MUST use flat JSON schema with {path} parameter (no oneOf or nested action objects)",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:38:09.575Z"
+        },
+        {
+          "id": 2,
+          "text": "GeminiListDirectoryFacade MUST map Gemini params to internal LsArgs format",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:38:13.112Z"
+        },
+        {
+          "id": 3,
+          "text": "Directory listing facade MUST be wrapped with LsToolFacadeWrapper for rig integration",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:38:14.675Z"
+        },
+        {
+          "id": 4,
+          "text": "LsToolFacadeWrapper MUST replace raw LsTool usage in GeminiProvider.create_rig_agent()",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:38:16.441Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Gemini sends {path: 'src'} to tool 'list_directory' → facade maps to LsArgs{path: Some('src')} → LsTool executes and returns directory listing",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:38:32.881Z"
+        },
+        {
+          "id": 1,
+          "text": "Gemini sends {} (empty) to tool 'list_directory' → facade maps to LsArgs{path: None} → LsTool lists current directory",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:38:34.500Z"
+        },
+        {
+          "id": 2,
+          "text": "GeminiListDirectoryFacade provides flat schema {type: 'object', properties: {path: {type: 'string'}}, required: []} - no oneOf, path is optional",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:38:36.192Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "GeminiListDirectoryFacade in codelet/tools/src/facade/ls.rs implements LsToolFacade trait. Uses tool name 'list_directory'. Maps {path} to InternalLsParams::List. Wrapped with LsToolFacadeWrapper and replaces raw LsTool in GeminiProvider.create_rig_agent().",
+          "deleted": false,
+          "createdAt": "2025-12-26T09:40:13.963Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-26T09:59:28.733Z"
     },
     "TOOL-007": {
       "id": "TOOL-007",
       "title": "Provider Integration and E2E Tests",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-12-26T07:07:42.886Z",
-      "updatedAt": "2025-12-26T07:08:27.469Z",
+      "updatedAt": "2025-12-26T10:21:22.730Z",
       "description": "Integrate facade system with provider agent builders (GeminiProvider, ClaudeProvider) and add E2E tests with real provider APIs. Verifies that facades work correctly in actual provider interactions.",
       "epic": "tool-facades",
       "children": [],
@@ -55832,7 +56329,98 @@
         "TOOL-004",
         "TOOL-005",
         "TOOL-006"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T10:04:24.462Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T10:09:24.893Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T10:16:15.729Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T10:18:35.000Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T10:21:22.730Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer integrating LLM providers",
+        "action": "have all providers use the facade pattern consistently and verify with E2E tests",
+        "benefit": "providers have consistent tool interfaces and I can confidently deploy knowing tools work with real APIs"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "ClaudeProvider.create_rig_agent() MUST use FacadeToolWrapper with ClaudeWebSearchFacade instead of raw WebSearchTool",
+          "deleted": false,
+          "createdAt": "2025-12-26T10:05:54.865Z"
+        },
+        {
+          "id": 1,
+          "text": "GeminiProvider MUST continue using all existing facade wrappers (verified by E2E test)",
+          "deleted": false,
+          "createdAt": "2025-12-26T10:06:06.549Z"
+        },
+        {
+          "id": 2,
+          "text": "E2E tests MUST verify facade tool definitions are correctly sent to provider APIs",
+          "deleted": false,
+          "createdAt": "2025-12-26T10:06:08.530Z"
+        },
+        {
+          "id": 3,
+          "text": "E2E tests MUST be marked with #[ignore] attribute and require real API keys to run",
+          "deleted": false,
+          "createdAt": "2025-12-26T10:06:10.259Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "ClaudeProvider.create_rig_agent() creates FacadeToolWrapper with ClaudeWebSearchFacade → agent receives tool 'web_search' with action-based schema containing Search/OpenPage/FindInPage variants",
+          "deleted": false,
+          "createdAt": "2025-12-26T10:06:22.600Z"
+        },
+        {
+          "id": 1,
+          "text": "GeminiProvider.create_rig_agent() includes LsToolFacadeWrapper → agent receives tool 'list_directory' with flat schema {path: string}",
+          "deleted": false,
+          "createdAt": "2025-12-26T10:06:24.525Z"
+        },
+        {
+          "id": 2,
+          "text": "E2E test calls gemini_provider.create_rig_agent() and verifies 10 tools registered: read_file, write_file, replace, run_shell_command, search_file_content, find_files, list_directory, ast_grep, google_web_search, web_fetch",
+          "deleted": false,
+          "createdAt": "2025-12-26T10:06:26.142Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "attachments": [
+        "spec/attachments/TOOL-007/provider-facade-integration-research.json",
+        "spec/attachments/TOOL-007/ast-research-claude-provider.json"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "ClaudeProvider needs FacadeToolWrapper(ClaudeWebSearchFacade) in create_rig_agent(). GeminiProvider already uses all facades. E2E tests in codelet/tests/*_facade_e2e_test.rs with #[ignore] for CI. Claude supports oneOf schemas so only WebSearch needs facade; other tools use raw implementations.",
+          "deleted": false,
+          "createdAt": "2025-12-26T10:07:11.499Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-26T10:21:22.730Z"
     }
   },
   "states": {
@@ -55889,13 +56477,7 @@
       "DOC-013",
       "DOC-014",
       "DOC-017",
-      "AGENT-022",
-      "TOOL-002",
-      "TOOL-003",
-      "TOOL-004",
-      "TOOL-005",
-      "TOOL-006",
-      "TOOL-007"
+      "AGENT-022"
     ],
     "specifying": [
       "LANG-001",
@@ -55910,6 +56492,12 @@
     ],
     "validating": [],
     "done": [
+      "TOOL-007",
+      "TOOL-006",
+      "TOOL-005",
+      "TOOL-004",
+      "TOOL-002",
+      "TOOL-003",
       "TOOL-001",
       "CTX-001",
       "TUI-033",

@@ -1,0 +1,109 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 33,
+      "column": 4,
+      "text": "pub fn new(facade: BoxedToolFacade) -> Self {\n        Self {\n            facade,\n            base_tool: WebSearchTool::new(),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 41,
+      "column": 4,
+      "text": "pub fn provider(&self) -> &'static str {\n        self.facade.provider()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "name",
+      "line": 55,
+      "column": 4,
+      "text": "fn name(&self) -> String {\n        self.facade.tool_name().to_string()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 60,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> RigToolDefinition {\n        let facade_def = self.facade.definition();\n        RigToolDefinition {\n            name: facade_def.name,\n            description: facade_def.description,\n            parameters: facade_def.parameters,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 70,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        // Use the facade to map provider-specific params to internal format\n        let internal_params = self.facade.map_params(args.0)?;\n\n        // Convert internal params to WebSearchRequest for the base tool\n        let request = match internal_params {\n            InternalWebSearchParams::Search { query } => WebSearchRequest {\n                action: WebSearchAction::Search { query: Some(query) },\n            },\n            InternalWebSearchParams::OpenPage { url } => WebSearchRequest {\n                action: WebSearchAction::OpenPage { url: Some(url) },\n            },\n            InternalWebSearchParams::FindInPage { url, pattern } => WebSearchRequest {\n                action: WebSearchAction::FindInPage {\n                    url: Some(url),\n                    pattern: Some(pattern),\n                },\n            },\n        };\n\n        // Execute against the base tool\n        self.base_tool.call(request).await\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_wrapper_returns_facade_tool_name",
+      "line": 102,
+      "column": 4,
+      "text": "fn test_wrapper_returns_facade_tool_name() {\n        let facade = Arc::new(GeminiGoogleWebSearchFacade) as BoxedToolFacade;\n        let wrapper = FacadeToolWrapper::new(facade);\n\n        assert_eq!(wrapper.name(), \"google_web_search\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_wrapper_returns_facade_tool_name_web_fetch",
+      "line": 110,
+      "column": 4,
+      "text": "fn test_wrapper_returns_facade_tool_name_web_fetch() {\n        let facade = Arc::new(GeminiWebFetchFacade) as BoxedToolFacade;\n        let wrapper = FacadeToolWrapper::new(facade);\n\n        assert_eq!(wrapper.name(), \"web_fetch\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_wrapper_returns_flat_schema_for_gemini",
+      "line": 118,
+      "column": 4,
+      "text": "async fn test_wrapper_returns_flat_schema_for_gemini() {\n        let facade = Arc::new(GeminiGoogleWebSearchFacade) as BoxedToolFacade;\n        let wrapper = FacadeToolWrapper::new(facade);\n\n        let def = wrapper.definition(String::new()).await;\n\n        assert_eq!(def.name, \"google_web_search\");\n        assert!(def.parameters[\"properties\"][\"query\"].is_object());\n        assert!(def.parameters.get(\"oneOf\").is_none());\n        assert!(def.parameters[\"properties\"].get(\"action\").is_none());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_file_wrapper_returns_facade_tool_name",
+      "line": 131,
+      "column": 4,
+      "text": "fn test_file_wrapper_returns_facade_tool_name() {\n        let facade = Arc::new(GeminiReadFileFacade) as BoxedFileToolFacade;\n        let wrapper = FileToolFacadeWrapper::new(facade);\n\n        assert_eq!(wrapper.name(), \"read_file\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_file_wrapper_returns_flat_schema",
+      "line": 139,
+      "column": 4,
+      "text": "async fn test_file_wrapper_returns_flat_schema() {\n        let facade = Arc::new(GeminiReadFileFacade) as BoxedFileToolFacade;\n        let wrapper = FileToolFacadeWrapper::new(facade);\n\n        let def = wrapper.definition(String::new()).await;\n\n        assert_eq!(def.name, \"read_file\");\n        assert!(def.parameters[\"properties\"][\"path\"].is_object());\n        assert!(def.parameters.get(\"oneOf\").is_none());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 178,
+      "column": 4,
+      "text": "pub fn new(facade: BoxedFileToolFacade) -> Self {\n        Self {\n            facade,\n            read_tool: ReadTool::new(),\n            write_tool: WriteTool::new(),\n            edit_tool: EditTool::new(),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 188,
+      "column": 4,
+      "text": "pub fn provider(&self) -> &'static str {\n        self.facade.provider()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "name",
+      "line": 201,
+      "column": 4,
+      "text": "fn name(&self) -> String {\n        self.facade.tool_name().to_string()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 206,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> RigToolDefinition {\n        let facade_def = self.facade.definition();\n        RigToolDefinition {\n            name: facade_def.name,\n            description: facade_def.description,\n            parameters: facade_def.parameters,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 216,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        // Use the facade to map provider-specific params to internal format\n        let internal_params = self.facade.map_params(args.0)?;\n\n        // Execute the appropriate base tool based on the operation type\n        match internal_params {\n            InternalFileParams::Read {\n                file_path,\n                offset,\n                limit,\n            } => {\n                use crate::read::ReadArgs;\n                let read_args = ReadArgs {\n                    file_path,\n                    offset,\n                    limit,\n                };\n                match self.read_tool.call(read_args).await {\n                    Ok(content) => Ok(FileOperationResult {\n                        success: true,\n                        content: Some(content),\n                        error: None,\n                    }),\n                    Err(e) => Ok(FileOperationResult {\n                        success: false,\n                        content: None,\n                        error: Some(e.to_string()),\n                    }),\n                }\n            }\n            InternalFileParams::Write { file_path, content } => {\n                use crate::write::WriteArgs;\n                let write_args = WriteArgs { file_path, content };\n                match self.write_tool.call(write_args).await {\n                    Ok(result) => Ok(FileOperationResult {\n                        success: true,\n                        content: Some(result),\n                        error: None,\n                    }),\n                    Err(e) => Ok(FileOperationResult {\n                        success: false,\n                        content: None,\n                        error: Some(e.to_string()),\n                    }),\n                }\n            }\n            InternalFileParams::Edit {\n                file_path,\n                old_string,\n                new_string,\n            } => {\n                use crate::edit::EditArgs;\n                let edit_args = EditArgs {\n                    file_path,\n                    old_string,\n                    new_string,\n                };\n                match self.edit_tool.call(edit_args).await {\n                    Ok(result) => Ok(FileOperationResult {\n                        success: true,\n                        content: Some(result),\n                        error: None,\n                    }),\n                    Err(e) => Ok(FileOperationResult {\n                        success: false,\n                        content: None,\n                        error: Some(e.to_string()),\n                    }),\n                }\n            }\n        }\n    }"
+    }
+  ]
+}

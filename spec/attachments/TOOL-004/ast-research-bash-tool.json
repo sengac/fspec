@@ -1,0 +1,39 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 25,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self::with_timeout(Duration::from_secs(DEFAULT_TIMEOUT_SECS))\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_timeout",
+      "line": 30,
+      "column": 4,
+      "text": "pub fn with_timeout(timeout: Duration) -> Self {\n        Self { timeout }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 36,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::new()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 57,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {\n        rig::completion::ToolDefinition {\n            name: \"bash\".to_string(),\n            description: \"Execute a bash command. Returns stdout or error message with stderr. \\\n                Commands timeout after 120 seconds by default.\"\n                .to_string(),\n            parameters: serde_json::to_value(schemars::schema_for!(BashArgs))\n                .unwrap_or_else(|_| json!({\"type\": \"object\"})),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 68,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        if args.command.is_empty() {\n            return Err(ToolError::Validation {\n                tool: \"bash\",\n                message: \"command parameter is required\".to_string(),\n            });\n        }\n\n        // Execute command with timeout\n        let result = timeout(\n            self.timeout,\n            Command::new(\"sh\").arg(\"-c\").arg(&args.command).output(),\n        )\n        .await;\n\n        match result {\n            Ok(Ok(output)) => {\n                let stdout = String::from_utf8_lossy(&output.stdout);\n                let stderr = String::from_utf8_lossy(&output.stderr);\n\n                if output.status.success() {\n                    // Process successful output\n                    let lines = process_output_lines(&stdout);\n                    let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);\n\n                    let mut final_output = truncate_result.output;\n\n                    let was_truncated =\n                        truncate_result.char_truncated || truncate_result.remaining_count > 0;\n\n                    if was_truncated {\n                        let warning = format_truncation_warning(\n                            truncate_result.remaining_count,\n                            \"lines\",\n                            truncate_result.char_truncated,\n                            OutputLimits::MAX_OUTPUT_CHARS,\n                        );\n                        final_output.push_str(&warning);\n                    }\n\n                    Ok(final_output)\n                } else {\n                    // Command failed\n                    Err(ToolError::Execution {\n                        tool: \"bash\",\n                        message: format!(\n                            \"exit code {}\\nStdout: {}\\nStderr: {}\",\n                            output.status.code().unwrap_or(-1),\n                            stdout.trim(),\n                            stderr.trim()\n                        ),\n                    })\n                }\n            }\n            Ok(Err(e)) => Err(ToolError::Execution {\n                tool: \"bash\",\n                message: e.to_string(),\n            }),\n            Err(_) => Err(ToolError::Timeout {\n                tool: \"bash\",\n                seconds: self.timeout.as_secs(),\n            }),\n        }\n    }"
+    }
+  ]
+}

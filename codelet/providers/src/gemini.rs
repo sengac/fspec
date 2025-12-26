@@ -86,9 +86,12 @@ impl GeminiProvider {
 
     /// Create a rig Agent with all tools configured for this provider
     ///
-    /// Uses provider-specific tool facades for web search (TOOL-001):
+    /// Uses provider-specific tool facades (TOOL-001, TOOL-003):
     /// - `google_web_search` - Gemini-native web search with flat schema
     /// - `web_fetch` - Gemini-native URL fetching with flat schema
+    /// - `read_file` - Gemini-native file reading with flat schema
+    /// - `write_file` - Gemini-native file writing with flat schema
+    /// - `replace` - Gemini-native text replacement with flat schema
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
@@ -97,11 +100,13 @@ impl GeminiProvider {
         preamble: Option<&str>,
     ) -> rig::agent::Agent<gemini::completion::CompletionModel> {
         use codelet_tools::facade::{
-            FacadeToolWrapper, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
+            BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper,
+            GeminiGlobFacade, GeminiGoogleWebSearchFacade, GeminiListDirectoryFacade,
+            GeminiReadFileFacade, GeminiReplaceFacade, GeminiRunShellCommandFacade,
+            GeminiSearchFileContentFacade, GeminiWebFetchFacade, GeminiWriteFileFacade,
+            LsToolFacadeWrapper, SearchToolFacadeWrapper,
         };
-        use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
-        };
+        use codelet_tools::AstGrepTool;
         use std::sync::Arc;
 
         // Create Gemini-specific web search facades (TOOL-001)
@@ -109,19 +114,43 @@ impl GeminiProvider {
         let google_web_search = FacadeToolWrapper::new(Arc::new(GeminiGoogleWebSearchFacade));
         let web_fetch = FacadeToolWrapper::new(Arc::new(GeminiWebFetchFacade));
 
+        // Create Gemini-specific file operation facades (TOOL-003)
+        // These provide Gemini-native tool names: read_file, write_file, replace
+        let read_file = FileToolFacadeWrapper::new(Arc::new(GeminiReadFileFacade));
+        let write_file = FileToolFacadeWrapper::new(Arc::new(GeminiWriteFileFacade));
+        let replace = FileToolFacadeWrapper::new(Arc::new(GeminiReplaceFacade));
+
+        // Create Gemini-specific bash facade (TOOL-004)
+        // Provides Gemini-native tool name: run_shell_command
+        let run_shell_command = BashToolFacadeWrapper::new(Arc::new(GeminiRunShellCommandFacade));
+
+        // Create Gemini-specific search facades (TOOL-005)
+        // Provides Gemini-native tool names: search_file_content, find_files
+        let search_file_content =
+            SearchToolFacadeWrapper::new(Arc::new(GeminiSearchFileContentFacade));
+        let find_files = SearchToolFacadeWrapper::new(Arc::new(GeminiGlobFacade));
+
+        // Create Gemini-specific directory listing facade (TOOL-006)
+        // Provides Gemini-native tool name: list_directory
+        let list_directory = LsToolFacadeWrapper::new(Arc::new(GeminiListDirectoryFacade));
+
         // Build agent with all tools using rig's builder pattern
         // TOOL-001: Use facade wrappers for web search instead of generic WebSearchTool
+        // TOOL-003: Use facade wrappers for file operations instead of raw tools
+        // TOOL-004: Use facade wrapper for bash instead of raw BashTool
+        // TOOL-005: Use facade wrappers for search instead of raw GrepTool/GlobTool
+        // TOOL-006: Use facade wrapper for directory listing instead of raw LsTool
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
-            .tool(ReadTool::new())
-            .tool(WriteTool::new())
-            .tool(EditTool::new())
-            .tool(BashTool::new())
-            .tool(GrepTool::new())
-            .tool(GlobTool::new())
-            .tool(LsTool::new())
+            .tool(read_file) // TOOL-003: Gemini-native read_file
+            .tool(write_file) // TOOL-003: Gemini-native write_file
+            .tool(replace) // TOOL-003: Gemini-native replace
+            .tool(run_shell_command) // TOOL-004: Gemini-native run_shell_command
+            .tool(search_file_content) // TOOL-005: Gemini-native search_file_content
+            .tool(find_files) // TOOL-005: Gemini-native find_files
+            .tool(list_directory) // TOOL-006: Gemini-native list_directory
             .tool(AstGrepTool::new())
             .tool(google_web_search) // TOOL-001: Gemini-native google_web_search
             .tool(web_fetch); // TOOL-001: Gemini-native web_fetch

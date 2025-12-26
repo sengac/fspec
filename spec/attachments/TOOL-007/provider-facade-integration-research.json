@@ -1,0 +1,49 @@
+{
+  "research_summary": "Provider Facade Integration Analysis",
+  "date": "2025-12-26",
+  "findings": {
+    "gemini_provider": {
+      "status": "fully_integrated",
+      "facade_usage": {
+        "TOOL-001": ["FacadeToolWrapper(GeminiGoogleWebSearchFacade)", "FacadeToolWrapper(GeminiWebFetchFacade)"],
+        "TOOL-003": ["FileToolFacadeWrapper(GeminiReadFileFacade)", "FileToolFacadeWrapper(GeminiWriteFileFacade)", "FileToolFacadeWrapper(GeminiReplaceFacade)"],
+        "TOOL-004": ["BashToolFacadeWrapper(GeminiRunShellCommandFacade)"],
+        "TOOL-005": ["SearchToolFacadeWrapper(GeminiSearchFileContentFacade)", "SearchToolFacadeWrapper(GeminiGlobFacade)"],
+        "TOOL-006": ["LsToolFacadeWrapper(GeminiListDirectoryFacade)"]
+      },
+      "raw_tools": ["AstGrepTool"],
+      "tool_count": 10,
+      "file": "codelet/providers/src/gemini.rs",
+      "method": "create_rig_agent()"
+    },
+    "claude_provider": {
+      "status": "needs_integration",
+      "facade_usage": {},
+      "raw_tools": ["ReadTool", "WriteTool", "EditTool", "BashTool", "GrepTool", "GlobTool", "LsTool", "AstGrepTool", "WebSearchTool"],
+      "tool_count": 9,
+      "file": "codelet/providers/src/claude.rs",
+      "method": "create_rig_agent()",
+      "action_required": "Replace WebSearchTool with FacadeToolWrapper(ClaudeWebSearchFacade)"
+    },
+    "available_claude_facades": {
+      "ClaudeWebSearchFacade": {
+        "file": "codelet/tools/src/facade/web_search.rs",
+        "tool_name": "web_search",
+        "schema_type": "action-based with oneOf (Search, OpenPage, FindInPage)"
+      }
+    },
+    "note": "Claude supports complex schemas with oneOf, so only web search needs a facade. Other tools use standard schemas that Claude understands."
+  },
+  "e2e_test_requirements": {
+    "gemini": {
+      "test_file": "codelet/tests/gemini_facade_e2e_test.rs",
+      "requires": "GOOGLE_GENERATIVE_AI_API_KEY",
+      "verifies": "All 10 facade-wrapped tools are correctly registered"
+    },
+    "claude": {
+      "test_file": "codelet/tests/claude_facade_e2e_test.rs",
+      "requires": "ANTHROPIC_API_KEY",
+      "verifies": "ClaudeWebSearchFacade is correctly integrated"
+    }
+  }
+}
