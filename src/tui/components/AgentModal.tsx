@@ -1112,7 +1112,22 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           // TUI-033: Update context fill percentage from Rust
           setContextFillPercentage(chunk.contextFill.fillPercentage);
         } else if (chunk.type === 'Error' && chunk.error) {
-          setError(chunk.error);
+          // API error occurred - clean up streaming placeholder and show error in conversation
+          setConversation(prev => {
+            const updated = [...prev];
+            // Remove empty streaming assistant messages at the end
+            while (
+              updated.length > 0 &&
+              updated[updated.length - 1].role === 'assistant' &&
+              updated[updated.length - 1].isStreaming &&
+              !updated[updated.length - 1].content
+            ) {
+              updated.pop();
+            }
+            // Add error as tool message so it's visible in conversation
+            updated.push({ role: 'tool', content: `API Error: ${chunk.error}` });
+            return updated;
+          });
         }
       });
 
@@ -1175,7 +1190,22 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to send prompt';
-      setError(errorMessage);
+      // Clean up streaming placeholder and show error in conversation
+      setConversation(prev => {
+        const updated = [...prev];
+        // Remove empty streaming assistant messages at the end
+        while (
+          updated.length > 0 &&
+          updated[updated.length - 1].role === 'assistant' &&
+          updated[updated.length - 1].isStreaming &&
+          !updated[updated.length - 1].content
+        ) {
+          updated.pop();
+        }
+        // Add error as tool message so it's visible in conversation
+        updated.push({ role: 'tool', content: `Error: ${errorMessage}` });
+        return updated;
+      });
     } finally {
       setIsLoading(false);
     }
@@ -1464,13 +1494,28 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       if (sessionRef.current) {
         sessionRef.current.restoreMessagesFromEnvelopes(envelopes);
 
+        // Switch provider to match the restored session's provider
+        // This ensures API calls use the same provider as the original session
+        if (selectedSession.provider && selectedSession.provider !== sessionRef.current.currentProviderName) {
+          try {
+            await sessionRef.current.switchProvider(selectedSession.provider);
+            setCurrentProvider(selectedSession.provider);
+          } catch (providerErr) {
+            // Provider switch failed - continue with current provider
+            logger.warn(`Failed to switch to session provider ${selectedSession.provider}: ${providerErr instanceof Error ? providerErr.message : String(providerErr)}`);
+          }
+        }
+
         // Restore token state from persisted session (including cache tokens for TUI-033)
+        // CTX-003: Restore current context, output, cache tokens, and cumulative billing fields
         if (selectedSession.tokenUsage) {
           sessionRef.current.restoreTokenState(
-            selectedSession.tokenUsage.totalInputTokens,
-            selectedSession.tokenUsage.totalOutputTokens,
-            selectedSession.tokenUsage.cacheReadTokens ?? 0,
-            selectedSession.tokenUsage.cacheCreationTokens ?? 0
+            selectedSession.tokenUsage.currentContextTokens,           // current input context
+            selectedSession.tokenUsage.cumulativeBilledOutput,         // output tokens (use cumulative as we don't store current separately)
+            selectedSession.tokenUsage.cacheReadTokens ?? 0,           // cache read
+            selectedSession.tokenUsage.cacheCreationTokens ?? 0,       // cache creation
+            selectedSession.tokenUsage.cumulativeBilledInput ?? 0,     // cumulative billed input
+            selectedSession.tokenUsage.cumulativeBilledOutput ?? 0     // cumulative billed output
           );
         }
 
@@ -1489,10 +1534,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       isFirstMessageRef.current = false;
 
       // Restore token usage from session manifest (including cache tokens)
+      // CTX-003: Use currentContextTokens for display, cumulativeBilledOutput for output
       if (selectedSession.tokenUsage) {
         setTokenUsage({
-          inputTokens: selectedSession.tokenUsage.totalInputTokens,
-          outputTokens: selectedSession.tokenUsage.totalOutputTokens,
+          inputTokens: selectedSession.tokenUsage.currentContextTokens,
+          outputTokens: selectedSession.tokenUsage.cumulativeBilledOutput,
           cacheReadInputTokens: selectedSession.tokenUsage.cacheReadTokens,
           cacheCreationInputTokens: selectedSession.tokenUsage.cacheCreationTokens,
         });

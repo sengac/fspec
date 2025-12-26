@@ -464,10 +464,14 @@ impl CodeletSession {
                 MessagePayload::User(user_msg) => {
                     // Convert user content blocks
                     let mut rig_contents: Vec<UserContent> = Vec::new();
+                    let mut has_text = false;
+                    let mut has_tool_results = false;
+
                     for content in user_msg.content {
                         match content {
                             EnvUserContent::Text { text } => {
                                 rig_contents.push(UserContent::Text(Text { text }));
+                                has_text = true;
                             }
                             EnvUserContent::ToolResult {
                                 tool_use_id,
@@ -483,6 +487,7 @@ impl CodeletSession {
                                         text: content,
                                     })),
                                 }));
+                                has_tool_results = true;
                             }
                             EnvUserContent::Image { .. } | EnvUserContent::Document { .. } => {
                                 // Skip images/documents for now - they don't affect LLM context directly
@@ -492,10 +497,42 @@ impl CodeletSession {
                     }
 
                     if !rig_contents.is_empty() {
-                        session.messages.push(RigMessage::User {
-                            content: OneOrMany::many(rig_contents)
-                                .unwrap_or_else(|_| OneOrMany::one(UserContent::text(""))),
-                        });
+                        // NAPI-008 FIX: Merge consecutive tool_result-only User messages
+                        // Claude API requires ALL tool_results to be in a SINGLE User message
+                        // immediately after the Assistant message with tool_use blocks.
+                        // When multiple tool calls occur, each tool_result is stored as a separate
+                        // envelope, but they must be merged during restoration.
+                        let should_merge = !has_text
+                            && has_tool_results
+                            && session.messages.last().map_or(false, |last| {
+                                matches!(last, RigMessage::User { content } if {
+                                    // Check if last message is User with only tool_results
+                                    content.iter().all(|c| matches!(c, UserContent::ToolResult(_)))
+                                })
+                            });
+
+                        if should_merge {
+                            // Merge with the previous User message
+                            if let Some(RigMessage::User { content: last_content }) =
+                                session.messages.last_mut()
+                            {
+                                // Append new tool_results to existing message
+                                let mut merged: Vec<UserContent> =
+                                    last_content.iter().cloned().collect();
+                                merged.extend(rig_contents);
+                                *last_content = OneOrMany::many(merged)
+                                    .unwrap_or_else(|_| OneOrMany::one(UserContent::text("")));
+                                tracing::debug!(
+                                    "Merged tool_result into previous User message (now has {} content blocks)",
+                                    last_content.iter().count()
+                                );
+                            }
+                        } else {
+                            session.messages.push(RigMessage::User {
+                                content: OneOrMany::many(rig_contents)
+                                    .unwrap_or_else(|_| OneOrMany::one(UserContent::text(""))),
+                            });
+                        }
                     }
                 }
                 MessagePayload::Assistant(assistant_msg) => {
@@ -573,12 +610,17 @@ impl CodeletSession {
         output_tokens: u32,
         cache_read_tokens: u32,
         cache_creation_tokens: u32,
+        cumulative_billed_input: u32,
+        cumulative_billed_output: u32,
     ) {
         let mut session = self.inner.blocking_lock();
         session.token_tracker.input_tokens = input_tokens as u64;
         session.token_tracker.output_tokens = output_tokens as u64;
         session.token_tracker.cache_read_input_tokens = Some(cache_read_tokens as u64);
         session.token_tracker.cache_creation_input_tokens = Some(cache_creation_tokens as u64);
+        // CTX-003: Restore cumulative billing fields for accurate billing analytics after resume
+        session.token_tracker.cumulative_billed_input = cumulative_billed_input as u64;
+        session.token_tracker.cumulative_billed_output = cumulative_billed_output as u64;
     }
 
     /// Get current context fill info (TUI-033)
