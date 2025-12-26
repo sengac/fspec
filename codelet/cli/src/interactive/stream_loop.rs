@@ -238,15 +238,17 @@ where
     let threshold = calculate_usable_context(context_window, max_output_tokens);
 
     // TUI-033: Helper to emit context fill percentage after token updates
-    // CTX-002: Uses simple sum (input + cache_read + output) for token calculation
+    // CTX-004: Fixed context fill calculation
+    // - input_tokens ALREADY includes cache_read_input_tokens (it's a subset, not additional)
+    // - output_tokens should be CURRENT API call output only (previous output is in input_tokens as history)
     let emit_context_fill = |output: &O,
                              input_tokens: u64,
-                             cache_read_tokens: u64,
                              output_tokens: u64,
                              threshold: u64,
                              context_window: u64| {
-        // CTX-002: Simple sum of all token types
-        let total_tokens = input_tokens + cache_read_tokens + output_tokens;
+        // CTX-004: input_tokens includes cache, and previous output is already in input as history
+        // So total context = input_tokens + current_api_output_tokens
+        let total_tokens = input_tokens + output_tokens;
         // Calculate fill percentage (can exceed 100% near compaction)
         let fill_percentage = if threshold > 0 {
             ((total_tokens as f64 / threshold as f64) * 100.0) as u32
@@ -387,14 +389,9 @@ where
         cache_creation_input_tokens: Some(prev_cache_creation),
         tokens_per_second: None,
     });
-    emit_context_fill(
-        output,
-        prev_input_tokens,
-        prev_cache_read,
-        prev_output_tokens,
-        threshold,
-        context_window,
-    );
+    // CTX-004: For initial state, use 0 for output since no new output yet in this turn
+    // prev_output_tokens is from previous turns and is already counted in prev_input_tokens
+    emit_context_fill(output, prev_input_tokens, 0, threshold, context_window);
 
     loop {
         // Check interruption at start of each iteration (works for both modes)
@@ -499,7 +496,7 @@ where
                         output,
                     )?;
 
-                    // TUI-031: Emit CUMULATIVE output tokens after tool result
+                    // TUI-031: Emit CUMULATIVE output tokens after tool result (for display)
                     let display_output = turn_cumulative_output + current_api_output;
                     output.emit_tokens(&TokenInfo {
                         input_tokens: current_api_input,
@@ -508,12 +505,11 @@ where
                         cache_creation_input_tokens: Some(turn_cache_creation),
                         tokens_per_second: tok_per_sec_tracker.current_rate(),
                     });
-                    // TUI-033: Emit context fill percentage
+                    // CTX-004: Context fill uses CURRENT API output only (not cumulative)
                     emit_context_fill(
                         output,
                         current_api_input,
-                        turn_cache_read,
-                        display_output,
+                        current_api_output,
                         threshold,
                         context_window,
                     );
@@ -548,12 +544,11 @@ where
                         cache_creation_input_tokens: Some(turn_cache_creation),
                         tokens_per_second: tok_per_sec_tracker.current_rate(),
                     });
-                    // TUI-033: Emit context fill percentage
+                    // CTX-004: Context fill uses CURRENT API output only (not cumulative)
                     emit_context_fill(
                         output,
                         current_api_input,
-                        turn_cache_read,
-                        display_output,
+                        current_api_output,
                         threshold,
                         context_window,
                     );
@@ -588,12 +583,12 @@ where
                         cache_creation_input_tokens: Some(turn_cache_creation),
                         tokens_per_second: None, // Streaming done, hide tok/s
                     });
-                    // TUI-033: Emit context fill percentage
+                    // CTX-004: Context fill uses CURRENT API output only
+                    // At FinalResponse, current_api_output has the final output count for this API call
                     emit_context_fill(
                         output,
                         current_api_input,
-                        turn_cache_read,
-                        turn_cumulative_output,
+                        current_api_output,
                         threshold,
                         context_window,
                     );
@@ -890,11 +885,11 @@ where
                                 cache_creation_input_tokens: Some(retry_cache_creation),
                                 tokens_per_second: retry_tok_tracker.current_rate(),
                             });
+                            // CTX-004: Context fill uses CURRENT API output only
                             emit_context_fill(
                                 output,
                                 retry_api_input,
-                                retry_cache_read,
-                                display_output,
+                                retry_api_output,
                                 threshold,
                                 context_window,
                             );
@@ -918,12 +913,11 @@ where
                                 cache_creation_input_tokens: Some(retry_cache_creation),
                                 tokens_per_second: retry_tok_tracker.current_rate(),
                             });
-                            // TUI-033: Emit context fill percentage
+                            // CTX-004: Context fill uses CURRENT API output only
                             emit_context_fill(
                                 output,
                                 retry_api_input,
-                                retry_cache_read,
-                                display_output,
+                                retry_api_output,
                                 threshold,
                                 context_window,
                             );
@@ -946,11 +940,11 @@ where
                                 cache_creation_input_tokens: Some(retry_cache_creation),
                                 tokens_per_second: None, // Streaming done, hide tok/s
                             });
+                            // CTX-004: Context fill uses CURRENT API output only
                             emit_context_fill(
                                 output,
                                 retry_api_input,
-                                retry_cache_read,
-                                retry_cumulative_output,
+                                retry_api_output,
                                 threshold,
                                 context_window,
                             );

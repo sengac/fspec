@@ -642,11 +642,12 @@ impl CodeletSession {
         // CTX-002: Use usable_context (context_window - output_reservation)
         let threshold = calculate_usable_context(context_window, max_output_tokens);
         let input_tokens = session.token_tracker.input_tokens;
-        let cache_read_tokens = session.token_tracker.cache_read_input_tokens.unwrap_or(0);
-        let output_tokens = session.token_tracker.output_tokens;
 
-        // CTX-002: Simple sum of all token types
-        let total_tokens = input_tokens + cache_read_tokens + output_tokens;
+        // CTX-004: cache_read is a SUBSET of input_tokens, not additional
+        // After restoration, input_tokens represents the last API call's context
+        // For the next turn, this is a reasonable baseline (output from last turn
+        // will become part of input for the next API call)
+        let total_tokens = input_tokens;
         let fill_percentage = if threshold > 0 {
             ((total_tokens as f64 / threshold as f64) * 100.0) as u32
         } else {
