@@ -26,7 +26,8 @@ fn test_transform_system_prompt_api_key_mode() {
     let system_text = "You are a helpful assistant";
 
     // @step When the middleware transforms the request for /v1/messages
-    let transformed = transform_system_prompt(system_text, false, None);
+    // TOOL-008: New signature - (preamble, is_oauth)
+    let transformed = transform_system_prompt(system_text, false);
 
     // @step Then the system field should be an array with one content block
     assert!(transformed.is_array());
@@ -44,23 +45,25 @@ fn test_transform_system_prompt_api_key_mode() {
 #[test]
 fn test_transform_system_prompt_oauth_mode() {
     // @step Given OAuth mode is enabled with Claude Code prefix
-    let oauth_prefix = "You are Claude Code, Anthropic's official CLI for Claude.";
-
-    // @step And a request body with system prompt containing the prefix and additional text
-    let system_text = format!("{} Additional instructions here", oauth_prefix);
+    // TOOL-008: For OAuth, pass just the ADDITIONAL preamble (facade adds prefix)
+    let additional_text = "Additional instructions here";
 
     // @step When the middleware transforms the request for /v1/messages
-    let transformed = transform_system_prompt(&system_text, true, Some(oauth_prefix));
+    let transformed = transform_system_prompt(additional_text, true);
 
     // @step Then the system field should be an array with two content blocks
     let system_array = transformed.as_array().unwrap();
     assert_eq!(system_array.len(), 2);
 
     // @step And the first block should contain the Claude Code prefix without cache_control
-    assert_eq!(system_array[0]["text"], oauth_prefix);
+    assert!(system_array[0]["text"]
+        .as_str()
+        .unwrap()
+        .starts_with("You are Claude Code"));
     assert!(system_array[0].get("cache_control").is_none());
 
     // @step And the second block should have cache_control with type 'ephemeral'
+    assert_eq!(system_array[1]["text"], additional_text);
     assert_eq!(system_array[1]["cache_control"]["type"], "ephemeral");
 }
 
@@ -274,7 +277,7 @@ fn test_caching_http_client_transforms_request_body() {
 
     // @step Given a CachingHttpClient with API key mode
     let is_oauth = false;
-    let oauth_prefix: Option<&str> = None;
+    // TOOL-008: oauth_prefix no longer needed - facade handles it internally
 
     // @step And a mock request to https://api.anthropic.com/v1/messages
     // @step And the request body has system as plain string 'You are helpful'
@@ -289,7 +292,8 @@ fn test_caching_http_client_transforms_request_body() {
     });
 
     // @step When the request is executed through the CachingHttpClient
-    let transformed = transform_request_body(&request_body, is_oauth, oauth_prefix);
+    // TOOL-008: New signature - (body, is_oauth)
+    let transformed = transform_request_body(&request_body, is_oauth);
 
     // @step Then the actual request body sent should have system as array with cache_control
     assert!(
@@ -468,7 +472,8 @@ fn test_system_text_gets_transformed() {
     let system_text = "Already text format";
 
     // @step When the middleware transforms the request
-    let transformed = transform_system_prompt(system_text, false, None);
+    // TOOL-008: New signature - (preamble, is_oauth)
+    let transformed = transform_system_prompt(system_text, false);
 
     // @step Then the system field should be an array with cache_control
     assert!(transformed.is_array());

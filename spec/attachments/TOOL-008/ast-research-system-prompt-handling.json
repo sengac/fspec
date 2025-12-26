@@ -1,0 +1,73 @@
+{
+  "research_target": "System Prompt Handling in Providers",
+  "files_analyzed": [
+    "codelet/tools/src/facade/traits.rs",
+    "codelet/providers/src/claude.rs",
+    "codelet/providers/src/gemini.rs"
+  ],
+  "findings": {
+    "existing_facade_pattern": {
+      "location": "codelet/tools/src/facade/traits.rs",
+      "traits": [
+        "ToolFacade",
+        "FileToolFacade",
+        "BashToolFacade",
+        "SearchToolFacade",
+        "LsToolFacade"
+      ],
+      "common_methods": [
+        "provider() -> &'static str",
+        "tool_name() -> &'static str",
+        "definition() -> ToolDefinition",
+        "map_params(input: Value) -> Result<Internal*Params, ToolError>"
+      ]
+    },
+    "claude_system_prompt_handling": {
+      "location": "codelet/providers/src/claude.rs",
+      "existing_functions": {
+        "build_cached_system_prompt": {
+          "lines": "74-104",
+          "description": "Builds system prompt array with cache_control",
+          "oauth_mode": "2 blocks - prefix WITHOUT cache_control, preamble WITH cache_control",
+          "api_key_mode": "1 block - preamble WITH cache_control"
+        },
+        "create_rig_agent": {
+          "lines": "288-357",
+          "uses": "transform_system_prompt from caching_client module"
+        },
+        "system_prompt": {
+          "lines": "247-253",
+          "returns": "Some(CLAUDE_CODE_PROMPT_PREFIX) if OAuth, None otherwise"
+        }
+      },
+      "constants": {
+        "CLAUDE_CODE_PROMPT_PREFIX": "You are Claude Code, Anthropic's official CLI for Claude."
+      },
+      "auth_modes": ["ApiKey", "OAuth"]
+    },
+    "gemini_system_prompt_handling": {
+      "location": "codelet/providers/src/gemini.rs",
+      "create_rig_agent": {
+        "lines": "98-164",
+        "preamble_handling": "Simply calls agent_builder.preamble(p) - no transformation"
+      },
+      "notes": "Uses rig's default string format, no special formatting needed"
+    }
+  },
+  "proposed_facade_design": {
+    "trait_name": "SystemPromptFacade",
+    "methods": [
+      "provider() -> &'static str",
+      "identity_prefix() -> Option<&'static str>",
+      "transform_preamble(preamble: &str) -> String",
+      "format_for_api(content: &str, context: &PromptContext) -> Value"
+    ],
+    "implementations": [
+      "ClaudeOAuthSystemPromptFacade",
+      "ClaudeApiKeySystemPromptFacade",
+      "GeminiSystemPromptFacade",
+      "OpenAISystemPromptFacade"
+    ],
+    "location": "codelet/tools/src/facade/system_prompt.rs"
+  }
+}

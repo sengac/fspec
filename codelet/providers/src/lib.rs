@@ -26,7 +26,8 @@ pub use caching_client::{
     should_transform_request, transform_request_body, transform_system_prompt,
     transform_user_message_cache_control,
 };
-pub use claude::{build_cached_system_prompt, AuthMode, CacheControl, ClaudeProvider};
+// TOOL-008: build_cached_system_prompt removed - use codelet_tools::facade::select_claude_facade instead
+pub use claude::{AuthMode, CacheControl, ClaudeProvider};
 pub use codex::CodexProvider;
 pub use credentials::ProviderCredentials;
 pub use gemini::GeminiProvider;
