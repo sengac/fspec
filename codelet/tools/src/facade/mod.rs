@@ -25,6 +25,7 @@ mod file_ops;
 mod ls;
 mod registry;
 mod search;
+mod system_prompt;
 mod traits;
 mod web_search;
 mod wrapper;
@@ -39,6 +40,11 @@ pub use traits::{
     BoxedSearchToolFacade, BoxedToolFacade, FileToolFacade, InternalBashParams, InternalFileParams,
     InternalLsParams, InternalSearchParams, InternalWebSearchParams, LsToolFacade,
     SearchToolFacade, ToolDefinition, ToolFacade,
+};
+pub use system_prompt::{
+    select_claude_facade, BoxedSystemPromptFacade, ClaudeApiKeySystemPromptFacade,
+    ClaudeOAuthSystemPromptFacade, GeminiSystemPromptFacade, OpenAISystemPromptFacade,
+    SystemPromptFacade, CLAUDE_CODE_PROMPT_PREFIX,
 };
 pub use web_search::{ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade};
 pub use wrapper::{

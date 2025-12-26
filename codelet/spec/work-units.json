@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-25T23:38:48.701Z"
+    "lastUpdated": "2025-12-26T11:25:02.967Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -8612,6 +8612,27 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-25T23:38:48.714Z"
+    },
+    "TOOL-001": {
+      "id": "TOOL-001",
+      "title": "System Prompt Facade for Provider-Specific Prompt Handling",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-12-26T11:04:44.864Z",
+      "updatedAt": "2025-12-26T11:25:02.967Z",
+      "description": "Implement SystemPromptFacade trait to standardize system prompt handling across providers. Each provider can define its identity prefix, transform preamble content (e.g., map tool names), and format for their API. This extends the facade pattern from tools to system prompts for architecture consistency.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T11:24:51.331Z"
+        }
+      ],
+      "userStory": {
+        "role": "codelet system designer",
+        "action": "have provider-specific system prompt formatting",
+        "benefit": "Claude OAuth mode gets the correct identity prefix while other providers receive their native format"
+      }
     }
   },
   "states": {
@@ -8619,7 +8640,8 @@
     "specifying": [
       "NAPI-001",
       "NAPI-002",
-      "AGENT-002"
+      "AGENT-002",
+      "TOOL-001"
     ],
     "testing": [],
     "implementing": [],
@@ -8695,6 +8717,7 @@
     "REFAC": 15,
     "CLI": 24,
     "WEB": 2,
-    "NAPI": 3
+    "NAPI": 3,
+    "TOOL": 1
   }
 }

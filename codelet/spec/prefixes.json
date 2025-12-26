@@ -44,6 +44,11 @@
       "prefix": "NAPI",
       "description": "NAPI-RS native bindings for codelet CLI commands",
       "createdAt": "2025-12-22T07:09:34.535Z"
+    },
+    "TOOL": {
+      "prefix": "TOOL",
+      "description": "Tool facade implementations for provider-specific tool interfaces",
+      "createdAt": "2025-12-26T11:04:23.759Z"
     }
   }
 }

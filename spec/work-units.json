@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-26T10:21:22.702Z"
+    "lastUpdated": "2025-12-26T11:38:54.841Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -55598,9 +55598,9 @@
       "id": "TOOL-001",
       "title": "Provider-Specific Tool Facades",
       "type": "story",
-      "status": "done",
+      "status": "specifying",
       "createdAt": "2025-12-26T06:27:22.393Z",
-      "updatedAt": "2025-12-26T07:27:22.264Z",
+      "updatedAt": "2025-12-26T11:05:10.445Z",
       "description": "Implement a facade pattern for tools that presents provider-specific interfaces while sharing a common implementation. Different LLM providers (Claude, Gemini, OpenAI) expect different tool schemas, names, and parameter formats. This story creates an abstraction layer that maps provider-specific tool calls to shared implementations.",
       "children": [],
       "attachments": [
@@ -55646,6 +55646,10 @@
         {
           "state": "done",
           "timestamp": "2025-12-26T07:27:22.264Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T11:05:10.445Z"
         }
       ],
       "rules": [
@@ -56421,6 +56425,168 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-26T10:21:22.730Z"
+    },
+    "TOOL-008": {
+      "id": "TOOL-008",
+      "title": "System Prompt Facade for Provider-Specific Prompt Handling",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-26T11:06:57.611Z",
+      "updatedAt": "2025-12-26T11:38:54.871Z",
+      "description": "Implement a facade pattern for system prompts that adapts the prompt format for different LLM providers. Claude OAuth needs 'You are Claude Code...' prefix and cache_control blocks, Claude API key uses raw preamble, Gemini/OpenAI have their own requirements. This maintains architecture consistency with the tool facade pattern already in use.",
+      "epic": "tool-facades",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T11:07:12.715Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T11:14:29.892Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T11:19:18.732Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T11:26:09.702Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T11:26:36.597Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T11:29:15.124Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T11:38:52.231Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T11:38:54.871Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer integrating LLM providers",
+        "action": "have provider-specific system prompt formatting handled automatically",
+        "benefit": "each provider receives prompts in their expected format without duplicating logic across providers"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each SystemPromptFacade MUST implement the trait with provider(), identity_prefix(), transform_preamble(), and format_for_api() methods",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:07:47.592Z"
+        },
+        {
+          "id": 1,
+          "text": "Claude OAuth facade MUST prepend 'You are Claude Code...' identity prefix to the preamble",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:07:49.432Z"
+        },
+        {
+          "id": 2,
+          "text": "Claude API key facade MUST NOT prepend any identity prefix (passes preamble through unchanged)",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:07:51.191Z"
+        },
+        {
+          "id": 3,
+          "text": "Claude facades MUST format system prompts as array of content blocks with cache_control for caching",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:07:52.966Z"
+        },
+        {
+          "id": 4,
+          "text": "Gemini and OpenAI facades MUST format system prompts as plain strings (no special structure)",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:07:55.322Z"
+        },
+        {
+          "id": 5,
+          "text": "Provider implementations MUST use the facade to format system prompts before API calls",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:07:56.898Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Claude OAuth: preamble 'You are a helpful assistant' → format_for_api returns [{type:'text', text:'You are Claude Code...\\nYou are a helpful assistant', cache_control:{type:'ephemeral'}}]",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:08:21.773Z"
+        },
+        {
+          "id": 1,
+          "text": "Claude API key: preamble 'You are a helpful assistant' → format_for_api returns [{type:'text', text:'You are a helpful assistant', cache_control:{type:'ephemeral'}}] (no prefix)",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:08:23.699Z"
+        },
+        {
+          "id": 2,
+          "text": "Gemini: preamble 'You are a helpful assistant' → format_for_api returns plain string 'You are a helpful assistant'",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:08:25.567Z"
+        },
+        {
+          "id": 3,
+          "text": "OpenAI: preamble 'You are a helpful assistant' → format_for_api returns plain string 'You are a helpful assistant'",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:08:29.928Z"
+        },
+        {
+          "id": 4,
+          "text": "ClaudeProvider uses ClaudeOAuthSystemPromptFacade when token starts with 'cc-' and ClaudeApiKeySystemPromptFacade otherwise",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:08:31.939Z"
+        },
+        {
+          "id": 5,
+          "text": "identity_prefix() returns Some('You are Claude Code...') for Claude OAuth and None for other facades",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:08:33.660Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: SystemPromptFacade trait with provider(), identity_prefix(), transform_preamble(), format_for_api() methods",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:12:53.701Z"
+        },
+        {
+          "id": 1,
+          "text": "Implementation: Provider-specific facade implementations in codelet/tools/src/facade/system_prompt.rs",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:12:55.599Z"
+        },
+        {
+          "id": 2,
+          "text": "Dependency: Integrates with existing provider implementations in codelet/providers/",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:12:57.378Z"
+        },
+        {
+          "id": 3,
+          "text": "Refactoring: Follows same pattern as ToolFacade trait from TOOL-001",
+          "deleted": false,
+          "createdAt": "2025-12-26T11:12:59.045Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/TOOL-008/ast-research-system-prompt-handling.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-26T11:38:54.871Z"
     }
   },
   "states": {
@@ -56484,7 +56650,8 @@
       "EXMAP-004",
       "AGENT-001",
       "BROWSE-001",
-      "BOARD-020"
+      "BOARD-020",
+      "TOOL-001"
     ],
     "testing": [],
     "implementing": [
@@ -56492,13 +56659,13 @@
     ],
     "validating": [],
     "done": [
+      "TOOL-008",
       "TOOL-007",
       "TOOL-006",
       "TOOL-005",
       "TOOL-004",
       "TOOL-002",
       "TOOL-003",
-      "TOOL-001",
       "CTX-001",
       "TUI-033",
       "NAPI-008",
@@ -56965,6 +57132,6 @@
     "CLEAN": 5,
     "NAPI": 8,
     "CTX": 2,
-    "TOOL": 7
+    "TOOL": 8
   }
 }

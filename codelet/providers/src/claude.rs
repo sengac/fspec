@@ -2,6 +2,10 @@
 //!
 //! Implements the LlmProvider trait for Claude API communication.
 //! Uses rig::providers::anthropic for HTTP communication.
+//!
+//! # TOOL-008: Uses SystemPromptFacade
+//! This module uses the SystemPromptFacade from codelet_tools for provider-specific
+//! system prompt formatting, eliminating duplicate code.
 
 use crate::{
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
@@ -10,6 +14,8 @@ use crate::{
 };
 use async_trait::async_trait;
 use codelet_common::{Message, MessageContent, MessageRole};
+// TOOL-008: Import CLAUDE_CODE_PROMPT_PREFIX from facade (single source of truth)
+use codelet_tools::facade::CLAUDE_CODE_PROMPT_PREFIX;
 use codelet_tools::ToolDefinition as OurToolDefinition;
 use reqwest::header::{HeaderValue, AUTHORIZATION};
 use rig::completion::CompletionRequestBuilder;
@@ -27,8 +33,8 @@ pub const CONTEXT_WINDOW: usize = 200_000;
 /// Claude Sonnet 4 max output tokens (CTX-002)
 pub const MAX_OUTPUT_TOKENS: usize = 8192;
 
-/// Claude Code system prompt prefix (required for OAuth authentication)
-const CLAUDE_CODE_PROMPT_PREFIX: &str = "You are Claude Code, Anthropic's official CLI for Claude.";
+// TOOL-008: CLAUDE_CODE_PROMPT_PREFIX is now imported from codelet_tools::facade
+// (single source of truth - see imports at top)
 
 /// Anthropic beta features header for OAuth and prompt caching
 const ANTHROPIC_BETA_HEADER: &str =
@@ -54,54 +60,9 @@ impl CacheControl {
     }
 }
 
-/// Build a cached system prompt array for Anthropic API (CLI-017)
-///
-/// Converts a preamble string into the array format required for cache_control:
-/// ```json
-/// [{ "type": "text", "text": "...", "cache_control": { "type": "ephemeral" } }]
-/// ```
-///
-/// For OAuth mode, the OAuth prefix is added as the first block WITHOUT cache_control,
-/// and the preamble is added as the second block WITH cache_control.
-///
-/// # Arguments
-/// * `preamble` - The system prompt text
-/// * `is_oauth` - Whether OAuth mode is active
-/// * `oauth_prefix` - Optional OAuth prefix (required if is_oauth is true)
-///
-/// # Returns
-/// * `serde_json::Value` array suitable for use in additional_params
-pub fn build_cached_system_prompt(
-    preamble: &str,
-    is_oauth: bool,
-    oauth_prefix: Option<&str>,
-) -> serde_json::Value {
-    if is_oauth {
-        // OAuth mode: first block is prefix without cache_control
-        // second block is preamble with cache_control
-        let prefix = oauth_prefix.unwrap_or(CLAUDE_CODE_PROMPT_PREFIX);
-        json!([
-            {
-                "type": "text",
-                "text": prefix
-            },
-            {
-                "type": "text",
-                "text": preamble,
-                "cache_control": { "type": "ephemeral" }
-            }
-        ])
-    } else {
-        // API key mode: single block with cache_control
-        json!([
-            {
-                "type": "text",
-                "text": preamble,
-                "cache_control": { "type": "ephemeral" }
-            }
-        ])
-    }
-}
+// TOOL-008: build_cached_system_prompt has been removed
+// Use codelet_tools::facade::select_claude_facade(is_oauth).format_for_api(preamble) instead
+// Or use crate::caching_client::transform_system_prompt(preamble, is_oauth)
 
 /// Authentication mode for Claude API
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -273,12 +234,16 @@ impl ClaudeProvider {
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble. For API key mode, this should
-    ///   contain CLAUDE.md content and other context. For OAuth mode, this is combined
-    ///   with the required Claude Code prefix.
+    ///   contain CLAUDE.md content and other context. For OAuth mode, this is the
+    ///   ADDITIONAL content (facade adds the required Claude Code prefix).
     ///
-    /// # Cache Control Behavior (PROV-006)
+    /// # Cache Control Behavior (PROV-006, TOOL-008)
     /// - OAuth mode: 2 blocks - Claude Code prefix WITHOUT cache_control, preamble WITH cache_control
     /// - API key mode: 1 block - preamble WITH cache_control
+    ///
+    /// # TOOL-008: Uses SystemPromptFacade
+    /// System prompt formatting now uses select_claude_facade() from codelet_tools,
+    /// ensuring consistent formatting across the codebase.
     ///
     /// # TOOL-007 Note
     /// Web search uses FacadeToolWrapper(ClaudeWebSearchFacade) for consistent tool interfaces.
@@ -289,8 +254,10 @@ impl ClaudeProvider {
         &self,
         preamble: Option<&str>,
     ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
-        use crate::caching_client::transform_system_prompt;
-        use codelet_tools::facade::{ClaudeWebSearchFacade, FacadeToolWrapper};
+        // TOOL-008: Use facade for system prompt formatting
+        use codelet_tools::facade::{
+            select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,
+        };
         use codelet_tools::{AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool};
         use rig::client::CompletionClient;
         use std::sync::Arc;
@@ -310,48 +277,26 @@ impl ClaudeProvider {
             .tool(AstGrepTool::new())
             .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade))); // TOOL-007: Use facade for consistent tool interfaces
 
-        // PROV-006: Apply cache_control to system prompt for BOTH auth modes
-        // OAuth mode: built-in prefix + optional additional preamble
-        // API key mode: just the provided preamble
+        // PROV-006, TOOL-008: Apply cache_control to system prompt using facade
         let is_oauth = self.is_oauth_mode();
+        let facade = select_claude_facade(is_oauth);
 
-        // Determine the effective preamble based on auth mode
-        let effective_preamble = if is_oauth {
-            // OAuth mode: Claude Code prefix is required, optionally combined with additional preamble
-            match preamble {
-                Some(p) if !p.is_empty() => {
-                    // Combine prefix with additional preamble
-                    Some(format!("{CLAUDE_CODE_PROMPT_PREFIX}\n\n{p}"))
-                }
-                _ => {
-                    // Just the required prefix
-                    Some(CLAUDE_CODE_PROMPT_PREFIX.to_string())
-                }
-            }
-        } else {
-            // API key mode: use provided preamble as-is
-            preamble.map(str::to_string)
-        };
+        // Get the preamble text (or empty string for OAuth-only prefix case)
+        let preamble_text = preamble.unwrap_or("");
 
-        // Apply cache_control transformation if we have a preamble
-        if let Some(ref preamble_text) = effective_preamble {
-            // Set preamble for rig's internal handling
-            agent_builder = agent_builder.preamble(preamble_text);
+        // Build effective preamble for rig's internal handling
+        // (rig needs the combined text, facade handles the structured format)
+        let effective_preamble = facade.transform_preamble(preamble_text);
 
-            // Override system field with array format containing cache_control (PROV-006)
-            let cached_system = transform_system_prompt(
-                preamble_text,
-                is_oauth,
-                if is_oauth {
-                    Some(CLAUDE_CODE_PROMPT_PREFIX)
-                } else {
-                    None
-                },
-            );
-            agent_builder = agent_builder.additional_params(json!({
-                "system": cached_system
-            }));
-        }
+        // Set preamble for rig's internal handling
+        agent_builder = agent_builder.preamble(&effective_preamble);
+
+        // Override system field with array format containing cache_control (PROV-006, TOOL-008)
+        // Facade handles OAuth vs API key formatting automatically
+        let cached_system = facade.format_for_api(preamble_text);
+        agent_builder = agent_builder.additional_params(json!({
+            "system": cached_system
+        }));
 
         agent_builder.build()
     }
