@@ -263,6 +263,7 @@ impl CodeletSession {
                 .token_tracker
                 .cache_creation_input_tokens
                 .map(|t| t as u32),
+            tokens_per_second: None, // Only set during streaming
         })
     }
 

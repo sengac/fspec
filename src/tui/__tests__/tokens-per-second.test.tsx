@@ -135,38 +135,43 @@ const resetMockSession = () => {
   capturedResolver = null;
 };
 
-// Helper to simulate streaming with multiple Text chunks for rate calculation
-// The new implementation calculates tok/s from Text chunks, not TokenUpdate events
+// Helper to simulate streaming with tok/s from Rust
+// TUI-031: Tok/s is calculated in Rust and sent via TokenUpdate.tokensPerSecond
 const simulateStreaming = async (
   finalTokens: { inputTokens: number; outputTokens: number },
-  waitTime: number
+  waitTime: number,
+  tokensPerSecond: number = 25.5 // Default tok/s value for tests
 ) => {
   if (capturedCallback) {
-    // First text chunk - establishes baseline timestamp
+    // First text chunk
     capturedCallback({ type: 'Text', text: 'Hello ' });
   }
-  // Wait to create time delta between chunks
   await waitForFrame(waitTime / 3);
   if (capturedCallback) {
-    // Second text chunk - this creates the first rate sample
+    // Second text chunk
     capturedCallback({ type: 'Text', text: 'world, this is ' });
   }
   await waitForFrame(waitTime / 3);
   if (capturedCallback) {
-    // Third text chunk - another rate sample for averaging
+    // Third text chunk
     capturedCallback({ type: 'Text', text: 'a streaming response.' });
-    // Send token update for display
+    // Send token update with tok/s from Rust
     capturedCallback({
       type: 'TokenUpdate',
-      tokens: finalTokens,
+      tokens: { ...finalTokens, tokensPerSecond },
     });
   }
   await waitForFrame(waitTime / 3);
 };
 
 // Helper to end streaming
-const endStreaming = async () => {
+const endStreaming = async (finalTokens = { inputTokens: 100, outputTokens: 50 }) => {
   if (capturedCallback) {
+    // Final token update with tokensPerSecond: null to hide tok/s display
+    capturedCallback({
+      type: 'TokenUpdate',
+      tokens: { ...finalTokens, tokensPerSecond: null },
+    });
     capturedCallback({ type: 'Done' });
   }
   if (capturedResolver) {
@@ -243,14 +248,14 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
       stdin.write('\r');
       await waitForFrame(100);
 
-      // @step And only one TokenUpdate event has been received
+      // @step And only one TokenUpdate event has been received (without tokensPerSecond)
       // @step When the header is rendered
-      // Send only the first token update - no rate can be calculated yet
+      // TUI-031: Rust hasn't calculated tok/s yet, so it's not sent
       if (capturedCallback) {
         capturedCallback({ type: 'Text', text: 'Hello' });
         capturedCallback({
           type: 'TokenUpdate',
-          tokens: { inputTokens: 100, outputTokens: 10 },
+          tokens: { inputTokens: 100, outputTokens: 10 }, // No tokensPerSecond
         });
       }
       await waitForFrame(100);
@@ -393,20 +398,20 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
       expect(frame1).toContain('tok/s');
 
       // @step When additional tokens continue to stream over time
-      // Send more tokens
+      // TUI-031: Send more tokens with updated tok/s from Rust
       if (capturedCallback) {
         capturedCallback({
           type: 'TokenUpdate',
-          tokens: { inputTokens: 100, outputTokens: 150 },
+          tokens: { inputTokens: 100, outputTokens: 150, tokensPerSecond: 30.2 },
         });
       }
       await waitForFrame(200);
 
-      // @step Then the tokens per second display should update with new samples
+      // @step Then the tokens per second display should update with new value from Rust
       const frame2 = lastFrame();
       expect(frame2).toContain('tok/s');
 
-      // @step And the displayed value should reflect the average of all rate samples
+      // @step And the displayed value should reflect the EMA-smoothed rate from Rust
       expect(frame1).toMatch(/\d+\.\d tok\/s/);
       expect(frame2).toMatch(/\d+\.\d tok\/s/);
 

@@ -18,6 +18,8 @@ pub struct TokenInfo {
     pub output_tokens: u64,
     pub cache_read_input_tokens: Option<u64>,
     pub cache_creation_input_tokens: Option<u64>,
+    /// Tokens per second (smoothed with EMA for stable display)
+    pub tokens_per_second: Option<f64>,
 }
 
 /// Tool call information

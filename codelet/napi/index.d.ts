@@ -531,6 +531,8 @@ export interface TokenTracker {
   outputTokens: number;
   cacheReadInputTokens?: number;
   cacheCreationInputTokens?: number;
+  /** Tokens per second (EMA-smoothed, calculated in Rust) */
+  tokensPerSecond?: number;
 }
 
 /** Tool call information */
