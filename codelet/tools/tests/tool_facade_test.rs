@@ -23,12 +23,10 @@ async fn test_map_claude_web_search_parameters_to_internal_format() -> Result<()
     // @step Given a ClaudeWebSearchFacade is registered
     let facade = ClaudeWebSearchFacade;
 
-    // @step When Claude sends parameters {action: {type: 'search', query: 'rust async'}}
+    // @step When Claude sends parameters {action_type: 'search', query: 'rust async'}
     let claude_params = json!({
-        "action": {
-            "type": "search",
-            "query": "rust async"
-        }
+        "action_type": "search",
+        "query": "rust async"
     });
 
     // @step Then the facade maps to InternalParams::Search with query 'rust async'
@@ -77,12 +75,12 @@ async fn test_map_gemini_web_fetch_url_to_internal_open_page_format() -> Result<
     // @step Given a GeminiWebFetchFacade is registered
     let facade = GeminiWebFetchFacade;
 
-    // @step When Gemini sends parameters {prompt: 'https://example.com summarize this'} to tool 'web_fetch'
+    // @step When Gemini sends parameters {url: 'https://example.com'} to tool 'web_fetch'
     let gemini_params = json!({
-        "prompt": "https://example.com summarize this"
+        "url": "https://example.com"
     });
 
-    // @step Then the facade extracts the URL and maps to InternalParams::OpenPage with url 'https://example.com'
+    // @step Then the facade maps to InternalParams::OpenPage with url 'https://example.com'
     let internal = facade.map_params(gemini_params)?;
     assert_eq!(
         internal,
@@ -92,7 +90,7 @@ async fn test_map_gemini_web_fetch_url_to_internal_open_page_format() -> Result<
     );
 
     // @step And the base web search tool executes the open_page action
-    // The facade correctly extracts the URL for the base tool
+    // The facade correctly passes the URL for the base tool
 
     Ok(())
 }
@@ -140,22 +138,22 @@ async fn test_gemini_facade_provides_flat_json_schema_without_oneof() -> Result<
 }
 
 #[tokio::test]
-async fn test_claude_facade_provides_complex_schema_with_action_variants() -> Result<()> {
+async fn test_claude_facade_provides_flat_schema_with_action_type_enum() -> Result<()> {
     // @step Given a ClaudeWebSearchFacade is created
     let facade = ClaudeWebSearchFacade;
 
     // @step When I request the tool definition
     let definition = facade.definition();
 
-    // @step Then the schema contains an 'action' property with 'oneOf' variants
+    // @step Then the schema contains an 'action_type' property with enum values
     let params = &definition.parameters;
-    assert!(params["properties"]["action"]["oneOf"].is_array());
+    assert!(params["properties"]["action_type"]["enum"].is_array());
 
-    // @step And the variants include search, open_page, and find_in_page action types
-    let one_of = params["properties"]["action"]["oneOf"].as_array().unwrap();
-    let types: Vec<&str> = one_of
+    // @step And the enum values include search, open_page, and find_in_page action types
+    let action_types = params["properties"]["action_type"]["enum"].as_array().unwrap();
+    let types: Vec<&str> = action_types
         .iter()
-        .filter_map(|v| v["properties"]["type"]["const"].as_str())
+        .filter_map(|v| v.as_str())
         .collect();
     assert!(types.contains(&"search"));
     assert!(types.contains(&"open_page"));
@@ -227,9 +225,11 @@ async fn test_facade_wrapper_web_fetch_integrates_with_rig() -> Result<()> {
     // @step And when I call definition()
     let def = wrapper.definition(String::new()).await;
 
-    // @step Then it returns a flat schema with prompt parameter
+    // @step Then it returns a flat schema with url and format parameters
     assert_eq!(def.name, "web_fetch");
-    assert!(def.parameters["properties"]["prompt"]["type"] == "string");
+    assert!(def.parameters["properties"]["url"]["type"] == "string");
+    assert!(def.parameters["properties"]["format"]["type"] == "string");
+    assert!(def.parameters["properties"]["format"]["enum"].is_array());
 
     Ok(())
 }
@@ -244,9 +244,9 @@ async fn test_map_gemini_read_file_parameters_to_internal_format() -> Result<()>
     // @step Given a GeminiReadFileFacade is registered
     let facade = GeminiReadFileFacade;
 
-    // @step When Gemini sends parameters {path: '/tmp/file.txt'} to tool 'read_file'
+    // @step When Gemini sends parameters {file_path: '/tmp/file.txt'} to tool 'read_file'
     let gemini_params = json!({
-        "path": "/tmp/file.txt"
+        "file_path": "/tmp/file.txt"
     });
 
     // @step Then the facade maps to InternalFileParams::Read with file_path '/tmp/file.txt'
@@ -272,9 +272,9 @@ async fn test_map_gemini_write_file_parameters_to_internal_format() -> Result<()
     // @step Given a GeminiWriteFileFacade is registered
     let facade = GeminiWriteFileFacade;
 
-    // @step When Gemini sends parameters {path: '/tmp/file.txt', content: 'hello'} to tool 'write_file'
+    // @step When Gemini sends parameters {file_path: '/tmp/file.txt', content: 'hello'} to tool 'write_file'
     let gemini_params = json!({
-        "path": "/tmp/file.txt",
+        "file_path": "/tmp/file.txt",
         "content": "hello"
     });
 
@@ -298,11 +298,11 @@ async fn test_map_gemini_replace_parameters_to_internal_format() -> Result<()> {
     // @step Given a GeminiReplaceFacade is registered
     let facade = GeminiReplaceFacade;
 
-    // @step When Gemini sends parameters {path: '/tmp/file.txt', old_text: 'foo', new_text: 'bar'} to tool 'replace'
+    // @step When Gemini sends parameters {file_path: '/tmp/file.txt', old_string: 'foo', new_string: 'bar'} to tool 'replace'
     let gemini_params = json!({
-        "path": "/tmp/file.txt",
-        "old_text": "foo",
-        "new_text": "bar"
+        "file_path": "/tmp/file.txt",
+        "old_string": "foo",
+        "new_string": "bar"
     });
 
     // @step Then the facade maps to InternalFileParams::Edit with file_path '/tmp/file.txt', old_string 'foo', new_string 'bar'
@@ -329,10 +329,10 @@ async fn test_gemini_read_file_facade_provides_flat_schema() -> Result<()> {
     // @step When I request the tool definition
     let definition = facade.definition();
 
-    // @step Then the schema has type 'object' with properties containing only {path: {type: 'string'}}
+    // @step Then the schema has type 'object' with properties containing {file_path: {type: 'string'}}
     let params = &definition.parameters;
     assert_eq!(params["type"], "object");
-    assert!(params["properties"]["path"]["type"] == "string");
+    assert!(params["properties"]["file_path"]["type"] == "string");
 
     // @step And the schema does not contain 'oneOf' or nested action objects
     assert!(params.get("oneOf").is_none());
@@ -349,10 +349,10 @@ async fn test_gemini_write_file_facade_provides_flat_schema() -> Result<()> {
     // @step When I request the tool definition
     let definition = facade.definition();
 
-    // @step Then the schema has type 'object' with properties containing {path: {type: 'string'}, content: {type: 'string'}}
+    // @step Then the schema has type 'object' with properties containing {file_path: {type: 'string'}, content: {type: 'string'}}
     let params = &definition.parameters;
     assert_eq!(params["type"], "object");
-    assert!(params["properties"]["path"]["type"] == "string");
+    assert!(params["properties"]["file_path"]["type"] == "string");
     assert!(params["properties"]["content"]["type"] == "string");
 
     // @step And the schema does not contain 'oneOf' or nested action objects
@@ -370,12 +370,12 @@ async fn test_gemini_replace_facade_provides_flat_schema() -> Result<()> {
     // @step When I request the tool definition
     let definition = facade.definition();
 
-    // @step Then the schema has type 'object' with properties containing {path: {type: 'string'}, old_text: {type: 'string'}, new_text: {type: 'string'}}
+    // @step Then the schema has type 'object' with properties containing {file_path: {type: 'string'}, old_string: {type: 'string'}, new_string: {type: 'string'}}
     let params = &definition.parameters;
     assert_eq!(params["type"], "object");
-    assert!(params["properties"]["path"]["type"] == "string");
-    assert!(params["properties"]["old_text"]["type"] == "string");
-    assert!(params["properties"]["new_text"]["type"] == "string");
+    assert!(params["properties"]["file_path"]["type"] == "string");
+    assert!(params["properties"]["old_string"]["type"] == "string");
+    assert!(params["properties"]["new_string"]["type"] == "string");
 
     // @step And the schema does not contain 'oneOf' or nested action objects
     assert!(params.get("oneOf").is_none());
@@ -396,10 +396,10 @@ async fn test_facade_wrapper_read_file_integrates_with_rig() -> Result<()> {
     // @step Then it returns "read_file"
     assert_eq!(name, "read_file");
 
-    // @step And when I call definition() it returns a flat schema with path parameter
+    // @step And when I call definition() it returns a flat schema with file_path parameter
     let def = wrapper.definition(String::new()).await;
     assert_eq!(def.name, "read_file");
-    assert!(def.parameters["properties"]["path"]["type"] == "string");
+    assert!(def.parameters["properties"]["file_path"]["type"] == "string");
     assert!(def.parameters.get("oneOf").is_none());
 
     Ok(())
@@ -522,10 +522,10 @@ async fn test_map_gemini_search_file_content_parameters_to_internal_format() -> 
     // @step Given a GeminiSearchFileContentFacade is registered
     let facade = GeminiSearchFileContentFacade;
 
-    // @step When Gemini sends parameters {pattern: 'TODO', path: 'src'} to tool 'search_file_content'
+    // @step When Gemini sends parameters {pattern: 'TODO', dir_path: 'src'} to tool 'search_file_content'
     let gemini_params = json!({
         "pattern": "TODO",
-        "path": "src"
+        "dir_path": "src"
     });
 
     // @step Then the facade maps to InternalSearchParams::Grep with pattern 'TODO' and path 'src'
@@ -553,11 +553,11 @@ async fn test_gemini_search_file_content_facade_provides_flat_schema() -> Result
     // @step When I request the tool definition
     let definition = facade.definition();
 
-    // @step Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, path: {type: 'string'}}
+    // @step Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, dir_path: {type: 'string'}}
     let params = &definition.parameters;
     assert_eq!(params["type"], "object");
     assert!(params["properties"]["pattern"]["type"] == "string");
-    assert!(params["properties"]["path"]["type"] == "string");
+    assert!(params["properties"]["dir_path"]["type"] == "string");
 
     // @step And the schema does not contain 'oneOf' or nested action objects
     assert!(params.get("oneOf").is_none());
@@ -567,14 +567,14 @@ async fn test_gemini_search_file_content_facade_provides_flat_schema() -> Result
 }
 
 #[tokio::test]
-async fn test_map_gemini_find_files_parameters_to_internal_format() -> Result<()> {
+async fn test_map_gemini_glob_parameters_to_internal_format() -> Result<()> {
     // @step Given a GeminiGlobFacade is registered
     let facade = GeminiGlobFacade;
 
-    // @step When Gemini sends parameters {pattern: '**/*.rs', path: 'src'} to tool 'find_files'
+    // @step When Gemini sends parameters {pattern: '**/*.rs', dir_path: 'src'} to tool 'glob'
     let gemini_params = json!({
         "pattern": "**/*.rs",
-        "path": "src"
+        "dir_path": "src"
     });
 
     // @step Then the facade maps to InternalSearchParams::Glob with pattern '**/*.rs' and path 'src'
@@ -602,11 +602,11 @@ async fn test_gemini_glob_facade_provides_flat_schema() -> Result<()> {
     // @step When I request the tool definition
     let definition = facade.definition();
 
-    // @step Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, path: {type: 'string'}}
+    // @step Then the schema has type 'object' with properties containing {pattern: {type: 'string'}, dir_path: {type: 'string'}}
     let params = &definition.parameters;
     assert_eq!(params["type"], "object");
     assert!(params["properties"]["pattern"]["type"] == "string");
-    assert!(params["properties"]["path"]["type"] == "string");
+    assert!(params["properties"]["dir_path"]["type"] == "string");
 
     // @step And the schema does not contain 'oneOf' or nested action objects
     assert!(params.get("oneOf").is_none());
@@ -627,18 +627,18 @@ async fn test_search_facade_wrapper_integrates_with_rig_for_search_file_content(
     // @step Then it returns "search_file_content"
     assert_eq!(name, "search_file_content");
 
-    // @step And when I call definition() it returns a flat schema with pattern and path parameters
+    // @step And when I call definition() it returns a flat schema with pattern and dir_path parameters
     let def = wrapper.definition(String::new()).await;
     assert_eq!(def.name, "search_file_content");
     assert!(def.parameters["properties"]["pattern"]["type"] == "string");
-    assert!(def.parameters["properties"]["path"]["type"] == "string");
+    assert!(def.parameters["properties"]["dir_path"]["type"] == "string");
     assert!(def.parameters.get("oneOf").is_none());
 
     Ok(())
 }
 
 #[tokio::test]
-async fn test_search_facade_wrapper_integrates_with_rig_for_find_files() -> Result<()> {
+async fn test_search_facade_wrapper_integrates_with_rig_for_glob() -> Result<()> {
     // @step Given a SearchToolFacadeWrapper wrapping GeminiGlobFacade
     let facade = Arc::new(GeminiGlobFacade) as Arc<dyn SearchToolFacade>;
     let wrapper = SearchToolFacadeWrapper::new(facade);
@@ -646,14 +646,14 @@ async fn test_search_facade_wrapper_integrates_with_rig_for_find_files() -> Resu
     // @step When I call name() on the wrapper
     let name = wrapper.name();
 
-    // @step Then it returns "find_files"
-    assert_eq!(name, "find_files");
+    // @step Then it returns "glob"
+    assert_eq!(name, "glob");
 
-    // @step And when I call definition() it returns a flat schema with pattern and path parameters
+    // @step And when I call definition() it returns a flat schema with pattern and dir_path parameters
     let def = wrapper.definition(String::new()).await;
-    assert_eq!(def.name, "find_files");
+    assert_eq!(def.name, "glob");
     assert!(def.parameters["properties"]["pattern"]["type"] == "string");
-    assert!(def.parameters["properties"]["path"]["type"] == "string");
+    assert!(def.parameters["properties"]["dir_path"]["type"] == "string");
     assert!(def.parameters.get("oneOf").is_none());
 
     Ok(())

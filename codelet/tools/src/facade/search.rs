@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 
 /// Gemini-specific facade for content search (grep).
 ///
-/// Maps Gemini's `search_file_content` tool with flat `{pattern, path}` schema
+/// Maps Gemini's `search_file_content` tool with flat `{pattern, dir_path}` schema
 /// to the internal GrepTool parameters.
 pub struct GeminiSearchFileContentFacade;
 
@@ -33,7 +33,7 @@ impl SearchToolFacade for GeminiSearchFileContentFacade {
                         "type": "string",
                         "description": "The regex pattern to search for"
                     },
-                    "path": {
+                    "dir_path": {
                         "type": "string",
                         "description": "Directory or file to search in (optional, defaults to current directory)"
                     }
@@ -53,7 +53,10 @@ impl SearchToolFacade for GeminiSearchFileContentFacade {
             })?
             .to_string();
 
-        let path = input.get("path").and_then(|p| p.as_str()).map(String::from);
+        let path = input
+            .get("dir_path")
+            .and_then(|p| p.as_str())
+            .map(String::from);
 
         Ok(InternalSearchParams::Grep { pattern, path })
     }
@@ -61,7 +64,7 @@ impl SearchToolFacade for GeminiSearchFileContentFacade {
 
 /// Gemini-specific facade for file pattern matching (glob).
 ///
-/// Maps Gemini's `find_files` tool with flat `{pattern, path}` schema
+/// Maps Gemini's `glob` tool with flat `{pattern, dir_path}` schema
 /// to the internal GlobTool parameters.
 pub struct GeminiGlobFacade;
 
@@ -71,12 +74,12 @@ impl SearchToolFacade for GeminiGlobFacade {
     }
 
     fn tool_name(&self) -> &'static str {
-        "find_files"
+        "glob"
     }
 
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
-            name: "find_files".to_string(),
+            name: "glob".to_string(),
             description: "Find files matching a glob pattern".to_string(),
             parameters: json!({
                 "type": "object",
@@ -85,7 +88,7 @@ impl SearchToolFacade for GeminiGlobFacade {
                         "type": "string",
                         "description": "The glob pattern to match files (e.g., '**/*.rs')"
                     },
-                    "path": {
+                    "dir_path": {
                         "type": "string",
                         "description": "Directory to search in (optional, defaults to current directory)"
                     }
@@ -100,12 +103,15 @@ impl SearchToolFacade for GeminiGlobFacade {
             .get("pattern")
             .and_then(|p| p.as_str())
             .ok_or_else(|| ToolError::Validation {
-                tool: "find_files",
+                tool: "glob",
                 message: "Missing 'pattern' field".to_string(),
             })?
             .to_string();
 
-        let path = input.get("path").and_then(|p| p.as_str()).map(String::from);
+        let path = input
+            .get("dir_path")
+            .and_then(|p| p.as_str())
+            .map(String::from);
 
         Ok(InternalSearchParams::Glob { pattern, path })
     }

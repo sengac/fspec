@@ -15,6 +15,26 @@ use serde_json::{json, Value};
 pub const CLAUDE_CODE_PROMPT_PREFIX: &str =
     "You are Claude Code, Anthropic's official CLI for Claude.";
 
+/// Gemini-specific web tool guidance
+///
+/// This guidance helps Gemini understand how to effectively use web tools
+/// since the model sometimes fails to proactively use them without explicit instructions.
+pub const GEMINI_WEB_TOOL_GUIDANCE: &str = r#"
+## Web Search and Browsing
+
+When you need information that may not be in the local codebase or is about current events, APIs, or documentation:
+
+1. **Search first**: Use `google_web_search` with a clear, specific query to find relevant URLs
+2. **Fetch content**: After searching, use `web_fetch` with the `url` parameter to retrieve page content from the most relevant search results
+3. **Chain the tools**: Always follow up searches by fetching content from the URLs you find - don't just report the search results
+
+Example workflow:
+- User asks about a library's API
+- Use `google_web_search` to find the documentation URL
+- Use `web_fetch` with the URL to get the actual documentation content
+- Answer based on the fetched content
+"#;
+
 /// Trait for provider-specific system prompt formatting.
 ///
 /// Each facade adapts system prompt formatting for a specific LLM provider,
@@ -145,6 +165,7 @@ impl SystemPromptFacade for ClaudeApiKeySystemPromptFacade {
 /// Formats system prompts for Gemini:
 /// - No identity prefix
 /// - Plain string format (no special transformation)
+/// - Appends web tool guidance to help Gemini use web tools effectively
 pub struct GeminiSystemPromptFacade;
 
 impl SystemPromptFacade for GeminiSystemPromptFacade {
@@ -157,12 +178,13 @@ impl SystemPromptFacade for GeminiSystemPromptFacade {
     }
 
     fn transform_preamble(&self, preamble: &str) -> String {
-        preamble.to_string()
+        // Append web tool guidance to help Gemini use web tools effectively
+        format!("{preamble}\n{GEMINI_WEB_TOOL_GUIDANCE}")
     }
 
     fn format_for_api(&self, preamble: &str) -> Value {
-        // Gemini uses plain string format
-        Value::String(preamble.to_string())
+        // Gemini uses plain string format with web tool guidance appended
+        Value::String(self.transform_preamble(preamble))
     }
 }
 
@@ -277,7 +299,19 @@ mod tests {
         let facade = GeminiSystemPromptFacade;
         let result = facade.format_for_api("Hello");
         assert!(result.is_string());
-        assert_eq!(result.as_str().unwrap(), "Hello");
+        let text = result.as_str().unwrap();
+        assert!(text.starts_with("Hello"));
+        assert!(text.contains("Web Search and Browsing"));
+        assert!(text.contains("google_web_search"));
+        assert!(text.contains("web_fetch"));
+    }
+
+    #[test]
+    fn test_gemini_transform_preamble_appends_web_guidance() {
+        let facade = GeminiSystemPromptFacade;
+        let result = facade.transform_preamble("Hello");
+        assert!(result.starts_with("Hello"));
+        assert!(result.contains(GEMINI_WEB_TOOL_GUIDANCE));
     }
 
     #[test]
