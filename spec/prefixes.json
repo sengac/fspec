@@ -269,6 +269,11 @@
       "prefix": "CTX",
       "description": "Context management and compaction",
       "createdAt": "2025-12-24T02:52:02.548Z"
+    },
+    "TOOL": {
+      "prefix": "TOOL",
+      "description": "Tool system and provider abstraction",
+      "createdAt": "2025-12-26T06:27:13.966Z"
     }
   }
 }

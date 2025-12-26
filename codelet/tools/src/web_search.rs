@@ -164,9 +164,33 @@ pub struct WebSearchRequest {
     pub action: WebSearchAction,
 }
 
-/// Custom deserializer that handles both JSON object and JSON string formats
+/// Normalize action type strings across different LLM providers
 ///
-/// This handles the case where Claude passes the action as a JSON string instead of an object
+/// Different providers may send action types in various formats:
+/// - Claude: "search", "open_page", "find_in_page" (correct)
+/// - Gemini: "web_search", "openPage", etc. (variations)
+///
+/// This function maps all known variations to the canonical snake_case format.
+fn normalize_action_type(action_type: &str) -> &'static str {
+    match action_type.to_lowercase().as_str() {
+        // Search action variations
+        // - "query" is what Gemini sends (uses the parameter name as the type)
+        "search" | "web_search" | "websearch" | "query" => "search",
+        // Open page variations
+        "open_page" | "openpage" | "open" | "navigate" | "goto" | "url" => "open_page",
+        // Find in page variations
+        "find_in_page" | "findinpage" | "find" | "search_in_page" | "searchinpage" | "pattern" => "find_in_page",
+        // Unknown - return as-is to let serde handle the error
+        _ => "unknown",
+    }
+}
+
+/// Custom deserializer that handles both JSON object and JSON string formats
+/// and normalizes action types across different LLM providers
+///
+/// This handles:
+/// 1. Action as JSON object vs JSON string (Claude sometimes stringifies)
+/// 2. Different action type naming conventions across providers
 fn deserialize_web_search_action<'de, D>(deserializer: D) -> Result<WebSearchAction, D::Error>
 where
     D: serde::Deserializer<'de>,
@@ -176,16 +200,27 @@ where
 
     let value = Value::deserialize(deserializer)?;
 
-    match value {
-        // If it's already an object, deserialize directly
-        Value::Object(_) => WebSearchAction::deserialize(value).map_err(D::Error::custom),
-        // If it's a string, parse it as JSON first
+    // Parse the value into a mutable JSON object
+    let mut obj = match value {
+        Value::Object(obj) => obj,
         Value::String(s) => {
             let parsed: Value = serde_json::from_str(&s).map_err(D::Error::custom)?;
-            WebSearchAction::deserialize(parsed).map_err(D::Error::custom)
+            match parsed {
+                Value::Object(obj) => obj,
+                _ => return Err(D::Error::custom("Expected object for action")),
+            }
         }
-        _ => Err(D::Error::custom("Expected object or string for action")),
+        _ => return Err(D::Error::custom("Expected object or string for action")),
+    };
+
+    // Normalize the "type" field if present
+    if let Some(Value::String(action_type)) = obj.get("type") {
+        let normalized = normalize_action_type(action_type);
+        obj.insert("type".to_string(), Value::String(normalized.to_string()));
     }
+
+    // Deserialize the normalized object
+    WebSearchAction::deserialize(Value::Object(obj)).map_err(D::Error::custom)
 }
 
 /// Result from web search operations
@@ -515,6 +550,53 @@ mod tests {
                 assert_eq!(query, Some("test".to_string()));
             }
             _ => panic!("Expected Search action"),
+        }
+    }
+
+    #[test]
+    fn test_action_type_normalization_gemini_web_search() {
+        // Gemini sends "web_search" instead of "search"
+        let json = r#"{"action": {"type": "web_search", "query": "latest news"}}"#;
+        let request: WebSearchRequest = serde_json::from_str(json).expect("Should parse Gemini format");
+        match request.action {
+            WebSearchAction::Search { query } => {
+                assert_eq!(query, Some("latest news".to_string()));
+            }
+            _ => panic!("Expected Search action from Gemini's web_search type"),
+        }
+    }
+
+    #[test]
+    fn test_action_type_normalization_variations() {
+        // Test various action type formats that different providers might send
+        let test_cases = vec![
+            // Search variations
+            (r#"{"action": {"type": "search", "query": "q"}}"#, "search"),
+            (r#"{"action": {"type": "web_search", "query": "q"}}"#, "search"),
+            (r#"{"action": {"type": "SEARCH", "query": "q"}}"#, "search"),
+            (r#"{"action": {"type": "WebSearch", "query": "q"}}"#, "search"),
+            (r#"{"action": {"type": "query", "query": "q"}}"#, "search"), // Gemini uses parameter name as type
+            // Open page variations
+            (r#"{"action": {"type": "open_page", "url": "http://x"}}"#, "open_page"),
+            (r#"{"action": {"type": "openPage", "url": "http://x"}}"#, "open_page"),
+            (r#"{"action": {"type": "open", "url": "http://x"}}"#, "open_page"),
+            (r#"{"action": {"type": "navigate", "url": "http://x"}}"#, "open_page"),
+            // Find in page variations
+            (r#"{"action": {"type": "find_in_page", "url": "http://x", "pattern": "p"}}"#, "find_in_page"),
+            (r#"{"action": {"type": "findInPage", "url": "http://x", "pattern": "p"}}"#, "find_in_page"),
+            (r#"{"action": {"type": "find", "url": "http://x", "pattern": "p"}}"#, "find_in_page"),
+        ];
+
+        for (json, expected_type) in test_cases {
+            let request: Result<WebSearchRequest, _> = serde_json::from_str(json);
+            assert!(request.is_ok(), "Failed to parse: {} (expected {})", json, expected_type);
+            let action = request.unwrap().action;
+            match (expected_type, &action) {
+                ("search", WebSearchAction::Search { .. }) => {}
+                ("open_page", WebSearchAction::OpenPage { .. }) => {}
+                ("find_in_page", WebSearchAction::FindInPage { .. }) => {}
+                _ => panic!("Wrong action type for {}: got {:?}", json, action),
+            }
         }
     }
 

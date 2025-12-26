@@ -284,6 +284,20 @@
         "RES-013",
         "RES-014"
       ]
+    },
+    "tool-facades": {
+      "id": "tool-facades",
+      "title": "Tool Facades",
+      "createdAt": "2025-12-26T07:07:11.178Z",
+      "description": "Provider-specific tool facades that adapt tool interfaces for different LLM providers while sharing common implementations",
+      "workUnits": [
+        "TOOL-002",
+        "TOOL-003",
+        "TOOL-004",
+        "TOOL-005",
+        "TOOL-006",
+        "TOOL-007"
+      ]
     }
   }
 }

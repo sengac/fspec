@@ -8,6 +8,7 @@ pub mod bash;
 pub mod chrome_browser;
 pub mod edit;
 pub mod error;
+pub mod facade;
 pub mod glob;
 pub mod grep;
 pub mod limits;

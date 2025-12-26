@@ -1,0 +1,151 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "from",
+      "line": 20,
+      "column": 4,
+      "text": "fn from(err: ChromeError) -> Self {\n        match err {\n            ChromeError::Timeout => ToolError::Timeout {\n                tool: \"web_search\",\n                seconds: 30, // Default Chrome timeout\n            },\n            ChromeError::LaunchError(msg) => ToolError::Execution {\n                tool: \"web_search\",\n                message: format!(\"Chrome launch failed: {msg}\"),\n            },\n            ChromeError::ConnectionError(msg) => ToolError::Execution {\n                tool: \"web_search\",\n                message: format!(\"Chrome connection failed: {msg}\"),\n            },\n            ChromeError::TabError(msg) => ToolError::Execution {\n                tool: \"web_search\",\n                message: format!(\"Chrome tab error: {msg}\"),\n            },\n            ChromeError::NavigationError(msg) => ToolError::Execution {\n                tool: \"web_search\",\n                message: format!(\"Navigation failed: {msg}\"),\n            },\n            ChromeError::EvaluationError(msg) => ToolError::Execution {\n                tool: \"web_search\",\n                message: format!(\"JavaScript evaluation failed: {msg}\"),\n            },\n            ChromeError::ChromeNotFound(path) => ToolError::NotFound {\n                tool: \"web_search\",\n                message: format!(\"Chrome not found at: {path}\"),\n            },\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "create_browser",
+      "line": 58,
+      "column": 0,
+      "text": "fn create_browser() -> Result<Arc<ChromeBrowser>, ChromeError> {\n    let config = ChromeConfig::default();\n    let browser = ChromeBrowser::new(config)?;\n    Ok(Arc::new(browser))\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "get_browser",
+      "line": 66,
+      "column": 0,
+      "text": "fn get_browser() -> Result<Arc<ChromeBrowser>, ChromeError> {\n    let mut guard = BROWSER\n        .lock()\n        .map_err(|e| ChromeError::LaunchError(format!(\"Failed to acquire browser lock: {e}\")))?;\n\n    // If we have a browser, return it\n    if let Some(ref browser) = *guard {\n        return Ok(Arc::clone(browser));\n    }\n\n    // Create a new browser\n    let browser = create_browser()?;\n    *guard = Some(Arc::clone(&browser));\n    Ok(browser)\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "clear_browser",
+      "line": 83,
+      "column": 0,
+      "text": "fn clear_browser() {\n    if let Ok(mut guard) = BROWSER.lock() {\n        *guard = None;\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "shutdown_browser",
+      "line": 96,
+      "column": 0,
+      "text": "pub fn shutdown_browser() {\n    if let Ok(mut guard) = BROWSER.lock() {\n        if let Some(browser) = guard.take() {\n            // Drop the Arc - if this is the last reference, Chrome will be killed\n            // via Browser -> BrowserInner -> Process -> TemporaryProcess -> kill()\n            drop(browser);\n            tracing::info!(\"Browser shutdown complete\");\n        }\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "install_browser_cleanup_handler",
+      "line": 120,
+      "column": 0,
+      "text": "pub fn install_browser_cleanup_handler() {\n    if let Err(e) = ctrlc::set_handler(move || {\n        tracing::info!(\"Received termination signal, shutting down browser...\");\n        shutdown_browser();\n        // Exit after cleanup - use 130 for SIGINT (128 + 2)\n        std::process::exit(130);\n    }) {\n        tracing::warn!(\"Failed to install browser cleanup handler: {e}\");\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "with_browser_retry",
+      "line": 132,
+      "column": 0,
+      "text": "fn with_browser_retry<T, F>(operation: F) -> Result<T, ChromeError>\nwhere\n    F: Fn(Arc<ChromeBrowser>) -> Result<T, ChromeError>,\n{\n    // First attempt\n    let browser = get_browser()?;\n    match operation(Arc::clone(&browser)) {\n        Ok(result) => Ok(result),\n        Err(ChromeError::TabError(msg)) if msg.contains(\"connection is closed\") => {\n            // Browser connection died, clear cache and retry once\n            clear_browser();\n            let new_browser = get_browser()?;\n            operation(new_browser)\n        }\n        Err(e) => Err(e),\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "normalize_action_type",
+      "line": 174,
+      "column": 0,
+      "text": "fn normalize_action_type(action_type: &str) -> &'static str {\n    match action_type.to_lowercase().as_str() {\n        // Search action variations\n        // - \"query\" is what Gemini sends (uses the parameter name as the type)\n        \"search\" | \"web_search\" | \"websearch\" | \"query\" => \"search\",\n        // Open page variations\n        \"open_page\" | \"openpage\" | \"open\" | \"navigate\" | \"goto\" | \"url\" => \"open_page\",\n        // Find in page variations\n        \"find_in_page\" | \"findinpage\" | \"find\" | \"search_in_page\" | \"searchinpage\" | \"pattern\" => \"find_in_page\",\n        // Unknown - return as-is to let serde handle the error\n        _ => \"unknown\",\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "deserialize_web_search_action",
+      "line": 194,
+      "column": 0,
+      "text": "fn deserialize_web_search_action<'de, D>(deserializer: D) -> Result<WebSearchAction, D::Error>\nwhere\n    D: serde::Deserializer<'de>,\n{\n    use serde::de::Error;\n    use serde_json::Value;\n\n    let value = Value::deserialize(deserializer)?;\n\n    // Parse the value into a mutable JSON object\n    let mut obj = match value {\n        Value::Object(obj) => obj,\n        Value::String(s) => {\n            let parsed: Value = serde_json::from_str(&s).map_err(D::Error::custom)?;\n            match parsed {\n                Value::Object(obj) => obj,\n                _ => return Err(D::Error::custom(\"Expected object for action\")),\n            }\n        }\n        _ => return Err(D::Error::custom(\"Expected object or string for action\")),\n    };\n\n    // Normalize the \"type\" field if present\n    if let Some(Value::String(action_type)) = obj.get(\"type\") {\n        let normalized = normalize_action_type(action_type);\n        obj.insert(\"type\".to_string(), Value::String(normalized.to_string()));\n    }\n\n    // Deserialize the normalized object\n    WebSearchAction::deserialize(Value::Object(obj)).map_err(D::Error::custom)\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 235,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 242,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 254,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> ToolDefinition {\n        // This matches the schema structure that was working in the previous implementation\n        ToolDefinition {\n            name: \"web_search\".to_string(),\n            description: \"Perform web search, open web pages, or find content within pages using Chrome-based web scraping with full JavaScript support\".to_string(),\n            parameters: json!({\n                \"additionalProperties\": false,\n                \"properties\": {\n                    \"action\": {\n                        \"oneOf\": [\n                            {\n                                \"additionalProperties\": false,\n                                \"properties\": {\n                                    \"query\": {\n                                        \"description\": \"Search query\",\n                                        \"type\": \"string\"\n                                    },\n                                    \"type\": {\n                                        \"const\": \"search\",\n                                        \"type\": \"string\"\n                                    }\n                                },\n                                \"required\": [\"type\"],\n                                \"type\": \"object\"\n                            },\n                            {\n                                \"additionalProperties\": false,\n                                \"properties\": {\n                                    \"type\": {\n                                        \"const\": \"open_page\",\n                                        \"type\": \"string\"\n                                    },\n                                    \"url\": {\n                                        \"description\": \"URL to open\",\n                                        \"type\": \"string\"\n                                    }\n                                },\n                                \"required\": [\"type\"],\n                                \"type\": \"object\"\n                            },\n                            {\n                                \"additionalProperties\": false,\n                                \"properties\": {\n                                    \"pattern\": {\n                                        \"description\": \"Pattern to find\",\n                                        \"type\": \"string\"\n                                    },\n                                    \"type\": {\n                                        \"const\": \"find_in_page\",\n                                        \"type\": \"string\"\n                                    },\n                                    \"url\": {\n                                        \"description\": \"URL of page to search\",\n                                        \"type\": \"string\"\n                                    }\n                                },\n                                \"required\": [\"type\"],\n                                \"type\": \"object\"\n                            }\n                        ],\n                        \"type\": \"object\"\n                    }\n                },\n                \"required\": [\"action\"],\n                \"type\": \"object\"\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 323,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        // Implement web search functionality using Chrome\n        // Return ToolError for validation failures, ChromeError converts via From impl\n        let (success, message) = match &args.action {\n            WebSearchAction::Search { query } => {\n                let query = query.as_deref().unwrap_or(\"\");\n                if query.is_empty() {\n                    return Err(ToolError::Validation {\n                        tool: \"web_search\",\n                        message: \"Search query is required\".to_string(),\n                    });\n                }\n                match perform_web_search(query) {\n                    Ok(results) => (true, format!(\"Search results for '{query}':\\n{results}\")),\n                    Err(e) => return Err(e.into()),\n                }\n            }\n            WebSearchAction::OpenPage { url } => {\n                let url = url.as_deref().unwrap_or(\"\");\n                if url.is_empty() {\n                    return Err(ToolError::Validation {\n                        tool: \"web_search\",\n                        message: \"URL is required\".to_string(),\n                    });\n                }\n                match fetch_page_content(url) {\n                    Ok(content) => (true, format!(\"Page content from {url}:\\n{content}\")),\n                    Err(e) => return Err(e.into()),\n                }\n            }\n            WebSearchAction::FindInPage { url, pattern } => {\n                let url = url.as_deref().unwrap_or(\"\");\n                let pattern = pattern.as_deref().unwrap_or(\"\");\n                if url.is_empty() {\n                    return Err(ToolError::Validation {\n                        tool: \"web_search\",\n                        message: \"URL is required for find_in_page\".to_string(),\n                    });\n                }\n                if pattern.is_empty() {\n                    return Err(ToolError::Validation {\n                        tool: \"web_search\",\n                        message: \"Pattern is required for find_in_page\".to_string(),\n                    });\n                }\n                match find_pattern_in_page(url, pattern) {\n                    Ok(found) => (\n                        true,\n                        format!(\"Pattern '{pattern}' search results in {url}:\\n{found}\"),\n                    ),\n                    Err(e) => return Err(e.into()),\n                }\n            }\n            WebSearchAction::Other => {\n                return Err(ToolError::Validation {\n                    tool: \"web_search\",\n                    message: \"Unknown web search action type\".to_string(),\n                });\n            }\n        };\n\n        Ok(WebSearchResult {\n            success,\n            message,\n            action: args.action,\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "perform_web_search",
+      "line": 393,
+      "column": 0,
+      "text": "fn perform_web_search(query: &str) -> Result<String, ChromeError> {\n    let query = query.to_string();\n    with_browser_retry(|browser| {\n        let search_engine = SearchEngine::new(browser);\n        let results = search_engine.search(&query)?;\n\n        if results.is_empty() {\n            return Ok(\"No search results found\".to_string());\n        }\n\n        let mut output = Vec::new();\n        for (i, result) in results.iter().enumerate() {\n            output.push(format!(\n                \"{}. {}\\n   URL: {}\\n   {}\",\n                i + 1,\n                result.title,\n                result.url,\n                result.snippet\n            ));\n        }\n\n        let raw_output = output.join(\"\\n\\n\");\n\n        // Apply truncation to prevent oversized output\n        let lines = process_output_lines(&raw_output);\n        let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);\n        let mut final_output = truncate_result.output;\n\n        if truncate_result.char_truncated || truncate_result.remaining_count > 0 {\n            let warning = format_truncation_warning(\n                truncate_result.remaining_count,\n                \"lines\",\n                truncate_result.char_truncated,\n                OutputLimits::MAX_OUTPUT_CHARS,\n            );\n            final_output.push_str(&warning);\n        }\n\n        Ok(final_output)\n    })\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "fetch_page_content",
+      "line": 436,
+      "column": 0,
+      "text": "fn fetch_page_content(url: &str) -> Result<String, ChromeError> {\n    let url = url.to_string();\n    with_browser_retry(|browser| {\n        let page_fetcher = PageFetcher::new(browser);\n        let content = page_fetcher.fetch(&url)?;\n\n        let mut output = Vec::new();\n\n        if let Some(title) = &content.title {\n            output.push(format!(\"# {title}\"));\n        }\n\n        if let Some(desc) = &content.meta_description {\n            output.push(format!(\"*{desc}*\"));\n        }\n\n        if !content.main_content.is_empty() {\n            output.push(String::new());\n            output.push(content.main_content.clone());\n        }\n\n        if !content.links.is_empty() {\n            output.push(String::new());\n            output.push(\"## Links found:\".to_string());\n            for link in content.links.iter().take(10) {\n                if !link.text.is_empty() {\n                    output.push(format!(\"- [{}]({})\", link.text, link.href));\n                }\n            }\n        }\n\n        let raw_output = output.join(\"\\n\");\n\n        // Apply truncation to prevent oversized output (page content can be large)\n        let lines = process_output_lines(&raw_output);\n        let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);\n        let mut final_output = truncate_result.output;\n\n        if truncate_result.char_truncated || truncate_result.remaining_count > 0 {\n            let warning = format_truncation_warning(\n                truncate_result.remaining_count,\n                \"lines\",\n                truncate_result.char_truncated,\n                OutputLimits::MAX_OUTPUT_CHARS,\n            );\n            final_output.push_str(&warning);\n        }\n\n        Ok(final_output)\n    })\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "find_pattern_in_page",
+      "line": 489,
+      "column": 0,
+      "text": "fn find_pattern_in_page(url: &str, pattern: &str) -> Result<String, ChromeError> {\n    let url = url.to_string();\n    let pattern = pattern.to_string();\n    with_browser_retry(|browser| {\n        let page_fetcher = PageFetcher::new(browser);\n        let matches = page_fetcher.find_in_page(&url, &pattern)?;\n\n        if matches.is_empty() {\n            return Ok(format!(\"Pattern '{pattern}' not found on page\"));\n        }\n\n        let mut output = Vec::new();\n        output.push(format!(\"Found {} matches:\", matches.len()));\n\n        for (i, context) in matches.iter().enumerate() {\n            output.push(format!(\"{}. ...{}...\", i + 1, context));\n        }\n\n        let raw_output = output.join(\"\\n\");\n\n        // Apply truncation to prevent oversized output\n        let lines = process_output_lines(&raw_output);\n        let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);\n        let mut final_output = truncate_result.output;\n\n        if truncate_result.char_truncated || truncate_result.remaining_count > 0 {\n            let warning = format_truncation_warning(\n                truncate_result.remaining_count,\n                \"lines\",\n                truncate_result.char_truncated,\n                OutputLimits::MAX_OUTPUT_CHARS,\n            );\n            final_output.push_str(&warning);\n        }\n\n        Ok(final_output)\n    })\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "test_deserialize_web_search_action_from_object",
+      "line": 533,
+      "column": 4,
+      "text": "fn test_deserialize_web_search_action_from_object() {\n        let json = r#\"{\"action\": {\"type\": \"search\", \"query\": \"test\"}}\"#;\n        let request: WebSearchRequest = serde_json::from_str(json).expect(\"Should parse object\");\n        match request.action {\n            WebSearchAction::Search { query } => {\n                assert_eq!(query, Some(\"test\".to_string()));\n            }\n            _ => panic!(\"Expected Search action\"),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_deserialize_web_search_action_from_string",
+      "line": 545,
+      "column": 4,
+      "text": "fn test_deserialize_web_search_action_from_string() {\n        let json = r#\"{\"action\": \"{\\\"type\\\": \\\"search\\\", \\\"query\\\": \\\"test\\\"}\"}\"#;\n        let request: WebSearchRequest = serde_json::from_str(json).expect(\"Should parse string\");\n        match request.action {\n            WebSearchAction::Search { query } => {\n                assert_eq!(query, Some(\"test\".to_string()));\n            }\n            _ => panic!(\"Expected Search action\"),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_action_type_normalization_gemini_web_search",
+      "line": 557,
+      "column": 4,
+      "text": "fn test_action_type_normalization_gemini_web_search() {\n        // Gemini sends \"web_search\" instead of \"search\"\n        let json = r#\"{\"action\": {\"type\": \"web_search\", \"query\": \"latest news\"}}\"#;\n        let request: WebSearchRequest = serde_json::from_str(json).expect(\"Should parse Gemini format\");\n        match request.action {\n            WebSearchAction::Search { query } => {\n                assert_eq!(query, Some(\"latest news\".to_string()));\n            }\n            _ => panic!(\"Expected Search action from Gemini's web_search type\"),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_action_type_normalization_variations",
+      "line": 570,
+      "column": 4,
+      "text": "fn test_action_type_normalization_variations() {\n        // Test various action type formats that different providers might send\n        let test_cases = vec![\n            // Search variations\n            (r#\"{\"action\": {\"type\": \"search\", \"query\": \"q\"}}\"#, \"search\"),\n            (r#\"{\"action\": {\"type\": \"web_search\", \"query\": \"q\"}}\"#, \"search\"),\n            (r#\"{\"action\": {\"type\": \"SEARCH\", \"query\": \"q\"}}\"#, \"search\"),\n            (r#\"{\"action\": {\"type\": \"WebSearch\", \"query\": \"q\"}}\"#, \"search\"),\n            (r#\"{\"action\": {\"type\": \"query\", \"query\": \"q\"}}\"#, \"search\"), // Gemini uses parameter name as type\n            // Open page variations\n            (r#\"{\"action\": {\"type\": \"open_page\", \"url\": \"http://x\"}}\"#, \"open_page\"),\n            (r#\"{\"action\": {\"type\": \"openPage\", \"url\": \"http://x\"}}\"#, \"open_page\"),\n            (r#\"{\"action\": {\"type\": \"open\", \"url\": \"http://x\"}}\"#, \"open_page\"),\n            (r#\"{\"action\": {\"type\": \"navigate\", \"url\": \"http://x\"}}\"#, \"open_page\"),\n            // Find in page variations\n            (r#\"{\"action\": {\"type\": \"find_in_page\", \"url\": \"http://x\", \"pattern\": \"p\"}}\"#, \"find_in_page\"),\n            (r#\"{\"action\": {\"type\": \"findInPage\", \"url\": \"http://x\", \"pattern\": \"p\"}}\"#, \"find_in_page\"),\n            (r#\"{\"action\": {\"type\": \"find\", \"url\": \"http://x\", \"pattern\": \"p\"}}\"#, \"find_in_page\"),\n        ];\n\n        for (json, expected_type) in test_cases {\n            let request: Result<WebSearchRequest, _> = serde_json::from_str(json);\n            assert!(request.is_ok(), \"Failed to parse: {} (expected {})\", json, expected_type);\n            let action = request.unwrap().action;\n            match (expected_type, &action) {\n                (\"search\", WebSearchAction::Search { .. }) => {}\n                (\"open_page\", WebSearchAction::OpenPage { .. }) => {}\n                (\"find_in_page\", WebSearchAction::FindInPage { .. }) => {}\n                _ => panic!(\"Wrong action type for {}: got {:?}\", json, action),\n            }\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_chrome_error_to_tool_error_conversion",
+      "line": 604,
+      "column": 4,
+      "text": "fn test_chrome_error_to_tool_error_conversion() {\n        // Test Timeout conversion\n        let chrome_err = ChromeError::Timeout;\n        let tool_err: ToolError = chrome_err.into();\n        assert!(matches!(\n            tool_err,\n            ToolError::Timeout {\n                tool: \"web_search\",\n                ..\n            }\n        ));\n\n        // Test LaunchError conversion\n        let chrome_err = ChromeError::LaunchError(\"test\".to_string());\n        let tool_err: ToolError = chrome_err.into();\n        assert!(matches!(\n            tool_err,\n            ToolError::Execution {\n                tool: \"web_search\",\n                ..\n            }\n        ));\n        assert!(tool_err.to_string().contains(\"Chrome launch failed\"));\n\n        // Test ConnectionError conversion\n        let chrome_err = ChromeError::ConnectionError(\"conn failed\".to_string());\n        let tool_err: ToolError = chrome_err.into();\n        assert!(matches!(\n            tool_err,\n            ToolError::Execution {\n                tool: \"web_search\",\n                ..\n            }\n        ));\n        assert!(tool_err.to_string().contains(\"Chrome connection failed\"));\n\n        // Test ChromeNotFound conversion\n        let chrome_err = ChromeError::ChromeNotFound(\"/usr/bin/chrome\".to_string());\n        let tool_err: ToolError = chrome_err.into();\n        assert!(matches!(\n            tool_err,\n            ToolError::NotFound {\n                tool: \"web_search\",\n                ..\n            }\n        ));\n        assert!(tool_err.to_string().contains(\"Chrome not found\"));\n    }"
+    }
+  ]
+}

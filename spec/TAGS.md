@@ -33,6 +33,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@persistence` | Session persistence and storage functionality |
 | `@session` | Session management and state tracking |
 | `@templates` | Template generation and transformation system |
+| `@tools` | Tool system components and tool implementations |
 | `@tui` | Terminal User Interface components and infrastructure |
 | `@tui-component` | Terminal User Interface components |
 | `@ui` | User interface and visual components |
@@ -149,6 +150,7 @@ Tags that categorize features by functional area.
 | `@priority` | Priority management and reordering |
 | `@progress` | Progress tracking and reporting |
 | `@project-management` | Project management features including work units, epics, and workflow |
+| `@provider-abstraction` | Provider abstraction layer for multi-provider support |
 | `@publish` | npm publishing functionality |
 | `@quality-assurance` | Quality assurance and code review features |
 | `@query` | Query operations for searching and filtering |
@@ -273,6 +275,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@envelope` | Message envelope metadata scenarios |
 | `@error-handling` | Error Handling |
 | `@eslint` | ESLint configuration and linting |
+| `@facade-pattern` | Features implementing the facade design pattern |
 | `@file-discovery` | File discovery and pattern matching functionality |
 | `@file-initialization` | Scenarios testing initialization of project files |
 | `@file-structure` | File and directory structure validation |
@@ -743,7 +746,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-23T23:37:55.483Z_
+_Last updated: 2025-12-26T06:37:09.136Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -84,7 +84,11 @@ impl GeminiProvider {
         &self.rig_client
     }
 
-    /// Create a rig Agent with all 8 tools configured for this provider
+    /// Create a rig Agent with all tools configured for this provider
+    ///
+    /// Uses provider-specific tool facades for web search (TOOL-001):
+    /// - `google_web_search` - Gemini-native web search with flat schema
+    /// - `web_fetch` - Gemini-native URL fetching with flat schema
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
@@ -92,12 +96,21 @@ impl GeminiProvider {
         &self,
         preamble: Option<&str>,
     ) -> rig::agent::Agent<gemini::completion::CompletionModel> {
-        use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
-            WriteTool,
+        use codelet_tools::facade::{
+            FacadeToolWrapper, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
         };
+        use codelet_tools::{
+            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
+        };
+        use std::sync::Arc;
 
-        // Build agent with all 9 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
+        // Create Gemini-specific web search facades (TOOL-001)
+        // These provide Gemini-native tool names and flat schemas
+        let google_web_search = FacadeToolWrapper::new(Arc::new(GeminiGoogleWebSearchFacade));
+        let web_fetch = FacadeToolWrapper::new(Arc::new(GeminiWebFetchFacade));
+
+        // Build agent with all tools using rig's builder pattern
+        // TOOL-001: Use facade wrappers for web search instead of generic WebSearchTool
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -110,7 +123,8 @@ impl GeminiProvider {
             .tool(GlobTool::new())
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
-            .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
+            .tool(google_web_search) // TOOL-001: Gemini-native google_web_search
+            .tool(web_fetch); // TOOL-001: Gemini-native web_fetch
 
         // Set preamble if provided
         if let Some(p) = preamble {
