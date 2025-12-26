@@ -20,70 +20,49 @@ impl ToolFacade for ClaudeWebSearchFacade {
     }
 
     fn definition(&self) -> ToolDefinition {
+        // Use flat schema to avoid Claude serializing nested objects as strings
         ToolDefinition {
             name: "web_search".to_string(),
-            description: "Perform web search, open web pages, or find content within pages"
-                .to_string(),
+            description: "Perform web search, open web pages, or find content within pages. Use action_type to specify the operation.".to_string(),
             parameters: json!({
                 "type": "object",
-                "additionalProperties": false,
                 "properties": {
-                    "action": {
-                        "type": "object",
-                        "oneOf": [
-                            {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "properties": {
-                                    "type": { "type": "string", "const": "search" },
-                                    "query": { "type": "string", "description": "Search query" }
-                                },
-                                "required": ["type"]
-                            },
-                            {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "properties": {
-                                    "type": { "type": "string", "const": "open_page" },
-                                    "url": { "type": "string", "description": "URL to open" }
-                                },
-                                "required": ["type"]
-                            },
-                            {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "properties": {
-                                    "type": { "type": "string", "const": "find_in_page" },
-                                    "url": { "type": "string", "description": "URL of page to search" },
-                                    "pattern": { "type": "string", "description": "Pattern to find" }
-                                },
-                                "required": ["type"]
-                            }
-                        ]
+                    "action_type": {
+                        "type": "string",
+                        "enum": ["search", "open_page", "find_in_page"],
+                        "description": "The type of web action to perform"
+                    },
+                    "query": {
+                        "type": "string",
+                        "description": "Search query (required for 'search' action)"
+                    },
+                    "url": {
+                        "type": "string",
+                        "description": "URL to open or search within (required for 'open_page' and 'find_in_page' actions)"
+                    },
+                    "pattern": {
+                        "type": "string",
+                        "description": "Pattern to find in page (required for 'find_in_page' action)"
                     }
                 },
-                "required": ["action"]
+                "required": ["action_type"]
             }),
         }
     }
 
     fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {
-        let action = input.get("action").ok_or_else(|| ToolError::Validation {
-            tool: "web_search",
-            message: "Missing 'action' field".to_string(),
-        })?;
-
-        let action_type = action
-            .get("type")
+        // Handle flat schema with action_type at top level
+        let action_type = input
+            .get("action_type")
             .and_then(|t| t.as_str())
             .ok_or_else(|| ToolError::Validation {
                 tool: "web_search",
-                message: "Missing 'type' field in action".to_string(),
+                message: "Missing 'action_type' field".to_string(),
             })?;
 
         match action_type {
             "search" => {
-                let query = action
+                let query = input
                     .get("query")
                     .and_then(|q| q.as_str())
                     .unwrap_or("")
@@ -91,7 +70,7 @@ impl ToolFacade for ClaudeWebSearchFacade {
                 Ok(InternalWebSearchParams::Search { query })
             }
             "open_page" => {
-                let url = action
+                let url = input
                     .get("url")
                     .and_then(|u| u.as_str())
                     .unwrap_or("")
@@ -99,12 +78,12 @@ impl ToolFacade for ClaudeWebSearchFacade {
                 Ok(InternalWebSearchParams::OpenPage { url })
             }
             "find_in_page" => {
-                let url = action
+                let url = input
                     .get("url")
                     .and_then(|u| u.as_str())
                     .unwrap_or("")
                     .to_string();
-                let pattern = action
+                let pattern = input
                     .get("pattern")
                     .and_then(|p| p.as_str())
                     .unwrap_or("")
@@ -237,11 +216,10 @@ mod tests {
     #[test]
     fn test_claude_facade_maps_search_action() {
         let facade = ClaudeWebSearchFacade;
+        // Uses flat schema with action_type at top level
         let input = json!({
-            "action": {
-                "type": "search",
-                "query": "rust async"
-            }
+            "action_type": "search",
+            "query": "rust async"
         });
 
         let result = facade.map_params(input).unwrap();
@@ -256,11 +234,10 @@ mod tests {
     #[test]
     fn test_claude_facade_maps_open_page_action() {
         let facade = ClaudeWebSearchFacade;
+        // Uses flat schema with action_type at top level
         let input = json!({
-            "action": {
-                "type": "open_page",
-                "url": "https://example.com"
-            }
+            "action_type": "open_page",
+            "url": "https://example.com"
         });
 
         let result = facade.map_params(input).unwrap();
@@ -317,24 +294,30 @@ mod tests {
     }
 
     #[test]
-    fn test_claude_facade_has_oneof_schema() {
+    fn test_claude_facade_has_flat_schema_with_enum() {
         let facade = ClaudeWebSearchFacade;
         let def = facade.definition();
 
-        // Should have action property with oneOf
-        assert!(def.parameters["properties"]["action"]["oneOf"].is_array());
+        // Should have flat schema with action_type enum (not nested oneOf)
+        assert!(def.parameters["properties"]["action_type"].is_object());
+        assert!(def.parameters["properties"]["action_type"]["enum"].is_array());
 
-        let one_of = def.parameters["properties"]["action"]["oneOf"]
+        let action_types = def.parameters["properties"]["action_type"]["enum"]
             .as_array()
             .unwrap();
-        let types: Vec<&str> = one_of
+        let types: Vec<&str> = action_types
             .iter()
-            .filter_map(|v| v["properties"]["type"]["const"].as_str())
+            .filter_map(|v| v.as_str())
             .collect();
 
         assert!(types.contains(&"search"));
         assert!(types.contains(&"open_page"));
         assert!(types.contains(&"find_in_page"));
+
+        // Should have query, url, and pattern as top-level properties
+        assert!(def.parameters["properties"]["query"].is_object());
+        assert!(def.parameters["properties"]["url"].is_object());
+        assert!(def.parameters["properties"]["pattern"].is_object());
     }
 
     #[test]

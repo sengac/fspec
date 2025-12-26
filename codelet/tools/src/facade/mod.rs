@@ -20,14 +20,28 @@
 //! └────────────────────────────────────────────────────────────┘
 //! ```
 
+mod bash;
+mod file_ops;
+mod ls;
 mod registry;
+mod search;
 mod traits;
 mod web_search;
 mod wrapper;
 
+pub use bash::GeminiRunShellCommandFacade;
+pub use file_ops::{GeminiReadFileFacade, GeminiReplaceFacade, GeminiWriteFileFacade};
+pub use ls::GeminiListDirectoryFacade;
 pub use registry::ProviderToolRegistry;
-pub use traits::{BoxedToolFacade, InternalWebSearchParams, ToolDefinition, ToolFacade};
-pub use web_search::{
-    ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
+pub use search::{GeminiGlobFacade, GeminiSearchFileContentFacade};
+pub use traits::{
+    BashToolFacade, BoxedBashToolFacade, BoxedFileToolFacade, BoxedLsToolFacade,
+    BoxedSearchToolFacade, BoxedToolFacade, FileToolFacade, InternalBashParams, InternalFileParams,
+    InternalLsParams, InternalSearchParams, InternalWebSearchParams, LsToolFacade,
+    SearchToolFacade, ToolDefinition, ToolFacade,
 };
-pub use wrapper::FacadeToolWrapper;
+pub use web_search::{ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade};
+pub use wrapper::{
+    BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper, LsToolFacadeWrapper,
+    SearchToolFacadeWrapper,
+};

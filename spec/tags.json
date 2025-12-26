@@ -82,6 +82,10 @@
           "description": "Session persistence and storage functionality"
         },
         {
+          "name": "@providers",
+          "description": "Provider integration and LLM provider implementations"
+        },
+        {
           "name": "@session",
           "description": "Session management and state tracking"
         },
@@ -2018,7 +2022,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-26T06:37:09.136Z",
+    "lastUpdated": "2025-12-26T10:08:11.169Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -280,9 +280,9 @@ impl ClaudeProvider {
     /// - OAuth mode: 2 blocks - Claude Code prefix WITHOUT cache_control, preamble WITH cache_control
     /// - API key mode: 1 block - preamble WITH cache_control
     ///
-    /// # WEB-001 Note
-    /// WebSearchTool is now included as a rig tool that provides web search capabilities
-    /// with Search, OpenPage, and FindInPage actions.
+    /// # TOOL-007 Note
+    /// Web search uses FacadeToolWrapper(ClaudeWebSearchFacade) for consistent tool interfaces.
+    /// This provides web search capabilities with Search, OpenPage, and FindInPage actions.
     ///
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(
@@ -290,13 +290,12 @@ impl ClaudeProvider {
         preamble: Option<&str>,
     ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
         use crate::caching_client::transform_system_prompt;
-        use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
-            WriteTool,
-        };
+        use codelet_tools::facade::{ClaudeWebSearchFacade, FacadeToolWrapper};
+        use codelet_tools::{AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool};
         use rig::client::CompletionClient;
+        use std::sync::Arc;
 
-        // Build agent with all 9 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
+        // Build agent with all 9 tools using rig's builder pattern (TOOL-007: Uses FacadeToolWrapper for web search)
         let mut agent_builder = self
             .rig_client
             .agent(DEFAULT_MODEL)
@@ -309,7 +308,7 @@ impl ClaudeProvider {
             .tool(GlobTool::new())
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
-            .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
+            .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade))); // TOOL-007: Use facade for consistent tool interfaces
 
         // PROV-006: Apply cache_control to system prompt for BOTH auth modes
         // OAuth mode: built-in prefix + optional additional preamble

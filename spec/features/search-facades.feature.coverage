@@ -1,0 +1,189 @@
+{
+  "scenarios": [
+    {
+      "name": "Map Gemini search_file_content parameters to internal GrepArgs format",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "517-542",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/search.rs",
+              "lines": [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GeminiSearchFileContentFacade provides flat JSON schema",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "544-563",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/search.rs",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Map Gemini find_files parameters to internal GlobArgs format",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "565-591",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/search.rs",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "GeminiGlobFacade provides flat JSON schema",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "593-612",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/search.rs",
+              "lines": [
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SearchToolFacadeWrapper integrates with rig Tool trait for search_file_content",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "614-634",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SearchToolFacadeWrapper integrates with rig Tool trait for find_files",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/tool_facade_test.rs",
+          "lines": "636-656",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                430,
+                431,
+                432,
+                433
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/tool_facade_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/facade/search.rs",
+      "codelet/tools/src/facade/wrapper.rs"
+    ],
+    "totalLinesCovered": 211
+  }
+}

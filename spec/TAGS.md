@@ -31,6 +31,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@npm` | npm package management and dependency resolution |
 | `@parser` | Gherkin Parser Integration |
 | `@persistence` | Session persistence and storage functionality |
+| `@providers` | Provider integration and LLM provider implementations |
 | `@session` | Session management and state tracking |
 | `@templates` | Template generation and transformation system |
 | `@tools` | Tool system components and tool implementations |
@@ -746,7 +747,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-26T06:37:09.136Z_
+_Last updated: 2025-12-26T10:08:11.169Z_
 
 **Update Command**: `fspec tag-stats`
 
