@@ -129,7 +129,9 @@ export declare class CodeletSession {
     inputTokens: number,
     outputTokens: number,
     cacheReadTokens: number,
-    cacheCreationTokens: number
+    cacheCreationTokens: number,
+    cumulativeBilledInput: number,
+    cumulativeBilledOutput: number
   ): void;
   /**
    * Get current context fill info (TUI-033)

@@ -57,7 +57,7 @@ const createMockSessions = (count: number) => {
     forkedFrom: null,
     mergedFrom: [],
     compaction: null,
-    tokenUsage: { totalInputTokens: 0, totalOutputTokens: 0, cacheReadTokens: 0, cacheCreationTokens: 0 },
+    tokenUsage: { currentContextTokens: 0, cumulativeBilledInput: 0, cumulativeBilledOutput: 0, cacheReadTokens: 0, cacheCreationTokens: 0 },
   }));
 };
 
