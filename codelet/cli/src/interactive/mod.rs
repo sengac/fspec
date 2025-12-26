@@ -10,7 +10,10 @@ mod repl_loop;
 mod stream_handlers;
 pub mod stream_loop;
 
-pub use output::{CliOutput, ContextFillInfo, StreamEvent, StreamOutput, TokenInfo, ToolCallEvent, ToolResultEvent};
+pub use output::{
+    CliOutput, ContextFillInfo, StreamEvent, StreamOutput, TokenInfo, ToolCallEvent,
+    ToolResultEvent,
+};
 pub use stream_loop::run_agent_stream;
 
 use crate::session::Session;

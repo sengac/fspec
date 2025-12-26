@@ -451,19 +451,33 @@ impl From<CompactionState> for NapiCompactionState {
     }
 }
 
+/// Token usage with dual metrics (CTX-003)
+///
+/// - `current_context_tokens`: Latest context size (for display and threshold checks)
+/// - `cumulative_billed_input`: Sum of all API calls (for billing analytics)
+/// - `cumulative_billed_output`: Sum of all API output tokens (for billing analytics)
 #[napi(object)]
 pub struct NapiTokenUsage {
-    pub total_input_tokens: u32,
-    pub total_output_tokens: u32,
+    /// Current context size (latest input_tokens from API - overwritten, not accumulated)
+    /// CTX-003: This is what should be displayed to users and used for threshold checks
+    pub current_context_tokens: u32,
+    /// Cumulative billed input tokens (sum of all API calls - for billing analytics)
+    /// CTX-003: This is the total billed by Anthropic across all API calls
+    pub cumulative_billed_input: u32,
+    /// Cumulative billed output tokens (sum of all API calls)
+    pub cumulative_billed_output: u32,
+    /// Cache read tokens from current API call
     pub cache_read_tokens: u32,
+    /// Cache creation tokens from current API call
     pub cache_creation_tokens: u32,
 }
 
 impl From<TokenUsage> for NapiTokenUsage {
     fn from(t: TokenUsage) -> Self {
         Self {
-            total_input_tokens: t.total_input_tokens as u32,
-            total_output_tokens: t.total_output_tokens as u32,
+            current_context_tokens: t.current_context_tokens as u32,
+            cumulative_billed_input: t.cumulative_billed_input as u32,
+            cumulative_billed_output: t.cumulative_billed_output as u32,
             cache_read_tokens: t.cache_read_tokens as u32,
             cache_creation_tokens: t.cache_creation_tokens as u32,
         }
@@ -563,7 +577,8 @@ pub fn persistence_store_message_envelope(
         .map_err(|e| Error::from_reason(format!("Invalid message envelope JSON: {}", e)))?;
 
     // Process envelope for blob storage (extracts large content)
-    let (processed_envelope, blob_refs) = process_envelope_impl(&envelope).map_err(Error::from_reason)?;
+    let (processed_envelope, blob_refs) =
+        process_envelope_impl(&envelope).map_err(Error::from_reason)?;
 
     // Determine role from envelope
     let role = processed_envelope.message_type.clone();
@@ -635,7 +650,9 @@ pub fn persistence_get_message_envelope_raw(id: String) -> Result<Option<String>
                     .into_iter()
                     .collect::<serde_json::Map<String, serde_json::Value>>(),
             );
-            Ok(Some(serde_json::to_string(&metadata_value).unwrap_or_default()))
+            Ok(Some(
+                serde_json::to_string(&metadata_value).unwrap_or_default(),
+            ))
         }
         None => Ok(None),
     }
@@ -703,7 +720,7 @@ fn truncate_chars(s: &str, max_chars: usize) -> String {
 fn extract_content_summary(envelope: &super::MessageEnvelope) -> String {
     match &envelope.message {
         super::MessagePayload::User(user_msg) => {
-            for content in &user_msg.content {
+            if let Some(content) = user_msg.content.first() {
                 match content {
                     super::UserContent::Text { text } => return text.clone(),
                     super::UserContent::ToolResult { content, .. } => {
@@ -716,18 +733,18 @@ fn extract_content_summary(envelope: &super::MessageEnvelope) -> String {
             "[empty user message]".to_string()
         }
         super::MessagePayload::Assistant(assistant_msg) => {
-            for content in &assistant_msg.content {
+            if let Some(content) = assistant_msg.content.first() {
                 match content {
                     super::AssistantContent::Text { text } => return text.clone(),
                     super::AssistantContent::ToolUse { name, .. } => {
-                        return format!("[tool_use: {}]", name);
+                        return format!("[tool_use: {name}]");
                     }
                     super::AssistantContent::Thinking { thinking, .. } => {
                         let summary = truncate_chars(thinking, 200);
                         if summary.ends_with("...") {
-                            return format!("[thinking: {}]", summary);
+                            return format!("[thinking: {summary}]");
                         }
-                        return format!("[thinking: {}]", thinking);
+                        return format!("[thinking: {thinking}]");
                     }
                 }
             }

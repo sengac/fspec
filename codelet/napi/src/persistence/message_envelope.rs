@@ -193,26 +193,16 @@ impl ToolUseResultMetadata {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ImageSource {
-    Base64 {
-        media_type: String,
-        data: String,
-    },
-    Url {
-        url: String,
-    },
+    Base64 { media_type: String, data: String },
+    Url { url: String },
 }
 
 /// Document source (base64 or URL)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum DocumentSource {
-    Base64 {
-        media_type: String,
-        data: String,
-    },
-    Url {
-        url: String,
-    },
+    Base64 { media_type: String, data: String },
+    Url { url: String },
 }
 
 /// Cache control for documents
@@ -433,7 +423,10 @@ mod tests {
         let restored: AssistantContent = serde_json::from_str(&json).unwrap();
 
         match restored {
-            AssistantContent::Thinking { thinking, signature } => {
+            AssistantContent::Thinking {
+                thinking,
+                signature,
+            } => {
                 assert_eq!(thinking, "Let me think about this problem...");
                 assert!(signature.is_none());
             }
@@ -549,9 +542,18 @@ mod tests {
         let restored: AssistantMessage = serde_json::from_str(&json).unwrap();
 
         assert_eq!(restored.content.len(), 3);
-        assert!(matches!(&restored.content[0], AssistantContent::Text { .. }));
-        assert!(matches!(&restored.content[1], AssistantContent::ToolUse { .. }));
-        assert!(matches!(&restored.content[2], AssistantContent::Text { .. }));
+        assert!(matches!(
+            &restored.content[0],
+            AssistantContent::Text { .. }
+        ));
+        assert!(matches!(
+            &restored.content[1],
+            AssistantContent::ToolUse { .. }
+        ));
+        assert!(matches!(
+            &restored.content[2],
+            AssistantContent::Text { .. }
+        ));
     }
 
     #[test]

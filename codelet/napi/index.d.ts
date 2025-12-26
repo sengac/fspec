@@ -289,10 +289,29 @@ export interface NapiStoredMessage {
   metadataJson: string;
 }
 
+/**
+ * Token usage with dual metrics (CTX-003)
+ *
+ * - `current_context_tokens`: Latest context size (for display and threshold checks)
+ * - `cumulative_billed_input`: Sum of all API calls (for billing analytics)
+ * - `cumulative_billed_output`: Sum of all API output tokens (for billing analytics)
+ */
 export interface NapiTokenUsage {
-  totalInputTokens: number;
-  totalOutputTokens: number;
+  /**
+   * Current context size (latest input_tokens from API - overwritten, not accumulated)
+   * CTX-003: This is what should be displayed to users and used for threshold checks
+   */
+  currentContextTokens: number;
+  /**
+   * Cumulative billed input tokens (sum of all API calls - for billing analytics)
+   * CTX-003: This is the total billed by Anthropic across all API calls
+   */
+  cumulativeBilledInput: number;
+  /** Cumulative billed output tokens (sum of all API calls) */
+  cumulativeBilledOutput: number;
+  /** Cache read tokens from current API call */
   cacheReadTokens: number;
+  /** Cache creation tokens from current API call */
   cacheCreationTokens: number;
 }
 

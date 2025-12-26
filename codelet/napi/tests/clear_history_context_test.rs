@@ -39,12 +39,7 @@ fn count_system_reminder_messages(session: &Session) -> usize {
 fn clear_session_state(session: &mut Session) {
     session.messages.clear();
     session.turns.clear();
-    session.token_tracker = codelet_core::compaction::TokenTracker {
-        input_tokens: 0,
-        output_tokens: 0,
-        cache_read_input_tokens: Some(0),
-        cache_creation_input_tokens: Some(0),
-    };
+    session.token_tracker = codelet_core::compaction::TokenTracker::default();
 }
 
 /// Test that clear_history resets messages, turns, and tokens

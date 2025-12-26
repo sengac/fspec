@@ -1,0 +1,358 @@
+{
+  "scenarios": [
+    {
+      "name": "Display accurate tokens for single API call",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "21-48",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display accurate tokens for multi-API turn with tool calls",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "53-80",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prevent 15.7x token inflation in real-world session",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "222-250",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                806,
+                807,
+                808,
+                809,
+                810,
+                811,
+                812,
+                813,
+                814,
+                815,
+                816
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accurate display during turn with 10 tool calls",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "194-216",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction threshold uses correct per-request tokens",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "369-390",
+          "implMappings": [
+            {
+              "file": "core/src/compaction_hook.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CompactionHook correctly overwrites with per-request value",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "343-363",
+          "implMappings": [
+            {
+              "file": "core/src/compaction_hook.rs",
+              "lines": [
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session persistence stores both context and billing tokens",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "284-308",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                806,
+                807,
+                808,
+                809,
+                810,
+                811,
+                812,
+                813,
+                814,
+                815,
+                816
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stream display shows progressive context size not cumulative",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "314-337",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Distinguish billing total from context display",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "396-415",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Context fill percentage uses current context not cumulative",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "256-278",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prevent double-counting tokens between MessageStart and FinalResponse",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "86-140",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Verify inflation calculation with both bugs present",
+      "testMappings": [
+        {
+          "file": "cli/tests/token_inflation_bug_test.rs",
+          "lines": "146-188",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive/stream_loop.rs",
+              "lines": [
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "cli/tests/token_inflation_bug_test.rs"
+    ],
+    "implFiles": [
+      "cli/src/interactive/stream_loop.rs",
+      "core/src/compaction_hook.rs"
+    ],
+    "totalLinesCovered": 490
+  }
+}

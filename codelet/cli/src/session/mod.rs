@@ -63,12 +63,7 @@ impl Session {
             provider_manager,
             messages: Vec::new(),
             turns: Vec::new(),
-            token_tracker: TokenTracker {
-                input_tokens: 0,
-                output_tokens: 0,
-                cache_read_input_tokens: Some(0),
-                cache_creation_input_tokens: Some(0),
-            },
+            token_tracker: TokenTracker::default(),
         })
     }
 
@@ -90,12 +85,7 @@ impl Session {
         // Clear conversation context before switching (matches codelet behavior)
         self.messages.clear();
         self.turns.clear();
-        self.token_tracker = TokenTracker {
-            input_tokens: 0,
-            output_tokens: 0,
-            cache_read_input_tokens: Some(0),
-            cache_creation_input_tokens: Some(0),
-        };
+        self.token_tracker = TokenTracker::default();
 
         // Switch provider
         self.provider_manager.switch_provider(provider_name)?;

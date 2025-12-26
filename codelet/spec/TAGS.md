@@ -47,6 +47,7 @@ Functional area tags
 | `@rendering` | Markdown rendering and terminal display features |
 | `@scaffold` | Project scaffold and foundation setup |
 | `@session-management` | Session and context management features including message persistence and state handling |
+| `@token-tracking` | Features related to token usage tracking and display |
 | `@tool-display` | Features related to displaying tool execution information |
 | `@web-search` | Web search and content fetching functionality |
 
@@ -89,6 +90,7 @@ Development status tags
 
 | Tag | Description |
 |-----|-------------|
+| `@bug-fix` | Bug fix work units addressing defects in existing functionality |
 | `@done` | Completed features |
 | `@wip` | Work in progress - feature not yet complete |
 
@@ -99,6 +101,7 @@ Test-related tags
 | Tag | Description |
 |-----|-------------|
 | `@integration` | Integration test scenarios that verify end-to-end wiring |
+| `@unit-test` | Scenarios that should be implemented as unit tests |
 
 ### Automation Tags
 
@@ -118,7 +121,7 @@ Automation integration tags
 
 ## Tag Statistics
 
-_Last updated: 2025-12-23T00:19:40.368Z_
+_Last updated: 2025-12-25T01:12:06.196Z_
 
 **Update Command**: `fspec tag-stats`
 

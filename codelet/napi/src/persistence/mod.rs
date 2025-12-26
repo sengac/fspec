@@ -566,6 +566,11 @@ pub fn update_session_tokens(
 }
 
 /// Set session token usage (REPLACES existing - for restore scenarios)
+///
+/// CTX-003: Uses dual-metric fields for proper token tracking:
+/// - `current_context_tokens`: Set to input (current context size for display)
+/// - `cumulative_billed_input`: Set to input (for billing - initialized on restore)
+/// - `cumulative_billed_output`: Set to output (for billing)
 pub fn set_session_tokens(
     session: &mut SessionManifest,
     input: u64,
@@ -573,8 +578,10 @@ pub fn set_session_tokens(
     cache_read: u64,
     cache_create: u64,
 ) -> Result<(), String> {
-    session.token_usage.total_input_tokens = input;
-    session.token_usage.total_output_tokens = output;
+    // CTX-003: Use new dual-metric fields
+    session.token_usage.current_context_tokens = input;
+    session.token_usage.cumulative_billed_input = input;
+    session.token_usage.cumulative_billed_output = output;
     session.token_usage.cache_read_tokens = cache_read;
     session.token_usage.cache_creation_tokens = cache_create;
 

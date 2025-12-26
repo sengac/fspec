@@ -342,12 +342,7 @@ impl CodeletSession {
 
         session.messages.clear();
         session.turns.clear();
-        session.token_tracker = codelet_core::compaction::TokenTracker {
-            input_tokens: 0,
-            output_tokens: 0,
-            cache_read_input_tokens: Some(0),
-            cache_creation_input_tokens: Some(0),
-        };
+        session.token_tracker = codelet_core::compaction::TokenTracker::default();
 
         // Reinject context reminders to restore CLAUDE.md and environment info
         // This ensures the AI retains project context after clearing history
@@ -384,12 +379,7 @@ impl CodeletSession {
         // Clear existing state before restoring
         session.messages.clear();
         session.turns.clear();
-        session.token_tracker = codelet_core::compaction::TokenTracker {
-            input_tokens: 0,
-            output_tokens: 0,
-            cache_read_input_tokens: Some(0),
-            cache_creation_input_tokens: Some(0),
-        };
+        session.token_tracker = codelet_core::compaction::TokenTracker::default();
 
         // Convert persistence messages to rig messages
         for msg in messages {
@@ -427,9 +417,15 @@ impl CodeletSession {
     /// * `envelopes` - Array of envelope JSON strings from persistenceGetSessionMessageEnvelopes
     #[napi]
     pub fn restore_messages_from_envelopes(&self, envelopes: Vec<String>) -> Result<()> {
-        use crate::persistence::{AssistantContent as EnvAssistantContent, MessageEnvelope, MessagePayload, UserContent as EnvUserContent};
+        use crate::persistence::{
+            AssistantContent as EnvAssistantContent, MessageEnvelope, MessagePayload,
+            UserContent as EnvUserContent,
+        };
         use codelet_cli::interactive_helpers::convert_messages_to_turns;
-        use rig::message::{AssistantContent, Message as RigMessage, Text, ToolCall, ToolFunction, ToolResult, ToolResultContent, UserContent};
+        use rig::message::{
+            AssistantContent, Message as RigMessage, Text, ToolCall, ToolFunction, ToolResult,
+            ToolResultContent, UserContent,
+        };
         use rig::OneOrMany;
 
         let mut session = self.inner.blocking_lock();
@@ -437,22 +433,29 @@ impl CodeletSession {
         // Clear existing state before restoring
         session.messages.clear();
         session.turns.clear();
-        session.token_tracker = codelet_core::compaction::TokenTracker {
-            input_tokens: 0,
-            output_tokens: 0,
-            cache_read_input_tokens: Some(0),
-            cache_creation_input_tokens: Some(0),
-        };
+        session.token_tracker = codelet_core::compaction::TokenTracker::default();
 
-        tracing::info!("restore_messages_from_envelopes: processing {} envelopes", envelopes.len());
+        tracing::info!(
+            "restore_messages_from_envelopes: processing {} envelopes",
+            envelopes.len()
+        );
 
         for (idx, envelope_json) in envelopes.iter().enumerate() {
-            tracing::debug!("Processing envelope {}: {}", idx, &envelope_json[..std::cmp::min(200, envelope_json.len())]);
+            tracing::debug!(
+                "Processing envelope {}: {}",
+                idx,
+                &envelope_json[..std::cmp::min(200, envelope_json.len())]
+            );
 
             let envelope: MessageEnvelope = match serde_json::from_str(envelope_json) {
                 Ok(e) => e,
                 Err(e) => {
-                    tracing::warn!("Failed to parse envelope {} during restore: {} - json: {}", idx, e, &envelope_json[..std::cmp::min(500, envelope_json.len())]);
+                    tracing::warn!(
+                        "Failed to parse envelope {} during restore: {} - json: {}",
+                        idx,
+                        e,
+                        &envelope_json[..std::cmp::min(500, envelope_json.len())]
+                    );
                     continue;
                 }
             };
@@ -466,13 +469,19 @@ impl CodeletSession {
                             EnvUserContent::Text { text } => {
                                 rig_contents.push(UserContent::Text(Text { text }));
                             }
-                            EnvUserContent::ToolResult { tool_use_id, content, .. } => {
+                            EnvUserContent::ToolResult {
+                                tool_use_id,
+                                content,
+                                ..
+                            } => {
                                 // Create proper ToolResult for rig
                                 // Note: rig's ToolResult uses 'id' for the call reference
                                 rig_contents.push(UserContent::ToolResult(ToolResult {
                                     id: tool_use_id,
                                     call_id: None,
-                                    content: OneOrMany::one(ToolResultContent::Text(Text { text: content })),
+                                    content: OneOrMany::one(ToolResultContent::Text(Text {
+                                        text: content,
+                                    })),
                                 }));
                             }
                             EnvUserContent::Image { .. } | EnvUserContent::Document { .. } => {
