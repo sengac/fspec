@@ -264,6 +264,8 @@ impl CodeletSession {
                 .cache_creation_input_tokens
                 .map(|t| t as u32),
             tokens_per_second: None, // Only set during streaming
+            cumulative_billed_input: Some(session.token_tracker.cumulative_billed_input as u32),
+            cumulative_billed_output: Some(session.token_tracker.cumulative_billed_output as u32),
         })
     }
 

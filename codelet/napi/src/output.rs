@@ -191,6 +191,9 @@ impl StreamOutput for NapiOutput<'_> {
                         .cache_creation_input_tokens
                         .map(|t| t as u32),
                     tokens_per_second: tokens.tokens_per_second,
+                    // Cumulative values are tracked at session level, not per-streaming-event
+                    cumulative_billed_input: None,
+                    cumulative_billed_output: None,
                 };
                 let mut buffer = self.buffer.lock().unwrap();
                 buffer.set_tokens(tracker);

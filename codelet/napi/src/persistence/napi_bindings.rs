@@ -308,6 +308,8 @@ pub fn persistence_set_session_tokens(
     output: u32,
     cache_read: u32,
     cache_create: u32,
+    cumulative_input: u32,
+    cumulative_output: u32,
 ) -> Result<NapiSessionManifest> {
     let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
     let mut session = load_session(uuid).map_err(Error::from_reason)?;
@@ -317,6 +319,8 @@ pub fn persistence_set_session_tokens(
         output as u64,
         cache_read as u64,
         cache_create as u64,
+        cumulative_input as u64,
+        cumulative_output as u64,
     )
     .map_err(Error::from_reason)?;
     Ok(session.into())
