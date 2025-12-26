@@ -18,6 +18,9 @@ headless_chrome.workspace = true
 # URL encoding for search queries
 urlencoding = "2.1"
 
+# URL parsing for tool facades
+url = "2.5"
+
 # LLM Integration (for rig::tool::Tool trait)
 rig-core.workspace = true
 

@@ -90,6 +90,10 @@
           "description": "Template generation and transformation system"
         },
         {
+          "name": "@tools",
+          "description": "Tool system components and tool implementations"
+        },
+        {
           "name": "@tui",
           "description": "Terminal User Interface components and infrastructure"
         },
@@ -524,6 +528,10 @@
         {
           "name": "@project-management",
           "description": "Project management features including work units, epics, and workflow"
+        },
+        {
+          "name": "@provider-abstraction",
+          "description": "Provider abstraction layer for multi-provider support"
         },
         {
           "name": "@publish",
@@ -992,6 +1000,10 @@
         {
           "name": "@eslint",
           "description": "ESLint configuration and linting"
+        },
+        {
+          "name": "@facade-pattern",
+          "description": "Features implementing the facade design pattern"
         },
         {
           "name": "@file-discovery",
@@ -2006,7 +2018,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-23T23:37:55.483Z",
+    "lastUpdated": "2025-12-26T06:37:09.136Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

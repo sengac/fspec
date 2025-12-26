@@ -1,0 +1,102 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "provider_name",
+      "line": 37,
+      "column": 4,
+      "text": "fn provider_name(&self) -> &'static str {\n        \"gemini\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 49,
+      "column": 4,
+      "text": "pub fn new() -> Result<Self, ProviderError> {\n        // Use shared credential detection helper (REFAC-013)\n        let api_key = detect_credential_from_env(\"gemini\", &[\"GOOGLE_GENERATIVE_AI_API_KEY\"])?;\n\n        // Allow model override via GEMINI_MODEL env var\n        let model_name =\n            std::env::var(\"GEMINI_MODEL\").unwrap_or_else(|_| DEFAULT_MODEL.to_string());\n\n        Self::from_api_key(&api_key, &model_name)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "from_api_key",
+      "line": 63,
+      "column": 4,
+      "text": "pub fn from_api_key(api_key: &str, model: &str) -> Result<Self, ProviderError> {\n        // Use shared validation helper (REFAC-013)\n        validate_api_key_static(\"gemini\", api_key)?;\n\n        // Build rig gemini client\n        let rig_client = gemini::Client::new(api_key).map_err(|e| {\n            ProviderError::config(\"gemini\", format!(\"Failed to build Gemini client: {e}\"))\n        })?;\n\n        // Create completion model using the client\n        let completion_model = rig_client.completion_model(model);\n\n        Ok(Self {\n            completion_model,\n            rig_client,\n            model_name: model.to_string(),\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "client",
+      "line": 83,
+      "column": 4,
+      "text": "pub fn client(&self) -> &gemini::Client {\n        &self.rig_client\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "create_rig_agent",
+      "line": 91,
+      "column": 4,
+      "text": "pub fn create_rig_agent(\n        &self,\n        preamble: Option<&str>,\n    ) -> rig::agent::Agent<gemini::completion::CompletionModel> {\n        use codelet_tools::{\n            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,\n            WriteTool,\n        };\n\n        // Build agent with all 9 tools using rig's builder pattern (WEB-001: Added WebSearchTool)\n        let mut agent_builder = self\n            .rig_client\n            .agent(&self.model_name)\n            .max_tokens(MAX_OUTPUT_TOKENS as u64)\n            .tool(ReadTool::new())\n            .tool(WriteTool::new())\n            .tool(EditTool::new())\n            .tool(BashTool::new())\n            .tool(GrepTool::new())\n            .tool(GlobTool::new())\n            .tool(LsTool::new())\n            .tool(AstGrepTool::new())\n            .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern\n\n        // Set preamble if provided\n        if let Some(p) = preamble {\n            agent_builder = agent_builder.preamble(p);\n        }\n\n        agent_builder.build()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "rig_response_to_completion",
+      "line": 124,
+      "column": 4,
+      "text": "fn rig_response_to_completion(\n        &self,\n        response: rig::completion::CompletionResponse<\n            gemini::completion::gemini_api_types::GenerateContentResponse,\n        >,\n    ) -> Result<CompletionResponse, ProviderError> {\n        // Convert rig AssistantContent to our ContentPart format using shared helper (REFAC-013)\n        let content_parts = convert_assistant_content(response.choice, \"gemini\")?;\n\n        // Map Gemini's finish_reason to our StopReason enum (provider-specific)\n        use gemini::completion::gemini_api_types::FinishReason;\n        let stop_reason = match response.raw_response.candidates.first() {\n            Some(candidate) => match &candidate.finish_reason {\n                Some(FinishReason::Stop) => StopReason::EndTurn,\n                Some(FinishReason::MaxTokens) => StopReason::MaxTokens,\n                Some(FinishReason::Safety) => StopReason::EndTurn,\n                Some(FinishReason::Recitation) => StopReason::EndTurn,\n                Some(FinishReason::FinishReasonUnspecified) => StopReason::EndTurn,\n                Some(other) => {\n                    warn!(finish_reason = ?other, \"Unknown finish_reason from Gemini API\");\n                    StopReason::EndTurn\n                }\n                None => {\n                    warn!(\"No finish_reason in Gemini candidate\");\n                    StopReason::EndTurn\n                }\n            },\n            None => {\n                warn!(\"No candidates in Gemini response\");\n                StopReason::EndTurn\n            }\n        };\n\n        Ok(CompletionResponse {\n            content: MessageContent::Parts(content_parts),\n            stop_reason,\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "name",
+      "line": 166,
+      "column": 4,
+      "text": "fn name(&self) -> &str {\n        \"gemini\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "model",
+      "line": 170,
+      "column": 4,
+      "text": "fn model(&self) -> &str {\n        &self.model_name\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "context_window",
+      "line": 174,
+      "column": 4,
+      "text": "fn context_window(&self) -> usize {\n        CONTEXT_WINDOW\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "max_output_tokens",
+      "line": 178,
+      "column": 4,
+      "text": "fn max_output_tokens(&self) -> usize {\n        MAX_OUTPUT_TOKENS\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "supports_caching",
+      "line": 182,
+      "column": 4,
+      "text": "fn supports_caching(&self) -> bool {\n        false // Gemini does not support prompt caching yet\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "supports_streaming",
+      "line": 186,
+      "column": 4,
+      "text": "fn supports_streaming(&self) -> bool {\n        true // Streaming support via rig\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "complete",
+      "line": 190,
+      "column": 4,
+      "text": "async fn complete(&self, messages: &[Message]) -> Result<String, ProviderError> {\n        // Reuse complete_with_tools with no tools to avoid code duplication\n        let response = self.complete_with_tools(messages, &[]).await?;\n\n        // Extract text using shared helper (REFAC-013)\n        Ok(extract_text_from_content(&response.content))\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "complete_with_tools",
+      "line": 198,
+      "column": 4,
+      "text": "async fn complete_with_tools(\n        &self,\n        messages: &[Message],\n        tools: &[OurToolDefinition],\n    ) -> Result<CompletionResponse, ProviderError> {\n        // Extract prompt data using shared helper (REFAC-013)\n        let (preamble, prompt) = extract_prompt_data(messages);\n\n        // Convert tools to rig format using shared helper (REFAC-013)\n        let rig_tools = convert_tools_to_rig(tools);\n\n        // Build and send completion request using rig's builder pattern\n        let mut builder = CompletionRequestBuilder::new(self.completion_model.clone(), prompt)\n            .max_tokens(MAX_OUTPUT_TOKENS as u64)\n            .tools(rig_tools);\n\n        if let Some(preamble_text) = preamble {\n            builder = builder.preamble(preamble_text);\n        }\n\n        // Send request and get response\n        let response = builder\n            .send()\n            .await\n            .map_err(|e| ProviderError::api(\"gemini\", format!(\"Rig completion failed: {e}\")))?;\n\n        // Convert rig response to our CompletionResponse format\n        self.rig_response_to_completion(response)\n    }"
+    }
+  ]
+}

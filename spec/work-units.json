@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-24T05:21:50.045Z"
+    "lastUpdated": "2025-12-26T07:27:22.237Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -55593,6 +55593,246 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-24T05:21:50.072Z"
+    },
+    "TOOL-001": {
+      "id": "TOOL-001",
+      "title": "Provider-Specific Tool Facades",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-26T06:27:22.393Z",
+      "updatedAt": "2025-12-26T07:27:22.264Z",
+      "description": "Implement a facade pattern for tools that presents provider-specific interfaces while sharing a common implementation. Different LLM providers (Claude, Gemini, OpenAI) expect different tool schemas, names, and parameter formats. This story creates an abstraction layer that maps provider-specific tool calls to shared implementations.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TOOL-001/tool-facade-design.md",
+        "spec/attachments/TOOL-001/ast-research-web-search.json",
+        "spec/attachments/TOOL-001/ast-research-gemini-provider.json",
+        "spec/attachments/TOOL-001/ast-research-claude-provider.json"
+      ],
+      "userStory": {
+        "role": "developer building multi-provider LLM agents",
+        "action": "use a consistent internal tool interface while each provider receives tool schemas in their native format",
+        "benefit": "I can add new providers without duplicating tool logic and each provider gets optimal tool definitions"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-26T06:34:14.431Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-26T06:41:08.596Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T06:44:34.178Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T06:49:47.933Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T06:57:15.502Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-26T07:12:10.509Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-26T07:27:00.680Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-26T07:27:22.264Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each tool facade MUST implement the ToolFacade trait with provider(), tool_name(), definition(), and map_params() methods",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:34:46.405Z"
+        },
+        {
+          "id": 1,
+          "text": "Provider-specific parameters MUST be mapped to internal parameters through the facade before tool execution",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:34:47.997Z"
+        },
+        {
+          "id": 2,
+          "text": "A single internal tool MAY have multiple facades for a provider (e.g., Gemini has google_web_search AND web_fetch for our web_search)",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:34:49.772Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool definitions MUST use JSON Schema format that the target provider understands (no oneOf for Gemini)",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:34:51.281Z"
+        },
+        {
+          "id": 4,
+          "text": "Tool definitions sent to the provider API MUST use the provider's expected schema format, tool names, and parameter structures (e.g., Gemini gets 'google_web_search' with flat {query} schema, not 'web_search' with nested action objects)",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:35:33.683Z"
+        },
+        {
+          "id": 5,
+          "text": "Base tool implementations MUST remain unchanged - only facades adapt the interface",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:35:39.148Z"
+        },
+        {
+          "id": 6,
+          "text": "ProviderToolRegistry MUST return only facades registered for the requested provider",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:35:40.806Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Claude web search: provider sends {action: {type: 'search', query: 'rust async'}} → facade maps to InternalParams::Search{query: 'rust async'} → base tool executes search",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:35:57.487Z"
+        },
+        {
+          "id": 1,
+          "text": "Gemini web search: provider sends {query: 'rust async'} to 'google_web_search' tool → facade maps to InternalParams::Search{query: 'rust async'} → same base tool executes",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:35:59.569Z"
+        },
+        {
+          "id": 2,
+          "text": "Gemini URL fetch: provider sends {prompt: 'https://example.com summarize'} to 'web_fetch' tool → facade extracts URL and maps to InternalParams::OpenPage{url: 'https://example.com'}",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:36:01.242Z"
+        },
+        {
+          "id": 3,
+          "text": "Registry lookup: tools_for_provider('gemini') returns [GeminiGoogleWebSearchFacade, GeminiWebFetchFacade, GeminiReadFileFacade, ...] but NOT Claude facades",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:36:02.883Z"
+        },
+        {
+          "id": 4,
+          "text": "Tool definition for Gemini: google_web_search sends schema {type: 'object', properties: {query: {type: 'string'}}, required: ['query']} - flat structure, no oneOf",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:36:04.630Z"
+        },
+        {
+          "id": 5,
+          "text": "Tool definition for Claude: web_search sends schema with oneOf containing search/open_page/find_in_page action variants - Claude handles complex schemas well",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:36:06.302Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Three-layer architecture: Provider Facades → Tool Adapter Layer → Base Implementation. ToolFacade trait with provider(), tool_name(), definition(), map_params(). ProviderToolRegistry for facade lookup. Located in codelet/tools/src/facade/. Integrates with existing provider implementations in codelet/providers/.",
+          "deleted": false,
+          "createdAt": "2025-12-26T06:40:02.043Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "estimate": 5,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-26T07:27:22.264Z"
+    },
+    "TOOL-002": {
+      "id": "TOOL-002",
+      "title": "FacadeToolWrapper for Rig Integration",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-12-26T07:07:18.464Z",
+      "updatedAt": "2025-12-26T07:08:11.099Z",
+      "description": "Create FacadeToolWrapper that wraps ToolFacade implementations to integrate with rig's tool system, enabling facades to be used with builder.tool(...). This wrapper implements rig::tool::Tool trait and delegates to the underlying facade.",
+      "epic": "tool-facades",
+      "children": [],
+      "dependsOn": [
+        "TOOL-001"
+      ]
+    },
+    "TOOL-003": {
+      "id": "TOOL-003",
+      "title": "File Operation Facades",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-12-26T07:07:34.451Z",
+      "updatedAt": "2025-12-26T07:08:12.532Z",
+      "description": "Create Gemini-compatible facades for file operations: GeminiReadFileFacade (read_file), GeminiWriteFileFacade (write_file), GeminiReplaceFacade (replace/edit). Maps Gemini's flat parameter schemas to internal file operation parameters.",
+      "epic": "tool-facades",
+      "children": [],
+      "dependsOn": [
+        "TOOL-002"
+      ]
+    },
+    "TOOL-004": {
+      "id": "TOOL-004",
+      "title": "Bash Facade",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-12-26T07:07:36.713Z",
+      "updatedAt": "2025-12-26T07:08:14.453Z",
+      "description": "Create Gemini-compatible facade for shell execution: GeminiRunShellCommandFacade (run_shell_command). Maps Gemini's {command} schema to internal BashTool parameters.",
+      "epic": "tool-facades",
+      "children": [],
+      "dependsOn": [
+        "TOOL-002"
+      ]
+    },
+    "TOOL-005": {
+      "id": "TOOL-005",
+      "title": "Search Facades",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-12-26T07:07:38.914Z",
+      "updatedAt": "2025-12-26T07:08:16.226Z",
+      "description": "Create Gemini-compatible facades for search operations: GeminiSearchFileContentFacade (search_file_content for Grep) and GeminiGlobFacade (glob). Maps Gemini's flat parameter schemas to internal search parameters.",
+      "epic": "tool-facades",
+      "children": [],
+      "dependsOn": [
+        "TOOL-002"
+      ]
+    },
+    "TOOL-006": {
+      "id": "TOOL-006",
+      "title": "Directory Listing Facade",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-12-26T07:07:40.802Z",
+      "updatedAt": "2025-12-26T07:08:18.361Z",
+      "description": "Create Gemini-compatible facade for directory listing: GeminiListDirectoryFacade (list_directory). Maps Gemini's {path} schema to internal LsTool parameters.",
+      "epic": "tool-facades",
+      "children": [],
+      "dependsOn": [
+        "TOOL-002"
+      ]
+    },
+    "TOOL-007": {
+      "id": "TOOL-007",
+      "title": "Provider Integration and E2E Tests",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-12-26T07:07:42.886Z",
+      "updatedAt": "2025-12-26T07:08:27.469Z",
+      "description": "Integrate facade system with provider agent builders (GeminiProvider, ClaudeProvider) and add E2E tests with real provider APIs. Verifies that facades work correctly in actual provider interactions.",
+      "epic": "tool-facades",
+      "children": [],
+      "dependsOn": [
+        "TOOL-002",
+        "TOOL-003",
+        "TOOL-004",
+        "TOOL-005",
+        "TOOL-006"
+      ]
     }
   },
   "states": {
@@ -55649,7 +55889,13 @@
       "DOC-013",
       "DOC-014",
       "DOC-017",
-      "AGENT-022"
+      "AGENT-022",
+      "TOOL-002",
+      "TOOL-003",
+      "TOOL-004",
+      "TOOL-005",
+      "TOOL-006",
+      "TOOL-007"
     ],
     "specifying": [
       "LANG-001",
@@ -55664,6 +55910,7 @@
     ],
     "validating": [],
     "done": [
+      "TOOL-001",
       "CTX-001",
       "TUI-033",
       "NAPI-008",
@@ -56129,6 +56376,7 @@
     "DOCS": 3,
     "CLEAN": 5,
     "NAPI": 8,
-    "CTX": 2
+    "CTX": 2,
+    "TOOL": 7
   }
 }
