@@ -190,6 +190,7 @@ impl StreamOutput for NapiOutput<'_> {
                     cache_creation_input_tokens: tokens
                         .cache_creation_input_tokens
                         .map(|t| t as u32),
+                    tokens_per_second: tokens.tokens_per_second,
                 };
                 let mut buffer = self.buffer.lock().unwrap();
                 buffer.set_tokens(tracker);

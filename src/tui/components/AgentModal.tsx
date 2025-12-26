@@ -160,12 +160,6 @@ interface Message {
   content: string;
 }
 
-// TUI-031: Token sample for time-window based tok/s calculation
-interface TokenSample {
-  timestamp: number;
-  cumulativeTokens: number;
-}
-
 // AGENT-021: Debug command result from toggleDebug()
 interface DebugCommandResult {
   enabled: boolean;
@@ -279,17 +273,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [availableSessions, setAvailableSessions] = useState<SessionManifest[]>([]);
   const [resumeSessionIndex, setResumeSessionIndex] = useState(0);
 
-  // TUI-031: Track tok/s using time-window based calculation
-  // Uses cumulative tokens over a sliding time window for stable, accurate rate display
-  const tokenSamplesRef = useRef<TokenSample[]>([]);
-  const TIME_WINDOW_MS = 3000; // 3-second sliding window
+  // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(null);
   const [lastChunkTime, setLastChunkTime] = useState<number | null>(null);
-  // EMA smoothing and display throttling for stable display
-  const smoothedRateRef = useRef<number | null>(null);
-  const lastDisplayUpdateRef = useRef<number>(0);
-  const EMA_ALPHA = 0.3; // Lower = smoother (0.3 means 30% new, 70% old)
-  const DISPLAY_THROTTLE_MS = 500; // Only update display every 500ms
 
   // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
   const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
@@ -325,10 +311,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setError(null);
       setInputValue('');
       setIsDebugEnabled(false); // AGENT-021: Reset debug state on modal close
-      // TUI-031: Reset tok/s tracking
-      tokenSamplesRef.current = [];
-      smoothedRateRef.current = null;
-      lastDisplayUpdateRef.current = 0;
+      // TUI-031: Reset tok/s display
       setDisplayedTokPerSec(null);
       setLastChunkTime(null);
       sessionRef.current = null;
@@ -805,10 +788,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     setHistoryIndex(-1); // Reset history navigation
     setSavedInput('');
     setIsLoading(true);
-    // TUI-031: Reset tok/s tracking for new prompt
-    tokenSamplesRef.current = [];
-    smoothedRateRef.current = null;
-    lastDisplayUpdateRef.current = 0;
+    // TUI-031: Reset tok/s display for new prompt (Rust will send new values)
     setDisplayedTokPerSec(null);
     setLastChunkTime(null);
 
@@ -903,47 +883,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         if (!chunk) return;
 
         if (chunk.type === 'Text' && chunk.text) {
-          // TUI-031: Calculate tok/s using time-window based approach
-          // This provides stable, accurate rate by measuring total tokens over a time window
-          const now = Date.now();
-          const chunkTokens = Math.ceil(chunk.text.length / 4); // ~4 chars per token
-
-          // Add sample with cumulative token count
-          const lastSample = tokenSamplesRef.current[tokenSamplesRef.current.length - 1];
-          const cumulative = (lastSample?.cumulativeTokens ?? 0) + chunkTokens;
-          tokenSamplesRef.current.push({ timestamp: now, cumulativeTokens: cumulative });
-
-          // Remove samples older than TIME_WINDOW_MS
-          const cutoff = now - TIME_WINDOW_MS;
-          tokenSamplesRef.current = tokenSamplesRef.current.filter(s => s.timestamp >= cutoff);
-
-          // Calculate rate from window (need at least 2 samples spanning 100ms)
-          if (tokenSamplesRef.current.length >= 2) {
-            const oldest = tokenSamplesRef.current[0];
-            const newest = tokenSamplesRef.current[tokenSamplesRef.current.length - 1];
-            const tokenDelta = newest.cumulativeTokens - oldest.cumulativeTokens;
-            const timeDelta = (newest.timestamp - oldest.timestamp) / 1000;
-
-            if (timeDelta >= 0.1) { // At least 100ms of data for stable rate
-              const rawRate = tokenDelta / timeDelta;
-
-              // Apply EMA smoothing to reduce jitter
-              if (smoothedRateRef.current === null) {
-                smoothedRateRef.current = rawRate;
-              } else {
-                smoothedRateRef.current = EMA_ALPHA * rawRate + (1 - EMA_ALPHA) * smoothedRateRef.current;
-              }
-
-              // Throttle display updates to reduce visual noise
-              if (now - lastDisplayUpdateRef.current >= DISPLAY_THROTTLE_MS) {
-                setDisplayedTokPerSec(smoothedRateRef.current);
-                setLastChunkTime(now);
-                lastDisplayUpdateRef.current = now;
-              }
-            }
-          }
-
-          // Text chunks are now batched in Rust, so we receive fewer, larger updates
+          // Text chunks are batched in Rust for efficiency
           currentSegment += chunk.text;
           fullAssistantResponse += chunk.text; // Accumulate for display persistence
           // Add to content blocks for envelope storage
@@ -1135,10 +1075,16 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             return updated;
           });
         } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
-          // Update token usage display (tok/s is now calculated from Text chunks)
+          // TUI-031: Display token counts and tok/s from Rust
           setTokenUsage(chunk.tokens);
+          if (chunk.tokens.tokensPerSecond !== undefined) {
+            setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
+            if (chunk.tokens.tokensPerSecond !== null) {
+              setLastChunkTime(Date.now());
+            }
+          }
         } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
-          // TUI-033: Update context fill percentage from Rust
+          // TUI-033: Display context fill percentage from Rust
           setContextFillPercentage(chunk.contextFill.fillPercentage);
         } else if (chunk.type === 'Error' && chunk.error) {
           // API error occurred - clean up streaming placeholder and show error in conversation

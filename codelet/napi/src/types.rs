@@ -12,6 +12,8 @@ pub struct TokenTracker {
     pub output_tokens: u32,
     pub cache_read_input_tokens: Option<u32>,
     pub cache_creation_input_tokens: Option<u32>,
+    /// Tokens per second (EMA-smoothed, calculated in Rust)
+    pub tokens_per_second: Option<f64>,
 }
 
 impl Default for TokenTracker {
@@ -21,6 +23,7 @@ impl Default for TokenTracker {
             output_tokens: 0,
             cache_read_input_tokens: Some(0),
             cache_creation_input_tokens: Some(0),
+            tokens_per_second: None,
         }
     }
 }

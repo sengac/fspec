@@ -34,10 +34,101 @@ use std::sync::atomic::AtomicBool;
 // - Release: Ensures all writes before the store are visible to Acquire loads
 use std::sync::atomic::Ordering::{Acquire, Release};
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use tokio::sync::Notify;
 use tokio::time::interval;
 use tracing::error;
+
+/// TUI-031: Tokens per second tracker with time-window and EMA smoothing
+/// All tok/s calculation is done in Rust for single source of truth
+struct TokPerSecTracker {
+    /// Samples of (timestamp, cumulative_tokens) for time-window calculation
+    samples: Vec<(Instant, u64)>,
+    /// Cumulative tokens generated in this turn
+    cumulative_tokens: u64,
+    /// EMA-smoothed rate for stable display
+    smoothed_rate: Option<f64>,
+    /// Last time we emitted a tok/s update (for throttling)
+    last_emit_time: Option<Instant>,
+}
+
+impl TokPerSecTracker {
+    /// Time window for rate calculation (3 seconds)
+    const TIME_WINDOW: Duration = Duration::from_secs(3);
+    /// EMA alpha (0.3 = 30% new value, 70% old value)
+    const EMA_ALPHA: f64 = 0.3;
+    /// Minimum time between display updates (500ms)
+    const DISPLAY_THROTTLE: Duration = Duration::from_millis(500);
+    /// Minimum time span for stable rate calculation (100ms)
+    const MIN_TIME_SPAN: Duration = Duration::from_millis(100);
+
+    fn new() -> Self {
+        Self {
+            samples: Vec::new(),
+            cumulative_tokens: 0,
+            smoothed_rate: None,
+            last_emit_time: None,
+        }
+    }
+
+    /// Record a text chunk and calculate the smoothed tok/s rate
+    /// Returns Some(rate) if display should be updated, None if throttled
+    fn record_chunk(&mut self, text: &str) -> Option<f64> {
+        let now = Instant::now();
+
+        // Estimate tokens (~4 chars per token, rounded up)
+        let chunk_tokens = (text.len() + 3) / 4;
+        self.cumulative_tokens += chunk_tokens as u64;
+
+        // Add sample
+        self.samples.push((now, self.cumulative_tokens));
+
+        // Remove samples older than TIME_WINDOW
+        let cutoff = now - Self::TIME_WINDOW;
+        self.samples.retain(|(ts, _)| *ts >= cutoff);
+
+        // Need at least 2 samples for rate calculation
+        if self.samples.len() < 2 {
+            return None;
+        }
+
+        let oldest = self.samples.first().unwrap();
+        let newest = self.samples.last().unwrap();
+        let token_delta = newest.1 - oldest.1;
+        let time_delta = newest.0.duration_since(oldest.0);
+
+        // Need at least MIN_TIME_SPAN for stable rate
+        if time_delta < Self::MIN_TIME_SPAN {
+            return None;
+        }
+
+        let raw_rate = token_delta as f64 / time_delta.as_secs_f64();
+
+        // Apply EMA smoothing
+        self.smoothed_rate = Some(match self.smoothed_rate {
+            Some(prev) => Self::EMA_ALPHA * raw_rate + (1.0 - Self::EMA_ALPHA) * prev,
+            None => raw_rate,
+        });
+
+        // Check throttling
+        let should_emit = match self.last_emit_time {
+            Some(last) => now.duration_since(last) >= Self::DISPLAY_THROTTLE,
+            None => true,
+        };
+
+        if should_emit {
+            self.last_emit_time = Some(now);
+            self.smoothed_rate
+        } else {
+            None
+        }
+    }
+
+    /// Get current smoothed rate without recording (for final emit)
+    fn current_rate(&self) -> Option<f64> {
+        self.smoothed_rate
+    }
+}
 
 /// Run agent stream with CLI event handling
 ///
@@ -266,10 +357,11 @@ where
     let mut tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
     let mut last_tool_name: Option<String> = None;
 
-    // CTX-003: Previous tokens are no longer needed for cumulative display
-    // (we now show current context, not cumulative sum)
-    let _prev_input_tokens = session.token_tracker.input_tokens;
-    let _prev_output_tokens = session.token_tracker.output_tokens;
+    // Track previous session state for initial display
+    let prev_input_tokens = session.token_tracker.input_tokens;
+    let prev_output_tokens = session.token_tracker.output_tokens;
+    let prev_cache_read = session.token_tracker.cache_read_input_tokens.unwrap_or(0);
+    let prev_cache_creation = session.token_tracker.cache_creation_input_tokens.unwrap_or(0);
 
     // CTX-003: Track CURRENT CONTEXT tokens (overwritten with each API call, not accumulated)
     // Anthropic's input_tokens represents TOTAL context per call (absolute, not incremental)
@@ -277,6 +369,32 @@ where
     let mut current_api_output: u64 = 0;
     let mut turn_cache_read: u64 = 0;
     let mut turn_cache_creation: u64 = 0;
+
+    // TUI-031: Track CUMULATIVE output tokens across all API calls within this turn
+    // Initialize to previous output so display doesn't flash to 0 at start of new turn
+    // This value grows throughout the session and never decreases
+    let mut turn_cumulative_output: u64 = prev_output_tokens;
+
+    // TUI-031: Tokens per second tracker (time-window + EMA smoothing)
+    let mut tok_per_sec_tracker = TokPerSecTracker::new();
+
+    // Emit initial token state at start of prompt so display shows current session state
+    // (prevents flash to 0 when starting new prompt)
+    output.emit_tokens(&TokenInfo {
+        input_tokens: prev_input_tokens,
+        output_tokens: prev_output_tokens,
+        cache_read_input_tokens: Some(prev_cache_read),
+        cache_creation_input_tokens: Some(prev_cache_creation),
+        tokens_per_second: None,
+    });
+    emit_context_fill(
+        output,
+        prev_input_tokens,
+        prev_cache_read,
+        prev_output_tokens,
+        threshold,
+        context_window,
+    );
 
     loop {
         // Check interruption at start of each iteration (works for both modes)
@@ -345,6 +463,18 @@ where
                     StreamedAssistantContent::Text(text),
                 ))) => {
                     handle_text_chunk(&text.text, &mut assistant_text, Some(&request_id), output)?;
+
+                    // TUI-031: Track tok/s and emit update if not throttled
+                    if let Some(rate) = tok_per_sec_tracker.record_chunk(&text.text) {
+                        let display_output = turn_cumulative_output + current_api_output;
+                        output.emit_tokens(&TokenInfo {
+                            input_tokens: current_api_input,
+                            output_tokens: display_output,
+                            cache_read_input_tokens: Some(turn_cache_read),
+                            cache_creation_input_tokens: Some(turn_cache_creation),
+                            tokens_per_second: Some(rate),
+                        });
+                    }
                 }
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                     StreamedAssistantContent::ToolCall(tool_call),
@@ -369,19 +499,21 @@ where
                         output,
                     )?;
 
-                    // CTX-003: Emit CURRENT CONTEXT tokens after tool result
+                    // TUI-031: Emit CUMULATIVE output tokens after tool result
+                    let display_output = turn_cumulative_output + current_api_output;
                     output.emit_tokens(&TokenInfo {
                         input_tokens: current_api_input,
-                        output_tokens: current_api_output,
+                        output_tokens: display_output,
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
+                        tokens_per_second: tok_per_sec_tracker.current_rate(),
                     });
-                    // TUI-033: Emit context fill percentage (uses current context)
+                    // TUI-033: Emit context fill percentage
                     emit_context_fill(
                         output,
                         current_api_input,
                         turn_cache_read,
-                        current_api_output,
+                        display_output,
                         threshold,
                         context_window,
                     );
@@ -393,9 +525,7 @@ where
 
                     if usage.output_tokens == 0 {
                         // MessageStart - new API call starting
-                        // CTX-003: DON'T accumulate here! FinalResponse already commits to turn_accumulated.
-                        // Accumulating here causes DOUBLE-COUNTING (same tokens added in FinalResponse AND MessageStart).
-                        // Just track the new API call's input tokens (overwrite, not accumulate)
+                        // Reset current API output but keep cumulative for display
                         current_api_input = usage.input_tokens;
                         current_api_output = 0;
                     } else {
@@ -408,21 +538,22 @@ where
                         .cache_creation_input_tokens
                         .unwrap_or(turn_cache_creation);
 
-                    // CTX-003: Emit CURRENT CONTEXT tokens, not cumulative sum
-                    // Anthropic's input_tokens is the TOTAL context size per API call (absolute),
-                    // not incremental tokens added. Display should show current context window usage.
+                    // TUI-031: Emit CUMULATIVE output tokens for display (never decreases within turn)
+                    // Input tokens show current context size, output tokens show cumulative generation
+                    let display_output = turn_cumulative_output + current_api_output;
                     output.emit_tokens(&TokenInfo {
                         input_tokens: current_api_input,
-                        output_tokens: current_api_output,
+                        output_tokens: display_output,
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
+                        tokens_per_second: tok_per_sec_tracker.current_rate(),
                     });
-                    // TUI-033: Emit context fill percentage (uses current context, not cumulative)
+                    // TUI-033: Emit context fill percentage
                     emit_context_fill(
                         output,
                         current_api_input,
                         turn_cache_read,
-                        current_api_output,
+                        display_output,
                         threshold,
                         context_window,
                     );
@@ -437,7 +568,9 @@ where
                     }
                     current_api_output = usage.output_tokens;
 
-                    // CTX-003: No accumulation needed - we track current context, not cumulative
+                    // TUI-031: Accumulate output tokens for this turn
+                    // This happens when FinalResponse is received (end of an API call)
+                    turn_cumulative_output += current_api_output;
 
                     // Update cache tokens from FinalResponse
                     turn_cache_read = usage.cache_read_input_tokens.unwrap_or(turn_cache_read);
@@ -445,21 +578,22 @@ where
                         .cache_creation_input_tokens
                         .unwrap_or(turn_cache_creation);
 
-                    // CTX-003: Emit CURRENT CONTEXT tokens (not cumulative)
-                    // current_api_input contains the final input_tokens for this API call,
-                    // which represents the total context size (absolute, not incremental)
+                    // TUI-031: Emit CUMULATIVE output tokens for display
+                    // Input tokens show current context size, output tokens show cumulative generation
+                    // Clear tok/s on final response (streaming is done)
                     output.emit_tokens(&TokenInfo {
                         input_tokens: current_api_input,
-                        output_tokens: current_api_output,
+                        output_tokens: turn_cumulative_output,
                         cache_read_input_tokens: Some(turn_cache_read),
                         cache_creation_input_tokens: Some(turn_cache_creation),
+                        tokens_per_second: None, // Streaming done, hide tok/s
                     });
-                    // TUI-033: Emit context fill percentage (uses current context)
+                    // TUI-033: Emit context fill percentage
                     emit_context_fill(
                         output,
                         current_api_input,
                         turn_cache_read,
-                        current_api_output,
+                        turn_cumulative_output,
                         threshold,
                         context_window,
                     );
@@ -682,6 +816,14 @@ where
                 let mut retry_tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
                 let mut retry_last_tool_name: Option<String> = None;
 
+                // TUI-031: Track tokens for retry loop (same pattern as main loop)
+                let mut retry_api_input: u64 = 0;
+                let mut retry_api_output: u64 = 0;
+                let mut retry_cumulative_output: u64 = 0;
+                let mut retry_cache_read: u64 = 0;
+                let mut retry_cache_creation: u64 = 0;
+                let mut retry_tok_tracker = TokPerSecTracker::new();
+
                 // Process retry stream
                 loop {
                     if is_interrupted.load(Acquire) {
@@ -703,6 +845,18 @@ where
                             StreamedAssistantContent::Text(text),
                         ))) => {
                             handle_text_chunk(&text.text, &mut retry_assistant_text, None, output)?;
+
+                            // TUI-031: Track tok/s and emit update if not throttled
+                            if let Some(rate) = retry_tok_tracker.record_chunk(&text.text) {
+                                let display_output = retry_cumulative_output + retry_api_output;
+                                output.emit_tokens(&TokenInfo {
+                                    input_tokens: retry_api_input,
+                                    output_tokens: display_output,
+                                    cache_read_input_tokens: Some(retry_cache_read),
+                                    cache_creation_input_tokens: Some(retry_cache_creation),
+                                    tokens_per_second: Some(rate),
+                                });
+                            }
                         }
                         Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                             StreamedAssistantContent::ToolCall(tool_call),
@@ -726,25 +880,81 @@ where
                                 &retry_last_tool_name,
                                 output,
                             )?;
-                        }
-                        Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
+
+                            // TUI-031: Emit CUMULATIVE output tokens after tool result
+                            let display_output = retry_cumulative_output + retry_api_output;
                             output.emit_tokens(&TokenInfo {
-                                input_tokens: usage.input_tokens,
-                                output_tokens: usage.output_tokens,
-                                cache_read_input_tokens: usage.cache_read_input_tokens,
-                                cache_creation_input_tokens: usage.cache_creation_input_tokens,
+                                input_tokens: retry_api_input,
+                                output_tokens: display_output,
+                                cache_read_input_tokens: Some(retry_cache_read),
+                                cache_creation_input_tokens: Some(retry_cache_creation),
+                                tokens_per_second: retry_tok_tracker.current_rate(),
                             });
-                            // TUI-033: Emit context fill percentage
                             emit_context_fill(
                                 output,
-                                usage.input_tokens,
-                                usage.cache_read_input_tokens.unwrap_or(0),
-                                usage.output_tokens,
+                                retry_api_input,
+                                retry_cache_read,
+                                display_output,
                                 threshold,
                                 context_window,
                             );
                         }
-                        Some(Ok(MultiTurnStreamItem::FinalResponse(_))) => {
+                        Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
+                            // TUI-031: Track tokens with cumulative output (same pattern as main loop)
+                            if usage.output_tokens == 0 {
+                                retry_api_input = usage.input_tokens;
+                                retry_api_output = 0;
+                            } else {
+                                retry_api_output = usage.output_tokens;
+                            }
+                            retry_cache_read = usage.cache_read_input_tokens.unwrap_or(retry_cache_read);
+                            retry_cache_creation = usage.cache_creation_input_tokens.unwrap_or(retry_cache_creation);
+
+                            let display_output = retry_cumulative_output + retry_api_output;
+                            output.emit_tokens(&TokenInfo {
+                                input_tokens: retry_api_input,
+                                output_tokens: display_output,
+                                cache_read_input_tokens: Some(retry_cache_read),
+                                cache_creation_input_tokens: Some(retry_cache_creation),
+                                tokens_per_second: retry_tok_tracker.current_rate(),
+                            });
+                            // TUI-033: Emit context fill percentage
+                            emit_context_fill(
+                                output,
+                                retry_api_input,
+                                retry_cache_read,
+                                display_output,
+                                threshold,
+                                context_window,
+                            );
+                        }
+                        Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
+                            // TUI-031: Accumulate output tokens from FinalResponse
+                            let usage = final_resp.usage();
+                            if retry_api_input == 0 {
+                                retry_api_input = usage.input_tokens;
+                            }
+                            retry_api_output = usage.output_tokens;
+                            retry_cumulative_output += retry_api_output;
+                            retry_cache_read = usage.cache_read_input_tokens.unwrap_or(retry_cache_read);
+                            retry_cache_creation = usage.cache_creation_input_tokens.unwrap_or(retry_cache_creation);
+
+                            output.emit_tokens(&TokenInfo {
+                                input_tokens: retry_api_input,
+                                output_tokens: retry_cumulative_output,
+                                cache_read_input_tokens: Some(retry_cache_read),
+                                cache_creation_input_tokens: Some(retry_cache_creation),
+                                tokens_per_second: None, // Streaming done, hide tok/s
+                            });
+                            emit_context_fill(
+                                output,
+                                retry_api_input,
+                                retry_cache_read,
+                                retry_cumulative_output,
+                                threshold,
+                                context_window,
+                            );
+
                             handle_final_response(&retry_assistant_text, &mut session.messages)?;
                             output.emit_done();
                             break;
@@ -766,6 +976,16 @@ where
                         _ => {}
                     }
                     output.flush();
+                }
+
+                // TUI-031: Update session state after retry completes (mirrors end-of-function logic)
+                if !is_interrupted.load(Acquire) {
+                    session.token_tracker.input_tokens = retry_api_input;
+                    session.token_tracker.output_tokens = retry_cumulative_output;
+                    session.token_tracker.cumulative_billed_input += retry_api_input;
+                    session.token_tracker.cumulative_billed_output += retry_api_output;
+                    session.token_tracker.cache_read_input_tokens = Some(retry_cache_read);
+                    session.token_tracker.cache_creation_input_tokens = Some(retry_cache_creation);
                 }
 
                 return Ok(());
@@ -802,14 +1022,16 @@ where
     // Anthropic's input_tokens represents the TOTAL context size (absolute, not incremental).
     //
     // Two distinct metrics:
-    // - input_tokens/output_tokens: CURRENT context size (for display and threshold checks)
+    // - input_tokens: CURRENT context size (for display and threshold checks)
+    // - output_tokens: CUMULATIVE output tokens across all API calls (TUI-031)
     // - cumulative_billed_input/output: Sum of all API calls (for billing analytics)
     //
     // This matches CompactionHook behavior which correctly OVERWRITES (not accumulates) for context.
     if !is_interrupted.load(Acquire) {
         // Overwrite current context values (for display and threshold checks)
         session.token_tracker.input_tokens = current_api_input;
-        session.token_tracker.output_tokens = current_api_output;
+        // TUI-031: Save CUMULATIVE output tokens so next turn continues from correct value
+        session.token_tracker.output_tokens = turn_cumulative_output;
         // Accumulate for billing analytics (sum of all API calls in session)
         session.token_tracker.cumulative_billed_input += current_api_input;
         session.token_tracker.cumulative_billed_output += current_api_output;
