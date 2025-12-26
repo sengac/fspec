@@ -483,7 +483,9 @@ export declare function persistenceSetSessionTokens(
   input: number,
   output: number,
   cacheRead: number,
-  cacheCreate: number
+  cacheCreate: number,
+  cumulativeInput: number,
+  cumulativeOutput: number
 ): NapiSessionManifest;
 
 /** Store content in blob storage */
@@ -533,6 +535,10 @@ export interface TokenTracker {
   cacheCreationInputTokens?: number;
   /** Tokens per second (EMA-smoothed, calculated in Rust) */
   tokensPerSecond?: number;
+  /** Cumulative billed input tokens (sum of all API calls) */
+  cumulativeBilledInput?: number;
+  /** Cumulative billed output tokens (sum of all API calls) */
+  cumulativeBilledOutput?: number;
 }
 
 /** Tool call information */

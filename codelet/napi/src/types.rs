@@ -14,6 +14,10 @@ pub struct TokenTracker {
     pub cache_creation_input_tokens: Option<u32>,
     /// Tokens per second (EMA-smoothed, calculated in Rust)
     pub tokens_per_second: Option<f64>,
+    /// Cumulative billed input tokens (sum of all API calls)
+    pub cumulative_billed_input: Option<u32>,
+    /// Cumulative billed output tokens (sum of all API calls)
+    pub cumulative_billed_output: Option<u32>,
 }
 
 impl Default for TokenTracker {
@@ -24,6 +28,8 @@ impl Default for TokenTracker {
             cache_read_input_tokens: Some(0),
             cache_creation_input_tokens: Some(0),
             tokens_per_second: None,
+            cumulative_billed_input: Some(0),
+            cumulative_billed_output: Some(0),
         }
     }
 }

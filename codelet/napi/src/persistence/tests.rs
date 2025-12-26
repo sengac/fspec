@@ -1672,7 +1672,8 @@ fn test_set_session_tokens() {
     append_message(&mut session, "assistant", "Hi there!").expect("append");
 
     // @step When I set the cumulative token usage to specific values
-    set_session_tokens(&mut session, 1000, 500, 100, 50).expect("set tokens");
+    // Pass cumulative values separately (here same as current for fresh session)
+    set_session_tokens(&mut session, 1000, 500, 100, 50, 1000, 500).expect("set tokens");
 
     // @step Then the session should have exactly those token values (not added)
     // CTX-003: Now uses dual-metric fields
@@ -1769,7 +1770,7 @@ fn test_token_and_compaction_state_persist_together() {
     }
 
     // @step When I set both token usage and compaction state
-    set_session_tokens(&mut session, 2000, 1000, 200, 100).expect("set tokens");
+    set_session_tokens(&mut session, 2000, 1000, 200, 100, 2000, 1000).expect("set tokens");
     set_compaction_state(&mut session, "Compacted 15 turns".to_string(), 15)
         .expect("set compaction");
 

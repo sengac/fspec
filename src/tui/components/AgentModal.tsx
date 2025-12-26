@@ -768,7 +768,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               finalTokens.inputTokens,
               finalTokens.outputTokens,
               finalTokens.cacheReadInputTokens ?? 0,
-              finalTokens.cacheCreationInputTokens ?? 0
+              finalTokens.cacheCreationInputTokens ?? 0,
+              finalTokens.cumulativeBilledInput ?? finalTokens.inputTokens,
+              finalTokens.cumulativeBilledOutput ?? finalTokens.outputTokens
             );
           } catch {
             // Compaction state persistence failed - continue
@@ -1155,7 +1157,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               finalTokens.inputTokens,
               finalTokens.outputTokens,
               finalTokens.cacheReadInputTokens ?? 0,
-              finalTokens.cacheCreationInputTokens ?? 0
+              finalTokens.cacheCreationInputTokens ?? 0,
+              finalTokens.cumulativeBilledInput ?? finalTokens.inputTokens,
+              finalTokens.cumulativeBilledOutput ?? finalTokens.outputTokens
             );
           } catch {
             // Token usage persistence failed - continue
