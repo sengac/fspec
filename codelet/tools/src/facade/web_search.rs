@@ -146,8 +146,8 @@ impl ToolFacade for GeminiGoogleWebSearchFacade {
 
 /// Gemini-specific web fetch facade.
 ///
-/// Gemini CLI uses a separate `web_fetch` tool for fetching URL content.
-/// The prompt parameter contains the URL and instructions.
+/// Uses a clean schema with separate `url` and `format` parameters
+/// (following OpenCode's approach rather than Gemini CLI's prompt-embedded URLs).
 pub struct GeminiWebFetchFacade;
 
 impl ToolFacade for GeminiWebFetchFacade {
@@ -162,51 +162,52 @@ impl ToolFacade for GeminiWebFetchFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "web_fetch".to_string(),
-            description: "Fetch and process content from URLs".to_string(),
+            description: "Fetch content from a URL. Use this after google_web_search to retrieve page content from search results.".to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
-                    "prompt": {
+                    "url": {
                         "type": "string",
-                        "description": "URL(s) and instructions for processing"
+                        "description": "The URL to fetch content from (must start with http:// or https://)"
+                    },
+                    "format": {
+                        "type": "string",
+                        "enum": ["text", "markdown", "html"],
+                        "description": "The format to return the content in (default: markdown)"
                     }
                 },
-                "required": ["prompt"]
+                "required": ["url"]
             }),
         }
     }
 
     fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {
-        let prompt = input
-            .get("prompt")
-            .and_then(|p| p.as_str())
+        let url = input
+            .get("url")
+            .and_then(|u| u.as_str())
             .ok_or_else(|| ToolError::Validation {
                 tool: "web_fetch",
-                message: "Missing 'prompt' field".to_string(),
+                message: "Missing 'url' field".to_string(),
             })?;
 
-        // Extract URL from prompt - look for http:// or https://
-        let url = extract_url_from_prompt(prompt).ok_or_else(|| ToolError::Validation {
+        // Validate URL format
+        if !url.starts_with("http://") && !url.starts_with("https://") {
+            return Err(ToolError::Validation {
+                tool: "web_fetch",
+                message: "URL must start with http:// or https://".to_string(),
+            });
+        }
+
+        // Validate it's a proper URL
+        url::Url::parse(url).map_err(|e| ToolError::Validation {
             tool: "web_fetch",
-            message: "No valid URL found in prompt".to_string(),
+            message: format!("Invalid URL: {e}"),
         })?;
 
-        Ok(InternalWebSearchParams::OpenPage { url })
+        Ok(InternalWebSearchParams::OpenPage {
+            url: url.to_string(),
+        })
     }
-}
-
-/// Extracts the first URL from a prompt string.
-fn extract_url_from_prompt(prompt: &str) -> Option<String> {
-    // Split on whitespace and find the first token that looks like a URL
-    for token in prompt.split_whitespace() {
-        if token.starts_with("http://") || token.starts_with("https://") {
-            // Validate it's a proper URL
-            if url::Url::parse(token).is_ok() {
-                return Some(token.to_string());
-            }
-        }
-    }
-    None
 }
 
 #[cfg(test)]
@@ -266,10 +267,10 @@ mod tests {
     }
 
     #[test]
-    fn test_gemini_web_fetch_facade_extracts_url() {
+    fn test_gemini_web_fetch_facade_maps_url() {
         let facade = GeminiWebFetchFacade;
         let input = json!({
-            "prompt": "https://example.com summarize this page"
+            "url": "https://example.com"
         });
 
         let result = facade.map_params(input).unwrap();
@@ -279,6 +280,60 @@ mod tests {
                 url: "https://example.com".to_string()
             }
         );
+    }
+
+    #[test]
+    fn test_gemini_web_fetch_facade_with_format() {
+        let facade = GeminiWebFetchFacade;
+        let input = json!({
+            "url": "https://example.com",
+            "format": "markdown"
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::OpenPage {
+                url: "https://example.com".to_string()
+            }
+        );
+    }
+
+    #[test]
+    fn test_gemini_web_fetch_facade_rejects_invalid_url() {
+        let facade = GeminiWebFetchFacade;
+        let input = json!({
+            "url": "not-a-url"
+        });
+
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_gemini_web_fetch_facade_rejects_missing_protocol() {
+        let facade = GeminiWebFetchFacade;
+        let input = json!({
+            "url": "example.com"
+        });
+
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_gemini_web_fetch_facade_has_url_and_format_schema() {
+        let facade = GeminiWebFetchFacade;
+        let def = facade.definition();
+
+        // Should have url and format properties
+        assert!(def.parameters["properties"]["url"].is_object());
+        assert!(def.parameters["properties"]["format"].is_object());
+        assert!(def.parameters["properties"]["format"]["enum"].is_array());
+
+        // url should be required
+        let required = def.parameters["required"].as_array().unwrap();
+        assert!(required.iter().any(|v| v == "url"));
     }
 
     #[test]
@@ -318,20 +373,5 @@ mod tests {
         assert!(def.parameters["properties"]["query"].is_object());
         assert!(def.parameters["properties"]["url"].is_object());
         assert!(def.parameters["properties"]["pattern"].is_object());
-    }
-
-    #[test]
-    fn test_extract_url_from_prompt() {
-        assert_eq!(
-            extract_url_from_prompt("https://example.com summarize this"),
-            Some("https://example.com".to_string())
-        );
-
-        assert_eq!(
-            extract_url_from_prompt("Please fetch http://test.org and analyze"),
-            Some("http://test.org".to_string())
-        );
-
-        assert_eq!(extract_url_from_prompt("no url here"), None);
     }
 }

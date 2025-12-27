@@ -111,8 +111,26 @@ fn test_gemini_facade_formats_preamble_as_plain_string() {
     // @step Then the result should be a plain string
     assert!(result.is_string(), "Result should be a plain string");
 
-    // @step And the result should equal "You are a helpful assistant"
-    assert_eq!(result.as_str().unwrap(), preamble);
+    // @step And the result should start with the preamble
+    let text = result.as_str().unwrap();
+    assert!(
+        text.starts_with(preamble),
+        "Result should start with the preamble"
+    );
+
+    // @step And the result should contain web tool guidance
+    assert!(
+        text.contains("Web Search and Browsing"),
+        "Result should contain web tool guidance"
+    );
+    assert!(
+        text.contains("google_web_search"),
+        "Result should mention google_web_search"
+    );
+    assert!(
+        text.contains("web_fetch"),
+        "Result should mention web_fetch"
+    );
 }
 
 // ============================================================================
@@ -267,10 +285,17 @@ fn test_transform_preamble_applies_provider_specific_transformations() {
     let transformed = api_key.transform_preamble("Hello");
     assert_eq!(transformed, "Hello");
 
-    // Gemini should pass through unchanged
+    // Gemini should append web tool guidance
     let gemini = GeminiSystemPromptFacade;
     let transformed = gemini.transform_preamble("Hello");
-    assert_eq!(transformed, "Hello");
+    assert!(
+        transformed.starts_with("Hello"),
+        "Gemini should start with original preamble"
+    );
+    assert!(
+        transformed.contains("Web Search and Browsing"),
+        "Gemini should append web tool guidance"
+    );
 
     // OpenAI should pass through unchanged
     let openai = OpenAISystemPromptFacade;

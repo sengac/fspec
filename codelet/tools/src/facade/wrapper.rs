@@ -143,7 +143,7 @@ mod tests {
         let def = wrapper.definition(String::new()).await;
 
         assert_eq!(def.name, "read_file");
-        assert!(def.parameters["properties"]["path"].is_object());
+        assert!(def.parameters["properties"]["file_path"].is_object());
         assert!(def.parameters.get("oneOf").is_none());
     }
 }
