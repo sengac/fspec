@@ -1,3 +1,4 @@
+@cli
 @foundation-management
 @work-unit-automation
 @critical

@@ -1,4 +1,5 @@
-@NAPI-003
+@agent-integration
+@tui
 Feature: Proper TUI Integration Using Existing Codelet Rust Infrastructure
 
   """

@@ -1,3 +1,4 @@
+@tool-discovery
 @TOOL-003 @high @tools @facade @gemini
 Feature: File Operation Facades
 

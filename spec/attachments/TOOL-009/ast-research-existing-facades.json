@@ -1,0 +1,386 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 14,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"claude\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "tool_name",
+      "line": 18,
+      "column": 4,
+      "text": "fn tool_name(&self) -> &'static str {\n        \"web_search\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 22,
+      "column": 4,
+      "text": "fn definition(&self) -> ToolDefinition {\n        // Use flat schema to avoid Claude serializing nested objects as strings\n        ToolDefinition {\n            name: \"web_search\".to_string(),\n            description: \"Perform web search, open web pages, or find content within pages. Use action_type to specify the operation.\".to_string(),\n            parameters: json!({\n                \"type\": \"object\",\n                \"properties\": {\n                    \"action_type\": {\n                        \"type\": \"string\",\n                        \"enum\": [\"search\", \"open_page\", \"find_in_page\"],\n                        \"description\": \"The type of web action to perform\"\n                    },\n                    \"query\": {\n                        \"type\": \"string\",\n                        \"description\": \"Search query (required for 'search' action)\"\n                    },\n                    \"url\": {\n                        \"type\": \"string\",\n                        \"description\": \"URL to open or search within (required for 'open_page' and 'find_in_page' actions)\"\n                    },\n                    \"pattern\": {\n                        \"type\": \"string\",\n                        \"description\": \"Pattern to find in page (required for 'find_in_page' action)\"\n                    }\n                },\n                \"required\": [\"action_type\"]\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "map_params",
+      "line": 53,
+      "column": 4,
+      "text": "fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {\n        // Handle flat schema with action_type at top level\n        let action_type = input\n            .get(\"action_type\")\n            .and_then(|t| t.as_str())\n            .ok_or_else(|| ToolError::Validation {\n                tool: \"web_search\",\n                message: \"Missing 'action_type' field\".to_string(),\n            })?;\n\n        match action_type {\n            \"search\" => {\n                let query = input\n                    .get(\"query\")\n                    .and_then(|q| q.as_str())\n                    .unwrap_or(\"\")\n                    .to_string();\n                Ok(InternalWebSearchParams::Search { query })\n            }\n            \"open_page\" => {\n                let url = input\n                    .get(\"url\")\n                    .and_then(|u| u.as_str())\n                    .unwrap_or(\"\")\n                    .to_string();\n                Ok(InternalWebSearchParams::OpenPage { url })\n            }\n            \"find_in_page\" => {\n                let url = input\n                    .get(\"url\")\n                    .and_then(|u| u.as_str())\n                    .unwrap_or(\"\")\n                    .to_string();\n                let pattern = input\n                    .get(\"pattern\")\n                    .and_then(|p| p.as_str())\n                    .unwrap_or(\"\")\n                    .to_string();\n                Ok(InternalWebSearchParams::FindInPage { url, pattern })\n            }\n            _ => Err(ToolError::Validation {\n                tool: \"web_search\",\n                message: format!(\"Unknown action type: {action_type}\"),\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 108,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"gemini\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "tool_name",
+      "line": 112,
+      "column": 4,
+      "text": "fn tool_name(&self) -> &'static str {\n        \"google_web_search\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 116,
+      "column": 4,
+      "text": "fn definition(&self) -> ToolDefinition {\n        ToolDefinition {\n            name: \"google_web_search\".to_string(),\n            description: \"Search the web using Google Search\".to_string(),\n            parameters: json!({\n                \"type\": \"object\",\n                \"properties\": {\n                    \"query\": {\n                        \"type\": \"string\",\n                        \"description\": \"The search query\"\n                    }\n                },\n                \"required\": [\"query\"]\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "map_params",
+      "line": 133,
+      "column": 4,
+      "text": "fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {\n        let query = input\n            .get(\"query\")\n            .and_then(|q| q.as_str())\n            .ok_or_else(|| ToolError::Validation {\n                tool: \"google_web_search\",\n                message: \"Missing 'query' field\".to_string(),\n            })?\n            .to_string();\n\n        Ok(InternalWebSearchParams::Search { query })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 154,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"gemini\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "tool_name",
+      "line": 158,
+      "column": 4,
+      "text": "fn tool_name(&self) -> &'static str {\n        \"web_fetch\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 162,
+      "column": 4,
+      "text": "fn definition(&self) -> ToolDefinition {\n        ToolDefinition {\n            name: \"web_fetch\".to_string(),\n            description: \"Fetch content from a URL. Use this after google_web_search to retrieve page content from search results.\".to_string(),\n            parameters: json!({\n                \"type\": \"object\",\n                \"properties\": {\n                    \"url\": {\n                        \"type\": \"string\",\n                        \"description\": \"The URL to fetch content from (must start with http:// or https://)\"\n                    },\n                    \"format\": {\n                        \"type\": \"string\",\n                        \"enum\": [\"text\", \"markdown\", \"html\"],\n                        \"description\": \"The format to return the content in (default: markdown)\"\n                    }\n                },\n                \"required\": [\"url\"]\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "map_params",
+      "line": 184,
+      "column": 4,
+      "text": "fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {\n        let url = input\n            .get(\"url\")\n            .and_then(|u| u.as_str())\n            .ok_or_else(|| ToolError::Validation {\n                tool: \"web_fetch\",\n                message: \"Missing 'url' field\".to_string(),\n            })?;\n\n        // Validate URL format\n        if !url.starts_with(\"http://\") && !url.starts_with(\"https://\") {\n            return Err(ToolError::Validation {\n                tool: \"web_fetch\",\n                message: \"URL must start with http:// or https://\".to_string(),\n            });\n        }\n\n        // Validate it's a proper URL\n        url::Url::parse(url).map_err(|e| ToolError::Validation {\n            tool: \"web_fetch\",\n            message: format!(\"Invalid URL: {e}\"),\n        })?;\n\n        Ok(InternalWebSearchParams::OpenPage {\n            url: url.to_string(),\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_facade_maps_search_action",
+      "line": 218,
+      "column": 4,
+      "text": "fn test_claude_facade_maps_search_action() {\n        let facade = ClaudeWebSearchFacade;\n        // Uses flat schema with action_type at top level\n        let input = json!({\n            \"action_type\": \"search\",\n            \"query\": \"rust async\"\n        });\n\n        let result = facade.map_params(input).unwrap();\n        assert_eq!(\n            result,\n            InternalWebSearchParams::Search {\n                query: \"rust async\".to_string()\n            }\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_facade_maps_open_page_action",
+      "line": 236,
+      "column": 4,
+      "text": "fn test_claude_facade_maps_open_page_action() {\n        let facade = ClaudeWebSearchFacade;\n        // Uses flat schema with action_type at top level\n        let input = json!({\n            \"action_type\": \"open_page\",\n            \"url\": \"https://example.com\"\n        });\n\n        let result = facade.map_params(input).unwrap();\n        assert_eq!(\n            result,\n            InternalWebSearchParams::OpenPage {\n                url: \"https://example.com\".to_string()\n            }\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_web_search_facade_maps_query",
+      "line": 254,
+      "column": 4,
+      "text": "fn test_gemini_web_search_facade_maps_query() {\n        let facade = GeminiGoogleWebSearchFacade;\n        let input = json!({\n            \"query\": \"rust async\"\n        });\n\n        let result = facade.map_params(input).unwrap();\n        assert_eq!(\n            result,\n            InternalWebSearchParams::Search {\n                query: \"rust async\".to_string()\n            }\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_web_fetch_facade_maps_url",
+      "line": 270,
+      "column": 4,
+      "text": "fn test_gemini_web_fetch_facade_maps_url() {\n        let facade = GeminiWebFetchFacade;\n        let input = json!({\n            \"url\": \"https://example.com\"\n        });\n\n        let result = facade.map_params(input).unwrap();\n        assert_eq!(\n            result,\n            InternalWebSearchParams::OpenPage {\n                url: \"https://example.com\".to_string()\n            }\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_web_fetch_facade_with_format",
+      "line": 286,
+      "column": 4,
+      "text": "fn test_gemini_web_fetch_facade_with_format() {\n        let facade = GeminiWebFetchFacade;\n        let input = json!({\n            \"url\": \"https://example.com\",\n            \"format\": \"markdown\"\n        });\n\n        let result = facade.map_params(input).unwrap();\n        assert_eq!(\n            result,\n            InternalWebSearchParams::OpenPage {\n                url: \"https://example.com\".to_string()\n            }\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_web_fetch_facade_rejects_invalid_url",
+      "line": 303,
+      "column": 4,
+      "text": "fn test_gemini_web_fetch_facade_rejects_invalid_url() {\n        let facade = GeminiWebFetchFacade;\n        let input = json!({\n            \"url\": \"not-a-url\"\n        });\n\n        let result = facade.map_params(input);\n        assert!(result.is_err());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_web_fetch_facade_rejects_missing_protocol",
+      "line": 314,
+      "column": 4,
+      "text": "fn test_gemini_web_fetch_facade_rejects_missing_protocol() {\n        let facade = GeminiWebFetchFacade;\n        let input = json!({\n            \"url\": \"example.com\"\n        });\n\n        let result = facade.map_params(input);\n        assert!(result.is_err());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_web_fetch_facade_has_url_and_format_schema",
+      "line": 325,
+      "column": 4,
+      "text": "fn test_gemini_web_fetch_facade_has_url_and_format_schema() {\n        let facade = GeminiWebFetchFacade;\n        let def = facade.definition();\n\n        // Should have url and format properties\n        assert!(def.parameters[\"properties\"][\"url\"].is_object());\n        assert!(def.parameters[\"properties\"][\"format\"].is_object());\n        assert!(def.parameters[\"properties\"][\"format\"][\"enum\"].is_array());\n\n        // url should be required\n        let required = def.parameters[\"required\"].as_array().unwrap();\n        assert!(required.iter().any(|v| v == \"url\"));\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_facade_has_flat_schema",
+      "line": 340,
+      "column": 4,
+      "text": "fn test_gemini_facade_has_flat_schema() {\n        let facade = GeminiGoogleWebSearchFacade;\n        let def = facade.definition();\n\n        // Should have flat query property, not nested action with oneOf\n        assert!(def.parameters.get(\"properties\").is_some());\n        assert!(def.parameters[\"properties\"].get(\"query\").is_some());\n        assert!(def.parameters.get(\"oneOf\").is_none());\n        assert!(def.parameters[\"properties\"].get(\"action\").is_none());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_facade_has_flat_schema_with_enum",
+      "line": 352,
+      "column": 4,
+      "text": "fn test_claude_facade_has_flat_schema_with_enum() {\n        let facade = ClaudeWebSearchFacade;\n        let def = facade.definition();\n\n        // Should have flat schema with action_type enum (not nested oneOf)\n        assert!(def.parameters[\"properties\"][\"action_type\"].is_object());\n        assert!(def.parameters[\"properties\"][\"action_type\"][\"enum\"].is_array());\n\n        let action_types = def.parameters[\"properties\"][\"action_type\"][\"enum\"]\n            .as_array()\n            .unwrap();\n        let types: Vec<&str> = action_types\n            .iter()\n            .filter_map(|v| v.as_str())\n            .collect();\n\n        assert!(types.contains(&\"search\"));\n        assert!(types.contains(&\"open_page\"));\n        assert!(types.contains(&\"find_in_page\"));\n\n        // Should have query, url, and pattern as top-level properties\n        assert!(def.parameters[\"properties\"][\"query\"].is_object());\n        assert!(def.parameters[\"properties\"][\"url\"].is_object());\n        assert!(def.parameters[\"properties\"][\"pattern\"].is_object());\n    }"
+    }
+  ]
+}
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 79,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"claude\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "identity_prefix",
+      "line": 83,
+      "column": 4,
+      "text": "fn identity_prefix(&self) -> Option<&'static str> {\n        Some(CLAUDE_CODE_PROMPT_PREFIX)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "transform_preamble",
+      "line": 87,
+      "column": 4,
+      "text": "fn transform_preamble(&self, preamble: &str) -> String {\n        format!(\"{CLAUDE_CODE_PROMPT_PREFIX}\\n\\n{preamble}\")\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "format_for_api",
+      "line": 91,
+      "column": 4,
+      "text": "fn format_for_api(&self, preamble: &str) -> Value {\n        // OAuth mode: Handle empty preamble case (PROV-006)\n        // Anthropic API rejects: \"cache_control cannot be set for empty text blocks\"\n        let trimmed = preamble.trim();\n        if trimmed.is_empty() {\n            // Only prefix - put cache_control on the prefix itself\n            json!([\n                {\n                    \"type\": \"text\",\n                    \"text\": CLAUDE_CODE_PROMPT_PREFIX,\n                    \"cache_control\": { \"type\": \"ephemeral\" }\n                }\n            ])\n        } else {\n            // 2 blocks:\n            // 1. Claude Code prefix WITHOUT cache_control (static, always same)\n            // 2. Preamble WITH cache_control (variable content to cache)\n            json!([\n                {\n                    \"type\": \"text\",\n                    \"text\": CLAUDE_CODE_PROMPT_PREFIX\n                },\n                {\n                    \"type\": \"text\",\n                    \"text\": preamble,\n                    \"cache_control\": { \"type\": \"ephemeral\" }\n                }\n            ])\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 135,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"claude\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "identity_prefix",
+      "line": 139,
+      "column": 4,
+      "text": "fn identity_prefix(&self) -> Option<&'static str> {\n        None\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "transform_preamble",
+      "line": 143,
+      "column": 4,
+      "text": "fn transform_preamble(&self, preamble: &str) -> String {\n        preamble.to_string()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "format_for_api",
+      "line": 147,
+      "column": 4,
+      "text": "fn format_for_api(&self, preamble: &str) -> Value {\n        // API key mode: single block with cache_control\n        json!([\n            {\n                \"type\": \"text\",\n                \"text\": preamble,\n                \"cache_control\": { \"type\": \"ephemeral\" }\n            }\n        ])\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 172,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"gemini\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "identity_prefix",
+      "line": 176,
+      "column": 4,
+      "text": "fn identity_prefix(&self) -> Option<&'static str> {\n        None\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "transform_preamble",
+      "line": 180,
+      "column": 4,
+      "text": "fn transform_preamble(&self, preamble: &str) -> String {\n        // Append web tool guidance to help Gemini use web tools effectively\n        format!(\"{preamble}\\n{GEMINI_WEB_TOOL_GUIDANCE}\")\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "format_for_api",
+      "line": 185,
+      "column": 4,
+      "text": "fn format_for_api(&self, preamble: &str) -> Value {\n        // Gemini uses plain string format with web tool guidance appended\n        Value::String(self.transform_preamble(preamble))\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 203,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"openai\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "identity_prefix",
+      "line": 207,
+      "column": 4,
+      "text": "fn identity_prefix(&self) -> Option<&'static str> {\n        None\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "transform_preamble",
+      "line": 211,
+      "column": 4,
+      "text": "fn transform_preamble(&self, preamble: &str) -> String {\n        preamble.to_string()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "format_for_api",
+      "line": 215,
+      "column": 4,
+      "text": "fn format_for_api(&self, preamble: &str) -> Value {\n        // OpenAI uses plain string format\n        Value::String(preamble.to_string())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "select_claude_facade",
+      "line": 238,
+      "column": 0,
+      "text": "pub fn select_claude_facade(is_oauth: bool) -> BoxedSystemPromptFacade {\n    if is_oauth {\n        Box::new(ClaudeOAuthSystemPromptFacade)\n    } else {\n        Box::new(ClaudeApiKeySystemPromptFacade)\n    }\n}"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_oauth_facade_has_identity_prefix",
+      "line": 251,
+      "column": 4,
+      "text": "fn test_claude_oauth_facade_has_identity_prefix() {\n        let facade = ClaudeOAuthSystemPromptFacade;\n        assert_eq!(facade.provider(), \"claude\");\n        assert!(facade.identity_prefix().is_some());\n        assert!(facade\n            .identity_prefix()\n            .unwrap()\n            .starts_with(\"You are Claude Code\"));\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_api_key_facade_no_identity_prefix",
+      "line": 262,
+      "column": 4,
+      "text": "fn test_claude_api_key_facade_no_identity_prefix() {\n        let facade = ClaudeApiKeySystemPromptFacade;\n        assert_eq!(facade.provider(), \"claude\");\n        assert!(facade.identity_prefix().is_none());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_facade_no_identity_prefix",
+      "line": 269,
+      "column": 4,
+      "text": "fn test_gemini_facade_no_identity_prefix() {\n        let facade = GeminiSystemPromptFacade;\n        assert_eq!(facade.provider(), \"gemini\");\n        assert!(facade.identity_prefix().is_none());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_openai_facade_no_identity_prefix",
+      "line": 276,
+      "column": 4,
+      "text": "fn test_openai_facade_no_identity_prefix() {\n        let facade = OpenAISystemPromptFacade;\n        assert_eq!(facade.provider(), \"openai\");\n        assert!(facade.identity_prefix().is_none());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_oauth_transform_preamble",
+      "line": 283,
+      "column": 4,
+      "text": "fn test_claude_oauth_transform_preamble() {\n        let facade = ClaudeOAuthSystemPromptFacade;\n        let result = facade.transform_preamble(\"Hello\");\n        assert!(result.contains(\"You are Claude Code\"));\n        assert!(result.contains(\"Hello\"));\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_api_key_transform_preamble",
+      "line": 291,
+      "column": 4,
+      "text": "fn test_claude_api_key_transform_preamble() {\n        let facade = ClaudeApiKeySystemPromptFacade;\n        let result = facade.transform_preamble(\"Hello\");\n        assert_eq!(result, \"Hello\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_format_for_api_returns_string",
+      "line": 298,
+      "column": 4,
+      "text": "fn test_gemini_format_for_api_returns_string() {\n        let facade = GeminiSystemPromptFacade;\n        let result = facade.format_for_api(\"Hello\");\n        assert!(result.is_string());\n        let text = result.as_str().unwrap();\n        assert!(text.starts_with(\"Hello\"));\n        assert!(text.contains(\"Web Search and Browsing\"));\n        assert!(text.contains(\"google_web_search\"));\n        assert!(text.contains(\"web_fetch\"));\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini_transform_preamble_appends_web_guidance",
+      "line": 310,
+      "column": 4,
+      "text": "fn test_gemini_transform_preamble_appends_web_guidance() {\n        let facade = GeminiSystemPromptFacade;\n        let result = facade.transform_preamble(\"Hello\");\n        assert!(result.starts_with(\"Hello\"));\n        assert!(result.contains(GEMINI_WEB_TOOL_GUIDANCE));\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_openai_format_for_api_returns_string",
+      "line": 318,
+      "column": 4,
+      "text": "fn test_openai_format_for_api_returns_string() {\n        let facade = OpenAISystemPromptFacade;\n        let result = facade.format_for_api(\"Hello\");\n        assert!(result.is_string());\n        assert_eq!(result.as_str().unwrap(), \"Hello\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_oauth_format_for_api_returns_array",
+      "line": 326,
+      "column": 4,
+      "text": "fn test_claude_oauth_format_for_api_returns_array() {\n        let facade = ClaudeOAuthSystemPromptFacade;\n        let result = facade.format_for_api(\"Hello\");\n        assert!(result.is_array());\n        let arr = result.as_array().unwrap();\n        assert_eq!(arr.len(), 2);\n        // First block is prefix without cache_control\n        assert!(arr[0][\"text\"]\n            .as_str()\n            .unwrap()\n            .starts_with(\"You are Claude Code\"));\n        assert!(arr[0].get(\"cache_control\").is_none());\n        // Second block is preamble with cache_control\n        assert_eq!(arr[1][\"text\"].as_str().unwrap(), \"Hello\");\n        assert!(arr[1].get(\"cache_control\").is_some());\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_api_key_format_for_api_returns_array_with_cache_control",
+      "line": 344,
+      "column": 4,
+      "text": "fn test_claude_api_key_format_for_api_returns_array_with_cache_control() {\n        let facade = ClaudeApiKeySystemPromptFacade;\n        let result = facade.format_for_api(\"Hello\");\n        assert!(result.is_array());\n        let arr = result.as_array().unwrap();\n        assert_eq!(arr.len(), 1);\n        assert_eq!(arr[0][\"text\"].as_str().unwrap(), \"Hello\");\n        assert!(arr[0].get(\"cache_control\").is_some());\n        assert_eq!(\n            arr[0][\"cache_control\"][\"type\"].as_str().unwrap(),\n            \"ephemeral\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_oauth_format_for_api_empty_preamble",
+      "line": 359,
+      "column": 4,
+      "text": "fn test_claude_oauth_format_for_api_empty_preamble() {\n        // PROV-006: Empty preamble should result in single block with cache_control on prefix\n        // Anthropic API rejects: \"cache_control cannot be set for empty text blocks\"\n        let facade = ClaudeOAuthSystemPromptFacade;\n        let result = facade.format_for_api(\"\");\n        assert!(result.is_array());\n        let arr = result.as_array().unwrap();\n        assert_eq!(arr.len(), 1, \"Empty preamble should produce single block\");\n        assert!(arr[0][\"text\"]\n            .as_str()\n            .unwrap()\n            .starts_with(\"You are Claude Code\"));\n        assert!(\n            arr[0].get(\"cache_control\").is_some(),\n            \"Single block should have cache_control\"\n        );\n        assert_eq!(arr[0][\"cache_control\"][\"type\"].as_str().unwrap(), \"ephemeral\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_oauth_format_for_api_whitespace_preamble",
+      "line": 379,
+      "column": 4,
+      "text": "fn test_claude_oauth_format_for_api_whitespace_preamble() {\n        // Whitespace-only preamble should also result in single block\n        let facade = ClaudeOAuthSystemPromptFacade;\n        let result = facade.format_for_api(\"   \");\n        assert!(result.is_array());\n        let arr = result.as_array().unwrap();\n        assert_eq!(arr.len(), 1, \"Whitespace preamble should produce single block\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_select_claude_facade_oauth",
+      "line": 389,
+      "column": 4,
+      "text": "fn test_select_claude_facade_oauth() {\n        let facade = select_claude_facade(true);\n        assert_eq!(facade.provider(), \"claude\");\n        assert!(facade.identity_prefix().is_some());\n        assert!(facade\n            .identity_prefix()\n            .unwrap()\n            .starts_with(\"You are Claude Code\"));\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_select_claude_facade_api_key",
+      "line": 400,
+      "column": 4,
+      "text": "fn test_select_claude_facade_api_key() {\n        let facade = select_claude_facade(false);\n        assert_eq!(facade.provider(), \"claude\");\n        assert!(facade.identity_prefix().is_none());\n    }"
+    }
+  ]
+}

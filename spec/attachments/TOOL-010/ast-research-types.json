@@ -1,0 +1,74 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 24,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self {\n            input_tokens: 0,\n            output_tokens: 0,\n            cache_read_input_tokens: Some(0),\n            cache_creation_input_tokens: Some(0),\n            tokens_per_second: None,\n            cumulative_billed_input: Some(0),\n            cumulative_billed_output: Some(0),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "text",
+      "line": 115,
+      "column": 4,
+      "text": "pub fn text(text: String) -> Self {\n        Self {\n            chunk_type: \"Text\".to_string(),\n            text: Some(text),\n            tool_call: None,\n            tool_result: None,\n            status: None,\n            queued_inputs: None,\n            tokens: None,\n            context_fill: None,\n            error: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "tool_call",
+      "line": 129,
+      "column": 4,
+      "text": "pub fn tool_call(info: ToolCallInfo) -> Self {\n        Self {\n            chunk_type: \"ToolCall\".to_string(),\n            text: None,\n            tool_call: Some(info),\n            tool_result: None,\n            status: None,\n            queued_inputs: None,\n            tokens: None,\n            context_fill: None,\n            error: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "tool_result",
+      "line": 143,
+      "column": 4,
+      "text": "pub fn tool_result(info: ToolResultInfo) -> Self {\n        Self {\n            chunk_type: \"ToolResult\".to_string(),\n            text: None,\n            tool_call: None,\n            tool_result: Some(info),\n            status: None,\n            queued_inputs: None,\n            tokens: None,\n            context_fill: None,\n            error: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "status",
+      "line": 157,
+      "column": 4,
+      "text": "pub fn status(message: String) -> Self {\n        Self {\n            chunk_type: \"Status\".to_string(),\n            text: None,\n            tool_call: None,\n            tool_result: None,\n            status: Some(message),\n            queued_inputs: None,\n            tokens: None,\n            context_fill: None,\n            error: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "interrupted",
+      "line": 171,
+      "column": 4,
+      "text": "pub fn interrupted(queued_inputs: Vec<String>) -> Self {\n        Self {\n            chunk_type: \"Interrupted\".to_string(),\n            text: None,\n            tool_call: None,\n            tool_result: None,\n            status: None,\n            queued_inputs: Some(queued_inputs),\n            tokens: None,\n            context_fill: None,\n            error: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "token_update",
+      "line": 185,
+      "column": 4,
+      "text": "pub fn token_update(tokens: TokenTracker) -> Self {\n        Self {\n            chunk_type: \"TokenUpdate\".to_string(),\n            text: None,\n            tool_call: None,\n            tool_result: None,\n            status: None,\n            queued_inputs: None,\n            tokens: Some(tokens),\n            context_fill: None,\n            error: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "context_fill_update",
+      "line": 200,
+      "column": 4,
+      "text": "pub fn context_fill_update(info: ContextFillInfo) -> Self {\n        Self {\n            chunk_type: \"ContextFillUpdate\".to_string(),\n            text: None,\n            tool_call: None,\n            tool_result: None,\n            status: None,\n            queued_inputs: None,\n            tokens: None,\n            context_fill: Some(info),\n            error: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "done",
+      "line": 214,
+      "column": 4,
+      "text": "pub fn done() -> Self {\n        Self {\n            chunk_type: \"Done\".to_string(),\n            text: None,\n            tool_call: None,\n            tool_result: None,\n            status: None,\n            queued_inputs: None,\n            tokens: None,\n            context_fill: None,\n            error: None,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "error",
+      "line": 228,
+      "column": 4,
+      "text": "pub fn error(message: String) -> Self {\n        Self {\n            chunk_type: \"Error\".to_string(),\n            text: None,\n            tool_call: None,\n            tool_result: None,\n            status: None,\n            queued_inputs: None,\n            tokens: None,\n            context_fill: None,\n            error: Some(message),\n        }\n    }"
+    }
+  ]
+}

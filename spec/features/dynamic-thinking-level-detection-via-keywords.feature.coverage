@@ -1,0 +1,584 @@
+{
+  "scenarios": [
+    {
+      "name": "High-level keyword ultrathink triggers maximum thinking",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "18-33",
+          "implMappings": [
+            {
+              "file": "src/utils/thinkingLevel.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Medium-level keyword megathink triggers moderate thinking",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "35-50",
+          "implMappings": [
+            {
+              "file": "src/utils/thinkingLevel.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Low-level keyword phrase triggers basic thinking",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "52-67",
+          "implMappings": [
+            {
+              "file": "src/utils/thinkingLevel.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Conversational usage does not trigger thinking",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "69-84",
+          "implMappings": [
+            {
+              "file": "src/utils/thinkingLevel.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Disable keyword overrides thinking keywords",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "86-101",
+          "implMappings": [
+            {
+              "file": "src/utils/thinkingLevel.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prompt without keywords defaults to no thinking",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "103-118",
+          "implMappings": [
+            {
+              "file": "src/utils/thinkingLevel.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detected level generates provider-specific config",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "167-186",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/thinking_config.rs",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session receives thinking config on prompt submission",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "189-212",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session.rs",
+              "lines": [
+                679,
+                680,
+                681,
+                682,
+                683,
+                684,
+                685,
+                686,
+                687,
+                688,
+                689,
+                690
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                885,
+                886,
+                887,
+                888,
+                889,
+                890,
+                891,
+                892,
+                893,
+                894,
+                895,
+                896,
+                897,
+                898,
+                899,
+                900,
+                901,
+                902,
+                903,
+                904,
+                905,
+                906
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Thinking content is streamed with distinct chunk type",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/thinkingLevel.test.ts",
+          "lines": "215-234",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/types.rs",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                932,
+                933,
+                934,
+                935,
+                936,
+                937,
+                938,
+                939,
+                940,
+                941,
+                942,
+                943,
+                944,
+                945
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/thinkingLevel.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/thinkingLevel.ts",
+      "codelet/napi/src/thinking_config.rs",
+      "codelet/napi/src/session.rs",
+      "src/tui/components/AgentModal.tsx",
+      "codelet/napi/src/types.rs"
+    ],
+    "totalLinesCovered": 570
+  }
+}

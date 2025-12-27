@@ -109,7 +109,8 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
         chunks.push(chunk);
       };
 
-      await session.prompt('Say hello in exactly 3 words', callback);
+      // TOOL-010: prompt now takes (input, thinkingConfig, callback)
+      await session.prompt('Say hello in exactly 3 words', null, callback);
 
       // @step Then the callback should receive chunks with type 'Text' containing streamed content
       const textChunks = chunks.filter(c => c.type === 'Text');
@@ -141,7 +142,7 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
       const session = new CodeletSession();
 
       // @step When I complete a prompt that uses tokens
-      await session.prompt('Say hi', () => {});
+      await session.prompt('Say hi', null, () => {});
 
       // @step Then the tokenTracker getter should return inputTokens, outputTokens, and cache token counts
       const tracker = session.tokenTracker;
@@ -167,7 +168,7 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
       const session = new CodeletSession('claude');
 
       // @step And I have completed at least one prompt
-      await session.prompt('Say hi', () => {});
+      await session.prompt('Say hi', null, () => {});
       expect(session.currentProviderName).toBe('claude');
 
       // @step When I call session.switchProvider with 'openai'
@@ -178,7 +179,7 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
 
       // @step And subsequent prompts should use the OpenAI provider
       // Verify by making another prompt (would fail if provider not properly switched)
-      await session.prompt('Say hello', () => {});
+      await session.prompt('Say hello', null, () => {});
     });
   });
 
@@ -205,6 +206,7 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
       }> = [];
       await session.prompt(
         'Read the file package.json and tell me the name field',
+        null,
         chunk => {
           chunks.push(chunk);
         }
@@ -246,6 +248,7 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
       }> = [];
       await session.prompt(
         'Read the file package.json and tell me the name field',
+        null,
         chunk => {
           chunks.push(chunk);
         }
@@ -316,7 +319,7 @@ describe('Feature: Codelet NAPI-RS Native Module Bindings', () => {
 
       // @step When I send another prompt
       const chunks: Array<{ type: string }> = [];
-      await session.prompt('Say hi', chunk => {
+      await session.prompt('Say hi', null, chunk => {
         chunks.push(chunk);
       });
 

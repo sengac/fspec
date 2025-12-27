@@ -65,11 +65,13 @@ pub struct ToolResultInfo {
     pub is_error: bool,
 }
 
-/// Stream chunk types for streaming responses
+/// Stream chunk types for streaming responses (TOOL-010)
 #[napi(string_enum)]
 #[derive(Debug, PartialEq, Eq)]
 pub enum ChunkType {
     Text,
+    /// Thinking/reasoning content from extended thinking (TOOL-010)
+    Thinking,
     ToolCall,
     ToolResult,
     Status,
@@ -95,13 +97,15 @@ pub struct ContextFillInfo {
     pub context_window: f64,
 }
 
-/// A chunk of streaming response
+/// A chunk of streaming response (TOOL-010: added thinking field)
 #[napi(object)]
 #[derive(Debug, Clone)]
 pub struct StreamChunk {
     #[napi(js_name = "type")]
     pub chunk_type: String,
     pub text: Option<String>,
+    /// Thinking/reasoning content from extended thinking (TOOL-010)
+    pub thinking: Option<String>,
     pub tool_call: Option<ToolCallInfo>,
     pub tool_result: Option<ToolResultInfo>,
     pub status: Option<String>,
@@ -116,6 +120,23 @@ impl StreamChunk {
         Self {
             chunk_type: "Text".to_string(),
             text: Some(text),
+            thinking: None,
+            tool_call: None,
+            tool_result: None,
+            status: None,
+            queued_inputs: None,
+            tokens: None,
+            context_fill: None,
+            error: None,
+        }
+    }
+
+    /// Create a thinking/reasoning content chunk (TOOL-010)
+    pub fn thinking(thinking: String) -> Self {
+        Self {
+            chunk_type: "Thinking".to_string(),
+            text: None,
+            thinking: Some(thinking),
             tool_call: None,
             tool_result: None,
             status: None,
@@ -130,6 +151,7 @@ impl StreamChunk {
         Self {
             chunk_type: "ToolCall".to_string(),
             text: None,
+            thinking: None,
             tool_call: Some(info),
             tool_result: None,
             status: None,
@@ -144,6 +166,7 @@ impl StreamChunk {
         Self {
             chunk_type: "ToolResult".to_string(),
             text: None,
+            thinking: None,
             tool_call: None,
             tool_result: Some(info),
             status: None,
@@ -158,6 +181,7 @@ impl StreamChunk {
         Self {
             chunk_type: "Status".to_string(),
             text: None,
+            thinking: None,
             tool_call: None,
             tool_result: None,
             status: Some(message),
@@ -172,6 +196,7 @@ impl StreamChunk {
         Self {
             chunk_type: "Interrupted".to_string(),
             text: None,
+            thinking: None,
             tool_call: None,
             tool_result: None,
             status: None,
@@ -186,6 +211,7 @@ impl StreamChunk {
         Self {
             chunk_type: "TokenUpdate".to_string(),
             text: None,
+            thinking: None,
             tool_call: None,
             tool_result: None,
             status: None,
@@ -201,6 +227,7 @@ impl StreamChunk {
         Self {
             chunk_type: "ContextFillUpdate".to_string(),
             text: None,
+            thinking: None,
             tool_call: None,
             tool_result: None,
             status: None,
@@ -215,6 +242,7 @@ impl StreamChunk {
         Self {
             chunk_type: "Done".to_string(),
             text: None,
+            thinking: None,
             tool_call: None,
             tool_result: None,
             status: None,
@@ -229,6 +257,7 @@ impl StreamChunk {
         Self {
             chunk_type: "Error".to_string(),
             text: None,
+            thinking: None,
             tool_call: None,
             tool_result: None,
             status: None,

@@ -664,18 +664,28 @@ impl CodeletSession {
 
     /// Send a prompt and stream the response
     ///
-    /// The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'
+    /// The callback receives StreamChunk objects with type: 'Text', 'Thinking', 'ToolCall', 'ToolResult', 'Done', or 'Error'
     ///
     /// Uses the same streaming infrastructure as codelet-cli:
     /// - run_agent_stream for shared streaming logic
     /// - StreamOutput trait for polymorphic output
     /// - is_interrupted flag for Esc key handling (set via interrupt() method)
+    ///
+    /// # Arguments
+    /// * `input` - The user prompt text
+    /// * `thinking_config` - Optional JSON string from getThinkingConfig() (TOOL-010)
+    /// * `callback` - Stream callback for receiving chunks
     #[napi]
     pub async fn prompt(
         &self,
         input: String,
+        thinking_config: Option<String>,
         #[napi(ts_arg_type = "(chunk: StreamChunk) => void")] callback: StreamCallback,
     ) -> Result<()> {
+        // TOOL-010: Log thinking config if provided (future: pass to agent)
+        if let Some(ref config) = thinking_config {
+            tracing::debug!("Thinking config received: {}", config);
+        }
         // Reset interrupt flag at start of each prompt
         self.is_interrupted.store(false, Release);
 

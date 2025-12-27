@@ -28,7 +28,8 @@ import { VirtualList } from './VirtualList';
 import { getFspecUserDir } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
-import { persistenceStoreMessageEnvelope } from '@sengac/codelet-napi';
+import { persistenceStoreMessageEnvelope, getThinkingConfig, JsThinkingLevel } from '@sengac/codelet-napi';
+import { detectThinkingLevel, getThinkingLevelLabel } from '../../utils/thinkingLevel';
 
 // NAPI-006: Callbacks for history navigation
 interface SafeTextInputCallbacks {
@@ -147,11 +148,13 @@ interface TokenTracker {
 interface StreamChunk {
   type: string;
   text?: string;
+  thinking?: string; // TOOL-010: Extended thinking content
   toolCall?: { id: string; name: string; input: string };
   toolResult?: { toolCallId: string; content: string; isError: boolean };
   status?: string;
   queuedInputs?: string[];
   tokens?: TokenTracker;
+  contextFill?: { fillPercentage: number };
   error?: string;
 }
 
@@ -203,6 +206,7 @@ interface CodeletSessionType {
   messages: Message[];
   prompt: (
     input: string,
+    thinkingConfig: string | null, // TOOL-010: Thinking config JSON
     callback: (chunk: StreamChunk) => void
   ) => Promise<void>;
   switchProvider: (providerName: string) => Promise<void>;
@@ -211,6 +215,7 @@ interface CodeletSessionType {
   resetInterrupt: () => void;
   toggleDebug: (debugDir?: string) => DebugCommandResult; // AGENT-021
   compact: () => Promise<CompactionResult>; // NAPI-005
+  getContextFillInfo: () => { fillPercentage: number };
 }
 
 export interface AgentModalProps {
@@ -280,6 +285,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
   const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
 
+  // TOOL-010: Detected thinking level (for UI indicator)
+  const [detectedThinkingLevel, setDetectedThinkingLevel] = useState<number | null>(null);
+
   // TUI-033: Get color based on fill percentage
   const getContextFillColor = (percentage: number): string => {
     if (percentage < 50) return 'green';
@@ -311,6 +319,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setError(null);
       setInputValue('');
       setIsDebugEnabled(false); // AGENT-021: Reset debug state on modal close
+      setDetectedThinkingLevel(null); // TOOL-010: Reset thinking level
       // TUI-031: Reset tok/s display
       setDisplayedTokPerSec(null);
       setLastChunkTime(null);
@@ -875,13 +884,27 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     ]);
 
     try {
+      // TOOL-010: Detect thinking level from prompt keywords
+      const thinkingLevel = detectThinkingLevel(userMessage);
+      setDetectedThinkingLevel(thinkingLevel);
+
+      // Get thinking config JSON if level is not Off
+      let thinkingConfig: string | null = null;
+      if (thinkingLevel !== JsThinkingLevel.Off) {
+        thinkingConfig = getThinkingConfig(currentProvider, thinkingLevel);
+        const label = getThinkingLevelLabel(thinkingLevel);
+        if (label) {
+          logger.debug(`Thinking level detected: ${label}`);
+        }
+      }
+
       // Track current text segment (resets after tool calls)
       let currentSegment = '';
       // Track full assistant response for persistence (includes ALL content blocks)
       let fullAssistantResponse = '';
       // Track assistant message content blocks for envelope storage
-      const assistantContentBlocks: Array<{ type: string; text?: string; id?: string; name?: string; input?: unknown }> = [];
-      await sessionRef.current.prompt(userMessage, (chunk: StreamChunk) => {
+      const assistantContentBlocks: Array<{ type: string; text?: string; thinking?: string; id?: string; name?: string; input?: unknown }> = [];
+      await sessionRef.current.prompt(userMessage, thinkingConfig, (chunk: StreamChunk) => {
         if (!chunk) return;
 
         if (chunk.type === 'Text' && chunk.text) {
@@ -905,6 +928,20 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 content: segmentSnapshot,
               };
             }
+            return updated;
+          });
+        } else if (chunk.type === 'Thinking' && chunk.thinking) {
+          // TOOL-010: Handle thinking/reasoning content from extended thinking
+          // Store thinking block for envelope persistence
+          assistantContentBlocks.push({ type: 'thinking', thinking: chunk.thinking });
+          // Display thinking content in a distinct way (could be collapsible in future)
+          setConversation(prev => {
+            const updated = [...prev];
+            // Add thinking as a separate tool-style message with distinct formatting
+            updated.push({
+              role: 'tool',
+              content: `[Thinking]\n${chunk.thinking}`,
+            });
             return updated;
           });
         } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
@@ -2014,6 +2051,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             {isLoading && <Text color="yellow"> (streaming...)</Text>}
             {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
             {isDebugEnabled && <Text color="red" bold> [DEBUG]</Text>}
+            {/* TOOL-010: Thinking level indicator - only show while streaming */}
+            {isLoading && detectedThinkingLevel !== null && detectedThinkingLevel !== JsThinkingLevel.Off && (
+              <Text color="magenta" bold> {getThinkingLevelLabel(detectedThinkingLevel)}</Text>
+            )}
           </Box>
           {/* TUI-031: Tokens per second display during streaming */}
           {isLoading && displayedTokPerSec !== null && (

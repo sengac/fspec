@@ -40,7 +40,7 @@ vi.mock('@sengac/codelet-napi', () => ({
     availableProviders: string[];
     tokenTracker: { inputTokens: number; outputTokens: number };
     messages: Array<{ role: string; content: string }>;
-    prompt: (input: string, callback: (chunk: unknown) => void) => Promise<void>;
+    prompt: (input: string, thinkingConfig: string | null, callback: (chunk: unknown) => void) => Promise<void>;
     switchProvider: ReturnType<typeof vi.fn>;
     clearHistory: ReturnType<typeof vi.fn>;
     interrupt: ReturnType<typeof vi.fn>;
@@ -54,8 +54,8 @@ vi.mock('@sengac/codelet-napi', () => ({
       this.availableProviders = mockState.session.availableProviders;
       this.tokenTracker = mockState.session.tokenTracker;
       this.messages = mockState.session.messages;
-      // Capture callback and return a controllable promise
-      this.prompt = async (_input: string, callback: (chunk: unknown) => void) => {
+      // Capture callback and return a controllable promise (TOOL-010: added thinkingConfig param)
+      this.prompt = async (_input: string, _thinkingConfig: string | null, callback: (chunk: unknown) => void) => {
         capturedCallback = callback;
         return new Promise<void>(resolve => {
           capturedResolver = resolve;
@@ -67,8 +67,17 @@ vi.mock('@sengac/codelet-napi', () => ({
       this.resetInterrupt = mockState.session.resetInterrupt;
     }
   },
+  // TOOL-010: Thinking level detection exports
+  JsThinkingLevel: {
+    Off: 0,
+    Low: 1,
+    Medium: 2,
+    High: 3,
+  },
+  getThinkingConfig: vi.fn(() => null),
   // Persistence NAPI bindings required by AgentModal
   persistenceSetDataDirectory: vi.fn(),
+  persistenceStoreMessageEnvelope: vi.fn(),
   persistenceGetHistory: vi.fn(() => []),
   persistenceCreateSessionWithProvider: vi.fn(() => ({
     id: 'mock-session-id',

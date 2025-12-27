@@ -73,13 +73,23 @@ vi.mock('@sengac/codelet-napi', () => ({
   },
   ChunkType: {
     Text: 'Text',
+    Thinking: 'Thinking', // TOOL-010
     ToolCall: 'ToolCall',
     ToolResult: 'ToolResult',
     Done: 'Done',
     Error: 'Error',
   },
+  // TOOL-010: Thinking level detection exports
+  JsThinkingLevel: {
+    Off: 0,
+    Low: 1,
+    Medium: 2,
+    High: 3,
+  },
+  getThinkingConfig: vi.fn(() => null),
   // Persistence NAPI bindings required by AgentModal
   persistenceSetDataDirectory: vi.fn(),
+  persistenceStoreMessageEnvelope: vi.fn(),
   persistenceGetHistory: vi.fn(() => []),
   persistenceCreateSessionWithProvider: vi.fn(() => ({
     id: 'mock-session-id',
@@ -545,7 +555,8 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Verify prompt was called (debug events are captured in Rust layer)
-      expect(mockPrompt).toHaveBeenCalledWith('test prompt', expect.any(Function));
+      // TOOL-010: prompt now takes (input, thinkingConfig, callback)
+      expect(mockPrompt).toHaveBeenCalledWith('test prompt', null, expect.any(Function));
 
       // @step Then the debug session file should contain "api.request" event
       // @step And the debug session file should contain "api.response.start" event
