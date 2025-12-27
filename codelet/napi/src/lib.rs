@@ -15,6 +15,8 @@ mod output;
 #[cfg(not(feature = "noop"))]
 mod session;
 #[cfg(not(feature = "noop"))]
+mod thinking_config;
+#[cfg(not(feature = "noop"))]
 mod types;
 
 // Persistence module works in both modes (pure Rust with optional NAPI bindings)
@@ -24,6 +26,10 @@ pub use persistence::*;
 
 #[cfg(not(feature = "noop"))]
 pub use session::CodeletSession;
+#[cfg(not(feature = "noop"))]
+pub use thinking_config::{
+    extract_thinking_text, get_thinking_config, is_thinking_content, JsThinkingLevel,
+};
 #[cfg(not(feature = "noop"))]
 pub use types::*;
 

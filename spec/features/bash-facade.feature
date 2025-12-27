@@ -1,3 +1,4 @@
+@tool-discovery
 @TOOL-004 @high @tools @facade @gemini
 Feature: Bash Facade
 

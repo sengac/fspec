@@ -183,11 +183,21 @@ vi.mock('@sengac/codelet-napi', () => ({
   })),
   ChunkType: {
     Text: 'Text',
+    Thinking: 'Thinking', // TOOL-010
     ToolCall: 'ToolCall',
     ToolResult: 'ToolResult',
     Done: 'Done',
     Error: 'Error',
   },
+  // TOOL-010: Thinking level detection exports
+  JsThinkingLevel: {
+    Off: 0,
+    Low: 1,
+    Medium: 2,
+    High: 3,
+  },
+  getThinkingConfig: vi.fn(() => null),
+  persistenceStoreMessageEnvelope: vi.fn(),
 }));
 
 // Mock Ink's Box to strip position="absolute" which doesn't work in ink-testing-library

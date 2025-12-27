@@ -1,3 +1,5 @@
+@validation
+@validator
 @BUG-093
 Feature: VAL-005 1:1 validation checks across entire work unit instead of per-feature
 

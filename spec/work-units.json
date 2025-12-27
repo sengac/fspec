@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-26T11:38:54.841Z"
+    "lastUpdated": "2025-12-27T03:53:09.111Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -56587,6 +56587,337 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-26T11:38:54.871Z"
+    },
+    "TOOL-009": {
+      "id": "TOOL-009",
+      "title": "Thinking Config Facade for Provider-Specific Reasoning Configuration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-27T02:14:47.671Z",
+      "updatedAt": "2025-12-27T02:33:03.110Z",
+      "description": "Implement a ThinkingConfigFacade trait in Rust for provider-agnostic thinking/reasoning token configuration. Supports Gemini 3 (thinkingLevel: high), Gemini 2.5 (thinkingBudget), Claude (thinking.budget_tokens), and OpenAI o-series (reasoning.effort). Exposes TypeScript interfaces via NAPI bindings.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-27T02:14:56.374Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-27T02:21:20.191Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-27T02:25:23.536Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-27T02:31:27.235Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-27T02:33:03.110Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer integrating LLM providers",
+        "action": "configure provider-specific thinking/reasoning settings through a common interface",
+        "benefit": "each provider receives correct thinking configuration without duplicating logic across provider implementations"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Each ThinkingConfigFacade MUST implement the trait with provider(), request_config(), is_thinking_part(), and extract_thinking_text() methods",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:19.938Z"
+        },
+        {
+          "id": 1,
+          "text": "ThinkingLevel enum MUST provide semantic levels (Off, Low, Medium, High) that map to provider-specific configurations",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:21.476Z"
+        },
+        {
+          "id": 2,
+          "text": "Gemini 3 facade MUST use thinkingLevel enum ('high') instead of thinkingBudget (token count)",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:23.150Z"
+        },
+        {
+          "id": 3,
+          "text": "Gemini 2.5 facade MUST use thinkingBudget (token count) instead of thinkingLevel enum",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:24.795Z"
+        },
+        {
+          "id": 4,
+          "text": "Claude facade MUST use thinking.type='enabled' with budget_tokens for extended thinking",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:26.578Z"
+        },
+        {
+          "id": 5,
+          "text": "Response parsing MUST identify thinking content via provider-specific markers (thought:true for Gemini, thinking blocks for Claude)",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:28.444Z"
+        },
+        {
+          "id": 6,
+          "text": "TypeScript interfaces MUST be exposed via NAPI bindings allowing TypeScript code to configure thinking options",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:30.300Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Gemini3ThinkingFacade with ThinkingLevel::High returns {thinkingConfig: {includeThoughts: true, thinkingLevel: 'high'}}",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:44.512Z"
+        },
+        {
+          "id": 1,
+          "text": "Gemini25ThinkingFacade with ThinkingLevel::High returns {thinkingConfig: {includeThoughts: true, thinkingBudget: 8192}}",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:46.181Z"
+        },
+        {
+          "id": 2,
+          "text": "ClaudeThinkingFacade with ThinkingLevel::High returns {thinking: {type: 'enabled', budget_tokens: 32000}}",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:48.028Z"
+        },
+        {
+          "id": 3,
+          "text": "Gemini response part with thought:true is identified as thinking content by is_thinking_part()",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:49.629Z"
+        },
+        {
+          "id": 4,
+          "text": "TypeScript calls ThinkingConfig.forProvider('gemini-3', ThinkingLevel.High) to get request config JSON",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:51.391Z"
+        },
+        {
+          "id": 5,
+          "text": "ThinkingLevel::Off returns empty object {} for all providers (no thinking configuration)",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:15:53.152Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "attachments": [
+        "spec/attachments/TOOL-009/thinking-config-facade-implementation-plan.md",
+        "spec/attachments/TOOL-009/ast-research-existing-facades.json"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: ThinkingConfigFacade trait follows existing facade pattern in codelet/tools/src/facade/ (see web_search.rs, system_prompt.rs)",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:20:26.148Z"
+        },
+        {
+          "id": 1,
+          "text": "Implementation: ThinkingLevel enum provides semantic abstraction (Off, Low, Medium, High) mapped to provider-specific configs",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:20:27.776Z"
+        },
+        {
+          "id": 2,
+          "text": "Dependency: serde_json for JSON serialization, napi-derive for TypeScript bindings",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:20:29.280Z"
+        },
+        {
+          "id": 3,
+          "text": "Implementation: NAPI bindings expose getThinkingConfig() and isThinkingContent() functions to TypeScript via codelet/napi",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:20:31.143Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-27T02:33:03.110Z"
+    },
+    "TOOL-010": {
+      "id": "TOOL-010",
+      "title": "Dynamic Thinking Level Detection via Keywords",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-27T02:54:35.439Z",
+      "updatedAt": "2025-12-27T03:53:09.138Z",
+      "description": "Integrate ThinkingConfigFacade with keyword-based detection to dynamically set thinking/reasoning levels based on prompt content (think, megathink, ultrathink) with disable overrides (quickly, briefly)",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec's AI agent",
+        "action": "have thinking/reasoning levels automatically detected from my prompt keywords",
+        "benefit": "I can control how deeply the AI thinks without manual configuration, using natural language"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-27T02:55:24.910Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-27T03:06:32.619Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-27T03:10:27.167Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-27T03:21:24.821Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-27T03:50:34.452Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-27T03:53:09.139Z"
+        }
+      ],
+      "dependsOn": [
+        "TOOL-009"
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Disable keywords (quickly, briefly, fast, nothink) MUST have highest priority and always force ThinkingLevel::Off",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:55:42.086Z"
+        },
+        {
+          "id": 1,
+          "text": "Thinking keywords MUST only match command-like phrases, NOT conversational usage (e.g., 'I think' should NOT trigger thinking)",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:55:42.804Z"
+        },
+        {
+          "id": 2,
+          "text": "High-level keywords (ultrathink, think harder, think very hard) MUST map to ThinkingLevel::High",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:55:43.520Z"
+        },
+        {
+          "id": 3,
+          "text": "Medium-level keywords (megathink, think hard, think deeply) MUST map to ThinkingLevel::Medium",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:55:44.238Z"
+        },
+        {
+          "id": 4,
+          "text": "Low-level keywords (think about, think through, think carefully) MUST map to ThinkingLevel::Low",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:55:44.956Z"
+        },
+        {
+          "id": 5,
+          "text": "Detected thinking level MUST be passed to getThinkingConfig() to generate provider-specific configuration",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:55:45.685Z"
+        },
+        {
+          "id": 6,
+          "text": "The UI SHOULD display the detected thinking level as a visual indicator in the status area",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:55:47.553Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Prompt 'ultrathink about this bug' returns ThinkingLevel::High",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:56:03.883Z"
+        },
+        {
+          "id": 1,
+          "text": "Prompt 'megathink through this problem' returns ThinkingLevel::Medium",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:56:05.625Z"
+        },
+        {
+          "id": 2,
+          "text": "Prompt 'think about why this fails' returns ThinkingLevel::Low",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:56:07.924Z"
+        },
+        {
+          "id": 3,
+          "text": "Prompt 'I think we should fix this' returns ThinkingLevel::Off (conversational, not a command)",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:56:09.689Z"
+        },
+        {
+          "id": 4,
+          "text": "Prompt 'ultrathink but answer quickly' returns ThinkingLevel::Off (disable keyword wins)",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:56:12.026Z"
+        },
+        {
+          "id": 5,
+          "text": "Prompt 'fix this bug' with no keywords returns ThinkingLevel::Off",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:56:14.015Z"
+        },
+        {
+          "id": 6,
+          "text": "For Gemini 3 with ThinkingLevel::High, config includes thinkingLevel: 'high' (uses TOOL-009 facade)",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:56:15.999Z"
+        },
+        {
+          "id": 7,
+          "text": "UI shows thinking indicator when level is not Off",
+          "deleted": false,
+          "createdAt": "2025-12-27T02:56:18.744Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "attachments": [
+        "spec/attachments/TOOL-010/dynamic-thinking-level-implementation-plan.md",
+        "spec/attachments/TOOL-010/ast-research-agent-modal.json",
+        "spec/attachments/TOOL-010/ast-research-session.json",
+        "spec/attachments/TOOL-010/ast-research-types.json"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "TypeScript keyword detection uses regex patterns with priority: disable keywords > high > medium > low. Conversational patterns are excluded before matching.",
+          "deleted": false,
+          "createdAt": "2025-12-27T03:05:05.887Z"
+        },
+        {
+          "id": 1,
+          "text": "Session integration passes thinking config JSON from getThinkingConfig() NAPI binding to Rust session.prompt() method.",
+          "deleted": false,
+          "createdAt": "2025-12-27T03:05:07.611Z"
+        },
+        {
+          "id": 2,
+          "text": "StreamChunk enum extended with Thinking variant to stream thinking content distinctly from regular text.",
+          "deleted": false,
+          "createdAt": "2025-12-27T03:05:09.269Z"
+        },
+        {
+          "id": 3,
+          "text": "UI indicator component displays detected thinking level in status area, updating on input change.",
+          "deleted": false,
+          "createdAt": "2025-12-27T03:05:11.259Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-27T03:53:09.138Z"
     }
   },
   "states": {
@@ -56659,6 +56990,8 @@
     ],
     "validating": [],
     "done": [
+      "TOOL-010",
+      "TOOL-009",
       "TOOL-008",
       "TOOL-007",
       "TOOL-006",
@@ -57132,6 +57465,6 @@
     "CLEAN": 5,
     "NAPI": 8,
     "CTX": 2,
-    "TOOL": 8
+    "TOOL": 10
   }
 }

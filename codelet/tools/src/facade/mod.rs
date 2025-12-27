@@ -26,6 +26,7 @@ mod ls;
 mod registry;
 mod search;
 mod system_prompt;
+mod thinking_config;
 mod traits;
 mod web_search;
 mod wrapper;
@@ -45,6 +46,10 @@ pub use system_prompt::{
     select_claude_facade, BoxedSystemPromptFacade, ClaudeApiKeySystemPromptFacade,
     ClaudeOAuthSystemPromptFacade, GeminiSystemPromptFacade, OpenAISystemPromptFacade,
     SystemPromptFacade, CLAUDE_CODE_PROMPT_PREFIX,
+};
+pub use thinking_config::{
+    ClaudeThinkingFacade, Gemini25ThinkingFacade, Gemini3ThinkingFacade, ThinkingConfigFacade,
+    ThinkingLevel,
 };
 pub use web_search::{ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade};
 pub use wrapper::{

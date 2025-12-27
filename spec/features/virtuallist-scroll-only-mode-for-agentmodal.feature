@@ -1,5 +1,6 @@
+@tui-component
+@ui-enhancement
 @done
-@component
 @tui
 @TUI-032
 Feature: VirtualList scroll-only mode for AgentModal

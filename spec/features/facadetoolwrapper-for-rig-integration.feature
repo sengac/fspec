@@ -1,3 +1,4 @@
+@tool-discovery
 @TOOL-002 @high @tools @facade @rig
 Feature: FacadeToolWrapper for Rig Integration
 

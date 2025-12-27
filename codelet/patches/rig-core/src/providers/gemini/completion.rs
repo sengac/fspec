@@ -1416,10 +1416,22 @@ pub mod gemini_api_types {
         }
     }
 
+    /// Configuration for thinking/reasoning in Gemini models.
+    ///
+    /// Gemini 2.5 uses `thinking_budget` (token count: 2048, 4096, 8192).
+    /// Gemini 3 uses `thinking_level` (enum string: "low", "medium", "high").
+    /// Only one should be set based on the model version.
     #[derive(Debug, Deserialize, Serialize)]
     #[serde(rename_all = "camelCase")]
     pub struct ThinkingConfig {
-        pub thinking_budget: u32,
+        /// Token budget for thinking (Gemini 2.5 style)
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub thinking_budget: Option<u32>,
+        /// Thinking level enum (Gemini 3 style): "low", "medium", "high"
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub thinking_level: Option<String>,
+        /// Whether to include thoughts in the response
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub include_thoughts: Option<bool>,
     }
 

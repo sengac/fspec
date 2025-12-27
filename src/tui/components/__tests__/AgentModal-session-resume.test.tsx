@@ -22,11 +22,20 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceGetSessionMessages: mockPersistenceGetSessionMessages,
   persistenceSetDataDirectory: vi.fn(),
   persistenceGetHistory: vi.fn(() => []),
+  persistenceStoreMessageEnvelope: vi.fn(),
   persistenceCreateSessionWithProvider: vi.fn(() => ({
     id: 'test-session-id',
     name: 'Test Session',
     messageCount: 0,
   })),
+  // TOOL-010: Thinking level detection exports
+  JsThinkingLevel: {
+    Off: 0,
+    Low: 1,
+    Medium: 2,
+    High: 3,
+  },
+  getThinkingConfig: vi.fn(() => null),
   CodeletSession: vi.fn().mockImplementation(() => ({
     currentProviderName: 'claude',
     availableProviders: ['claude'],

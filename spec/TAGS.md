@@ -93,6 +93,7 @@ Tags that categorize features by functional area.
 | `@compound` | Compound query operations |
 | `@config-management` | Configuration management and settings features |
 | `@configuration` | Configuration loading and validation |
+| `@context-management` | Context window and memory management features |
 | `@context-window` | Context window management and monitoring features |
 | `@coverage` | Coverage tracking and traceability features |
 | `@coverage-tracking` | Coverage tracking and traceability from scenarios to tests to implementation code |
@@ -108,6 +109,7 @@ Tags that categorize features by functional area.
 | `@diff-viewer` | Diff visualization and comparison features |
 | `@discovery-command` | Example Mapping discovery commands |
 | `@documentation` | Documentation Display |
+| `@documentation-generation` | Automatic documentation generation features |
 | `@documentation-management` | Documentation generation, updates, and maintenance |
 | `@epics` | Epic management and high-level work grouping |
 | `@estimation` | Estimation operations |
@@ -198,6 +200,7 @@ Tags that categorize features by functional area.
 | `@test-coverage` | Test coverage tracking and validation features |
 | `@test-maintenance` | Test maintenance and quality assurance features |
 | `@testing` | Testing and quality assurance features |
+| `@thinking-detection` | Features related to thinking/reasoning level detection and configuration |
 | `@tool-discovery` | Tool discovery and listing features |
 | `@tracking` | Metric tracking operations |
 | `@ui-enhancement` | TUI user interface enhancements and visual improvements |
@@ -211,6 +214,7 @@ Tags that categorize features by functional area.
 | `@visual-design` | Visual design and branding features |
 | `@visualization` | Data visualization |
 | `@work-management` | Work unit management and Kanban workflow operations |
+| `@work-unit-automation` | Automatic work unit creation and management |
 | `@work-unit-linking` | Scenarios related to work unit and feature file linking functionality |
 | `@work-unit-management` | Work unit lifecycle and status management |
 | `@work-units` | Work unit CRUD operations |
@@ -250,6 +254,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@cleanup` | Cleanup and resource management features |
 | `@code-review` | Code review and quality analysis features |
 | `@codex` | Codex AI agent integration features |
+| `@command` | CLI command implementation |
 | `@command-registration` | CLI command registration features |
 | `@compaction` | Compaction scenarios |
 | `@compaction-state-on-fork` | Compaction state handling on fork |
@@ -276,6 +281,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@envelope` | Message envelope metadata scenarios |
 | `@error-handling` | Error Handling |
 | `@eslint` | ESLint configuration and linting |
+| `@facade` | Facade pattern implementation for wrapping external APIs |
 | `@facade-pattern` | Features implementing the facade design pattern |
 | `@file-discovery` | File discovery and pattern matching functionality |
 | `@file-initialization` | Scenarios testing initialization of project files |
@@ -287,6 +293,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@format-check` | Format and style checking |
 | `@fullscreen` | Fullscreen modal and overlay features |
 | `@function-signature` | Function signature validation and checking |
+| `@gemini` | Google Gemini AI provider integration |
 | `@gherkin` | Gherkin Specification Compliance |
 | `@github-integration` | Features integrating with GitHub API or URLs |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |
@@ -302,6 +309,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@investigation` | Investigation and research tasks for evaluating technical approaches |
 | `@ipc` | Inter-process communication features using Unix sockets or named pipes |
 | `@isomorphic-git` | Uses isomorphic-git library for pure JavaScript git operations |
+| `@item-mode` | Item mode for virtual list components |
 | `@jira` | JIRA integration and API features |
 | `@json-backed` | JSON-Backed Documentation |
 | `@json-output` | JSON format output support |
@@ -349,9 +357,11 @@ Tags for specific technical concerns or architectural patterns.
 | `@restore` | Session restore scenarios |
 | `@reverse-engineering` | Reverse engineering existing code to create specifications |
 | `@review` | Code review and quality analysis |
+| `@rig` | Rig framework integration |
 | `@runtime` | Runtime behavior and dynamic configuration |
 | `@rust` | Rust implementation components |
 | `@schema-validation` | JSON Schema validation features and commands |
+| `@scroll-mode` | Scroll mode for virtual list components |
 | `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
 | `@server` | Server-side components and HTTP endpoints |
 | `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |
@@ -747,7 +757,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-26T10:08:11.169Z_
+_Last updated: 2025-12-27T03:51:13.071Z_
 
 **Update Command**: `fspec tag-stats`
 

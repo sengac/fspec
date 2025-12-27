@@ -302,6 +302,10 @@
           "description": "Configuration loading and validation"
         },
         {
+          "name": "@context-management",
+          "description": "Context window and memory management features"
+        },
+        {
           "name": "@context-window",
           "description": "Context window management and monitoring features"
         },
@@ -360,6 +364,10 @@
         {
           "name": "@documentation",
           "description": "Documentation Display"
+        },
+        {
+          "name": "@documentation-generation",
+          "description": "Automatic documentation generation features"
         },
         {
           "name": "@documentation-management",
@@ -722,6 +730,10 @@
           "description": "Testing and quality assurance features"
         },
         {
+          "name": "@thinking-detection",
+          "description": "Features related to thinking/reasoning level detection and configuration"
+        },
+        {
           "name": "@tool-discovery",
           "description": "Tool discovery and listing features"
         },
@@ -772,6 +784,10 @@
         {
           "name": "@work-management",
           "description": "Work unit management and Kanban workflow operations"
+        },
+        {
+          "name": "@work-unit-automation",
+          "description": "Automatic work unit creation and management"
         },
         {
           "name": "@work-unit-linking",
@@ -902,6 +918,10 @@
           "description": "Codex AI agent integration features"
         },
         {
+          "name": "@command",
+          "description": "CLI command implementation"
+        },
+        {
           "name": "@command-registration",
           "description": "CLI command registration features"
         },
@@ -1006,6 +1026,10 @@
           "description": "ESLint configuration and linting"
         },
         {
+          "name": "@facade",
+          "description": "Facade pattern implementation for wrapping external APIs"
+        },
+        {
           "name": "@facade-pattern",
           "description": "Features implementing the facade design pattern"
         },
@@ -1048,6 +1072,10 @@
         {
           "name": "@function-signature",
           "description": "Function signature validation and checking"
+        },
+        {
+          "name": "@gemini",
+          "description": "Google Gemini AI provider integration"
         },
         {
           "name": "@gherkin",
@@ -1108,6 +1136,10 @@
         {
           "name": "@isomorphic-git",
           "description": "Uses isomorphic-git library for pure JavaScript git operations"
+        },
+        {
+          "name": "@item-mode",
+          "description": "Item mode for virtual list components"
         },
         {
           "name": "@jira",
@@ -1298,6 +1330,10 @@
           "description": "Code review and quality analysis"
         },
         {
+          "name": "@rig",
+          "description": "Rig framework integration"
+        },
+        {
           "name": "@runtime",
           "description": "Runtime behavior and dynamic configuration"
         },
@@ -1308,6 +1344,10 @@
         {
           "name": "@schema-validation",
           "description": "JSON Schema validation features and commands"
+        },
+        {
+          "name": "@scroll-mode",
+          "description": "Scroll mode for virtual list components"
         },
         {
           "name": "@search",
@@ -2022,7 +2062,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-26T10:08:11.169Z",
+    "lastUpdated": "2025-12-27T03:51:13.071Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

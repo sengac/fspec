@@ -147,19 +147,30 @@ export declare class CodeletSession {
   /**
    * Send a prompt and stream the response
    *
-   * The callback receives StreamChunk objects with type: 'Text', 'ToolCall', 'ToolResult', 'Done', or 'Error'
+   * The callback receives StreamChunk objects with type: 'Text', 'Thinking', 'ToolCall', 'ToolResult', 'Done', or 'Error'
    *
    * Uses the same streaming infrastructure as codelet-cli:
    * - run_agent_stream for shared streaming logic
    * - StreamOutput trait for polymorphic output
    * - is_interrupted flag for Esc key handling (set via interrupt() method)
+   *
+   * # Arguments
+   * * `input` - The user prompt text
+   * * `thinking_config` - Optional JSON string from getThinkingConfig() (TOOL-010)
+   * * `callback` - Stream callback for receiving chunks
    */
-  prompt(input: string, callback: (chunk: StreamChunk) => void): Promise<void>;
+  prompt(
+    input: string,
+    thinkingConfig: string | undefined | null,
+    callback: (chunk: StreamChunk) => void
+  ): Promise<void>;
 }
 
-/** Stream chunk types for streaming responses */
+/** Stream chunk types for streaming responses (TOOL-010) */
 export declare const enum ChunkType {
   Text = 'Text',
+  /** Thinking/reasoning content from extended thinking (TOOL-010) */
+  Thinking = 'Thinking',
   ToolCall = 'ToolCall',
   ToolResult = 'ToolResult',
   Status = 'Status',
@@ -213,6 +224,80 @@ export interface DebugCommandResult {
   sessionFile?: string;
   /** Human-readable message about the result */
   message: string;
+}
+
+/**
+ * Extract thinking text from a response part.
+ *
+ * # Arguments
+ * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+ * * `part_json` - JSON string of the response part
+ *
+ * # Returns
+ * The thinking text if present, null otherwise.
+ */
+export declare function extractThinkingText(
+  provider: string,
+  partJson: string
+): string | null;
+
+/**
+ * Get thinking configuration JSON for a provider at a specific level.
+ *
+ * # Arguments
+ * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+ * * `level` - Thinking intensity level
+ *
+ * # Returns
+ * JSON string containing the provider-specific thinking configuration.
+ *
+ * # Example
+ * ```typescript
+ * import { getThinkingConfig, JsThinkingLevel } from '@anthropic/codelet-napi';
+ *
+ * const config = JSON.parse(getThinkingConfig('gemini-3', JsThinkingLevel.High));
+ * // { thinkingConfig: { includeThoughts: true, thinkingLevel: "high" } }
+ * ```
+ */
+export declare function getThinkingConfig(
+  provider: string,
+  level: JsThinkingLevel
+): string;
+
+/**
+ * Check if a response part contains thinking content.
+ *
+ * # Arguments
+ * * `provider` - Provider identifier: "gemini-3", "gemini-2.5", "claude", etc.
+ * * `part_json` - JSON string of the response part
+ *
+ * # Returns
+ * true if the part contains thinking/reasoning content, false otherwise.
+ *
+ * # Example
+ * ```typescript
+ * import { isThinkingContent } from '@anthropic/codelet-napi';
+ *
+ * const part = JSON.stringify({ thought: true, text: "Let me think..." });
+ * const isThinking = isThinkingContent('gemini-3', part);
+ * // true
+ * ```
+ */
+export declare function isThinkingContent(
+  provider: string,
+  partJson: string
+): boolean;
+
+/** TypeScript-friendly thinking level enum */
+export declare const enum JsThinkingLevel {
+  /** Disable thinking/reasoning entirely */
+  Off = 0,
+  /** Minimal thinking (fast responses) */
+  Low = 1,
+  /** Balanced thinking (default for most tasks) */
+  Medium = 2,
+  /** Maximum thinking (complex reasoning tasks) */
+  High = 3,
 }
 
 /** A conversation message (simplified for JS) */
@@ -514,10 +599,12 @@ export declare function persistenceUpdateSessionTokens(
 /** Set the logging callback from TypeScript and initialize the tracing subscriber */
 export declare function setRustLogCallback(callback: LogCallback): void;
 
-/** A chunk of streaming response */
+/** A chunk of streaming response (TOOL-010: added thinking field) */
 export interface StreamChunk {
   type: string;
   text?: string;
+  /** Thinking/reasoning content from extended thinking (TOOL-010) */
+  thinking?: string;
   toolCall?: ToolCallInfo;
   toolResult?: ToolResultInfo;
   status?: string;

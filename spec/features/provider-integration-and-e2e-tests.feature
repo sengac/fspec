@@ -1,3 +1,5 @@
+@testing
+@providers
 @TOOL-007 @high @tools @facade-pattern @provider-abstraction @e2e
 Feature: Provider Integration and E2E Tests
 
