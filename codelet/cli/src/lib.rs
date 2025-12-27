@@ -116,25 +116,25 @@ async fn run_agent(prompt: &str, provider_name: Option<&str>) -> Result<()> {
     match manager.current_provider_name() {
         "claude" => {
             let provider = manager.get_claude()?;
-            let rig_agent = provider.create_rig_agent(None);
+            let rig_agent = provider.create_rig_agent(None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "openai" => {
             let provider = manager.get_openai()?;
-            let rig_agent = provider.create_rig_agent(None);
+            let rig_agent = provider.create_rig_agent(None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "codex" => {
             let provider = manager.get_codex()?;
-            let rig_agent = provider.create_rig_agent(None);
+            let rig_agent = provider.create_rig_agent(None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "gemini" => {
             let provider = manager.get_gemini()?;
-            let rig_agent = provider.create_rig_agent(None);
+            let rig_agent = provider.create_rig_agent(None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }

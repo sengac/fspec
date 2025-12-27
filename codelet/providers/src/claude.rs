@@ -231,11 +231,14 @@ impl ClaudeProvider {
     /// - System prompt with cache_control metadata (PROV-006)
     /// - All 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearchTool)
     /// - Prompt caching via cache_control metadata (PROV-006)
+    /// - Extended thinking configuration (TOOL-010)
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble. For API key mode, this should
     ///   contain CLAUDE.md content and other context. For OAuth mode, this is the
     ///   ADDITIONAL content (facade adds the required Claude Code prefix).
+    /// * `thinking_config` - Optional thinking configuration JSON (TOOL-010). When provided,
+    ///   enables extended thinking with the specified budget. Format: `{"thinking": {"type": "enabled", "budget_tokens": N}}`
     ///
     /// # Cache Control Behavior (PROV-006, TOOL-008)
     /// - OAuth mode: 2 blocks - Claude Code prefix WITHOUT cache_control, preamble WITH cache_control
@@ -253,6 +256,7 @@ impl ClaudeProvider {
     pub fn create_rig_agent(
         &self,
         preamble: Option<&str>,
+        thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
         // TOOL-008: Use facade for system prompt formatting
         use codelet_tools::facade::{
@@ -294,9 +298,24 @@ impl ClaudeProvider {
         // Override system field with array format containing cache_control (PROV-006, TOOL-008)
         // Facade handles OAuth vs API key formatting automatically
         let cached_system = facade.format_for_api(preamble_text);
-        agent_builder = agent_builder.additional_params(json!({
+
+        // TOOL-010: Merge thinking config with system prompt in additional_params
+        let mut additional = json!({
             "system": cached_system
-        }));
+        });
+
+        // If thinking config is provided, merge it into additional_params
+        if let Some(thinking) = thinking_config {
+            if let Some(obj) = additional.as_object_mut() {
+                if let Some(thinking_obj) = thinking.as_object() {
+                    for (key, value) in thinking_obj {
+                        obj.insert(key.clone(), value.clone());
+                    }
+                }
+            }
+        }
+
+        agent_builder = agent_builder.additional_params(additional);
 
         agent_builder.build()
     }

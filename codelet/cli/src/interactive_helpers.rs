@@ -276,25 +276,25 @@ pub async fn prompt_provider(
     match manager.current_provider_name() {
         "claude" => {
             let provider = manager.get_claude()?;
-            let rig_agent = provider.create_rig_agent(None);
+            let rig_agent = provider.create_rig_agent(None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await
         }
         "openai" => {
             let provider = manager.get_openai()?;
-            let rig_agent = provider.create_rig_agent(None);
+            let rig_agent = provider.create_rig_agent(None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await
         }
         "codex" => {
             let provider = manager.get_codex()?;
-            let rig_agent = provider.create_rig_agent(None);
+            let rig_agent = provider.create_rig_agent(None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await
         }
         "gemini" => {
             let provider = manager.get_gemini()?;
-            let rig_agent = provider.create_rig_agent(None);
+            let rig_agent = provider.create_rig_agent(None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await
         }

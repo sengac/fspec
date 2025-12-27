@@ -26,7 +26,8 @@ pub(super) async fn run_agent_with_interruption(
     macro_rules! run_with_provider {
         ($get_provider:ident, $preamble:expr) => {{
             let provider = manager.$get_provider()?;
-            let rig_agent = provider.create_rig_agent($preamble);
+            // TOOL-010: Pass None for thinking_config in CLI (keywords not supported yet)
+            let rig_agent = provider.create_rig_agent($preamble, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream_with_interruption(
                 agent,

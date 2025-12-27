@@ -95,9 +95,11 @@ impl GeminiProvider {
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
+    /// * `_thinking_config` - Optional thinking configuration JSON (TOOL-010, currently unused for Gemini)
     pub fn create_rig_agent(
         &self,
         preamble: Option<&str>,
+        _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<gemini::completion::CompletionModel> {
         use codelet_tools::facade::{
             BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper,
