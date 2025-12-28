@@ -75,6 +75,10 @@ vi.mock('@sengac/codelet-napi', () => ({
     High: 3,
   },
   getThinkingConfig: vi.fn(() => null),
+  // TUI-034: Model selection mocks
+  modelsSetCacheDirectory: vi.fn(),
+  modelsListAll: vi.fn(() => Promise.resolve([])),
+  setRustLogCallback: vi.fn(),
   // Persistence NAPI bindings required by AgentModal
   persistenceSetDataDirectory: vi.fn(),
   persistenceStoreMessageEnvelope: vi.fn(),

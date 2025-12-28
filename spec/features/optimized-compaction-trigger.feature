@@ -1,3 +1,4 @@
+@done
 @CTX-002 @cli @context-window
 Feature: Optimized Compaction Window Limit Trigger
 

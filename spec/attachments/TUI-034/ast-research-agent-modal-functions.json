@@ -1,0 +1,611 @@
+{
+  "matches": [
+    {
+      "type": "arrow_function",
+      "line": 47,
+      "column": 30,
+      "text": "({\n  value,\n  onChange,\n  onSubmit,\n  placeholder = '',\n  isActive = true,\n  onHistoryPrev,\n  onHistoryNext,\n}) => {\n  // Use ref to avoid stale closure issues with rapid typing\n  const valueRef = useRef(value);\n  valueRef.current = value;\n\n  useInput(\n    (input, key) => {\n      // Ignore mouse escape sequences\n      if (key.mouse || input.includes('[M') || input.includes('[<')) {\n        return;\n      }\n\n      if (key.return) {\n        onSubmit();\n        return;\n      }\n\n      if (key.backspace || key.delete) {\n        const newValue = valueRef.current.slice(0, -1);\n        valueRef.current = newValue; // Update immediately to handle rapid keystrokes\n        onChange(newValue);\n        return;\n      }\n\n\n      // NAPI-006: Shift+Arrow for history navigation (check before ignoring arrow keys)\n\n      // Check raw escape sequences first (most reliable for Shift+Arrow)\n      if (input.includes('[1;2A') || input.includes('\\x1b[1;2A')) {\n        onHistoryPrev?.();\n        return;\n      }\n      if (input.includes('[1;2B') || input.includes('\\x1b[1;2B')) {\n        onHistoryNext?.();\n        return;\n      }\n      // ink may set key.shift when shift is held\n      if (key.shift && key.upArrow) {\n        onHistoryPrev?.();\n        return;\n      }\n      if (key.shift && key.downArrow) {\n        onHistoryNext?.();\n        return;\n      }\n\n      // Ignore navigation keys (handled by other components)\n      if (\n        key.escape ||\n        key.tab ||\n        key.upArrow ||\n        key.downArrow ||\n        key.pageUp ||\n        key.pageDown\n      ) {\n        return;\n      }\n\n      // Filter to only printable characters, removing any escape sequence remnants\n      const clean = input\n        .split('')\n        .filter((ch) => {\n          const code = ch.charCodeAt(0);\n          // Only allow printable ASCII (space through tilde)\n          return code >= 32 && code <= 126;\n        })\n        .join('');\n\n      if (clean) {\n        const newValue = valueRef.current + clean;\n        valueRef.current = newValue; // Update immediately to handle rapid keystrokes\n        onChange(newValue);\n      }\n    },\n    { isActive }\n  );\n\n  return (\n    <Text>\n      {value || <Text dimColor>{placeholder}</Text>}\n      <Text inverse> </Text>\n    </Text>\n  );\n}"
+    },
+    {
+      "type": "arrow_function",
+      "line": 61,
+      "column": 4,
+      "text": "(input, key) => {\n      // Ignore mouse escape sequences\n      if (key.mouse || input.includes('[M') || input.includes('[<')) {\n        return;\n      }\n\n      if (key.return) {\n        onSubmit();\n        return;\n      }\n\n      if (key.backspace || key.delete) {\n        const newValue = valueRef.current.slice(0, -1);\n        valueRef.current = newValue; // Update immediately to handle rapid keystrokes\n        onChange(newValue);\n        return;\n      }\n\n\n      // NAPI-006: Shift+Arrow for history navigation (check before ignoring arrow keys)\n\n      // Check raw escape sequences first (most reliable for Shift+Arrow)\n      if (input.includes('[1;2A') || input.includes('\\x1b[1;2A')) {\n        onHistoryPrev?.();\n        return;\n      }\n      if (input.includes('[1;2B') || input.includes('\\x1b[1;2B')) {\n        onHistoryNext?.();\n        return;\n      }\n      // ink may set key.shift when shift is held\n      if (key.shift && key.upArrow) {\n        onHistoryPrev?.();\n        return;\n      }\n      if (key.shift && key.downArrow) {\n        onHistoryNext?.();\n        return;\n      }\n\n      // Ignore navigation keys (handled by other components)\n      if (\n        key.escape ||\n        key.tab ||\n        key.upArrow ||\n        key.downArrow ||\n        key.pageUp ||\n        key.pageDown\n      ) {\n        return;\n      }\n\n      // Filter to only printable characters, removing any escape sequence remnants\n      const clean = input\n        .split('')\n        .filter((ch) => {\n          const code = ch.charCodeAt(0);\n          // Only allow printable ASCII (space through tilde)\n          return code >= 32 && code <= 126;\n        })\n        .join('');\n\n      if (clean) {\n        const newValue = valueRef.current + clean;\n        valueRef.current = newValue; // Update immediately to handle rapid keystrokes\n        onChange(newValue);\n      }\n    }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 116,
+      "column": 16,
+      "text": "(ch) => {\n          const code = ch.charCodeAt(0);\n          // Only allow printable ASCII (space through tilde)\n          return code >= 32 && code <= 126;\n        }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 292,
+      "column": 30,
+      "text": "(percentage: number): string => {\n    if (percentage < 50) return 'green';\n    if (percentage < 70) return 'yellow';\n    if (percentage < 85) return 'magenta';\n    return 'red';\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 304,
+      "column": 12,
+      "text": "() => {\n    if (!isLoading || lastChunkTime === null) return;\n    const timeout = setTimeout(() => {\n      setDisplayedTokPerSec(null);\n    }, 10000);\n    return () => clearTimeout(timeout);\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 306,
+      "column": 31,
+      "text": "() => {\n      setDisplayedTokPerSec(null);\n    }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 309,
+      "column": 11,
+      "text": "() => clearTimeout(timeout)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 313,
+      "column": 12,
+      "text": "() => {\n    if (!isOpen) {\n      // Reset state when modal closes (fresh session each time)\n      setSession(null);\n      setConversation([]);\n      setTokenUsage({ inputTokens: 0, outputTokens: 0 });\n      setError(null);\n      setInputValue('');\n      setIsDebugEnabled(false); // AGENT-021: Reset debug state on modal close\n      setDetectedThinkingLevel(null); // TOOL-010: Reset thinking level\n      // TUI-031: Reset tok/s display\n      setDisplayedTokPerSec(null);\n      setLastChunkTime(null);\n      sessionRef.current = null;\n      // NAPI-006: Reset history and search state\n      setHistoryEntries([]);\n      setHistoryIndex(-1);\n      setSavedInput('');\n      setIsSearchMode(false);\n      setSearchQuery('');\n      setSearchResults([]);\n      setSearchResultIndex(0);\n      setCurrentSessionId(null);\n      // NAPI-003: Reset resume mode state\n      setIsResumeMode(false);\n      setAvailableSessions([]);\n      setResumeSessionIndex(0);\n      return;\n    }\n\n    const initSession = async () => {\n      try {\n        // Dynamic import to handle ESM\n        const codeletNapi = await import('@sengac/codelet-napi');\n        const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory } = codeletNapi;\n\n        // NAPI-006: Set up persistence data directory\n        const fspecDir = getFspecUserDir();\n        try {\n          persistenceSetDataDirectory(fspecDir);\n        } catch {\n          // Ignore if already set\n        }\n\n        // Wire up Rust tracing to TypeScript logger\n        try {\n          const { setRustLogCallback } = await import('@sengac/codelet-napi');\n          setRustLogCallback((msg: string) => {\n            // Route Rust logs through TypeScript logger\n            if (msg.includes('[RUST:ERROR]')) {\n              logger.error(msg);\n            } else if (msg.includes('[RUST:WARN]')) {\n              logger.warn(msg);\n            } else if (msg.includes('[RUST:DEBUG]')) {\n              logger.debug(msg);\n            } else {\n              logger.info(msg);\n            }\n          });\n        } catch (err) {\n          logger.warn('Failed to set up Rust log callback', { error: err });\n        }\n\n        // Default to Claude as the primary AI provider\n        const newSession = new CodeletSession('claude');\n        setSession(newSession);\n        sessionRef.current = newSession;\n        setCurrentProvider(newSession.currentProviderName);\n        setAvailableProviders(newSession.availableProviders);\n        setTokenUsage(newSession.tokenTracker);\n\n        // NAPI-006: Session creation is deferred until first message is sent\n        // This prevents empty sessions from being persisted when user opens\n        // the modal but doesn't send any messages. See handleSubmit() for\n        // the actual session creation logic.\n\n        // NAPI-006: Load history for current project\n        try {\n\n          const history = persistenceGetHistory(currentProjectRef.current, 100);\n\n          // Convert NAPI history entries (camelCase from NAPI-RS) to our interface\n          const entries: HistoryEntry[] = history.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({\n            display: h.display,\n            timestamp: h.timestamp,\n            project: h.project,\n            sessionId: h.sessionId,\n            hasPastedContent: h.hasPastedContent ?? false,\n          }));\n          setHistoryEntries(entries);\n        } catch (err) {\n          logger.error(`Failed to load history: ${err instanceof Error ? err.message : String(err)}`);\n        }\n\n        setError(null);\n      } catch (err) {\n        const errorMessage =\n          err instanceof Error\n            ? err.message\n            : 'Failed to initialize AI session';\n        setError(errorMessage);\n        setSession(null);\n        sessionRef.current = null;\n      }\n    };\n\n    void initSession();\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 343,
+      "column": 24,
+      "text": "async () => {\n      try {\n        // Dynamic import to handle ESM\n        const codeletNapi = await import('@sengac/codelet-napi');\n        const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory } = codeletNapi;\n\n        // NAPI-006: Set up persistence data directory\n        const fspecDir = getFspecUserDir();\n        try {\n          persistenceSetDataDirectory(fspecDir);\n        } catch {\n          // Ignore if already set\n        }\n\n        // Wire up Rust tracing to TypeScript logger\n        try {\n          const { setRustLogCallback } = await import('@sengac/codelet-napi');\n          setRustLogCallback((msg: string) => {\n            // Route Rust logs through TypeScript logger\n            if (msg.includes('[RUST:ERROR]')) {\n              logger.error(msg);\n            } else if (msg.includes('[RUST:WARN]')) {\n              logger.warn(msg);\n            } else if (msg.includes('[RUST:DEBUG]')) {\n              logger.debug(msg);\n            } else {\n              logger.info(msg);\n            }\n          });\n        } catch (err) {\n          logger.warn('Failed to set up Rust log callback', { error: err });\n        }\n\n        // Default to Claude as the primary AI provider\n        const newSession = new CodeletSession('claude');\n        setSession(newSession);\n        sessionRef.current = newSession;\n        setCurrentProvider(newSession.currentProviderName);\n        setAvailableProviders(newSession.availableProviders);\n        setTokenUsage(newSession.tokenTracker);\n\n        // NAPI-006: Session creation is deferred until first message is sent\n        // This prevents empty sessions from being persisted when user opens\n        // the modal but doesn't send any messages. See handleSubmit() for\n        // the actual session creation logic.\n\n        // NAPI-006: Load history for current project\n        try {\n\n          const history = persistenceGetHistory(currentProjectRef.current, 100);\n\n          // Convert NAPI history entries (camelCase from NAPI-RS) to our interface\n          const entries: HistoryEntry[] = history.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({\n            display: h.display,\n            timestamp: h.timestamp,\n            project: h.project,\n            sessionId: h.sessionId,\n            hasPastedContent: h.hasPastedContent ?? false,\n          }));\n          setHistoryEntries(entries);\n        } catch (err) {\n          logger.error(`Failed to load history: ${err instanceof Error ? err.message : String(err)}`);\n        }\n\n        setError(null);\n      } catch (err) {\n        const errorMessage =\n          err instanceof Error\n            ? err.message\n            : 'Failed to initialize AI session';\n        setError(errorMessage);\n        setSession(null);\n        sessionRef.current = null;\n      }\n    }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 360,
+      "column": 29,
+      "text": "(msg: string) => {\n            // Route Rust logs through TypeScript logger\n            if (msg.includes('[RUST:ERROR]')) {\n              logger.error(msg);\n            } else if (msg.includes('[RUST:WARN]')) {\n              logger.warn(msg);\n            } else if (msg.includes('[RUST:DEBUG]')) {\n              logger.debug(msg);\n            } else {\n              logger.info(msg);\n            }\n          }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 395,
+      "column": 54,
+      "text": "(h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({\n            display: h.display,\n            timestamp: h.timestamp,\n            project: h.project,\n            sessionId: h.sessionId,\n            hasPastedContent: h.hasPastedContent ?? false,\n          })"
+    },
+    {
+      "type": "arrow_function",
+      "line": 423,
+      "column": 35,
+      "text": "async () => {\n    if (!sessionRef.current || !inputValue.trim() || isLoading) return;\n\n    const userMessage = inputValue.trim();\n\n    // AGENT-021: Handle /debug command - toggle debug capture mode\n    if (userMessage === '/debug') {\n      setInputValue('');\n      try {\n        // Pass ~/.fspec as the debug directory\n        const result = sessionRef.current.toggleDebug(getFspecUserDir());\n        setIsDebugEnabled(result.enabled);\n        // Add the result message to conversation\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: result.message },\n        ]);\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to toggle debug mode';\n        setError(errorMessage);\n      }\n      return;\n    }\n\n    // NAPI-006: Handle /search command - enter history search mode\n    if (userMessage === '/search') {\n      setInputValue('');\n      handleSearchMode();\n      return;\n    }\n\n    // AGENT-003: Handle /clear command - clear context and reset session\n    if (userMessage === '/clear') {\n      setInputValue('');\n      try {\n        // Clear history in the Rust session (includes reinjecting context reminders)\n        sessionRef.current.clearHistory();\n        // Reset React state\n        setConversation([]);\n        setTokenUsage({ inputTokens: 0, outputTokens: 0 });\n        setContextFillPercentage(0);\n        // Note: currentProvider, isDebugEnabled, and historyEntries are preserved\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to clear session';\n        setError(errorMessage);\n      }\n      return;\n    }\n\n    // NAPI-006: Handle /history command - show command history\n    if (userMessage === '/history' || userMessage.startsWith('/history ')) {\n      setInputValue('');\n      const allProjects = userMessage.includes('--all-projects');\n      try {\n        const { persistenceGetHistory } = await import('@sengac/codelet-napi');\n        const history = persistenceGetHistory(allProjects ? null : currentProjectRef.current, 20);\n        if (history.length === 0) {\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool', content: 'No history entries found' },\n          ]);\n        } else {\n          const historyList = history.map((h: { display: string; timestamp: string }) =>\n            `- ${h.display}`\n          ).join('\\n');\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool', content: `Command history:\\n${historyList}` },\n          ]);\n        }\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to get history';\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `History failed: ${errorMessage}` },\n        ]);\n      }\n      return;\n    }\n\n    // NAPI-003: Handle /resume command - show session selection overlay\n    if (userMessage === '/resume') {\n      setInputValue('');\n      void handleResumeMode();\n      return;\n    }\n\n    // NAPI-006: Handle /sessions command - list all sessions\n    if (userMessage === '/sessions') {\n      setInputValue('');\n      try {\n        const { persistenceListSessions } = await import('@sengac/codelet-napi');\n        const sessions = persistenceListSessions(currentProjectRef.current);\n        if (sessions.length === 0) {\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool', content: 'No sessions found for this project' },\n          ]);\n        } else {\n          const sessionList = sessions.map((s: SessionManifest) =>\n            `- ${s.name} (${s.messageCount} messages, ${s.id.slice(0, 8)}...)`\n          ).join('\\n');\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool', content: `Sessions:\\n${sessionList}` },\n          ]);\n        }\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to list sessions';\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `List sessions failed: ${errorMessage}` },\n        ]);\n      }\n      return;\n    }\n\n    // NAPI-006: Handle /switch <name> command - switch to another session\n    if (userMessage.startsWith('/switch ')) {\n      setInputValue('');\n      const targetName = userMessage.slice(8).trim();\n      try {\n        const { persistenceListSessions, persistenceLoadSession } = await import('@sengac/codelet-napi');\n        const sessions = persistenceListSessions(currentProjectRef.current);\n        const target = sessions.find((s: SessionManifest) => s.name === targetName);\n        if (target) {\n          setCurrentSessionId(target.id);\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool', content: `Switched to session: \"${target.name}\"` },\n          ]);\n        } else {\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool', content: `Session not found: \"${targetName}\"` },\n          ]);\n        }\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to switch session';\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Switch failed: ${errorMessage}` },\n        ]);\n      }\n      return;\n    }\n\n    // NAPI-006: Handle /rename <new-name> command - rename current session\n    if (userMessage.startsWith('/rename ')) {\n      setInputValue('');\n      const newName = userMessage.slice(8).trim();\n      if (!currentSessionId) {\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: 'No active session to rename' },\n        ]);\n        return;\n      }\n      try {\n        const { persistenceRenameSession } = await import('@sengac/codelet-napi');\n        persistenceRenameSession(currentSessionId, newName);\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Session renamed to: \"${newName}\"` },\n        ]);\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to rename session';\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Rename failed: ${errorMessage}` },\n        ]);\n      }\n      return;\n    }\n\n    // NAPI-006: Handle /fork <index> <name> command - fork session at index\n    if (userMessage.startsWith('/fork ')) {\n      setInputValue('');\n      const parts = userMessage.slice(6).trim().split(/\\s+/);\n      const index = parseInt(parts[0], 10);\n      const name = parts.slice(1).join(' ');\n      if (!currentSessionId) {\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: 'No active session to fork' },\n        ]);\n        return;\n      }\n      if (isNaN(index) || !name) {\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: 'Usage: /fork <index> <name>' },\n        ]);\n        return;\n      }\n      try {\n        const { persistenceForkSession } = await import('@sengac/codelet-napi');\n        const forkedSession = persistenceForkSession(currentSessionId, index, name);\n        setCurrentSessionId(forkedSession.id);\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Session forked at index ${index}: \"${name}\"` },\n        ]);\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to fork session';\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Fork failed: ${errorMessage}` },\n        ]);\n      }\n      return;\n    }\n\n    // NAPI-006: Handle /merge <session> <indices> command - merge messages from another session\n    if (userMessage.startsWith('/merge ')) {\n      setInputValue('');\n      const parts = userMessage.slice(7).trim().split(/\\s+/);\n      const sourceName = parts[0];\n      const indicesStr = parts[1];\n      if (!currentSessionId) {\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: 'No active session to merge into' },\n        ]);\n        return;\n      }\n      if (!sourceName || !indicesStr) {\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: 'Usage: /merge <session-name> <indices> (e.g., /merge session-b 3,4)' },\n        ]);\n        return;\n      }\n      try {\n        const { persistenceListSessions, persistenceMergeMessages } = await import('@sengac/codelet-napi');\n        const sessions = persistenceListSessions(currentProjectRef.current);\n        const source = sessions.find((s: SessionManifest) => s.name === sourceName || s.id === sourceName);\n        if (!source) {\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool', content: `Source session not found: \"${sourceName}\"` },\n          ]);\n          return;\n        }\n        const indices = indicesStr.split(',').map((s: string) => parseInt(s.trim(), 10));\n        const result = persistenceMergeMessages(currentSessionId, source.id, indices);\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Merged ${indices.length} messages from \"${source.name}\"` },\n        ]);\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to merge messages';\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Merge failed: ${errorMessage}` },\n        ]);\n      }\n      return;\n    }\n\n    // NAPI-006: Handle /cherry-pick <session> <index> --context <n> command\n    if (userMessage.startsWith('/cherry-pick ')) {\n      setInputValue('');\n      const args = userMessage.slice(13).trim();\n      const contextMatch = args.match(/--context\\s+(\\d+)/);\n      const context = contextMatch ? parseInt(contextMatch[1], 10) : 0;\n      const cleanArgs = args.replace(/--context\\s+\\d+/, '').trim();\n      const parts = cleanArgs.split(/\\s+/);\n      const sourceName = parts[0];\n      const index = parseInt(parts[1], 10);\n      if (!currentSessionId) {\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: 'No active session for cherry-pick' },\n        ]);\n        return;\n      }\n      if (!sourceName || isNaN(index)) {\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: 'Usage: /cherry-pick <session> <index> [--context N]' },\n        ]);\n        return;\n      }\n      try {\n        const { persistenceListSessions, persistenceCherryPick } = await import('@sengac/codelet-napi');\n        const sessions = persistenceListSessions(currentProjectRef.current);\n        const source = sessions.find((s: SessionManifest) => s.name === sourceName || s.id === sourceName);\n        if (!source) {\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool', content: `Source session not found: \"${sourceName}\"` },\n          ]);\n          return;\n        }\n        const result = persistenceCherryPick(currentSessionId, source.id, index, context);\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Cherry-picked message ${index} with ${context} context messages from \"${source.name}\"` },\n        ]);\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to cherry-pick';\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Cherry-pick failed: ${errorMessage}` },\n        ]);\n      }\n      return;\n    }\n\n    // NAPI-005: Handle /compact command - manual context compaction\n    if (userMessage === '/compact') {\n      setInputValue('');\n\n      // Check if there's anything to compact - use session's messages, not React state\n      if (sessionRef.current.messages.length === 0) {\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: 'Nothing to compact - no messages yet' },\n        ]);\n        return;\n      }\n\n      // Show compacting message\n      setConversation(prev => [\n        ...prev,\n        { role: 'tool', content: '[Compacting context...]' },\n      ]);\n\n      try {\n        const result = await sessionRef.current.compact();\n        // Show success message with metrics\n        const compressionPct = result.compressionRatio.toFixed(0);\n        const message = `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression]\\n[Summarized ${result.turnsSummarized} turns, kept ${result.turnsKept} turns]`;\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: message },\n        ]);\n        // Update token tracker and context fill to reflect reduced context\n        const finalTokens = sessionRef.current.tokenTracker;\n        setTokenUsage(finalTokens);\n        const contextFillInfo = sessionRef.current.getContextFillInfo();\n        setContextFillPercentage(contextFillInfo.fillPercentage);\n\n        // Persist compaction state and token usage\n        if (currentSessionId) {\n          try {\n            const { persistenceSetCompactionState, persistenceSetSessionTokens } = await import('@sengac/codelet-napi');\n            // Create summary for persistence (includes key metrics)\n            const summary = `Compacted ${result.turnsSummarized} turns (${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression)`;\n            // compacted_before_index = turnsSummarized (messages 0 to turnsSummarized-1 were compacted)\n            persistenceSetCompactionState(currentSessionId, summary, result.turnsSummarized);\n            persistenceSetSessionTokens(\n              currentSessionId,\n              finalTokens.inputTokens,\n              finalTokens.outputTokens,\n              finalTokens.cacheReadInputTokens ?? 0,\n              finalTokens.cacheCreationInputTokens ?? 0,\n              finalTokens.cumulativeBilledInput ?? finalTokens.inputTokens,\n              finalTokens.cumulativeBilledOutput ?? finalTokens.outputTokens\n            );\n          } catch {\n            // Compaction state persistence failed - continue\n          }\n        }\n      } catch (err) {\n        const errorMessage = err instanceof Error ? err.message : 'Failed to compact context';\n        setConversation(prev => [\n          ...prev,\n          { role: 'tool', content: `Compaction failed: ${errorMessage}` },\n        ]);\n      }\n      return;\n    }\n\n    setInputValue('');\n    setHistoryIndex(-1); // Reset history navigation\n    setSavedInput('');\n    setIsLoading(true);\n    // TUI-031: Reset tok/s display for new prompt (Rust will send new values)\n    setDisplayedTokPerSec(null);\n    setLastChunkTime(null);\n\n    // NAPI-006: Deferred session creation - only create session on first message\n    // This prevents empty sessions from being persisted when user opens modal\n    // but doesn't send any messages\n    let activeSessionId = currentSessionId;\n    if (!activeSessionId && isFirstMessageRef.current) {\n      try {\n        const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');\n        const project = currentProjectRef.current;\n        // Use first message as session name (truncated to 50 chars)\n        const sessionName = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');\n\n        const persistedSession = persistenceCreateSessionWithProvider(\n          sessionName,\n          project,\n          currentProvider\n        );\n\n        activeSessionId = persistedSession.id;\n        setCurrentSessionId(activeSessionId);\n        // Mark first message as processed (session already named with message content)\n        isFirstMessageRef.current = false;\n      } catch {\n        // Session creation failed - continue without persistence\n      }\n    }\n\n    // NAPI-006: Save command to history\n    if (activeSessionId) {\n      try {\n        const { persistenceAddHistory } = await import('@sengac/codelet-napi');\n        persistenceAddHistory(userMessage, currentProjectRef.current, activeSessionId);\n        // Update local history entries\n        setHistoryEntries(prev => [{\n          display: userMessage,\n          timestamp: new Date().toISOString(),\n          project: currentProjectRef.current,\n          sessionId: activeSessionId,\n          hasPastedContent: false,\n        }, ...prev]);\n      } catch (err) {\n        logger.error(`Failed to save history: ${err instanceof Error ? err.message : String(err)}`);\n      }\n    } else {\n      logger.warn('No activeSessionId - history will not be saved');\n    }\n\n    // Add user message to conversation\n    setConversation(prev => [...prev, { role: 'user', content: userMessage }]);\n\n    // Persist user message as full envelope\n    if (activeSessionId) {\n      try {\n        // Create proper user message envelope\n        // Note: \"type\" field matches Rust's #[serde(rename = \"type\")] for message_type\n        const userEnvelope = {\n          uuid: crypto.randomUUID(),\n          timestamp: new Date().toISOString(),\n          type: 'user',\n          provider: currentProvider,\n          message: {\n            role: 'user',\n            content: [{ type: 'text', text: userMessage }],\n          },\n        };\n        const envelopeJson = JSON.stringify(userEnvelope);\n        persistenceStoreMessageEnvelope(activeSessionId, envelopeJson);\n\n        // Note: Session naming now happens at creation time (deferred session creation above)\n        // so we don't need to rename here\n      } catch {\n        // User message persistence failed - continue\n      }\n    }\n\n    // Add streaming assistant message placeholder\n    setConversation(prev => [\n      ...prev,\n      { role: 'assistant', content: '', isStreaming: true },\n    ]);\n\n    try {\n      // TOOL-010: Detect thinking level from prompt keywords\n      const thinkingLevel = detectThinkingLevel(userMessage);\n      setDetectedThinkingLevel(thinkingLevel);\n\n      // Get thinking config JSON if level is not Off\n      let thinkingConfig: string | null = null;\n      if (thinkingLevel !== JsThinkingLevel.Off) {\n        thinkingConfig = getThinkingConfig(currentProvider, thinkingLevel);\n        const label = getThinkingLevelLabel(thinkingLevel);\n        if (label) {\n          logger.debug(`Thinking level detected: ${label}`);\n        }\n      }\n\n      // Track current text segment (resets after tool calls)\n      let currentSegment = '';\n      // Track full assistant response for persistence (includes ALL content blocks)\n      let fullAssistantResponse = '';\n      // Track assistant message content blocks for envelope storage\n      const assistantContentBlocks: Array<{ type: string; text?: string; thinking?: string; id?: string; name?: string; input?: unknown }> = [];\n      await sessionRef.current.prompt(userMessage, thinkingConfig, (chunk: StreamChunk) => {\n        if (!chunk) return;\n\n        if (chunk.type === 'Text' && chunk.text) {\n          // Text chunks are batched in Rust for efficiency\n          currentSegment += chunk.text;\n          fullAssistantResponse += chunk.text; // Accumulate for display persistence\n          // Add to content blocks for envelope storage\n          const lastBlock = assistantContentBlocks[assistantContentBlocks.length - 1];\n          if (lastBlock && lastBlock.type === 'text') {\n            lastBlock.text = (lastBlock.text || '') + chunk.text;\n          } else {\n            assistantContentBlocks.push({ type: 'text', text: chunk.text });\n          }\n          const segmentSnapshot = currentSegment;\n          setConversation(prev => {\n            const updated = [...prev];\n            const streamingIdx = updated.findLastIndex(m => m.isStreaming);\n            if (streamingIdx >= 0) {\n              updated[streamingIdx] = {\n                ...updated[streamingIdx],\n                content: segmentSnapshot,\n              };\n            }\n            return updated;\n          });\n        } else if (chunk.type === 'Thinking' && chunk.thinking) {\n          // TOOL-010: Handle thinking/reasoning content from extended thinking\n          // Store thinking block for envelope persistence\n          assistantContentBlocks.push({ type: 'thinking', thinking: chunk.thinking });\n          // Display thinking content in a distinct way (could be collapsible in future)\n          setConversation(prev => {\n            const updated = [...prev];\n            // Add thinking as a separate tool-style message with distinct formatting\n            updated.push({\n              role: 'tool',\n              content: `[Thinking]\\n${chunk.thinking}`,\n            });\n            return updated;\n          });\n        } else if (chunk.type === 'ToolCall' && chunk.toolCall) {\n          // Finalize current streaming message and add tool call (match CLI format)\n          const toolCall = chunk.toolCall;\n\n          // Add tool_use block to content blocks for envelope storage\n          let parsedInput: unknown;\n          try {\n            parsedInput = JSON.parse(toolCall.input);\n          } catch {\n            parsedInput = toolCall.input;\n          }\n          assistantContentBlocks.push({\n            type: 'tool_use',\n            id: toolCall.id,\n            name: toolCall.name,\n            input: parsedInput,\n          });\n\n          let toolContent = `[Planning to use tool: ${toolCall.name}]`;\n          // Parse and display arguments\n          if (typeof parsedInput === 'object' && parsedInput !== null) {\n            for (const [key, value] of Object.entries(parsedInput as Record<string, unknown>)) {\n              const displayValue =\n                typeof value === 'string' ? value : JSON.stringify(value);\n              toolContent += `\\n  ${key}: ${displayValue}`;\n            }\n          } else if (toolCall.input) {\n            toolContent += `\\n  ${toolCall.input}`;\n          }\n          const toolContentSnapshot = toolContent;\n          setConversation(prev => {\n            const updated = [...prev];\n            const streamingIdx = updated.findLastIndex(m => m.isStreaming);\n            if (streamingIdx >= 0) {\n              // Mark current segment as complete\n              updated[streamingIdx] = {\n                ...updated[streamingIdx],\n                isStreaming: false,\n              };\n            }\n            // Add tool call message\n            updated.push({\n              role: 'tool',\n              content: toolContentSnapshot,\n            });\n            return updated;\n          });\n        } else if (chunk.type === 'ToolResult' && chunk.toolResult) {\n          // Show tool result in CLI format, then start new streaming message\n          const result = chunk.toolResult;\n\n          // NAPI-008: Store current assistant envelope BEFORE the tool_result\n          // This ensures the assistant message with tool_use is separate from the continuation\n          if (activeSessionId && assistantContentBlocks.length > 0) {\n            try {\n              const assistantEnvelope = {\n                uuid: crypto.randomUUID(),\n                timestamp: new Date().toISOString(),\n                type: 'assistant',\n                provider: currentProvider,\n                message: {\n                  role: 'assistant',\n                  content: [...assistantContentBlocks], // Clone before clearing\n                },\n              };\n              persistenceStoreMessageEnvelope(activeSessionId, JSON.stringify(assistantEnvelope));\n              // Clear for continuation after tool_result\n              assistantContentBlocks.length = 0;\n            } catch {\n              // Persistence failed - continue\n            }\n          }\n\n          // Store tool_result as user message immediately\n          if (activeSessionId) {\n            try {\n              const toolResultEnvelope = {\n                uuid: crypto.randomUUID(),\n                timestamp: new Date().toISOString(),\n                type: 'user',\n                provider: currentProvider,\n                message: {\n                  role: 'user',\n                  content: [{\n                    type: 'tool_result',\n                    tool_use_id: result.toolCallId,\n                    content: result.content,\n                    is_error: result.isError,\n                  }],\n                },\n              };\n              persistenceStoreMessageEnvelope(activeSessionId, JSON.stringify(toolResultEnvelope));\n            } catch {\n              // Persistence failed - continue\n            }\n          }\n\n          // Sanitize content: replace tabs with spaces (Ink can't render tabs)\n          const sanitizedContent = result.content.replace(/\\t/g, '  ');\n          const preview = sanitizedContent.slice(0, 500);\n          const truncated = sanitizedContent.length > 500;\n          // Format like CLI: indented with separators\n          const indentedPreview = preview\n            .split('\\n')\n            .map(line => `  ${line}`)\n            .join('\\n');\n          const toolResultContent = `[Tool result preview]\\n-------\\n${indentedPreview}${truncated ? '...' : ''}\\n-------`;\n          currentSegment = ''; // Reset for next text segment\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool' as const, content: toolResultContent },\n            // Add new streaming placeholder for AI continuation\n            { role: 'assistant' as const, content: '', isStreaming: true },\n          ]);\n        } else if (chunk.type === 'Done') {\n          // Mark streaming complete and remove empty trailing assistant messages\n          setConversation(prev => {\n            const updated = [...prev];\n            // Remove empty streaming assistant messages at the end\n            while (\n              updated.length > 0 &&\n              updated[updated.length - 1].role === 'assistant' &&\n              updated[updated.length - 1].isStreaming &&\n              !updated[updated.length - 1].content\n            ) {\n              updated.pop();\n            }\n            // Mark any remaining streaming message as complete\n            const lastAssistantIdx = updated.findLastIndex(\n              m => m.role === 'assistant' && m.isStreaming\n            );\n            if (lastAssistantIdx >= 0) {\n              updated[lastAssistantIdx] = {\n                ...updated[lastAssistantIdx],\n                isStreaming: false,\n              };\n            }\n            return updated;\n          });\n        } else if (chunk.type === 'Status' && chunk.status) {\n          const statusMessage = chunk.status;\n          // Status messages (e.g., compaction notifications)\n          setConversation(prev => [\n            ...prev,\n            {\n              role: 'tool',\n              content: statusMessage,\n            },\n          ]);\n        } else if (chunk.type === 'Interrupted') {\n          // Agent was interrupted by user\n          // Use ⚠ (U+26A0) without emoji selector - width 1 in both string-width and terminal\n          setConversation(prev => {\n            const updated = [\n              ...prev,\n              { role: 'tool' as const, content: '⚠ Agent interrupted' },\n            ];\n            // Mark any streaming message as complete\n            const lastAssistantIdx = updated.findLastIndex(\n              m => m.role === 'assistant' && m.isStreaming\n            );\n            if (lastAssistantIdx >= 0) {\n              updated[lastAssistantIdx] = {\n                ...updated[lastAssistantIdx],\n                isStreaming: false,\n              };\n            }\n            return updated;\n          });\n        } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {\n          // TUI-031: Display token counts and tok/s from Rust\n          setTokenUsage(chunk.tokens);\n          if (chunk.tokens.tokensPerSecond !== undefined) {\n            setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);\n            if (chunk.tokens.tokensPerSecond !== null) {\n              setLastChunkTime(Date.now());\n            }\n          }\n        } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {\n          // TUI-033: Display context fill percentage from Rust\n          setContextFillPercentage(chunk.contextFill.fillPercentage);\n        } else if (chunk.type === 'Error' && chunk.error) {\n          // API error occurred - clean up streaming placeholder and show error in conversation\n          setConversation(prev => {\n            const updated = [...prev];\n            // Remove empty streaming assistant messages at the end\n            while (\n              updated.length > 0 &&\n              updated[updated.length - 1].role === 'assistant' &&\n              updated[updated.length - 1].isStreaming &&\n              !updated[updated.length - 1].content\n            ) {\n              updated.pop();\n            }\n            // Add error as tool message so it's visible in conversation\n            updated.push({ role: 'tool', content: `API Error: ${chunk.error}` });\n            return updated;\n          });\n        }\n      });\n\n      // Persist full envelopes to session (includes tool calls and results)\n      if (activeSessionId) {\n        try {\n          // Store assistant message with ALL content blocks (text + tool_use)\n          // Note: \"type\" field matches Rust's #[serde(rename = \"type\")] for message_type\n          if (assistantContentBlocks.length > 0) {\n            // Per-message cumulative token usage for analytics/debugging (NAPI-008)\n            // Note: This is cumulative session usage at time of message, stored for\n            // historical analysis. Not used during restore (session totals are in manifest).\n            const currentTokens = sessionRef.current?.tokenTracker;\n            const assistantEnvelope = {\n              uuid: crypto.randomUUID(),\n              timestamp: new Date().toISOString(),\n              type: 'assistant',\n              provider: currentProvider,\n              message: {\n                role: 'assistant',\n                content: assistantContentBlocks,\n              },\n              usage: currentTokens ? {\n                input_tokens: currentTokens.inputTokens,\n                output_tokens: currentTokens.outputTokens,\n                cache_read_input_tokens: currentTokens.cacheReadInputTokens ?? 0,\n                cache_creation_input_tokens: currentTokens.cacheCreationInputTokens ?? 0,\n              } : undefined,\n            };\n            const assistantJson = JSON.stringify(assistantEnvelope);\n            persistenceStoreMessageEnvelope(activeSessionId, assistantJson);\n          }\n          // Note: Tool results are stored immediately in ToolResult handler (NAPI-008)\n        } catch {\n          // Message persistence failed - continue\n        }\n      }\n\n      // Update token usage after prompt completes (safe to access now - session unlocked)\n      if (sessionRef.current) {\n        const finalTokens = sessionRef.current.tokenTracker;\n        setTokenUsage(finalTokens);\n\n        // Persist token usage to session manifest (for restore)\n        if (activeSessionId) {\n          try {\n            const { persistenceSetSessionTokens } = await import('@sengac/codelet-napi');\n            persistenceSetSessionTokens(\n              activeSessionId,\n              finalTokens.inputTokens,\n              finalTokens.outputTokens,\n              finalTokens.cacheReadInputTokens ?? 0,\n              finalTokens.cacheCreationInputTokens ?? 0,\n              finalTokens.cumulativeBilledInput ?? finalTokens.inputTokens,\n              finalTokens.cumulativeBilledOutput ?? finalTokens.outputTokens\n            );\n          } catch {\n            // Token usage persistence failed - continue\n          }\n        }\n      }\n    } catch (err) {\n      const errorMessage =\n        err instanceof Error ? err.message : 'Failed to send prompt';\n      // Clean up streaming placeholder and show error in conversation\n      setConversation(prev => {\n        const updated = [...prev];\n        // Remove empty streaming assistant messages at the end\n        while (\n          updated.length > 0 &&\n          updated[updated.length - 1].role === 'assistant' &&\n          updated[updated.length - 1].isStreaming &&\n          !updated[updated.length - 1].content\n        ) {\n          updated.pop();\n        }\n        // Add error as tool message so it's visible in conversation\n        updated.push({ role: 'tool', content: `Error: ${errorMessage}` });\n        return updated;\n      });\n    } finally {\n      setIsLoading(false);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 436,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: result.message },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 480,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool', content: 'No history entries found' },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 485,
+      "column": 42,
+      "text": "(h: { display: string; timestamp: string }) =>\n            `- ${h.display}`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 488,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool', content: `Command history:\\n${historyList}` },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 495,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `History failed: ${errorMessage}` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 517,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool', content: 'No sessions found for this project' },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 522,
+      "column": 43,
+      "text": "(s: SessionManifest) =>\n            `- ${s.name} (${s.messageCount} messages, ${s.id.slice(0, 8)}...)`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 525,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool', content: `Sessions:\\n${sessionList}` },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 532,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `List sessions failed: ${errorMessage}` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 547,
+      "column": 37,
+      "text": "(s: SessionManifest) => s.name === targetName"
+    },
+    {
+      "type": "arrow_function",
+      "line": 550,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool', content: `Switched to session: \"${target.name}\"` },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 555,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool', content: `Session not found: \"${targetName}\"` },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 562,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Switch failed: ${errorMessage}` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 575,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: 'No active session to rename' },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 584,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Session renamed to: \"${newName}\"` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 590,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Rename failed: ${errorMessage}` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 605,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: 'No active session to fork' },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 612,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: 'Usage: /fork <index> <name>' },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 622,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Session forked at index ${index}: \"${name}\"` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 628,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Fork failed: ${errorMessage}` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 643,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: 'No active session to merge into' },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 650,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: 'Usage: /merge <session-name> <indices> (e.g., /merge session-b 3,4)' },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 659,
+      "column": 37,
+      "text": "(s: SessionManifest) => s.name === sourceName || s.id === sourceName"
+    },
+    {
+      "type": "arrow_function",
+      "line": 661,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool', content: `Source session not found: \"${sourceName}\"` },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 667,
+      "column": 50,
+      "text": "(s: string) => parseInt(s.trim(), 10)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 669,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Merged ${indices.length} messages from \"${source.name}\"` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 675,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Merge failed: ${errorMessage}` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 694,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: 'No active session for cherry-pick' },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 701,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: 'Usage: /cherry-pick <session> <index> [--context N]' },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 710,
+      "column": 37,
+      "text": "(s: SessionManifest) => s.name === sourceName || s.id === sourceName"
+    },
+    {
+      "type": "arrow_function",
+      "line": 712,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool', content: `Source session not found: \"${sourceName}\"` },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 719,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Cherry-picked message ${index} with ${context} context messages from \"${source.name}\"` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 725,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Cherry-pick failed: ${errorMessage}` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 739,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: 'Nothing to compact - no messages yet' },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 747,
+      "column": 22,
+      "text": "prev => [\n        ...prev,\n        { role: 'tool', content: '[Compacting context...]' },\n      ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 757,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: message },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 790,
+      "column": 24,
+      "text": "prev => [\n          ...prev,\n          { role: 'tool', content: `Compaction failed: ${errorMessage}` },\n        ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 838,
+      "column": 26,
+      "text": "prev => [{\n          display: userMessage,\n          timestamp: new Date().toISOString(),\n          project: currentProjectRef.current,\n          sessionId: activeSessionId,\n          hasPastedContent: false,\n        }, ...prev]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 853,
+      "column": 20,
+      "text": "prev => [...prev, { role: 'user', content: userMessage }]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 881,
+      "column": 20,
+      "text": "prev => [\n      ...prev,\n      { role: 'assistant', content: '', isStreaming: true },\n    ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 907,
+      "column": 67,
+      "text": "(chunk: StreamChunk) => {\n        if (!chunk) return;\n\n        if (chunk.type === 'Text' && chunk.text) {\n          // Text chunks are batched in Rust for efficiency\n          currentSegment += chunk.text;\n          fullAssistantResponse += chunk.text; // Accumulate for display persistence\n          // Add to content blocks for envelope storage\n          const lastBlock = assistantContentBlocks[assistantContentBlocks.length - 1];\n          if (lastBlock && lastBlock.type === 'text') {\n            lastBlock.text = (lastBlock.text || '') + chunk.text;\n          } else {\n            assistantContentBlocks.push({ type: 'text', text: chunk.text });\n          }\n          const segmentSnapshot = currentSegment;\n          setConversation(prev => {\n            const updated = [...prev];\n            const streamingIdx = updated.findLastIndex(m => m.isStreaming);\n            if (streamingIdx >= 0) {\n              updated[streamingIdx] = {\n                ...updated[streamingIdx],\n                content: segmentSnapshot,\n              };\n            }\n            return updated;\n          });\n        } else if (chunk.type === 'Thinking' && chunk.thinking) {\n          // TOOL-010: Handle thinking/reasoning content from extended thinking\n          // Store thinking block for envelope persistence\n          assistantContentBlocks.push({ type: 'thinking', thinking: chunk.thinking });\n          // Display thinking content in a distinct way (could be collapsible in future)\n          setConversation(prev => {\n            const updated = [...prev];\n            // Add thinking as a separate tool-style message with distinct formatting\n            updated.push({\n              role: 'tool',\n              content: `[Thinking]\\n${chunk.thinking}`,\n            });\n            return updated;\n          });\n        } else if (chunk.type === 'ToolCall' && chunk.toolCall) {\n          // Finalize current streaming message and add tool call (match CLI format)\n          const toolCall = chunk.toolCall;\n\n          // Add tool_use block to content blocks for envelope storage\n          let parsedInput: unknown;\n          try {\n            parsedInput = JSON.parse(toolCall.input);\n          } catch {\n            parsedInput = toolCall.input;\n          }\n          assistantContentBlocks.push({\n            type: 'tool_use',\n            id: toolCall.id,\n            name: toolCall.name,\n            input: parsedInput,\n          });\n\n          let toolContent = `[Planning to use tool: ${toolCall.name}]`;\n          // Parse and display arguments\n          if (typeof parsedInput === 'object' && parsedInput !== null) {\n            for (const [key, value] of Object.entries(parsedInput as Record<string, unknown>)) {\n              const displayValue =\n                typeof value === 'string' ? value : JSON.stringify(value);\n              toolContent += `\\n  ${key}: ${displayValue}`;\n            }\n          } else if (toolCall.input) {\n            toolContent += `\\n  ${toolCall.input}`;\n          }\n          const toolContentSnapshot = toolContent;\n          setConversation(prev => {\n            const updated = [...prev];\n            const streamingIdx = updated.findLastIndex(m => m.isStreaming);\n            if (streamingIdx >= 0) {\n              // Mark current segment as complete\n              updated[streamingIdx] = {\n                ...updated[streamingIdx],\n                isStreaming: false,\n              };\n            }\n            // Add tool call message\n            updated.push({\n              role: 'tool',\n              content: toolContentSnapshot,\n            });\n            return updated;\n          });\n        } else if (chunk.type === 'ToolResult' && chunk.toolResult) {\n          // Show tool result in CLI format, then start new streaming message\n          const result = chunk.toolResult;\n\n          // NAPI-008: Store current assistant envelope BEFORE the tool_result\n          // This ensures the assistant message with tool_use is separate from the continuation\n          if (activeSessionId && assistantContentBlocks.length > 0) {\n            try {\n              const assistantEnvelope = {\n                uuid: crypto.randomUUID(),\n                timestamp: new Date().toISOString(),\n                type: 'assistant',\n                provider: currentProvider,\n                message: {\n                  role: 'assistant',\n                  content: [...assistantContentBlocks], // Clone before clearing\n                },\n              };\n              persistenceStoreMessageEnvelope(activeSessionId, JSON.stringify(assistantEnvelope));\n              // Clear for continuation after tool_result\n              assistantContentBlocks.length = 0;\n            } catch {\n              // Persistence failed - continue\n            }\n          }\n\n          // Store tool_result as user message immediately\n          if (activeSessionId) {\n            try {\n              const toolResultEnvelope = {\n                uuid: crypto.randomUUID(),\n                timestamp: new Date().toISOString(),\n                type: 'user',\n                provider: currentProvider,\n                message: {\n                  role: 'user',\n                  content: [{\n                    type: 'tool_result',\n                    tool_use_id: result.toolCallId,\n                    content: result.content,\n                    is_error: result.isError,\n                  }],\n                },\n              };\n              persistenceStoreMessageEnvelope(activeSessionId, JSON.stringify(toolResultEnvelope));\n            } catch {\n              // Persistence failed - continue\n            }\n          }\n\n          // Sanitize content: replace tabs with spaces (Ink can't render tabs)\n          const sanitizedContent = result.content.replace(/\\t/g, '  ');\n          const preview = sanitizedContent.slice(0, 500);\n          const truncated = sanitizedContent.length > 500;\n          // Format like CLI: indented with separators\n          const indentedPreview = preview\n            .split('\\n')\n            .map(line => `  ${line}`)\n            .join('\\n');\n          const toolResultContent = `[Tool result preview]\\n-------\\n${indentedPreview}${truncated ? '...' : ''}\\n-------`;\n          currentSegment = ''; // Reset for next text segment\n          setConversation(prev => [\n            ...prev,\n            { role: 'tool' as const, content: toolResultContent },\n            // Add new streaming placeholder for AI continuation\n            { role: 'assistant' as const, content: '', isStreaming: true },\n          ]);\n        } else if (chunk.type === 'Done') {\n          // Mark streaming complete and remove empty trailing assistant messages\n          setConversation(prev => {\n            const updated = [...prev];\n            // Remove empty streaming assistant messages at the end\n            while (\n              updated.length > 0 &&\n              updated[updated.length - 1].role === 'assistant' &&\n              updated[updated.length - 1].isStreaming &&\n              !updated[updated.length - 1].content\n            ) {\n              updated.pop();\n            }\n            // Mark any remaining streaming message as complete\n            const lastAssistantIdx = updated.findLastIndex(\n              m => m.role === 'assistant' && m.isStreaming\n            );\n            if (lastAssistantIdx >= 0) {\n              updated[lastAssistantIdx] = {\n                ...updated[lastAssistantIdx],\n                isStreaming: false,\n              };\n            }\n            return updated;\n          });\n        } else if (chunk.type === 'Status' && chunk.status) {\n          const statusMessage = chunk.status;\n          // Status messages (e.g., compaction notifications)\n          setConversation(prev => [\n            ...prev,\n            {\n              role: 'tool',\n              content: statusMessage,\n            },\n          ]);\n        } else if (chunk.type === 'Interrupted') {\n          // Agent was interrupted by user\n          // Use ⚠ (U+26A0) without emoji selector - width 1 in both string-width and terminal\n          setConversation(prev => {\n            const updated = [\n              ...prev,\n              { role: 'tool' as const, content: '⚠ Agent interrupted' },\n            ];\n            // Mark any streaming message as complete\n            const lastAssistantIdx = updated.findLastIndex(\n              m => m.role === 'assistant' && m.isStreaming\n            );\n            if (lastAssistantIdx >= 0) {\n              updated[lastAssistantIdx] = {\n                ...updated[lastAssistantIdx],\n                isStreaming: false,\n              };\n            }\n            return updated;\n          });\n        } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {\n          // TUI-031: Display token counts and tok/s from Rust\n          setTokenUsage(chunk.tokens);\n          if (chunk.tokens.tokensPerSecond !== undefined) {\n            setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);\n            if (chunk.tokens.tokensPerSecond !== null) {\n              setLastChunkTime(Date.now());\n            }\n          }\n        } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {\n          // TUI-033: Display context fill percentage from Rust\n          setContextFillPercentage(chunk.contextFill.fillPercentage);\n        } else if (chunk.type === 'Error' && chunk.error) {\n          // API error occurred - clean up streaming placeholder and show error in conversation\n          setConversation(prev => {\n            const updated = [...prev];\n            // Remove empty streaming assistant messages at the end\n            while (\n              updated.length > 0 &&\n              updated[updated.length - 1].role === 'assistant' &&\n              updated[updated.length - 1].isStreaming &&\n              !updated[updated.length - 1].content\n            ) {\n              updated.pop();\n            }\n            // Add error as tool message so it's visible in conversation\n            updated.push({ role: 'tool', content: `API Error: ${chunk.error}` });\n            return updated;\n          });\n        }\n      }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 922,
+      "column": 26,
+      "text": "prev => {\n            const updated = [...prev];\n            const streamingIdx = updated.findLastIndex(m => m.isStreaming);\n            if (streamingIdx >= 0) {\n              updated[streamingIdx] = {\n                ...updated[streamingIdx],\n                content: segmentSnapshot,\n              };\n            }\n            return updated;\n          }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 924,
+      "column": 55,
+      "text": "m => m.isStreaming"
+    },
+    {
+      "type": "arrow_function",
+      "line": 938,
+      "column": 26,
+      "text": "prev => {\n            const updated = [...prev];\n            // Add thinking as a separate tool-style message with distinct formatting\n            updated.push({\n              role: 'tool',\n              content: `[Thinking]\\n${chunk.thinking}`,\n            });\n            return updated;\n          }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 977,
+      "column": 26,
+      "text": "prev => {\n            const updated = [...prev];\n            const streamingIdx = updated.findLastIndex(m => m.isStreaming);\n            if (streamingIdx >= 0) {\n              // Mark current segment as complete\n              updated[streamingIdx] = {\n                ...updated[streamingIdx],\n                isStreaming: false,\n              };\n            }\n            // Add tool call message\n            updated.push({\n              role: 'tool',\n              content: toolContentSnapshot,\n            });\n            return updated;\n          }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 979,
+      "column": 55,
+      "text": "m => m.isStreaming"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1051,
+      "column": 17,
+      "text": "line => `  ${line}`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1055,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            { role: 'tool' as const, content: toolResultContent },\n            // Add new streaming placeholder for AI continuation\n            { role: 'assistant' as const, content: '', isStreaming: true },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1063,
+      "column": 26,
+      "text": "prev => {\n            const updated = [...prev];\n            // Remove empty streaming assistant messages at the end\n            while (\n              updated.length > 0 &&\n              updated[updated.length - 1].role === 'assistant' &&\n              updated[updated.length - 1].isStreaming &&\n              !updated[updated.length - 1].content\n            ) {\n              updated.pop();\n            }\n            // Mark any remaining streaming message as complete\n            const lastAssistantIdx = updated.findLastIndex(\n              m => m.role === 'assistant' && m.isStreaming\n            );\n            if (lastAssistantIdx >= 0) {\n              updated[lastAssistantIdx] = {\n                ...updated[lastAssistantIdx],\n                isStreaming: false,\n              };\n            }\n            return updated;\n          }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1076,
+      "column": 14,
+      "text": "m => m.role === 'assistant' && m.isStreaming"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1089,
+      "column": 26,
+      "text": "prev => [\n            ...prev,\n            {\n              role: 'tool',\n              content: statusMessage,\n            },\n          ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1099,
+      "column": 26,
+      "text": "prev => {\n            const updated = [\n              ...prev,\n              { role: 'tool' as const, content: '⚠ Agent interrupted' },\n            ];\n            // Mark any streaming message as complete\n            const lastAssistantIdx = updated.findLastIndex(\n              m => m.role === 'assistant' && m.isStreaming\n            );\n            if (lastAssistantIdx >= 0) {\n              updated[lastAssistantIdx] = {\n                ...updated[lastAssistantIdx],\n                isStreaming: false,\n              };\n            }\n            return updated;\n          }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1106,
+      "column": 14,
+      "text": "m => m.role === 'assistant' && m.isStreaming"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1130,
+      "column": 26,
+      "text": "prev => {\n            const updated = [...prev];\n            // Remove empty streaming assistant messages at the end\n            while (\n              updated.length > 0 &&\n              updated[updated.length - 1].role === 'assistant' &&\n              updated[updated.length - 1].isStreaming &&\n              !updated[updated.length - 1].content\n            ) {\n              updated.pop();\n            }\n            // Add error as tool message so it's visible in conversation\n            updated.push({ role: 'tool', content: `API Error: ${chunk.error}` });\n            return updated;\n          }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1210,
+      "column": 22,
+      "text": "prev => {\n        const updated = [...prev];\n        // Remove empty streaming assistant messages at the end\n        while (\n          updated.length > 0 &&\n          updated[updated.length - 1].role === 'assistant' &&\n          updated[updated.length - 1].isStreaming &&\n          !updated[updated.length - 1].content\n        ) {\n          updated.pop();\n        }\n        // Add error as tool message so it's visible in conversation\n        updated.push({ role: 'tool', content: `Error: ${errorMessage}` });\n        return updated;\n      }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1231,
+      "column": 43,
+      "text": "async (providerName: string) => {\n    if (!sessionRef.current) return;\n\n    try {\n      setIsLoading(true);\n      await sessionRef.current.switchProvider(providerName);\n      setCurrentProvider(providerName);\n      setShowProviderSelector(false);\n    } catch (err) {\n      const errorMessage =\n        err instanceof Error ? err.message : 'Failed to switch provider';\n      setError(errorMessage);\n    } finally {\n      setIsLoading(false);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1249,
+      "column": 40,
+      "text": "() => {\n    if (historyEntries.length === 0) {\n      return;\n    }\n\n    // Save current input if we're starting navigation\n    if (historyIndex === -1) {\n      setSavedInput(inputValue);\n    }\n\n    const newIndex = historyIndex === -1 ? 0 : Math.min(historyIndex + 1, historyEntries.length - 1);\n    setHistoryIndex(newIndex);\n    setInputValue(historyEntries[newIndex].display);\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1265,
+      "column": 40,
+      "text": "() => {\n    if (historyIndex === -1) return;\n\n    if (historyIndex === 0) {\n      // Return to saved input\n      setHistoryIndex(-1);\n      setInputValue(savedInput);\n    } else {\n      const newIndex = historyIndex - 1;\n      setHistoryIndex(newIndex);\n      setInputValue(historyEntries[newIndex].display);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1280,
+      "column": 39,
+      "text": "() => {\n    setIsSearchMode(true);\n    setSearchQuery('');\n    setSearchResults([]);\n    setSearchResultIndex(0);\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1288,
+      "column": 40,
+      "text": "async (query: string) => {\n    setSearchQuery(query);\n    if (!query.trim()) {\n      setSearchResults([]);\n      return;\n    }\n\n    try {\n      const { persistenceSearchHistory } = await import('@sengac/codelet-napi');\n      const results = persistenceSearchHistory(query, currentProjectRef.current);\n      const entries: HistoryEntry[] = results.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({\n        display: h.display,\n        timestamp: h.timestamp,\n        project: h.project,\n        sessionId: h.sessionId,\n        hasPastedContent: h.hasPastedContent ?? false,\n      }));\n      setSearchResults(entries);\n      setSearchResultIndex(0);\n    } catch {\n      // Search is optional - continue without it\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1298,
+      "column": 50,
+      "text": "(h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({\n        display: h.display,\n        timestamp: h.timestamp,\n        project: h.project,\n        sessionId: h.sessionId,\n        hasPastedContent: h.hasPastedContent ?? false,\n      })"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1313,
+      "column": 41,
+      "text": "() => {\n    if (searchResults.length > 0 && searchResultIndex < searchResults.length) {\n      setInputValue(searchResults[searchResultIndex].display);\n    }\n    setIsSearchMode(false);\n    setSearchQuery('');\n    setSearchResults([]);\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1323,
+      "column": 41,
+      "text": "() => {\n    setIsSearchMode(false);\n    setSearchQuery('');\n    setSearchResults([]);\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1330,
+      "column": 36,
+      "text": "(date: Date): string => {\n    const now = new Date();\n    const diffMs = now.getTime() - date.getTime();\n    const diffMins = Math.floor(diffMs / 60000);\n    const diffHours = Math.floor(diffMs / 3600000);\n    const diffDays = Math.floor(diffMs / 86400000);\n\n    // Format time as HH:MM\n    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });\n\n    if (diffMins < 1) return 'just now';\n    if (diffMins < 60) return `${diffMins}m ago`;\n    if (diffHours < 24) return `${diffHours}h ago`;\n    if (diffDays === 1) return `yesterday ${timeStr}`;\n    if (diffDays < 7) {\n      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });\n      return `${dayName} ${timeStr}`;\n    }\n    // For older sessions, show date and time\n    const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });\n    return `${monthDay} ${timeStr}`;\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1354,
+      "column": 39,
+      "text": "async () => {\n    try {\n      const { persistenceListSessions } = await import('@sengac/codelet-napi');\n      const sessions = persistenceListSessions(currentProjectRef.current);\n\n      // Sort by updatedAt descending (most recent first)\n      const sorted = [...sessions].sort((a: SessionManifest, b: SessionManifest) =>\n        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()\n      );\n\n      setAvailableSessions(sorted);\n      setResumeSessionIndex(0);\n      setIsResumeMode(true);\n    } catch (err) {\n      const errorMessage = err instanceof Error ? err.message : 'Failed to list sessions';\n      setConversation(prev => [\n        ...prev,\n        { role: 'tool', content: `Resume failed: ${errorMessage}` },\n      ]);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1360,
+      "column": 40,
+      "text": "(a: SessionManifest, b: SessionManifest) =>\n        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1369,
+      "column": 22,
+      "text": "prev => [\n        ...prev,\n        { role: 'tool', content: `Resume failed: ${errorMessage}` },\n      ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1377,
+      "column": 41,
+      "text": "async () => {\n    if (availableSessions.length === 0 || resumeSessionIndex >= availableSessions.length) {\n      return;\n    }\n\n    const selectedSession = availableSessions[resumeSessionIndex];\n\n    try {\n      const { persistenceGetSessionMessages, persistenceGetSessionMessageEnvelopes } = await import('@sengac/codelet-napi');\n      const messages = persistenceGetSessionMessages(selectedSession.id);\n\n      // Get FULL envelopes with all content blocks (ToolUse, ToolResult, Text, etc.)\n      const envelopes: string[] = persistenceGetSessionMessageEnvelopes(selectedSession.id);\n\n      // Convert full envelopes to conversation format for UI display\n      // This properly restores tool calls, tool results, thinking, etc.\n      //\n      // CRITICAL: Tool results are stored in separate user envelopes after assistant\n      // messages, but we need to interleave them correctly by matching tool_use_id.\n      const restored: ConversationMessage[] = [];\n\n      // First pass: collect all tool results by their tool_use_id\n      const toolResultsByUseId = new Map<string, { content: string; isError: boolean }>();\n      for (const envelopeJson of envelopes) {\n        try {\n          const envelope = JSON.parse(envelopeJson);\n          const messageType = envelope.type || envelope.message_type || envelope.messageType;\n          const message = envelope.message;\n          if (!message) continue;\n\n          if (messageType === 'user') {\n            const contents = message.content || [];\n            for (const content of contents) {\n              if (content.type === 'tool_result' && content.tool_use_id) {\n                toolResultsByUseId.set(content.tool_use_id, {\n                  content: content.content || '',\n                  isError: content.is_error || false,\n                });\n              }\n            }\n          }\n        } catch {\n          // Skip malformed envelopes in first pass\n        }\n      }\n\n      // Second pass: process envelopes and interleave tool results\n      for (const envelopeJson of envelopes) {\n        try {\n          const envelope = JSON.parse(envelopeJson);\n          const messageType = envelope.type || envelope.message_type || envelope.messageType;\n          const message = envelope.message;\n\n          if (!message) continue;\n\n          if (messageType === 'user') {\n            // User messages - extract text only (tool results handled via interleaving)\n            const contents = message.content || [];\n            for (const content of contents) {\n              if (content.type === 'text' && content.text) {\n                restored.push({ role: 'user', content: `${content.text}`, isStreaming: false });\n              }\n              // Skip tool_result here - they're interleaved with tool_use below\n            }\n          } else if (messageType === 'assistant') {\n            // Assistant messages - extract text, tool use, and thinking\n            // Interleave tool results immediately after their corresponding tool_use\n            const contents = message.content || [];\n            let textContent = '';\n\n            for (const content of contents) {\n              if (content.type === 'text' && content.text) {\n                textContent += content.text;\n              } else if (content.type === 'tool_use') {\n                // Flush accumulated text first\n                if (textContent) {\n                  restored.push({ role: 'assistant', content: textContent, isStreaming: false });\n                  textContent = '';\n                }\n                // Tool call\n                let toolContent = `[Planning to use tool: ${content.name}]`;\n                const input = content.input;\n                if (typeof input === 'object' && input !== null) {\n                  for (const [key, value] of Object.entries(input)) {\n                    const displayValue = typeof value === 'string' ? value : JSON.stringify(value);\n                    toolContent += `\\n  ${key}: ${displayValue}`;\n                  }\n                }\n                restored.push({ role: 'tool', content: toolContent, isStreaming: false });\n\n                // Immediately show the tool result (interleaved)\n                const toolResult = toolResultsByUseId.get(content.id);\n                if (toolResult) {\n                  const preview = toolResult.content.slice(0, 500);\n                  const truncated = toolResult.content.length > 500;\n                  const indentedPreview = preview.split('\\n').map((line: string) => `  ${line}`).join('\\n');\n                  restored.push({\n                    role: 'tool',\n                    content: `[Tool result preview]\\n-------\\n${indentedPreview}${truncated ? '...' : ''}\\n-------`,\n                    isStreaming: false,\n                  });\n                }\n              } else if (content.type === 'thinking' && content.thinking) {\n                // Thinking block (could show or hide based on preference)\n                // For now, skip thinking blocks in restore (like Claude Code does)\n              }\n            }\n\n            // Flush remaining text\n            if (textContent) {\n              restored.push({ role: 'assistant', content: textContent, isStreaming: false });\n            }\n          }\n        } catch {\n          // If envelope parsing fails, fall back to simple format\n          logger.warn('Failed to parse envelope, falling back to simple format');\n        }\n      }\n\n      // If envelope parsing yielded nothing, fall back to simple messages\n      if (restored.length === 0) {\n        for (const m of messages) {\n          restored.push({\n            role: m.role === 'user' ? 'user' : 'assistant',\n            content: m.content,\n            isStreaming: false,\n          });\n        }\n      }\n\n      // NAPI-008: Restore messages to CodeletSession for LLM context using full envelopes\n      // This preserves structured tool_use/tool_result blocks (not just text summaries)\n      // and rebuilds turn boundaries for proper compaction after restore\n      if (sessionRef.current) {\n        sessionRef.current.restoreMessagesFromEnvelopes(envelopes);\n\n        // Switch provider to match the restored session's provider\n        // This ensures API calls use the same provider as the original session\n        if (selectedSession.provider && selectedSession.provider !== sessionRef.current.currentProviderName) {\n          try {\n            await sessionRef.current.switchProvider(selectedSession.provider);\n            setCurrentProvider(selectedSession.provider);\n          } catch (providerErr) {\n            // Provider switch failed - continue with current provider\n            logger.warn(`Failed to switch to session provider ${selectedSession.provider}: ${providerErr instanceof Error ? providerErr.message : String(providerErr)}`);\n          }\n        }\n\n        // Restore token state from persisted session (including cache tokens for TUI-033)\n        // CTX-003: Restore current context, output, cache tokens, and cumulative billing fields\n        if (selectedSession.tokenUsage) {\n          sessionRef.current.restoreTokenState(\n            selectedSession.tokenUsage.currentContextTokens,           // current input context\n            selectedSession.tokenUsage.cumulativeBilledOutput,         // output tokens (use cumulative as we don't store current separately)\n            selectedSession.tokenUsage.cacheReadTokens ?? 0,           // cache read\n            selectedSession.tokenUsage.cacheCreationTokens ?? 0,       // cache creation\n            selectedSession.tokenUsage.cumulativeBilledInput ?? 0,     // cumulative billed input\n            selectedSession.tokenUsage.cumulativeBilledOutput ?? 0     // cumulative billed output\n          );\n        }\n\n        // Update context fill percentage after restoring messages and tokens\n        const contextFillInfo = sessionRef.current.getContextFillInfo();\n        setContextFillPercentage(contextFillInfo.fillPercentage);\n      }\n\n      // Update state - replace current conversation entirely\n      setCurrentSessionId(selectedSession.id);\n      setConversation(restored);\n      setIsResumeMode(false);\n      setAvailableSessions([]);\n      setResumeSessionIndex(0);\n      // Don't rename resumed sessions with their first new message\n      isFirstMessageRef.current = false;\n\n      // Restore token usage from session manifest (including cache tokens)\n      // CTX-003: Use currentContextTokens for display, cumulativeBilledOutput for output\n      if (selectedSession.tokenUsage) {\n        setTokenUsage({\n          inputTokens: selectedSession.tokenUsage.currentContextTokens,\n          outputTokens: selectedSession.tokenUsage.cumulativeBilledOutput,\n          cacheReadInputTokens: selectedSession.tokenUsage.cacheReadTokens,\n          cacheCreationInputTokens: selectedSession.tokenUsage.cacheCreationTokens,\n        });\n      }\n\n      // Build confirmation message with compaction info\n      let confirmationMsg = `Session resumed: \"${selectedSession.name}\" (${selectedSession.messageCount} messages)`;\n      if (selectedSession.compaction) {\n        confirmationMsg += `\\n[Compaction: ${selectedSession.compaction.summary}]`;\n      }\n\n      // Add confirmation message\n      setConversation(prev => [\n        ...prev,\n        { role: 'tool', content: confirmationMsg },\n      ]);\n    } catch (err) {\n      const errorMessage = err instanceof Error ? err.message : 'Failed to restore session';\n      setConversation(prev => [\n        ...prev,\n        { role: 'tool', content: `Resume failed: ${errorMessage}` },\n      ]);\n      setIsResumeMode(false);\n      setAvailableSessions([]);\n      setResumeSessionIndex(0);\n    }\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1472,
+      "column": 66,
+      "text": "(line: string) => `  ${line}`"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1570,
+      "column": 22,
+      "text": "prev => [\n        ...prev,\n        { role: 'tool', content: confirmationMsg },\n      ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1576,
+      "column": 22,
+      "text": "prev => [\n        ...prev,\n        { role: 'tool', content: `Resume failed: ${errorMessage}` },\n      ]"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1587,
+      "column": 41,
+      "text": "() => {\n    setIsResumeMode(false);\n    setAvailableSessions([]);\n    setResumeSessionIndex(0);\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1595,
+      "column": 4,
+      "text": "(input, key) => {\n      // Skip mouse events (handled by VirtualList)\n      if (input.startsWith('[M') || key.mouse) {\n        return;\n      }\n\n      // NAPI-006: Search mode keyboard handling\n      if (isSearchMode) {\n        if (key.escape) {\n          handleSearchCancel();\n          return;\n        }\n        if (key.return) {\n          handleSearchSelect();\n          return;\n        }\n        if (key.upArrow) {\n          setSearchResultIndex(prev => Math.max(0, prev - 1));\n          return;\n        }\n        if (key.downArrow) {\n          setSearchResultIndex(prev => Math.min(searchResults.length - 1, prev + 1));\n          return;\n        }\n        if (key.backspace || key.delete) {\n          void handleSearchInput(searchQuery.slice(0, -1));\n          return;\n        }\n        // Accept printable characters for search query\n        const clean = input\n          .split('')\n          .filter((ch) => {\n            const code = ch.charCodeAt(0);\n            return code >= 32 && code <= 126;\n          })\n          .join('');\n        if (clean) {\n          void handleSearchInput(searchQuery + clean);\n        }\n        return;\n      }\n\n      // NAPI-003: Resume mode keyboard handling\n      if (isResumeMode) {\n        if (key.escape) {\n          handleResumeCancel();\n          return;\n        }\n        if (key.return) {\n          void handleResumeSelect();\n          return;\n        }\n        if (key.upArrow) {\n          setResumeSessionIndex(prev => Math.max(0, prev - 1));\n          return;\n        }\n        if (key.downArrow) {\n          setResumeSessionIndex(prev => Math.min(availableSessions.length - 1, prev + 1));\n          return;\n        }\n        // No text input in resume mode - just navigation\n        return;\n      }\n\n      if (showProviderSelector) {\n        if (key.escape) {\n          setShowProviderSelector(false);\n          return;\n        }\n        if (key.upArrow) {\n          setSelectedProviderIndex(prev =>\n            prev > 0 ? prev - 1 : availableProviders.length - 1\n          );\n          return;\n        }\n        if (key.downArrow) {\n          setSelectedProviderIndex(prev =>\n            prev < availableProviders.length - 1 ? prev + 1 : 0\n          );\n          return;\n        }\n        if (key.return) {\n          void handleSwitchProvider(availableProviders[selectedProviderIndex]);\n          return;\n        }\n        return;\n      }\n\n      // Esc key handling - interrupt if loading, close if not\n      if (key.escape) {\n        if (isLoading && sessionRef.current) {\n          // Interrupt the agent execution\n          sessionRef.current.interrupt();\n        } else {\n          // Close the modal\n          onClose();\n        }\n        return;\n      }\n\n      // Tab to toggle provider selector\n      if (key.tab && availableProviders.length > 1) {\n        setShowProviderSelector(true);\n        const idx = availableProviders.indexOf(currentProvider);\n        setSelectedProviderIndex(idx >= 0 ? idx : 0);\n        return;\n      }\n    }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1612,
+      "column": 31,
+      "text": "prev => Math.max(0, prev - 1)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1616,
+      "column": 31,
+      "text": "prev => Math.min(searchResults.length - 1, prev + 1)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1626,
+      "column": 18,
+      "text": "(ch) => {\n            const code = ch.charCodeAt(0);\n            return code >= 32 && code <= 126;\n          }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1648,
+      "column": 32,
+      "text": "prev => Math.max(0, prev - 1)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1652,
+      "column": 32,
+      "text": "prev => Math.min(availableSessions.length - 1, prev + 1)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1665,
+      "column": 35,
+      "text": "prev =>\n            prev > 0 ? prev - 1 : availableProviders.length - 1"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1671,
+      "column": 35,
+      "text": "prev =>\n            prev < availableProviders.length - 1 ? prev + 1 : 0"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1710,
+      "column": 36,
+      "text": "(): ConversationLine[] => {\n    const maxWidth = terminalWidth - 6; // Account for borders and padding\n    const lines: ConversationLine[] = [];\n\n    conversation.forEach((msg, msgIndex) => {\n      // Add role prefix to first line\n      const prefix =\n        msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? 'AI: ' : '';\n      // Normalize emoji variation selectors for consistent width calculation\n      const normalizedContent = normalizeEmojiWidth(msg.content);\n      const contentLines = normalizedContent.split('\\n');\n\n      contentLines.forEach((lineContent, lineIndex) => {\n        let displayContent =\n          lineIndex === 0 ? `${prefix}${lineContent}` : lineContent;\n        // Add streaming indicator to last line of streaming message\n        const isLastLine = lineIndex === contentLines.length - 1;\n        if (msg.isStreaming && isLastLine) {\n          displayContent += '...';\n        }\n\n        // Wrap long lines manually to fit terminal width (using visual width for Unicode)\n        if (getVisualWidth(displayContent) === 0) {\n          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });\n        } else {\n          // Split into words, keeping whitespace\n          const words = displayContent.split(/(\\s+)/);\n          let currentLine = '';\n          let currentWidth = 0;\n\n          for (const word of words) {\n            const wordWidth = getVisualWidth(word);\n\n            if (wordWidth === 0) continue;\n\n            // If word alone exceeds max width, force break it character by character\n            if (wordWidth > maxWidth) {\n              // Flush current line first\n              if (currentLine) {\n                lines.push({ role: msg.role, content: currentLine, messageIndex: msgIndex });\n                currentLine = '';\n                currentWidth = 0;\n              }\n              // Break long word by visual width\n              let chunk = '';\n              let chunkWidth = 0;\n              for (const char of word) {\n                const charWidth = getVisualWidth(char);\n                if (chunkWidth + charWidth > maxWidth && chunk) {\n                  lines.push({ role: msg.role, content: chunk, messageIndex: msgIndex });\n                  chunk = char;\n                  chunkWidth = charWidth;\n                } else {\n                  chunk += char;\n                  chunkWidth += charWidth;\n                }\n              }\n              if (chunk) {\n                currentLine = chunk;\n                currentWidth = chunkWidth;\n              }\n              continue;\n            }\n\n            // Check if word fits on current line\n            if (currentWidth + wordWidth > maxWidth) {\n              // Flush current line and start new one\n              if (currentLine.trim()) {\n                lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });\n              }\n              // Don't start line with whitespace\n              currentLine = word.trim() ? word : '';\n              currentWidth = word.trim() ? wordWidth : 0;\n            } else {\n              currentLine += word;\n              currentWidth += wordWidth;\n            }\n          }\n\n          // Flush remaining content\n          if (currentLine.trim()) {\n            lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });\n          } else if (lines.length === 0 || lines[lines.length - 1]?.messageIndex !== msgIndex) {\n            // Ensure at least one line per content section\n            lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });\n          }\n        }\n      });\n\n      // Add empty line after each message for spacing (use space to ensure line renders)\n      lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });\n    });\n\n    return lines;\n  }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1714,
+      "column": 25,
+      "text": "(msg, msgIndex) => {\n      // Add role prefix to first line\n      const prefix =\n        msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? 'AI: ' : '';\n      // Normalize emoji variation selectors for consistent width calculation\n      const normalizedContent = normalizeEmojiWidth(msg.content);\n      const contentLines = normalizedContent.split('\\n');\n\n      contentLines.forEach((lineContent, lineIndex) => {\n        let displayContent =\n          lineIndex === 0 ? `${prefix}${lineContent}` : lineContent;\n        // Add streaming indicator to last line of streaming message\n        const isLastLine = lineIndex === contentLines.length - 1;\n        if (msg.isStreaming && isLastLine) {\n          displayContent += '...';\n        }\n\n        // Wrap long lines manually to fit terminal width (using visual width for Unicode)\n        if (getVisualWidth(displayContent) === 0) {\n          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });\n        } else {\n          // Split into words, keeping whitespace\n          const words = displayContent.split(/(\\s+)/);\n          let currentLine = '';\n          let currentWidth = 0;\n\n          for (const word of words) {\n            const wordWidth = getVisualWidth(word);\n\n            if (wordWidth === 0) continue;\n\n            // If word alone exceeds max width, force break it character by character\n            if (wordWidth > maxWidth) {\n              // Flush current line first\n              if (currentLine) {\n                lines.push({ role: msg.role, content: currentLine, messageIndex: msgIndex });\n                currentLine = '';\n                currentWidth = 0;\n              }\n              // Break long word by visual width\n              let chunk = '';\n              let chunkWidth = 0;\n              for (const char of word) {\n                const charWidth = getVisualWidth(char);\n                if (chunkWidth + charWidth > maxWidth && chunk) {\n                  lines.push({ role: msg.role, content: chunk, messageIndex: msgIndex });\n                  chunk = char;\n                  chunkWidth = charWidth;\n                } else {\n                  chunk += char;\n                  chunkWidth += charWidth;\n                }\n              }\n              if (chunk) {\n                currentLine = chunk;\n                currentWidth = chunkWidth;\n              }\n              continue;\n            }\n\n            // Check if word fits on current line\n            if (currentWidth + wordWidth > maxWidth) {\n              // Flush current line and start new one\n              if (currentLine.trim()) {\n                lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });\n              }\n              // Don't start line with whitespace\n              currentLine = word.trim() ? word : '';\n              currentWidth = word.trim() ? wordWidth : 0;\n            } else {\n              currentLine += word;\n              currentWidth += wordWidth;\n            }\n          }\n\n          // Flush remaining content\n          if (currentLine.trim()) {\n            lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });\n          } else if (lines.length === 0 || lines[lines.length - 1]?.messageIndex !== msgIndex) {\n            // Ensure at least one line per content section\n            lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });\n          }\n        }\n      });\n\n      // Add empty line after each message for spacing (use space to ensure line renders)\n      lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });\n    }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1722,
+      "column": 27,
+      "text": "(lineContent, lineIndex) => {\n        let displayContent =\n          lineIndex === 0 ? `${prefix}${lineContent}` : lineContent;\n        // Add streaming indicator to last line of streaming message\n        const isLastLine = lineIndex === contentLines.length - 1;\n        if (msg.isStreaming && isLastLine) {\n          displayContent += '...';\n        }\n\n        // Wrap long lines manually to fit terminal width (using visual width for Unicode)\n        if (getVisualWidth(displayContent) === 0) {\n          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });\n        } else {\n          // Split into words, keeping whitespace\n          const words = displayContent.split(/(\\s+)/);\n          let currentLine = '';\n          let currentWidth = 0;\n\n          for (const word of words) {\n            const wordWidth = getVisualWidth(word);\n\n            if (wordWidth === 0) continue;\n\n            // If word alone exceeds max width, force break it character by character\n            if (wordWidth > maxWidth) {\n              // Flush current line first\n              if (currentLine) {\n                lines.push({ role: msg.role, content: currentLine, messageIndex: msgIndex });\n                currentLine = '';\n                currentWidth = 0;\n              }\n              // Break long word by visual width\n              let chunk = '';\n              let chunkWidth = 0;\n              for (const char of word) {\n                const charWidth = getVisualWidth(char);\n                if (chunkWidth + charWidth > maxWidth && chunk) {\n                  lines.push({ role: msg.role, content: chunk, messageIndex: msgIndex });\n                  chunk = char;\n                  chunkWidth = charWidth;\n                } else {\n                  chunk += char;\n                  chunkWidth += charWidth;\n                }\n              }\n              if (chunk) {\n                currentLine = chunk;\n                currentWidth = chunkWidth;\n              }\n              continue;\n            }\n\n            // Check if word fits on current line\n            if (currentWidth + wordWidth > maxWidth) {\n              // Flush current line and start new one\n              if (currentLine.trim()) {\n                lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });\n              }\n              // Don't start line with whitespace\n              currentLine = word.trim() ? word : '';\n              currentWidth = word.trim() ? wordWidth : 0;\n            } else {\n              currentLine += word;\n              currentWidth += wordWidth;\n            }\n          }\n\n          // Flush remaining content\n          if (currentLine.trim()) {\n            lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });\n          } else if (lines.length === 0 || lines[lines.length - 1]?.messageIndex !== msgIndex) {\n            // Ensure at least one line per content section\n            lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });\n          }\n        }\n      }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1881,
+      "column": 36,
+      "text": "(provider, idx) => (\n              <Box key={provider}>\n                <Text\n                  backgroundColor={\n                    idx === selectedProviderIndex ? 'cyan' : undefined\n                  }\n                  color={idx === selectedProviderIndex ? 'black' : 'white'}\n                >\n                  {idx === selectedProviderIndex ? '> ' : '  '}\n                  {provider}\n                  {provider === currentProvider ? ' (current)' : ''}\n                </Text>\n              </Box>\n            )"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1936,
+      "column": 44,
+      "text": "(entry, idx) => (\n              <Box key={`${entry.sessionId}-${entry.timestamp}`}>\n                <Text\n                  backgroundColor={idx === searchResultIndex ? 'magenta' : undefined}\n                  color={idx === searchResultIndex ? 'black' : 'white'}\n                >\n                  {idx === searchResultIndex ? '> ' : '  '}\n                  {entry.display.slice(0, terminalWidth - 10)}\n                </Text>\n              </Box>\n            )"
+    },
+    {
+      "type": "arrow_function",
+      "line": 1987,
+      "column": 48,
+      "text": "(session, idx) => {\n              const isSelected = idx === resumeSessionIndex;\n              const updatedAt = new Date(session.updatedAt);\n              const timeAgo = formatTimeAgo(updatedAt);\n              const provider = session.provider || 'unknown';\n              return (\n                <Box key={session.id} flexDirection=\"column\">\n                  <Text\n                    backgroundColor={isSelected ? 'blue' : undefined}\n                    color={isSelected ? 'black' : 'white'}\n                  >\n                    {isSelected ? '> ' : '  '}\n                    {session.name}\n                  </Text>\n                  <Text\n                    backgroundColor={isSelected ? 'blue' : undefined}\n                    color={isSelected ? 'black' : 'gray'}\n                    dimColor={!isSelected}\n                  >\n                    {'    '}\n                    {session.messageCount} messages | {provider} | {timeAgo}\n                  </Text>\n                </Box>\n              );\n            })}"
+    },
+    {
+      "type": "method_signature",
+      "name": "getContextFillColor",
+      "line": 2072,
+      "column": 25,
+      "text": "getContextFillColor(contextFillPercentage)"
+    },
+    {
+      "type": "arrow_function",
+      "line": 2087,
+      "column": 24,
+      "text": "(line) => {\n              const color =\n                line.role === 'user'\n                  ? 'green'\n                  : line.role === 'tool'\n                    ? 'yellow'\n                    : 'white';\n              return (\n                <Box flexGrow={1}>\n                  <Text color={color}>{line.content}</Text>\n                </Box>\n              );\n            }"
+    },
+    {
+      "type": "arrow_function",
+      "line": 2100,
+      "column": 26,
+      "text": "(_line, index) => `line-${index}`}\n            emptyMessage=\"Type a message to start...\""
+    }
+  ]
+}

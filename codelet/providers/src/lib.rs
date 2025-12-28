@@ -11,6 +11,7 @@ mod credentials;
 pub mod error;
 pub mod gemini;
 mod manager;
+pub mod models;
 pub mod openai;
 
 pub use adapter::{

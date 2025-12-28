@@ -20,9 +20,23 @@ use crate::session::Session;
 use anyhow::Result;
 use repl_loop::repl_loop;
 
-pub async fn run_interactive_mode(provider_name: Option<&str>) -> Result<()> {
-    // Initialize session with persistent context (CLI-008)
-    let mut session = Session::new(provider_name)?;
+/// MODEL-001: Interactive mode now accepts optional model string (provider/model-id format)
+pub async fn run_interactive_mode(
+    provider_name: Option<&str>,
+    model_string: Option<&str>,
+) -> Result<()> {
+    use codelet_providers::ProviderManager;
+
+    // MODEL-001: Initialize session with model support if model is specified
+    let mut session = if let Some(model) = model_string {
+        // Use async model support for dynamic model selection
+        let mut mgr = ProviderManager::with_model_support().await?;
+        mgr.select_model(model)?;
+        Session::from_provider_manager(mgr)
+    } else {
+        // Initialize session with persistent context (CLI-008)
+        Session::new(provider_name)?
+    };
 
     // CLI-016: Inject context reminders (CLAUDE.md discovery + environment info)
     session.inject_context_reminders();

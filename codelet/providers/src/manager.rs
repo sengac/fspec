@@ -2,10 +2,13 @@
 //!
 //! Handles credential detection and provider instantiation based on:
 //! - Available credentials (environment variables and auth files)
-//! - CLI arguments (--provider flag)
+//! - CLI arguments (--provider and --model flags)
 //! - Priority order: Claude API > Claude OAuth > Gemini > Codex > OpenAI
+//!
+//! MODEL-001: Integrates with ModelCache and ModelRegistry for dynamic model selection
 
 use super::credentials::ProviderCredentials;
+use super::models::{ModelCache, ModelInfo, ModelRegistry};
 use super::{
     claude, codex, gemini, openai, ClaudeProvider, CodexProvider, GeminiProvider, OpenAIProvider,
     ProviderError,
@@ -51,10 +54,28 @@ impl ProviderType {
 }
 
 /// Provider Manager for dynamic provider selection
-#[derive(Debug)]
+///
+/// MODEL-001: Now includes optional ModelRegistry for dynamic model selection
 pub struct ProviderManager {
     credentials: ProviderCredentials,
     current_provider: ProviderType,
+    /// MODEL-001: Optional model registry for dynamic model selection
+    model_registry: Option<ModelRegistry>,
+    /// MODEL-001: Selected model string (provider/model-id format)
+    selected_model: Option<String>,
+}
+
+impl std::fmt::Debug for ProviderManager {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ProviderManager")
+            .field("current_provider", &self.current_provider)
+            .field("selected_model", &self.selected_model)
+            .field(
+                "has_model_registry",
+                &self.model_registry.is_some(),
+            )
+            .finish()
+    }
 }
 
 impl ProviderManager {
@@ -77,6 +98,8 @@ impl ProviderManager {
         Ok(Self {
             credentials,
             current_provider,
+            model_registry: None,
+            selected_model: None,
         })
     }
 
@@ -108,7 +131,151 @@ impl ProviderManager {
         Ok(Self {
             credentials,
             current_provider: requested_provider,
+            model_registry: None,
+            selected_model: None,
         })
+    }
+
+    /// MODEL-001: Create ProviderManager with model registry support
+    ///
+    /// This async constructor initializes the model cache and registry,
+    /// enabling dynamic model selection via `--model provider/model-id`.
+    pub async fn with_model_support() -> Result<Self, ProviderError> {
+        let credentials = ProviderCredentials::detect();
+
+        if !credentials.has_any() {
+            return Err(ProviderError::auth(
+                "manager",
+                "No provider credentials found. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, \
+                 GOOGLE_GENERATIVE_AI_API_KEY, or run 'codex auth login' to authenticate.",
+            ));
+        }
+
+        let current_provider = Self::detect_default_provider(&credentials)?;
+
+        // Initialize model cache and registry
+        let cache = ModelCache::new();
+        let registry = ModelRegistry::new(&cache).await?;
+
+        Ok(Self {
+            credentials,
+            current_provider,
+            model_registry: Some(registry),
+            selected_model: None,
+        })
+    }
+
+    /// MODEL-001: Select a model using provider/model-id format
+    ///
+    /// Parses the model string, validates the provider exists and has credentials,
+    /// validates the model exists in the registry, and ensures tool_call capability.
+    ///
+    /// # Arguments
+    /// * `model_string` - Model in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+    ///
+    /// # Returns
+    /// The validated ModelInfo for the selected model
+    pub fn select_model(&mut self, model_string: &str) -> Result<&ModelInfo, ProviderError> {
+        let registry = self.model_registry.as_ref().ok_or_else(|| {
+            ProviderError::config(
+                "manager",
+                "Model registry not initialized. Use with_model_support() for model selection.",
+            )
+        })?;
+
+        // Parse the model string into provider/model
+        let (provider_id, model_id) = registry.parse_model_string(model_string)?;
+
+        // Map models.dev provider ID to our ProviderType
+        let provider_type = Self::map_provider_id_to_type(&provider_id)?;
+
+        // Validate we have credentials for this provider
+        let has_credentials = match provider_type {
+            ProviderType::Claude => self.credentials.has_claude(),
+            ProviderType::OpenAI => self.credentials.has_openai(),
+            ProviderType::Codex => self.credentials.has_codex(),
+            ProviderType::Gemini => self.credentials.has_gemini(),
+        };
+
+        if !has_credentials {
+            return Err(ProviderError::auth(
+                &provider_id,
+                format!(
+                    "Provider '{}' requires credentials. Available providers: {}",
+                    provider_id,
+                    self.credentials.available_providers().join(", ")
+                ),
+            ));
+        }
+
+        // Validate model exists and has tool_call capability
+        let model_info = registry.validate_model_for_use(&provider_id, &model_id)?;
+
+        // Update state
+        self.current_provider = provider_type;
+        self.selected_model = Some(model_string.to_string());
+
+        Ok(model_info)
+    }
+
+    /// MODEL-001: Get the selected model ID (the actual API model ID)
+    ///
+    /// Returns the model ID to use for API calls. If a model was explicitly selected,
+    /// returns that model's ID from the registry. Otherwise returns None (use default).
+    pub fn selected_model_id(&self) -> Option<String> {
+        let model_string = self.selected_model.as_ref()?;
+        let registry = self.model_registry.as_ref()?;
+
+        // Parse and get the model info
+        if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
+            if let Ok(model_info) = registry.get_model(&provider_id, &model_id) {
+                return Some(model_info.id.clone());
+            }
+        }
+
+        None
+    }
+
+    /// MODEL-001: Get model info for the selected model
+    pub fn selected_model_info(&self) -> Option<&ModelInfo> {
+        let model_string = self.selected_model.as_ref()?;
+        let registry = self.model_registry.as_ref()?;
+
+        if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
+            registry.get_model(&provider_id, &model_id).ok()
+        } else {
+            None
+        }
+    }
+
+    /// MODEL-001: Get the original model string (provider/model-id format)
+    ///
+    /// Returns the model string as originally passed to select_model(),
+    /// e.g., "anthropic/claude-sonnet-4".
+    pub fn selected_model_string(&self) -> Option<&str> {
+        self.selected_model.as_deref()
+    }
+
+    /// MODEL-001: Get the model registry (for CLI commands like `codelet models`)
+    pub fn model_registry(&self) -> Option<&ModelRegistry> {
+        self.model_registry.as_ref()
+    }
+
+    /// MODEL-001: Map models.dev provider ID to our ProviderType
+    fn map_provider_id_to_type(provider_id: &str) -> Result<ProviderType, ProviderError> {
+        match provider_id {
+            "anthropic" => Ok(ProviderType::Claude),
+            "openai" => Ok(ProviderType::OpenAI),
+            "google" => Ok(ProviderType::Gemini),
+            // Codex uses OAuth flow, not a models.dev provider
+            _ => Err(ProviderError::config(
+                "manager",
+                format!(
+                    "Provider '{}' is not supported. Supported providers: anthropic, openai, google",
+                    provider_id
+                ),
+            )),
+        }
     }
 
     /// Detect default provider based on priority
@@ -141,9 +308,11 @@ impl ProviderManager {
     }
 
     /// Get Claude provider (if selected)
+    ///
+    /// MODEL-001: Now uses selected_model_id() for dynamic model selection.
     pub fn get_claude(&self) -> Result<ClaudeProvider, ProviderError> {
         if self.current_provider == ProviderType::Claude {
-            ClaudeProvider::new()
+            ClaudeProvider::new_with_model(self.selected_model_id().as_deref())
         } else {
             Err(ProviderError::config(
                 "manager",
@@ -153,9 +322,20 @@ impl ProviderManager {
     }
 
     /// Get OpenAI provider (if selected)
+    ///
+    /// MODEL-001: Now uses selected_model_id() for dynamic model selection.
     pub fn get_openai(&self) -> Result<OpenAIProvider, ProviderError> {
         if self.current_provider == ProviderType::OpenAI {
-            OpenAIProvider::new()
+            // OpenAI's new() already handles env var detection
+            // For MODEL-001, we need to create with explicit model if selected
+            if let Some(model_id) = self.selected_model_id() {
+                let api_key = std::env::var("OPENAI_API_KEY").map_err(|_| {
+                    ProviderError::auth("openai", "OPENAI_API_KEY not set")
+                })?;
+                OpenAIProvider::from_api_key(&api_key, &model_id)
+            } else {
+                OpenAIProvider::new()
+            }
         } else {
             Err(ProviderError::config(
                 "manager",
@@ -177,9 +357,20 @@ impl ProviderManager {
     }
 
     /// Get Gemini provider (if selected)
+    ///
+    /// MODEL-001: Now uses selected_model_id() for dynamic model selection.
     pub fn get_gemini(&self) -> Result<GeminiProvider, ProviderError> {
         if self.current_provider == ProviderType::Gemini {
-            GeminiProvider::new()
+            // Gemini's new() already handles env var detection
+            // For MODEL-001, we need to create with explicit model if selected
+            if let Some(model_id) = self.selected_model_id() {
+                let api_key = std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").map_err(|_| {
+                    ProviderError::auth("gemini", "GOOGLE_GENERATIVE_AI_API_KEY not set")
+                })?;
+                GeminiProvider::from_api_key(&api_key, &model_id)
+            } else {
+                GeminiProvider::new()
+            }
         } else {
             Err(ProviderError::config(
                 "manager",
