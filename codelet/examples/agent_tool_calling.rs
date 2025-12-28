@@ -15,7 +15,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Create provider and agent
     let provider = ClaudeProvider::new()?;
-    let rig_agent = provider.create_rig_agent(None);
+    let rig_agent = provider.create_rig_agent(None, None);
     let agent = RigAgent::with_default_depth(rig_agent);
 
     println!("✅ Agent created with OAuth authentication");

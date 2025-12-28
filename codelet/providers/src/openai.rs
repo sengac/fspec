@@ -108,6 +108,7 @@ impl OpenAIProvider {
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
+    /// * `_thinking_config` - Optional thinking configuration JSON (TOOL-010, currently unused for OpenAI)
     ///
     /// # WEB-001 Note
     /// WebSearchTool is now included as a rig tool that provides web search capabilities
@@ -117,6 +118,7 @@ impl OpenAIProvider {
     pub fn create_rig_agent(
         &self,
         preamble: Option<&str>,
+        _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
             AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,

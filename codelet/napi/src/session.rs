@@ -574,6 +574,80 @@ impl CodeletSession {
             }
         }
 
+        // NAPI-009: Detect and remove orphaned tool_use blocks (those without matching tool_result)
+        // This can happen when a session is interrupted while waiting for tool execution
+        let mut tool_use_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
+        let mut tool_result_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
+
+        // Collect all tool_use and tool_result IDs
+        for msg in &session.messages {
+            match msg {
+                RigMessage::Assistant { content, .. } => {
+                    for c in content.iter() {
+                        if let AssistantContent::ToolCall(tc) = c {
+                            tool_use_ids.insert(tc.id.clone());
+                        }
+                    }
+                }
+                RigMessage::User { content } => {
+                    for c in content.iter() {
+                        if let UserContent::ToolResult(tr) = c {
+                            tool_result_ids.insert(tr.id.clone());
+                        }
+                    }
+                }
+            }
+        }
+
+        // Find orphaned tool_use IDs (no matching tool_result)
+        let orphaned_ids: std::collections::HashSet<_> = tool_use_ids
+            .difference(&tool_result_ids)
+            .cloned()
+            .collect();
+
+        if !orphaned_ids.is_empty() {
+            tracing::warn!(
+                "restore_messages_from_envelopes: found {} orphaned tool_use blocks without tool_result: {:?}",
+                orphaned_ids.len(),
+                orphaned_ids
+            );
+
+            // Remove orphaned tool_use blocks from messages
+            session.messages.retain_mut(|msg| {
+                if let RigMessage::Assistant { content, .. } = msg {
+                    // Filter out orphaned tool calls
+                    let filtered: Vec<AssistantContent> = content
+                        .iter()
+                        .filter(|c| {
+                            if let AssistantContent::ToolCall(tc) = c {
+                                !orphaned_ids.contains(&tc.id)
+                            } else {
+                                true
+                            }
+                        })
+                        .cloned()
+                        .collect();
+
+                    if filtered.is_empty() {
+                        // Remove the entire message if no content left
+                        return false;
+                    }
+
+                    if filtered.len() != content.iter().count() {
+                        // Update the message with filtered content
+                        *content = OneOrMany::many(filtered)
+                            .unwrap_or_else(|_| OneOrMany::one(AssistantContent::text("")));
+                    }
+                }
+                true
+            });
+
+            tracing::info!(
+                "restore_messages_from_envelopes: removed orphaned tool_use blocks, {} messages remaining",
+                session.messages.len()
+            );
+        }
+
         // Rebuild turns from restored messages for compaction support
         session.turns = convert_messages_to_turns(&session.messages);
 
@@ -682,10 +756,20 @@ impl CodeletSession {
         thinking_config: Option<String>,
         #[napi(ts_arg_type = "(chunk: StreamChunk) => void")] callback: StreamCallback,
     ) -> Result<()> {
-        // TOOL-010: Log thinking config if provided (future: pass to agent)
-        if let Some(ref config) = thinking_config {
-            tracing::debug!("Thinking config received: {}", config);
-        }
+        // TOOL-010: Parse thinking config JSON if provided
+        let thinking_config_value: Option<serde_json::Value> = thinking_config.as_ref().and_then(|config_str| {
+            match serde_json::from_str(config_str) {
+                Ok(value) => {
+                    tracing::debug!("Thinking config parsed: {:?}", value);
+                    Some(value)
+                }
+                Err(e) => {
+                    tracing::warn!("Failed to parse thinking config: {} - config: {}", e, config_str);
+                    None
+                }
+            }
+        });
+
         // Reset interrupt flag at start of each prompt
         self.is_interrupted.store(false, Release);
 
@@ -709,7 +793,8 @@ impl CodeletSession {
                     .provider_manager_mut()
                     .get_claude()
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
-                let rig_agent = provider.create_rig_agent(None);
+                // TOOL-010: Pass thinking config to Claude provider
+                let rig_agent = provider.create_rig_agent(None, thinking_config_value.clone());
                 let agent = RigAgent::with_default_depth(rig_agent);
                 run_agent_stream(
                     agent,
@@ -726,7 +811,8 @@ impl CodeletSession {
                     .provider_manager_mut()
                     .get_openai()
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
-                let rig_agent = provider.create_rig_agent(None);
+                // TOOL-010: Pass thinking config (unused for OpenAI currently)
+                let rig_agent = provider.create_rig_agent(None, thinking_config_value.clone());
                 let agent = RigAgent::with_default_depth(rig_agent);
                 run_agent_stream(
                     agent,
@@ -743,7 +829,8 @@ impl CodeletSession {
                     .provider_manager_mut()
                     .get_gemini()
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
-                let rig_agent = provider.create_rig_agent(None);
+                // TOOL-010: Pass thinking config (unused for Gemini currently)
+                let rig_agent = provider.create_rig_agent(None, thinking_config_value.clone());
                 let agent = RigAgent::with_default_depth(rig_agent);
                 run_agent_stream(
                     agent,
@@ -760,7 +847,8 @@ impl CodeletSession {
                     .provider_manager_mut()
                     .get_codex()
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
-                let rig_agent = provider.create_rig_agent(None);
+                // TOOL-010: Pass thinking config (unused for Codex currently)
+                let rig_agent = provider.create_rig_agent(None, thinking_config_value);
                 let agent = RigAgent::with_default_depth(rig_agent);
                 run_agent_stream(
                     agent,

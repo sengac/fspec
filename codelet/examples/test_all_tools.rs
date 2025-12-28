@@ -22,7 +22,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 2. Create RigAgent
     println!("2️⃣  Creating RigAgent...");
-    let rig_agent = provider.create_rig_agent(None);
+    let rig_agent = provider.create_rig_agent(None, None);
     let agent = RigAgent::with_default_depth(rig_agent);
     println!("   ✅ Agent created with max_depth: {}", agent.max_depth());
     println!();
