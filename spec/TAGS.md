@@ -141,6 +141,7 @@ Tags that categorize features by functional area.
 | `@metrics` | Metrics and measurements |
 | `@metrics-estimation` | Metrics and estimation tracking |
 | `@migration` | Migration & Data Transformation |
+| `@model-selection` | Model selection and provider management features |
 | `@modification` | Feature Modification Operations |
 | `@multi-agent-support` | Features related to supporting multiple AI coding agents beyond Claude |
 | `@navigation` | Navigation and keyboard interaction features in the TUI |
@@ -249,6 +250,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@browser-integration` | Features requiring browser launcher integration |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
+| `@cache` | Caching and persistence features |
 | `@checkpoints` | Git checkpoint and state restoration features |
 | `@ci` | Continuous integration and build automation |
 | `@cleanup` | Cleanup and resource management features |
@@ -757,7 +759,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-27T03:51:13.071Z_
+_Last updated: 2025-12-28T00:33:40.314Z_
 
 **Update Command**: `fspec tag-stats`
 

@@ -67,6 +67,24 @@ impl Session {
         })
     }
 
+    /// MODEL-001: Create a new session from an existing ProviderManager
+    ///
+    /// This allows creating a session with pre-configured model selection.
+    ///
+    /// # Arguments
+    /// * `provider_manager` - Pre-configured ProviderManager
+    ///
+    /// # Returns
+    /// * `Session` - New session with the given provider manager
+    pub fn from_provider_manager(provider_manager: ProviderManager) -> Self {
+        Self {
+            provider_manager,
+            messages: Vec::new(),
+            turns: Vec::new(),
+            token_tracker: TokenTracker::default(),
+        }
+    }
+
     /// Get current provider name
     pub fn current_provider_name(&self) -> &str {
         self.provider_manager.current_provider_name()

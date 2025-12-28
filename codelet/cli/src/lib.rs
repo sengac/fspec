@@ -70,7 +70,9 @@ pub async fn run() -> Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Some(Commands::Exec { prompt }) => run_agent(&prompt, cli.provider.as_deref()).await,
+        Some(Commands::Exec { prompt }) => {
+            run_agent(&prompt, cli.provider.as_deref(), cli.model.as_deref()).await
+        }
         Some(Commands::Completion { shell }) => {
             generate_completions(shell);
             Ok(())
@@ -90,21 +92,33 @@ pub async fn run() -> Result<()> {
         }
         None => {
             if let Some(prompt) = cli.prompt {
-                run_agent(&prompt, cli.provider.as_deref()).await
+                run_agent(&prompt, cli.provider.as_deref(), cli.model.as_deref()).await
             } else {
                 // Run interactive TUI mode
-                interactive::run_interactive_mode(cli.provider.as_deref()).await
+                interactive::run_interactive_mode(cli.provider.as_deref(), cli.model.as_deref())
+                    .await
             }
         }
     }
 }
 
 /// Run the agent with a prompt (with streaming)
-async fn run_agent(prompt: &str, provider_name: Option<&str>) -> Result<()> {
+///
+/// MODEL-001: Now accepts optional model string (provider/model-id format)
+async fn run_agent(
+    prompt: &str,
+    provider_name: Option<&str>,
+    model_string: Option<&str>,
+) -> Result<()> {
     use codelet_providers::ProviderManager;
 
-    // Use ProviderManager to select provider
-    let manager = if let Some(name) = provider_name {
+    // MODEL-001: Use ProviderManager with model support if model is specified
+    let manager = if let Some(model) = model_string {
+        // Use async model support for dynamic model selection
+        let mut mgr = ProviderManager::with_model_support().await?;
+        mgr.select_model(model)?;
+        mgr
+    } else if let Some(name) = provider_name {
         ProviderManager::with_provider(name)?
     } else {
         ProviderManager::new()?

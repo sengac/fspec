@@ -118,6 +118,10 @@ vi.mock('@sengac/codelet-napi', () => ({
     return entries;
   }),
   persistenceSetDataDirectory: vi.fn(),
+  // TUI-034: Model selection mocks
+  modelsSetCacheDirectory: vi.fn(),
+  modelsListAll: vi.fn(() => Promise.resolve([])),
+  setRustLogCallback: vi.fn(),
   persistenceCreateSessionWithProvider: vi.fn().mockImplementation((name: string, project: string, provider: string) => ({
     id: 'mock-session-id',
     name,

@@ -46,6 +46,8 @@ dotenvy.workspace = true
 regex.workspace = true
 uuid.workspace = true
 chrono.workspace = true
+dirs = "5"
+lazy_static = "1.4"
 
 [dev-dependencies]
 tempfile.workspace = true

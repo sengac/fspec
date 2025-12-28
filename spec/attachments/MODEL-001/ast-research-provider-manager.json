@@ -1,0 +1,116 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "from_str",
+      "line": 27,
+      "column": 4,
+      "text": "fn from_str(name: &str) -> Result<Self, ProviderError> {\n        match name.to_lowercase().as_str() {\n            \"claude\" => Ok(ProviderType::Claude),\n            \"openai\" => Ok(ProviderType::OpenAI),\n            \"codex\" => Ok(ProviderType::Codex),\n            \"gemini\" => Ok(ProviderType::Gemini),\n            _ => Err(ProviderError::config(\n                \"manager\",\n                format!(\"Unknown provider: {name}\"),\n            )),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "as_str",
+      "line": 43,
+      "column": 4,
+      "text": "pub fn as_str(self) -> &'static str {\n        match self {\n            ProviderType::Claude => \"claude\",\n            ProviderType::OpenAI => \"openai\",\n            ProviderType::Codex => \"codex\",\n            ProviderType::Gemini => \"gemini\",\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 64,
+      "column": 4,
+      "text": "pub fn new() -> Result<Self, ProviderError> {\n        let credentials = ProviderCredentials::detect();\n\n        if !credentials.has_any() {\n            return Err(ProviderError::auth(\n                \"manager\",\n                \"No provider credentials found. Set ANTHROPIC_API_KEY, OPENAI_API_KEY, \\\n                 GOOGLE_GENERATIVE_AI_API_KEY, or run 'codex auth login' to authenticate.\",\n            ));\n        }\n\n        let current_provider = Self::detect_default_provider(&credentials)?;\n\n        Ok(Self {\n            credentials,\n            current_provider,\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "with_provider",
+      "line": 84,
+      "column": 4,
+      "text": "pub fn with_provider(provider_name: &str) -> Result<Self, ProviderError> {\n        let credentials = ProviderCredentials::detect();\n        let requested_provider = ProviderType::from_str(provider_name)?;\n\n        // Validate requested provider has credentials\n        let has_credentials = match requested_provider {\n            ProviderType::Claude => credentials.has_claude(),\n            ProviderType::OpenAI => credentials.has_openai(),\n            ProviderType::Codex => credentials.has_codex(),\n            ProviderType::Gemini => credentials.has_gemini(),\n        };\n\n        if !has_credentials {\n            let available = credentials.available_providers();\n            return Err(ProviderError::auth(\n                provider_name,\n                format!(\n                    \"Provider {} not available. Available providers: {}\",\n                    provider_name,\n                    available.join(\", \")\n                ),\n            ));\n        }\n\n        Ok(Self {\n            credentials,\n            current_provider: requested_provider,\n        })\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "detect_default_provider",
+      "line": 115,
+      "column": 4,
+      "text": "fn detect_default_provider(\n        credentials: &ProviderCredentials,\n    ) -> Result<ProviderType, ProviderError> {\n        // Priority: Claude > Gemini > Codex > OpenAI\n        if credentials.has_claude() {\n            return Ok(ProviderType::Claude);\n        }\n        if credentials.has_gemini() {\n            return Ok(ProviderType::Gemini);\n        }\n        if credentials.has_codex() {\n            return Ok(ProviderType::Codex);\n        }\n        if credentials.has_openai() {\n            return Ok(ProviderType::OpenAI);\n        }\n\n        Err(ProviderError::auth(\n            \"manager\",\n            \"No provider credentials available\",\n        ))\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "current_provider_name",
+      "line": 139,
+      "column": 4,
+      "text": "pub fn current_provider_name(&self) -> &str {\n        self.current_provider.as_str()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_claude",
+      "line": 144,
+      "column": 4,
+      "text": "pub fn get_claude(&self) -> Result<ClaudeProvider, ProviderError> {\n        if self.current_provider == ProviderType::Claude {\n            ClaudeProvider::new()\n        } else {\n            Err(ProviderError::config(\n                \"manager\",\n                \"Current provider is not Claude\",\n            ))\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_openai",
+      "line": 156,
+      "column": 4,
+      "text": "pub fn get_openai(&self) -> Result<OpenAIProvider, ProviderError> {\n        if self.current_provider == ProviderType::OpenAI {\n            OpenAIProvider::new()\n        } else {\n            Err(ProviderError::config(\n                \"manager\",\n                \"Current provider is not OpenAI\",\n            ))\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_codex",
+      "line": 168,
+      "column": 4,
+      "text": "pub fn get_codex(&self) -> Result<CodexProvider, ProviderError> {\n        if self.current_provider == ProviderType::Codex {\n            CodexProvider::new()\n        } else {\n            Err(ProviderError::config(\n                \"manager\",\n                \"Current provider is not Codex\",\n            ))\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_gemini",
+      "line": 180,
+      "column": 4,
+      "text": "pub fn get_gemini(&self) -> Result<GeminiProvider, ProviderError> {\n        if self.current_provider == ProviderType::Gemini {\n            GeminiProvider::new()\n        } else {\n            Err(ProviderError::config(\n                \"manager\",\n                \"Current provider is not Gemini\",\n            ))\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "has_any_provider",
+      "line": 192,
+      "column": 4,
+      "text": "pub fn has_any_provider(&self) -> bool {\n        self.credentials.has_any()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "list_available_providers",
+      "line": 197,
+      "column": 4,
+      "text": "pub fn list_available_providers(&self) -> Vec<String> {\n        let mut providers = Vec::new();\n        if self.credentials.has_claude() {\n            providers.push(\"Claude (/claude)\".to_string());\n        }\n        if self.credentials.has_openai() {\n            providers.push(\"OpenAI (/openai)\".to_string());\n        }\n        if self.credentials.has_gemini() {\n            providers.push(\"Gemini (/gemini)\".to_string());\n        }\n        if self.credentials.has_codex() {\n            providers.push(\"Codex (/codex)\".to_string());\n        }\n        providers\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "switch_provider",
+      "line": 215,
+      "column": 4,
+      "text": "pub fn switch_provider(&mut self, provider_name: &str) -> Result<(), ProviderError> {\n        let requested_provider = ProviderType::from_str(provider_name)?;\n\n        // Validate requested provider has credentials\n        let has_credentials = match requested_provider {\n            ProviderType::Claude => self.credentials.has_claude(),\n            ProviderType::OpenAI => self.credentials.has_openai(),\n            ProviderType::Codex => self.credentials.has_codex(),\n            ProviderType::Gemini => self.credentials.has_gemini(),\n        };\n\n        if !has_credentials {\n            return Err(ProviderError::auth(\n                provider_name,\n                format!(\"Provider {provider_name} not available. No credentials found.\"),\n            ));\n        }\n\n        self.current_provider = requested_provider;\n        Ok(())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "get_prompt_prefix",
+      "line": 238,
+      "column": 4,
+      "text": "pub fn get_prompt_prefix(&self) -> String {\n        format!(\"[{}] > \", self.current_provider.as_str())\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "context_window",
+      "line": 246,
+      "column": 4,
+      "text": "pub fn context_window(&self) -> usize {\n        match self.current_provider {\n            ProviderType::Claude => claude::CONTEXT_WINDOW,\n            ProviderType::OpenAI => openai::CONTEXT_WINDOW,\n            ProviderType::Gemini => gemini::CONTEXT_WINDOW,\n            ProviderType::Codex => codex::CONTEXT_WINDOW,\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "max_output_tokens",
+      "line": 259,
+      "column": 4,
+      "text": "pub fn max_output_tokens(&self) -> usize {\n        match self.current_provider {\n            ProviderType::Claude => claude::MAX_OUTPUT_TOKENS,\n            ProviderType::OpenAI => openai::MAX_OUTPUT_TOKENS,\n            ProviderType::Gemini => gemini::MAX_OUTPUT_TOKENS,\n            ProviderType::Codex => codex::MAX_OUTPUT_TOKENS,\n        }\n    }"
+    }
+  ]
+}

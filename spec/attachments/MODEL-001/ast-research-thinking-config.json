@@ -1,0 +1,221 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 48,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"gemini-3\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "request_config",
+      "line": 52,
+      "column": 4,
+      "text": "fn request_config(&self, level: ThinkingLevel) -> Value {\n        match level {\n            ThinkingLevel::Off => json!({}),\n            ThinkingLevel::Low => json!({\n                \"thinkingConfig\": {\n                    \"includeThoughts\": true,\n                    \"thinkingLevel\": \"low\"\n                }\n            }),\n            ThinkingLevel::Medium => json!({\n                \"thinkingConfig\": {\n                    \"includeThoughts\": true,\n                    \"thinkingLevel\": \"medium\"\n                }\n            }),\n            ThinkingLevel::High => json!({\n                \"thinkingConfig\": {\n                    \"includeThoughts\": true,\n                    \"thinkingLevel\": \"high\"\n                }\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "is_thinking_part",
+      "line": 76,
+      "column": 4,
+      "text": "fn is_thinking_part(&self, part: &Value) -> bool {\n        part.get(\"thought\").and_then(|v| v.as_bool()).unwrap_or(false)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "extract_thinking_text",
+      "line": 80,
+      "column": 4,
+      "text": "fn extract_thinking_text(&self, part: &Value) -> Option<String> {\n        if self.is_thinking_part(part) {\n            part.get(\"text\").and_then(|v| v.as_str()).map(String::from)\n        } else {\n            None\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 93,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"gemini-2.5\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "request_config",
+      "line": 97,
+      "column": 4,
+      "text": "fn request_config(&self, level: ThinkingLevel) -> Value {\n        match level {\n            ThinkingLevel::Off => json!({}),\n            ThinkingLevel::Low => json!({\n                \"thinkingConfig\": {\n                    \"includeThoughts\": true,\n                    \"thinkingBudget\": 2048\n                }\n            }),\n            ThinkingLevel::Medium => json!({\n                \"thinkingConfig\": {\n                    \"includeThoughts\": true,\n                    \"thinkingBudget\": 4096\n                }\n            }),\n            ThinkingLevel::High => json!({\n                \"thinkingConfig\": {\n                    \"includeThoughts\": true,\n                    \"thinkingBudget\": 8192\n                }\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "is_thinking_part",
+      "line": 121,
+      "column": 4,
+      "text": "fn is_thinking_part(&self, part: &Value) -> bool {\n        // Gemini 2.5 uses same response format as Gemini 3\n        part.get(\"thought\").and_then(|v| v.as_bool()).unwrap_or(false)\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "extract_thinking_text",
+      "line": 126,
+      "column": 4,
+      "text": "fn extract_thinking_text(&self, part: &Value) -> Option<String> {\n        if self.is_thinking_part(part) {\n            part.get(\"text\").and_then(|v| v.as_str()).map(String::from)\n        } else {\n            None\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "provider",
+      "line": 139,
+      "column": 4,
+      "text": "fn provider(&self) -> &'static str {\n        \"claude\"\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "request_config",
+      "line": 143,
+      "column": 4,
+      "text": "fn request_config(&self, level: ThinkingLevel) -> Value {\n        match level {\n            ThinkingLevel::Off => json!({}),\n            ThinkingLevel::Low => json!({\n                \"thinking\": {\n                    \"type\": \"enabled\",\n                    \"budget_tokens\": 4096\n                }\n            }),\n            ThinkingLevel::Medium => json!({\n                \"thinking\": {\n                    \"type\": \"enabled\",\n                    \"budget_tokens\": 16000\n                }\n            }),\n            ThinkingLevel::High => json!({\n                \"thinking\": {\n                    \"type\": \"enabled\",\n                    \"budget_tokens\": 32000\n                }\n            }),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "is_thinking_part",
+      "line": 167,
+      "column": 4,
+      "text": "fn is_thinking_part(&self, part: &Value) -> bool {\n        // Claude uses content blocks with type \"thinking\"\n        part.get(\"type\").and_then(|v| v.as_str()) == Some(\"thinking\")\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "extract_thinking_text",
+      "line": 172,
+      "column": 4,
+      "text": "fn extract_thinking_text(&self, part: &Value) -> Option<String> {\n        if self.is_thinking_part(part) {\n            part.get(\"thinking\").and_then(|v| v.as_str()).map(String::from)\n        } else {\n            None\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini3_high_level_returns_thinking_level_enum",
+      "line": 190,
+      "column": 4,
+      "text": "fn test_gemini3_high_level_returns_thinking_level_enum() {\n        // @step Given a Gemini3ThinkingFacade\n        let facade = Gemini3ThinkingFacade;\n\n        // @step And ThinkingLevel::High is requested\n        let level = ThinkingLevel::High;\n\n        // @step When I call request_config with the level\n        let config = facade.request_config(level);\n\n        // @step Then the result should contain thinkingConfig.thinkingLevel set to \"high\"\n        assert_eq!(\n            config[\"thinkingConfig\"][\"thinkingLevel\"].as_str(),\n            Some(\"high\"),\n            \"Gemini 3 should use thinkingLevel 'high' for High level\"\n        );\n\n        // @step And the result should contain thinkingConfig.includeThoughts set to true\n        assert_eq!(\n            config[\"thinkingConfig\"][\"includeThoughts\"].as_bool(),\n            Some(true),\n            \"includeThoughts should be true\"\n        );\n\n        // @step And the result should NOT contain thinkingBudget\n        assert!(\n            config[\"thinkingConfig\"][\"thinkingBudget\"].is_null(),\n            \"Gemini 3 should NOT use thinkingBudget\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini25_high_level_returns_thinking_budget",
+      "line": 226,
+      "column": 4,
+      "text": "fn test_gemini25_high_level_returns_thinking_budget() {\n        // @step Given a Gemini25ThinkingFacade\n        let facade = Gemini25ThinkingFacade;\n\n        // @step And ThinkingLevel::High is requested\n        let level = ThinkingLevel::High;\n\n        // @step When I call request_config with the level\n        let config = facade.request_config(level);\n\n        // @step Then the result should contain thinkingConfig.thinkingBudget set to 8192\n        assert_eq!(\n            config[\"thinkingConfig\"][\"thinkingBudget\"].as_u64(),\n            Some(8192),\n            \"Gemini 2.5 should use thinkingBudget 8192 for High level\"\n        );\n\n        // @step And the result should contain thinkingConfig.includeThoughts set to true\n        assert_eq!(\n            config[\"thinkingConfig\"][\"includeThoughts\"].as_bool(),\n            Some(true),\n            \"includeThoughts should be true\"\n        );\n\n        // @step And the result should NOT contain thinkingLevel\n        assert!(\n            config[\"thinkingConfig\"][\"thinkingLevel\"].is_null(),\n            \"Gemini 2.5 should NOT use thinkingLevel enum\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_high_level_returns_budget_tokens",
+      "line": 262,
+      "column": 4,
+      "text": "fn test_claude_high_level_returns_budget_tokens() {\n        // @step Given a ClaudeThinkingFacade\n        let facade = ClaudeThinkingFacade;\n\n        // @step And ThinkingLevel::High is requested\n        let level = ThinkingLevel::High;\n\n        // @step When I call request_config with the level\n        let config = facade.request_config(level);\n\n        // @step Then the result should contain thinking.type set to \"enabled\"\n        assert_eq!(\n            config[\"thinking\"][\"type\"].as_str(),\n            Some(\"enabled\"),\n            \"Claude should use thinking.type 'enabled'\"\n        );\n\n        // @step And the result should contain thinking.budget_tokens set to 32000\n        assert_eq!(\n            config[\"thinking\"][\"budget_tokens\"].as_u64(),\n            Some(32000),\n            \"Claude should use budget_tokens 32000 for High level\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini3_identifies_thinking_parts",
+      "line": 292,
+      "column": 4,
+      "text": "fn test_gemini3_identifies_thinking_parts() {\n        // @step Given a Gemini3ThinkingFacade\n        let facade = Gemini3ThinkingFacade;\n\n        // @step And a response part with \"thought\" field set to true\n        let thinking_part = json!({\n            \"thought\": true,\n            \"text\": \"Let me think about this...\"\n        });\n\n        // @step When I call is_thinking_part with the part\n        let is_thinking = facade.is_thinking_part(&thinking_part);\n\n        // @step Then it should return true\n        assert!(is_thinking, \"Part with thought:true should be identified as thinking\");\n\n        // @step And extract_thinking_text should return the text content\n        let text = facade.extract_thinking_text(&thinking_part);\n        assert_eq!(\n            text,\n            Some(\"Let me think about this...\".to_string()),\n            \"Should extract thinking text\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini3_ignores_non_thinking_parts",
+      "line": 322,
+      "column": 4,
+      "text": "fn test_gemini3_ignores_non_thinking_parts() {\n        // @step Given a Gemini3ThinkingFacade\n        let facade = Gemini3ThinkingFacade;\n\n        // @step And a response part without \"thought\" field\n        let response_part = json!({\n            \"text\": \"The answer is 42.\"\n        });\n\n        // @step When I call is_thinking_part with the part\n        let is_thinking = facade.is_thinking_part(&response_part);\n\n        // @step Then it should return false\n        assert!(!is_thinking, \"Part without thought field should not be thinking\");\n\n        // @step And extract_thinking_text should return None\n        let text = facade.extract_thinking_text(&response_part);\n        assert!(text.is_none(), \"Should return None for non-thinking part\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_thinking_level_off_returns_empty_for_gemini3",
+      "line": 347,
+      "column": 4,
+      "text": "fn test_thinking_level_off_returns_empty_for_gemini3() {\n        // @step Given any ThinkingConfigFacade implementation\n        let facade = Gemini3ThinkingFacade;\n\n        // @step And ThinkingLevel::Off is requested\n        let level = ThinkingLevel::Off;\n\n        // @step When I call request_config with the level\n        let config = facade.request_config(level);\n\n        // @step Then the result should be an empty object\n        assert_eq!(config, json!({}), \"Off should return empty object\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_thinking_level_off_returns_empty_for_gemini25",
+      "line": 362,
+      "column": 4,
+      "text": "fn test_thinking_level_off_returns_empty_for_gemini25() {\n        let facade = Gemini25ThinkingFacade;\n        let config = facade.request_config(ThinkingLevel::Off);\n        assert_eq!(config, json!({}), \"Off should return empty object\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_thinking_level_off_returns_empty_for_claude",
+      "line": 369,
+      "column": 4,
+      "text": "fn test_thinking_level_off_returns_empty_for_claude() {\n        let facade = ClaudeThinkingFacade;\n        let config = facade.request_config(ThinkingLevel::Off);\n        assert_eq!(config, json!({}), \"Off should return empty object\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini3_low_level",
+      "line": 380,
+      "column": 4,
+      "text": "fn test_gemini3_low_level() {\n        let facade = Gemini3ThinkingFacade;\n        let config = facade.request_config(ThinkingLevel::Low);\n\n        assert_eq!(\n            config[\"thinkingConfig\"][\"thinkingLevel\"].as_str(),\n            Some(\"low\"),\n            \"Gemini 3 Low should use thinkingLevel 'low'\"\n        );\n        assert_eq!(\n            config[\"thinkingConfig\"][\"includeThoughts\"].as_bool(),\n            Some(true)\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini3_medium_level",
+      "line": 396,
+      "column": 4,
+      "text": "fn test_gemini3_medium_level() {\n        let facade = Gemini3ThinkingFacade;\n        let config = facade.request_config(ThinkingLevel::Medium);\n\n        assert_eq!(\n            config[\"thinkingConfig\"][\"thinkingLevel\"].as_str(),\n            Some(\"medium\"),\n            \"Gemini 3 Medium should use thinkingLevel 'medium'\"\n        );\n        assert_eq!(\n            config[\"thinkingConfig\"][\"includeThoughts\"].as_bool(),\n            Some(true)\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini25_low_level",
+      "line": 412,
+      "column": 4,
+      "text": "fn test_gemini25_low_level() {\n        let facade = Gemini25ThinkingFacade;\n        let config = facade.request_config(ThinkingLevel::Low);\n\n        assert_eq!(\n            config[\"thinkingConfig\"][\"thinkingBudget\"].as_u64(),\n            Some(2048),\n            \"Gemini 2.5 Low should use thinkingBudget 2048\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini25_medium_level",
+      "line": 424,
+      "column": 4,
+      "text": "fn test_gemini25_medium_level() {\n        let facade = Gemini25ThinkingFacade;\n        let config = facade.request_config(ThinkingLevel::Medium);\n\n        assert_eq!(\n            config[\"thinkingConfig\"][\"thinkingBudget\"].as_u64(),\n            Some(4096),\n            \"Gemini 2.5 Medium should use thinkingBudget 4096\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_low_level",
+      "line": 436,
+      "column": 4,
+      "text": "fn test_claude_low_level() {\n        let facade = ClaudeThinkingFacade;\n        let config = facade.request_config(ThinkingLevel::Low);\n\n        assert_eq!(config[\"thinking\"][\"type\"].as_str(), Some(\"enabled\"));\n        assert_eq!(\n            config[\"thinking\"][\"budget_tokens\"].as_u64(),\n            Some(4096),\n            \"Claude Low should use budget_tokens 4096\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_medium_level",
+      "line": 449,
+      "column": 4,
+      "text": "fn test_claude_medium_level() {\n        let facade = ClaudeThinkingFacade;\n        let config = facade.request_config(ThinkingLevel::Medium);\n\n        assert_eq!(config[\"thinking\"][\"type\"].as_str(), Some(\"enabled\"));\n        assert_eq!(\n            config[\"thinking\"][\"budget_tokens\"].as_u64(),\n            Some(16000),\n            \"Claude Medium should use budget_tokens 16000\"\n        );\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini3_provider_name",
+      "line": 466,
+      "column": 4,
+      "text": "fn test_gemini3_provider_name() {\n        let facade = Gemini3ThinkingFacade;\n        assert_eq!(facade.provider(), \"gemini-3\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_gemini25_provider_name",
+      "line": 472,
+      "column": 4,
+      "text": "fn test_gemini25_provider_name() {\n        let facade = Gemini25ThinkingFacade;\n        assert_eq!(facade.provider(), \"gemini-2.5\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_claude_provider_name",
+      "line": 478,
+      "column": 4,
+      "text": "fn test_claude_provider_name() {\n        let facade = ClaudeThinkingFacade;\n        assert_eq!(facade.provider(), \"claude\");\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_napi_get_thinking_config",
+      "line": 489,
+      "column": 4,
+      "text": "fn test_napi_get_thinking_config() {\n        // @step Given the NAPI getThinkingConfig function\n        // The NAPI function will call Gemini3ThinkingFacade.request_config()\n        let facade = Gemini3ThinkingFacade;\n\n        // @step And provider \"gemini-3\" and ThinkingLevel.High\n        let provider = \"gemini-3\";\n        let level = ThinkingLevel::High;\n\n        // @step When I call getThinkingConfig from TypeScript\n        // Simulated: TypeScript would call the NAPI binding which calls this\n        let config = facade.request_config(level);\n        let json_string = serde_json::to_string(&config).unwrap();\n\n        // @step Then I should receive a JSON string with the correct configuration\n        assert!(!json_string.is_empty());\n        assert!(json_string.contains(\"thinkingConfig\") || json_string == \"{}\");\n\n        // @step And the parsed JSON should match the Rust facade output\n        let parsed: serde_json::Value = serde_json::from_str(&json_string).unwrap();\n        assert_eq!(parsed, config);\n        assert_eq!(facade.provider(), provider);\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "test_napi_is_thinking_content",
+      "line": 518,
+      "column": 4,
+      "text": "fn test_napi_is_thinking_content() {\n        // @step Given the NAPI isThinkingContent function\n        let facade = Gemini3ThinkingFacade;\n\n        // @step And a Gemini response part JSON string with thought:true\n        let thinking_part = json!({\n            \"thought\": true,\n            \"text\": \"Analyzing...\"\n        });\n        let part_json = serde_json::to_string(&thinking_part).unwrap();\n\n        // @step When I call isThinkingContent from TypeScript\n        // Simulated: TypeScript would call the NAPI binding which calls this\n        let parsed: serde_json::Value = serde_json::from_str(&part_json).unwrap();\n        let is_thinking = facade.is_thinking_part(&parsed);\n\n        // @step Then it should return true\n        assert!(is_thinking, \"NAPI should correctly identify thinking content\");\n    }"
+    }
+  ]
+}

@@ -28,8 +28,53 @@ import { VirtualList } from './VirtualList';
 import { getFspecUserDir } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
-import { persistenceStoreMessageEnvelope, getThinkingConfig, JsThinkingLevel } from '@sengac/codelet-napi';
+import { persistenceStoreMessageEnvelope, getThinkingConfig, JsThinkingLevel, modelsListAll, type NapiProviderModels, type NapiModelInfo } from '@sengac/codelet-napi';
 import { detectThinkingLevel, getThinkingLevelLabel } from '../../utils/thinkingLevel';
+
+// TUI-034: Model selection types
+interface ModelSelection {
+  providerId: string;      // "anthropic"
+  modelId: string;         // "claude-sonnet-4"
+  apiModelId: string;      // "claude-sonnet-4-20250514" (for API calls)
+  displayName: string;     // "Claude Sonnet 4"
+  reasoning: boolean;
+  hasVision: boolean;
+  contextWindow: number;   // 200000
+  maxOutput: number;       // 16000
+}
+
+interface ProviderSection {
+  providerId: string;      // "anthropic"
+  providerName: string;    // "Anthropic"
+  internalName: string;    // "claude" (for provider manager)
+  models: NapiModelInfo[]; // Filtered to tool_call=true
+  hasCredentials: boolean; // From availableProviders check
+}
+
+// TUI-034: Provider ID mapping (models.dev to internal)
+const mapProviderIdToInternal = (providerId: string): string => {
+  switch (providerId) {
+    case 'anthropic': return 'claude';
+    case 'google': return 'gemini';
+    default: return providerId;
+  }
+};
+
+const mapInternalToProviderId = (internalName: string): string => {
+  switch (internalName) {
+    case 'claude': return 'anthropic';
+    case 'gemini': return 'google';
+    default: return internalName;
+  }
+};
+
+// TUI-034: Format context window size for display
+const formatContextWindow = (contextWindow: number): string => {
+  if (contextWindow >= 1000000) {
+    return `${(contextWindow / 1000000).toFixed(0)}M`;
+  }
+  return `${Math.round(contextWindow / 1000)}k`;
+};
 
 // NAPI-006: Callbacks for history navigation
 interface SafeTextInputCallbacks {
@@ -256,6 +301,14 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021
   const sessionRef = useRef<CodeletSessionType | null>(null);
 
+  // TUI-034: Model selection state
+  const [currentModel, setCurrentModel] = useState<ModelSelection | null>(null);
+  const [providerSections, setProviderSections] = useState<ProviderSection[]>([]);
+  const [showModelSelector, setShowModelSelector] = useState(false);
+  const [selectedSectionIdx, setSelectedSectionIdx] = useState(0);
+  const [selectedModelIdx, setSelectedModelIdx] = useState(-1); // -1 = on section header
+  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set());
+
   // NAPI-006: History navigation state
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1); // -1 means not navigating history
@@ -344,12 +397,14 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       try {
         // Dynamic import to handle ESM
         const codeletNapi = await import('@sengac/codelet-napi');
-        const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory } = codeletNapi;
+        const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory, modelsListAll: loadModels, modelsSetCacheDirectory } = codeletNapi;
 
         // NAPI-006: Set up persistence data directory
         const fspecDir = getFspecUserDir();
         try {
           persistenceSetDataDirectory(fspecDir);
+          // TUI-034: Set up model cache directory
+          modelsSetCacheDirectory(`${fspecDir}/cache`);
         } catch {
           // Ignore if already set
         }
@@ -373,13 +428,135 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           logger.warn('Failed to set up Rust log callback', { error: err });
         }
 
-        // Default to Claude as the primary AI provider
-        const newSession = new CodeletSession('claude');
+        // TUI-034: Load models and build provider sections
+        // First create a basic session to get available providers (has credentials)
+        let tempSession: CodeletSessionType | null = null;
+        try {
+          tempSession = new CodeletSession();
+        } catch {
+          // No credentials at all - will show error later
+        }
+
+        const availableProviderNames = tempSession?.availableProviders ?? [];
+        let allModels: NapiProviderModels[] = [];
+        try {
+          allModels = await loadModels();
+        } catch (err) {
+          logger.warn('Failed to load models from models.dev, using fallback', { error: err });
+          // Continue with empty models - will use provider defaults
+        }
+
+        // Build provider sections: filter by credentials, keep even if no compatible models
+        // TUI-034: Show all providers with credentials so we can display "No compatible models" message
+        const sections: ProviderSection[] = allModels
+          .map(pm => {
+            const internalName = mapProviderIdToInternal(pm.providerId);
+            const hasCredentials = availableProviderNames.includes(internalName);
+            // Filter to only models with tool_call=true
+            const toolCallModels = pm.models.filter(m => m.toolCall);
+            return {
+              providerId: pm.providerId,
+              providerName: pm.providerName,
+              internalName,
+              models: toolCallModels,
+              hasCredentials,
+            };
+          })
+          .filter(s => s.hasCredentials); // Keep providers with credentials even if no compatible models
+
+        setProviderSections(sections);
+        // TUI-034: Only include providers with compatible models in availableProviders for actual use
+        setAvailableProviders(sections.filter(s => s.models.length > 0).map(s => s.internalName));
+
+        // Find default model (first available with tool_call=true)
+        let defaultModelString = 'anthropic/claude-sonnet-4'; // Fallback
+        let defaultModelInfo: NapiModelInfo | null = null;
+        let defaultSection: ProviderSection | null = null;
+
+        if (sections.length > 0) {
+          defaultSection = sections[0];
+          if (defaultSection.models.length > 0) {
+            defaultModelInfo = defaultSection.models[0];
+            // Extract model-id from the API ID (e.g., "claude-sonnet-4-20250514" -> "claude-sonnet-4")
+            const modelId = defaultModelInfo.family || defaultModelInfo.id.replace(/-\d{8}$/, '');
+            defaultModelString = `${defaultSection.providerId}/${modelId}`;
+          }
+        }
+
+        // TUI-034: Create session with model using newWithModel factory
+        // Must use newWithModel() to enable mid-session model switching via selectModel()
+        let newSession: CodeletSessionType;
+        let sessionHasModelSupport = false;
+
+        // Try creating session with the default model
+        try {
+          newSession = await CodeletSession.newWithModel(defaultModelString);
+          sessionHasModelSupport = true;
+        } catch (err) {
+          logger.warn(`Failed to create session with model ${defaultModelString}, trying fallbacks`, { error: err });
+
+          // TUI-034 FIX: Try fallback models to maintain model support
+          // Without model support, Tab key model switching won't work
+          const fallbackModels = ['anthropic/claude-sonnet-4', 'google/gemini-2.0-flash', 'openai/gpt-4o'];
+
+          for (const fallbackModel of fallbackModels) {
+            if (fallbackModel === defaultModelString) continue; // Skip if same as already tried
+            try {
+              newSession = await CodeletSession.newWithModel(fallbackModel);
+              sessionHasModelSupport = true;
+              logger.info(`Successfully created session with fallback model: ${fallbackModel}`);
+              // Update defaultModelInfo to match what we actually created
+              const [providerId, modelId] = fallbackModel.split('/');
+              const section = sections.find(s => s.providerId === providerId);
+              if (section) {
+                const model = section.models.find(m =>
+                  (m.family || m.id.replace(/-\d{8}$/, '')) === modelId
+                );
+                if (model) {
+                  defaultModelInfo = model;
+                  defaultSection = section;
+                }
+              }
+              break;
+            } catch (fallbackErr) {
+              logger.warn(`Fallback model ${fallbackModel} also failed`, { error: fallbackErr });
+            }
+          }
+
+          // Last resort: basic session without model support
+          if (!sessionHasModelSupport) {
+            logger.error('All newWithModel attempts failed, falling back to basic session (model switching disabled)');
+            newSession = new CodeletSession('claude');
+            // Clear model info since model switching won't work
+            defaultModelInfo = null;
+            defaultSection = null;
+          }
+        }
+
         setSession(newSession);
         sessionRef.current = newSession;
         setCurrentProvider(newSession.currentProviderName);
-        setAvailableProviders(newSession.availableProviders);
         setTokenUsage(newSession.tokenTracker);
+
+        // TUI-034: Set current model info (only if session has model support)
+        if (sessionHasModelSupport && defaultModelInfo && defaultSection) {
+          const modelId = defaultModelInfo.family || defaultModelInfo.id.replace(/-\d{8}$/, '');
+          setCurrentModel({
+            providerId: defaultSection.providerId,
+            modelId,
+            apiModelId: defaultModelInfo.id,
+            displayName: defaultModelInfo.name,
+            reasoning: defaultModelInfo.reasoning,
+            hasVision: defaultModelInfo.hasVision,
+            contextWindow: defaultModelInfo.contextWindow,
+            maxOutput: defaultModelInfo.maxOutput,
+          });
+          // Expand current provider's section by default
+          setExpandedProviders(new Set([defaultSection.providerId]));
+        } else if (!sessionHasModelSupport) {
+          // Clear model info - model switching won't work without model support
+          setCurrentModel(null);
+        }
 
         // NAPI-006: Session creation is deferred until first message is sent
         // This prevents empty sessions from being persisted when user opens
@@ -806,6 +983,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     // NAPI-006: Deferred session creation - only create session on first message
     // This prevents empty sessions from being persisted when user opens modal
     // but doesn't send any messages
+    // TUI-034: Store full model path (provider/model-id) for proper restore
     let activeSessionId = currentSessionId;
     if (!activeSessionId && isFirstMessageRef.current) {
       try {
@@ -814,10 +992,15 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Use first message as session name (truncated to 50 chars)
         const sessionName = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
 
+        // TUI-034: Use full model path if available, fallback to provider
+        const modelPath = currentModel
+          ? `${currentModel.providerId}/${currentModel.modelId}`
+          : currentProvider;
+
         const persistedSession = persistenceCreateSessionWithProvider(
           sessionName,
           project,
-          currentProvider
+          modelPath
         );
 
         activeSessionId = persistedSession.id;
@@ -1245,6 +1428,46 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     }
   }, []);
 
+  // TUI-034: Handle model selection
+  const handleSelectModel = useCallback(async (section: ProviderSection, model: NapiModelInfo) => {
+    if (!sessionRef.current) return;
+
+    try {
+      setIsLoading(true);
+      // Extract model-id from the API ID (e.g., "claude-sonnet-4-20250514" -> "claude-sonnet-4")
+      const modelId = model.family || model.id.replace(/-\d{8}$/, '');
+      const modelString = `${section.providerId}/${modelId}`;
+
+      // Use selectModel to switch the model
+      await sessionRef.current.selectModel(modelString);
+
+      // Update state
+      setCurrentModel({
+        providerId: section.providerId,
+        modelId,
+        apiModelId: model.id,
+        displayName: model.name,
+        reasoning: model.reasoning,
+        hasVision: model.hasVision,
+        contextWindow: model.contextWindow,
+        maxOutput: model.maxOutput,
+      });
+      setCurrentProvider(section.internalName);
+      setShowModelSelector(false);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to switch model';
+      // TUI-034: Display error in conversation instead of global error state
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `Model selection failed: ${errorMessage}` },
+      ]);
+      setShowModelSelector(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // NAPI-006: Navigate to previous history entry (Shift+Arrow-Up)
   const handleHistoryPrev = useCallback(() => {
     if (historyEntries.length === 0) {
@@ -1510,15 +1733,65 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       if (sessionRef.current) {
         sessionRef.current.restoreMessagesFromEnvelopes(envelopes);
 
-        // Switch provider to match the restored session's provider
-        // This ensures API calls use the same provider as the original session
-        if (selectedSession.provider && selectedSession.provider !== sessionRef.current.currentProviderName) {
-          try {
-            await sessionRef.current.switchProvider(selectedSession.provider);
-            setCurrentProvider(selectedSession.provider);
-          } catch (providerErr) {
-            // Provider switch failed - continue with current provider
-            logger.warn(`Failed to switch to session provider ${selectedSession.provider}: ${providerErr instanceof Error ? providerErr.message : String(providerErr)}`);
+        // TUI-034: Handle full model path (provider/model-id) or legacy provider-only format
+        if (selectedSession.provider) {
+          const storedProvider = selectedSession.provider;
+
+          if (storedProvider.includes('/')) {
+            // Full model path format: "anthropic/claude-sonnet-4"
+            try {
+              await sessionRef.current.selectModel(storedProvider);
+              // Parse model info from stored path
+              const [providerId, modelId] = storedProvider.split('/');
+              const internalName = mapProviderIdToInternal(providerId);
+              setCurrentProvider(internalName);
+              // Find matching model info from provider sections
+              const section = providerSections.find(s => s.providerId === providerId);
+              const model = section?.models.find(m =>
+                (m.family || m.id.replace(/-\d{8}$/, '')) === modelId
+              );
+              if (model && section) {
+                setCurrentModel({
+                  providerId,
+                  modelId,
+                  apiModelId: model.id,
+                  displayName: model.name,
+                  reasoning: model.reasoning,
+                  hasVision: model.hasVision,
+                  contextWindow: model.contextWindow,
+                  maxOutput: model.maxOutput,
+                });
+              }
+            } catch (modelErr) {
+              logger.warn(`Failed to select model ${storedProvider}: ${modelErr instanceof Error ? modelErr.message : String(modelErr)}`);
+              // Fallback: try switching provider only
+              const [providerId, modelId] = storedProvider.split('/');
+              const internalName = mapProviderIdToInternal(providerId);
+              try {
+                await sessionRef.current.switchProvider(internalName);
+                setCurrentProvider(internalName);
+                // TUI-034: Show informational message about deprecated model fallback
+                restored.push({
+                  role: 'tool',
+                  content: `Note: Model "${modelId}" is no longer available. Using provider default for ${internalName}.`,
+                });
+              } catch {
+                // Provider switch also failed - continue with current
+                restored.push({
+                  role: 'tool',
+                  content: `Note: Model "${storedProvider}" is no longer available and provider switch failed. Using current provider.`,
+                });
+              }
+            }
+          } else if (storedProvider !== sessionRef.current.currentProviderName) {
+            // Legacy provider-only format
+            try {
+              await sessionRef.current.switchProvider(storedProvider);
+              setCurrentProvider(storedProvider);
+            } catch (providerErr) {
+              // Provider switch failed - continue with current provider
+              logger.warn(`Failed to switch to session provider ${storedProvider}: ${providerErr instanceof Error ? providerErr.message : String(providerErr)}`);
+            }
           }
         }
 
@@ -1680,6 +1953,108 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
 
+      // TUI-034: Model selector keyboard handling
+      if (showModelSelector) {
+        if (key.escape) {
+          setShowModelSelector(false);
+          return;
+        }
+
+        // Left arrow: collapse current section
+        if (key.leftArrow) {
+          const currentSection = providerSections[selectedSectionIdx];
+          if (currentSection && expandedProviders.has(currentSection.providerId)) {
+            setExpandedProviders(prev => {
+              const next = new Set(prev);
+              next.delete(currentSection.providerId);
+              return next;
+            });
+            setSelectedModelIdx(-1); // Move back to section header
+          }
+          return;
+        }
+
+        // Right arrow: expand current section
+        if (key.rightArrow) {
+          const currentSection = providerSections[selectedSectionIdx];
+          if (currentSection && !expandedProviders.has(currentSection.providerId)) {
+            setExpandedProviders(prev => new Set([...prev, currentSection.providerId]));
+          }
+          return;
+        }
+
+        // Up arrow: navigate up through models and sections
+        if (key.upArrow) {
+          const currentSection = providerSections[selectedSectionIdx];
+          const isExpanded = currentSection && expandedProviders.has(currentSection.providerId);
+
+          if (selectedModelIdx > 0 && isExpanded) {
+            // Move up within models
+            setSelectedModelIdx(prev => prev - 1);
+          } else if (selectedModelIdx === 0 && isExpanded) {
+            // Move from first model to section header
+            setSelectedModelIdx(-1);
+          } else if (selectedSectionIdx > 0) {
+            // Move to previous section
+            const prevSection = providerSections[selectedSectionIdx - 1];
+            const prevExpanded = expandedProviders.has(prevSection.providerId);
+            setSelectedSectionIdx(prev => prev - 1);
+            if (prevExpanded && prevSection.models.length > 0) {
+              // Move to last model of previous section
+              setSelectedModelIdx(prevSection.models.length - 1);
+            } else {
+              setSelectedModelIdx(-1);
+            }
+          }
+          return;
+        }
+
+        // Down arrow: navigate down through models and sections
+        if (key.downArrow) {
+          const currentSection = providerSections[selectedSectionIdx];
+          const isExpanded = currentSection && expandedProviders.has(currentSection.providerId);
+          const modelCount = currentSection?.models.length ?? 0;
+
+          if (selectedModelIdx === -1 && isExpanded && modelCount > 0) {
+            // Move from section header to first model
+            setSelectedModelIdx(0);
+          } else if (selectedModelIdx < modelCount - 1 && isExpanded) {
+            // Move down within models
+            setSelectedModelIdx(prev => prev + 1);
+          } else if (selectedSectionIdx < providerSections.length - 1) {
+            // Move to next section
+            setSelectedSectionIdx(prev => prev + 1);
+            setSelectedModelIdx(-1);
+          }
+          return;
+        }
+
+        // Enter: select model or toggle section
+        if (key.return) {
+          const currentSection = providerSections[selectedSectionIdx];
+          if (selectedModelIdx === -1) {
+            // On section header - toggle expand/collapse
+            if (expandedProviders.has(currentSection.providerId)) {
+              setExpandedProviders(prev => {
+                const next = new Set(prev);
+                next.delete(currentSection.providerId);
+                return next;
+              });
+            } else {
+              setExpandedProviders(prev => new Set([...prev, currentSection.providerId]));
+            }
+          } else {
+            // On model - select it
+            const model = currentSection.models[selectedModelIdx];
+            if (model) {
+              void handleSelectModel(currentSection, model);
+            }
+          }
+          return;
+        }
+        return;
+      }
+
       // Esc key handling - interrupt if loading, close if not
       if (key.escape) {
         if (isLoading && sessionRef.current) {
@@ -1692,11 +2067,19 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
 
-      // Tab to toggle provider selector
-      if (key.tab && availableProviders.length > 1) {
-        setShowProviderSelector(true);
-        const idx = availableProviders.indexOf(currentProvider);
-        setSelectedProviderIndex(idx >= 0 ? idx : 0);
+      // TUI-034: Tab to toggle model selector (replaces provider-only selector)
+      if (key.tab && providerSections.length > 0) {
+        setShowModelSelector(true);
+        // Find current section and expand it
+        const currentSectionIdx = providerSections.findIndex(
+          s => s.providerId === currentModel?.providerId
+        );
+        setSelectedSectionIdx(currentSectionIdx >= 0 ? currentSectionIdx : 0);
+        setSelectedModelIdx(-1); // Start on section header
+        // Expand current provider's section
+        if (currentModel?.providerId) {
+          setExpandedProviders(new Set([currentModel.providerId]));
+        }
         return;
       }
     },
@@ -1901,6 +2284,88 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     );
   }
 
+  // TUI-034: Model selector overlay (hierarchical with collapsible sections)
+  if (showModelSelector) {
+    return (
+      <Box
+        position="absolute"
+        flexDirection="column"
+        width={terminalWidth}
+        height={terminalHeight}
+      >
+        <Box
+          flexDirection="column"
+          flexGrow={1}
+          borderStyle="double"
+          borderColor="cyan"
+          backgroundColor="black"
+        >
+          <Box
+            flexDirection="column"
+            padding={2}
+            flexGrow={1}
+          >
+            <Box marginBottom={1}>
+              <Text bold color="cyan">
+                Select Model
+              </Text>
+            </Box>
+            {providerSections.map((section, sectionIdx) => {
+              const isExpanded = expandedProviders.has(section.providerId);
+              const isSectionSelected = sectionIdx === selectedSectionIdx;
+              const sectionIcon = isExpanded ? '▼' : '▶';
+
+              return (
+                <Box key={section.providerId} flexDirection="column">
+                  {/* Section header */}
+                  <Box>
+                    <Text
+                      backgroundColor={isSectionSelected && selectedModelIdx === -1 ? 'cyan' : undefined}
+                      color={isSectionSelected && selectedModelIdx === -1 ? 'black' : 'white'}
+                    >
+                      {isSectionSelected && selectedModelIdx === -1 ? '> ' : '  '}
+                      {sectionIcon} [{section.providerId}] ({section.models.length} models)
+                    </Text>
+                  </Box>
+                  {/* Models within section */}
+                  {isExpanded && section.models.length === 0 && (
+                    <Box>
+                      <Text color="yellow">    No compatible models (tool_call required)</Text>
+                    </Box>
+                  )}
+                  {isExpanded && section.models.map((model, modelIdx) => {
+                    const isModelSelected = isSectionSelected && modelIdx === selectedModelIdx;
+                    const isCurrent = currentModel?.apiModelId === model.id;
+                    const modelId = model.family || model.id.replace(/-\d{8}$/, '');
+
+                    return (
+                      <Box key={model.id}>
+                        <Text
+                          backgroundColor={isModelSelected ? 'cyan' : undefined}
+                          color={isModelSelected ? 'black' : 'white'}
+                        >
+                          {isModelSelected ? '  > ' : '    '}
+                          {modelId} ({model.name})
+                          {model.reasoning && <Text color={isModelSelected ? 'black' : 'magenta'}> [R]</Text>}
+                          {model.hasVision && <Text color={isModelSelected ? 'black' : 'blue'}> [V]</Text>}
+                          <Text color={isModelSelected ? 'black' : 'gray'}> [{formatContextWindow(model.contextWindow)}]</Text>
+                          {isCurrent && <Text color={isModelSelected ? 'black' : 'green'}> (current)</Text>}
+                        </Text>
+                      </Box>
+                    );
+                  })}
+                </Box>
+              );
+            })}
+            <Box marginTop={1}>
+              <Text dimColor>Enter Select | ←→ Expand/Collapse | ↑↓ Navigate | Esc Cancel</Text>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
+
   // NAPI-006: Search mode overlay (Ctrl+R history search)
   if (isSearchMode) {
     return (
@@ -2035,7 +2500,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         borderColor="cyan"
         backgroundColor="black"
       >
-        {/* Header with provider and token usage */}
+        {/* TUI-034: Header with model name, capability indicators, and token usage */}
         <Box
           borderStyle="single"
           borderBottom={true}
@@ -2046,8 +2511,14 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         >
           <Box flexGrow={1}>
             <Text bold color="cyan">
-              Agent: {currentProvider}
+              Agent: {currentModel?.modelId || currentProvider}
             </Text>
+            {/* TUI-034: Model capability indicators */}
+            {currentModel?.reasoning && <Text color="magenta"> [R]</Text>}
+            {currentModel?.hasVision && <Text color="blue"> [V]</Text>}
+            {currentModel?.contextWindow && (
+              <Text dimColor> [{formatContextWindow(currentModel.contextWindow)}]</Text>
+            )}
             {isLoading && <Text color="yellow"> (streaming...)</Text>}
             {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
             {isDebugEnabled && <Text color="red" bold> [DEBUG]</Text>}
@@ -2073,9 +2544,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               [{contextFillPercentage}%]
             </Text>
           </Box>
-          {availableProviders.length > 1 && (
+          {/* TUI-034: Tab to switch model */}
+          {providerSections.length > 0 && (
             <Box marginLeft={2}>
-              <Text dimColor>[Tab] Switch</Text>
+              <Text dimColor>[Tab]</Text>
             </Box>
           )}
         </Box>

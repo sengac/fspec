@@ -1,0 +1,497 @@
+{
+  "scenarios": [
+    {
+      "name": "Select model using full provider/model path",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "283-313",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "First run fetches models from API and creates cache",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "129-158",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/cache.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Subsequent runs use cached models without network call",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "164-193",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/cache.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Force refresh fetches fresh data from API",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "199-230",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/cache.rs",
+              "lines": [
+                68,
+                69,
+                70,
+                71
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List models for a specific provider",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "319-346",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Unknown model shows error with fuzzy suggestions",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "352-378",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Corrupted cache triggers automatic refetch",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "236-264",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/cache.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject model without tool_call capability",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "384-410",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter models by reasoning capability",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "416-442",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Use embedded fallback when network unavailable on first run",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "270-299",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/cache.rs",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List all available providers",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "448-476",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter models by vision capability",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "482-504",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Search models with fuzzy matching",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "510-535",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show verbose model details",
+      "testMappings": [
+        {
+          "file": "codelet/providers/tests/model_selection_test.rs",
+          "lines": "541-566",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/models/registry.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/providers/tests/model_selection_test.rs"
+    ],
+    "implFiles": [
+      "codelet/providers/src/models/registry.rs",
+      "codelet/providers/src/models/cache.rs"
+    ],
+    "totalLinesCovered": 651
+  }
+}

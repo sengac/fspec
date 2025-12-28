@@ -1,0 +1,1396 @@
+{
+  "scenarios": [
+    {
+      "name": "Tab key opens model selector with providers as collapsible sections",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "279-316",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate between provider sections with arrow keys",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "318-345",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expand provider section with Right arrow or Enter",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "347-371",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Collapse provider section with Left arrow",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "373-399",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select model with Enter key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "401-432",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel model selection with Escape",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "434-468",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display reasoning capability indicator",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "474-498",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display vision capability indicator",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "500-517",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display context window size",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "519-535",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Header shows model with capability indicators",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "537-556",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Only show providers with valid credentials",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "562-582",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Only show models with tool_call capability",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "584-611",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show message when provider has no compatible models",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "613-650",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "New session uses newWithModel factory method",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "656-676",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session stores full model path in persistence",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "678-704",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resumed session restores exact model",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "706-742",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Legacy session with provider-only format uses default model",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "744-782",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Graceful fallback when model cache unavailable",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "788-806",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error message when selected model unavailable",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "808-839",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fallback when resumed session model no longer exists",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "841-878",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider header shows model count",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "884-902",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model list shows consistent format",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "904-923",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab hint in header shows model switching available",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-selection.test.tsx",
+          "lines": "925-939",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 23,
+    "coveredScenarios": 23,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/AgentModal-model-selection.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentModal.tsx"
+    ],
+    "totalLinesCovered": 1631
+  }
+}

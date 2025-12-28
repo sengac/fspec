@@ -274,6 +274,11 @@
       "prefix": "TOOL",
       "description": "Tool system and provider abstraction",
       "createdAt": "2025-12-26T06:27:13.966Z"
+    },
+    "MODEL": {
+      "prefix": "MODEL",
+      "description": "Model selection and provider abstraction",
+      "createdAt": "2025-12-27T23:58:51.875Z"
     }
   }
 }

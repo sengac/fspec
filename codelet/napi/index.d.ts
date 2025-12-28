@@ -14,6 +14,21 @@ export declare class CodeletSession {
    */
   constructor(providerName?: string | undefined | null);
   /**
+   * MODEL-001: Create a new CodeletSession with dynamic model selection
+   *
+   * Creates a session with model support enabled, allowing selection of specific
+   * models from models.dev. The model string should be in "provider/model-id" format.
+   *
+   * # Arguments
+   * * `model_string` - Model in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+   *
+   * # Example
+   * ```typescript
+   * const session = await CodeletSession.newWithModel("anthropic/claude-sonnet-4");
+   * ```
+   */
+  static newWithModel(modelString: string): Promise<CodeletSession>;
+  /**
    * Interrupt the current agent execution
    *
    * Call this when the user presses Esc in the TUI.
@@ -58,6 +73,13 @@ export declare class CodeletSession {
   compact(): Promise<CompactionResult>;
   /** Get the current provider name */
   get currentProviderName(): string;
+  /**
+   * MODEL-001: Get the currently selected model string
+   *
+   * Returns the model string in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+   * if a model was explicitly selected via newWithModel() or selectModel(), otherwise None.
+   */
+  get selectedModel(): string | null;
   /** Get list of available providers */
   get availableProviders(): Array<string>;
   /** Get the token usage tracker */
@@ -66,6 +88,26 @@ export declare class CodeletSession {
   get messages(): Array<Message>;
   /** Switch to a different provider */
   switchProvider(providerName: string): Promise<void>;
+  /**
+   * MODEL-001: Select a different model mid-session
+   *
+   * Changes the model used for subsequent prompts without clearing conversation history.
+   * The model string should be in "provider/model-id" format.
+   *
+   * NOTE: This only works for sessions created via newWithModel(). Sessions created
+   * via the default constructor do not have model registry support enabled.
+   *
+   * # Arguments
+   * * `model_string` - Model in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+   *
+   * # Example
+   * ```typescript
+   * const session = await CodeletSession.newWithModel("anthropic/claude-sonnet-4");
+   * // ... use session ...
+   * await session.selectModel("anthropic/claude-opus-4");  // Switch to Opus
+   * ```
+   */
+  selectModel(modelString: string): Promise<void>;
   /**
    * Clear conversation history and reinject context reminders
    *
@@ -313,6 +355,68 @@ export declare const enum MessageRole {
   Assistant = 'Assistant',
 }
 
+/**
+ * Get the current cache directory for model data
+ *
+ * Returns the custom directory if set via modelsSetCacheDirectory(),
+ * otherwise returns ~/.fspec/cache as the default.
+ */
+export declare function modelsGetCacheDirectory(): string;
+
+/**
+ * Get information for a specific model (async)
+ *
+ * # Arguments
+ * * `provider_id` - Provider ID (e.g., "anthropic")
+ * * `model_id` - Model ID (e.g., "claude-sonnet-4")
+ */
+export declare function modelsGetInfo(
+  providerId: string,
+  modelId: string
+): Promise<NapiModelInfo>;
+
+/**
+ * List all available models from models.dev (async)
+ *
+ * Returns models grouped by provider. Uses cached registry for efficiency.
+ * First call loads from disk/API, subsequent calls use cached data.
+ */
+export declare function modelsListAll(): Promise<Array<NapiProviderModels>>;
+
+/**
+ * List models for a specific provider (async)
+ *
+ * # Arguments
+ * * `provider_id` - Provider ID (e.g., "anthropic", "openai", "google")
+ */
+export declare function modelsListForProvider(
+  providerId: string
+): Promise<Array<NapiModelInfo>>;
+
+/**
+ * Refresh the model cache from models.dev API (async)
+ *
+ * Forces a fresh fetch from the API, ignoring cached data.
+ * NOTE: This does NOT invalidate the in-memory registry cache.
+ * For a full refresh, restart the process after calling this.
+ *
+ * Returns the number of providers loaded.
+ */
+export declare function modelsRefreshCache(): Promise<number>;
+
+/**
+ * Set the cache directory for model data (e.g., ~/.fspec/cache)
+ *
+ * IMPORTANT: This MUST be called BEFORE any other model operations.
+ * The directory setting is captured when the registry is first loaded.
+ * Calling this after other model functions will have no effect until
+ * modelsRefreshCache() is called.
+ *
+ * # Arguments
+ * * `dir` - The directory path for cache data (models.json will be stored here)
+ */
+export declare function modelsSetCacheDirectory(dir: string): void;
+
 export interface NapiAppendResult {
   messageId: string;
   session: NapiSessionManifest;
@@ -348,6 +452,40 @@ export interface NapiMergeRecord {
   sourceIndices: Array<number>;
   insertedAt?: number;
   mergedAt: string;
+}
+
+/** Model information from models.dev */
+export interface NapiModelInfo {
+  /** The API model ID (e.g., "claude-sonnet-4-20250514") */
+  id: string;
+  /** Display name (e.g., "Claude Sonnet 4") */
+  name: string;
+  /** Model family (e.g., "claude-sonnet") */
+  family?: string;
+  /** Whether model supports reasoning/thinking */
+  reasoning: boolean;
+  /** Whether model supports tool calls */
+  toolCall: boolean;
+  /** Whether model supports file/image attachments */
+  attachment: boolean;
+  /** Whether model supports temperature parameter */
+  temperature: boolean;
+  /** Context window size in tokens */
+  contextWindow: number;
+  /** Maximum output tokens */
+  maxOutput: number;
+  /** Whether model has vision capability (image input) */
+  hasVision: boolean;
+}
+
+/** Provider with its available models */
+export interface NapiProviderModels {
+  /** Provider ID (e.g., "anthropic", "openai", "google") */
+  providerId: string;
+  /** Provider display name (e.g., "Anthropic", "OpenAI", "Google") */
+  providerName: string;
+  /** List of models available from this provider */
+  models: Array<NapiModelInfo>;
 }
 
 export interface NapiSessionManifest {

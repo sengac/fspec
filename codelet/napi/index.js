@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { CodeletSession, ChunkType, extractThinkingText, getThinkingConfig, isThinkingContent, JsThinkingLevel, MessageRole, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessages, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, setRustLogCallback } = nativeBinding
+const { CodeletSession, ChunkType, extractThinkingText, getThinkingConfig, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessages, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, setRustLogCallback } = nativeBinding
 export { CodeletSession }
 export { ChunkType }
 export { extractThinkingText }
@@ -583,6 +583,12 @@ export { getThinkingConfig }
 export { isThinkingContent }
 export { JsThinkingLevel }
 export { MessageRole }
+export { modelsGetCacheDirectory }
+export { modelsGetInfo }
+export { modelsListAll }
+export { modelsListForProvider }
+export { modelsRefreshCache }
+export { modelsSetCacheDirectory }
 export { persistenceAddHistory }
 export { persistenceAppendMessage }
 export { persistenceAppendMessageWithMetadata }

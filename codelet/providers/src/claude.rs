@@ -79,12 +79,14 @@ pub struct ClaudeProvider {
     completion_model: anthropic::completion::CompletionModel,
     rig_client: anthropic::Client,
     auth_mode: AuthMode,
+    /// MODEL-001: Store model name for dynamic model selection
+    model_name: String,
 }
 
 impl std::fmt::Debug for ClaudeProvider {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ClaudeProvider")
-            .field("model", &DEFAULT_MODEL)
+            .field("model", &self.model_name)
             .field("auth_mode", &self.auth_mode)
             .finish()
     }
@@ -105,15 +107,24 @@ impl ClaudeProvider {
     ///
     /// Uses shared detect_credential_from_env() helper (REFAC-013).
     pub fn new() -> Result<Self, ProviderError> {
+        Self::new_with_model(None)
+    }
+
+    /// MODEL-001: Create a new ClaudeProvider with optional custom model
+    ///
+    /// If model is None, uses DEFAULT_MODEL.
+    pub fn new_with_model(model: Option<&str>) -> Result<Self, ProviderError> {
+        let model_name = model.unwrap_or(DEFAULT_MODEL);
+
         // Check for API key first (takes precedence) using shared helper
         if let Ok(api_key) = detect_credential_from_env("claude", &["ANTHROPIC_API_KEY"]) {
-            return Self::from_api_key_with_mode(&api_key, AuthMode::ApiKey);
+            return Self::from_api_key_with_mode_and_model(&api_key, AuthMode::ApiKey, model_name);
         }
 
         // Fall back to OAuth token using shared helper
         if let Ok(oauth_token) = detect_credential_from_env("claude", &["CLAUDE_CODE_OAUTH_TOKEN"])
         {
-            return Self::from_api_key_with_mode(&oauth_token, AuthMode::OAuth);
+            return Self::from_api_key_with_mode_and_model(&oauth_token, AuthMode::OAuth, model_name);
         }
 
         Err(ProviderError::auth(
@@ -127,12 +138,30 @@ impl ClaudeProvider {
         Self::from_api_key_with_mode(api_key, AuthMode::ApiKey)
     }
 
+    /// MODEL-001: Create a new ClaudeProvider with explicit model
+    ///
+    /// Uses the specified model instead of DEFAULT_MODEL.
+    pub fn from_api_key_with_model(api_key: &str, model: &str) -> Result<Self, ProviderError> {
+        Self::from_api_key_with_mode_and_model(api_key, AuthMode::ApiKey, model)
+    }
+
     /// Create a new ClaudeProvider with an explicit API key and auth mode
     ///
     /// Uses shared validate_api_key_static() helper (REFAC-013).
     pub fn from_api_key_with_mode(
         api_key: &str,
         auth_mode: AuthMode,
+    ) -> Result<Self, ProviderError> {
+        Self::from_api_key_with_mode_and_model(api_key, auth_mode, DEFAULT_MODEL)
+    }
+
+    /// MODEL-001: Create a new ClaudeProvider with explicit API key, auth mode, and model
+    ///
+    /// Uses shared validate_api_key_static() helper (REFAC-013).
+    pub fn from_api_key_with_mode_and_model(
+        api_key: &str,
+        auth_mode: AuthMode,
+        model: &str,
     ) -> Result<Self, ProviderError> {
         // Use shared validation helper (REFAC-013)
         validate_api_key_static("claude", api_key)?;
@@ -173,14 +202,15 @@ impl ClaudeProvider {
             );
         }
 
-        // Create completion model
+        // Create completion model with specified model name
         let completion_model =
-            anthropic::completion::CompletionModel::new(rig_client.clone(), DEFAULT_MODEL);
+            anthropic::completion::CompletionModel::new(rig_client.clone(), model);
 
         Ok(Self {
             completion_model,
             rig_client,
             auth_mode,
+            model_name: model.to_string(),
         })
     }
 
@@ -267,9 +297,10 @@ impl ClaudeProvider {
         use std::sync::Arc;
 
         // Build agent with all 9 tools using rig's builder pattern (TOOL-007: Uses FacadeToolWrapper for web search)
+        // MODEL-001: Use stored model name instead of DEFAULT_MODEL
         let mut agent_builder = self
             .rig_client
-            .agent(DEFAULT_MODEL)
+            .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
             .tool(ReadTool::new())
             .tool(WriteTool::new())
@@ -401,7 +432,7 @@ impl LlmProvider for ClaudeProvider {
     }
 
     fn model(&self) -> &str {
-        DEFAULT_MODEL
+        &self.model_name
     }
 
     fn context_window(&self) -> usize {

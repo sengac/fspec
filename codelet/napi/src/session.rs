@@ -66,6 +66,48 @@ impl CodeletSession {
         })
     }
 
+    /// MODEL-001: Create a new CodeletSession with dynamic model selection
+    ///
+    /// Creates a session with model support enabled, allowing selection of specific
+    /// models from models.dev. The model string should be in "provider/model-id" format.
+    ///
+    /// # Arguments
+    /// * `model_string` - Model in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+    ///
+    /// # Example
+    /// ```typescript
+    /// const session = await CodeletSession.newWithModel("anthropic/claude-sonnet-4");
+    /// ```
+    #[napi(factory)]
+    pub async fn new_with_model(model_string: String) -> Result<Self> {
+        use codelet_providers::ProviderManager;
+
+        // Load environment variables from .env file (if present)
+        let _ = dotenvy::dotenv();
+
+        // Create ProviderManager with model support (async for model cache)
+        let mut manager = ProviderManager::with_model_support()
+            .await
+            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {e}")))?;
+
+        // Select the specified model
+        manager
+            .select_model(&model_string)
+            .map_err(|e| Error::from_reason(format!("Failed to select model '{}': {e}", model_string)))?;
+
+        // Create session from the configured provider manager
+        let mut session = codelet_cli::session::Session::from_provider_manager(manager);
+
+        // Inject context reminders (CLAUDE.md discovery, environment info)
+        session.inject_context_reminders();
+
+        Ok(Self {
+            inner: Arc::new(Mutex::new(session)),
+            is_interrupted: Arc::new(AtomicBool::new(false)),
+            interrupt_notify: Arc::new(Notify::new()),
+        })
+    }
+
     /// Interrupt the current agent execution
     ///
     /// Call this when the user presses Esc in the TUI.
@@ -222,6 +264,20 @@ impl CodeletSession {
         Ok(session.current_provider_name().to_string())
     }
 
+    /// MODEL-001: Get the currently selected model string
+    ///
+    /// Returns the model string in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+    /// if a model was explicitly selected via newWithModel() or selectModel(), otherwise None.
+    #[napi(getter)]
+    pub fn selected_model(&self) -> Result<Option<String>> {
+        let session = self.inner.blocking_lock();
+        // Return the original model string, not the API ID
+        Ok(session
+            .provider_manager()
+            .selected_model_string()
+            .map(|s| s.to_string()))
+    }
+
     /// Get list of available providers
     #[napi(getter)]
     pub fn available_providers(&self) -> Result<Vec<String>> {
@@ -327,6 +383,41 @@ impl CodeletSession {
         session
             .switch_provider(&provider_name)
             .map_err(|e| Error::from_reason(format!("Failed to switch provider: {e}")))?;
+
+        Ok(())
+    }
+
+    /// MODEL-001: Select a different model mid-session
+    ///
+    /// Changes the model used for subsequent prompts without clearing conversation history.
+    /// The model string should be in "provider/model-id" format.
+    ///
+    /// NOTE: This only works for sessions created via newWithModel(). Sessions created
+    /// via the default constructor do not have model registry support enabled.
+    ///
+    /// # Arguments
+    /// * `model_string` - Model in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+    ///
+    /// # Example
+    /// ```typescript
+    /// const session = await CodeletSession.newWithModel("anthropic/claude-sonnet-4");
+    /// // ... use session ...
+    /// await session.selectModel("anthropic/claude-opus-4");  // Switch to Opus
+    /// ```
+    #[napi]
+    pub async fn select_model(&self, model_string: String) -> Result<()> {
+        let mut session = self.inner.lock().await;
+
+        session
+            .provider_manager_mut()
+            .select_model(&model_string)
+            .map_err(|e| {
+                Error::from_reason(format!(
+                    "Failed to select model '{}': {}. \
+                     Note: Model selection requires session created via newWithModel().",
+                    model_string, e
+                ))
+            })?;
 
         Ok(())
     }

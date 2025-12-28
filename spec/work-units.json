@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-27T03:53:09.111Z"
+    "lastUpdated": "2025-12-28T03:38:52.847Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -55383,9 +55383,9 @@
       "id": "CTX-002",
       "title": "OpenCode-Style Compaction Window Limit Trigger",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2025-12-24T04:23:45.474Z",
-      "updatedAt": "2025-12-24T05:25:22.058Z",
+      "updatedAt": "2025-12-28T03:38:52.874Z",
       "description": "Implement OpenCode's compaction TRIGGER logic (when to compact, not how to compact).\n\n**Issue 1: Token Counting (BROKEN)**\nCurrent: `effective = input - (cache_read * 0.9)` - discounts cache, ignores output\nOpenCode: `count = input + cache_read + output` - includes ALL tokens\n\n**Issue 2: Threshold Calculation (SUBOPTIMAL)**  \nCurrent: `threshold = context_window * 0.9` - static percentage\nOpenCode: `usable = context_window - min(model_max_output, 32000)` - reserves output space\n\n**Required Changes:**\n1. Token count = input + cache_read + output (include all, no discount)\n2. Threshold = context_window - min(model_max_output, SESSION_OUTPUT_MAX)\n3. Add SESSION_OUTPUT_TOKEN_MAX = 32,000 constant\n4. Add max_output_tokens to provider trait\n5. Trigger when: count > usable\n\n**Files to modify:**\n- codelet/core/src/compaction_hook.rs (token calculation)\n- codelet/cli/src/compaction_threshold.rs (threshold calculation)\n- codelet/providers/src/lib.rs (add max_output_tokens trait method)",
       "children": [],
       "attachments": [
@@ -55436,6 +55436,14 @@
         {
           "state": "implementing",
           "timestamp": "2025-12-24T05:25:22.058Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-28T03:38:17.020Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-28T03:38:52.875Z"
         }
       ],
       "userStory": {
@@ -55592,7 +55600,7 @@
       "nextNoteId": 3,
       "questions": [],
       "nextQuestionId": 0,
-      "updated": "2025-12-24T05:21:50.072Z"
+      "updated": "2025-12-28T03:38:52.874Z"
     },
     "TOOL-001": {
       "id": "TOOL-001",
@@ -56918,6 +56926,434 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-27T03:53:09.138Z"
+    },
+    "MODEL-001": {
+      "id": "MODEL-001",
+      "title": "Dynamic Model Selection via models.dev",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-12-27T23:58:58.421Z",
+      "updatedAt": "2025-12-28T02:10:57.006Z",
+      "description": "Implement dynamic model selection using models.dev API as the single source of truth for model metadata. Includes caching, provider facades, and CLI integration.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/MODEL-001/models.md",
+        "spec/attachments/MODEL-001/ast-research-thinking-config.json",
+        "spec/attachments/MODEL-001/ast-research-provider-manager.json"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-28T00:01:34.541Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-28T00:35:42.273Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-28T00:49:24.059Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-28T01:00:27.336Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-28T01:13:30.312Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-28T01:16:41.703Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-28T01:25:36.648Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-28T01:42:00.155Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-28T01:42:13.527Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-28T02:10:57.006Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using codelet",
+        "action": "select from available LLM models across providers",
+        "benefit": "I can choose the best model for my task without hardcoded limitations"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Model metadata MUST come from models.dev API, never hardcoded",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:06.639Z"
+        },
+        {
+          "id": 1,
+          "text": "Cache is indefinite - only refetch when cache missing, corrupted, or user requests refresh",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:08.495Z"
+        },
+        {
+          "id": 2,
+          "text": "ProviderFacade defines HOW to talk to a provider (API format, auth, thinking config), NOT what models exist",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:11.800Z"
+        },
+        {
+          "id": 3,
+          "text": "ModelRegistry provides lookup, alias resolution, and capability filtering",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:13.839Z"
+        },
+        {
+          "id": 4,
+          "text": "Each model has capabilities from models.dev: reasoning, tool_call, attachment, temperature, modalities",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:15.768Z"
+        },
+        {
+          "id": 5,
+          "text": "Unknown model should return error with fuzzy match suggestions",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:24.586Z"
+        },
+        {
+          "id": 6,
+          "text": "Cache stored at ~/.codelet/cache/models.json",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:26.702Z"
+        },
+        {
+          "id": 7,
+          "text": "Provider facades integrate with existing ThinkingConfigFacade and SystemPromptFacade",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:28.409Z"
+        },
+        {
+          "id": 8,
+          "text": "Build process fetches latest models.dev data and embeds as fallback snapshot in binary",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:25:32.722Z"
+        },
+        {
+          "id": 9,
+          "text": "Selected models MUST have tool_call=true capability, reject models without it",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:27:23.459Z"
+        },
+        {
+          "id": 10,
+          "text": "Model strings use full format only: provider/model-id (e.g., anthropic/claude-sonnet-4)",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:29:41.184Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'codelet --model google/gemini-2.5-pro' and full model path is used directly",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:51.985Z"
+        },
+        {
+          "id": 1,
+          "text": "First run with no cache fetches from models.dev and creates ~/.codelet/cache/models.json",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:53.679Z"
+        },
+        {
+          "id": 2,
+          "text": "Subsequent runs use cached models.json without network call",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:55.193Z"
+        },
+        {
+          "id": 3,
+          "text": "User runs 'codelet models --refresh' to force fetch fresh data from models.dev",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:56.907Z"
+        },
+        {
+          "id": 4,
+          "text": "User runs 'codelet models anthropic' to list all Anthropic models with names and capabilities",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:02:58.631Z"
+        },
+        {
+          "id": 5,
+          "text": "User runs 'codelet --model claud' (typo) and gets error with suggestions: claude-sonnet-4, claude-opus-4, claude-haiku-4",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:03:10.035Z"
+        },
+        {
+          "id": 6,
+          "text": "User runs 'codelet models --reasoning' to list only models with reasoning capability",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:03:11.622Z"
+        },
+        {
+          "id": 7,
+          "text": "Corrupted cache file triggers automatic refetch from models.dev",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:03:13.298Z"
+        },
+        {
+          "id": 8,
+          "text": "Selected model's capabilities determine which ThinkingConfigFacade is used (Claude vs Gemini thinking)",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:03:15.073Z"
+        },
+        {
+          "id": 9,
+          "text": "User runs 'codelet --model anthropic/claude-sonnet-4' and model is selected from registry",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:29:52.467Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should we embed a fallback snapshot of models.dev for first-run when network is unavailable?",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:03:34.365Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, embed a fallback snapshot. Include a build step that fetches latest from models.dev and embeds it in the binary."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should codelet require tool_call=true capability for all selected models?",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:03:36.088Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, require tool_call=true. Only allow models that support function calling to ensure codelet features work."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should we support custom/self-hosted providers not in models.dev?",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:03:37.667Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Defer to later phase. Not in scope for MODEL-001, add as separate work unit."
+        },
+        {
+          "id": 3,
+          "text": "@human: What default aliases should we ship with? (sonnet, opus, haiku, flash, pro, gpt4, o1?)",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:03:39.205Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No built-in aliases. Users must use full model paths (e.g., anthropic/claude-sonnet-4)."
+        }
+      ],
+      "nextQuestionId": 4,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create ModelCache in codelet/providers for fetching and caching models.dev data to ~/.codelet/cache/models.json",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:34:54.743Z"
+        },
+        {
+          "id": 1,
+          "text": "Create ModelRegistry for lookup by provider/model-id, capability filtering, and fuzzy match suggestions",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:34:56.513Z"
+        },
+        {
+          "id": 2,
+          "text": "Extend ProviderFacade trait to return appropriate ThinkingConfigFacade and SystemPromptFacade based on model capabilities",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:34:58.049Z"
+        },
+        {
+          "id": 3,
+          "text": "Add build.rs step to fetch models.dev and embed as fallback snapshot in binary using include_bytes!",
+          "deleted": false,
+          "createdAt": "2025-12-28T00:35:00.029Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "updated": "2025-12-28T01:42:13.527Z"
+    },
+    "TUI-034": {
+      "id": "TUI-034",
+      "title": "Agent Modal Model Selection",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-28T02:46:02.209Z",
+      "updatedAt": "2025-12-28T03:29:56.667Z",
+      "description": "Replace provider-only selector with hierarchical model selector using MODEL-001 registry",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-28T02:46:13.306Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-28T02:50:08.556Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-28T02:56:31.435Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-28T03:29:35.938Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-28T03:29:56.667Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec's AI agent",
+        "action": "select specific models within providers",
+        "benefit": "I can choose the best model for my task and budget"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tab key opens model selector (replaces current provider-only selector)",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:46:37.512Z"
+        },
+        {
+          "id": 1,
+          "text": "Only providers with valid credentials are shown",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:46:39.315Z"
+        },
+        {
+          "id": 2,
+          "text": "Only models with tool_call=true are selectable (required for agent functionality)",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:46:40.869Z"
+        },
+        {
+          "id": 3,
+          "text": "Current model should be highlighted with (current) indicator",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:46:42.369Z"
+        },
+        {
+          "id": 4,
+          "text": "Provider sections are collapsible with Left/Right arrow keys",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:46:44.400Z"
+        },
+        {
+          "id": 5,
+          "text": "Header displays model name and capability indicators, not just provider",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:46:45.942Z"
+        },
+        {
+          "id": 6,
+          "text": "Session persistence stores full model path for accurate restoration",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:46:47.708Z"
+        },
+        {
+          "id": 7,
+          "text": "Backward compatible with legacy provider-only session format",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:46:49.466Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User presses Tab and sees anthropic expanded with claude-sonnet-4 highlighted",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:47:09.677Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses Down to navigate to claude-opus-4, Enter to select",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:47:11.256Z"
+        },
+        {
+          "id": 2,
+          "text": "Header changes from Agent: claude to Agent: claude-opus-4 [R] [200k]",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:47:12.999Z"
+        },
+        {
+          "id": 3,
+          "text": "User opens model selector, presses Right on collapsed google to expand it",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:47:14.499Z"
+        },
+        {
+          "id": 4,
+          "text": "User resumes session with provider anthropic/claude-sonnet-4 and sees correct model",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:47:16.003Z"
+        },
+        {
+          "id": 5,
+          "text": "User sees [R] indicator for reasoning models, [V] for vision, context size",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:47:17.476Z"
+        },
+        {
+          "id": 6,
+          "text": "User only sees anthropic section if ANTHROPIC_API_KEY is set",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:47:19.297Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Provider ID mapping: models.dev anthropic -> internal claude, google -> gemini, openai -> openai",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:48:09.308Z"
+        },
+        {
+          "id": 1,
+          "text": "Files modified: src/tui/components/AgentModal.tsx (main), persistence integration for full model path storage",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:48:10.901Z"
+        },
+        {
+          "id": 2,
+          "text": "5-layer architecture: UI Layer (AgentModal.tsx) -> State Layer (React) -> NAPI Layer (codelet-napi) -> Provider Layer (codelet-providers) -> Cache Layer",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:48:20.964Z"
+        },
+        {
+          "id": 3,
+          "text": "Uses MODEL-001 NAPI bindings: modelsListAll(), CodeletSession.newWithModel(), selectModel(), selectedModel getter",
+          "deleted": false,
+          "createdAt": "2025-12-28T02:48:21.662Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/TUI-034/ast-research-agent-modal-functions.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-28T03:29:56.667Z"
     }
   },
   "states": {
@@ -56982,14 +57418,15 @@
       "AGENT-001",
       "BROWSE-001",
       "BOARD-020",
-      "TOOL-001"
+      "TOOL-001",
+      "MODEL-001"
     ],
     "testing": [],
-    "implementing": [
-      "CTX-002"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "CTX-002",
+      "TUI-034",
       "TOOL-010",
       "TOOL-009",
       "TOOL-008",
@@ -57434,7 +57871,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 33,
+    "TUI": 34,
     "REFAC": 5,
     "VIEW": 2,
     "DOC": 17,
@@ -57465,6 +57902,7 @@
     "CLEAN": 5,
     "NAPI": 8,
     "CTX": 2,
-    "TOOL": 10
+    "TOOL": 10,
+    "MODEL": 1
   }
 }
