@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-28T03:38:52.847Z"
+    "lastUpdated": "2025-12-28T11:14:48.475Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -57354,6 +57354,93 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-28T03:29:56.667Z"
+    },
+    "TUI-035": {
+      "id": "TUI-035",
+      "title": "Persist Last Used Model Selection",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-12-28T11:14:40.468Z",
+      "updatedAt": "2025-12-28T11:15:33.999Z",
+      "description": "Persist the last used provider/model selection to ~/.fspec config and restore it when opening a new AgentModal session. This improves UX by remembering the user's preferred model across sessions.",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec's AI agent",
+        "action": "have my last used model remembered",
+        "benefit": "I don't need to re-select my preferred model every time I open the agent"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-28T11:15:07.086Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Model selection persisted to ~/.fspec/config.json under lastUsedModel key",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:13.373Z"
+        },
+        {
+          "id": 1,
+          "text": "Persistence uses provider/model-id format (e.g., anthropic/claude-sonnet-4)",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:13.979Z"
+        },
+        {
+          "id": 2,
+          "text": "On new session, restore last used model if available and credentials exist",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:14.596Z"
+        },
+        {
+          "id": 3,
+          "text": "Fall back to default model selection if persisted model unavailable",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:15.200Z"
+        },
+        {
+          "id": 4,
+          "text": "Update persistence whenever user switches models via Tab selector",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:15.778Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User selects anthropic/claude-opus-4 via Tab, config.json is updated with lastUsedModel",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:31.731Z"
+        },
+        {
+          "id": 1,
+          "text": "User opens new AgentModal, session starts with previously selected claude-opus-4",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:32.293Z"
+        },
+        {
+          "id": 2,
+          "text": "User's persisted model google/gemini-pro no longer exists, falls back to first available model",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:32.856Z"
+        },
+        {
+          "id": 3,
+          "text": "User's persisted model is anthropic/claude-sonnet-4 but no ANTHROPIC_API_KEY, uses different provider",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:33.421Z"
+        },
+        {
+          "id": 4,
+          "text": "Fresh install with no config.json, uses default model selection logic",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:15:33.999Z"
+        }
+      ],
+      "nextExampleId": 5
     }
   },
   "states": {
@@ -57419,7 +57506,8 @@
       "BROWSE-001",
       "BOARD-020",
       "TOOL-001",
-      "MODEL-001"
+      "MODEL-001",
+      "TUI-035"
     ],
     "testing": [],
     "implementing": [],
@@ -57871,7 +57959,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 34,
+    "TUI": 35,
     "REFAC": 5,
     "VIEW": 2,
     "DOC": 17,
