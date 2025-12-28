@@ -380,6 +380,12 @@ export declare function modelsGetInfo(
  *
  * Returns models grouped by provider. Uses cached registry for efficiency.
  * First call loads from disk/API, subsequent calls use cached data.
+ *
+ * Filters out:
+ * - Deprecated models (status = "deprecated")
+ * - Models older than 18 months
+ *
+ * Sorts models by release date (newest first).
  */
 export declare function modelsListAll(): Promise<Array<NapiProviderModels>>;
 

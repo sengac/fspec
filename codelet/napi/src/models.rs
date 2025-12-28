@@ -10,6 +10,7 @@
 //! IMPORTANT: Call modelsSetCacheDirectory() BEFORE any other model operations
 //! if you need a custom cache location. The directory is captured at first use.
 
+use chrono::Datelike;
 use codelet_providers::models::{get_cache_dir, set_cache_directory, ModelCache, ModelRegistry};
 use napi::bindgen_prelude::*;
 use std::path::PathBuf;
@@ -123,6 +124,30 @@ fn to_napi_model_info(model: &codelet_providers::models::ModelInfo) -> NapiModel
     }
 }
 
+/// Check if a model should be shown in the UI (filters out deprecated/old models)
+fn is_current_model(model: &codelet_providers::models::ModelInfo) -> bool {
+    use codelet_providers::models::ModelStatus;
+
+    // Filter out deprecated models
+    if model.status == Some(ModelStatus::Deprecated) {
+        return false;
+    }
+
+    // Filter out models older than 18 months
+    if let Some(ref release_date) = model.release_date {
+        // Parse release date (format: "YYYY-MM-DD")
+        if let Ok(date) = chrono::NaiveDate::parse_from_str(release_date, "%Y-%m-%d") {
+            let today = chrono::Utc::now().date_naive();
+            let age_months = (today.year() - date.year()) * 12 + (today.month() as i32 - date.month() as i32);
+            if age_months > 18 {
+                return false;
+            }
+        }
+    }
+
+    true
+}
+
 /// Provider with its available models
 #[napi(object)]
 pub struct NapiProviderModels {
@@ -142,6 +167,12 @@ pub struct NapiProviderModels {
 ///
 /// Returns models grouped by provider. Uses cached registry for efficiency.
 /// First call loads from disk/API, subsequent calls use cached data.
+///
+/// Filters out:
+/// - Deprecated models (status = "deprecated")
+/// - Models older than 18 months
+///
+/// Sorts models by release date (newest first).
 #[napi]
 pub async fn models_list_all() -> Result<Vec<NapiProviderModels>> {
     let registry = get_registry().await?;
@@ -149,14 +180,26 @@ pub async fn models_list_all() -> Result<Vec<NapiProviderModels>> {
     Ok(registry
         .list_providers()
         .iter()
-        .map(|provider_info| NapiProviderModels {
-            provider_id: provider_info.id.clone(),
-            provider_name: provider_info.name.clone(),
-            models: provider_info
+        .map(|provider_info| {
+            // Filter to current models and sort by release date (newest first)
+            let mut models: Vec<_> = provider_info
                 .models
                 .values()
-                .map(to_napi_model_info)
-                .collect(),
+                .filter(|m| is_current_model(m))
+                .collect();
+
+            // Sort by release date descending (newest first)
+            models.sort_by(|a, b| {
+                let date_a = a.release_date.as_deref().unwrap_or("1970-01-01");
+                let date_b = b.release_date.as_deref().unwrap_or("1970-01-01");
+                date_b.cmp(date_a)
+            });
+
+            NapiProviderModels {
+                provider_id: provider_info.id.clone(),
+                provider_name: provider_info.name.clone(),
+                models: models.into_iter().map(to_napi_model_info).collect(),
+            }
         })
         .collect())
 }
