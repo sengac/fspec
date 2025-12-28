@@ -282,6 +282,22 @@ interface ConversationLine {
   messageIndex: number;
 }
 
+/**
+ * Extract model ID from API model ID for registry matching.
+ * IMPORTANT: Do NOT use model.family - it may be a generic family name (e.g., "gemini-pro")
+ * that doesn't match registry keys. Instead, extract from the full API ID by stripping suffixes.
+ *
+ * Examples:
+ *   "claude-sonnet-4-20250514" -> "claude-sonnet-4" (strip date suffix)
+ *   "gemini-2.5-pro-preview-06-05" -> "gemini-2.5-pro" (strip preview suffix)
+ *   "gpt-4o" -> "gpt-4o" (no change)
+ */
+const extractModelIdForRegistry = (apiModelId: string): string => {
+  return apiModelId
+    .replace(/-preview-\d{2}-\d{2}$/, '')  // Remove Gemini preview suffix
+    .replace(/-\d{8}$/, '');               // Remove date suffix
+};
+
 export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const { stdout } = useStdout();
   const [session, setSession] = useState<CodeletSessionType | null>(null);
@@ -478,7 +494,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           if (defaultSection.models.length > 0) {
             defaultModelInfo = defaultSection.models[0];
             // Extract model-id from the API ID (e.g., "claude-sonnet-4-20250514" -> "claude-sonnet-4")
-            const modelId = defaultModelInfo.family || defaultModelInfo.id.replace(/-\d{8}$/, '');
+            const modelId = extractModelIdForRegistry(defaultModelInfo.id);
             defaultModelString = `${defaultSection.providerId}/${modelId}`;
           }
         }
@@ -510,7 +526,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               const section = sections.find(s => s.providerId === providerId);
               if (section) {
                 const model = section.models.find(m =>
-                  (m.family || m.id.replace(/-\d{8}$/, '')) === modelId
+                  extractModelIdForRegistry(m.id) === modelId
                 );
                 if (model) {
                   defaultModelInfo = model;
@@ -540,7 +556,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
         // TUI-034: Set current model info (only if session has model support)
         if (sessionHasModelSupport && defaultModelInfo && defaultSection) {
-          const modelId = defaultModelInfo.family || defaultModelInfo.id.replace(/-\d{8}$/, '');
+          const modelId = extractModelIdForRegistry(defaultModelInfo.id);
           setCurrentModel({
             providerId: defaultSection.providerId,
             modelId,
@@ -1434,8 +1450,14 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
     try {
       setIsLoading(true);
-      // Extract model-id from the API ID (e.g., "claude-sonnet-4-20250514" -> "claude-sonnet-4")
-      const modelId = model.family || model.id.replace(/-\d{8}$/, '');
+      // Extract model-id from the API ID for registry matching
+      // IMPORTANT: Do NOT use model.family - it may be a generic family name (e.g., "gemini-pro")
+      // that doesn't match registry keys. Instead, extract from model.id by stripping suffixes.
+      // Examples:
+      //   "claude-sonnet-4-20250514" -> "claude-sonnet-4" (strip date suffix)
+      //   "gemini-2.5-pro-preview-06-05" -> "gemini-2.5-pro" (strip preview suffix)
+      //   "gpt-4o" -> "gpt-4o" (no change)
+      const modelId = extractModelIdForRegistry(model.id);
       const modelString = `${section.providerId}/${modelId}`;
 
       // Use selectModel to switch the model
@@ -1748,7 +1770,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               // Find matching model info from provider sections
               const section = providerSections.find(s => s.providerId === providerId);
               const model = section?.models.find(m =>
-                (m.family || m.id.replace(/-\d{8}$/, '')) === modelId
+                extractModelIdForRegistry(m.id) === modelId
               );
               if (model && section) {
                 setCurrentModel({
@@ -2336,7 +2358,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                   {isExpanded && section.models.map((model, modelIdx) => {
                     const isModelSelected = isSectionSelected && modelIdx === selectedModelIdx;
                     const isCurrent = currentModel?.apiModelId === model.id;
-                    const modelId = model.family || model.id.replace(/-\d{8}$/, '');
+                    const modelId = extractModelIdForRegistry(model.id);
 
                     return (
                       <Box key={model.id}>
