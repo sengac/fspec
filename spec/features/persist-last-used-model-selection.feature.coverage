@@ -1,0 +1,182 @@
+{
+  "scenarios": [
+    {
+      "name": "Restore persisted model on new session",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-persistence.test.tsx",
+          "lines": "342-365",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                28,
+                490,
+                491
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restore persisted model from different provider",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-persistence.test.tsx",
+          "lines": "367-389",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                28,
+                490,
+                491
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fall back when persisted model no longer exists",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-persistence.test.tsx",
+          "lines": "395-419",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                28,
+                490,
+                491
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fall back when persisted provider has no credentials",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-persistence.test.tsx",
+          "lines": "421-445",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                28,
+                490,
+                491
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Use default selection on fresh install",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-persistence.test.tsx",
+          "lines": "447-469",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                28,
+                490,
+                491
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle corrupt config gracefully",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-persistence.test.tsx",
+          "lines": "471-493",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                28,
+                490,
+                491
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Config uses proper nested structure",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-persistence.test.tsx",
+          "lines": "499-532",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                28,
+                1522,
+                1523,
+                1524,
+                1525,
+                1526,
+                1527,
+                1528,
+                1529,
+                1530
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Config preserves other settings when updating model",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentModal-model-persistence.test.tsx",
+          "lines": "534-574",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentModal.tsx",
+              "lines": [
+                28,
+                1522,
+                1523,
+                1524,
+                1525,
+                1526,
+                1527,
+                1528,
+                1529,
+                1530
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/AgentModal-model-persistence.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentModal.tsx"
+    ],
+    "totalLinesCovered": 256
+  }
+}

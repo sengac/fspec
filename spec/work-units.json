@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-28T11:14:48.475Z"
+    "lastUpdated": "2025-12-28T11:42:42.717Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -57359,9 +57359,9 @@
       "id": "TUI-035",
       "title": "Persist Last Used Model Selection",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-12-28T11:14:40.468Z",
-      "updatedAt": "2025-12-28T11:15:33.999Z",
+      "updatedAt": "2025-12-28T11:42:42.745Z",
       "description": "Persist the last used provider/model selection to ~/.fspec config and restore it when opening a new AgentModal session. This improves UX by remembering the user's preferred model across sessions.",
       "children": [],
       "userStory": {
@@ -57373,6 +57373,22 @@
         {
           "state": "specifying",
           "timestamp": "2025-12-28T11:15:07.086Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-28T11:19:05.124Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-28T11:21:42.333Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-28T11:41:38.739Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-28T11:42:42.745Z"
         }
       ],
       "rules": [
@@ -57440,7 +57456,40 @@
           "createdAt": "2025-12-28T11:15:33.999Z"
         }
       ],
-      "nextExampleId": 5
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Uses existing loadConfig() and writeConfig() from src/utils/config.ts for persistence to ~/.fspec/fspec-config.json",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:18:00.460Z"
+        },
+        {
+          "id": 1,
+          "text": "Config path: agent.lastUsedModel stores provider/model-id format (e.g., anthropic/claude-sonnet-4)",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:18:01.027Z"
+        },
+        {
+          "id": 2,
+          "text": "AgentModal.tsx reads config on mount, validates provider credentials before using persisted model",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:18:01.589Z"
+        },
+        {
+          "id": 3,
+          "text": "handleSelectModel callback updates config after successful model switch",
+          "deleted": false,
+          "createdAt": "2025-12-28T11:18:02.151Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/TUI-035/ast-research-config-integration.json"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-28T11:42:42.745Z"
     }
   },
   "states": {
@@ -57506,13 +57555,13 @@
       "BROWSE-001",
       "BOARD-020",
       "TOOL-001",
-      "MODEL-001",
-      "TUI-035"
+      "MODEL-001"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-035",
       "CTX-002",
       "TUI-034",
       "TOOL-010",
