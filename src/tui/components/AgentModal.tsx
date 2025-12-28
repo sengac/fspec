@@ -25,7 +25,7 @@ import React, {
 } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
-import { getFspecUserDir } from '../../utils/config';
+import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
 import { persistenceStoreMessageEnvelope, getThinkingConfig, JsThinkingLevel, modelsListAll, type NapiProviderModels, type NapiModelInfo } from '@sengac/codelet-napi';
@@ -484,12 +484,52 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // TUI-034: Only include providers with compatible models in availableProviders for actual use
         setAvailableProviders(sections.filter(s => s.models.length > 0).map(s => s.internalName));
 
+        // TUI-035: Load persisted model selection from config
+        let persistedModelString: string | null = null;
+        try {
+          const config = await loadConfig();
+          persistedModelString = config?.tui?.lastUsedModel || null;
+          if (persistedModelString) {
+            logger.debug(`Found persisted model selection: ${persistedModelString}`);
+          }
+        } catch (err) {
+          logger.warn('Failed to load config for persisted model, using default', { error: err });
+        }
+
         // Find default model (first available with tool_call=true)
         let defaultModelString = 'anthropic/claude-sonnet-4'; // Fallback
         let defaultModelInfo: NapiModelInfo | null = null;
         let defaultSection: ProviderSection | null = null;
 
-        if (sections.length > 0) {
+        // TUI-035: Check if persisted model is available and has credentials
+        if (persistedModelString && persistedModelString.includes('/')) {
+          const [persistedProviderId, persistedModelId] = persistedModelString.split('/');
+          const persistedSection = sections.find(s => s.providerId === persistedProviderId);
+
+          if (persistedSection && persistedSection.hasCredentials) {
+            // Find the model in the section
+            const persistedModel = persistedSection.models.find(m =>
+              extractModelIdForRegistry(m.id) === persistedModelId
+            );
+
+            if (persistedModel) {
+              // Use persisted model
+              defaultModelString = persistedModelString;
+              defaultModelInfo = persistedModel;
+              defaultSection = persistedSection;
+              logger.info(`Restored persisted model: ${persistedModelString}`);
+            } else {
+              logger.info(`Persisted model ${persistedModelId} not found in ${persistedProviderId}, using default`);
+            }
+          } else if (persistedSection && !persistedSection.hasCredentials) {
+            logger.info(`Persisted provider ${persistedProviderId} has no credentials, using default`);
+          } else {
+            logger.info(`Persisted provider ${persistedProviderId} not available, using default`);
+          }
+        }
+
+        // Use first available model if no persisted model was restored
+        if (!defaultModelInfo && sections.length > 0) {
           defaultSection = sections[0];
           if (defaultSection.models.length > 0) {
             defaultModelInfo = defaultSection.models[0];
@@ -1476,6 +1516,23 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       });
       setCurrentProvider(section.internalName);
       setShowModelSelector(false);
+
+      // TUI-035: Persist model selection to user config
+      try {
+        const existingConfig = await loadConfig();
+        const updatedConfig = {
+          ...existingConfig,
+          tui: {
+            ...existingConfig?.tui,
+            lastUsedModel: modelString,
+          },
+        };
+        await writeConfig('user', updatedConfig);
+        logger.debug(`Persisted model selection: ${modelString}`);
+      } catch (persistErr) {
+        // Log but don't fail - persistence is not critical
+        logger.warn('Failed to persist model selection', { error: persistErr });
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to switch model';

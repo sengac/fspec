@@ -1,0 +1,56 @@
+{
+  "description": "AST research for TUI-035: Persist Last Used Model Selection",
+  "files_analyzed": [
+    "src/utils/config.ts",
+    "src/tui/components/AgentModal.tsx"
+  ],
+  "findings": {
+    "config_utilities": {
+      "file": "src/utils/config.ts",
+      "functions": [
+        {
+          "name": "getFspecUserDir",
+          "signature": "(): string",
+          "description": "Returns ~/.fspec path for user-level config"
+        },
+        {
+          "name": "loadConfig",
+          "signature": "(cwd?: string): Promise<any>",
+          "description": "Loads and merges user-level and project-level config"
+        },
+        {
+          "name": "writeConfig",
+          "signature": "(scope: 'user' | 'project', config: any, cwd?: string): Promise<void>",
+          "description": "Writes config to user or project scope"
+        }
+      ],
+      "config_path": "~/.fspec/fspec-config.json",
+      "config_key": "tui.lastUsedModel"
+    },
+    "agent_modal": {
+      "file": "src/tui/components/AgentModal.tsx",
+      "integration_points": [
+        {
+          "location": "useEffect initialization (~line 420)",
+          "description": "Session creation with newWithModel - ADD config read here"
+        },
+        {
+          "location": "handleSelectModel (~line 1432)",
+          "description": "Model switch handler - ADD config write here"
+        }
+      ],
+      "state_variables": [
+        "currentModel",
+        "providerSections",
+        "availableProviders"
+      ]
+    }
+  },
+  "implementation_plan": {
+    "step1": "Import loadConfig, writeConfig from src/utils/config.ts in AgentModal.tsx",
+    "step2": "In useEffect init, call loadConfig() to get agent.lastUsedModel",
+    "step3": "If lastUsedModel exists and provider has credentials, use as defaultModelString",
+    "step4": "In handleSelectModel, after successful switch, call writeConfig to persist",
+    "step5": "Use try/catch to gracefully handle config read/write failures"
+  }
+}
