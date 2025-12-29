@@ -215,6 +215,8 @@ export declare const enum ChunkType {
   Thinking = 'Thinking',
   ToolCall = 'ToolCall',
   ToolResult = 'ToolResult',
+  /** Tool execution progress - streaming output from bash/shell tools (TOOL-011) */
+  ToolProgress = 'ToolProgress',
   Status = 'Status',
   Interrupted = 'Interrupted',
   TokenUpdate = 'TokenUpdate',
@@ -743,7 +745,7 @@ export declare function persistenceUpdateSessionTokens(
 /** Set the logging callback from TypeScript and initialize the tracing subscriber */
 export declare function setRustLogCallback(callback: LogCallback): void;
 
-/** A chunk of streaming response (TOOL-010: added thinking field) */
+/** A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress) */
 export interface StreamChunk {
   type: string;
   text?: string;
@@ -751,6 +753,8 @@ export interface StreamChunk {
   thinking?: string;
   toolCall?: ToolCallInfo;
   toolResult?: ToolResultInfo;
+  /** Tool execution progress - streaming output from bash/shell tools (TOOL-011) */
+  toolProgress?: ToolProgressInfo;
   status?: string;
   queuedInputs?: Array<string>;
   tokens?: TokenTracker;
@@ -777,6 +781,19 @@ export interface ToolCallInfo {
   id: string;
   name: string;
   input: string;
+}
+
+/**
+ * Tool execution progress information (TOOL-011)
+ * Streaming output from bash/shell tools during execution
+ */
+export interface ToolProgressInfo {
+  /** Tool call ID this progress is for */
+  toolCallId: string;
+  /** Tool name (e.g., "bash", "run_shell_command") */
+  toolName: string;
+  /** Output chunk (new text since last progress event) */
+  outputChunk: string;
 }
 
 /** Tool result information */

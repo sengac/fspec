@@ -870,7 +870,8 @@ impl CodeletSession {
         let interrupt_notify = Arc::clone(&self.interrupt_notify);
 
         // Create NAPI output handler
-        let output = NapiOutput::new(&callback);
+        // TOOL-011: Wrap callback in Arc to enable sharing with progress_emitter
+        let output = NapiOutput::new(Arc::new(callback));
 
         // Lock session and run the stream
         let mut session = session_arc.lock().await;

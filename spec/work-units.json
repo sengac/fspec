@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-29T06:12:42.756Z"
+    "lastUpdated": "2025-12-29T09:00:00.424Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -57832,6 +57832,137 @@
       ],
       "nextNoteId": 4,
       "updated": "2025-12-29T06:12:42.787Z"
+    },
+    "TOOL-011": {
+      "id": "TOOL-011",
+      "title": "Bash Tool UI Streaming During Execution",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-29T07:55:24.153Z",
+      "updatedAt": "2025-12-29T09:00:00.450Z",
+      "description": "Add real-time output streaming to the bash tool so users see command output as it executes, rather than waiting for completion",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TOOL-011/TOOL-011-bash-streaming-research.md",
+        "spec/attachments/TOOL-011/ast-research-bash-tool.json"
+      ],
+      "userStory": {
+        "role": "developer using codelet CLI",
+        "action": "see bash command output streaming in real-time during execution",
+        "benefit": "I get visual feedback that commands are running and can see progress without waiting for completion"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-29T08:00:35.837Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-29T08:05:39.536Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-29T08:19:33.500Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-29T08:24:16.400Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-29T08:31:10.756Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-29T08:35:57.566Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-29T08:59:33.139Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-29T09:00:00.451Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Output must stream to UI in real-time as subprocess writes to stdout/stderr",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:00:50.447Z"
+        },
+        {
+          "id": 1,
+          "text": "LLM must still receive complete buffered output after command completion (not streamed chunks)",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:00:51.135Z"
+        },
+        {
+          "id": 2,
+          "text": "Output truncation limits (MAX_OUTPUT_CHARS) must still apply to final LLM result",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:00:53.544Z"
+        },
+        {
+          "id": 3,
+          "text": "Streaming must work through existing StreamOutput trait callbacks",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:00:54.228Z"
+        },
+        {
+          "id": 4,
+          "text": "Timeout handling must continue to work correctly with streaming",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:00:54.903Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs 'npm install' - sees package download progress line-by-line in TUI as it happens",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:01:09.164Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs 'cargo build' - sees compilation progress streaming in real-time, then LLM receives full output",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:01:11.118Z"
+        },
+        {
+          "id": 2,
+          "text": "Command produces 50KB output - user sees it streaming, but LLM result is truncated to MAX_OUTPUT_CHARS limit",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:01:12.831Z"
+        },
+        {
+          "id": 3,
+          "text": "Command times out after 120s - user saw partial output during execution, error returned to LLM",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:01:15.253Z"
+        },
+        {
+          "id": 4,
+          "text": "Similar to opencode pattern: emit_tool_progress callback called on each stdout chunk",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:01:16.900Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation approach based on research of opencode, aider, gemini-cli, letta. Use tokio spawn with piped stdout, read lines in loop, emit via StreamOutput trait. See attached research document for detailed comparison.",
+          "deleted": false,
+          "createdAt": "2025-12-29T08:01:27.558Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-29T09:00:00.450Z"
     }
   },
   "states": {
@@ -57904,6 +58035,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TOOL-011",
       "BROWSE-002",
       "TOOLS-001",
       "TUI-035",
@@ -58384,7 +58516,7 @@
     "CLEAN": 5,
     "NAPI": 8,
     "CTX": 2,
-    "TOOL": 10,
+    "TOOL": 11,
     "MODEL": 1,
     "TOOLS": 2
   }

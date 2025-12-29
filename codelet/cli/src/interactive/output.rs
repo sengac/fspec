@@ -51,6 +51,17 @@ pub struct ContextFillInfo {
     pub context_window: u64,
 }
 
+/// Tool progress information for streaming bash output (TOOL-011)
+#[derive(Debug, Clone)]
+pub struct ToolProgressEvent {
+    /// Tool call ID this progress is for
+    pub tool_call_id: String,
+    /// Tool name (e.g., "bash", "run_shell_command")
+    pub tool_name: String,
+    /// Output chunk (new text since last progress event)
+    pub output_chunk: String,
+}
+
 /// Stream event enum - all possible events in a single type
 ///
 /// Using an enum instead of multiple trait methods:
@@ -77,6 +88,8 @@ pub enum StreamEvent {
     Tokens(TokenInfo),
     /// Context window fill percentage (TUI-033)
     ContextFill(ContextFillInfo),
+    /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
+    ToolProgress(ToolProgressEvent),
 }
 
 /// Stream output handler trait
@@ -93,6 +106,18 @@ pub trait StreamOutput: Send + Sync {
     /// Flush any buffered events (called periodically and at end of stream)
     /// Default implementation does nothing (for unbuffered outputs like CLI)
     fn flush(&self) {}
+
+    /// Get a clonable emitter for use in tool progress callbacks (TOOL-011)
+    ///
+    /// This returns an `Arc<dyn StreamOutput>` that can be captured by `'static`
+    /// closures (like the global tool progress callback). This is necessary because
+    /// tool execution happens inside `stream.next()` and tokio::select! cannot
+    /// interleave with it - progress must be emitted directly, not through a channel.
+    ///
+    /// Default returns None (progress streaming not supported).
+    fn progress_emitter(&self) -> Option<std::sync::Arc<dyn StreamOutput>> {
+        None
+    }
 
     // Convenience methods with default implementations
 
@@ -156,6 +181,16 @@ pub trait StreamOutput: Send + Sync {
     #[inline]
     fn emit_context_fill(&self, info: &ContextFillInfo) {
         self.emit(StreamEvent::ContextFill(info.clone()));
+    }
+
+    /// Emit tool execution progress - streaming output from bash/shell tools (TOOL-011)
+    #[inline]
+    fn emit_tool_progress(&self, tool_call_id: &str, tool_name: &str, output_chunk: &str) {
+        self.emit(StreamEvent::ToolProgress(ToolProgressEvent {
+            tool_call_id: tool_call_id.to_string(),
+            tool_name: tool_name.to_string(),
+            output_chunk: output_chunk.to_string(),
+        }));
     }
 }
 
@@ -245,6 +280,35 @@ impl StreamOutput for CliOutput {
             StreamEvent::ContextFill(_) => {
                 // CLI doesn't display context fill percentage (TUI-only feature)
             }
+            StreamEvent::ToolProgress(progress) => {
+                // TOOL-011: Stream bash output to terminal in real-time
+                // Replace \n with \r\n for proper terminal display in raw mode
+                let display_text = progress.output_chunk.replace('\n', "\r\n");
+                print!("{display_text}");
+                std::io::stdout().flush().ok();
+            }
         }
+    }
+
+    /// TOOL-011: Return a clonable emitter for tool progress callbacks
+    ///
+    /// CliOutput is a stateless unit struct, so we can simply create a new
+    /// instance wrapped in Arc. This enables the global tool progress callback
+    /// to emit directly to stdout without going through a channel.
+    fn progress_emitter(&self) -> Option<std::sync::Arc<dyn StreamOutput>> {
+        Some(std::sync::Arc::new(CliOutput))
+    }
+}
+
+// TOOL-011: Blanket implementation for Arc<O> to enable shared ownership
+// This allows the tool progress callback to emit directly via StreamOutput
+// without going through a channel that would block during tool execution.
+impl<O: StreamOutput> StreamOutput for std::sync::Arc<O> {
+    fn emit(&self, event: StreamEvent) {
+        (**self).emit(event);
+    }
+
+    fn flush(&self) {
+        (**self).flush();
     }
 }

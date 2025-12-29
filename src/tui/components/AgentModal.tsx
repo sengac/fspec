@@ -196,6 +196,8 @@ interface StreamChunk {
   thinking?: string; // TOOL-010: Extended thinking content
   toolCall?: { id: string; name: string; input: string };
   toolResult?: { toolCallId: string; content: string; isError: boolean };
+  // TOOL-011: Tool execution progress - streaming output from bash/shell tools
+  toolProgress?: { toolCallId: string; toolName: string; outputChunk: string };
   status?: string;
   queuedInputs?: string[];
   tokens?: TokenTracker;
@@ -1364,6 +1366,39 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
           // TUI-033: Display context fill percentage from Rust
           setContextFillPercentage(chunk.contextFill.fillPercentage);
+        } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
+          // TOOL-011: Stream tool execution progress (bash output) in real-time
+          // Display the output chunk by appending to a tool output message
+          const outputChunk = chunk.toolProgress.outputChunk;
+          setConversation(prev => {
+            const updated = [...prev];
+            // Find the last tool message (should be showing tool execution)
+            // or the last streaming assistant message with tool call
+            const lastIdx = updated.length - 1;
+            if (lastIdx >= 0) {
+              const lastMsg = updated[lastIdx];
+              // If last message is a tool message (from ToolCall), append to it
+              if (lastMsg.role === 'tool' && lastMsg.content.startsWith('[Planning to use tool:')) {
+                updated[lastIdx] = {
+                  ...lastMsg,
+                  content: lastMsg.content + outputChunk,
+                };
+              } else if (lastMsg.role === 'tool' && lastMsg.content.includes('[Tool output]')) {
+                // Already showing tool output, append to it
+                updated[lastIdx] = {
+                  ...lastMsg,
+                  content: lastMsg.content + outputChunk,
+                };
+              } else {
+                // Create new tool output message
+                updated.push({
+                  role: 'tool',
+                  content: `[Tool output]\n${outputChunk}`,
+                });
+              }
+            }
+            return updated;
+          });
         } else if (chunk.type === 'Error' && chunk.error) {
           // API error occurred - clean up streaming placeholder and show error in conversation
           setConversation(prev => {
