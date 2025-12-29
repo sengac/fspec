@@ -1145,6 +1145,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       let fullAssistantResponse = '';
       // Track assistant message content blocks for envelope storage
       const assistantContentBlocks: Array<{ type: string; text?: string; thinking?: string; id?: string; name?: string; input?: unknown }> = [];
+      // TOOL-011: Track if we've streamed tool progress (to skip redundant tool result preview)
+      let hasStreamedToolProgress = false;
       await sessionRef.current.prompt(userMessage, thinkingConfig, (chunk: StreamChunk) => {
         if (!chunk) return;
 
@@ -1293,12 +1295,39 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             .join('\n');
           const toolResultContent = `[Tool result preview]\n-------\n${indentedPreview}${truncated ? '...' : ''}\n-------`;
           currentSegment = ''; // Reset for next text segment
-          setConversation(prev => [
-            ...prev,
-            { role: 'tool' as const, content: toolResultContent },
-            // Add new streaming placeholder for AI continuation
-            { role: 'assistant' as const, content: '', isStreaming: true },
-          ]);
+
+          // TOOL-011: If we streamed output, remove it and replace with preview
+          // This ensures consistency with restored sessions (which only have the preview)
+          if (hasStreamedToolProgress) {
+            hasStreamedToolProgress = false; // Reset for next tool call
+            setConversation(prev => {
+              const updated = [...prev];
+              // Find and remove the streaming output message (contains streamed bash output)
+              // It's either appended to the tool call message or a separate "[Tool output]" message
+              for (let i = updated.length - 1; i >= 0; i--) {
+                const msg = updated[i];
+                if (msg.role === 'tool' && (msg.content.includes('[Tool output]') ||
+                    (msg.content.startsWith('[Planning to use tool:') && msg.content.includes('\n')))) {
+                  // Remove the streaming output - we'll replace with preview
+                  updated.splice(i, 1);
+                  break;
+                }
+              }
+              return [
+                ...updated,
+                { role: 'tool' as const, content: toolResultContent },
+                // Add new streaming placeholder for AI continuation
+                { role: 'assistant' as const, content: '', isStreaming: true },
+              ];
+            });
+          } else {
+            setConversation(prev => [
+              ...prev,
+              { role: 'tool' as const, content: toolResultContent },
+              // Add new streaming placeholder for AI continuation
+              { role: 'assistant' as const, content: '', isStreaming: true },
+            ]);
+          }
         } else if (chunk.type === 'Done') {
           // Mark streaming complete and remove empty trailing assistant messages
           setConversation(prev => {
@@ -1369,6 +1398,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
           // TOOL-011: Stream tool execution progress (bash output) in real-time
           // Display the output chunk by appending to a tool output message
+          hasStreamedToolProgress = true;
           const outputChunk = chunk.toolProgress.outputChunk;
           setConversation(prev => {
             const updated = [...prev];
