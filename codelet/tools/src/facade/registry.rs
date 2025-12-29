@@ -1,7 +1,10 @@
 //! Provider Tool Registry for managing tool facades.
 
 use super::traits::BoxedToolFacade;
-use super::web_search::{ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade};
+use super::web_search::{
+    ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
+    GeminiWebScreenshotFacade,
+};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -43,6 +46,15 @@ impl ProviderToolRegistry {
         facades.insert(
             (gemini_web_fetch.provider(), gemini_web_fetch.tool_name()),
             gemini_web_fetch,
+        );
+
+        let gemini_web_screenshot = Arc::new(GeminiWebScreenshotFacade) as BoxedToolFacade;
+        facades.insert(
+            (
+                gemini_web_screenshot.provider(),
+                gemini_web_screenshot.tool_name(),
+            ),
+            gemini_web_screenshot,
         );
 
         Self { facades }
@@ -96,11 +108,12 @@ mod tests {
         let registry = ProviderToolRegistry::new();
         let tools = registry.tools_for_provider("gemini");
 
-        assert_eq!(tools.len(), 2);
+        assert_eq!(tools.len(), 3);
 
         let tool_names: Vec<&str> = tools.iter().map(|t| t.tool_name()).collect();
         assert!(tool_names.contains(&"google_web_search"));
         assert!(tool_names.contains(&"web_fetch"));
+        assert!(tool_names.contains(&"capture_screenshot"));
 
         // All should be for gemini provider
         for tool in &tools {

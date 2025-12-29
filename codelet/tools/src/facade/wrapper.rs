@@ -85,6 +85,17 @@ impl Tool for FacadeToolWrapper {
                     pattern: Some(pattern),
                 },
             },
+            InternalWebSearchParams::CaptureScreenshot {
+                url,
+                output_path,
+                full_page,
+            } => WebSearchRequest {
+                action: WebSearchAction::CaptureScreenshot {
+                    url: Some(url),
+                    output_path,
+                    full_page: Some(full_page),
+                },
+            },
         };
 
         // Execute against the base tool
