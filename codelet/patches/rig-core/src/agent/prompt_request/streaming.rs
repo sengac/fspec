@@ -3,7 +3,7 @@ use crate::{
     agent::CancelSignal,
     completion::GetTokenUsage,
     json_utils,
-    message::{AssistantContent, Reasoning, ToolResult, ToolResultContent, UserContent},
+    message::{AssistantContent, ImageMediaType, MimeType, Reasoning, ToolResult, ToolResultContent, UserContent},
     streaming::{StreamedAssistantContent, StreamedUserContent, StreamingCompletion},
     wasm_compat::{WasmBoxedFuture, WasmCompatSend},
 };
@@ -20,6 +20,48 @@ use crate::{
     message::{Message, Text},
     tool::ToolSetError,
 };
+
+/// Parse tool result string and convert to appropriate ToolResultContent.
+/// Detects image responses from Read tool and converts to ToolResultContent::Image.
+fn parse_tool_result_content(result: &str) -> ToolResultContent {
+    // Try to parse as JSON to detect structured tool output
+    if let Ok(json) = serde_json::from_str::<serde_json::Value>(result) {
+        // Handle double-serialization: if the parsed JSON is a string, parse it again
+        // This happens when tool results are JSON-encoded strings containing JSON
+        let json = if let Some(inner_str) = json.as_str() {
+            match serde_json::from_str::<serde_json::Value>(inner_str) {
+                Ok(inner_json) => inner_json,
+                Err(_) => return ToolResultContent::text(inner_str),
+            }
+        } else {
+            json
+        };
+
+        // Check for image type from Read tool: {"type":"image","data":"...","media_type":"..."}
+        let type_field = json.get("type").and_then(|t| t.as_str());
+
+        if type_field == Some("image") {
+            let data = json.get("data").and_then(|d| d.as_str());
+            let media_type_str = json.get("media_type").and_then(|m| m.as_str());
+
+            if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
+                // Parse the media type string to ImageMediaType
+                if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
+                    tracing::info!("parse_tool_result_content: returning Image, media_type={:?}", media_type);
+                    return ToolResultContent::image_base64(data, Some(media_type), None);
+                }
+            }
+        }
+        // Check for text type from Read tool: {"type":"text","content":"..."}
+        if type_field == Some("text") {
+            if let Some(content) = json.get("content").and_then(|c| c.as_str()) {
+                return ToolResultContent::text(content);
+            }
+        }
+    }
+    // Default: treat as plain text
+    ToolResultContent::text(result)
+}
 
 #[cfg(not(target_arch = "wasm32"))]
 pub type StreamingResult<R> =
@@ -341,7 +383,7 @@ where
 
                             match tc_result {
                                 Ok(text) => {
-                                    let tr = ToolResult { id: tool_call.id, call_id: tool_call.call_id, content: OneOrMany::one(ToolResultContent::Text(Text { text })) };
+                                    let tr = ToolResult { id: tool_call.id, call_id: tool_call.call_id, content: OneOrMany::one(parse_tool_result_content(&text)) };
                                     yield Ok(MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(tr)));
                                 }
                                 Err(e) => {
@@ -409,14 +451,14 @@ where
                             content: OneOrMany::one(UserContent::tool_result_with_call_id(
                                 &id,
                                 call_id.clone(),
-                                OneOrMany::one(ToolResultContent::text(&tool_result)),
+                                OneOrMany::one(parse_tool_result_content(&tool_result)),
                             )),
                         });
                     } else {
                         chat_history.write().await.push(Message::User {
                             content: OneOrMany::one(UserContent::tool_result(
                                 &id,
-                                OneOrMany::one(ToolResultContent::text(&tool_result)),
+                                OneOrMany::one(parse_tool_result_content(&tool_result)),
                             )),
                         });
                     }

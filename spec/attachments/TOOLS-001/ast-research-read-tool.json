@@ -1,0 +1,32 @@
+{
+  "matches": [
+    {
+      "type": "function_item",
+      "name": "new",
+      "line": 18,
+      "column": 4,
+      "text": "pub fn new() -> Self {\n        Self\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "default",
+      "line": 24,
+      "column": 4,
+      "text": "fn default() -> Self {\n        Self::new()\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "definition",
+      "line": 51,
+      "column": 4,
+      "text": "async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {\n        rig::completion::ToolDefinition {\n            name: \"read\".to_string(),\n            description: \"Reads a file from the local filesystem. You can access any file directly by using this tool.\\n\\n\\\n                Usage:\\n\\\n                - The file_path parameter must be an absolute path, not a relative path\\n\\\n                - By default, it reads up to 2000 lines starting from the beginning of the file\\n\\\n                - You can optionally specify a line offset and limit (especially handy for long files), but it's recommended to read the whole file by not providing these parameters\\n\\\n                - Any lines longer than 2000 characters will be truncated\\n\\\n                - Results are returned using cat -n format, with line numbers starting at 1\".to_string(),\n            parameters: serde_json::to_value(schemars::schema_for!(ReadArgs))\n                .unwrap_or_else(|_| json!({\"type\": \"object\"})),\n        }\n    }"
+    },
+    {
+      "type": "function_item",
+      "name": "call",
+      "line": 66,
+      "column": 4,
+      "text": "async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {\n        // Validate absolute path (sync - no I/O)\n        let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {\n            tool: \"read\",\n            message: e.content,\n        })?;\n\n        // Check file exists (async)\n        require_file_exists(path, &args.file_path)\n            .await\n            .map_err(|e| ToolError::Validation {\n                tool: \"read\",\n                message: e.content,\n            })?;\n\n        // Read file content (async)\n        let content = read_file_contents(path)\n            .await\n            .map_err(|e| ToolError::File {\n                tool: \"read\",\n                message: e.content,\n            })?;\n\n        let lines: Vec<&str> = content.lines().collect();\n        let total_lines = lines.len();\n\n        // Parse offset and limit\n        let offset = args.offset.unwrap_or(1);\n        let limit = args.limit.unwrap_or(OutputLimits::MAX_LINES);\n\n        // Calculate range (offset is 1-based)\n        let start_idx = offset.saturating_sub(1);\n\n        // Apply line limit\n        let effective_limit = limit.min(OutputLimits::MAX_LINES);\n        let end_idx = (start_idx + effective_limit).min(total_lines);\n\n        // Format lines with numbers and truncate long lines\n        let mut output_lines: Vec<String> = Vec::new();\n        for (idx, line) in lines[start_idx..end_idx].iter().enumerate() {\n            let line_num = start_idx + idx + 1; // 1-based line numbers\n            let truncated_line = truncate_line_default(line);\n            output_lines.push(format!(\"{line_num}: {truncated_line}\"));\n        }\n\n        // Check if we need to truncate due to line limit\n        let lines_after_range = total_lines.saturating_sub(end_idx);\n        let was_truncated = end_idx < total_lines && lines_after_range > 0;\n\n        // Build output\n        let mut output = output_lines.join(\"\\n\");\n\n        if was_truncated {\n            let remaining = total_lines - end_idx;\n            let warning =\n                format_truncation_warning(remaining, \"lines\", true, OutputLimits::MAX_OUTPUT_CHARS);\n            output.push('\\n');\n            output.push_str(&warning);\n        }\n\n        Ok(output)\n    }"
+    }
+  ]
+}

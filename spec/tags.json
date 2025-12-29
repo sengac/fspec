@@ -1246,6 +1246,10 @@
           "description": "Multi-provider session support for sessions using different LLM providers"
         },
         {
+          "name": "@multimodal",
+          "description": "Multimodal content handling (images, PDFs, etc.)"
+        },
+        {
           "name": "@napi",
           "description": "NAPI-RS native module bindings for Node.js"
         },
@@ -2070,7 +2074,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-28T00:33:40.314Z",
+    "lastUpdated": "2025-12-29T01:48:26.873Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

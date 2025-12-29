@@ -1,0 +1,252 @@
+{
+  "scenarios": [
+    {
+      "name": "Read PNG image and display visually",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_multimodal_test.rs",
+          "lines": "11-48",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Read text file with line numbers",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_multimodal_test.rs",
+          "lines": "51-75",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle corrupted image gracefully",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_multimodal_test.rs",
+          "lines": "78-114",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect image type by content when extension missing",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/read_multimodal_test.rs",
+          "lines": "117-157",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/file_type.rs",
+              "lines": [
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/read_multimodal_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/read.rs",
+      "codelet/tools/src/file_type.rs"
+    ],
+    "totalLinesCovered": 312
+  }
+}

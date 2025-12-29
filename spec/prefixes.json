@@ -279,6 +279,11 @@
       "prefix": "MODEL",
       "description": "Model selection and provider abstraction",
       "createdAt": "2025-12-27T23:58:51.875Z"
+    },
+    "TOOLS": {
+      "prefix": "TOOLS",
+      "description": "Work units related to codelet-napi tool implementations",
+      "createdAt": "2025-12-29T01:18:26.609Z"
     }
   }
 }

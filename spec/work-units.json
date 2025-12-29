@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-28T11:42:42.717Z"
+    "lastUpdated": "2025-12-29T01:48:51.007Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -57490,6 +57490,206 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-28T11:42:42.745Z"
+    },
+    "TOOLS-001": {
+      "id": "TOOLS-001",
+      "title": "Add Multimodal Content Support to Read Tool",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-29T01:18:32.705Z",
+      "updatedAt": "2025-12-29T01:48:51.036Z",
+      "description": "Enable the Read tool to return images and PDFs as visual content to the LLM, similar to Claude Code's Read tool functionality. This requires changes to both the Read tool implementation and the agent loop to properly handle multimodal tool outputs.",
+      "epic": "codelet-tools",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TOOLS-001/multimodal-read-tool-research.md",
+        "spec/attachments/TOOLS-001/ast-research-read-tool.json"
+      ],
+      "userStory": {
+        "role": "developer using the fspec agent",
+        "action": "read images and PDFs visually in the conversation",
+        "benefit": "I can discuss visual content, screenshots, and documents without leaving the agent"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-29T01:20:32.517Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-29T01:37:15.906Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-29T01:40:22.796Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-29T01:45:11.889Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-29T01:48:51.036Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "When I ask the agent to read an image file (PNG, JPG, GIF, WEBP, SVG), the agent MUST display the image visually in the conversation",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:32:39.627Z"
+        },
+        {
+          "id": 1,
+          "text": "When I ask the agent to read a text file, the agent MUST show the file content with line numbers (existing behavior)",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:32:41.200Z"
+        },
+        {
+          "id": 2,
+          "text": "When I ask the agent to read a corrupted or unreadable image, the agent MUST show a clear error message instead of crashing",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:32:42.893Z"
+        },
+        {
+          "id": 3,
+          "text": "Image files without extensions MUST still be recognized by their content",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:32:44.703Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer asks agent to read screenshot.png - agent returns image visually embedded in conversation",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:20:59.144Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer asks agent to read config.json - agent returns text with line numbers (existing behavior preserved)",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:21:02.690Z"
+        },
+        {
+          "id": 2,
+          "text": "Agent reads corrupted image file - returns graceful error message instead of crashing",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:21:04.531Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: Read tool returns structured ReadOutput enum (Text or Image variant) that agent loop parses",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:36:29.165Z"
+        },
+        {
+          "id": 1,
+          "text": "Dependency: rig framework provides ToolResultContent::Image for multimodal tool results",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:36:31.851Z"
+        },
+        {
+          "id": 2,
+          "text": "Implementation: File type detection uses extension mapping with magic bytes fallback for extensionless files",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:36:33.713Z"
+        },
+        {
+          "id": 3,
+          "text": "Refactoring: New file_type.rs module for centralized file type detection logic",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:36:35.346Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-29T01:48:51.036Z"
+    },
+    "TOOLS-002": {
+      "id": "TOOLS-002",
+      "title": "Add PDF Reading Support to Read Tool",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2025-12-29T01:27:02.712Z",
+      "updatedAt": "2025-12-29T01:27:53.621Z",
+      "description": "Enable the Read tool to read PDF files, extracting both text content and visual page representations. PDFs should be processed page by page, similar to Claude Code's PDF reading functionality. This depends on TOOLS-001 (multimodal infrastructure).",
+      "epic": "codelet-tools",
+      "children": [],
+      "dependsOn": [
+        "TOOLS-001"
+      ],
+      "userStory": {
+        "role": "developer using the fspec agent",
+        "action": "read PDF documents and have the agent understand their content",
+        "benefit": "I can discuss technical documentation, diagrams, and reports without manually extracting text"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-29T01:27:20.223Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "PDFs MUST be processed page by page, extracting text content from each page",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:27:31.545Z"
+        },
+        {
+          "id": 1,
+          "text": "PDF pages with visual content (diagrams, charts, images) SHOULD be rendered as images for the LLM to see",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:27:33.595Z"
+        },
+        {
+          "id": 2,
+          "text": "PDF text extraction MUST preserve reading order and basic structure (paragraphs, lists)",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:27:35.191Z"
+        },
+        {
+          "id": 3,
+          "text": "Password-protected PDFs MUST return a clear error message explaining the file cannot be read",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:27:36.788Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Developer asks agent to read API-documentation.pdf - agent returns text from each page with page numbers",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:27:48.160Z"
+        },
+        {
+          "id": 1,
+          "text": "Developer asks agent to read architecture-diagram.pdf - agent shows the diagram visually and describes what it sees",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:27:49.994Z"
+        },
+        {
+          "id": 2,
+          "text": "Developer asks agent to read encrypted.pdf - agent returns error: 'Cannot read password-protected PDF'",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:27:52.037Z"
+        },
+        {
+          "id": 3,
+          "text": "Developer asks agent to read large-report.pdf (50 pages) - agent processes all pages and can answer questions about any section",
+          "deleted": false,
+          "createdAt": "2025-12-29T01:27:53.621Z"
+        }
+      ],
+      "nextExampleId": 4
     }
   },
   "states": {
@@ -57555,12 +57755,14 @@
       "BROWSE-001",
       "BOARD-020",
       "TOOL-001",
-      "MODEL-001"
+      "MODEL-001",
+      "TOOLS-002"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "TOOLS-001",
       "TUI-035",
       "CTX-002",
       "TUI-034",
@@ -58040,6 +58242,7 @@
     "NAPI": 8,
     "CTX": 2,
     "TOOL": 10,
-    "MODEL": 1
+    "MODEL": 1,
+    "TOOLS": 2
   }
 }

@@ -336,6 +336,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@multi-model` | Multi-model session scenarios |
 | `@multi-part` | Multi-part message scenarios |
 | `@multi-provider` | Multi-provider session support for sessions using different LLM providers |
+| `@multimodal` | Multimodal content handling (images, PDFs, etc.) |
 | `@napi` | NAPI-RS native module bindings for Node.js |
 | `@native` | Native platform builds |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
@@ -759,7 +760,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-28T00:33:40.314Z_
+_Last updated: 2025-12-29T01:48:26.873Z_
 
 **Update Command**: `fspec tag-stats`
 

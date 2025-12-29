@@ -24,7 +24,7 @@ impl FileToolFacade for GeminiReadFileFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "read_file".to_string(),
-            description: "Read the contents of a file from the filesystem".to_string(),
+            description: "Read the contents of a file from the filesystem. This tool can read images (PNG, JPG, GIF, WEBP, SVG) - when reading an image file the contents are returned as base64-encoded data with media type. If the user provides a path to a screenshot or image, use this tool to view it.".to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
