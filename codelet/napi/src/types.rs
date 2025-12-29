@@ -65,6 +65,19 @@ pub struct ToolResultInfo {
     pub is_error: bool,
 }
 
+/// Tool execution progress information (TOOL-011)
+/// Streaming output from bash/shell tools during execution
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ToolProgressInfo {
+    /// Tool call ID this progress is for
+    pub tool_call_id: String,
+    /// Tool name (e.g., "bash", "run_shell_command")
+    pub tool_name: String,
+    /// Output chunk (new text since last progress event)
+    pub output_chunk: String,
+}
+
 /// Stream chunk types for streaming responses (TOOL-010)
 #[napi(string_enum)]
 #[derive(Debug, PartialEq, Eq)]
@@ -74,6 +87,8 @@ pub enum ChunkType {
     Thinking,
     ToolCall,
     ToolResult,
+    /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
+    ToolProgress,
     Status,
     Interrupted,
     TokenUpdate,
@@ -97,7 +112,7 @@ pub struct ContextFillInfo {
     pub context_window: f64,
 }
 
-/// A chunk of streaming response (TOOL-010: added thinking field)
+/// A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress)
 #[napi(object)]
 #[derive(Debug, Clone)]
 pub struct StreamChunk {
@@ -108,6 +123,8 @@ pub struct StreamChunk {
     pub thinking: Option<String>,
     pub tool_call: Option<ToolCallInfo>,
     pub tool_result: Option<ToolResultInfo>,
+    /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
+    pub tool_progress: Option<ToolProgressInfo>,
     pub status: Option<String>,
     pub queued_inputs: Option<Vec<String>>,
     pub tokens: Option<TokenTracker>,
@@ -123,6 +140,7 @@ impl StreamChunk {
             thinking: None,
             tool_call: None,
             tool_result: None,
+            tool_progress: None,
             status: None,
             queued_inputs: None,
             tokens: None,
@@ -139,6 +157,7 @@ impl StreamChunk {
             thinking: Some(thinking),
             tool_call: None,
             tool_result: None,
+            tool_progress: None,
             status: None,
             queued_inputs: None,
             tokens: None,
@@ -154,6 +173,7 @@ impl StreamChunk {
             thinking: None,
             tool_call: Some(info),
             tool_result: None,
+            tool_progress: None,
             status: None,
             queued_inputs: None,
             tokens: None,
@@ -169,6 +189,24 @@ impl StreamChunk {
             thinking: None,
             tool_call: None,
             tool_result: Some(info),
+            tool_progress: None,
+            status: None,
+            queued_inputs: None,
+            tokens: None,
+            context_fill: None,
+            error: None,
+        }
+    }
+
+    /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
+    pub fn tool_progress(info: ToolProgressInfo) -> Self {
+        Self {
+            chunk_type: "ToolProgress".to_string(),
+            text: None,
+            thinking: None,
+            tool_call: None,
+            tool_result: None,
+            tool_progress: Some(info),
             status: None,
             queued_inputs: None,
             tokens: None,
@@ -184,6 +222,7 @@ impl StreamChunk {
             thinking: None,
             tool_call: None,
             tool_result: None,
+            tool_progress: None,
             status: Some(message),
             queued_inputs: None,
             tokens: None,
@@ -199,6 +238,7 @@ impl StreamChunk {
             thinking: None,
             tool_call: None,
             tool_result: None,
+            tool_progress: None,
             status: None,
             queued_inputs: Some(queued_inputs),
             tokens: None,
@@ -214,6 +254,7 @@ impl StreamChunk {
             thinking: None,
             tool_call: None,
             tool_result: None,
+            tool_progress: None,
             status: None,
             queued_inputs: None,
             tokens: Some(tokens),
@@ -230,6 +271,7 @@ impl StreamChunk {
             thinking: None,
             tool_call: None,
             tool_result: None,
+            tool_progress: None,
             status: None,
             queued_inputs: None,
             tokens: None,
@@ -245,6 +287,7 @@ impl StreamChunk {
             thinking: None,
             tool_call: None,
             tool_result: None,
+            tool_progress: None,
             status: None,
             queued_inputs: None,
             tokens: None,
@@ -260,6 +303,7 @@ impl StreamChunk {
             thinking: None,
             tool_call: None,
             tool_result: None,
+            tool_progress: None,
             status: None,
             queued_inputs: None,
             tokens: None,

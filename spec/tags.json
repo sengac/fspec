@@ -750,6 +750,10 @@
           "description": "Tool discovery and listing features"
         },
         {
+          "name": "@tool-execution",
+          "description": "Tool execution and subprocess management features"
+        },
+        {
           "name": "@tracking",
           "description": "Metric tracking operations"
         },
@@ -916,6 +920,10 @@
         {
           "name": "@cache",
           "description": "Caching and persistence features"
+        },
+        {
+          "name": "@callback",
+          "description": "Callback and event handling patterns"
         },
         {
           "name": "@checkpoints",
@@ -1194,6 +1202,10 @@
           "description": "Machine learning and adaptive features based on usage patterns"
         },
         {
+          "name": "@llm-integration",
+          "description": "LLM integration and response handling"
+        },
+        {
           "name": "@logging",
           "description": "Logging and diagnostics features"
         },
@@ -1426,6 +1438,10 @@
           "description": "Strategy planning and decision-making features that guide user choices"
         },
         {
+          "name": "@streaming",
+          "description": "Real-time output streaming features"
+        },
+        {
           "name": "@structure",
           "description": "Message structure preservation scenarios"
         },
@@ -1460,6 +1476,10 @@
         {
           "name": "@threshold",
           "description": "Threshold boundary scenarios"
+        },
+        {
+          "name": "@timeout",
+          "description": "Timeout handling and time limit scenarios"
         },
         {
           "name": "@timestamp",
@@ -1500,6 +1520,10 @@
         {
           "name": "@triggers",
           "description": "CI/CD trigger configuration"
+        },
+        {
+          "name": "@truncation",
+          "description": "Output truncation and limit handling"
         },
         {
           "name": "@turn-sequence",
@@ -2086,7 +2110,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-29T05:34:11.145Z",
+    "lastUpdated": "2025-12-29T08:04:40.045Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

@@ -205,6 +205,7 @@ Tags that categorize features by functional area.
 | `@testing` | Testing and quality assurance features |
 | `@thinking-detection` | Features related to thinking/reasoning level detection and configuration |
 | `@tool-discovery` | Tool discovery and listing features |
+| `@tool-execution` | Tool execution and subprocess management features |
 | `@tracking` | Metric tracking operations |
 | `@ui-enhancement` | TUI user interface enhancements and visual improvements |
 | `@ui-refinement` | UI refinement and enhancement operations |
@@ -254,6 +255,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
 | `@cache` | Caching and persistence features |
+| `@callback` | Callback and event handling patterns |
 | `@checkpoints` | Git checkpoint and state restoration features |
 | `@ci` | Continuous integration and build automation |
 | `@cleanup` | Cleanup and resource management features |
@@ -323,6 +325,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@kotlin` | Kotlin language and JVM features |
 | `@layout` | Layout and visual presentation features |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
+| `@llm-integration` | LLM integration and response handling |
 | `@logging` | Logging and diagnostics features |
 | `@markdown` | Markdown rendering and processing |
 | `@markdown-formatting` | Markdown formatting and rendering features |
@@ -381,6 +384,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@step-validation` | Step-level validation and Gherkin step matching |
 | `@stop-reason` | Response stop reason scenarios |
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
+| `@streaming` | Real-time output streaming features |
 | `@structure` | Message structure preservation scenarios |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
@@ -390,6 +394,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@thinking` | Thinking content type scenarios |
 | `@threading` | Message threading and lineage scenarios |
 | `@threshold` | Threshold boundary scenarios |
+| `@timeout` | Timeout handling and time limit scenarios |
 | `@timestamp` | Timestamp-related functionality for temporal ordering and history |
 | `@tokens` | Token tracking scenarios |
 | `@toml` | TOML configuration file parsing and manipulation |
@@ -400,6 +405,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@trackpad` | Trackpad and touchpad input handling with smoothing and gesture support |
 | `@tree-sitter` | Tree-sitter library for language-agnostic AST parsing |
 | `@triggers` | CI/CD trigger configuration |
+| `@truncation` | Output truncation and limit handling |
 | `@turn-sequence` | Message turn sequence scenarios |
 | `@turns` | Turn boundary scenarios |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
@@ -763,7 +769,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-29T05:34:11.145Z_
+_Last updated: 2025-12-29T08:04:40.045Z_
 
 **Update Command**: `fspec tag-stats`
 

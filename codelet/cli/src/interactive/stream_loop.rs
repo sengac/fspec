@@ -20,6 +20,7 @@ use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_core::{CompactionHook, RigAgent, TokenState};
+use codelet_tools::set_tool_progress_callback;
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
 use crossterm::event::KeyCode;
 use futures::StreamExt;
@@ -320,6 +321,25 @@ where
         }
     }
 
+    // TOOL-011: Set up tool progress callback for streaming bash output
+    // Get the progress emitter from output - this returns an Arc<dyn StreamOutput>
+    // that can be captured by the 'static callback closure.
+    //
+    // KEY INSIGHT: tokio::select! waits for ONE branch to COMPLETE. When stream.next()
+    // is executing and a tool runs inside it, the entire tool execution happens within
+    // that single poll. Even though spawned tasks send to a channel, by the time select!
+    // could check the channel, stream.next() has already returned Ready(ToolResult).
+    //
+    // SOLUTION: The callback emits DIRECTLY through StreamOutput, bypassing the channel.
+    // This works because the callback is called from a spawned tokio task inside the tool,
+    // which runs on the tokio runtime and can make I/O calls (print for CLI, or
+    // ThreadsafeFunction::call for NAPI which is NonBlocking).
+    if let Some(emitter) = output.progress_emitter() {
+        set_tool_progress_callback(Some(Arc::new(move |chunk: &str| {
+            emitter.emit_tool_progress("", "bash", chunk);
+        })));
+    }
+
     // Start streaming with history and hook
     let mut stream = agent
         .prompt_streaming_with_history_and_hook(prompt, &mut session.messages, hook)
@@ -418,6 +438,8 @@ where
         let chunk = match (&mut event_stream, &mut status_interval, &status) {
             (Some(es), Some(si), Some(st)) => {
                 // CLI mode: Use tokio::select! with event stream and status interval
+                // NOTE: Tool progress is emitted directly via progress_emitter callback,
+                // not through tokio::select! because select! can't interleave during stream.next()
                 tokio::select! {
                     c = stream.next() => Some(c),
                     event = es.next() => {
@@ -437,6 +459,8 @@ where
             _ => {
                 // NAPI mode: Use tokio::select! with interrupt notification (NAPI-004)
                 // This allows immediate ESC response even during blocking operations
+                // NOTE: Tool progress is emitted directly via progress_emitter callback,
+                // not through tokio::select! because select! can't interleave during stream.next()
                 match &interrupt_notify {
                     Some(notify) => {
                         let interrupt_fut = notify.notified();
@@ -705,8 +729,14 @@ where
             // This is a no-op for CLI (unbuffered) but triggers batched text emission for NAPI
             // Provides ~10-50ms latency for text streaming while dramatically reducing callback count
             output.flush();
+
+            // TOOL-011: Tool progress is emitted directly via progress_emitter callback
+            // This ensures streaming happens in real-time during tool execution
         }
     }
+
+    // TOOL-011: Clear the tool progress callback
+    set_tool_progress_callback(None);
 
     // Check if hook triggered compaction
     let compaction_needed = token_state
@@ -970,6 +1000,7 @@ where
                         _ => {}
                     }
                     output.flush();
+                    // TOOL-011: Tool progress is emitted directly via progress_emitter callback
                 }
 
                 // TUI-031: Update session state after retry completes (mirrors end-of-function logic)

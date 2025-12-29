@@ -13,7 +13,7 @@
 //! This dramatically reduces React state update frequency and eliminates
 //! the need for setImmediate workarounds in the JavaScript callback handler.
 
-use crate::types::{ContextFillInfo, StreamChunk, TokenTracker, ToolCallInfo, ToolResultInfo};
+use crate::types::{ContextFillInfo, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo, ToolResultInfo};
 use codelet_cli::interactive::{StreamEvent, StreamOutput};
 use napi::threadsafe_function::{
     ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue,
@@ -67,13 +67,16 @@ impl TextBuffer {
 /// Text chunks are accumulated in a buffer and flushed together to reduce
 /// the number of JavaScript callbacks. This prevents React state thrashing
 /// and eliminates the need for setImmediate workarounds.
-pub struct NapiOutput<'a> {
-    callback: &'a StreamCallback,
+///
+/// TOOL-011: Uses Arc<StreamCallback> to enable sharing with progress_emitter.
+/// The ThreadsafeFunction doesn't implement Clone, but we can clone Arc.
+pub struct NapiOutput {
+    callback: std::sync::Arc<StreamCallback>,
     buffer: Mutex<TextBuffer>,
 }
 
-impl<'a> NapiOutput<'a> {
-    pub fn new(callback: &'a StreamCallback) -> Self {
+impl NapiOutput {
+    pub fn new(callback: std::sync::Arc<StreamCallback>) -> Self {
         Self {
             callback,
             buffer: Mutex::new(TextBuffer::new()),
@@ -108,7 +111,44 @@ impl<'a> NapiOutput<'a> {
     }
 }
 
-impl StreamOutput for NapiOutput<'_> {
+/// TOOL-011: Owned progress emitter for tool progress callbacks
+///
+/// This struct owns an Arc<StreamCallback>, enabling it to be wrapped
+/// in Arc and captured by 'static closures (like the global tool progress callback).
+/// ThreadsafeFunction doesn't implement Clone, but Arc does.
+pub struct NapiProgressEmitter {
+    callback: std::sync::Arc<StreamCallback>,
+}
+
+impl NapiProgressEmitter {
+    pub fn new(callback: std::sync::Arc<StreamCallback>) -> Self {
+        Self { callback }
+    }
+}
+
+impl StreamOutput for NapiProgressEmitter {
+    fn emit(&self, event: StreamEvent) {
+        // Only handle ToolProgress events - this is a specialized emitter
+        if let StreamEvent::ToolProgress(progress) = event {
+            let info = ToolProgressInfo {
+                tool_call_id: progress.tool_call_id,
+                tool_name: progress.tool_name,
+                output_chunk: progress.output_chunk,
+            };
+            let _ = self.callback.call(
+                StreamChunk::tool_progress(info),
+                ThreadsafeFunctionCallMode::NonBlocking,
+            );
+        }
+        // Other events are ignored - this emitter is only for tool progress
+    }
+
+    fn flush(&self) {
+        // No buffering in progress emitter
+    }
+}
+
+impl StreamOutput for NapiOutput {
     fn emit(&self, event: StreamEvent) {
         match event {
             StreamEvent::Text(text) => {
@@ -213,10 +253,35 @@ impl StreamOutput for NapiOutput<'_> {
                     ThreadsafeFunctionCallMode::NonBlocking,
                 );
             }
+            StreamEvent::ToolProgress(progress) => {
+                // TOOL-011: Stream tool execution progress to JavaScript
+                // Don't flush text buffer - tool progress is separate from LLM text streaming
+                let info = ToolProgressInfo {
+                    tool_call_id: progress.tool_call_id,
+                    tool_name: progress.tool_name,
+                    output_chunk: progress.output_chunk,
+                };
+                let _ = self.callback.call(
+                    StreamChunk::tool_progress(info),
+                    ThreadsafeFunctionCallMode::NonBlocking,
+                );
+            }
         }
     }
 
     fn flush(&self) {
         self.flush_text();
+    }
+
+    /// TOOL-011: Return a clonable emitter for tool progress callbacks
+    ///
+    /// Creates a NapiProgressEmitter that owns a cloned Arc<StreamCallback>.
+    /// This enables the global tool progress callback to emit directly to
+    /// JavaScript without going through a channel that would block during
+    /// tool execution inside stream.next().
+    fn progress_emitter(&self) -> Option<std::sync::Arc<dyn StreamOutput>> {
+        Some(std::sync::Arc::new(NapiProgressEmitter::new(
+            std::sync::Arc::clone(&self.callback),
+        )))
     }
 }
