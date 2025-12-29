@@ -51,7 +51,10 @@ pub use thinking_config::{
     ClaudeThinkingFacade, Gemini25ThinkingFacade, Gemini3ThinkingFacade, ThinkingConfigFacade,
     ThinkingLevel,
 };
-pub use web_search::{ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade};
+pub use web_search::{
+    ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
+    GeminiWebScreenshotFacade,
+};
 pub use wrapper::{
     BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper, LsToolFacadeWrapper,
     SearchToolFacadeWrapper,

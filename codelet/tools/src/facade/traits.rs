@@ -26,6 +26,12 @@ pub enum InternalWebSearchParams {
     OpenPage { url: String },
     /// Find a pattern within a page's content
     FindInPage { url: String, pattern: String },
+    /// Capture a screenshot of a web page
+    CaptureScreenshot {
+        url: String,
+        output_path: Option<String>,
+        full_page: bool,
+    },
 }
 
 /// Internal parameters for file operations.

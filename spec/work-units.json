@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-29T05:07:51.502Z"
+    "lastUpdated": "2025-12-29T06:12:42.756Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -57695,14 +57695,143 @@
       "id": "BROWSE-002",
       "title": "Full-page scrollable screenshot capture",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2025-12-29T05:06:35.938Z",
-      "updatedAt": "2025-12-29T05:07:51.502Z",
+      "updatedAt": "2025-12-29T06:12:42.787Z",
       "description": "Add capability to capture full-page screenshots (entire scrollable content) in addition to viewport-only screenshots",
       "children": [],
       "attachments": [
-        "spec/attachments/BROWSE-002/rust-headless-chrome-screenshot-research.md"
-      ]
+        "spec/attachments/BROWSE-002/rust-headless-chrome-screenshot-research.md",
+        "spec/attachments/BROWSE-002/ast-research-screenshot-integration.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-29T05:23:06.930Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-29T05:46:19.196Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-29T05:50:04.995Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-29T05:54:52.618Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-29T06:12:42.787Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using codelet web tools",
+        "action": "capture screenshots of web pages and save them to files",
+        "benefit": "I can visually analyze web content using the Read tool's multimodal support"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Screenshot action must be added to the existing WebSearchAction enum as CaptureScreenshot variant",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:23:35.408Z"
+        },
+        {
+          "id": 1,
+          "text": "Screenshots must be saved to a file path and return the path so the AI can use Read tool to view",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:23:37.167Z"
+        },
+        {
+          "id": 2,
+          "text": "Full-page screenshots require setting capture_beyond_viewport: true in the CDP call",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:23:39.550Z"
+        },
+        {
+          "id": 3,
+          "text": "Screenshots default to PNG format for lossless quality",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:23:41.214Z"
+        },
+        {
+          "id": 4,
+          "text": "Default save location is temp directory if no output_path specified",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:23:44.055Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "AI uses web_search tool with action: {type: capture_screenshot, url: 'https://example.com'}, gets back file path /tmp/screenshot-abc123.png",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:23:59.593Z"
+        },
+        {
+          "id": 1,
+          "text": "AI captures full-page screenshot with action: {type: capture_screenshot, url: 'https://example.com', full_page: true}, captures entire scrollable content",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:24:01.998Z"
+        },
+        {
+          "id": 2,
+          "text": "AI captures screenshot to specific path with action: {type: capture_screenshot, url: 'https://example.com', output_path: '/tmp/my-screenshot.png'}",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:24:04.142Z"
+        },
+        {
+          "id": 3,
+          "text": "AI captures screenshot then uses Read tool on the returned path to view the image",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:24:06.254Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the screenshot action return the image data directly (like Read tool does for images) or save to a file and return the path? The Read tool approach would be more direct but potentially consume more tokens for large screenshots.",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:24:18.449Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Option A: Save to file and return path. This is better for token efficiency (full-page screenshots can be huge), reuses existing Read tool multimodal support, simpler implementation, and matches industry patterns like Playwright MCP."
+        }
+      ],
+      "nextQuestionId": 1,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: Add CaptureScreenshot variant to WebSearchAction enum in codelet_common/src/web_search.rs",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:40:08.953Z"
+        },
+        {
+          "id": 1,
+          "text": "Implementation: Add capture_screenshot method to ChromeBrowser in chrome_browser.rs using Tab::capture_screenshot with capture_beyond_viewport parameter",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:40:10.750Z"
+        },
+        {
+          "id": 2,
+          "text": "Implementation: Handle CaptureScreenshot action in web_search.rs, save PNG to temp or custom path, return file path in WebSearchResult",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:40:12.812Z"
+        },
+        {
+          "id": 3,
+          "text": "Dependency: Uses existing headless_chrome crate Tab::capture_screenshot with capture_beyond_viewport: true for full-page screenshots",
+          "deleted": false,
+          "createdAt": "2025-12-29T05:40:16.532Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "updated": "2025-12-29T06:12:42.787Z"
     }
   },
   "states": {
@@ -57759,8 +57888,7 @@
       "DOC-013",
       "DOC-014",
       "DOC-017",
-      "AGENT-022",
-      "BROWSE-002"
+      "AGENT-022"
     ],
     "specifying": [
       "LANG-001",
@@ -57776,6 +57904,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "BROWSE-002",
       "TOOLS-001",
       "TUI-035",
       "CTX-002",

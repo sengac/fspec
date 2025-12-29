@@ -1,0 +1,248 @@
+{
+  "scenarios": [
+    {
+      "name": "Capture viewport screenshot with default settings",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/screenshot_capture_test.rs",
+          "lines": "18-57",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/chrome_browser.rs",
+              "lines": [
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Capture full-page screenshot of scrollable content",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/screenshot_capture_test.rs",
+          "lines": "63-111",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/chrome_browser.rs",
+              "lines": [
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Capture screenshot to custom output path",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/screenshot_capture_test.rs",
+          "lines": "117-147",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/chrome_browser.rs",
+              "lines": [
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "View captured screenshot using Read tool",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/screenshot_capture_test.rs",
+          "lines": "153-189",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/chrome_browser.rs",
+              "lines": [
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/screenshot_capture_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/chrome_browser.rs"
+    ],
+    "totalLinesCovered": 325
+  }
+}

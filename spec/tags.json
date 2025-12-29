@@ -14,6 +14,10 @@
           "description": "Algorithmic components - similarity matching, scoring, deduplication algorithms"
         },
         {
+          "name": "@browser",
+          "description": "Browser automation and Chrome DevTools Protocol integration"
+        },
+        {
           "name": "@cli",
           "description": "Command-Line Interface"
         },
@@ -642,6 +646,10 @@
           "description": "Schema design and data structure definition"
         },
         {
+          "name": "@screenshot",
+          "description": "Screenshot capture functionality for web pages"
+        },
+        {
           "name": "@security",
           "description": "Security-related features and bug fixes"
         },
@@ -784,6 +792,10 @@
         {
           "name": "@visualization",
           "description": "Data visualization"
+        },
+        {
+          "name": "@web-tools",
+          "description": "Web tools including search, page fetching, and screenshot capture"
         },
         {
           "name": "@work-management",
@@ -2074,7 +2086,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-29T01:48:26.873Z",
+    "lastUpdated": "2025-12-29T05:34:11.145Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

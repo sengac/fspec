@@ -47,6 +47,14 @@ impl From<ChromeError> for ToolError {
                 tool: "web_search",
                 message: format!("Chrome not found at: {path}"),
             },
+            ChromeError::ScreenshotError(msg) => ToolError::Execution {
+                tool: "web_search",
+                message: format!("Screenshot capture failed: {msg}"),
+            },
+            ChromeError::IoError(msg) => ToolError::Execution {
+                tool: "web_search",
+                message: format!("File I/O error: {msg}"),
+            },
         }
     }
 }
@@ -180,6 +188,8 @@ fn normalize_action_type(action_type: &str) -> &'static str {
         "open_page" | "openpage" | "open" | "navigate" | "goto" | "url" => "open_page",
         // Find in page variations
         "find_in_page" | "findinpage" | "find" | "search_in_page" | "searchinpage" | "pattern" => "find_in_page",
+        // Screenshot variations
+        "capture_screenshot" | "capturescreenshot" | "screenshot" | "take_screenshot" | "takescreenshot" => "capture_screenshot",
         // Unknown - return as-is to let serde handle the error
         _ => "unknown",
     }
@@ -255,7 +265,7 @@ impl Tool for WebSearchTool {
         // This matches the schema structure that was working in the previous implementation
         ToolDefinition {
             name: "web_search".to_string(),
-            description: "Perform web search, open web pages, or find content within pages using Chrome-based web scraping with full JavaScript support".to_string(),
+            description: "Perform web search, open web pages, find content within pages, or capture screenshots using Chrome-based web scraping with full JavaScript support".to_string(),
             parameters: json!({
                 "additionalProperties": false,
                 "properties": {
@@ -308,6 +318,29 @@ impl Tool for WebSearchTool {
                                     }
                                 },
                                 "required": ["type"],
+                                "type": "object"
+                            },
+                            {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "type": {
+                                        "const": "capture_screenshot",
+                                        "type": "string"
+                                    },
+                                    "url": {
+                                        "description": "URL of page to capture",
+                                        "type": "string"
+                                    },
+                                    "output_path": {
+                                        "description": "Optional file path for screenshot. If not provided, saves to temp directory",
+                                        "type": "string"
+                                    },
+                                    "full_page": {
+                                        "description": "If true, captures entire scrollable page. If false (default), captures visible viewport only",
+                                        "type": "boolean"
+                                    }
+                                },
+                                "required": ["type", "url"],
                                 "type": "object"
                             }
                         ],
@@ -370,6 +403,20 @@ impl Tool for WebSearchTool {
                         true,
                         format!("Pattern '{pattern}' search results in {url}:\n{found}"),
                     ),
+                    Err(e) => return Err(e.into()),
+                }
+            }
+            WebSearchAction::CaptureScreenshot { url, output_path, full_page } => {
+                let url = url.as_deref().unwrap_or("");
+                if url.is_empty() {
+                    return Err(ToolError::Validation {
+                        tool: "web_search",
+                        message: "URL is required for capture_screenshot".to_string(),
+                    });
+                }
+                let full_page = full_page.unwrap_or(false);
+                match capture_page_screenshot(url, output_path.clone(), full_page) {
+                    Ok(file_path) => (true, format!("Screenshot saved to: {file_path}")),
                     Err(e) => return Err(e.into()),
                 }
             }
@@ -482,6 +529,18 @@ fn fetch_page_content(url: &str) -> Result<String, ChromeError> {
         }
 
         Ok(final_output)
+    })
+}
+
+/// Capture a screenshot of a web page using Chrome
+fn capture_page_screenshot(url: &str, output_path: Option<String>, full_page: bool) -> Result<String, ChromeError> {
+    let url = url.to_string();
+    with_browser_retry(|browser| {
+        let tab = browser.new_tab()?;
+        browser.navigate_and_wait(&tab, &url)?;
+        let file_path = browser.capture_screenshot(&tab, output_path.clone(), full_page)?;
+        browser.cleanup_tab(&tab);
+        Ok(file_path)
     })
 }
 

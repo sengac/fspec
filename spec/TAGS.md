@@ -14,6 +14,7 @@ Tags that identify which architectural component a feature belongs to.
 |-----|-------------|
 | `@agent-registry` | Agent registry and configuration management |
 | `@algorithm` | Algorithmic components - similarity matching, scoring, deduplication algorithms |
+| `@browser` | Browser automation and Chrome DevTools Protocol integration |
 | `@cli` | Command-Line Interface |
 | `@codelet` | Codelet AI agent integration |
 | `@demos` | Demo script functionality and video recording infrastructure |
@@ -178,6 +179,7 @@ Tags that categorize features by functional area.
 | `@scenario-deduplication` | Scenario deduplication and refactoring detection features |
 | `@scenario-generation` | Features related to generating scenarios from example mapping |
 | `@schema-design` | Schema design and data structure definition |
+| `@screenshot` | Screenshot capture functionality for web pages |
 | `@security` | Security-related features and bug fixes |
 | `@session-cherry-pick` | Cherry-pick message scenarios |
 | `@session-delete` | Session deletion and cleanup |
@@ -214,6 +216,7 @@ Tags that categorize features by functional area.
 | `@video-recording` | Video recording and demo playback features |
 | `@visual-design` | Visual design and branding features |
 | `@visualization` | Data visualization |
+| `@web-tools` | Web tools including search, page fetching, and screenshot capture |
 | `@work-management` | Work unit management and Kanban workflow operations |
 | `@work-unit-automation` | Automatic work unit creation and management |
 | `@work-unit-linking` | Scenarios related to work unit and feature file linking functionality |
@@ -760,7 +763,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-29T01:48:26.873Z_
+_Last updated: 2025-12-29T05:34:11.145Z_
 
 **Update Command**: `fspec tag-stats`
 

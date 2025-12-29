@@ -21,6 +21,14 @@ pub enum WebSearchAction {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         pattern: Option<String>,
     },
+    CaptureScreenshot {
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        url: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        output_path: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        full_page: Option<bool>,
+    },
 
     #[serde(other)]
     Other,

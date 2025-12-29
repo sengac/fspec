@@ -35,6 +35,12 @@ pub enum ChromeError {
 
     #[error("Timeout waiting for page load")]
     Timeout,
+
+    #[error("Screenshot capture failed: {0}")]
+    ScreenshotError(String),
+
+    #[error("File I/O error: {0}")]
+    IoError(String),
 }
 
 /// Configuration for Chrome browser connection
@@ -197,6 +203,58 @@ impl ChromeBrowser {
     /// severs network connections, and frees all resources.
     pub fn cleanup_tab(&self, tab: &Arc<Tab>) {
         let _ = tab.close(true);
+    }
+
+    /// Capture a screenshot of the current page
+    ///
+    /// # Arguments
+    /// * `tab` - The tab to capture
+    /// * `output_path` - Optional path to save the screenshot. If None, saves to temp directory
+    /// * `full_page` - If true, captures the entire scrollable page (uses capture_beyond_viewport)
+    ///
+    /// # Returns
+    /// The file path where the screenshot was saved
+    pub fn capture_screenshot(
+        &self,
+        tab: &Arc<Tab>,
+        output_path: Option<String>,
+        full_page: bool,
+    ) -> Result<String, ChromeError> {
+        use base64::prelude::*;
+        use headless_chrome::protocol::cdp::Page;
+
+        // Call CDP Page.captureScreenshot with capture_beyond_viewport parameter
+        let screenshot_data = tab
+            .call_method(Page::CaptureScreenshot {
+                format: Some(Page::CaptureScreenshotFormatOption::Png),
+                quality: None,
+                clip: None,
+                from_surface: Some(true),
+                capture_beyond_viewport: Some(full_page),
+                optimize_for_speed: None,
+            })
+            .map_err(|e| ChromeError::ScreenshotError(format!("CDP screenshot failed: {}", e)))?;
+
+        // Decode base64 screenshot data
+        let png_bytes = BASE64_STANDARD
+            .decode(&screenshot_data.data)
+            .map_err(|e| ChromeError::ScreenshotError(format!("Base64 decode failed: {}", e)))?;
+
+        // Determine output path
+        let file_path = match output_path {
+            Some(path) => path,
+            None => {
+                let temp_dir = std::env::temp_dir();
+                let filename = format!("screenshot-{}.png", uuid::Uuid::new_v4());
+                temp_dir.join(filename).to_string_lossy().to_string()
+            }
+        };
+
+        // Write to file
+        std::fs::write(&file_path, &png_bytes)
+            .map_err(|e| ChromeError::IoError(format!("Failed to write screenshot: {}", e)))?;
+
+        Ok(file_path)
     }
 
     /// Check if connected to an existing Chrome instance

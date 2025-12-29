@@ -23,13 +23,13 @@ impl ToolFacade for ClaudeWebSearchFacade {
         // Use flat schema to avoid Claude serializing nested objects as strings
         ToolDefinition {
             name: "web_search".to_string(),
-            description: "Perform web search, open web pages, or find content within pages. Use action_type to specify the operation.".to_string(),
+            description: "Perform web search, open web pages, find content within pages, or capture screenshots. Use action_type to specify the operation.".to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
                     "action_type": {
                         "type": "string",
-                        "enum": ["search", "open_page", "find_in_page"],
+                        "enum": ["search", "open_page", "find_in_page", "capture_screenshot"],
                         "description": "The type of web action to perform"
                     },
                     "query": {
@@ -38,11 +38,19 @@ impl ToolFacade for ClaudeWebSearchFacade {
                     },
                     "url": {
                         "type": "string",
-                        "description": "URL to open or search within (required for 'open_page' and 'find_in_page' actions)"
+                        "description": "URL to open, search within, or capture (required for 'open_page', 'find_in_page', and 'capture_screenshot' actions)"
                     },
                     "pattern": {
                         "type": "string",
                         "description": "Pattern to find in page (required for 'find_in_page' action)"
+                    },
+                    "output_path": {
+                        "type": "string",
+                        "description": "File path to save screenshot. If not provided, saves to temp directory (optional for 'capture_screenshot' action)"
+                    },
+                    "full_page": {
+                        "type": "boolean",
+                        "description": "If true, captures entire scrollable page. If false (default), captures visible viewport only (optional for 'capture_screenshot' action)"
                     }
                 },
                 "required": ["action_type"]
@@ -89,6 +97,26 @@ impl ToolFacade for ClaudeWebSearchFacade {
                     .unwrap_or("")
                     .to_string();
                 Ok(InternalWebSearchParams::FindInPage { url, pattern })
+            }
+            "capture_screenshot" => {
+                let url = input
+                    .get("url")
+                    .and_then(|u| u.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                let output_path = input
+                    .get("output_path")
+                    .and_then(|p| p.as_str())
+                    .map(|s| s.to_string());
+                let full_page = input
+                    .get("full_page")
+                    .and_then(|f| f.as_bool())
+                    .unwrap_or(false);
+                Ok(InternalWebSearchParams::CaptureScreenshot {
+                    url,
+                    output_path,
+                    full_page,
+                })
             }
             _ => Err(ToolError::Validation {
                 tool: "web_search",
@@ -210,6 +238,87 @@ impl ToolFacade for GeminiWebFetchFacade {
     }
 }
 
+/// Gemini-specific web page screenshot capture facade.
+///
+/// Provides a dedicated screenshot tool following Gemini's preference
+/// for separate, focused tools rather than action-based dispatching.
+pub struct GeminiWebScreenshotFacade;
+
+impl ToolFacade for GeminiWebScreenshotFacade {
+    fn provider(&self) -> &'static str {
+        "gemini"
+    }
+
+    fn tool_name(&self) -> &'static str {
+        "capture_screenshot"
+    }
+
+    fn definition(&self) -> ToolDefinition {
+        ToolDefinition {
+            name: "capture_screenshot".to_string(),
+            description: "Capture a screenshot of a web page. Returns the file path to the saved PNG image. Use the Read tool to view the screenshot.".to_string(),
+            parameters: json!({
+                "type": "object",
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The URL of the web page to capture (must start with http:// or https://)"
+                    },
+                    "output_path": {
+                        "type": "string",
+                        "description": "File path to save the screenshot. If not provided, saves to temp directory"
+                    },
+                    "full_page": {
+                        "type": "boolean",
+                        "description": "If true, captures the entire scrollable page. If false (default), captures only the visible viewport"
+                    }
+                },
+                "required": ["url"]
+            }),
+        }
+    }
+
+    fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {
+        let url = input
+            .get("url")
+            .and_then(|u| u.as_str())
+            .ok_or_else(|| ToolError::Validation {
+                tool: "capture_screenshot",
+                message: "Missing 'url' field".to_string(),
+            })?;
+
+        // Validate URL format
+        if !url.starts_with("http://") && !url.starts_with("https://") {
+            return Err(ToolError::Validation {
+                tool: "capture_screenshot",
+                message: "URL must start with http:// or https://".to_string(),
+            });
+        }
+
+        // Validate it's a proper URL
+        url::Url::parse(url).map_err(|e| ToolError::Validation {
+            tool: "capture_screenshot",
+            message: format!("Invalid URL: {e}"),
+        })?;
+
+        let output_path = input
+            .get("output_path")
+            .and_then(|p| p.as_str())
+            .map(|s| s.to_string());
+
+        let full_page = input
+            .get("full_page")
+            .and_then(|f| f.as_bool())
+            .unwrap_or(false);
+
+        Ok(InternalWebSearchParams::CaptureScreenshot {
+            url: url.to_string(),
+            output_path,
+            full_page,
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -322,6 +431,46 @@ mod tests {
     }
 
     #[test]
+    fn test_claude_facade_maps_capture_screenshot_action() {
+        let facade = ClaudeWebSearchFacade;
+        let input = json!({
+            "action_type": "capture_screenshot",
+            "url": "https://example.com",
+            "output_path": "/tmp/screenshot.png",
+            "full_page": true
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::CaptureScreenshot {
+                url: "https://example.com".to_string(),
+                output_path: Some("/tmp/screenshot.png".to_string()),
+                full_page: true,
+            }
+        );
+    }
+
+    #[test]
+    fn test_claude_facade_maps_capture_screenshot_defaults() {
+        let facade = ClaudeWebSearchFacade;
+        let input = json!({
+            "action_type": "capture_screenshot",
+            "url": "https://example.com"
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::CaptureScreenshot {
+                url: "https://example.com".to_string(),
+                output_path: None,
+                full_page: false,
+            }
+        );
+    }
+
+    #[test]
     fn test_gemini_web_fetch_facade_has_url_and_format_schema() {
         let facade = GeminiWebFetchFacade;
         let def = facade.definition();
@@ -368,10 +517,91 @@ mod tests {
         assert!(types.contains(&"search"));
         assert!(types.contains(&"open_page"));
         assert!(types.contains(&"find_in_page"));
+        assert!(types.contains(&"capture_screenshot"));
 
         // Should have query, url, and pattern as top-level properties
         assert!(def.parameters["properties"]["query"].is_object());
         assert!(def.parameters["properties"]["url"].is_object());
         assert!(def.parameters["properties"]["pattern"].is_object());
+        assert!(def.parameters["properties"]["output_path"].is_object());
+        assert!(def.parameters["properties"]["full_page"].is_object());
+    }
+
+    #[test]
+    fn test_gemini_web_screenshot_facade_maps_params() {
+        let facade = GeminiWebScreenshotFacade;
+        let input = json!({
+            "url": "https://example.com",
+            "output_path": "/tmp/screenshot.png",
+            "full_page": true
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::CaptureScreenshot {
+                url: "https://example.com".to_string(),
+                output_path: Some("/tmp/screenshot.png".to_string()),
+                full_page: true,
+            }
+        );
+    }
+
+    #[test]
+    fn test_gemini_web_screenshot_facade_maps_minimal_params() {
+        let facade = GeminiWebScreenshotFacade;
+        let input = json!({
+            "url": "https://example.com"
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::CaptureScreenshot {
+                url: "https://example.com".to_string(),
+                output_path: None,
+                full_page: false,
+            }
+        );
+    }
+
+    #[test]
+    fn test_gemini_web_screenshot_facade_rejects_invalid_url() {
+        let facade = GeminiWebScreenshotFacade;
+        let input = json!({
+            "url": "not-a-url"
+        });
+
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_gemini_web_screenshot_facade_rejects_missing_protocol() {
+        let facade = GeminiWebScreenshotFacade;
+        let input = json!({
+            "url": "example.com"
+        });
+
+        let result = facade.map_params(input);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_gemini_web_screenshot_facade_has_correct_schema() {
+        let facade = GeminiWebScreenshotFacade;
+        let def = facade.definition();
+
+        assert_eq!(def.name, "capture_screenshot");
+        assert!(def.description.contains("screenshot"));
+
+        // Should have url, output_path, and full_page properties
+        assert!(def.parameters["properties"]["url"].is_object());
+        assert!(def.parameters["properties"]["output_path"].is_object());
+        assert!(def.parameters["properties"]["full_page"].is_object());
+
+        // url should be required
+        let required = def.parameters["required"].as_array().unwrap();
+        assert!(required.iter().any(|v| v == "url"));
     }
 }

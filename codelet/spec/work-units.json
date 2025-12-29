@@ -8633,10 +8633,22 @@
         "action": "have provider-specific system prompt formatting",
         "benefit": "Claude OAuth mode gets the correct identity prefix while other providers receive their native format"
       }
+    },
+    "BROWSE-001": {
+      "id": "BROWSE-001",
+      "title": "Full-page scrollable screenshot capture",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2025-12-29T06:12:08.100Z",
+      "updatedAt": "2025-12-29T06:12:08.100Z",
+      "description": "Add screenshot capture capability to the web search tool using Chrome DevTools Protocol",
+      "children": []
     }
   },
   "states": {
-    "backlog": [],
+    "backlog": [
+      "BROWSE-001"
+    ],
     "specifying": [
       "NAPI-001",
       "NAPI-002",
@@ -8718,6 +8730,7 @@
     "CLI": 24,
     "WEB": 2,
     "NAPI": 3,
-    "TOOL": 1
+    "TOOL": 1,
+    "BROWSE": 1
   }
 }
