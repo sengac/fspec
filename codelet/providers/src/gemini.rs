@@ -95,18 +95,21 @@ impl GeminiProvider {
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
-    /// * `_thinking_config` - Optional thinking configuration JSON (TOOL-010, currently unused for Gemini)
+    /// * `thinking_config` - Optional thinking configuration JSON from ThinkingConfigFacade (TOOL-010)
+    ///                       Expected format: `{"thinkingConfig": {"includeThoughts": true, "thinkingLevel": "high"}}`
+    ///                       for Gemini 3, or `{"thinkingConfig": {"includeThoughts": true, "thinkingBudget": 8192}}`
+    ///                       for Gemini 2.5
     pub fn create_rig_agent(
         &self,
         preamble: Option<&str>,
-        _thinking_config: Option<serde_json::Value>,
+        thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<gemini::completion::CompletionModel> {
         use codelet_tools::facade::{
-            BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper,
-            GeminiGlobFacade, GeminiGoogleWebSearchFacade, GeminiListDirectoryFacade,
-            GeminiReadFileFacade, GeminiReplaceFacade, GeminiRunShellCommandFacade,
-            GeminiSearchFileContentFacade, GeminiWebFetchFacade, GeminiWriteFileFacade,
-            LsToolFacadeWrapper, SearchToolFacadeWrapper,
+            build_gemini_system_prompt, BashToolFacadeWrapper, FacadeToolWrapper,
+            FileToolFacadeWrapper, GeminiGlobFacade, GeminiGoogleWebSearchFacade,
+            GeminiListDirectoryFacade, GeminiReadFileFacade, GeminiReplaceFacade,
+            GeminiRunShellCommandFacade, GeminiSearchFileContentFacade, GeminiWebFetchFacade,
+            GeminiWriteFileFacade, LsToolFacadeWrapper, SearchToolFacadeWrapper,
         };
         use codelet_tools::AstGrepTool;
         use std::sync::Arc;
@@ -157,10 +160,61 @@ impl GeminiProvider {
             .tool(google_web_search) // TOOL-001: Gemini-native google_web_search
             .tool(web_fetch); // TOOL-001: Gemini-native web_fetch
 
-        // Set preamble if provided
-        if let Some(p) = preamble {
-            agent_builder = agent_builder.preamble(p);
+        // Build complete system prompt using model-aware builder
+        // This combines:
+        // 1. Base Gemini system prompt (from opencode) with examples showing simple questions → simple answers
+        // 2. Gemini 3 specific instruction (from gemini-cli) if model is Gemini 3
+        // 3. User-provided preamble (e.g., AGENTS.md content)
+        let system_prompt = build_gemini_system_prompt(&self.model_name, preamble);
+        agent_builder = agent_builder.preamble(&system_prompt);
+
+        // TOOL-010: Apply generation config for Gemini models
+        // Based on Gemini CLI and opencode research:
+        // - temperature: 1.0 (strongly recommended by Google, other values cause looping)
+        // - topP: 0.95 (standard Gemini value)
+        // - topK: 64 (standard Gemini value)
+        // - thinkingConfig: required for Gemini 3 models
+        //
+        // The facade returns {"thinkingConfig": {...}} but rig expects {"generationConfig": {...}}
+        let thinking_cfg = thinking_config
+            .as_ref()
+            .and_then(|config| config.get("thinkingConfig").cloned())
+            .or_else(|| {
+                // Provide default thinking config for Gemini 3 models
+                // Gemini 3 uses thinkingLevel enum instead of thinkingBudget
+                // Note: You cannot disable thinking for Gemini 3 Pro
+                if self.model_name.contains("gemini-3") {
+                    tracing::debug!(
+                        "Using default thinking level HIGH for Gemini 3 model: {}",
+                        self.model_name
+                    );
+                    Some(serde_json::json!({
+                        "includeThoughts": true,
+                        "thinkingLevel": "high"
+                    }))
+                } else {
+                    None
+                }
+            });
+
+        // ALWAYS apply generation config with proper defaults for ALL Gemini models
+        // This is critical for Gemini 3 which requires specific parameter values
+        let mut gen_config = serde_json::json!({
+            "temperature": 1.0,
+            "topP": 0.95,
+            "topK": 64
+        });
+
+        // Add thinking config if present (Gemini 3 or explicitly provided)
+        if let Some(thinking_cfg) = thinking_cfg {
+            gen_config["thinkingConfig"] = thinking_cfg;
         }
+
+        let generation_config = serde_json::json!({
+            "generationConfig": gen_config
+        });
+        tracing::debug!("Applying Gemini generation config: {:?}", generation_config);
+        agent_builder = agent_builder.additional_params(generation_config);
 
         agent_builder.build()
     }

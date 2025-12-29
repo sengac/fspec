@@ -43,9 +43,10 @@ pub use traits::{
     SearchToolFacade, ToolDefinition, ToolFacade,
 };
 pub use system_prompt::{
-    select_claude_facade, BoxedSystemPromptFacade, ClaudeApiKeySystemPromptFacade,
-    ClaudeOAuthSystemPromptFacade, GeminiSystemPromptFacade, OpenAISystemPromptFacade,
-    SystemPromptFacade, CLAUDE_CODE_PROMPT_PREFIX,
+    build_gemini_system_prompt, select_claude_facade, BoxedSystemPromptFacade,
+    ClaudeApiKeySystemPromptFacade, ClaudeOAuthSystemPromptFacade, GeminiSystemPromptFacade,
+    OpenAISystemPromptFacade, SystemPromptFacade, CLAUDE_CODE_PROMPT_PREFIX,
+    GEMINI_3_TOOL_INSTRUCTION, GEMINI_BASE_SYSTEM_PROMPT,
 };
 pub use thinking_config::{
     ClaudeThinkingFacade, Gemini25ThinkingFacade, Gemini3ThinkingFacade, ThinkingConfigFacade,
