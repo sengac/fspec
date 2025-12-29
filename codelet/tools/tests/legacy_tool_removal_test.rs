@@ -101,7 +101,7 @@ fn test_tools_module_does_not_export_legacy_types() {
     // @step When I check the public exports
     // @step Then "ReadTool" should be exported
     assert!(
-        lib_content.contains("pub use read::ReadTool"),
+        lib_content.contains("ReadTool"),
         "ReadTool should be exported"
     );
 

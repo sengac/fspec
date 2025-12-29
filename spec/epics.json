@@ -300,6 +300,16 @@
         "TOOL-001",
         "TOOL-008"
       ]
+    },
+    "codelet-tools": {
+      "id": "codelet-tools",
+      "title": "Codelet Tools Enhancement",
+      "createdAt": "2025-12-29T01:18:05.332Z",
+      "description": "Enhancements to codelet-napi tools including multimodal support and improved functionality",
+      "workUnits": [
+        "TOOLS-001",
+        "TOOLS-002"
+      ]
     }
   }
 }

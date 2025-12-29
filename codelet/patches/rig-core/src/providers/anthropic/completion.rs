@@ -228,7 +228,7 @@ impl FromStr for Content {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ToolResultContent {
     Text { text: String },
-    Image(ImageSource),
+    Image { source: ImageSource },
 }
 
 impl FromStr for ToolResultContent {
@@ -453,11 +453,13 @@ impl TryFrom<message::Message> for Message {
                                     image.media_type.ok_or(MessageError::ConversionError(
                                         "Image media type is required".to_owned(),
                                     ))?;
-                                Ok(ToolResultContent::Image(ImageSource {
-                                    data: ImageSourceData::Base64(data),
-                                    media_type: media_type.try_into()?,
-                                    r#type: SourceType::BASE64,
-                                }))
+                                Ok(ToolResultContent::Image {
+                                    source: ImageSource {
+                                        data: ImageSourceData::Base64(data),
+                                        media_type: media_type.try_into()?,
+                                        r#type: SourceType::BASE64,
+                                    },
+                                })
                             }
                         })?,
                         is_error: None,
@@ -564,11 +566,13 @@ impl From<ToolResultContent> for message::ToolResultContent {
     fn from(content: ToolResultContent) -> Self {
         match content {
             ToolResultContent::Text { text } => message::ToolResultContent::text(text),
-            ToolResultContent::Image(ImageSource {
-                data,
-                media_type: format,
-                ..
-            }) => message::ToolResultContent::image_base64(data, Some(format.into()), None),
+            ToolResultContent::Image {
+                source: ImageSource {
+                    data,
+                    media_type: format,
+                    ..
+                },
+            } => message::ToolResultContent::image_base64(data, Some(format.into()), None),
         }
     }
 }

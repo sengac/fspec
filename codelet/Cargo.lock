@@ -523,6 +523,7 @@ dependencies = [
  "ast-grep-core",
  "ast-grep-language",
  "async-trait",
+ "base64",
  "chrono",
  "codelet-common",
  "ctrlc",
