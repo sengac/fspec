@@ -565,6 +565,87 @@ pub mod gemini_api_types {
         pub role: Option<Role>,
     }
 
+    /// Convert UserContent to one or more Parts.
+    /// Tool results with images return multiple parts: FunctionResponse + InlineData.
+    fn user_content_to_parts(
+        content: message::UserContent,
+    ) -> Result<Vec<Part>, message::MessageError> {
+        match content {
+            message::UserContent::ToolResult(message::ToolResult { id, content, .. }) => {
+                let mut parts = Vec::new();
+
+                // Separate text and image content
+                let mut text_content = String::new();
+                let mut image_parts = Vec::new();
+
+                for item in content.into_iter() {
+                    match item {
+                        message::ToolResultContent::Text(text) => {
+                            if !text_content.is_empty() {
+                                text_content.push('\n');
+                            }
+                            text_content.push_str(&text.text);
+                        }
+                        message::ToolResultContent::Image(image) => {
+                            let media_type = image.media_type.ok_or_else(|| {
+                                message::MessageError::ConversionError(
+                                    "Image media type is required for Gemini".to_string(),
+                                )
+                            })?;
+
+                            let mime_type = media_type.to_mime_type().to_string();
+                            let data = match image.data {
+                                message::DocumentSourceKind::Base64(data) => data,
+                                _ => {
+                                    return Err(message::MessageError::ConversionError(
+                                        "Only base64 images supported in tool results".to_string(),
+                                    ));
+                                }
+                            };
+
+                            image_parts.push(Part {
+                                thought: Some(false),
+                                thought_signature: None,
+                                part: PartKind::InlineData(Blob { mime_type, data }),
+                                additional_params: None,
+                            });
+                        }
+                    }
+                }
+
+                // Always add FunctionResponse part (even if empty text when there's an image)
+                let result: serde_json::Value = if text_content.is_empty() {
+                    json!({ "status": "success" })
+                } else {
+                    serde_json::from_str(&text_content).unwrap_or_else(|error| {
+                        tracing::trace!(
+                            ?error,
+                            "Tool result is not a valid JSON, treat it as normal string"
+                        );
+                        json!(text_content)
+                    })
+                };
+
+                parts.push(Part {
+                    thought: Some(false),
+                    thought_signature: None,
+                    part: PartKind::FunctionResponse(FunctionResponse {
+                        name: id,
+                        response: Some(json!({ "result": result })),
+                    }),
+                    additional_params: None,
+                });
+
+                // Add image parts after the function response
+                parts.extend(image_parts);
+
+                Ok(parts)
+            }
+            // For non-tool-result content, delegate to existing TryFrom
+            other => Ok(vec![other.try_into()?]),
+        }
+    }
+
     impl TryFrom<message::Message> for Content {
         type Error = message::MessageError;
 
@@ -573,8 +654,11 @@ pub mod gemini_api_types {
                 message::Message::User { content } => Content {
                     parts: content
                         .into_iter()
-                        .map(|c| c.try_into())
-                        .collect::<Result<Vec<_>, _>>()?,
+                        .map(user_content_to_parts)
+                        .collect::<Result<Vec<_>, _>>()?
+                        .into_iter()
+                        .flatten()
+                        .collect(),
                     role: Some(Role::User),
                 },
                 message::Message::Assistant { content, .. } => Content {
@@ -795,33 +879,11 @@ pub mod gemini_api_types {
                     part: PartKind::Text(text),
                     additional_params: None,
                 }),
-                message::UserContent::ToolResult(message::ToolResult { id, content, .. }) => {
-                    let content = match content.first() {
-                        message::ToolResultContent::Text(text) => text.text,
-                        message::ToolResultContent::Image(_) => {
-                            return Err(message::MessageError::ConversionError(
-                                "Tool result content must be text".to_string(),
-                            ));
-                        }
-                    };
-                    // Convert to JSON since this value may be a valid JSON value
-                    let result: serde_json::Value =
-                        serde_json::from_str(&content).unwrap_or_else(|error| {
-                            tracing::trace!(
-                                ?error,
-                                "Tool result is not a valid JSON, treat it as normal string"
-                            );
-                            json!(content)
-                        });
-                    Ok(Part {
-                        thought: Some(false),
-                        thought_signature: None,
-                        part: PartKind::FunctionResponse(FunctionResponse {
-                            name: id,
-                            response: Some(json!({ "result": result })),
-                        }),
-                        additional_params: None,
-                    })
+                message::UserContent::ToolResult(_) => {
+                    // ToolResult should be handled by user_content_to_parts to support images
+                    Err(message::MessageError::ConversionError(
+                        "ToolResult should be converted via user_content_to_parts".to_string(),
+                    ))
                 }
                 message::UserContent::Image(message::Image {
                     data, media_type, ..
