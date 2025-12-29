@@ -307,6 +307,7 @@ where
 
                 let mut tool_calls = vec![];
                 let mut tool_results = vec![];
+                let mut reasoning_blocks: Vec<AssistantContent> = vec![];
 
                 while let Some(content) = stream.next().await {
                     match content {
@@ -402,6 +403,16 @@ where
                             }
                         }
                         Ok(StreamedAssistantContent::Reasoning(rig::message::Reasoning { reasoning, id, signature })) => {
+                            // Only capture FINAL reasoning blocks (those with signature) for chat history
+                            // Claude requires signature when sending thinking blocks back in multi-turn
+                            // Delta chunks have signature: None, final blocks have signature: Some(...)
+                            if signature.is_some() {
+                                reasoning_blocks.push(AssistantContent::Reasoning(Reasoning {
+                                    reasoning: reasoning.clone(),
+                                    id: id.clone(),
+                                    signature: signature.clone(),
+                                }));
+                            }
                             yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::Reasoning(rig::message::Reasoning { reasoning, id, signature })));
                             did_call_tool = false;
                         },
@@ -437,11 +448,15 @@ where
                 }
 
                 // Add (parallel) tool calls to chat history
+                // When thinking is enabled, reasoning blocks MUST come before tool_use blocks
                 if !tool_calls.is_empty() {
+                    let mut assistant_content = reasoning_blocks.clone();
+                    assistant_content.extend(tool_calls.clone());
                     chat_history.write().await.push(Message::Assistant {
                         id: None,
-                        content: OneOrMany::many(tool_calls.clone()).expect("Impossible EmptyListError"),
+                        content: OneOrMany::many(assistant_content).expect("Impossible EmptyListError"),
                     });
+                    reasoning_blocks.clear();
                 }
 
                 // Add tool results to chat history
