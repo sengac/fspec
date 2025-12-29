@@ -26,9 +26,21 @@ use crate::{
 fn parse_tool_result_content(result: &str) -> ToolResultContent {
     // Try to parse as JSON to detect structured tool output
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(result) {
-        // Handle double-serialization: if the parsed JSON is a string, parse it again
-        // This happens when tool results are JSON-encoded strings containing JSON
-        let json = if let Some(inner_str) = json.as_str() {
+        // Handle FileOperationResult wrapper: {"success":true,"content":"..."}
+        // The content field may contain a JSON string with image data
+        let json = if json.get("success").is_some() {
+            if let Some(content_str) = json.get("content").and_then(|c| c.as_str()) {
+                // Parse the content field as JSON
+                match serde_json::from_str::<serde_json::Value>(content_str) {
+                    Ok(inner_json) => inner_json,
+                    Err(_) => return ToolResultContent::text(content_str),
+                }
+            } else {
+                json
+            }
+        } else if let Some(inner_str) = json.as_str() {
+            // Handle double-serialization: if the parsed JSON is a string, parse it again
+            // This happens when tool results are JSON-encoded strings containing JSON
             match serde_json::from_str::<serde_json::Value>(inner_str) {
                 Ok(inner_json) => inner_json,
                 Err(_) => return ToolResultContent::text(inner_str),
