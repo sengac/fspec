@@ -29,6 +29,29 @@ export declare class CodeletSession {
    */
   static newWithModel(modelString: string): Promise<CodeletSession>;
   /**
+   * CONFIG-004: Create a new CodeletSession with explicit credentials
+   *
+   * Creates a session with programmatic credentials passed from TypeScript,
+   * without reading from environment variables. This enables API key management
+   * via the fspec settings UI.
+   *
+   * # Arguments
+   * * `model_string` - Model in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+   * * `provider_config` - Provider configuration with explicit API key
+   *
+   * # Example
+   * ```typescript
+   * const session = await CodeletSession.newWithCredentials(
+   *   "anthropic/claude-sonnet-4",
+   *   { providerId: "anthropic", apiKey: "sk-ant-...", enabled: true }
+   * );
+   * ```
+   */
+  static newWithCredentials(
+    modelString: string,
+    providerConfig: NapiProviderConfig
+  ): Promise<CodeletSession>;
+  /**
    * Interrupt the current agent execution
    *
    * Call this when the user presses Esc in the TUI.
@@ -484,6 +507,25 @@ export interface NapiModelInfo {
   maxOutput: number;
   /** Whether model has vision capability (image input) */
   hasVision: boolean;
+}
+
+/**
+ * Provider configuration for programmatic credential passing (CONFIG-004)
+ *
+ * Used by CodeletSession.newWithCredentials() to pass explicit API keys
+ * without reading from environment variables.
+ */
+export interface NapiProviderConfig {
+  /** Provider ID (e.g., "anthropic", "openai", "gemini") */
+  providerId: string;
+  /** API key for the provider */
+  apiKey?: string;
+  /** Custom base URL (optional) */
+  baseUrl?: string;
+  /** Whether the provider is enabled */
+  enabled: boolean;
+  /** Default model (optional) */
+  defaultModel?: string;
 }
 
 /** Provider with its available models */

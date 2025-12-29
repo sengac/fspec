@@ -306,6 +306,10 @@
           "description": "Configuration loading and validation"
         },
         {
+          "name": "@connection-test",
+          "description": "Connection testing functionality"
+        },
+        {
           "name": "@context-management",
           "description": "Context window and memory management features"
         },
@@ -482,6 +486,10 @@
           "description": "List operations"
         },
         {
+          "name": "@masked-display",
+          "description": "Masked display of sensitive data"
+        },
+        {
           "name": "@merge-preserves-references",
           "description": "Merge reference preservation"
         },
@@ -552,6 +560,10 @@
         {
           "name": "@provider-abstraction",
           "description": "Provider abstraction layer for multi-provider support"
+        },
+        {
+          "name": "@provider-settings",
+          "description": "Provider configuration settings"
         },
         {
           "name": "@publish",
@@ -694,6 +706,10 @@
           "description": "Session switching between conversations"
         },
         {
+          "name": "@settings-navigation",
+          "description": "Settings navigation and UI interactions"
+        },
+        {
           "name": "@soft-dependency",
           "description": "Soft dependency relationships"
         },
@@ -716,6 +732,10 @@
         {
           "name": "@statistics",
           "description": "Statistical analysis"
+        },
+        {
+          "name": "@status-display",
+          "description": "Status display in user interface"
         },
         {
           "name": "@strategy-detection",
@@ -874,12 +894,24 @@
           "description": "Work unit identifier for authentication features (example in example-mapping feature)"
         },
         {
+          "name": "@auth-methods",
+          "description": "Authentication method handling"
+        },
+        {
           "name": "@auto-create",
           "description": "Scenarios testing automatic file creation when files are missing"
         },
         {
           "name": "@automation",
           "description": "Automated workflow operations and state transitions"
+        },
+        {
+          "name": "@azure",
+          "description": "Azure OpenAI provider"
+        },
+        {
+          "name": "@backward-compat",
+          "description": "Backward compatibility"
         },
         {
           "name": "@backward-compatibility",
@@ -966,6 +998,10 @@
           "description": "Compaction state persistence"
         },
         {
+          "name": "@complex-config",
+          "description": "Complex configuration scenarios"
+        },
+        {
           "name": "@concurrency",
           "description": "Concurrent access coordination and file locking mechanisms"
         },
@@ -984,6 +1020,14 @@
         {
           "name": "@context",
           "description": "Context preservation scenarios"
+        },
+        {
+          "name": "@credential-resolution",
+          "description": "Credential resolution and priority chain"
+        },
+        {
+          "name": "@credentials",
+          "description": "Credential storage and management features"
         },
         {
           "name": "@cross-compile",
@@ -1040,6 +1084,10 @@
         {
           "name": "@email",
           "description": "Email-related functionality"
+        },
+        {
+          "name": "@env-vars",
+          "description": "Environment variable handling"
         },
         {
           "name": "@envelope",
@@ -1206,6 +1254,10 @@
           "description": "LLM integration and response handling"
         },
         {
+          "name": "@local",
+          "description": "Local-only functionality"
+        },
+        {
           "name": "@logging",
           "description": "Logging and diagnostics features"
         },
@@ -1282,6 +1334,14 @@
           "description": "Native platform builds"
         },
         {
+          "name": "@no-logging",
+          "description": "Ensuring secrets are not logged"
+        },
+        {
+          "name": "@ollama",
+          "description": "Ollama local provider"
+        },
+        {
           "name": "@outside-in-bdd",
           "description": "Outside-in BDD approach using personas and behavior-first thinking"
         },
@@ -1318,6 +1378,10 @@
           "description": "Prettier configuration and code formatting"
         },
         {
+          "name": "@programmatic",
+          "description": "Programmatic API usage"
+        },
+        {
           "name": "@provider",
           "description": "Provider-related functionality for LLM provider identification"
         },
@@ -1340,6 +1404,10 @@
         {
           "name": "@real-time",
           "description": "Features with real-time data synchronization and live updates"
+        },
+        {
+          "name": "@registry",
+          "description": "Provider or component registry"
         },
         {
           "name": "@request-id",
@@ -1432,6 +1500,10 @@
         {
           "name": "@stop-reason",
           "description": "Response stop reason scenarios"
+        },
+        {
+          "name": "@storage",
+          "description": "File storage operations"
         },
         {
           "name": "@strategy-planning",
@@ -2110,7 +2182,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-29T08:04:40.045Z",
+    "lastUpdated": "2025-12-29T11:16:09.898Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

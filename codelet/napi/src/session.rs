@@ -11,7 +11,7 @@
 //! Key difference from CLI: JavaScript calls interrupt() to set is_interrupted flag
 
 use crate::output::{NapiOutput, StreamCallback};
-use crate::types::{CompactionResult, ContextFillInfo, DebugCommandResult, Message, TokenTracker};
+use crate::types::{CompactionResult, ContextFillInfo, DebugCommandResult, Message, NapiProviderConfig, TokenTracker};
 use codelet_cli::compaction_threshold::calculate_usable_context;
 use codelet_cli::interactive::run_agent_stream;
 use codelet_cli::interactive_helpers::execute_compaction;
@@ -84,6 +84,87 @@ impl CodeletSession {
 
         // Load environment variables from .env file (if present)
         let _ = dotenvy::dotenv();
+
+        // Create ProviderManager with model support (async for model cache)
+        let mut manager = ProviderManager::with_model_support()
+            .await
+            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {e}")))?;
+
+        // Select the specified model
+        manager
+            .select_model(&model_string)
+            .map_err(|e| Error::from_reason(format!("Failed to select model '{}': {e}", model_string)))?;
+
+        // Create session from the configured provider manager
+        let mut session = codelet_cli::session::Session::from_provider_manager(manager);
+
+        // Inject context reminders (CLAUDE.md discovery, environment info)
+        session.inject_context_reminders();
+
+        Ok(Self {
+            inner: Arc::new(Mutex::new(session)),
+            is_interrupted: Arc::new(AtomicBool::new(false)),
+            interrupt_notify: Arc::new(Notify::new()),
+        })
+    }
+
+    /// CONFIG-004: Create a new CodeletSession with explicit credentials
+    ///
+    /// Creates a session with programmatic credentials passed from TypeScript,
+    /// without reading from environment variables. This enables API key management
+    /// via the fspec settings UI.
+    ///
+    /// # Arguments
+    /// * `model_string` - Model in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
+    /// * `provider_config` - Provider configuration with explicit API key
+    ///
+    /// # Example
+    /// ```typescript
+    /// const session = await CodeletSession.newWithCredentials(
+    ///   "anthropic/claude-sonnet-4",
+    ///   { providerId: "anthropic", apiKey: "sk-ant-...", enabled: true }
+    /// );
+    /// ```
+    #[napi(factory)]
+    pub async fn new_with_credentials(
+        model_string: String,
+        provider_config: NapiProviderConfig,
+    ) -> Result<Self> {
+        use codelet_providers::ProviderManager;
+
+        // Map provider ID to environment variable name
+        let env_var = match provider_config.provider_id.as_str() {
+            "anthropic" => "ANTHROPIC_API_KEY",
+            "openai" => "OPENAI_API_KEY",
+            "gemini" | "google" => "GOOGLE_GENERATIVE_AI_API_KEY",
+            "cohere" => "COHERE_API_KEY",
+            "mistral" => "MISTRAL_API_KEY",
+            "xai" => "XAI_API_KEY",
+            "together" => "TOGETHER_API_KEY",
+            "huggingface" => "HUGGINGFACE_API_KEY",
+            "openrouter" => "OPENROUTER_API_KEY",
+            "groq" => "GROQ_API_KEY",
+            "deepseek" => "DEEPSEEK_API_KEY",
+            "perplexity" => "PERPLEXITY_API_KEY",
+            "moonshot" => "MOONSHOT_API_KEY",
+            "hyperbolic" => "HYPERBOLIC_API_KEY",
+            "mira" => "MIRA_API_KEY",
+            "galadriel" => "GALADRIEL_API_KEY",
+            "azure" => "AZURE_OPENAI_API_KEY",
+            "voyageai" => "VOYAGEAI_API_KEY",
+            _ => {
+                return Err(Error::from_reason(format!(
+                    "Unknown provider: {}",
+                    provider_config.provider_id
+                )));
+            }
+        };
+
+        // Set environment variable with explicit API key
+        // This makes the credential available to ProviderCredentials::detect()
+        if let Some(api_key) = &provider_config.api_key {
+            std::env::set_var(env_var, api_key);
+        }
 
         // Create ProviderManager with model support (async for model cache)
         let mut manager = ProviderManager::with_model_support()

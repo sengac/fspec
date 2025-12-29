@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-29T09:00:00.424Z"
+    "lastUpdated": "2025-12-29T11:55:54.490Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -57963,6 +57963,247 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-29T09:00:00.450Z"
+    },
+    "CONFIG-004": {
+      "id": "CONFIG-004",
+      "title": "Provider Configuration and Credentials Management",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-29T11:00:12.271Z",
+      "updatedAt": "2025-12-29T11:55:54.516Z",
+      "description": "Implement a comprehensive provider configuration system that allows users to configure API keys and provider settings via ~/.fspec, store credentials securely in ~/.fspec/credentials, integrate with the model selection screen for key management, and pass credentials programmatically to codelet via NAPI/TypeScript",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CONFIG-004/CONFIG-004-provider-configuration-plan.md",
+        "spec/attachments/CONFIG-004/ast-research-provider-config.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "configure provider API keys and settings via the TUI",
+        "benefit": "I can manage credentials without editing .env files or environment variables"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-29T11:00:58.578Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-29T11:12:02.673Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-29T11:14:04.076Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-29T11:17:41.927Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-29T11:26:04.155Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-29T11:32:47.241Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-29T11:39:56.626Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-29T11:43:15.629Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-29T11:49:51.340Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-29T11:55:54.517Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Credentials must be stored in ~/.fspec/credentials/credentials.json with 600 file permissions",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:13.037Z"
+        },
+        {
+          "id": 1,
+          "text": "Provider settings (enabled, defaultModel, baseUrl) must be stored in ~/.fspec/fspec-config.json under providers key",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:13.732Z"
+        },
+        {
+          "id": 2,
+          "text": "Credential resolution must follow priority chain: explicit config → credentials file → environment variables → .env file",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:14.427Z"
+        },
+        {
+          "id": 3,
+          "text": "Codelet-NAPI must expose new_with_credentials() factory method to accept programmatic credentials from TypeScript",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:15.930Z"
+        },
+        {
+          "id": 4,
+          "text": "Model selection screen must have a Settings tab for API key management with masked display",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:16.609Z"
+        },
+        {
+          "id": 5,
+          "text": "Environment variables must continue to work for backward compatibility",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:18.172Z"
+        },
+        {
+          "id": 6,
+          "text": "API keys must never be logged, even partially",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:19.760Z"
+        },
+        {
+          "id": 7,
+          "text": "Must support all rig providers: OpenAI, Anthropic, Cohere, Gemini, Mistral, xAI, Together, HuggingFace, OpenRouter, Groq, Ollama, DeepSeek, Perplexity, Moonshot, Hyperbolic, Mira, Galadriel, Azure OpenAI, Voyage AI",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:07:49.300Z"
+        },
+        {
+          "id": 8,
+          "text": "Each provider may have different auth methods: Bearer token, x-api-key header (Anthropic), query param (Gemini), or no auth (Ollama)",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:07:52.296Z"
+        },
+        {
+          "id": 9,
+          "text": "Azure OpenAI requires additional config: endpoint URL and API version in addition to API key",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:07:53.991Z"
+        },
+        {
+          "id": 10,
+          "text": "Ollama is local-only and requires base URL config but no API key",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:07:57.729Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User opens Settings tab in model selection, enters Anthropic API key, key is saved to ~/.fspec/credentials/credentials.json with 600 permissions",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:36.075Z"
+        },
+        {
+          "id": 1,
+          "text": "User configures OpenRouter with custom base URL, provider settings saved to ~/.fspec/fspec-config.json under providers.openrouter",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:37.829Z"
+        },
+        {
+          "id": 2,
+          "text": "TypeScript code calls CodeletSession.new_with_credentials(modelString, providerConfig) with explicit API key, session created without reading environment",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:39.498Z"
+        },
+        {
+          "id": 3,
+          "text": "Model selection shows 'Anthropic (configured)' with green checkmark when credentials exist, 'OpenAI (not configured)' with warning when missing",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:41.081Z"
+        },
+        {
+          "id": 4,
+          "text": "User has ANTHROPIC_API_KEY in environment but also has different key in ~/.fspec/credentials, credentials file takes precedence",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:42.750Z"
+        },
+        {
+          "id": 5,
+          "text": "User clicks Test Connection button for a provider, system validates API key by making a lightweight API call, shows success or error",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:44.317Z"
+        },
+        {
+          "id": 6,
+          "text": "User configures Ollama with custom base URL http://localhost:11434, no API key required, can use local models",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:08:09.944Z"
+        },
+        {
+          "id": 7,
+          "text": "User configures Azure OpenAI with endpoint https://myresource.openai.azure.com, API version 2024-10-21, and API key",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:08:12.157Z"
+        },
+        {
+          "id": 8,
+          "text": "User passes explicit credentials via new_with_credentials(), credentials file exists with different key, explicit config is used (highest priority)",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:14:24.407Z"
+        },
+        {
+          "id": 9,
+          "text": "User has no credentials file, no env vars, but .env file exists with ANTHROPIC_API_KEY, .env file is used (lowest priority fallback)",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:14:26.870Z"
+        },
+        {
+          "id": 10,
+          "text": "User presses Tab in model selection to switch to Settings view, sees list of all 19 providers with configuration status",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:14:28.654Z"
+        },
+        {
+          "id": 11,
+          "text": "User enters API key in Settings, key displays as 'sk-ant-••••••••vX8D' (masked with visible prefix/suffix)",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:14:30.625Z"
+        },
+        {
+          "id": 12,
+          "text": "User deletes credential for anthropic provider, credentials.json updated, provider shows as 'not configured'",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:14:32.850Z"
+        },
+        {
+          "id": 13,
+          "text": "User configures Gemini provider, API key passed as query parameter (key=...) not Bearer header",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:14:34.563Z"
+        },
+        {
+          "id": 14,
+          "text": "Provider registry contains all 19 providers: OpenAI, Anthropic, Cohere, Gemini, Mistral, xAI, Together, HuggingFace, OpenRouter, Groq, Ollama, DeepSeek, Perplexity, Moonshot, Hyperbolic, Mira, Galadriel, Azure, VoyageAI",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:14:36.341Z"
+        }
+      ],
+      "nextExampleId": 15,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "See attached plan: spec/attachments/CONFIG-004/CONFIG-004-provider-configuration-plan.md for complete implementation details including data flow, NAPI types, and UI mockups",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:01:53.149Z"
+        },
+        {
+          "id": 1,
+          "text": "Rig providers to support: OpenAI, Anthropic, Cohere, Gemini, Mistral, xAI, Together, HuggingFace, OpenRouter, Groq, Ollama, DeepSeek, Perplexity, Moonshot, Hyperbolic, Mira, Galadriel, Azure OpenAI, Voyage AI (19 total)",
+          "deleted": false,
+          "createdAt": "2025-12-29T11:08:13.866Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-29T11:55:54.516Z"
     }
   },
   "states": {
@@ -58035,6 +58276,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "CONFIG-004",
       "TOOL-011",
       "BROWSE-002",
       "TOOLS-001",
@@ -58518,6 +58760,7 @@
     "CTX": 2,
     "TOOL": 11,
     "MODEL": 1,
-    "TOOLS": 2
+    "TOOLS": 2,
+    "CONFIG": 4
   }
 }

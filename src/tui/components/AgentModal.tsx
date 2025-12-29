@@ -28,8 +28,19 @@ import { VirtualList } from './VirtualList';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
-import { persistenceStoreMessageEnvelope, getThinkingConfig, JsThinkingLevel, modelsListAll, type NapiProviderModels, type NapiModelInfo } from '@sengac/codelet-napi';
+import { persistenceStoreMessageEnvelope, getThinkingConfig, JsThinkingLevel, modelsListAll, modelsRefreshCache, type NapiProviderModels, type NapiModelInfo } from '@sengac/codelet-napi';
 import { detectThinkingLevel, getThinkingLevelLabel } from '../../utils/thinkingLevel';
+import {
+  saveCredential,
+  deleteCredential,
+  getProviderConfig,
+  maskApiKey,
+} from '../../utils/credentials';
+import {
+  SUPPORTED_PROVIDERS,
+  getProviderRegistryEntry,
+  type ProviderRegistryEntry,
+} from '../../utils/provider-config';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -51,6 +62,60 @@ interface ProviderSection {
   hasCredentials: boolean; // From availableProviders check
 }
 
+// Flattened item type for VirtualList-based model selector scrolling
+type ModelSelectorItem =
+  | { type: 'section'; sectionIdx: number; section: ProviderSection; isExpanded: boolean }
+  | { type: 'model'; sectionIdx: number; modelIdx: number; section: ProviderSection; model: NapiModelInfo };
+
+// Build flattened list from sections and expanded state
+const buildFlatModelList = (
+  sections: ProviderSection[],
+  expandedProviders: Set<string>
+): ModelSelectorItem[] => {
+  const items: ModelSelectorItem[] = [];
+  sections.forEach((section, sectionIdx) => {
+    const isExpanded = expandedProviders.has(section.providerId);
+    items.push({ type: 'section', sectionIdx, section, isExpanded });
+    if (isExpanded) {
+      section.models.forEach((model, modelIdx) => {
+        items.push({ type: 'model', sectionIdx, modelIdx, section, model });
+      });
+    }
+  });
+  return items;
+};
+
+// Convert flat index to (sectionIdx, modelIdx) - modelIdx is -1 for section headers
+const flatIndexToSectionModel = (
+  flatIndex: number,
+  items: ModelSelectorItem[]
+): { sectionIdx: number; modelIdx: number } => {
+  const item = items[flatIndex];
+  if (!item) return { sectionIdx: 0, modelIdx: -1 };
+  if (item.type === 'section') {
+    return { sectionIdx: item.sectionIdx, modelIdx: -1 };
+  }
+  return { sectionIdx: item.sectionIdx, modelIdx: item.modelIdx };
+};
+
+// Convert (sectionIdx, modelIdx) to flat index
+const sectionModelToFlatIndex = (
+  sectionIdx: number,
+  modelIdx: number,
+  items: ModelSelectorItem[]
+): number => {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    if (item.type === 'section' && item.sectionIdx === sectionIdx && modelIdx === -1) {
+      return i;
+    }
+    if (item.type === 'model' && item.sectionIdx === sectionIdx && item.modelIdx === modelIdx) {
+      return i;
+    }
+  }
+  return 0;
+};
+
 // TUI-034: Provider ID mapping (models.dev to internal)
 const mapProviderIdToInternal = (providerId: string): string => {
   switch (providerId) {
@@ -65,6 +130,15 @@ const mapInternalToProviderId = (internalName: string): string => {
     case 'claude': return 'anthropic';
     case 'gemini': return 'google';
     default: return internalName;
+  }
+};
+
+// CONFIG-004: Map models.dev provider IDs to our registry/credentials provider IDs
+// models.dev uses "google" but our registry/credentials uses "gemini"
+const mapModelsDevToRegistryId = (modelsDevProviderId: string): string => {
+  switch (modelsDevProviderId) {
+    case 'google': return 'gemini';
+    default: return modelsDevProviderId;
   }
 };
 
@@ -326,6 +400,21 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [selectedSectionIdx, setSelectedSectionIdx] = useState(0);
   const [selectedModelIdx, setSelectedModelIdx] = useState(-1); // -1 = on section header
   const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set());
+  const [modelSelectorScrollOffset, setModelSelectorScrollOffset] = useState(0);
+  const [modelSelectorFilter, setModelSelectorFilter] = useState('');
+  const [isModelSelectorFilterMode, setIsModelSelectorFilterMode] = useState(false);
+
+  // CONFIG-004: Settings tab state
+  const [showSettingsTab, setShowSettingsTab] = useState(false);
+  const [selectedSettingsIdx, setSelectedSettingsIdx] = useState(0);
+  const [settingsScrollOffset, setSettingsScrollOffset] = useState(0);
+  const [settingsFilter, setSettingsFilter] = useState('');
+  const [isSettingsFilterMode, setIsSettingsFilterMode] = useState(false);
+  const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
+  const [editingApiKey, setEditingApiKey] = useState('');
+  const [providerStatuses, setProviderStatuses] = useState<Record<string, { hasKey: boolean; maskedKey?: string }>>({});
+  const [connectionTestResult, setConnectionTestResult] = useState<{ providerId: string; success: boolean; message: string } | null>(null);
+  const [isRefreshingModels, setIsRefreshingModels] = useState(false);
 
   // NAPI-006: History navigation state
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
@@ -370,6 +459,121 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   // Get terminal dimensions for full-screen layout
   const terminalWidth = stdout?.columns ?? 80;
   const terminalHeight = stdout?.rows ?? 24;
+
+  // Model selector scrolling: build flat list and manage scroll offset
+  const flatModelItems = useMemo(
+    () => buildFlatModelList(providerSections, expandedProviders),
+    [providerSections, expandedProviders]
+  );
+
+  // Filter model items by search string (matches provider name or model name/id)
+  const filteredFlatModelItems = useMemo(() => {
+    if (!modelSelectorFilter) return flatModelItems;
+    const filterLower = modelSelectorFilter.toLowerCase();
+    return flatModelItems.filter(item => {
+      if (item.type === 'section') {
+        return item.section.providerId.toLowerCase().includes(filterLower) ||
+               item.section.providerName.toLowerCase().includes(filterLower);
+      } else {
+        return item.model.id.toLowerCase().includes(filterLower) ||
+               item.model.name.toLowerCase().includes(filterLower) ||
+               item.section.providerId.toLowerCase().includes(filterLower);
+      }
+    });
+  }, [flatModelItems, modelSelectorFilter]);
+
+  const modelSelectorVisibleHeight = Math.max(1, terminalHeight - (isModelSelectorFilterMode ? 11 : 10)); // Extra line for filter input
+  const selectedFlatIdx = useMemo(
+    () => sectionModelToFlatIndex(selectedSectionIdx, selectedModelIdx, filteredFlatModelItems),
+    [selectedSectionIdx, selectedModelIdx, filteredFlatModelItems]
+  );
+
+  // Keep selected item visible by adjusting scroll offset
+  useEffect(() => {
+    if (!showModelSelector) return;
+    if (selectedFlatIdx < modelSelectorScrollOffset) {
+      setModelSelectorScrollOffset(selectedFlatIdx);
+    } else if (selectedFlatIdx >= modelSelectorScrollOffset + modelSelectorVisibleHeight) {
+      setModelSelectorScrollOffset(selectedFlatIdx - modelSelectorVisibleHeight + 1);
+    }
+  }, [selectedFlatIdx, modelSelectorScrollOffset, modelSelectorVisibleHeight, showModelSelector]);
+
+  // Reset scroll/filter when model selector opens
+  useEffect(() => {
+    if (showModelSelector) {
+      setModelSelectorScrollOffset(0);
+      setModelSelectorFilter('');
+      setIsModelSelectorFilterMode(false);
+    }
+  }, [showModelSelector]);
+
+  // Reset selection when filter changes
+  useEffect(() => {
+    if (filteredFlatModelItems.length > 0) {
+      const firstItem = filteredFlatModelItems[0];
+      if (firstItem.type === 'section') {
+        setSelectedSectionIdx(firstItem.sectionIdx);
+        setSelectedModelIdx(-1);
+      } else {
+        setSelectedSectionIdx(firstItem.sectionIdx);
+        setSelectedModelIdx(firstItem.modelIdx);
+      }
+      setModelSelectorScrollOffset(0);
+    }
+  }, [modelSelectorFilter]);
+
+  // Settings tab scrolling
+  const settingsVisibleHeight = Math.max(1, terminalHeight - (isSettingsFilterMode ? 11 : 10)); // Extra line for filter input
+
+  // Filter settings providers by search string
+  const filteredSettingsProviders = useMemo(() => {
+    if (!settingsFilter) return SUPPORTED_PROVIDERS;
+    const filterLower = settingsFilter.toLowerCase();
+    return SUPPORTED_PROVIDERS.filter(providerId => {
+      const registryEntry = getProviderRegistryEntry(providerId);
+      return providerId.toLowerCase().includes(filterLower) ||
+             (registryEntry?.name?.toLowerCase().includes(filterLower) ?? false);
+    });
+  }, [settingsFilter]);
+
+  // Keep selected settings item visible by adjusting scroll offset
+  useEffect(() => {
+    if (!showSettingsTab) return;
+    if (selectedSettingsIdx < settingsScrollOffset) {
+      setSettingsScrollOffset(selectedSettingsIdx);
+    } else if (selectedSettingsIdx >= settingsScrollOffset + settingsVisibleHeight) {
+      setSettingsScrollOffset(selectedSettingsIdx - settingsVisibleHeight + 1);
+    }
+  }, [selectedSettingsIdx, settingsScrollOffset, settingsVisibleHeight, showSettingsTab]);
+
+  // Reset scroll/filter when settings tab opens
+  useEffect(() => {
+    if (showSettingsTab) {
+      setSettingsScrollOffset(0);
+      setSettingsFilter('');
+      setIsSettingsFilterMode(false);
+    }
+  }, [showSettingsTab]);
+
+  // Reset selection when settings filter changes
+  useEffect(() => {
+    if (filteredSettingsProviders.length > 0) {
+      setSelectedSettingsIdx(0);
+      setSettingsScrollOffset(0);
+    }
+  }, [settingsFilter]);
+
+  // Enable mouse tracking for model selector and settings tab scrolling
+  useEffect(() => {
+    if (showModelSelector || showSettingsTab) {
+      // Enable mouse button event tracking (clicks and scroll wheel)
+      process.stdout.write('\x1b[?1000h');
+      return () => {
+        // Disable mouse tracking on unmount or when screens close
+        process.stdout.write('\x1b[?1000l');
+      };
+    }
+  }, [showModelSelector, showSettingsTab]);
 
   // TUI-031: Hide tok/s after 10 seconds of no chunks
   useEffect(() => {
@@ -447,31 +651,27 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         }
 
         // TUI-034: Load models and build provider sections
-        // First create a basic session to get available providers (has credentials)
-        let tempSession: CodeletSessionType | null = null;
-        try {
-          tempSession = new CodeletSession();
-        } catch {
-          // No credentials at all - will show error later
-        }
-
-        const availableProviderNames = tempSession?.availableProviders ?? [];
         let allModels: NapiProviderModels[] = [];
         try {
           allModels = await loadModels();
+          logger.debug(`Loaded ${allModels.length} providers from models.dev`);
         } catch (err) {
-          logger.warn('Failed to load models from models.dev, using fallback', { error: err });
-          // Continue with empty models - will use provider defaults
+          const errorMsg = err instanceof Error ? err.message : String(err);
+          logger.error(`Failed to load models from models.dev: ${errorMsg}`);
         }
 
         // Build provider sections: filter by credentials, keep even if no compatible models
         // TUI-034: Show all providers with credentials so we can display "No compatible models" message
-        const sections: ProviderSection[] = allModels
-          .map(pm => {
+        // CONFIG-004: TypeScript-side credential check for all 19 providers (including .env loading)
+        const sectionsWithCreds = await Promise.all(
+          allModels.map(async pm => {
             const internalName = mapProviderIdToInternal(pm.providerId);
-            const hasCredentials = availableProviderNames.includes(internalName);
-            // Filter to only models with tool_call=true
+            const registryId = mapModelsDevToRegistryId(pm.providerId);
+            const registryEntry = getProviderRegistryEntry(registryId);
+            const providerConfig = await getProviderConfig(registryId);
+            const hasCredentials = registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
             const toolCallModels = pm.models.filter(m => m.toolCall);
+            logger.debug(`Provider ${pm.providerId}: registryId=${registryId}, hasApiKey=${!!providerConfig.apiKey}, source=${providerConfig.source}, hasCredentials=${hasCredentials}`);
             return {
               providerId: pm.providerId,
               providerName: pm.providerName,
@@ -480,7 +680,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               hasCredentials,
             };
           })
-          .filter(s => s.hasCredentials); // Keep providers with credentials even if no compatible models
+        );
+        const sections: ProviderSection[] = sectionsWithCreds.filter(s => s.hasCredentials);
+        logger.debug(`Found ${sections.length} providers with credentials (from ${sectionsWithCreds.length} total)`);
 
         setProviderSections(sections);
         // TUI-034: Only include providers with compatible models in availableProviders for actual use
@@ -1549,6 +1751,204 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     }
   }, []);
 
+  // CONFIG-004: Load provider statuses (API key presence and masked display)
+  const loadProviderStatuses = useCallback(async () => {
+    const statuses: Record<string, { hasKey: boolean; maskedKey?: string }> = {};
+    for (const providerId of SUPPORTED_PROVIDERS) {
+      try {
+        const config = await getProviderConfig(providerId);
+        if (config.apiKey) {
+          statuses[providerId] = {
+            hasKey: true,
+            maskedKey: maskApiKey(config.apiKey),
+          };
+        } else {
+          statuses[providerId] = { hasKey: false };
+        }
+      } catch {
+        statuses[providerId] = { hasKey: false };
+      }
+    }
+    setProviderStatuses(statuses);
+  }, []);
+
+  // CONFIG-004: Handle saving API key for a provider
+  const handleSaveApiKey = useCallback(async (providerId: string, apiKey: string) => {
+    try {
+      await saveCredential(providerId, apiKey);
+      setEditingProviderId(null);
+      setEditingApiKey('');
+      setConnectionTestResult(null);
+      // Reload statuses to reflect the change
+      await loadProviderStatuses();
+      // Show success message briefly
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `✓ API key saved for ${providerId}. Refreshing models...` },
+      ]);
+      // Refresh models to pick up newly available providers
+      // Use setTimeout to allow the success message to appear first
+      setTimeout(async () => {
+        await modelsRefreshCache();
+        // Rebuild provider sections with new credentials
+        const codeletNapi = await import('@sengac/codelet-napi');
+        const { modelsListAll: loadModels } = codeletNapi;
+
+        let allModels: NapiProviderModels[] = [];
+        try {
+          allModels = await loadModels();
+        } catch {
+          // Ignore
+        }
+
+        // CONFIG-004: Use TypeScript-side credential check for all 19 providers
+        const sectionsWithCreds = await Promise.all(
+          allModels.map(async pm => {
+            const internalName = mapProviderIdToInternal(pm.providerId);
+            const registryId = mapModelsDevToRegistryId(pm.providerId);
+            const registryEntry = getProviderRegistryEntry(registryId);
+            const providerConfig = await getProviderConfig(registryId);
+            const hasCredentials = registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
+            const toolCallModels = pm.models.filter(m => m.toolCall);
+            return {
+              providerId: pm.providerId,
+              providerName: pm.providerName,
+              internalName,
+              models: toolCallModels,
+              hasCredentials,
+            };
+          })
+        );
+        const sections: ProviderSection[] = sectionsWithCreds.filter(s => s.hasCredentials);
+
+        setProviderSections(sections);
+        setAvailableProviders(sections.filter(s => s.models.length > 0).map(s => s.internalName));
+
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `✓ Models refreshed - ${sections.length} providers available` },
+        ]);
+      }, 100);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save API key';
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `✗ Failed to save API key: ${errorMessage}` },
+      ]);
+    }
+  }, [loadProviderStatuses]);
+
+  // CONFIG-004: Handle deleting API key for a provider
+  const handleDeleteApiKey = useCallback(async (providerId: string) => {
+    try {
+      await deleteCredential(providerId);
+      setConnectionTestResult(null);
+      await loadProviderStatuses();
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `✓ API key deleted for ${providerId}` },
+      ]);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete API key';
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `✗ Failed to delete API key: ${errorMessage}` },
+      ]);
+    }
+  }, [loadProviderStatuses]);
+
+  // CONFIG-004: Test provider connection with a lightweight API call
+  const handleTestConnection = useCallback(async (providerId: string) => {
+    setConnectionTestResult({ providerId, success: false, message: 'Testing...' });
+    try {
+      // Get the internal name for the provider
+      const internalName = mapProviderIdToInternal(providerId);
+
+      // Try to create a session with this provider to test the connection
+      const codeletNapi = await import('@sengac/codelet-napi');
+      const { CodeletSession } = codeletNapi;
+
+      // Attempt to create a session - this will fail if credentials are invalid
+      const testSession = new CodeletSession(internalName);
+
+      if (testSession) {
+        setConnectionTestResult({
+          providerId,
+          success: true,
+          message: '✓ Connection successful',
+        });
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Connection failed';
+      setConnectionTestResult({
+        providerId,
+        success: false,
+        message: `✗ ${errorMessage}`,
+      });
+    }
+  }, []);
+
+  // CONFIG-004: Refresh models from models.dev and rebuild provider sections
+  const refreshModels = useCallback(async () => {
+    setIsRefreshingModels(true);
+    try {
+      // Refresh the cache from models.dev
+      await modelsRefreshCache();
+
+      // Fetch the updated models
+      const codeletNapi = await import('@sengac/codelet-napi');
+      const { modelsListAll: loadModels } = codeletNapi;
+
+      let allModels: NapiProviderModels[] = [];
+      try {
+        allModels = await loadModels();
+      } catch (err) {
+        logger.warn('Failed to load models from models.dev', { error: err });
+      }
+
+      // Rebuild provider sections
+      // CONFIG-004: Use TypeScript-side credential check for all 19 providers
+      const sectionsWithCreds = await Promise.all(
+        allModels.map(async pm => {
+          const internalName = mapProviderIdToInternal(pm.providerId);
+          const registryId = mapModelsDevToRegistryId(pm.providerId);
+          // Get registry entry to check if API key is required
+          const registryEntry = getProviderRegistryEntry(registryId);
+          // Check credentials using TypeScript side (supports all 19 providers)
+          const providerConfig = await getProviderConfig(registryId);
+          // Provider is configured if: no API key required (e.g., Ollama) OR has API key
+          const hasCredentials = registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
+          const toolCallModels = pm.models.filter(m => m.toolCall);
+          return {
+            providerId: pm.providerId,
+            providerName: pm.providerName,
+            internalName,
+            models: toolCallModels,
+            hasCredentials,
+          };
+        })
+      );
+      const sections: ProviderSection[] = sectionsWithCreds.filter(s => s.hasCredentials);
+
+      setProviderSections(sections);
+      setAvailableProviders(sections.filter(s => s.models.length > 0).map(s => s.internalName));
+
+      // Show success message
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `✓ Models refreshed (${allModels.reduce((acc, pm) => acc + pm.models.length, 0)} models from ${allModels.length} providers)` },
+      ]);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh models';
+      setConversation(prev => [
+        ...prev,
+        { role: 'tool', content: `✗ Refresh failed: ${errorMessage}` },
+      ]);
+    } finally {
+      setIsRefreshingModels(false);
+    }
+  }, []);
+
   // TUI-034: Handle model selection
   const handleSelectModel = useCallback(async (section: ProviderSection, model: NapiModelInfo) => {
     if (!sessionRef.current) return;
@@ -2007,11 +2407,101 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     setResumeSessionIndex(0);
   }, []);
 
+  // Mouse scroll acceleration state (like VirtualList)
+  const modelSelectorLastScrollTime = useRef<number>(0);
+  const modelSelectorScrollVelocity = useRef<number>(1);
+  const settingsLastScrollTime = useRef<number>(0);
+  const settingsScrollVelocity = useRef<number>(1);
+
+  // Mouse scroll navigation helper for model selector (navigates through filtered flat list)
+  const navigateModelSelectorByDelta = useCallback((delta: number) => {
+    if (filteredFlatModelItems.length === 0) return;
+
+    // Acceleration: scroll faster when scrolling rapidly
+    const now = Date.now();
+    const timeDelta = now - modelSelectorLastScrollTime.current;
+    if (timeDelta < 150) {
+      modelSelectorScrollVelocity.current = Math.min(modelSelectorScrollVelocity.current + 1, 5);
+    } else {
+      modelSelectorScrollVelocity.current = 1;
+    }
+    modelSelectorLastScrollTime.current = now;
+    const scrollAmount = modelSelectorScrollVelocity.current * delta;
+
+    const currentFlatIdx = sectionModelToFlatIndex(selectedSectionIdx, selectedModelIdx, filteredFlatModelItems);
+    const newFlatIdx = Math.max(0, Math.min(filteredFlatModelItems.length - 1, currentFlatIdx + scrollAmount));
+    const { sectionIdx, modelIdx } = flatIndexToSectionModel(newFlatIdx, filteredFlatModelItems);
+    setSelectedSectionIdx(sectionIdx);
+    setSelectedModelIdx(modelIdx);
+  }, [filteredFlatModelItems, selectedSectionIdx, selectedModelIdx]);
+
+  // Mouse scroll navigation helper for settings tab (navigates through filtered list)
+  const navigateSettingsByDelta = useCallback((delta: number) => {
+    // Acceleration: scroll faster when scrolling rapidly
+    const now = Date.now();
+    const timeDelta = now - settingsLastScrollTime.current;
+    if (timeDelta < 150) {
+      settingsScrollVelocity.current = Math.min(settingsScrollVelocity.current + 1, 5);
+    } else {
+      settingsScrollVelocity.current = 1;
+    }
+    settingsLastScrollTime.current = now;
+    const scrollAmount = settingsScrollVelocity.current * delta;
+
+    setSelectedSettingsIdx(prev => Math.max(0, Math.min(filteredSettingsProviders.length - 1, prev + scrollAmount)));
+  }, [filteredSettingsProviders.length]);
+
   // Handle keyboard input
   useInput(
     (input, key) => {
-      // Skip mouse events (handled by VirtualList)
+      // Handle mouse scroll for model selector and settings tab
+      // Mouse scroll moves the SELECTION (like VirtualList item mode), scroll offset auto-adjusts
       if (input.startsWith('[M') || key.mouse) {
+        // Parse raw mouse escape sequences for scroll wheel
+        if (input.startsWith('[M')) {
+          const buttonByte = input.charCodeAt(2);
+          // Button codes: 96 = scroll up, 97 = scroll down (xterm encoding)
+          if (showModelSelector) {
+            if (buttonByte === 96) {
+              navigateModelSelectorByDelta(-1);
+              return;
+            } else if (buttonByte === 97) {
+              navigateModelSelectorByDelta(1);
+              return;
+            }
+          }
+          if (showSettingsTab) {
+            if (buttonByte === 96) {
+              navigateSettingsByDelta(-1);
+              return;
+            } else if (buttonByte === 97) {
+              navigateSettingsByDelta(1);
+              return;
+            }
+          }
+        }
+        // Handle parsed mouse events from Ink
+        if (key.mouse) {
+          if (showModelSelector) {
+            if (key.mouse.button === 'wheelUp') {
+              navigateModelSelectorByDelta(-1);
+              return;
+            } else if (key.mouse.button === 'wheelDown') {
+              navigateModelSelectorByDelta(1);
+              return;
+            }
+          }
+          if (showSettingsTab) {
+            if (key.mouse.button === 'wheelUp') {
+              navigateSettingsByDelta(-1);
+              return;
+            } else if (key.mouse.button === 'wheelDown') {
+              navigateSettingsByDelta(1);
+              return;
+            }
+          }
+        }
+        // Skip other mouse events (handled by VirtualList elsewhere)
         return;
       }
 
@@ -2099,8 +2589,47 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
       // TUI-034: Model selector keyboard handling
       if (showModelSelector) {
+        // Filter mode handling
+        if (isModelSelectorFilterMode) {
+          if (key.escape) {
+            setIsModelSelectorFilterMode(false);
+            setModelSelectorFilter('');
+            return;
+          }
+          if (key.return) {
+            setIsModelSelectorFilterMode(false);
+            return;
+          }
+          if (key.backspace || key.delete) {
+            setModelSelectorFilter(prev => prev.slice(0, -1));
+            return;
+          }
+          // Accept printable characters for filter
+          const clean = input
+            .split('')
+            .filter(ch => {
+              const code = ch.charCodeAt(0);
+              return code >= 32 && code <= 126;
+            })
+            .join('');
+          if (clean) {
+            setModelSelectorFilter(prev => prev + clean);
+          }
+          return;
+        }
+
         if (key.escape) {
+          if (modelSelectorFilter) {
+            setModelSelectorFilter('');
+            return;
+          }
           setShowModelSelector(false);
+          return;
+        }
+
+        // '/' to enter filter mode
+        if (input === '/') {
+          setIsModelSelectorFilterMode(true);
           return;
         }
 
@@ -2193,6 +2722,154 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             if (model) {
               void handleSelectModel(currentSection, model);
             }
+          }
+          return;
+        }
+
+        // CONFIG-004: 'r' to refresh models from models.dev
+        if ((input === 'r' || input === 'R') && !isRefreshingModels) {
+          void refreshModels();
+          return;
+        }
+
+        // CONFIG-004: Tab to switch to Settings view
+        if (key.tab) {
+          setShowModelSelector(false);
+          setShowSettingsTab(true);
+          setSelectedSettingsIdx(0);
+          setEditingProviderId(null);
+          setEditingApiKey('');
+          void loadProviderStatuses();
+          return;
+        }
+        return;
+      }
+
+      // CONFIG-004: Settings tab keyboard handling
+      if (showSettingsTab) {
+        // Filter mode handling
+        if (isSettingsFilterMode) {
+          if (key.escape) {
+            setIsSettingsFilterMode(false);
+            setSettingsFilter('');
+            return;
+          }
+          if (key.return) {
+            setIsSettingsFilterMode(false);
+            return;
+          }
+          if (key.backspace || key.delete) {
+            setSettingsFilter(prev => prev.slice(0, -1));
+            return;
+          }
+          // Accept printable characters for filter
+          const clean = input
+            .split('')
+            .filter(ch => {
+              const code = ch.charCodeAt(0);
+              return code >= 32 && code <= 126;
+            })
+            .join('');
+          if (clean) {
+            setSettingsFilter(prev => prev + clean);
+          }
+          return;
+        }
+
+        if (key.escape) {
+          if (settingsFilter) {
+            setSettingsFilter('');
+            return;
+          }
+          if (editingProviderId) {
+            // Cancel editing
+            setEditingProviderId(null);
+            setEditingApiKey('');
+          } else {
+            setShowSettingsTab(false);
+          }
+          return;
+        }
+
+        // '/' to enter filter mode (when not editing)
+        if (input === '/' && !editingProviderId) {
+          setIsSettingsFilterMode(true);
+          return;
+        }
+
+        // Tab to switch back to Model selector
+        if (key.tab && !editingProviderId) {
+          setShowSettingsTab(false);
+          setShowModelSelector(true);
+          return;
+        }
+
+        // Up/Down arrow to navigate providers (when not editing)
+        if (!editingProviderId) {
+          if (key.upArrow && selectedSettingsIdx > 0) {
+            setSelectedSettingsIdx(prev => prev - 1);
+            setConnectionTestResult(null);
+            return;
+          }
+          if (key.downArrow && selectedSettingsIdx < filteredSettingsProviders.length - 1) {
+            setSelectedSettingsIdx(prev => prev + 1);
+            setConnectionTestResult(null);
+            return;
+          }
+        }
+
+        // Enter to start editing or save
+        if (key.return) {
+          if (editingProviderId) {
+            // Save the key
+            if (editingApiKey.trim()) {
+              void handleSaveApiKey(editingProviderId, editingApiKey.trim());
+            } else {
+              // Cancel if empty
+              setEditingProviderId(null);
+              setEditingApiKey('');
+            }
+          } else {
+            // Start editing the selected provider
+            const providerId = filteredSettingsProviders[selectedSettingsIdx];
+            setEditingProviderId(providerId);
+            setEditingApiKey('');
+          }
+          return;
+        }
+
+        // 't' to test connection (when not editing)
+        if (!editingProviderId && (input === 't' || input === 'T')) {
+          const providerId = filteredSettingsProviders[selectedSettingsIdx];
+          void handleTestConnection(providerId);
+          return;
+        }
+
+        // 'd' to delete API key (when not editing)
+        if (!editingProviderId && (input === 'd' || input === 'D')) {
+          const providerId = filteredSettingsProviders[selectedSettingsIdx];
+          if (providerStatuses[providerId]?.hasKey) {
+            void handleDeleteApiKey(providerId);
+          }
+          return;
+        }
+
+        // Handle text input when editing
+        if (editingProviderId) {
+          if (key.backspace || key.delete) {
+            setEditingApiKey(prev => prev.slice(0, -1));
+            return;
+          }
+          // Filter to printable characters
+          const clean = input
+            .split('')
+            .filter(ch => {
+              const code = ch.charCodeAt(0);
+              return code >= 32 && code <= 126;
+            })
+            .join('');
+          if (clean) {
+            setEditingApiKey(prev => prev + clean);
           }
           return;
         }
@@ -2453,56 +3130,184 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               <Text bold color="cyan">
                 Select Model
               </Text>
+              {isRefreshingModels && (
+                <Text color="yellow"> (refreshing...)</Text>
+              )}
+              <Text dimColor> ({filteredFlatModelItems.length} items, showing {modelSelectorScrollOffset + 1}-{Math.min(modelSelectorScrollOffset + modelSelectorVisibleHeight, filteredFlatModelItems.length)})</Text>
             </Box>
-            {providerSections.map((section, sectionIdx) => {
-              const isExpanded = expandedProviders.has(section.providerId);
-              const isSectionSelected = sectionIdx === selectedSectionIdx;
-              const sectionIcon = isExpanded ? '▼' : '▶';
+            {/* Filter input box */}
+            {(isModelSelectorFilterMode || modelSelectorFilter) && (
+              <Box marginBottom={1}>
+                <Text color="yellow">Filter: </Text>
+                <Text>{modelSelectorFilter}</Text>
+                {isModelSelectorFilterMode && <Text inverse> </Text>}
+              </Box>
+            )}
+            {/* Scrollable list with viewport */}
+            <Box flexDirection="row" flexGrow={1}>
+              <Box flexDirection="column" flexGrow={1}>
+                {filteredFlatModelItems
+                  .slice(modelSelectorScrollOffset, modelSelectorScrollOffset + modelSelectorVisibleHeight)
+                  .map((item) => {
+                    if (item.type === 'section') {
+                      const isSectionSelected = item.sectionIdx === selectedSectionIdx && selectedModelIdx === -1;
+                      const sectionIcon = item.isExpanded ? '▼' : '▶';
+                      return (
+                        <Box key={`section-${item.section.providerId}`}>
+                          <Text
+                            backgroundColor={isSectionSelected ? 'cyan' : undefined}
+                            color={isSectionSelected ? 'black' : 'white'}
+                          >
+                            {isSectionSelected ? '> ' : '  '}
+                            {sectionIcon} [{item.section.providerId}] ({item.section.models.length} models)
+                          </Text>
+                        </Box>
+                      );
+                    } else {
+                      const isModelSelected = item.sectionIdx === selectedSectionIdx && item.modelIdx === selectedModelIdx;
+                      const isCurrent = currentModel?.apiModelId === item.model.id;
+                      const modelId = extractModelIdForRegistry(item.model.id);
+                      return (
+                        <Box key={`model-${item.model.id}`}>
+                          <Text
+                            backgroundColor={isModelSelected ? 'cyan' : undefined}
+                            color={isModelSelected ? 'black' : 'white'}
+                          >
+                            {isModelSelected ? '  > ' : '    '}
+                            {modelId} ({item.model.name})
+                            {item.model.reasoning && <Text color={isModelSelected ? 'black' : 'magenta'}> [R]</Text>}
+                            {item.model.hasVision && <Text color={isModelSelected ? 'black' : 'blue'}> [V]</Text>}
+                            <Text color={isModelSelected ? 'black' : 'gray'}> [{formatContextWindow(item.model.contextWindow)}]</Text>
+                            {isCurrent && <Text color={isModelSelected ? 'black' : 'green'}> (current)</Text>}
+                          </Text>
+                        </Box>
+                      );
+                    }
+                  })}
+              </Box>
+              {/* Scrollbar */}
+              {filteredFlatModelItems.length > modelSelectorVisibleHeight && (
+                <Box flexDirection="column" marginLeft={1}>
+                  {Array.from({ length: modelSelectorVisibleHeight }).map((_, i) => {
+                    const thumbHeight = Math.max(1, Math.floor((modelSelectorVisibleHeight / filteredFlatModelItems.length) * modelSelectorVisibleHeight));
+                    const thumbPos = Math.floor((modelSelectorScrollOffset / filteredFlatModelItems.length) * modelSelectorVisibleHeight);
+                    const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
+                    return <Text key={i} dimColor>{isThumb ? '■' : '│'}</Text>;
+                  })}
+                </Box>
+              )}
+            </Box>
+            <Box marginTop={1}>
+              <Text dimColor>Enter Select | ←→ Expand/Collapse | ↑↓ Navigate | / Filter | r Refresh | Tab Settings | Esc Cancel</Text>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+    );
+  }
 
-              return (
-                <Box key={section.providerId} flexDirection="column">
-                  {/* Section header */}
-                  <Box>
-                    <Text
-                      backgroundColor={isSectionSelected && selectedModelIdx === -1 ? 'cyan' : undefined}
-                      color={isSectionSelected && selectedModelIdx === -1 ? 'black' : 'white'}
-                    >
-                      {isSectionSelected && selectedModelIdx === -1 ? '> ' : '  '}
-                      {sectionIcon} [{section.providerId}] ({section.models.length} models)
-                    </Text>
-                  </Box>
-                  {/* Models within section */}
-                  {isExpanded && section.models.length === 0 && (
-                    <Box>
-                      <Text color="yellow">    No compatible models (tool_call required)</Text>
-                    </Box>
-                  )}
-                  {isExpanded && section.models.map((model, modelIdx) => {
-                    const isModelSelected = isSectionSelected && modelIdx === selectedModelIdx;
-                    const isCurrent = currentModel?.apiModelId === model.id;
-                    const modelId = extractModelIdForRegistry(model.id);
+  // CONFIG-004: Settings tab overlay (provider API key management)
+  if (showSettingsTab) {
+    return (
+      <Box
+        position="absolute"
+        flexDirection="column"
+        width={terminalWidth}
+        height={terminalHeight}
+      >
+        <Box
+          flexDirection="column"
+          flexGrow={1}
+          borderStyle="double"
+          borderColor="yellow"
+          backgroundColor="black"
+        >
+          <Box
+            flexDirection="column"
+            padding={2}
+            flexGrow={1}
+          >
+            <Box marginBottom={1}>
+              <Text bold color="yellow">
+                Provider Settings
+              </Text>
+              <Text dimColor> ({filteredSettingsProviders.length} providers, showing {settingsScrollOffset + 1}-{Math.min(settingsScrollOffset + settingsVisibleHeight, filteredSettingsProviders.length)})</Text>
+            </Box>
+            {/* Filter input box */}
+            {(isSettingsFilterMode || settingsFilter) && (
+              <Box marginBottom={1}>
+                <Text color="yellow">Filter: </Text>
+                <Text>{settingsFilter}</Text>
+                {isSettingsFilterMode && <Text inverse> </Text>}
+              </Box>
+            )}
+
+            {/* Scrollable list of providers with viewport */}
+            <Box flexDirection="row" flexGrow={1}>
+              <Box flexDirection="column" flexGrow={1}>
+                {filteredSettingsProviders
+                  .slice(settingsScrollOffset, settingsScrollOffset + settingsVisibleHeight)
+                  .map((providerId, visibleIdx) => {
+                    const actualIdx = settingsScrollOffset + visibleIdx;
+                    const isSelected = actualIdx === selectedSettingsIdx;
+                    const status = providerStatuses[providerId];
+                    const registryEntry = getProviderRegistryEntry(providerId);
+                    const isEditing = editingProviderId === providerId;
+                    const testResult = connectionTestResult?.providerId === providerId ? connectionTestResult : null;
 
                     return (
-                      <Box key={model.id}>
-                        <Text
-                          backgroundColor={isModelSelected ? 'cyan' : undefined}
-                          color={isModelSelected ? 'black' : 'white'}
-                        >
-                          {isModelSelected ? '  > ' : '    '}
-                          {modelId} ({model.name})
-                          {model.reasoning && <Text color={isModelSelected ? 'black' : 'magenta'}> [R]</Text>}
-                          {model.hasVision && <Text color={isModelSelected ? 'black' : 'blue'}> [V]</Text>}
-                          <Text color={isModelSelected ? 'black' : 'gray'}> [{formatContextWindow(model.contextWindow)}]</Text>
-                          {isCurrent && <Text color={isModelSelected ? 'black' : 'green'}> (current)</Text>}
-                        </Text>
+                      <Box key={providerId} flexDirection="column" marginBottom={0}>
+                        <Box>
+                          <Text
+                            backgroundColor={isSelected && !isEditing ? 'yellow' : undefined}
+                            color={isSelected && !isEditing ? 'black' : 'white'}
+                          >
+                            {isSelected ? '> ' : '  '}
+                            {registryEntry?.name || providerId}
+                          </Text>
+                          {status?.hasKey ? (
+                            <Text color="green"> ✓ {status.maskedKey}</Text>
+                          ) : (
+                            <Text color="gray"> (not configured)</Text>
+                          )}
+                          {testResult && (
+                            <Text color={testResult.success ? 'green' : 'red'}> {testResult.message}</Text>
+                          )}
+                        </Box>
+
+                        {/* Editing input */}
+                        {isEditing && (
+                          <Box marginLeft={4}>
+                            <Text color="yellow">API Key: </Text>
+                            <Text>
+                              {editingApiKey ? '•'.repeat(editingApiKey.length) : ''}
+                              <Text inverse> </Text>
+                            </Text>
+                          </Box>
+                        )}
                       </Box>
                     );
                   })}
+              </Box>
+              {/* Scrollbar */}
+              {filteredSettingsProviders.length > settingsVisibleHeight && (
+                <Box flexDirection="column" marginLeft={1}>
+                  {Array.from({ length: settingsVisibleHeight }).map((_, i) => {
+                    const thumbHeight = Math.max(1, Math.floor((settingsVisibleHeight / filteredSettingsProviders.length) * settingsVisibleHeight));
+                    const thumbPos = Math.floor((settingsScrollOffset / filteredSettingsProviders.length) * settingsVisibleHeight);
+                    const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
+                    return <Text key={i} dimColor>{isThumb ? '■' : '│'}</Text>;
+                  })}
                 </Box>
-              );
-            })}
+              )}
+            </Box>
+
             <Box marginTop={1}>
-              <Text dimColor>Enter Select | ←→ Expand/Collapse | ↑↓ Navigate | Esc Cancel</Text>
+              <Text dimColor>
+                {editingProviderId
+                  ? 'Type API key | Enter Save | Esc Cancel'
+                  : 'Enter Edit | t Test | d Delete | / Filter | Tab Models | Esc Close'}
+              </Text>
             </Box>
           </Box>
         </Box>
