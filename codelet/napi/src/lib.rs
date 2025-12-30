@@ -11,6 +11,8 @@ extern crate napi_derive;
 
 // These modules use ThreadsafeFunction and must be excluded in noop mode
 #[cfg(not(feature = "noop"))]
+mod astgrep;
+#[cfg(not(feature = "noop"))]
 mod models;
 #[cfg(not(feature = "noop"))]
 mod output;
@@ -26,6 +28,8 @@ pub mod persistence;
 
 pub use persistence::*;
 
+#[cfg(not(feature = "noop"))]
+pub use astgrep::*;
 #[cfg(not(feature = "noop"))]
 pub use models::*;
 #[cfg(not(feature = "noop"))]

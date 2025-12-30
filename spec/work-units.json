@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-29T11:55:54.490Z"
+    "lastUpdated": "2025-12-30T00:36:43.920Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -58204,6 +58204,283 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-29T11:55:54.516Z"
+    },
+    "REFAC-006": {
+      "id": "REFAC-006",
+      "title": "Migrate fspec research AST tool from tree-sitter to codelet ast-grep",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-29T23:05:35.736Z",
+      "updatedAt": "2025-12-30T00:36:44.000Z",
+      "description": "Replace the TypeScript tree-sitter based AST research tool with the native ast-grep implementation in rust/codelet. This migration eliminates 17 tree-sitter npm dependencies and provides advanced code extraction capabilities for refactoring large files.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/REFAC-006/ast-grep-migration-research.md",
+        "spec/attachments/REFAC-006/ast-research-codebase-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-29T23:52:33.597Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-30T00:12:59.977Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-30T00:16:24.536Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-30T00:30:34.921Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-30T00:31:21.842Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-30T00:34:54.908Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-30T00:36:22.551Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-30T00:36:44.000Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec",
+        "action": "use the ast research tool with pattern-based search via codelet's native ast-grep implementation",
+        "benefit": "I eliminate 17 tree-sitter npm dependencies, get better performance, and gain code extraction capabilities for refactoring large files"
+      },
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should we keep backwards compatibility with the old --operation flag syntax, or is a clean break acceptable?",
+          "deleted": false,
+          "createdAt": "2025-12-29T23:52:52.047Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, --extract capability is 100% required in this story. Must be included."
+        },
+        {
+          "id": 1,
+          "text": "@human: Do we need the --extract capability for code extraction in the initial implementation, or can that be a follow-up story?",
+          "deleted": false,
+          "createdAt": "2025-12-29T23:54:32.355Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, --extract capability is 100% required in this story. Must be included."
+        },
+        {
+          "id": 2,
+          "text": "@human: When refactoring/moving code, should the tool automatically add the import statement to the original file, or just remove the code and let the user handle imports?",
+          "deleted": false,
+          "createdAt": "2025-12-29T23:56:11.359Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Only do what ast-grep can deterministically do. Remove matched code from source, create new file with matched code. Do not guess or add imports - user handles that manually."
+        },
+        {
+          "id": 3,
+          "text": "@human: Should the tool be exposed via NAPI for use by other TypeScript code (like fspec review), or only through the fspec research --tool=ast CLI?",
+          "deleted": false,
+          "createdAt": "2025-12-29T23:57:33.975Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, expose via NAPI. Fully written in Rust, just exposed to TypeScript. No TypeScript implementation."
+        },
+        {
+          "id": 4,
+          "text": "@human: What should the NAPI function names be? e.g. astGrepSearch(), astGrepRefactor()?",
+          "deleted": false,
+          "createdAt": "2025-12-29T23:59:27.583Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, use astGrepSearch() and astGrepRefactor(). Also update tool definitions in both facades and tools."
+        },
+        {
+          "id": 5,
+          "text": "@human: Should we remove the tree-sitter dependencies from package.json as part of this story, or leave that for a separate cleanup task?",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:00:45.808Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, remove all 17 tree-sitter dependencies from package.json and remove all deprecated code."
+        },
+        {
+          "id": 6,
+          "text": "@human: For the pattern syntax, should we use the exact ast-grep syntax (, 93100) or provide any wrapper/simplification?",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:01:33.992Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Use exact ast-grep pattern syntax. No wrappers or simplification."
+        },
+        {
+          "id": 7,
+          "text": "@human: For refactor target file, can we use $NAME from the pattern as a variable in the target path (e.g., --target=src/components/$NAME.tsx), or should it be a fixed filename?",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:02:44.562Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Fixed filename. Refactoring should be deliberate - search first to see matches, then refactor one specific match to a specific target file. No variable interpolation."
+        },
+        {
+          "id": 8,
+          "text": "@human: What should happen if the refactor pattern matches multiple nodes in the source file? Error out, or require an additional selector like line number?",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:04:17.419Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Error out with helpful message showing all matches and suggesting more specific pattern. Refactor requires exactly 1 match - no ambiguity."
+        },
+        {
+          "id": 9,
+          "text": "@human: Any other capabilities or requirements I'm missing for this AST tool?",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:05:52.385Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Looks good. Can improve in later iterations or revisit if something is missing."
+        }
+      ],
+      "nextQuestionId": 10,
+      "rules": [
+        {
+          "id": 0,
+          "text": "The tool must include a refactor capability that can move matched code to a new file, not just extract/display it",
+          "deleted": false,
+          "createdAt": "2025-12-29T23:56:02.918Z"
+        },
+        {
+          "id": 1,
+          "text": "Refactor only does what ast-grep can deterministically do: remove matched code from source file, write matched code to new file. No guessing imports or adding code.",
+          "deleted": false,
+          "createdAt": "2025-12-29T23:57:22.596Z"
+        },
+        {
+          "id": 2,
+          "text": "Business logic (AST parsing, pattern matching, refactoring) in Rust exposed via NAPI. CLI handling (fspec research --tool=ast) remains in TypeScript.",
+          "deleted": false,
+          "createdAt": "2025-12-29T23:59:20.367Z"
+        },
+        {
+          "id": 3,
+          "text": "NAPI exports: astGrepSearch(pattern, language, paths) and astGrepRefactor(pattern, language, sourceFile, targetFile)",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:00:32.619Z"
+        },
+        {
+          "id": 4,
+          "text": "Must update tool definitions in both codelet facades and tools modules",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:00:38.799Z"
+        },
+        {
+          "id": 5,
+          "text": "Remove all 17 tree-sitter dependencies from package.json and delete all deprecated TypeScript AST code",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:01:26.435Z"
+        },
+        {
+          "id": 6,
+          "text": "Use exact ast-grep pattern syntax ($NAME, $$$ARGS, etc.) with no wrappers or simplification",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:02:16.177Z"
+        },
+        {
+          "id": 7,
+          "text": "Refactor uses fixed target filename. User searches first to see matches, then refactors one specific match to a specific file. No variable interpolation in target path.",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:03:37.205Z"
+        },
+        {
+          "id": 8,
+          "text": "Refactor requires exactly 1 match. If pattern matches multiple nodes, error out with list of matches so user can refine the pattern.",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:05:22.200Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Search: fspec research --tool=ast --pattern='function $NAME($$$ARGS)' --lang=typescript --path=src/",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:02:25.383Z"
+        },
+        {
+          "id": 1,
+          "text": "Refactor workflow: 1) Search to find matches, 2) Pick specific match, 3) Refactor with fixed target: fspec research --tool=ast --refactor --pattern='const SafeTextInput' --lang=tsx --source=src/tui/components/AgentModal.tsx --target=src/tui/components/SafeTextInput.tsx",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:03:51.308Z"
+        },
+        {
+          "id": 2,
+          "text": "NAPI usage from TypeScript: const results = await astGrepSearch('function $NAME', 'typescript', ['src/'])",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:03:59.101Z"
+        },
+        {
+          "id": 3,
+          "text": "Search output format: file:line:column:matched_text (e.g., src/auth.ts:42:1:function login())",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:04:06.179Z"
+        },
+        {
+          "id": 4,
+          "text": "Refactor with ambiguous pattern shows error: 'Pattern matched 5 nodes. Refactor requires exactly 1 match. Matches found at: line 42, line 156, ...' then user refines pattern to be more specific.",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:05:31.769Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create codelet/napi/src/astgrep.rs to expose astGrepSearch() and astGrepRefactor() functions via NAPI-RS",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:11:11.142Z"
+        },
+        {
+          "id": 1,
+          "text": "Reuse existing pattern matching logic from codelet/tools/src/astgrep.rs AstGrepTool",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:11:18.387Z"
+        },
+        {
+          "id": 2,
+          "text": "Add astGrepRefactor capability to AstGrepTool for extracting and removing matched code",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:11:27.503Z"
+        },
+        {
+          "id": 3,
+          "text": "Replace src/research-tools/ast.ts TypeScript implementation with thin wrapper calling NAPI functions",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:11:34.696Z"
+        },
+        {
+          "id": 4,
+          "text": "Delete deprecated files: src/utils/query-executor.ts, src/utils/language-loader.ts, src/utils/ast-queries/ directory",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:11:43.478Z"
+        },
+        {
+          "id": 5,
+          "text": "Remove all 17 @sengac/tree-sitter-* packages from package.json dependencies",
+          "deleted": false,
+          "createdAt": "2025-12-30T00:11:51.274Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "updated": "2025-12-30T00:36:44.000Z"
     }
   },
   "states": {
@@ -58276,6 +58553,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "REFAC-006",
       "CONFIG-004",
       "TOOL-011",
       "BROWSE-002",
@@ -58728,7 +59006,7 @@
     "DISC": 2,
     "COV": 55,
     "TUI": 35,
-    "REFAC": 5,
+    "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,
     "GIT": 12,

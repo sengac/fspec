@@ -46,23 +46,6 @@ export default defineConfig({
         'marked',
         'dompurify',
         'execa',
-        '@sengac/tree-sitter',
-        '@sengac/tree-sitter-dart',
-        '@sengac/tree-sitter-javascript',
-        '@sengac/tree-sitter-typescript',
-        '@sengac/tree-sitter-python',
-        '@sengac/tree-sitter-go',
-        '@sengac/tree-sitter-rust',
-        '@sengac/tree-sitter-java',
-        '@sengac/tree-sitter-ruby',
-        '@sengac/tree-sitter-c-sharp',
-        '@sengac/tree-sitter-php',
-        '@sengac/tree-sitter-cpp',
-        '@sengac/tree-sitter-bash',
-        '@sengac/tree-sitter-json',
-        '@sengac/tree-sitter-kotlin',
-        '@sengac/tree-sitter-swift',
-        '@sengac/tree-sitter-c',
       ],
       output: {
         preserveModules: false,
@@ -94,13 +77,6 @@ export default defineConfig({
         cpSync(
           resolve(__dirname, 'src', 'git'),
           resolve(__dirname, 'dist', 'git'),
-          { recursive: true }
-        );
-
-        // Bundle ast-queries directory (.scm query files)
-        cpSync(
-          resolve(__dirname, 'src', 'utils', 'ast-queries'),
-          resolve(__dirname, 'dist', 'ast-queries'),
           { recursive: true }
         );
       },

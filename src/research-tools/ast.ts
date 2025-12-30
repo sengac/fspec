@@ -1,21 +1,17 @@
 /**
  * AST Research Tool
  *
- * Code analysis using Abstract Syntax Tree parsing with deterministic tree-sitter queries.
- * Platform-agnostic TypeScript implementation.
+ * Code analysis using AST-based pattern matching via codelet's native ast-grep implementation.
+ * Uses ast-grep pattern syntax for structural code search and refactoring.
  */
 
 import type { ResearchTool } from './types';
-import { QueryExecutor } from '../utils/query-executor';
-import { loadLanguageParser } from '../utils/language-loader';
-import * as fs from 'fs/promises';
-import { resolve } from 'path';
-import Parser from '@sengac/tree-sitter';
+import { astGrepSearch, astGrepRefactor } from '@sengac/codelet-napi';
 
 export const tool: ResearchTool = {
   name: 'ast',
   description:
-    'AST code analysis tool using deterministic tree-sitter query operations. Supports 15 programming languages.',
+    'AST-based code search and refactoring using ast-grep pattern matching. Supports 23 programming languages.',
 
   async execute(args: string[]): Promise<string> {
     // Helper function to parse argument (handles both --flag=value and --flag value)
@@ -37,239 +33,220 @@ export const tool: ResearchTool = {
       return undefined;
     }
 
-    // Parse arguments (handles both --flag=value and --flag value formats)
-    const operation = parseArg(args, '--operation');
-    const filePath = parseArg(args, '--file');
-    const queryFile = parseArg(args, '--query-file');
+    // Check for --refactor flag
+    const isRefactor = args.includes('--refactor');
 
-    // Validate required flags
-    if (!filePath) {
-      throw new Error('--file is required');
+    // Parse arguments
+    const pattern = parseArg(args, '--pattern');
+    const language = parseArg(args, '--lang');
+    const path = parseArg(args, '--path');
+    const source = parseArg(args, '--source');
+    const target = parseArg(args, '--target');
+
+    // Validate required arguments
+    if (!pattern) {
+      throw new Error(
+        '--pattern is required. Example: --pattern="function $NAME($$$ARGS)"'
+      );
     }
 
-    if (!operation && !queryFile) {
-      throw new Error('Either --operation or --query-file is required');
+    if (!language) {
+      throw new Error('--lang is required. Example: --lang=typescript');
     }
 
-    // Extract parameters
-    const parameters: Record<string, string> = {};
-    for (let i = 0; i < args.length; i++) {
-      if (
-        args[i].startsWith('--') &&
-        args[i + 1] &&
-        !args[i + 1].startsWith('--')
-      ) {
-        const key = args[i].replace('--', '');
-        if (key !== 'operation' && key !== 'file' && key !== 'query-file') {
-          parameters[key] = args[i + 1];
-        }
+    if (isRefactor) {
+      // Refactor mode
+      if (!source) {
+        throw new Error(
+          '--source is required for refactor. Example: --source=src/file.ts'
+        );
       }
+      if (!target) {
+        throw new Error(
+          '--target is required for refactor. Example: --target=src/new-file.ts'
+        );
+      }
+
+      const result = await astGrepRefactor(pattern, language, source, target);
+
+      return JSON.stringify(
+        {
+          success: result.success,
+          movedCode: result.movedCode,
+          sourceFile: result.sourceFile,
+          targetFile: result.targetFile,
+        },
+        null,
+        2
+      );
+    } else {
+      // Search mode
+      const searchPaths = path ? [path] : ['.'];
+
+      const results = await astGrepSearch(pattern, language, searchPaths);
+
+      if (results.length === 0) {
+        return 'No matches found';
+      }
+
+      // Format as file:line:column:text
+      const outputLines = results.map(m => {
+        const firstLine = m.text.split('\n')[0];
+        return `${m.file}:${m.line}:${m.column}:${firstLine}`;
+      });
+
+      return outputLines.join('\n');
     }
-
-    // Detect language from file extension
-    const language = detectLanguage(filePath);
-
-    // Create query executor
-    const executor = new QueryExecutor({
-      language,
-      operation,
-      queryFile,
-      parameters,
-    });
-
-    // Parse file with tree-sitter (lazy load parser)
-    const parser = new Parser();
-    const parserLanguage = await loadLanguageParser(language);
-    parser.setLanguage(parserLanguage);
-
-    // Resolve relative file paths from current working directory
-    const resolvedPath = resolve(process.cwd(), filePath);
-    const fileContent = await fs.readFile(resolvedPath, 'utf-8');
-    const tree = parser.parse(fileContent);
-
-    // Execute query
-    const matches = await executor.execute(tree, parserLanguage);
-
-    // Format result based on operation
-    if (operation === 'find-class' || operation === 'find-exports') {
-      // Single match operations
-      const match = matches[0];
-      return JSON.stringify({ match: match || null }, null, 2);
-    }
-
-    // Multiple match operations
-    return JSON.stringify({ matches }, null, 2);
   },
 
   getHelpConfig() {
     return {
       name: 'ast',
       description:
-        'AST code analysis tool using deterministic tree-sitter query operations. Supports 16 languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash, JSON',
+        'AST-based code search and refactoring using ast-grep pattern matching. Supports 23 languages: TypeScript, TSX, JavaScript, Rust, Python, Go, Java, C, C++, C#, Ruby, Kotlin, Swift, Scala, PHP, Bash, HTML, CSS, JSON, YAML, Lua, Elixir, Haskell.',
       usage: 'fspec research --tool=ast [options]',
       whenToUse:
-        'Use during Example Mapping to understand code structure, find patterns, or analyze existing implementations using deterministic tree-sitter queries.',
+        'Use to search for code patterns by structure (not text), find functions/classes/imports, or refactor by moving code between files.',
       prerequisites: [
-        'Codebase must contain one of 16 supported languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash, JSON',
-        'Tree-sitter parsers are bundled (no additional setup required)',
+        'Uses native ast-grep via NAPI (no additional setup required)',
       ],
       options: [
         {
-          flag: '--operation <operation>',
+          flag: '--pattern <pattern>',
           description:
-            'Predefined query operation: list-functions, find-class, find-async-functions, list-keys (JSON), list-properties (JSON), etc. (required if no --query-file)',
+            'AST pattern to search for. Use $NAME for single node, $$$ARGS for multiple nodes. (required)',
         },
         {
-          flag: '--query-file <path>',
+          flag: '--lang <language>',
           description:
-            'Path to custom tree-sitter query file (.scm) (required if no --operation)',
+            'Programming language (typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell). (required)',
         },
         {
-          flag: '--file <path>',
-          description: 'Specific file to analyze (required)',
+          flag: '--path <path>',
+          description:
+            'File or directory to search (defaults to current directory)',
         },
         {
-          flag: '--name <name>',
-          description: 'Filter by name (for find-class, find-function)',
+          flag: '--refactor',
+          description:
+            'Enable refactor mode to move matched code to a new file',
         },
         {
-          flag: '--pattern <regex>',
-          description: 'Filter by regex pattern (for find-identifiers)',
+          flag: '--source <path>',
+          description: 'Source file for refactor (required with --refactor)',
         },
         {
-          flag: '--min-params <count>',
-          description: 'Minimum parameter count (for find-functions)',
-        },
-        {
-          flag: '--export-type <type>',
-          description: 'Export type filter: default, named (for find-exports)',
+          flag: '--target <path>',
+          description: 'Target file for refactor (required with --refactor)',
         },
       ],
       examples: [
         {
-          command: '--operation=list-functions --file=src/auth.ts',
-          description:
-            'List all function declarations, expressions, and arrow functions',
+          command: '--pattern="function $NAME" --lang=typescript --path=src/',
+          description: 'Find all function declarations in TypeScript files',
         },
         {
           command:
-            '--operation=find-class --name=AuthController --file=src/auth.ts',
-          description: 'Find specific class by name',
+            '--pattern="async function $NAME" --lang=typescript --path=src/',
+          description: 'Find async function declarations',
         },
         {
           command:
-            '--operation=find-functions --min-params=5 --file=src/api.ts',
-          description: 'Find functions with 5 or more parameters',
+            '--pattern="const $NAME" --lang=typescript --path=src/utils/',
+          description: 'Find all const declarations in a directory',
         },
         {
           command:
-            '--operation=find-identifiers --pattern="^[A-Z][A-Z_]+" --file=src/constants.ts',
-          description: 'Find CONSTANT_CASE identifiers',
+            '--pattern="interface $NAME" --lang=typescript --path=src/types/',
+          description: 'Find all TypeScript interfaces',
         },
         {
-          command: '--query-file=queries/custom.scm --file=src/utils.ts',
-          description: 'Execute custom tree-sitter query from file',
+          command: '--pattern="class $NAME" --lang=typescript --path=src/',
+          description: 'Find all class declarations',
         },
         {
-          command: '--operation=list-keys --file=src/schemas/schema.json',
-          description: 'List all JSON object keys in a schema file',
+          command: '--pattern="await $EXPR" --lang=typescript --path=src/',
+          description: 'Find all await expressions',
         },
         {
-          command: '--operation=list-properties --file=config.json',
-          description: 'List all key-value pairs in a JSON configuration file',
+          command:
+            '--pattern="import $BINDING from \'$MODULE\'" --lang=typescript --path=src/',
+          description: 'Find import statements',
+        },
+        {
+          command:
+            '--pattern="describe($TITLE, $CALLBACK)" --lang=typescript --path=src/',
+          description: 'Find test describe blocks',
+        },
+        {
+          command: '--pattern="fn $NAME" --lang=rust --path=src/',
+          description: 'Find Rust function declarations',
+        },
+        {
+          command: '--pattern="pub struct $NAME" --lang=rust --path=src/',
+          description: 'Find Rust public struct definitions',
+        },
+        {
+          command: '--pattern="def $NAME" --lang=python --path=.',
+          description: 'Find Python function definitions',
+        },
+        {
+          command: '--pattern="func $NAME" --lang=go --path=.',
+          description: 'Find Go function declarations',
+        },
+        {
+          command:
+            '--pattern="<$COMPONENT />" --lang=tsx --path=src/components/',
+          description: 'Find self-closing JSX/TSX components',
+        },
+        {
+          command:
+            '--refactor --pattern="const SafeTextInput" --lang=tsx --source=src/BigFile.tsx --target=src/SafeTextInput.tsx',
+          description: 'Move a component to its own file',
         },
       ],
       features: [
-        'Deterministic tree-sitter query language (S-expressions)',
-        'Predefined operations for common patterns',
-        'Custom query support via .scm files',
-        'Parametric predicates for filtering (name, pattern, min-params)',
-        'Supports 16 languages: JavaScript, TypeScript, Python, Go, Rust, Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash, JSON',
+        'Pattern-based AST search using ast-grep syntax',
+        '$NAME matches single AST node, $$$ARGS matches zero or more nodes',
+        'Output format: file:line:column:matched_text (first line only)',
+        'Refactor mode moves matched code between files',
+        'Supports 23 languages via native Rust implementation',
+        'Respects .gitignore when searching directories',
       ],
       commonErrors: [
         {
-          error: '--file is required',
-          fix: 'Provide --file path/to/file.ts',
+          error: '--pattern is required',
+          fix: 'Provide pattern like --pattern="function $NAME"',
         },
         {
-          error: 'Either --operation or --query-file is required',
-          fix: 'Provide either --operation=list-functions or --query-file=custom.scm',
+          error: '--lang is required',
+          fix: 'Provide language like --lang=typescript',
         },
         {
-          error: 'Unknown operation',
-          fix: 'Use valid operation: list-functions, find-class, find-async-functions, etc.',
+          error: 'Pattern matched N nodes. Refactor requires exactly 1 match.',
+          fix: 'Make pattern more specific to match exactly one code block',
+        },
+        {
+          error: 'Unsupported language',
+          fix: 'Use one of: typescript, tsx, javascript, rust, python, go, java, c, cpp, csharp, ruby, kotlin, swift, scala, php, bash, html, css, json, yaml, lua, elixir, haskell',
         },
       ],
       exitCodes: [
         { code: 0, description: 'Success' },
+        { code: 1, description: 'Missing required argument' },
         {
-          code: 1,
-          description:
-            'Missing required flag (--file, --operation, or --query-file)',
+          code: 2,
+          description: 'Pattern matched wrong number of nodes (refactor mode)',
         },
-        { code: 2, description: 'File not found or parsing error' },
-        { code: 3, description: 'Invalid operation or unsupported language' },
+      ],
+      notes: [
+        'Pattern syntax uses ast-grep format: $NAME for single node, $$$ARGS for multiple',
+        'Patterns must match valid AST structure for the target language',
+        'Some patterns like "export interface $NAME" may not work because export and interface are separate AST nodes - use "interface $NAME" instead',
+        'For complex patterns, test with a single file first before searching directories',
       ],
     };
   },
 };
-
-function detectLanguage(filePath: string): string {
-  if (filePath.endsWith('.ts') || filePath.endsWith('.tsx')) {
-    return 'typescript';
-  }
-  if (filePath.endsWith('.js') || filePath.endsWith('.jsx')) {
-    return 'javascript';
-  }
-  if (filePath.endsWith('.py')) {
-    return 'python';
-  }
-  if (filePath.endsWith('.go')) {
-    return 'go';
-  }
-  if (filePath.endsWith('.rs')) {
-    return 'rust';
-  }
-  if (filePath.endsWith('.kt') || filePath.endsWith('.kts')) {
-    return 'kotlin';
-  }
-  if (filePath.endsWith('.dart')) {
-    return 'dart';
-  }
-  if (filePath.endsWith('.swift')) {
-    return 'swift';
-  }
-  if (filePath.endsWith('.cs')) {
-    return 'csharp';
-  }
-  if (filePath.endsWith('.c') || filePath.endsWith('.h')) {
-    return 'c';
-  }
-  if (
-    filePath.endsWith('.cpp') ||
-    filePath.endsWith('.hpp') ||
-    filePath.endsWith('.cc') ||
-    filePath.endsWith('.cxx') ||
-    filePath.endsWith('.hxx')
-  ) {
-    return 'cpp';
-  }
-  if (filePath.endsWith('.java')) {
-    return 'java';
-  }
-  if (filePath.endsWith('.php')) {
-    return 'php';
-  }
-  if (filePath.endsWith('.rb')) {
-    return 'ruby';
-  }
-  if (filePath.endsWith('.sh') || filePath.endsWith('.bash')) {
-    return 'bash';
-  }
-  if (filePath.endsWith('.json')) {
-    return 'json';
-  }
-  throw new Error(`Cannot detect language from file extension: ${filePath}`);
-}
 
 export default tool;

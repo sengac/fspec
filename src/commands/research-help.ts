@@ -40,33 +40,20 @@ const config: CommandHelpConfig = {
     Usage: fspec research --tool=stakeholder <args>`,
     },
     {
-      command: 'fspec research --tool=ast --query "find all async functions"',
+      command:
+        'fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/',
       description: 'Search codebase for async functions using AST analysis',
-      output: `{
-  "matches": [
-    {
-      "file": "src/example.ts",
-      "startLine": 10,
-      "endLine": 15,
-      "code": "async function fetchData() { ... }",
-      "nodeType": "async_function"
-    }
-  ],
-  "stats": {
-    "filesScanned": 42,
-    "matchCount": 1
-  }
-}`,
+      output: `src/services/api.ts:15:1:async function fetchUser(id: string) {
+src/services/auth.ts:42:1:async function validateToken(token: string) {
+src/utils/cache.ts:8:1:async function getCacheValue(key: string) {`,
     },
     {
-      command: 'fspec research --tool=ast --file "src/broken.ts"',
-      description: 'Analyze specific file with AST parser',
-      output: `{
-  "partialAST": { "type": "program", "children": [...] },
-  "errors": [
-    { "line": 10, "message": "Unexpected token" }
-  ]
-}`,
+      command:
+        'fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/auth.ts',
+      description: 'Find all functions in a specific file',
+      output: `src/auth.ts:12:1:function login(username: string, password: string) {
+src/auth.ts:28:1:function logout() {
+src/auth.ts:45:1:function validateCredentials(user: User) {`,
     },
     {
       command:
@@ -91,17 +78,23 @@ Attach research results to work unit? (y/n):`,
     },
     {
       command:
-        'fspec research --tool=ast --query "functions with more than 5 parameters"',
-      description: 'Find complex functions with many parameters',
+        'fspec research --tool=ast --refactor --pattern="const MyComponent" --lang=tsx --source=src/big-file.tsx --target=src/components/MyComponent.tsx',
+      description: 'Move a component to its own file using AST refactoring',
       output: `{
-  "matches": [
-    {
-      "file": "src/example.ts",
-      "functionName": "complexFunc",
-      "parameterCount": 6
-    }
-  ]
+  "success": true,
+  "movedCode": "const MyComponent = () => { ... }",
+  "sourceFile": "src/big-file.tsx",
+  "targetFile": "src/components/MyComponent.tsx"
 }`,
+    },
+    {
+      command:
+        'fspec research --tool=ast --pattern="interface $NAME" --lang=typescript --path=src/types/',
+      description: 'Find all TypeScript interfaces in a directory',
+      output: `src/types/user.ts:5:1:interface User {
+src/types/user.ts:12:1:interface UserProfile {
+src/types/auth.ts:3:1:interface AuthToken {
+src/types/auth.ts:18:1:interface Session {`,
     },
   ],
   notes: [
@@ -135,33 +128,55 @@ Attach research results to work unit? (y/n):`,
         "Run 'fspec research' to list available tools, or create custom tool",
     },
     {
-      error: 'Error: FSPEC_TEST_MODE not set',
-      cause: 'Tool requires test mode but environment variable not configured',
-      solution: 'Set FSPEC_TEST_MODE=1 or run tool in production mode',
+      error: 'Error: --pattern is required',
+      cause: 'AST tool requires a pattern to search for',
+      solution:
+        'Provide pattern like --pattern="function $NAME" (use $NAME for single-node wildcard, $$$ARGS for multi-node)',
     },
     {
-      error: 'Permission denied',
-      cause: 'Research script not executable',
-      solution: 'chmod +x spec/research-scripts/<tool-name>',
+      error: 'Error: --lang is required',
+      cause: 'AST tool requires a language to parse',
+      solution:
+        'Provide language like --lang=typescript (supports: typescript, tsx, javascript, rust, python, go, java, c, cpp, ruby, etc.)',
+    },
+    {
+      error: 'Pattern matched N nodes. Refactor requires exactly 1 match.',
+      cause: 'Refactor mode can only move one code block at a time',
+      solution:
+        'Make your pattern more specific to match exactly one code block',
     },
   ],
   commonPatterns: [
     {
-      title: 'AST-based code search',
-      description: 'Find code patterns using AST instead of regex',
+      title: 'Find functions by pattern',
+      description:
+        'Search for function declarations using AST pattern matching',
       example:
-        'fspec research --tool=ast --query "find all exported functions"',
+        'fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/',
+    },
+    {
+      title: 'Find async functions',
+      description: 'Search for async function declarations',
+      example:
+        'fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/',
+    },
+    {
+      title: 'Find classes or interfaces',
+      description: 'Search for class or interface definitions',
+      example:
+        'fspec research --tool=ast --pattern="class $NAME" --lang=typescript --path=src/',
+    },
+    {
+      title: 'Refactor: Move code to new file',
+      description: 'Extract a component or function to its own file',
+      example:
+        'fspec research --tool=ast --refactor --pattern="const MyComponent" --lang=tsx --source=src/big.tsx --target=src/MyComponent.tsx',
     },
     {
       title: 'Stakeholder questions during discovery',
       description: 'Send questions to Teams/Slack and attach responses',
       example:
         'fspec research --tool=stakeholder --platform=teams,slack --question="Need OAuth?" --work-unit=AUTH-001',
-    },
-    {
-      title: 'Analyze broken code',
-      description: 'Use AST to identify syntax errors in specific files',
-      example: 'fspec research --tool=ast --file "src/problematic.ts"',
     },
   ],
 };

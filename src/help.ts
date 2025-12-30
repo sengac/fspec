@@ -1180,10 +1180,10 @@ function displayDiscoveryHelp(): void {
   );
   console.log('    Examples:');
   console.log(
-    '      fspec research --tool=ast --operation=list-functions --file=src/auth.ts'
+    '      fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/'
   );
   console.log(
-    '      fspec research --tool=ast --operation=find-async-functions --file=src/broken.ts'
+    '      fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/'
   );
   console.log(
     '      fspec research --tool=stakeholder --platform=teams --question="Support OAuth?" --work-unit=AUTH-001'
@@ -1193,29 +1193,29 @@ function displayDiscoveryHelp(): void {
   console.log(
     '    ' +
       chalk.cyan('ast') +
-      '          - AST code analysis and pattern detection'
+      '          - AST code search and refactoring using ast-grep'
   );
   console.log(
-    '                         Supports 15 languages: JavaScript, TypeScript, Python, Go, Rust,'
+    '                         Supports 23 languages via native Rust implementation'
   );
   console.log(
-    '                         Kotlin, Dart, Swift, C#, C, C++, Java, PHP, Ruby, Bash'
+    '      --pattern <pattern>      AST pattern to match (e.g., "function $NAME")'
   );
   console.log(
-    '      --operation <op>         Predefined operation: list-functions, find-class, etc.'
+    '      --lang <language>        Programming language (typescript, rust, python, etc.)'
   );
+  console.log('      --path <path>            File or directory to search');
   console.log(
-    '      --file <path>            Analyze specific file (required)'
+    '      --refactor               Refactor mode: move matched code to new file'
   );
-  console.log(
-    '      --query-file <path>      Custom tree-sitter query file (.scm)'
-  );
+  console.log('      --source <path>          Source file for refactor');
+  console.log('      --target <path>          Target file for refactor');
   console.log('      Examples:');
   console.log(
-    '        fspec research --tool=ast --operation=list-functions --file=src/auth.ts'
+    '        fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/'
   );
   console.log(
-    '        fspec research --tool=ast --operation=find-class --file=model.py --name=User'
+    '        fspec research --tool=ast --refactor --pattern="const MyComponent" --lang=tsx --source=src/big.tsx --target=src/MyComponent.tsx'
   );
   console.log('');
   console.log(
