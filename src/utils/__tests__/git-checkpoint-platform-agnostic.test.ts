@@ -30,15 +30,27 @@ try {
 
 describe('Feature: Replace hardcoded npm test in git-checkpoint conflict resolution with configured test command', () => {
   let testDir: string;
+  let originalHome: string | undefined;
 
   beforeEach(async () => {
     // Create temporary test directory
     testDir = join(tmpdir(), `fspec-test-${Date.now()}`);
     await mkdir(testDir, { recursive: true });
     await mkdir(join(testDir, 'spec'), { recursive: true });
+
+    // Override HOME to isolate from user-level config
+    originalHome = process.env.HOME;
+    process.env.HOME = testDir;
+
+    // Create empty .fspec directory to prevent fallback to any existing user config
+    await mkdir(join(testDir, '.fspec'), { recursive: true });
   });
 
   afterEach(async () => {
+    // Restore HOME
+    if (originalHome !== undefined) {
+      process.env.HOME = originalHome;
+    }
     // Cleanup test directory
     await rm(testDir, { recursive: true, force: true });
   });
