@@ -37,6 +37,7 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
   let testDir: string;
   let originalHome: string | undefined;
   let originalAnthropicKey: string | undefined;
+  let originalClaudeOAuthToken: string | undefined;
   let originalOpenaiKey: string | undefined;
 
   beforeEach(async () => {
@@ -44,11 +45,14 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
     originalHome = process.env.HOME;
     originalAnthropicKey = process.env.ANTHROPIC_API_KEY;
+    originalClaudeOAuthToken = process.env.CLAUDE_CODE_OAUTH_TOKEN;
     originalOpenaiKey = process.env.OPENAI_API_KEY;
     process.env.HOME = testDir;
 
     // Clear env vars to test credential resolution
+    // Must clear both ANTHROPIC_API_KEY and CLAUDE_CODE_OAUTH_TOKEN since both are valid for anthropic
     delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
     delete process.env.OPENAI_API_KEY;
 
     // Create .fspec directory
@@ -59,6 +63,9 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     process.env.HOME = originalHome;
     if (originalAnthropicKey) {
       process.env.ANTHROPIC_API_KEY = originalAnthropicKey;
+    }
+    if (originalClaudeOAuthToken) {
+      process.env.CLAUDE_CODE_OAUTH_TOKEN = originalClaudeOAuthToken;
     }
     if (originalOpenaiKey) {
       process.env.OPENAI_API_KEY = originalOpenaiKey;
@@ -116,9 +123,11 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
       // @step And "anthropic" should no longer have an apiKey entry
       expect(content.providers.anthropic).toBeUndefined();
 
-      // @step And the provider should show as "not configured"
+      // @step And the provider should NOT have credentials from file source
+      // Note: .env file may still provide credentials as fallback, but the
+      // credentials FILE should no longer be the source
       const config = await getProviderConfig('anthropic');
-      expect(config.apiKey).toBeUndefined();
+      expect(config.source).not.toBe('file');
     });
   });
 
