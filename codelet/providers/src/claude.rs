@@ -253,13 +253,13 @@ impl ClaudeProvider {
         ANTHROPIC_BETA_HEADER
     }
 
-    /// Create a rig Agent with all 9 tools configured for this provider
+    /// Create a rig Agent with all 10 tools configured for this provider
     ///
     /// This method encapsulates all Claude-specific configuration:
     /// - Model name (claude-sonnet-4-20250514)
     /// - Max tokens (8192)
     /// - System prompt with cache_control metadata (PROV-006)
-    /// - All 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearchTool)
+    /// - All 10 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, AstGrepRefactor, WebSearchTool)
     /// - Prompt caching via cache_control metadata (PROV-006)
     /// - Extended thinking configuration (TOOL-010)
     ///
@@ -292,11 +292,11 @@ impl ClaudeProvider {
         use codelet_tools::facade::{
             select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,
         };
-        use codelet_tools::{AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool};
+        use codelet_tools::{AstGrepTool, AstGrepRefactorTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool};
         use rig::client::CompletionClient;
         use std::sync::Arc;
 
-        // Build agent with all 9 tools using rig's builder pattern (TOOL-007: Uses FacadeToolWrapper for web search)
+        // Build agent with all 10 tools using rig's builder pattern (TOOL-007: Uses FacadeToolWrapper for web search)
         // MODEL-001: Use stored model name instead of DEFAULT_MODEL
         let mut agent_builder = self
             .rig_client
@@ -310,6 +310,7 @@ impl ClaudeProvider {
             .tool(GlobTool::new())
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
+            .tool(AstGrepRefactorTool::new())
             .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade))); // TOOL-007: Use facade for consistent tool interfaces
 
         // PROV-006, TOOL-008: Apply cache_control to system prompt using facade

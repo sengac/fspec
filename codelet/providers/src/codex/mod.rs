@@ -107,12 +107,12 @@ impl CodexProvider {
         &self.rig_client
     }
 
-    /// Create a rig Agent with all 9 tools configured for this provider (WEB-001: Added WebSearchTool)
+    /// Create a rig Agent with all 10 tools configured for this provider (WEB-001: Added WebSearchTool)
     ///
     /// This method encapsulates all Codex-specific configuration:
     /// - Model name (GPT or compatible)
     /// - Max tokens (4096)
-    /// - All 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearchTool)
+    /// - All 10 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, AstGrepRefactor, WebSearchTool)
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
@@ -125,12 +125,12 @@ impl CodexProvider {
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
+            AstGrepTool, AstGrepRefactorTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
             WriteTool,
         };
         use rig::client::CompletionClient;
 
-        // Build agent with all 9 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
+        // Build agent with all 10 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -143,6 +143,7 @@ impl CodexProvider {
             .tool(GlobTool::new())
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
+            .tool(AstGrepRefactorTool::new())
             .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
 
         // Set preamble if provided
