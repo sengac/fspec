@@ -62,9 +62,11 @@ describe('Feature: Documentation Clarity Improvements', () => {
       // @step When the AI follows the research-first workflow
       // Verified by checking for research commands
 
-      // @step Then the AI runs "fspec research --tool=ast --files src/auth/*.ts"
+      // @step Then the AI runs AST research with pattern matching
       expect(bootstrapContent).toContain('fspec research --tool=ast');
-      expect(bootstrapContent).toContain('--files');
+      expect(bootstrapContent).toContain('--pattern=');
+      expect(bootstrapContent).toContain('--lang=');
+      expect(bootstrapContent).toContain('--path=');
 
       // @step And the AI understands the authentication domain from code analysis
       // Implied by research-first workflow

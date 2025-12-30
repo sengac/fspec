@@ -7,10 +7,6 @@ import { showWorkUnit } from './show-work-unit';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import { getAgentConfig, formatAgentOutput } from '../utils/agentRuntimeConfig';
-import {
-  gatherASTData,
-  formatASTDataAsSystemReminder,
-} from '../utils/ast-data-gatherer';
 
 interface ReviewOptions {
   cwd?: string;
@@ -103,18 +99,8 @@ async function buildAIAnalysisReminder(
     }
   }
 
-  // Gather AST data for implementation files (if any)
-  if (implFiles.size > 0) {
-    try {
-      const astData = await gatherASTData(Array.from(implFiles), cwd);
-      const astSystemReminder = formatASTDataAsSystemReminder(astData);
-      lines.push(astSystemReminder);
-      lines.push('');
-    } catch (error) {
-      // AST data gathering failed, continue without it
-      console.error('Warning: AST data gathering failed:', error);
-    }
-  }
+  // AST data gathering removed - now uses ast-grep NAPI
+  // Implementation files will be analyzed through the astGrepSearch NAPI function if needed
 
   if (implFiles.size > 0) {
     lines.push('STEP 1: Read Implementation Files');

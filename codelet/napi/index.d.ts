@@ -231,6 +231,66 @@ export declare class CodeletSession {
   ): Promise<void>;
 }
 
+/** Result of an AST-grep search match */
+export interface AstGrepMatchResult {
+  /** File path where match was found */
+  file: string;
+  /** Line number (1-based) */
+  line: number;
+  /** Column number (1-based) */
+  column: number;
+  /** Matched text */
+  text: string;
+}
+
+/**
+ * Refactor by moving matched code from source file to target file
+ *
+ * # Arguments
+ * * `pattern` - AST pattern to match (must match exactly 1 node)
+ * * `language` - Programming language
+ * * `source_file` - Path to source file
+ * * `target_file` - Path to target file (will be created)
+ *
+ * # Returns
+ * Result containing the moved code, or error if pattern doesn't match exactly 1 node
+ */
+export declare function astGrepRefactor(
+  pattern: string,
+  language: string,
+  sourceFile: string,
+  targetFile: string
+): Promise<AstGrepRefactorResult>;
+
+/** Result of an AST-grep refactor operation */
+export interface AstGrepRefactorResult {
+  /** Whether the refactor was successful */
+  success: boolean;
+  /** The code that was moved */
+  movedCode: string;
+  /** Source file path */
+  sourceFile: string;
+  /** Target file path */
+  targetFile: string;
+}
+
+/**
+ * Search for AST pattern matches in files
+ *
+ * # Arguments
+ * * `pattern` - AST pattern to search for (e.g., "function $NAME($$$ARGS)")
+ * * `language` - Programming language (e.g., "typescript", "rust")
+ * * `paths` - List of file or directory paths to search
+ *
+ * # Returns
+ * Array of match results with file, line, column, and matched text
+ */
+export declare function astGrepSearch(
+  pattern: string,
+  language: string,
+  paths: Array<string>
+): Promise<Array<AstGrepMatchResult>>;
+
 /** Stream chunk types for streaming responses (TOOL-010) */
 export declare const enum ChunkType {
   Text = 'Text',

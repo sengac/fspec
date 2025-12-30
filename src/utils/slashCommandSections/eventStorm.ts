@@ -5,11 +5,21 @@ export function getEventStormSection(): string {
 
 ### Research-First Workflow
 
-**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using AST analysis.
+**CRITICAL**: Before deciding whether to use Feature Event Storm, FIRST research the codebase using AST analysis to understand the domain structure.
 
 \`\`\`bash
-# Step 1: Research relevant code using AST tool
-fspec research --tool=ast --files "src/auth/*.ts"
+# Step 1: Research relevant code using AST pattern matching
+# Find all functions in the domain area:
+fspec research --tool=ast --pattern="function $NAME" --lang=typescript --path=src/auth/
+
+# Find classes to understand domain entities:
+fspec research --tool=ast --pattern="class $NAME" --lang=typescript --path=src/auth/
+
+# Find interfaces to understand data structures:
+fspec research --tool=ast --pattern="interface $NAME" --lang=typescript --path=src/auth/
+
+# Find async functions (often indicate external integrations or events):
+fspec research --tool=ast --pattern="async function $NAME" --lang=typescript --path=src/auth/
 
 # Step 2: Analyze findings to understand domain
 # - What domain events exist in the code?
@@ -25,6 +35,12 @@ fspec research --tool=ast --files "src/auth/*.ts"
 # - Feature Event Storm (if complex/unfamiliar)
 # - Example Mapping (if simple/clear)
 \`\`\`
+
+**AST Pattern Tips:**
+- Use \`$NAME\` as a wildcard to match any identifier
+- Use \`$$$ARGS\` to match multiple arguments or body content
+- Adjust \`--lang\` for your codebase: typescript, tsx, javascript, rust, python, go, etc.
+- Adjust \`--path\` to focus on the relevant domain area
 
 **Decision is SUBJECTIVE and COLLABORATIVE** - emphasize no guessing, always ask if unsure. Research builds familiarity before judgment.
 

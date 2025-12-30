@@ -26,6 +26,11 @@ codelet-providers = { path = "../providers" }
 codelet-tools = { path = "../tools" }
 codelet-common = { path = "../common" }
 
+# AST-grep for NAPI bindings
+ast-grep-core.workspace = true
+ast-grep-language.workspace = true
+ignore.workspace = true
+
 # Rig - LLM framework (workspace version with patch)
 rig-core = { version = "0.25.0", default-features = false }
 

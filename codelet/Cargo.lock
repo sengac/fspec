@@ -458,6 +458,8 @@ name = "codelet-napi"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "ast-grep-core",
+ "ast-grep-language",
  "chrono",
  "codelet-cli",
  "codelet-common",
@@ -468,6 +470,7 @@ dependencies = [
  "dotenvy",
  "futures",
  "hex",
+ "ignore",
  "lazy_static",
  "napi",
  "napi-build",
