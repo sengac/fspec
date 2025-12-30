@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-30T00:36:43.920Z"
+    "lastUpdated": "2025-12-30T09:40:24.776Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -58481,6 +58481,220 @@
       ],
       "nextNoteId": 6,
       "updated": "2025-12-30T00:36:44.000Z"
+    },
+    "TOOLS-003": {
+      "id": "TOOLS-003",
+      "title": "AST Code Refactor Tool for Codelet",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-30T09:18:27.862Z",
+      "updatedAt": "2025-12-30T09:40:24.857Z",
+      "description": "Add AstGrepRefactorTool to codelet tools layer, exposing the existing NAPI refactoring capability as a standalone rig::tool::Tool for agent integration",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TOOLS-003/ast-refactor-tool-analysis.md",
+        "spec/attachments/TOOLS-003/ast-research-tool-patterns.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-30T09:20:04.355Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-30T09:26:23.154Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-30T09:30:19.905Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-30T09:40:05.107Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-30T09:40:24.858Z"
+        }
+      ],
+      "userStory": {
+        "role": "AI agent using codelet tools",
+        "action": "refactor code by extracting AST-matched patterns to new files",
+        "benefit": "I can perform structural code refactoring with precision and safety"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tool must implement rig::tool::Tool trait following the same pattern as AstGrepTool",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:20:46.777Z"
+        },
+        {
+          "id": 1,
+          "text": "Refactor operation requires exactly one AST match - zero matches or multiple matches must return an error",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:20:48.427Z"
+        },
+        {
+          "id": 2,
+          "text": "Tool must support all 23 languages supported by ast-grep (TypeScript, TSX, JavaScript, Rust, Python, Go, Java, C, C++, C#, Ruby, Kotlin, Swift, Scala, PHP, Bash, HTML, CSS, JSON, YAML, Lua, Elixir, Haskell)",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:20:50.284Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool must extract matched code from source file and write it to target file",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:20:51.984Z"
+        },
+        {
+          "id": 4,
+          "text": "Tool must clean up resulting blank lines in source file after code extraction",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:20:54.492Z"
+        },
+        {
+          "id": 5,
+          "text": "Tool must use async file operations with tokio for non-blocking I/O",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:20:56.552Z"
+        },
+        {
+          "id": 6,
+          "text": "Yes, support BOTH modes: extract-to-file (default) AND replace-in-place with a replacement pattern",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:23:02.119Z"
+        },
+        {
+          "id": 7,
+          "text": "Append to target file if it exists (useful for collecting multiple extractions)",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:23:03.857Z"
+        },
+        {
+          "id": 8,
+          "text": "No dry-run mode for initial implementation - keep it simple",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:23:06.757Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent calls astgrep_refactor with pattern 'const $NAME = () => { $$$BODY }', language 'typescript', source 'src/components.ts', target 'src/extracted.ts' - extracts arrow function to new file",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:21:17.616Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent calls astgrep_refactor with pattern 'fn $NAME($_)' on a file with 3 matching functions - returns error listing all 3 match locations",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:21:19.366Z"
+        },
+        {
+          "id": 2,
+          "text": "Agent calls astgrep_refactor with pattern 'class NonExistent' - returns error 'No matches found for pattern'",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:21:21.045Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent calls astgrep_refactor with language 'invalid_lang' - returns error with list of supported languages",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:21:22.831Z"
+        },
+        {
+          "id": 4,
+          "text": "After successful extraction, source file has consecutive blank lines collapsed to single blank line",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:21:24.583Z"
+        },
+        {
+          "id": 5,
+          "text": "Tool returns AstGrepRefactorResult with success=true, moved_code containing extracted text, source_file and target_file paths",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:21:26.676Z"
+        },
+        {
+          "id": 6,
+          "text": "Agent calls astgrep_refactor with replacement pattern - matched code is replaced in-place rather than extracted",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:23:15.392Z"
+        },
+        {
+          "id": 7,
+          "text": "Agent extracts function A, then extracts function B to same target file - both functions appear in target file",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:23:17.413Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the refactor tool support a replace-in-place mode in addition to extract-to-file?",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:22:26.851Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, support BOTH modes: extract-to-file (default) AND replace-in-place with a replacement pattern"
+        },
+        {
+          "id": 1,
+          "text": "@human: When writing to target file, should it overwrite or append if file exists?",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:22:29.641Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Append to target file if it exists (useful for collecting multiple extractions)"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the tool support a dry-run mode?",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:22:31.940Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No dry-run mode for initial implementation - keep it simple"
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create new file codelet/tools/src/astgrep_refactor.rs implementing AstGrepRefactorTool struct with rig::tool::Tool trait",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:25:19.696Z"
+        },
+        {
+          "id": 1,
+          "text": "Args struct: pattern (String), language (String), source_file (String), target_file (Option<String>), replacement (Option<String>)",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:25:21.750Z"
+        },
+        {
+          "id": 2,
+          "text": "Two modes: extract (target_file set) and replace (replacement set). Exactly one must be provided.",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:25:23.505Z"
+        },
+        {
+          "id": 3,
+          "text": "Reuse language parsing and file extension logic from existing astgrep.rs search tool",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:25:26.299Z"
+        },
+        {
+          "id": 4,
+          "text": "Update codelet/tools/src/lib.rs to export AstGrepRefactorTool",
+          "deleted": false,
+          "createdAt": "2025-12-30T09:25:28.501Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "updated": "2025-12-30T09:40:24.857Z"
     }
   },
   "states": {
@@ -58553,6 +58767,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TOOLS-003",
       "REFAC-006",
       "CONFIG-004",
       "TOOL-011",
@@ -59038,7 +59253,7 @@
     "CTX": 2,
     "TOOL": 11,
     "MODEL": 1,
-    "TOOLS": 2,
+    "TOOLS": 3,
     "CONFIG": 4
   }
 }

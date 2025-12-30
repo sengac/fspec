@@ -111,7 +111,7 @@ impl GeminiProvider {
             GeminiRunShellCommandFacade, GeminiSearchFileContentFacade, GeminiWebFetchFacade,
             GeminiWriteFileFacade, LsToolFacadeWrapper, SearchToolFacadeWrapper,
         };
-        use codelet_tools::AstGrepTool;
+        use codelet_tools::{AstGrepTool, AstGrepRefactorTool};
         use std::sync::Arc;
 
         // Create Gemini-specific web search facades (TOOL-001)
@@ -157,6 +157,7 @@ impl GeminiProvider {
             .tool(find_files) // TOOL-005: Gemini-native find_files
             .tool(list_directory) // TOOL-006: Gemini-native list_directory
             .tool(AstGrepTool::new())
+            .tool(AstGrepRefactorTool::new())
             .tool(google_web_search) // TOOL-001: Gemini-native google_web_search
             .tool(web_fetch); // TOOL-001: Gemini-native web_fetch
 

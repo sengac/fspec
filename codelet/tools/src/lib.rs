@@ -4,6 +4,7 @@
 //! All tools implement rig::tool::Tool trait for use with RigAgent.
 
 pub mod astgrep;
+pub mod astgrep_refactor;
 pub mod bash;
 pub mod chrome_browser;
 pub mod edit;
@@ -29,6 +30,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 pub use astgrep::AstGrepTool;
+pub use astgrep_refactor::AstGrepRefactorTool;
 pub use bash::BashTool;
 pub use chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
 pub use edit::EditTool;

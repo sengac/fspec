@@ -99,12 +99,12 @@ impl OpenAIProvider {
         &self.rig_client
     }
 
-    /// Create a rig Agent with all 9 tools configured for this provider
+    /// Create a rig Agent with all 10 tools configured for this provider
     ///
     /// This method encapsulates all OpenAI-specific configuration:
     /// - Model name (gpt-4-turbo or custom)
     /// - Max tokens (4096)
-    /// - All 9 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, WebSearchTool)
+    /// - All 10 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, AstGrepRefactor, WebSearchTool)
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
@@ -121,12 +121,12 @@ impl OpenAIProvider {
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
-            AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
+            AstGrepTool, AstGrepRefactorTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
             WriteTool,
         };
         use rig::client::CompletionClient;
 
-        // Build agent with all 9 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
+        // Build agent with all 10 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -139,6 +139,7 @@ impl OpenAIProvider {
             .tool(GlobTool::new())
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
+            .tool(AstGrepRefactorTool::new())
             .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
 
         // Set preamble if provided
