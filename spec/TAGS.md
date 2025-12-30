@@ -94,6 +94,7 @@ Tags that categorize features by functional area.
 | `@compound` | Compound query operations |
 | `@config-management` | Configuration management and settings features |
 | `@configuration` | Configuration loading and validation |
+| `@connection-test` | Connection testing functionality |
 | `@context-management` | Context window and memory management features |
 | `@context-window` | Context window management and monitoring features |
 | `@coverage` | Coverage tracking and traceability features |
@@ -138,6 +139,7 @@ Tags that categorize features by functional area.
 | `@kanban` | Kanban board and workflow management |
 | `@language-support` | Programming language support and integration |
 | `@list` | List operations |
+| `@masked-display` | Masked display of sensitive data |
 | `@merge-preserves-references` | Merge reference preservation |
 | `@metrics` | Metrics and measurements |
 | `@metrics-estimation` | Metrics and estimation tracking |
@@ -156,6 +158,7 @@ Tags that categorize features by functional area.
 | `@progress` | Progress tracking and reporting |
 | `@project-management` | Project management features including work units, epics, and workflow |
 | `@provider-abstraction` | Provider abstraction layer for multi-provider support |
+| `@provider-settings` | Provider configuration settings |
 | `@publish` | npm publishing functionality |
 | `@quality-assurance` | Quality assurance and code review features |
 | `@query` | Query operations for searching and filtering |
@@ -191,12 +194,14 @@ Tags that categorize features by functional area.
 | `@session-rename` | Session renaming |
 | `@session-resume` | Session resume and persistence scenarios |
 | `@session-switch` | Session switching between conversations |
+| `@settings-navigation` | Settings navigation and UI interactions |
 | `@soft-dependency` | Soft dependency relationships |
 | `@state-enforcement` | State transition enforcement |
 | `@state-history` | State history tracking |
 | `@state-management` | Work unit state management and transitions |
 | `@state-transition` | State transition operations |
 | `@statistics` | Statistical analysis |
+| `@status-display` | Status display in user interface |
 | `@strategy-detection` | Strategy detection and selection for reverse ACDD workflows |
 | `@system-reminders` | System reminder and anti-drift pattern features |
 | `@tag-management` | TAGS.md Operations |
@@ -243,8 +248,11 @@ Tags for specific technical concerns or architectural patterns.
 | `@ast` | Abstract Syntax Tree |
 | `@ast-analysis` | AST-based code analysis features |
 | `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |
+| `@auth-methods` | Authentication method handling |
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |
 | `@automation` | Automated workflow operations and state transitions |
+| `@azure` | Azure OpenAI provider |
+| `@backward-compat` | Backward compatibility |
 | `@backward-compatibility` | Features ensuring compatibility with older file formats or legacy systems |
 | `@base64` | Base64 encoded content scenarios |
 | `@bdd` | Behavior-Driven Development methodology |
@@ -266,11 +274,14 @@ Tags for specific technical concerns or architectural patterns.
 | `@compaction` | Compaction scenarios |
 | `@compaction-state-on-fork` | Compaction state handling on fork |
 | `@compaction-state-storage` | Compaction state persistence |
+| `@complex-config` | Complex configuration scenarios |
 | `@concurrency` | Concurrent access coordination and file locking mechanisms |
 | `@config` | Configuration loading and management features |
 | `@content-deduplication` | Content-addressed deduplication |
 | `@content-type` | Content type classification for message persistence |
 | `@context` | Context preservation scenarios |
+| `@credential-resolution` | Credential resolution and priority chain |
+| `@credentials` | Credential storage and management features |
 | `@cross-compile` | Cross-compilation builds |
 | `@cucumber-parser` | Cucumber Parser Integration |
 | `@cucumber-style` | Cucumber-style step definition and matching patterns |
@@ -285,6 +296,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@document` | Document content type scenarios |
 | `@email` | Email-related functionality |
+| `@env-vars` | Environment variable handling |
 | `@envelope` | Message envelope metadata scenarios |
 | `@error-handling` | Error Handling |
 | `@eslint` | ESLint configuration and linting |
@@ -326,6 +338,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@layout` | Layout and visual presentation features |
 | `@learning` | Machine learning and adaptive features based on usage patterns |
 | `@llm-integration` | LLM integration and response handling |
+| `@local` | Local-only functionality |
 | `@logging` | Logging and diagnostics features |
 | `@markdown` | Markdown rendering and processing |
 | `@markdown-formatting` | Markdown formatting and rendering features |
@@ -345,6 +358,8 @@ Tags for specific technical concerns or architectural patterns.
 | `@multimodal` | Multimodal content handling (images, PDFs, etc.) |
 | `@napi` | NAPI-RS native module bindings for Node.js |
 | `@native` | Native platform builds |
+| `@no-logging` | Ensuring secrets are not logged |
+| `@ollama` | Ollama local provider |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@package` | npm package configuration |
 | `@parallel-tools` | Parallel tool execution scenarios |
@@ -354,12 +369,14 @@ Tags for specific technical concerns or architectural patterns.
 | `@platform-agnostic` | Features supporting multiple platforms (Python, Rust, Go, JavaScript, etc.) |
 | `@plugin-system` | Plugin architecture and dynamic module loading |
 | `@prettier` | Prettier configuration and code formatting |
+| `@programmatic` | Programmatic API usage |
 | `@provider` | Provider-related functionality for LLM provider identification |
 | `@push` | Push notification functionality |
 | `@query-api` | Tree-sitter Query API features using S-expression pattern matching |
 | `@raw-output` | Raw tool output metadata scenarios |
 | `@react` | React framework and component lifecycle features |
 | `@real-time` | Features with real-time data synchronization and live updates |
+| `@registry` | Provider or component registry |
 | `@request-id` | API request ID scenarios |
 | `@resilience` | Error handling and graceful degradation features |
 | `@responsive` | Components that respond to viewport or terminal dimension changes |
@@ -383,6 +400,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@state` | Session state scenarios |
 | `@step-validation` | Step-level validation and Gherkin step matching |
 | `@stop-reason` | Response stop reason scenarios |
+| `@storage` | File storage operations |
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
 | `@streaming` | Real-time output streaming features |
 | `@structure` | Message structure preservation scenarios |
@@ -769,7 +787,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-29T08:04:40.045Z_
+_Last updated: 2025-12-29T11:16:09.898Z_
 
 **Update Command**: `fspec tag-stats`
 

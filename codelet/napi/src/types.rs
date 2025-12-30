@@ -313,6 +313,25 @@ impl StreamChunk {
     }
 }
 
+/// Provider configuration for programmatic credential passing (CONFIG-004)
+///
+/// Used by CodeletSession.newWithCredentials() to pass explicit API keys
+/// without reading from environment variables.
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NapiProviderConfig {
+    /// Provider ID (e.g., "anthropic", "openai", "gemini")
+    pub provider_id: String,
+    /// API key for the provider
+    pub api_key: Option<String>,
+    /// Custom base URL (optional)
+    pub base_url: Option<String>,
+    /// Whether the provider is enabled
+    pub enabled: bool,
+    /// Default model (optional)
+    pub default_model: Option<String>,
+}
+
 /// Message role enum
 #[napi(string_enum)]
 #[derive(Debug, PartialEq, Eq)]
