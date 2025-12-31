@@ -39,6 +39,9 @@ const Footer = () => {
         source_file: source_file.to_string_lossy().to_string(),
         target_file: Some(target_file.to_string_lossy().to_string()),
         replacement: None,
+        transforms: None,
+        batch: None,
+        preview: None,
     };
 
     // @step And specifies target file "src/extracted.ts"
@@ -98,6 +101,9 @@ fn baz(z: i32) {
         source_file: source_file.to_string_lossy().to_string(),
         target_file: Some(target_file.to_string_lossy().to_string()),
         replacement: None,
+        transforms: None,
+        batch: None,
+        preview: None,
     };
 
     let result = tool.call(args).await;
@@ -147,6 +153,9 @@ fn hello() {
         source_file: source_file.to_string_lossy().to_string(),
         target_file: Some(target_file.to_string_lossy().to_string()),
         replacement: None,
+        transforms: None,
+        batch: None,
+        preview: None,
     };
 
     let result = tool.call(args).await;
@@ -186,6 +195,9 @@ async fn test_error_when_invalid_language_specified() {
         source_file: source_file.to_string_lossy().to_string(),
         target_file: Some(target_file.to_string_lossy().to_string()),
         replacement: None,
+        transforms: None,
+        batch: None,
+        preview: None,
     };
 
     let result = tool.call(args).await;
@@ -235,6 +247,9 @@ fn after() {}
         source_file: source_file.to_string_lossy().to_string(),
         target_file: Some(target_file.to_string_lossy().to_string()),
         replacement: None,
+        transforms: None,
+        batch: None,
+        preview: None,
     };
 
     let result = tool.call(args).await;
@@ -284,6 +299,9 @@ fn target() {
         source_file: source_file.to_string_lossy().to_string(),
         target_file: Some(target_file.to_string_lossy().to_string()),
         replacement: None,
+        transforms: None,
+        batch: None,
+        preview: None,
     };
 
     let result = tool.call(args).await;
@@ -331,6 +349,9 @@ fn old_function() {
         source_file: source_file.to_string_lossy().to_string(),
         target_file: None,
         replacement: Some(replacement.to_string()),
+        transforms: None,
+        batch: None,
+        preview: None,
     };
 
     let result = tool.call(args).await;
@@ -392,6 +413,9 @@ fn function_b() {
         source_file: source_file.to_string_lossy().to_string(),
         target_file: Some(target_file.to_string_lossy().to_string()),
         replacement: None,
+        transforms: None,
+        batch: None,
+        preview: None,
     };
 
     let result = tool.call(args).await;

@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-30T09:40:24.776Z"
+    "lastUpdated": "2025-12-31T02:18:21.418Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -58695,6 +58695,227 @@
       ],
       "nextNoteId": 5,
       "updated": "2025-12-30T09:40:24.857Z"
+    },
+    "TOOLS-004": {
+      "id": "TOOLS-004",
+      "title": "Enhanced AST Refactor Tool with Transforms and Batch Mode",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-31T01:18:11.043Z",
+      "updatedAt": "2025-12-31T02:18:21.446Z",
+      "description": "Extend the AST refactor tool (TOOLS-003) with better pattern documentation, transform/rename capabilities, batch mode for multiple matches, and dry-run preview mode",
+      "children": [],
+      "userStory": {
+        "role": "AI agent using AST refactoring for code modifications",
+        "action": "understand patterns clearly, rename symbols with case transforms, replace multiple matches at once, and preview changes before applying",
+        "benefit": "I can perform complex refactoring operations confidently without misunderstanding the tool or making unintended changes"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-31T01:18:56.649Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-31T01:35:16.528Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-31T01:56:09.044Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-31T02:10:48.188Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-31T02:18:21.447Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tool description must clearly explain that patterns match PARTIAL code structure, not exact code strings",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:10.416Z"
+        },
+        {
+          "id": 1,
+          "text": "Meta-variable syntax must be documented: $NAME (single capture), $$NAME (unnamed), $_ (dropped), $$$ (multi-node), $$$ARGS (captured multi)",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:11.098Z"
+        },
+        {
+          "id": 2,
+          "text": "Meta-variable names must be UPPERCASE letters, underscores, or digits (after first char)",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:11.769Z"
+        },
+        {
+          "id": 3,
+          "text": "Transform mode must support three transform types: substring (with start/end char), replace (regex), and convert (case conversion)",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:12.469Z"
+        },
+        {
+          "id": 4,
+          "text": "Convert transform must support: lowerCase, upperCase, capitalize, camelCase, snakeCase, kebabCase, pascalCase",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:13.151Z"
+        },
+        {
+          "id": 5,
+          "text": "Transforms can be chained - output of one transform can be input to another via dependency ordering",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:15.263Z"
+        },
+        {
+          "id": 6,
+          "text": "Batch mode (batch: true) allows replacing ALL matches instead of requiring exactly one",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:29.546Z"
+        },
+        {
+          "id": 7,
+          "text": "Batch mode must report the count of replacements made in the result",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:31.160Z"
+        },
+        {
+          "id": 8,
+          "text": "Preview/dry-run mode (preview: true) shows what would be matched/changed without modifying files",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:32.718Z"
+        },
+        {
+          "id": 9,
+          "text": "Preview mode must show all matches with their locations, original code, and proposed replacement",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:34.480Z"
+        },
+        {
+          "id": 10,
+          "text": "Tool description must include concrete examples showing common refactoring patterns",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:37.033Z"
+        },
+        {
+          "id": 11,
+          "text": "Replacement templates can reference captured meta-variables and transformed variables",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:38.815Z"
+        },
+        {
+          "id": 12,
+          "text": "Transforms only apply to replace mode, not extract mode - extract keeps code as-is",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:24:32.038Z"
+        },
+        {
+          "id": 13,
+          "text": "Batch mode only applies to replace mode, not extract mode - extract is deliberate one-at-a-time",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:24:33.503Z"
+        },
+        {
+          "id": 14,
+          "text": "Transform errors must fail the whole operation with clear error message - no silent skipping",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:24:35.754Z"
+        },
+        {
+          "id": 15,
+          "text": "All separator options must be documented: caseChange, underscore, dash, dot, slash, space",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:24:37.361Z"
+        }
+      ],
+      "nextRuleId": 16,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Pattern 'fn $NAME($$$ARGS)' matches any Rust function - $NAME captures the function name, $$$ARGS captures all parameters",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:55.295Z"
+        },
+        {
+          "id": 1,
+          "text": "Pattern 'console.log($MSG)' matches all console.log calls - does NOT require passing the full statement as pattern",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:56.919Z"
+        },
+        {
+          "id": 2,
+          "text": "Transform to rename: pattern 'fn old_name()', transforms {NEW: {convert: {source: old_name, toCase: camelCase}}}, replacement 'fn $NEW()' produces 'fn oldName()'",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:19:59.166Z"
+        },
+        {
+          "id": 3,
+          "text": "Substring transform: {substring: {source: $NAME, startChar: 0, endChar: -1}} removes last character from captured NAME",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:20:01.037Z"
+        },
+        {
+          "id": 4,
+          "text": "Replace transform: {replace: {source: $NAME, replace: '_id$', by: ''}} removes '_id' suffix from captured NAME",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:20:02.688Z"
+        },
+        {
+          "id": 5,
+          "text": "Batch mode with pattern 'oldFunc($$$ARGS)' and replacement 'newFunc($$$ARGS)' changes all 15 call sites in one operation",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:20:04.289Z"
+        },
+        {
+          "id": 6,
+          "text": "Preview mode returns: [{location: 'file.rs:10:5', original: 'fn old()', replacement: 'fn new()'}] without modifying files",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:20:16.472Z"
+        },
+        {
+          "id": 7,
+          "text": "Chained transforms: STRIPPED removes suffix via replace, then FINAL converts STRIPPED to camelCase - ordered by dependency",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:20:18.212Z"
+        },
+        {
+          "id": 8,
+          "text": "Convert separatedBy option: 'user_accountName' with separatedBy: [underscore] splits only on underscore, preserving camelCase within segments",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:20:20.013Z"
+        }
+      ],
+      "nextExampleId": 9,
+      "attachments": [
+        "spec/attachments/TOOLS-004/ast-grep-refactor-enhancements.md",
+        "spec/attachments/TOOLS-004/ast-research-existing-implementation.md"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Extends astgrep_refactor.rs in codelet/tools/src - adds transforms, batch, preview parameters to existing AstGrepRefactorArgs struct",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:34:09.845Z"
+        },
+        {
+          "id": 1,
+          "text": "Transforms implemented inline using regex crate for replace, custom case conversion logic matching ast-grep's string_case.rs patterns",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:34:12.067Z"
+        },
+        {
+          "id": 2,
+          "text": "Dependency ordering for chained transforms uses topological sort - detect cycles and fail early with clear error",
+          "deleted": false,
+          "createdAt": "2025-12-31T01:34:13.903Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-31T02:18:21.446Z"
     }
   },
   "states": {
@@ -58767,6 +58988,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TOOLS-004",
       "TOOLS-003",
       "REFAC-006",
       "CONFIG-004",
@@ -59253,7 +59475,7 @@
     "CTX": 2,
     "TOOL": 11,
     "MODEL": 1,
-    "TOOLS": 3,
+    "TOOLS": 4,
     "CONFIG": 4
   }
 }
