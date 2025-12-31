@@ -231,6 +231,37 @@ export declare class CodeletSession {
   ): Promise<void>;
 }
 
+/** Case conversion types for transforms */
+export declare const enum AstGrepCaseType {
+  LowerCase = 'LowerCase',
+  UpperCase = 'UpperCase',
+  Capitalize = 'Capitalize',
+  CamelCase = 'CamelCase',
+  SnakeCase = 'SnakeCase',
+  KebabCase = 'KebabCase',
+  PascalCase = 'PascalCase',
+}
+
+/** Convert transform configuration */
+export interface AstGrepConvertTransform {
+  /** Source variable (e.g., "$NAME") */
+  source: string;
+  /** Target case type */
+  toCase: AstGrepCaseType;
+  /** Optional separators for word splitting */
+  separatedBy?: Array<AstGrepSeparator>;
+}
+
+/** Match information for replace operations */
+export interface AstGrepMatchInfo {
+  /** Location in format "file:line:column" */
+  location: string;
+  /** Original matched code */
+  original: string;
+  /** Replacement code */
+  replacement: string;
+}
+
 /** Result of an AST-grep search match */
 export interface AstGrepMatchResult {
   /** File path where match was found */
@@ -262,7 +293,7 @@ export declare function astGrepRefactor(
   targetFile: string
 ): Promise<AstGrepRefactorResult>;
 
-/** Result of an AST-grep refactor operation */
+/** Result of an AST-grep refactor operation (extract mode) */
 export interface AstGrepRefactorResult {
   /** Whether the refactor was successful */
   success: boolean;
@@ -272,6 +303,57 @@ export interface AstGrepRefactorResult {
   sourceFile: string;
   /** Target file path */
   targetFile: string;
+}
+
+/**
+ * Replace matched code in-place with optional transforms
+ *
+ * # Arguments
+ * * `pattern` - AST pattern to match
+ * * `language` - Programming language
+ * * `source_file` - Path to source file
+ * * `replacement` - Replacement template (can reference $NAME, $$$ARGS, and transform outputs)
+ * * `transforms` - Optional array of transforms to apply to captured variables
+ * * `batch` - If true, replace ALL matches; if false, require exactly one match
+ * * `preview` - If true, return what would change without modifying files
+ *
+ * # Returns
+ * Result containing match details and replacement info
+ */
+export declare function astGrepReplace(
+  pattern: string,
+  language: string,
+  sourceFile: string,
+  replacement: string,
+  transforms?: Array<AstGrepTransform> | undefined | null,
+  batch?: boolean | undefined | null,
+  preview?: boolean | undefined | null
+): Promise<AstGrepReplaceResult>;
+
+/** Result of an AST-grep replace operation (replace mode) */
+export interface AstGrepReplaceResult {
+  /** Whether the operation was successful */
+  success: boolean;
+  /** Mode: "replace" or "extract" */
+  mode: string;
+  /** Source file path */
+  sourceFile: string;
+  /** Number of matches replaced (batch mode) */
+  matchesCount: number;
+  /** Whether this was a preview (dry-run) */
+  preview: boolean;
+  /** Match details (location, original, replacement) */
+  matches: Array<AstGrepMatchInfo>;
+}
+
+/** Replace transform configuration */
+export interface AstGrepReplaceTransform {
+  /** Source variable (e.g., "$NAME") */
+  source: string;
+  /** Regex pattern to find */
+  replace: string;
+  /** Replacement string */
+  by: string;
 }
 
 /**
@@ -290,6 +372,38 @@ export declare function astGrepSearch(
   language: string,
   paths: Array<string>
 ): Promise<Array<AstGrepMatchResult>>;
+
+/** Separator options for word splitting */
+export declare const enum AstGrepSeparator {
+  CaseChange = 'CaseChange',
+  Underscore = 'Underscore',
+  Dash = 'Dash',
+  Dot = 'Dot',
+  Slash = 'Slash',
+  Space = 'Space',
+}
+
+/** Substring transform configuration */
+export interface AstGrepSubstringTransform {
+  /** Source variable (e.g., "$NAME") */
+  source: string;
+  /** Start character index (0-based, negative counts from end) */
+  startChar?: number;
+  /** End character index (negative counts from end) */
+  endChar?: number;
+}
+
+/** Transform definition - one of substring, replace, or convert */
+export interface AstGrepTransform {
+  /** Transform name (the variable it creates, e.g., "NEW") */
+  name: string;
+  /** Substring transform (mutually exclusive with replace/convert) */
+  substring?: AstGrepSubstringTransform;
+  /** Replace transform (mutually exclusive with substring/convert) */
+  replaceTransform?: AstGrepReplaceTransform;
+  /** Convert transform (mutually exclusive with substring/replace) */
+  convert?: AstGrepConvertTransform;
+}
 
 /** Stream chunk types for streaming responses (TOOL-010) */
 export declare const enum ChunkType {

@@ -41,6 +41,9 @@ futures = "0.3"
 # Error handling
 anyhow = "1"
 
+# Regex for replace transforms
+regex = "1"
+
 # Serialization (for converting types)
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

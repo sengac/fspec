@@ -475,6 +475,7 @@ dependencies = [
  "napi",
  "napi-build",
  "napi-derive",
+ "regex",
  "rig-core",
  "serde",
  "serde_json",
