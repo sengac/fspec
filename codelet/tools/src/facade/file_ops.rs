@@ -58,11 +58,11 @@ impl FileToolFacade for GeminiReadFileFacade {
 
         let offset = input
             .get("offset")
-            .and_then(|o| o.as_u64())
+            .and_then(serde_json::Value::as_u64)
             .map(|o| o as usize);
         let limit = input
             .get("limit")
-            .and_then(|l| l.as_u64())
+            .and_then(serde_json::Value::as_u64)
             .map(|l| l as usize);
 
         Ok(InternalFileParams::Read {
@@ -127,10 +127,7 @@ impl FileToolFacade for GeminiWriteFileFacade {
             })?
             .to_string();
 
-        Ok(InternalFileParams::Write {
-            file_path,
-            content,
-        })
+        Ok(InternalFileParams::Write { file_path, content })
     }
 }
 
@@ -326,7 +323,9 @@ mod tests {
         assert!(def.parameters["properties"].get("file_path").is_some());
         assert!(def.parameters["properties"].get("old_string").is_some());
         assert!(def.parameters["properties"].get("new_string").is_some());
-        assert!(def.parameters["properties"].get("expected_replacements").is_some());
+        assert!(def.parameters["properties"]
+            .get("expected_replacements")
+            .is_some());
         assert!(def.parameters.get("oneOf").is_none());
     }
 }

@@ -25,7 +25,9 @@ impl LsToolFacade for GeminiListDirectoryFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "list_directory".to_string(),
-            description: "List directory contents with file metadata (permissions, size, modification time)".to_string(),
+            description:
+                "List directory contents with file metadata (permissions, size, modification time)"
+                    .to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {

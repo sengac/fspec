@@ -78,7 +78,7 @@ impl TokPerSecTracker {
         let now = Instant::now();
 
         // Estimate tokens (~4 chars per token, rounded up)
-        let chunk_tokens = (text.len() + 3) / 4;
+        let chunk_tokens = text.len().div_ceil(4);
         self.cumulative_tokens += chunk_tokens as u64;
 
         // Add sample
@@ -89,12 +89,12 @@ impl TokPerSecTracker {
         self.samples.retain(|(ts, _)| *ts >= cutoff);
 
         // Need at least 2 samples for rate calculation
+        let (Some(oldest), Some(newest)) = (self.samples.first(), self.samples.last()) else {
+            return None;
+        };
         if self.samples.len() < 2 {
             return None;
         }
-
-        let oldest = self.samples.first().unwrap();
-        let newest = self.samples.last().unwrap();
         let token_delta = newest.1 - oldest.1;
         let time_delta = newest.0.duration_since(oldest.0);
 
@@ -242,27 +242,24 @@ where
     // CTX-004: Fixed context fill calculation
     // - input_tokens ALREADY includes cache_read_input_tokens (it's a subset, not additional)
     // - output_tokens should be CURRENT API call output only (previous output is in input_tokens as history)
-    let emit_context_fill = |output: &O,
-                             input_tokens: u64,
-                             output_tokens: u64,
-                             threshold: u64,
-                             context_window: u64| {
-        // CTX-004: input_tokens includes cache, and previous output is already in input as history
-        // So total context = input_tokens + current_api_output_tokens
-        let total_tokens = input_tokens + output_tokens;
-        // Calculate fill percentage (can exceed 100% near compaction)
-        let fill_percentage = if threshold > 0 {
-            ((total_tokens as f64 / threshold as f64) * 100.0) as u32
-        } else {
-            0
+    let emit_context_fill =
+        |output: &O, input_tokens: u64, output_tokens: u64, threshold: u64, context_window: u64| {
+            // CTX-004: input_tokens includes cache, and previous output is already in input as history
+            // So total context = input_tokens + current_api_output_tokens
+            let total_tokens = input_tokens + output_tokens;
+            // Calculate fill percentage (can exceed 100% near compaction)
+            let fill_percentage = if threshold > 0 {
+                ((total_tokens as f64 / threshold as f64) * 100.0) as u32
+            } else {
+                0
+            };
+            output.emit_context_fill(&ContextFillInfo {
+                fill_percentage,
+                effective_tokens: total_tokens,
+                threshold,
+                context_window,
+            });
         };
-        output.emit_context_fill(&ContextFillInfo {
-            fill_percentage,
-            effective_tokens: total_tokens,
-            threshold,
-            context_window,
-        });
-    };
 
     let token_state = Arc::new(Mutex::new(TokenState {
         input_tokens: session.token_tracker.input_tokens,
@@ -383,7 +380,10 @@ where
     let prev_input_tokens = session.token_tracker.input_tokens;
     let prev_output_tokens = session.token_tracker.output_tokens;
     let prev_cache_read = session.token_tracker.cache_read_input_tokens.unwrap_or(0);
-    let prev_cache_creation = session.token_tracker.cache_creation_input_tokens.unwrap_or(0);
+    let prev_cache_creation = session
+        .token_tracker
+        .cache_creation_input_tokens
+        .unwrap_or(0);
 
     // CTX-003: Track CURRENT CONTEXT tokens (overwritten with each API call, not accumulated)
     // Anthropic's input_tokens represents TOTAL context per call (absolute, not incremental)
@@ -932,8 +932,11 @@ where
                             } else {
                                 retry_api_output = usage.output_tokens;
                             }
-                            retry_cache_read = usage.cache_read_input_tokens.unwrap_or(retry_cache_read);
-                            retry_cache_creation = usage.cache_creation_input_tokens.unwrap_or(retry_cache_creation);
+                            retry_cache_read =
+                                usage.cache_read_input_tokens.unwrap_or(retry_cache_read);
+                            retry_cache_creation = usage
+                                .cache_creation_input_tokens
+                                .unwrap_or(retry_cache_creation);
 
                             let display_output = retry_cumulative_output + retry_api_output;
                             output.emit_tokens(&TokenInfo {
@@ -960,8 +963,11 @@ where
                             }
                             retry_api_output = usage.output_tokens;
                             retry_cumulative_output += retry_api_output;
-                            retry_cache_read = usage.cache_read_input_tokens.unwrap_or(retry_cache_read);
-                            retry_cache_creation = usage.cache_creation_input_tokens.unwrap_or(retry_cache_creation);
+                            retry_cache_read =
+                                usage.cache_read_input_tokens.unwrap_or(retry_cache_read);
+                            retry_cache_creation = usage
+                                .cache_creation_input_tokens
+                                .unwrap_or(retry_cache_creation);
 
                             output.emit_tokens(&TokenInfo {
                                 input_tokens: retry_api_input,

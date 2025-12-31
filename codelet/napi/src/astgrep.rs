@@ -266,10 +266,7 @@ async fn search_file(path: &Path, pattern: &str, lang: SupportLang) -> Vec<AstGr
         results
     }));
 
-    match search_result {
-        Ok(results) => results,
-        Err(_) => Vec::new(),
-    }
+    search_result.unwrap_or_default()
 }
 
 /// Refactor by moving matched code from source file to target file
@@ -290,9 +287,8 @@ pub async fn ast_grep_refactor(
     target_file: String,
 ) -> napi::Result<AstGrepRefactorResult> {
     // Parse language
-    let lang = parse_language(&language).ok_or_else(|| {
-        napi::Error::from_reason(format!("Unsupported language '{}'", language))
-    })?;
+    let lang = parse_language(&language)
+        .ok_or_else(|| napi::Error::from_reason(format!("Unsupported language '{}'", language)))?;
 
     // Read source file
     let source_path = Path::new(&source_file);
@@ -303,21 +299,24 @@ pub async fn ast_grep_refactor(
     // Find matches
     let pattern_owned = pattern.clone();
     let source_clone = source_content.clone();
-    
+
     let matches_result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
         let ast_grep = lang.ast_grep(&source_clone);
         let root = ast_grep.root();
         let matches: Vec<_> = root.find_all(pattern_owned.as_str()).collect();
-        
-        matches.iter().map(|m| {
-            let start_pos = m.start_pos();
-            (
-                m.text().to_string(),
-                start_pos.line() + 1,
-                m.range().start,
-                m.range().end,
-            )
-        }).collect::<Vec<_>>()
+
+        matches
+            .iter()
+            .map(|m| {
+                let start_pos = m.start_pos();
+                (
+                    m.text().to_string(),
+                    start_pos.line() + 1,
+                    m.range().start,
+                    m.range().end,
+                )
+            })
+            .collect::<Vec<_>>()
     }));
 
     let matches = matches_result.map_err(|_| {
@@ -350,12 +349,9 @@ pub async fn ast_grep_refactor(
     // Remove matched code from source
     let mut new_source = source_content.clone();
     new_source.replace_range(*start_byte..*end_byte, "");
-    
+
     // Clean up extra blank lines that might result
-    let new_source = new_source
-        .lines()
-        .collect::<Vec<_>>()
-        .join("\n");
+    let new_source = new_source.lines().collect::<Vec<_>>().join("\n");
 
     // Write updated source file
     tokio::fs::write(source_path, &new_source)
@@ -403,9 +399,8 @@ pub async fn ast_grep_replace(
     let preview = preview.unwrap_or(false);
 
     // Parse language
-    let lang = parse_language(&language).ok_or_else(|| {
-        napi::Error::from_reason(format!("Unsupported language '{}'", language))
-    })?;
+    let lang = parse_language(&language)
+        .ok_or_else(|| napi::Error::from_reason(format!("Unsupported language '{}'", language)))?;
 
     // Validate transforms (check for cyclic dependencies and invalid regex)
     if let Some(ref t) = transforms {
@@ -459,7 +454,8 @@ pub async fn ast_grep_replace(
                             let nodes = env.get_multiple_matches(&name);
                             if !nodes.is_empty() {
                                 // Join multiple captures with ", " for multi-variables
-                                let text: String = nodes.iter()
+                                let text: String = nodes
+                                    .iter()
                                     .map(|n| n.text())
                                     .collect::<Vec<_>>()
                                     .join(", ");
@@ -535,7 +531,11 @@ pub async fn ast_grep_replace(
             replacement: final_replacement.clone(),
         });
 
-        replacements.push((match_data.start_byte, match_data.end_byte, final_replacement));
+        replacements.push((
+            match_data.start_byte,
+            match_data.end_byte,
+            final_replacement,
+        ));
     }
 
     // Preview mode: return what would happen without modifying files
@@ -594,12 +594,10 @@ fn validate_transforms(transforms: &[AstGrepTransform]) -> napi::Result<()> {
     let mut rec_stack: HashSet<String> = HashSet::new();
 
     for t in transforms {
-        if !visited.contains(&t.name) {
-            if has_cycle(&t.name, &deps, &mut visited, &mut rec_stack) {
-                return Err(napi::Error::from_reason(
-                    "Cyclic dependency detected between transforms",
-                ));
-            }
+        if !visited.contains(&t.name) && has_cycle(&t.name, &deps, &mut visited, &mut rec_stack) {
+            return Err(napi::Error::from_reason(
+                "Cyclic dependency detected between transforms",
+            ));
         }
     }
 
@@ -655,11 +653,7 @@ fn get_transform_source(transform: &AstGrepTransform) -> String {
 }
 
 fn extract_var_name(source: &str) -> Option<String> {
-    if source.starts_with('$') {
-        Some(source[1..].to_string())
-    } else {
-        None
-    }
+    source.strip_prefix('$').map(String::from)
 }
 
 /// Apply all transforms in dependency order
@@ -734,11 +728,12 @@ fn apply_transform(
     variables: &HashMap<String, String>,
 ) -> napi::Result<String> {
     if let Some(ref s) = transform.substring {
-        let source_var = extract_var_name(&s.source)
-            .ok_or_else(|| napi::Error::from_reason(format!("Invalid source variable: {}", s.source)))?;
-        let source_text = variables
-            .get(&source_var)
-            .ok_or_else(|| napi::Error::from_reason(format!("Variable not found: {}", source_var)))?;
+        let source_var = extract_var_name(&s.source).ok_or_else(|| {
+            napi::Error::from_reason(format!("Invalid source variable: {}", s.source))
+        })?;
+        let source_text = variables.get(&source_var).ok_or_else(|| {
+            napi::Error::from_reason(format!("Variable not found: {}", source_var))
+        })?;
 
         let len = source_text.chars().count() as i32;
         let start = s.start_char.unwrap_or(0);
@@ -761,23 +756,30 @@ fn apply_transform(
         }
         Ok(chars[start_idx..end_idx.min(chars.len())].iter().collect())
     } else if let Some(ref r) = transform.replace_transform {
-        let source_var = extract_var_name(&r.source)
-            .ok_or_else(|| napi::Error::from_reason(format!("Invalid source variable: {}", r.source)))?;
-        let source_text = variables
-            .get(&source_var)
-            .ok_or_else(|| napi::Error::from_reason(format!("Variable not found: {}", source_var)))?;
+        let source_var = extract_var_name(&r.source).ok_or_else(|| {
+            napi::Error::from_reason(format!("Invalid source variable: {}", r.source))
+        })?;
+        let source_text = variables.get(&source_var).ok_or_else(|| {
+            napi::Error::from_reason(format!("Variable not found: {}", source_var))
+        })?;
 
-        let regex = Regex::new(&r.replace)
-            .map_err(|e| napi::Error::from_reason(format!("Invalid regex '{}': {}", r.replace, e)))?;
+        let regex = Regex::new(&r.replace).map_err(|e| {
+            napi::Error::from_reason(format!("Invalid regex '{}': {}", r.replace, e))
+        })?;
         Ok(regex.replace_all(source_text, &r.by).to_string())
     } else if let Some(ref c) = transform.convert {
-        let source_var = extract_var_name(&c.source)
-            .ok_or_else(|| napi::Error::from_reason(format!("Invalid source variable: {}", c.source)))?;
-        let source_text = variables
-            .get(&source_var)
-            .ok_or_else(|| napi::Error::from_reason(format!("Variable not found: {}", source_var)))?;
+        let source_var = extract_var_name(&c.source).ok_or_else(|| {
+            napi::Error::from_reason(format!("Invalid source variable: {}", c.source))
+        })?;
+        let source_text = variables.get(&source_var).ok_or_else(|| {
+            napi::Error::from_reason(format!("Variable not found: {}", source_var))
+        })?;
 
-        Ok(convert_case(source_text, &c.to_case, c.separated_by.as_deref()))
+        Ok(convert_case(
+            source_text,
+            &c.to_case,
+            c.separated_by.as_deref(),
+        ))
     } else {
         Err(napi::Error::from_reason(format!(
             "Transform '{}' has no operation defined",
@@ -786,7 +788,11 @@ fn apply_transform(
     }
 }
 
-fn convert_case(text: &str, to_case: &AstGrepCaseType, separated_by: Option<&[AstGrepSeparator]>) -> String {
+fn convert_case(
+    text: &str,
+    to_case: &AstGrepCaseType,
+    separated_by: Option<&[AstGrepSeparator]>,
+) -> String {
     let words = split_into_words(text, separated_by);
     if words.is_empty() {
         return String::new();
@@ -902,4 +908,3 @@ fn apply_replacement_template(template: &str, variables: &HashMap<String, String
     }
     result
 }
-

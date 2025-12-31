@@ -250,6 +250,10 @@
           "description": "Querying or filtering work units by prefix (e.g., AUTH-, DASH-)"
         },
         {
+          "name": "@caching",
+          "description": "Features related to prompt caching and API request optimization"
+        },
+        {
           "name": "@calculation",
           "description": "Calculation operations"
         },
@@ -2182,7 +2186,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-29T11:16:09.898Z",
+    "lastUpdated": "2025-12-31T04:48:57.501Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

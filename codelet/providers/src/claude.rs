@@ -124,7 +124,11 @@ impl ClaudeProvider {
         // Fall back to OAuth token using shared helper
         if let Ok(oauth_token) = detect_credential_from_env("claude", &["CLAUDE_CODE_OAUTH_TOKEN"])
         {
-            return Self::from_api_key_with_mode_and_model(&oauth_token, AuthMode::OAuth, model_name);
+            return Self::from_api_key_with_mode_and_model(
+                &oauth_token,
+                AuthMode::OAuth,
+                model_name,
+            );
         }
 
         Err(ProviderError::auth(
@@ -292,7 +296,10 @@ impl ClaudeProvider {
         use codelet_tools::facade::{
             select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,
         };
-        use codelet_tools::{AstGrepTool, AstGrepRefactorTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool};
+        use codelet_tools::{
+            AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
+            ReadTool, WriteTool,
+        };
         use rig::client::CompletionClient;
         use std::sync::Arc;
 

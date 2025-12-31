@@ -140,7 +140,7 @@ pub fn build_gemini_system_prompt(model_name: &str, user_preamble: Option<&str>)
         // Insert the Gemini 3 instruction into the Core Mandates section
         prompt = prompt.replace(
             "- **Do Not revert changes:**",
-            &format!("{}\n- **Do Not revert changes:**", GEMINI_3_TOOL_INSTRUCTION),
+            &format!("{GEMINI_3_TOOL_INSTRUCTION}\n- **Do Not revert changes:**"),
         );
     }
 
@@ -510,7 +510,10 @@ mod tests {
             arr[0].get("cache_control").is_some(),
             "Single block should have cache_control"
         );
-        assert_eq!(arr[0]["cache_control"]["type"].as_str().unwrap(), "ephemeral");
+        assert_eq!(
+            arr[0]["cache_control"]["type"].as_str().unwrap(),
+            "ephemeral"
+        );
     }
 
     #[test]
@@ -520,7 +523,11 @@ mod tests {
         let result = facade.format_for_api("   ");
         assert!(result.is_array());
         let arr = result.as_array().unwrap();
-        assert_eq!(arr.len(), 1, "Whitespace preamble should produce single block");
+        assert_eq!(
+            arr.len(),
+            1,
+            "Whitespace preamble should produce single block"
+        );
     }
 
     #[test]

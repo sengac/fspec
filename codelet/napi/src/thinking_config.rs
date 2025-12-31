@@ -54,9 +54,15 @@ pub fn get_thinking_config(provider: String, level: JsThinkingLevel) -> napi::Re
     let level: ThinkingLevel = level.into();
 
     let config = match provider.as_str() {
-        "gemini-3" | "gemini-3-pro" | "gemini-3-flash" | "gemini-3-pro-preview"
+        "gemini-3"
+        | "gemini-3-pro"
+        | "gemini-3-flash"
+        | "gemini-3-pro-preview"
         | "gemini-3-flash-preview" => Gemini3ThinkingFacade.request_config(level),
-        "gemini-2.5" | "gemini-2.5-pro" | "gemini-2.5-flash" | "gemini-2.5-pro-preview"
+        "gemini-2.5"
+        | "gemini-2.5-pro"
+        | "gemini-2.5-flash"
+        | "gemini-2.5-pro-preview"
         | "gemini-2.5-flash-preview" => Gemini25ThinkingFacade.request_config(level),
         "claude" | "claude-3" | "claude-opus" | "claude-sonnet" | "claude-3-opus"
         | "claude-3-sonnet" | "claude-3.5-sonnet" | "claude-3.5-haiku" => {
@@ -93,17 +99,19 @@ pub fn get_thinking_config(provider: String, level: JsThinkingLevel) -> napi::Re
 /// ```
 #[napi]
 pub fn is_thinking_content(provider: String, part_json: String) -> napi::Result<bool> {
-    let part: serde_json::Value = serde_json::from_str(&part_json).map_err(|e| {
-        napi::Error::new(
-            napi::Status::InvalidArg,
-            format!("Invalid JSON: {}", e),
-        )
-    })?;
+    let part: serde_json::Value = serde_json::from_str(&part_json)
+        .map_err(|e| napi::Error::new(napi::Status::InvalidArg, format!("Invalid JSON: {}", e)))?;
 
     let is_thinking = match provider.as_str() {
-        "gemini-3" | "gemini-3-pro" | "gemini-3-flash" | "gemini-3-pro-preview"
+        "gemini-3"
+        | "gemini-3-pro"
+        | "gemini-3-flash"
+        | "gemini-3-pro-preview"
         | "gemini-3-flash-preview" => Gemini3ThinkingFacade.is_thinking_part(&part),
-        "gemini-2.5" | "gemini-2.5-pro" | "gemini-2.5-flash" | "gemini-2.5-pro-preview"
+        "gemini-2.5"
+        | "gemini-2.5-pro"
+        | "gemini-2.5-flash"
+        | "gemini-2.5-pro-preview"
         | "gemini-2.5-flash-preview" => Gemini25ThinkingFacade.is_thinking_part(&part),
         "claude" | "claude-3" | "claude-opus" | "claude-sonnet" | "claude-3-opus"
         | "claude-3-sonnet" | "claude-3.5-sonnet" | "claude-3.5-haiku" => {
@@ -126,17 +134,19 @@ pub fn is_thinking_content(provider: String, part_json: String) -> napi::Result<
 /// The thinking text if present, null otherwise.
 #[napi]
 pub fn extract_thinking_text(provider: String, part_json: String) -> napi::Result<Option<String>> {
-    let part: serde_json::Value = serde_json::from_str(&part_json).map_err(|e| {
-        napi::Error::new(
-            napi::Status::InvalidArg,
-            format!("Invalid JSON: {}", e),
-        )
-    })?;
+    let part: serde_json::Value = serde_json::from_str(&part_json)
+        .map_err(|e| napi::Error::new(napi::Status::InvalidArg, format!("Invalid JSON: {}", e)))?;
 
     let text = match provider.as_str() {
-        "gemini-3" | "gemini-3-pro" | "gemini-3-flash" | "gemini-3-pro-preview"
+        "gemini-3"
+        | "gemini-3-pro"
+        | "gemini-3-flash"
+        | "gemini-3-pro-preview"
         | "gemini-3-flash-preview" => Gemini3ThinkingFacade.extract_thinking_text(&part),
-        "gemini-2.5" | "gemini-2.5-pro" | "gemini-2.5-flash" | "gemini-2.5-pro-preview"
+        "gemini-2.5"
+        | "gemini-2.5-pro"
+        | "gemini-2.5-flash"
+        | "gemini-2.5-pro-preview"
         | "gemini-2.5-flash-preview" => Gemini25ThinkingFacade.extract_thinking_text(&part),
         "claude" | "claude-3" | "claude-opus" | "claude-sonnet" | "claude-3-opus"
         | "claude-3-sonnet" | "claude-3.5-sonnet" | "claude-3.5-haiku" => {

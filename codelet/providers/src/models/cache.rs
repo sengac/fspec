@@ -64,7 +64,7 @@ pub fn get_cache_dir() -> Result<PathBuf, String> {
     // Check for custom directory first - fail explicitly on poison
     let guard = CACHE_DIRECTORY
         .lock()
-        .map_err(|e| format!("Cache directory mutex poisoned: {}", e))?;
+        .map_err(|e| format!("Cache directory mutex poisoned: {e}"))?;
 
     if let Some(ref dir) = *guard {
         return Ok(dir.clone());
@@ -152,7 +152,7 @@ impl ModelCache {
             .timeout(Duration::from_secs(30))
             .send()
             .await
-            .map_err(|e| ProviderError::api("models.dev", format!("Network error: {}", e)))?;
+            .map_err(|e| ProviderError::api("models.dev", format!("Network error: {e}")))?;
 
         if !response.status().is_success() {
             return Err(ProviderError::api(
@@ -161,26 +161,25 @@ impl ModelCache {
             ));
         }
 
-        let data = response
-            .text()
-            .await
-            .map_err(|e| ProviderError::api("models.dev", format!("Failed to read response: {}", e)))?;
+        let data = response.text().await.map_err(|e| {
+            ProviderError::api("models.dev", format!("Failed to read response: {e}"))
+        })?;
 
         // Validate JSON before saving
         let parsed: ModelsDevResponse = serde_json::from_str(&data)
-            .map_err(|e| ProviderError::api("models.dev", format!("Invalid JSON: {}", e)))?;
+            .map_err(|e| ProviderError::api("models.dev", format!("Invalid JSON: {e}")))?;
 
         // Ensure cache directory exists
         if let Some(parent) = self.cache_path.parent() {
             fs::create_dir_all(parent).await.map_err(|e| {
-                ProviderError::api("models.dev", format!("Failed to create cache dir: {}", e))
+                ProviderError::api("models.dev", format!("Failed to create cache dir: {e}"))
             })?;
         }
 
         // Write cache
-        fs::write(&self.cache_path, &data).await.map_err(|e| {
-            ProviderError::api("models.dev", format!("Failed to write cache: {}", e))
-        })?;
+        fs::write(&self.cache_path, &data)
+            .await
+            .map_err(|e| ProviderError::api("models.dev", format!("Failed to write cache: {e}")))?;
 
         info!("Models cache updated: {}", self.cache_path.display());
         Ok(parsed)
@@ -197,9 +196,8 @@ impl ModelCache {
 
     /// Load embedded fallback snapshot
     fn load_fallback(&self) -> Result<ModelsDevResponse, ProviderError> {
-        serde_json::from_slice(FALLBACK_MODELS).map_err(|e| {
-            ProviderError::api("models.dev", format!("Failed to parse fallback: {}", e))
-        })
+        serde_json::from_slice(FALLBACK_MODELS)
+            .map_err(|e| ProviderError::api("models.dev", format!("Failed to parse fallback: {e}")))
     }
 
     /// Get the cache file path
@@ -224,8 +222,8 @@ enum CacheError {
 impl std::fmt::Display for CacheError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            CacheError::NotFound(msg) => write!(f, "cache not found: {}", msg),
-            CacheError::ParseError(msg) => write!(f, "parse error: {}", msg),
+            CacheError::NotFound(msg) => write!(f, "cache not found: {msg}"),
+            CacheError::ParseError(msg) => write!(f, "parse error: {msg}"),
         }
     }
 }

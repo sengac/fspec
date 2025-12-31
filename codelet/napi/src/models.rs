@@ -38,7 +38,6 @@ async fn get_registry() -> Result<Arc<ModelRegistry>> {
         .cloned()
 }
 
-
 // ============================================================================
 // Cache Directory Configuration
 // ============================================================================
@@ -55,9 +54,8 @@ async fn get_registry() -> Result<Arc<ModelRegistry>> {
 #[napi]
 pub fn models_set_cache_directory(dir: String) -> Result<()> {
     let path = PathBuf::from(&dir);
-    set_cache_directory(path).map_err(|e| {
-        Error::from_reason(format!("Failed to set cache directory '{}': {}", dir, e))
-    })
+    set_cache_directory(path)
+        .map_err(|e| Error::from_reason(format!("Failed to set cache directory '{}': {}", dir, e)))
 }
 
 /// Get the current cache directory for model data
@@ -138,7 +136,8 @@ fn is_current_model(model: &codelet_providers::models::ModelInfo) -> bool {
         // Parse release date (format: "YYYY-MM-DD")
         if let Ok(date) = chrono::NaiveDate::parse_from_str(release_date, "%Y-%m-%d") {
             let today = chrono::Utc::now().date_naive();
-            let age_months = (today.year() - date.year()) * 12 + (today.month() as i32 - date.month() as i32);
+            let age_months =
+                (today.year() - date.year()) * 12 + (today.month() as i32 - date.month() as i32);
             if age_months > 18 {
                 return false;
             }

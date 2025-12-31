@@ -11,7 +11,10 @@
 //! Key difference from CLI: JavaScript calls interrupt() to set is_interrupted flag
 
 use crate::output::{NapiOutput, StreamCallback};
-use crate::types::{CompactionResult, ContextFillInfo, DebugCommandResult, Message, NapiProviderConfig, TokenTracker};
+use crate::types::{
+    CompactionResult, ContextFillInfo, DebugCommandResult, Message, NapiProviderConfig,
+    TokenTracker,
+};
 use codelet_cli::compaction_threshold::calculate_usable_context;
 use codelet_cli::interactive::run_agent_stream;
 use codelet_cli::interactive_helpers::execute_compaction;
@@ -91,9 +94,9 @@ impl CodeletSession {
             .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {e}")))?;
 
         // Select the specified model
-        manager
-            .select_model(&model_string)
-            .map_err(|e| Error::from_reason(format!("Failed to select model '{}': {e}", model_string)))?;
+        manager.select_model(&model_string).map_err(|e| {
+            Error::from_reason(format!("Failed to select model '{}': {e}", model_string))
+        })?;
 
         // Create session from the configured provider manager
         let mut session = codelet_cli::session::Session::from_provider_manager(manager);
@@ -172,9 +175,9 @@ impl CodeletSession {
             .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {e}")))?;
 
         // Select the specified model
-        manager
-            .select_model(&model_string)
-            .map_err(|e| Error::from_reason(format!("Failed to select model '{}': {e}", model_string)))?;
+        manager.select_model(&model_string).map_err(|e| {
+            Error::from_reason(format!("Failed to select model '{}': {e}", model_string))
+        })?;
 
         // Create session from the configured provider manager
         let mut session = codelet_cli::session::Session::from_provider_manager(manager);
@@ -679,7 +682,7 @@ impl CodeletSession {
                         // envelope, but they must be merged during restoration.
                         let should_merge = !has_text
                             && has_tool_results
-                            && session.messages.last().map_or(false, |last| {
+                            && session.messages.last().is_some_and(|last| {
                                 matches!(last, RigMessage::User { content } if {
                                     // Check if last message is User with only tool_results
                                     content.iter().all(|c| matches!(c, UserContent::ToolResult(_)))
@@ -688,8 +691,9 @@ impl CodeletSession {
 
                         if should_merge {
                             // Merge with the previous User message
-                            if let Some(RigMessage::User { content: last_content }) =
-                                session.messages.last_mut()
+                            if let Some(RigMessage::User {
+                                content: last_content,
+                            }) = session.messages.last_mut()
                             {
                                 // Append new tool_results to existing message
                                 let mut merged: Vec<UserContent> =
@@ -749,7 +753,8 @@ impl CodeletSession {
         // NAPI-009: Detect and remove orphaned tool_use blocks (those without matching tool_result)
         // This can happen when a session is interrupted while waiting for tool execution
         let mut tool_use_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
-        let mut tool_result_ids: std::collections::HashSet<String> = std::collections::HashSet::new();
+        let mut tool_result_ids: std::collections::HashSet<String> =
+            std::collections::HashSet::new();
 
         // Collect all tool_use and tool_result IDs
         for msg in &session.messages {
@@ -772,10 +777,8 @@ impl CodeletSession {
         }
 
         // Find orphaned tool_use IDs (no matching tool_result)
-        let orphaned_ids: std::collections::HashSet<_> = tool_use_ids
-            .difference(&tool_result_ids)
-            .cloned()
-            .collect();
+        let orphaned_ids: std::collections::HashSet<_> =
+            tool_use_ids.difference(&tool_result_ids).cloned().collect();
 
         if !orphaned_ids.is_empty() {
             tracing::warn!(
@@ -929,18 +932,23 @@ impl CodeletSession {
         #[napi(ts_arg_type = "(chunk: StreamChunk) => void")] callback: StreamCallback,
     ) -> Result<()> {
         // TOOL-010: Parse thinking config JSON if provided
-        let thinking_config_value: Option<serde_json::Value> = thinking_config.as_ref().and_then(|config_str| {
-            match serde_json::from_str(config_str) {
-                Ok(value) => {
-                    tracing::debug!("Thinking config parsed: {:?}", value);
-                    Some(value)
+        let thinking_config_value: Option<serde_json::Value> =
+            thinking_config.as_ref().and_then(|config_str| {
+                match serde_json::from_str(config_str) {
+                    Ok(value) => {
+                        tracing::debug!("Thinking config parsed: {:?}", value);
+                        Some(value)
+                    }
+                    Err(e) => {
+                        tracing::warn!(
+                            "Failed to parse thinking config: {} - config: {}",
+                            e,
+                            config_str
+                        );
+                        None
+                    }
                 }
-                Err(e) => {
-                    tracing::warn!("Failed to parse thinking config: {} - config: {}", e, config_str);
-                    None
-                }
-            }
-        });
+            });
 
         // Reset interrupt flag at start of each prompt
         self.is_interrupted.store(false, Release);

@@ -6,6 +6,7 @@ use codelet_tools::WebSearchTool;
 use rig::tool::Tool;
 
 #[tokio::test]
+#[ignore = "Spawns Chrome - run with --ignored flag"]
 async fn test_agent_performs_web_search() -> Result<()> {
     // @step Given the web search tool is available
     let web_search_tool = WebSearchTool;
@@ -29,6 +30,7 @@ async fn test_agent_performs_web_search() -> Result<()> {
 }
 
 #[tokio::test]
+#[ignore = "Spawns Chrome - run with --ignored flag"]
 async fn test_agent_fetches_page_content() -> Result<()> {
     // @step Given the web search tool is available
     let web_search_tool = WebSearchTool;
@@ -52,6 +54,7 @@ async fn test_agent_fetches_page_content() -> Result<()> {
 }
 
 #[tokio::test]
+#[ignore = "Spawns Chrome - run with --ignored flag"]
 async fn test_agent_searches_within_page_content() -> Result<()> {
     // @step Given the web search tool is available
     let web_search_tool = WebSearchTool;
@@ -77,6 +80,7 @@ async fn test_agent_searches_within_page_content() -> Result<()> {
 }
 
 #[tokio::test]
+#[ignore = "Spawns Chrome - run with --ignored flag"]
 async fn test_web_search_tool_registration() -> Result<()> {
     // @step Given the codelet system is starting up
     let web_search_tool = WebSearchTool;

@@ -4,7 +4,9 @@
 //! the Tool trait and delegating to the underlying facade for schema/naming while
 //! executing against the base tool implementation.
 
-use super::traits::{BoxedFileToolFacade, BoxedToolFacade, InternalFileParams, InternalWebSearchParams};
+use super::traits::{
+    BoxedFileToolFacade, BoxedToolFacade, InternalFileParams, InternalWebSearchParams,
+};
 use crate::web_search::{WebSearchRequest, WebSearchResult, WebSearchTool};
 use crate::{EditTool, ReadTool, ToolError, WriteTool};
 use codelet_common::web_search::WebSearchAction;

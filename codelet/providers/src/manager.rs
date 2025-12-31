@@ -70,10 +70,7 @@ impl std::fmt::Debug for ProviderManager {
         f.debug_struct("ProviderManager")
             .field("current_provider", &self.current_provider)
             .field("selected_model", &self.selected_model)
-            .field(
-                "has_model_registry",
-                &self.model_registry.is_some(),
-            )
+            .field("has_model_registry", &self.model_registry.is_some())
             .finish()
     }
 }
@@ -271,8 +268,7 @@ impl ProviderManager {
             _ => Err(ProviderError::config(
                 "manager",
                 format!(
-                    "Provider '{}' is not supported. Supported providers: anthropic, openai, google",
-                    provider_id
+                    "Provider '{provider_id}' is not supported. Supported providers: anthropic, openai, google"
                 ),
             )),
         }
@@ -329,9 +325,8 @@ impl ProviderManager {
             // OpenAI's new() already handles env var detection
             // For MODEL-001, we need to create with explicit model if selected
             if let Some(model_id) = self.selected_model_id() {
-                let api_key = std::env::var("OPENAI_API_KEY").map_err(|_| {
-                    ProviderError::auth("openai", "OPENAI_API_KEY not set")
-                })?;
+                let api_key = std::env::var("OPENAI_API_KEY")
+                    .map_err(|_| ProviderError::auth("openai", "OPENAI_API_KEY not set"))?;
                 OpenAIProvider::from_api_key(&api_key, &model_id)
             } else {
                 OpenAIProvider::new()

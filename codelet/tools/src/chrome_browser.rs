@@ -233,12 +233,12 @@ impl ChromeBrowser {
                 capture_beyond_viewport: Some(full_page),
                 optimize_for_speed: None,
             })
-            .map_err(|e| ChromeError::ScreenshotError(format!("CDP screenshot failed: {}", e)))?;
+            .map_err(|e| ChromeError::ScreenshotError(format!("CDP screenshot failed: {e}")))?;
 
         // Decode base64 screenshot data
         let png_bytes = BASE64_STANDARD
             .decode(&screenshot_data.data)
-            .map_err(|e| ChromeError::ScreenshotError(format!("Base64 decode failed: {}", e)))?;
+            .map_err(|e| ChromeError::ScreenshotError(format!("Base64 decode failed: {e}")))?;
 
         // Determine output path
         let file_path = match output_path {
@@ -252,7 +252,7 @@ impl ChromeBrowser {
 
         // Write to file
         std::fs::write(&file_path, &png_bytes)
-            .map_err(|e| ChromeError::IoError(format!("Failed to write screenshot: {}", e)))?;
+            .map_err(|e| ChromeError::IoError(format!("Failed to write screenshot: {e}")))?;
 
         Ok(file_path)
     }

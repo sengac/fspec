@@ -107,10 +107,10 @@ impl ToolFacade for ClaudeWebSearchFacade {
                 let output_path = input
                     .get("output_path")
                     .and_then(|p| p.as_str())
-                    .map(|s| s.to_string());
+                    .map(std::string::ToString::to_string);
                 let full_page = input
                     .get("full_page")
-                    .and_then(|f| f.as_bool())
+                    .and_then(serde_json::Value::as_bool)
                     .unwrap_or(false);
                 Ok(InternalWebSearchParams::CaptureScreenshot {
                     url,
@@ -210,13 +210,14 @@ impl ToolFacade for GeminiWebFetchFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {
-        let url = input
-            .get("url")
-            .and_then(|u| u.as_str())
-            .ok_or_else(|| ToolError::Validation {
-                tool: "web_fetch",
-                message: "Missing 'url' field".to_string(),
-            })?;
+        let url =
+            input
+                .get("url")
+                .and_then(|u| u.as_str())
+                .ok_or_else(|| ToolError::Validation {
+                    tool: "web_fetch",
+                    message: "Missing 'url' field".to_string(),
+                })?;
 
         // Validate URL format
         if !url.starts_with("http://") && !url.starts_with("https://") {
@@ -279,13 +280,14 @@ impl ToolFacade for GeminiWebScreenshotFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {
-        let url = input
-            .get("url")
-            .and_then(|u| u.as_str())
-            .ok_or_else(|| ToolError::Validation {
-                tool: "capture_screenshot",
-                message: "Missing 'url' field".to_string(),
-            })?;
+        let url =
+            input
+                .get("url")
+                .and_then(|u| u.as_str())
+                .ok_or_else(|| ToolError::Validation {
+                    tool: "capture_screenshot",
+                    message: "Missing 'url' field".to_string(),
+                })?;
 
         // Validate URL format
         if !url.starts_with("http://") && !url.starts_with("https://") {
@@ -304,11 +306,11 @@ impl ToolFacade for GeminiWebScreenshotFacade {
         let output_path = input
             .get("output_path")
             .and_then(|p| p.as_str())
-            .map(|s| s.to_string());
+            .map(std::string::ToString::to_string);
 
         let full_page = input
             .get("full_page")
-            .and_then(|f| f.as_bool())
+            .and_then(serde_json::Value::as_bool)
             .unwrap_or(false);
 
         Ok(InternalWebSearchParams::CaptureScreenshot {
@@ -509,10 +511,7 @@ mod tests {
         let action_types = def.parameters["properties"]["action_type"]["enum"]
             .as_array()
             .unwrap();
-        let types: Vec<&str> = action_types
-            .iter()
-            .filter_map(|v| v.as_str())
-            .collect();
+        let types: Vec<&str> = action_types.iter().filter_map(|v| v.as_str()).collect();
 
         assert!(types.contains(&"search"));
         assert!(types.contains(&"open_page"));

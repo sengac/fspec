@@ -29,9 +29,7 @@ fn test_claude_oauth_facade_prepends_identity_prefix_to_preamble() {
     assert!(!arr.is_empty(), "Array should not be empty");
 
     // Check cache_control is present
-    let has_cache_control = arr
-        .iter()
-        .any(|block| block.get("cache_control").is_some());
+    let has_cache_control = arr.iter().any(|block| block.get("cache_control").is_some());
     assert!(has_cache_control, "Should have cache_control field");
 
     // @step And the text should start with "You are Claude Code"
@@ -77,9 +75,7 @@ fn test_claude_api_key_facade_passes_preamble_through_unchanged() {
     assert!(!arr.is_empty(), "Array should not be empty");
 
     // Check cache_control is present
-    let has_cache_control = arr
-        .iter()
-        .any(|block| block.get("cache_control").is_some());
+    let has_cache_control = arr.iter().any(|block| block.get("cache_control").is_some());
     assert!(has_cache_control, "Should have cache_control field");
 
     // @step And the text should NOT start with "You are Claude Code"
@@ -90,7 +86,10 @@ fn test_claude_api_key_facade_passes_preamble_through_unchanged() {
     );
 
     // @step And the text should equal the original preamble exactly
-    assert_eq!(text, preamble, "Text should equal original preamble exactly");
+    assert_eq!(
+        text, preamble,
+        "Text should equal original preamble exactly"
+    );
 }
 
 // ============================================================================
@@ -173,7 +172,10 @@ fn test_claude_facade_formats_system_prompts_with_cache_control() {
     let api_key_result = api_key_facade.format_for_api(preamble);
 
     // @step Then the result should be a JSON array
-    assert!(oauth_result.is_array(), "OAuth result should be a JSON array");
+    assert!(
+        oauth_result.is_array(),
+        "OAuth result should be a JSON array"
+    );
     assert!(
         api_key_result.is_array(),
         "API key result should be a JSON array"

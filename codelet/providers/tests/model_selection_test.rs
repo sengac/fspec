@@ -419,7 +419,10 @@ async fn test_corrupted_cache_triggers_automatic_refetch() {
 #[serial]
 async fn test_use_embedded_fallback_when_network_unavailable() {
     let temp_dir = test_cache_dir();
-    let cache_path = temp_dir.path().join("nonexistent_subdir").join("models.json");
+    let cache_path = temp_dir
+        .path()
+        .join("nonexistent_subdir")
+        .join("models.json");
 
     // @step Given no cache file exists
     assert!(

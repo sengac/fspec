@@ -80,6 +80,7 @@ Tags that categorize features by functional area.
 | `@bulk-operations` | Bulk Multi-File Operations |
 | `@burndown` | Burndown chart generation |
 | `@by-prefix` | Querying or filtering work units by prefix (e.g., AUTH-, DASH-) |
+| `@caching` | Features related to prompt caching and API request optimization |
 | `@calculation` | Calculation operations |
 | `@cascade` | Cascade operations |
 | `@checkpoint` | Checkpoint and snapshot management for experimentation and recovery |
@@ -787,7 +788,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-29T11:16:09.898Z_
+_Last updated: 2025-12-31T04:48:57.501Z_
 
 **Update Command**: `fspec tag-stats`
 

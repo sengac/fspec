@@ -125,8 +125,8 @@ impl CodexProvider {
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
-            AstGrepTool, AstGrepRefactorTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WebSearchTool,
-            WriteTool,
+            AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
+            ReadTool, WebSearchTool, WriteTool,
         };
         use rig::client::CompletionClient;
 
