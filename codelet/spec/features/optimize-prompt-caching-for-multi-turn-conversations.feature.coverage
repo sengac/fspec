@@ -1,0 +1,32 @@
+{
+  "scenarios": [
+    {
+      "name": "Single turn conversation caches first user message",
+      "testMappings": []
+    },
+    {
+      "name": "Two turn conversation caches first user message as second-to-last",
+      "testMappings": []
+    },
+    {
+      "name": "Three turn conversation caches second user message",
+      "testMappings": []
+    },
+    {
+      "name": "Multi-turn conversation with tool use caches correct user message",
+      "testMappings": []
+    },
+    {
+      "name": "User message content is transformed to array format",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

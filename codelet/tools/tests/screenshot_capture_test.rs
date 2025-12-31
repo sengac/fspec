@@ -67,7 +67,10 @@ fn test_capture_full_page_screenshot_of_scrollable_content() -> Result<(), Chrom
     let browser = ChromeBrowser::new(config)?;
     let tab = browser.new_tab()?;
     // Wikipedia articles have scrollable content
-    browser.navigate_and_wait(&tab, "https://en.wikipedia.org/wiki/Rust_(programming_language)")?;
+    browser.navigate_and_wait(
+        &tab,
+        "https://en.wikipedia.org/wiki/Rust_(programming_language)",
+    )?;
 
     // @step When I capture a screenshot with url "https://example.com" and full_page set to true
     let screenshot_path = browser.capture_screenshot(&tab, None, true)?;
@@ -159,7 +162,8 @@ fn test_view_captured_screenshot_using_read_tool() -> Result<(), ChromeError> {
 
     // Capture a screenshot first
     let screenshot_path = "/tmp/screenshot-read-test.png";
-    let returned_path = browser.capture_screenshot(&tab, Some(screenshot_path.to_string()), false)?;
+    let returned_path =
+        browser.capture_screenshot(&tab, Some(screenshot_path.to_string()), false)?;
 
     // @step When I use the Read tool with file_path "/tmp/screenshot.png"
     // The Read tool in codelet already supports images via file_type detection
@@ -205,9 +209,15 @@ fn test_web_search_action_capture_screenshot_variant() {
 
     // @step Then the action should serialize correctly
     let json = serde_json::to_string(&action).expect("Should serialize");
-    assert!(json.contains("capture_screenshot"), "Should contain action type");
+    assert!(
+        json.contains("capture_screenshot"),
+        "Should contain action type"
+    );
     assert!(json.contains("example.com"), "Should contain URL");
-    assert!(json.contains("full_page"), "Should contain full_page parameter");
+    assert!(
+        json.contains("full_page"),
+        "Should contain full_page parameter"
+    );
 
     // @step And the action should deserialize correctly
     let deserialized: WebSearchAction = serde_json::from_str(&json).expect("Should deserialize");

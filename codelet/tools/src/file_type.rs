@@ -71,7 +71,10 @@ pub fn detect_by_magic_bytes(data: &[u8]) -> Option<FileType> {
     }
 
     // WebP: 52 49 46 46 ... 57 45 42 50 (RIFF....WEBP)
-    if data.len() >= 12 && data[0..4] == [0x52, 0x49, 0x46, 0x46] && data[8..12] == [0x57, 0x45, 0x42, 0x50] {
+    if data.len() >= 12
+        && data[0..4] == [0x52, 0x49, 0x46, 0x46]
+        && data[8..12] == [0x57, 0x45, 0x42, 0x50]
+    {
         return Some(FileType::Image(ImageMediaType::Webp));
     }
 
@@ -110,35 +113,53 @@ mod tests {
     #[test]
     fn test_detect_png_by_extension() {
         let path = PathBuf::from("/path/to/image.png");
-        assert_eq!(detect_by_extension(&path), Some(FileType::Image(ImageMediaType::Png)));
+        assert_eq!(
+            detect_by_extension(&path),
+            Some(FileType::Image(ImageMediaType::Png))
+        );
     }
 
     #[test]
     fn test_detect_jpeg_by_extension() {
         let path = PathBuf::from("/path/to/photo.jpg");
-        assert_eq!(detect_by_extension(&path), Some(FileType::Image(ImageMediaType::Jpeg)));
+        assert_eq!(
+            detect_by_extension(&path),
+            Some(FileType::Image(ImageMediaType::Jpeg))
+        );
 
         let path = PathBuf::from("/path/to/photo.jpeg");
-        assert_eq!(detect_by_extension(&path), Some(FileType::Image(ImageMediaType::Jpeg)));
+        assert_eq!(
+            detect_by_extension(&path),
+            Some(FileType::Image(ImageMediaType::Jpeg))
+        );
     }
 
     #[test]
     fn test_detect_png_by_magic_bytes() {
         let png_signature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00];
-        assert_eq!(detect_by_magic_bytes(&png_signature), Some(FileType::Image(ImageMediaType::Png)));
+        assert_eq!(
+            detect_by_magic_bytes(&png_signature),
+            Some(FileType::Image(ImageMediaType::Png))
+        );
     }
 
     #[test]
     fn test_detect_jpeg_by_magic_bytes() {
         let jpeg_signature = [0xFF, 0xD8, 0xFF, 0xE0, 0x00, 0x10];
-        assert_eq!(detect_by_magic_bytes(&jpeg_signature), Some(FileType::Image(ImageMediaType::Jpeg)));
+        assert_eq!(
+            detect_by_magic_bytes(&jpeg_signature),
+            Some(FileType::Image(ImageMediaType::Jpeg))
+        );
     }
 
     #[test]
     fn test_no_extension_falls_back_to_magic_bytes() {
         let path = PathBuf::from("/path/to/image-no-ext");
         let png_data = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00];
-        assert_eq!(detect_file_type(&path, &png_data), FileType::Image(ImageMediaType::Png));
+        assert_eq!(
+            detect_file_type(&path, &png_data),
+            FileType::Image(ImageMediaType::Png)
+        );
     }
 
     #[test]

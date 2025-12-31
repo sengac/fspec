@@ -95,10 +95,10 @@ impl GeminiProvider {
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
-    /// * `thinking_config` - Optional thinking configuration JSON from ThinkingConfigFacade (TOOL-010)
-    ///                       Expected format: `{"thinkingConfig": {"includeThoughts": true, "thinkingLevel": "high"}}`
-    ///                       for Gemini 3, or `{"thinkingConfig": {"includeThoughts": true, "thinkingBudget": 8192}}`
-    ///                       for Gemini 2.5
+    /// * `thinking_config` - Optional thinking configuration JSON from ThinkingConfigFacade (TOOL-010).
+    ///   Expected format: `{"thinkingConfig": {"includeThoughts": true, "thinkingLevel": "high"}}`
+    ///   for Gemini 3, or `{"thinkingConfig": {"includeThoughts": true, "thinkingBudget": 8192}}`
+    ///   for Gemini 2.5
     pub fn create_rig_agent(
         &self,
         preamble: Option<&str>,
@@ -111,7 +111,7 @@ impl GeminiProvider {
             GeminiRunShellCommandFacade, GeminiSearchFileContentFacade, GeminiWebFetchFacade,
             GeminiWriteFileFacade, LsToolFacadeWrapper, SearchToolFacadeWrapper,
         };
-        use codelet_tools::{AstGrepTool, AstGrepRefactorTool};
+        use codelet_tools::{AstGrepRefactorTool, AstGrepTool};
         use std::sync::Arc;
 
         // Create Gemini-specific web search facades (TOOL-001)

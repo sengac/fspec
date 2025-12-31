@@ -19,22 +19,12 @@ pub struct ModelRegistry {
 }
 
 /// Index of models by capability for fast filtering
+#[derive(Default)]
 struct CapabilityIndex {
     reasoning: Vec<(String, String)>,
     vision: Vec<(String, String)>,
     tool_call: Vec<(String, String)>,
     attachment: Vec<(String, String)>,
-}
-
-impl Default for CapabilityIndex {
-    fn default() -> Self {
-        Self {
-            reasoning: Vec::new(),
-            vision: Vec::new(),
-            tool_call: Vec::new(),
-            attachment: Vec::new(),
-        }
-    }
 }
 
 impl ModelRegistry {
@@ -79,8 +69,7 @@ impl ModelRegistry {
         Err(ProviderError::config(
             "registry",
             format!(
-                "Invalid model format: '{}'. Use 'provider/model-id' format (e.g., anthropic/claude-sonnet-4)",
-                input
+                "Invalid model format: '{input}'. Use 'provider/model-id' format (e.g., anthropic/claude-sonnet-4)"
             ),
         ))
     }
@@ -88,7 +77,7 @@ impl ModelRegistry {
     /// Get a model by provider and model ID
     pub fn get_model(&self, provider: &str, model: &str) -> Result<&ModelInfo, ProviderError> {
         let provider_info = self.providers.get(provider).ok_or_else(|| {
-            ProviderError::config("registry", format!("Unknown provider: {}", provider))
+            ProviderError::config("registry", format!("Unknown provider: {provider}"))
         })?;
 
         // Try exact match first
@@ -128,8 +117,7 @@ impl ModelRegistry {
             return Err(ProviderError::config(
                 "registry",
                 format!(
-                    "Model {}/{} does not support tool_call. Codelet requires tool_call capability.",
-                    provider, model
+                    "Model {provider}/{model} does not support tool_call. Codelet requires tool_call capability."
                 ),
             ));
         }
@@ -144,13 +132,16 @@ impl ModelRegistry {
 
     /// List provider IDs
     pub fn list_provider_ids(&self) -> Vec<&str> {
-        self.providers.keys().map(|s| s.as_str()).collect()
+        self.providers
+            .keys()
+            .map(std::string::String::as_str)
+            .collect()
     }
 
     /// List models for a specific provider
     pub fn list_models(&self, provider: &str) -> Result<Vec<&ModelInfo>, ProviderError> {
         let provider_info = self.providers.get(provider).ok_or_else(|| {
-            ProviderError::config("registry", format!("Unknown provider: {}", provider))
+            ProviderError::config("registry", format!("Unknown provider: {provider}"))
         })?;
 
         Ok(provider_info.models.values().collect())
@@ -181,7 +172,7 @@ impl ModelRegistry {
         let mut results = Vec::new();
 
         for (provider_id, provider) in &self.providers {
-            for (_model_key, model) in &provider.models {
+            for model in provider.models.values() {
                 if model.id.to_lowercase().contains(&query_lower)
                     || model.name.to_lowercase().contains(&query_lower)
                 {
@@ -214,11 +205,7 @@ impl ModelRegistry {
         suggestions.sort_by_key(|(_, d)| *d);
 
         // Return top 3
-        suggestions
-            .into_iter()
-            .take(3)
-            .map(|(k, _)| k)
-            .collect()
+        suggestions.into_iter().take(3).map(|(k, _)| k).collect()
     }
 
     /// Build the capability index for fast filtering
@@ -266,23 +253,19 @@ fn levenshtein_distance(a: &str, b: &str) -> usize {
 
     let mut matrix = vec![vec![0usize; b_len + 1]; a_len + 1];
 
-    for i in 0..=a_len {
-        matrix[i][0] = i;
+    for (i, row) in matrix.iter_mut().enumerate().take(a_len + 1) {
+        row[0] = i;
     }
-    for j in 0..=b_len {
-        matrix[0][j] = j;
+    for (j, val) in matrix[0].iter_mut().enumerate().take(b_len + 1) {
+        *val = j;
     }
 
-    for i in 1..=a_len {
-        for j in 1..=b_len {
-            let cost = if a_chars[i - 1] == b_chars[j - 1] {
-                0
-            } else {
-                1
-            };
-            matrix[i][j] = (matrix[i - 1][j] + 1)
-                .min(matrix[i][j - 1] + 1)
-                .min(matrix[i - 1][j - 1] + cost);
+    for (i, a_char) in a_chars.iter().enumerate() {
+        for (j, b_char) in b_chars.iter().enumerate() {
+            let cost = if a_char == b_char { 0 } else { 1 };
+            matrix[i + 1][j + 1] = (matrix[i][j + 1] + 1)
+                .min(matrix[i + 1][j] + 1)
+                .min(matrix[i][j] + cost);
         }
     }
 

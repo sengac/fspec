@@ -65,11 +65,9 @@ impl BashTool {
         }
 
         // If no streaming callback, use the non-streaming path
-        if stream_callback.is_none() {
+        let Some(callback) = stream_callback else {
             return self.call(args).await;
-        }
-
-        let callback = stream_callback.unwrap();
+        };
 
         // Spawn process with piped stdout/stderr for streaming
         let mut child = Command::new("sh")
@@ -80,7 +78,7 @@ impl BashTool {
             .spawn()
             .map_err(|e| ToolError::Execution {
                 tool: "bash",
-                message: format!("Failed to spawn command: {}", e),
+                message: format!("Failed to spawn command: {e}"),
             })?;
 
         // Take stdout and stderr handles
@@ -105,7 +103,7 @@ impl BashTool {
             let mut lines = reader.lines();
             while let Ok(Some(line)) = lines.next_line().await {
                 // Stream to UI immediately
-                let line_with_newline = format!("{}\n", line);
+                let line_with_newline = format!("{line}\n");
                 stdout_callback(&line_with_newline);
                 // Buffer for LLM
                 stdout_buffer.lock().await.push_str(&line_with_newline);
@@ -242,7 +240,7 @@ impl rig::tool::Tool for BashTool {
             .spawn()
             .map_err(|e| ToolError::Execution {
                 tool: "bash",
-                message: format!("Failed to spawn command: {}", e),
+                message: format!("Failed to spawn command: {e}"),
             })?;
 
         // Take stdout and stderr handles
@@ -265,7 +263,7 @@ impl rig::tool::Tool for BashTool {
             let reader = BufReader::new(stdout);
             let mut lines = reader.lines();
             while let Ok(Some(line)) = lines.next_line().await {
-                let line_with_newline = format!("{}\n", line);
+                let line_with_newline = format!("{line}\n");
                 // TOOL-011: Stream to UI via global callback
                 emit_tool_progress(&line_with_newline);
                 // Buffer for LLM

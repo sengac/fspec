@@ -162,10 +162,13 @@ impl AstGrepRefactorTool {
         let transforms: Option<HashMap<String, Transform>> = args
             .get("transforms")
             .and_then(|v| serde_json::from_value(v.clone()).ok());
-        let batch = args.get("batch").and_then(|v| v.as_bool()).unwrap_or(false);
+        let batch = args
+            .get("batch")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false);
         let preview = args
             .get("preview")
-            .and_then(|v| v.as_bool())
+            .and_then(serde_json::Value::as_bool)
             .unwrap_or(false);
 
         // Validate: exactly one of target_file or replacement must be provided
@@ -201,15 +204,14 @@ impl AstGrepRefactorTool {
         // Validate transforms if provided (check for cyclic dependencies and invalid regex early)
         if let Some(ref t) = transforms {
             if let Err(e) = Self::detect_cyclic_dependencies(t) {
-                return Ok(ToolOutput::error(format!("Error: {}", e)));
+                return Ok(ToolOutput::error(format!("Error: {e}")));
             }
             // Validate regex patterns early
             for (name, transform) in t {
                 if let Transform::Replace(ref r) = transform {
                     if let Err(e) = Regex::new(&r.replace) {
                         return Ok(ToolOutput::error(format!(
-                            "Error: Invalid regex in transform '{}': {}",
-                            name, e
+                            "Error: Invalid regex in transform '{name}': {e}"
                         )));
                     }
                 }
@@ -232,8 +234,7 @@ impl AstGrepRefactorTool {
         let source_path = Path::new(source_file);
         if !source_path.exists() {
             return Ok(ToolOutput::error(format!(
-                "Error: Source file not found: {}",
-                source_file
+                "Error: Source file not found: {source_file}"
             )));
         }
 
@@ -242,8 +243,7 @@ impl AstGrepRefactorTool {
             Ok(content) => content,
             Err(e) => {
                 return Ok(ToolOutput::error(format!(
-                    "Error: Failed to read source file: {}",
-                    e
+                    "Error: Failed to read source file: {e}"
                 )))
             }
         };
@@ -292,7 +292,7 @@ impl AstGrepRefactorTool {
                                     // Join multiple captures with ", " for multi-variables
                                     let var_text: String = nodes
                                         .iter()
-                                        .map(|n| n.text())
+                                        .map(ast_grep_core::Node::text)
                                         .collect::<Vec<_>>()
                                         .join(", ");
                                     variables.insert(name, var_text);
@@ -320,8 +320,7 @@ impl AstGrepRefactorTool {
             Ok(m) => m,
             Err(_) => {
                 return Ok(ToolOutput::error(format!(
-                    "Error: Pattern matching failed. Pattern may be invalid for {} syntax: {}",
-                    language_str, pattern
+                    "Error: Pattern matching failed. Pattern may be invalid for {language_str} syntax: {pattern}"
                 )))
             }
         };
@@ -329,8 +328,7 @@ impl AstGrepRefactorTool {
         // Validate match count based on mode
         if matches.is_empty() {
             return Ok(ToolOutput::error(format!(
-                "Error: No matches found for pattern '{}' in {}",
-                pattern, source_file
+                "Error: No matches found for pattern '{pattern}' in {source_file}"
             )));
         }
 
@@ -361,8 +359,7 @@ impl AstGrepRefactorTool {
                     Ok(content) => content,
                     Err(e) => {
                         return Ok(ToolOutput::error(format!(
-                            "Error: Failed to read target file: {}",
-                            e
+                            "Error: Failed to read target file: {e}"
                         )))
                     }
                 }
@@ -402,8 +399,7 @@ impl AstGrepRefactorTool {
             // Write updated source file
             if let Err(e) = tokio::fs::write(source_path, &new_source).await {
                 return Ok(ToolOutput::error(format!(
-                    "Error: Failed to write source file: {}",
-                    e
+                    "Error: Failed to write source file: {e}"
                 )));
             }
 
@@ -416,8 +412,7 @@ impl AstGrepRefactorTool {
 
             if let Err(e) = tokio::fs::write(target_path, &new_target).await {
                 return Ok(ToolOutput::error(format!(
-                    "Error: Failed to write target file: {}",
-                    e
+                    "Error: Failed to write target file: {e}"
                 )));
             }
 
@@ -451,7 +446,7 @@ impl AstGrepRefactorTool {
                     match Self::apply_transforms(t, &variables) {
                         Ok(v) => v,
                         Err(e) => {
-                            return Ok(ToolOutput::error(format!("Error: Transform failed: {}", e)));
+                            return Ok(ToolOutput::error(format!("Error: Transform failed: {e}")));
                         }
                     }
                 } else {
@@ -467,7 +462,11 @@ impl AstGrepRefactorTool {
                     replacement: final_replacement.clone(),
                 });
 
-                replacements.push((match_data.start_byte, match_data.end_byte, final_replacement));
+                replacements.push((
+                    match_data.start_byte,
+                    match_data.end_byte,
+                    final_replacement,
+                ));
             }
 
             // Preview mode: return what would happen without modifying files
@@ -499,8 +498,7 @@ impl AstGrepRefactorTool {
             // Write updated source file
             if let Err(e) = tokio::fs::write(source_path, &new_source).await {
                 return Ok(ToolOutput::error(format!(
-                    "Error: Failed to write source file: {}",
-                    e
+                    "Error: Failed to write source file: {e}"
                 )));
             }
 
@@ -578,11 +576,7 @@ impl AstGrepRefactorTool {
 
     /// Extract variable name from source (e.g., "$NAME" -> "NAME", "$STRIPPED" -> "STRIPPED")
     fn extract_var_name(source: &str) -> Option<&str> {
-        if source.starts_with('$') {
-            Some(&source[1..])
-        } else {
-            None
-        }
+        source.strip_prefix('$')
     }
 
     /// Detect cyclic dependencies in transforms
@@ -630,10 +624,10 @@ impl AstGrepRefactorTool {
         }
 
         for name in transforms.keys() {
-            if !visited.contains(name.as_str()) {
-                if has_cycle(name.as_str(), &deps, &mut visited, &mut rec_stack) {
-                    return Err("Cyclic dependency detected between transforms".to_string());
-                }
+            if !visited.contains(name.as_str())
+                && has_cycle(name.as_str(), &deps, &mut visited, &mut rec_stack)
+            {
+                return Err("Cyclic dependency detected between transforms".to_string());
             }
         }
         Ok(())
@@ -706,19 +700,22 @@ impl AstGrepRefactorTool {
             for word in words {
                 match sep {
                     Separator::Underscore => {
-                        new_words.extend(word.split('_').map(|s| s.to_string()));
+                        new_words.extend(word.split('_').map(std::string::ToString::to_string));
                     }
                     Separator::Dash => {
-                        new_words.extend(word.split('-').map(|s| s.to_string()));
+                        new_words.extend(word.split('-').map(std::string::ToString::to_string));
                     }
                     Separator::Dot => {
-                        new_words.extend(word.split('.').map(|s| s.to_string()));
+                        new_words.extend(word.split('.').map(std::string::ToString::to_string));
                     }
                     Separator::Slash => {
-                        new_words.extend(word.split('/').map(|s| s.to_string()));
+                        new_words.extend(word.split('/').map(std::string::ToString::to_string));
                     }
                     Separator::Space => {
-                        new_words.extend(word.split_whitespace().map(|s| s.to_string()));
+                        new_words.extend(
+                            word.split_whitespace()
+                                .map(std::string::ToString::to_string),
+                        );
                     }
                     Separator::CaseChange => {
                         // Split on case transitions (camelCase -> camel, Case)
@@ -762,25 +759,23 @@ impl AstGrepRefactorTool {
                     Some(c) => c.to_uppercase().to_string() + &chars.as_str().to_lowercase(),
                 }
             }
-            CaseType::CamelCase => {
-                words
-                    .iter()
-                    .enumerate()
-                    .map(|(i, w)| {
-                        if i == 0 {
-                            w.to_lowercase()
-                        } else {
-                            let mut chars = w.chars();
-                            match chars.next() {
-                                None => String::new(),
-                                Some(c) => {
-                                    c.to_uppercase().to_string() + &chars.as_str().to_lowercase()
-                                }
+            CaseType::CamelCase => words
+                .iter()
+                .enumerate()
+                .map(|(i, w)| {
+                    if i == 0 {
+                        w.to_lowercase()
+                    } else {
+                        let mut chars = w.chars();
+                        match chars.next() {
+                            None => String::new(),
+                            Some(c) => {
+                                c.to_uppercase().to_string() + &chars.as_str().to_lowercase()
                             }
                         }
-                    })
-                    .collect()
-            }
+                    }
+                })
+                .collect(),
             CaseType::PascalCase => words
                 .iter()
                 .map(|w| {
@@ -815,7 +810,7 @@ impl AstGrepRefactorTool {
                     .ok_or_else(|| format!("Invalid source variable: {}", t.source))?;
                 let source_text = variables
                     .get(source_var)
-                    .ok_or_else(|| format!("Variable not found: {}", source_var))?;
+                    .ok_or_else(|| format!("Variable not found: {source_var}"))?;
 
                 let len = source_text.chars().count() as i32;
                 let start = t.start_char.unwrap_or(0);
@@ -837,16 +832,14 @@ impl AstGrepRefactorTool {
                 if start_idx >= end_idx || start_idx >= chars.len() {
                     return Ok(String::new());
                 }
-                Ok(chars[start_idx..end_idx.min(chars.len())]
-                    .iter()
-                    .collect())
+                Ok(chars[start_idx..end_idx.min(chars.len())].iter().collect())
             }
             Transform::Replace(t) => {
                 let source_var = Self::extract_var_name(&t.source)
                     .ok_or_else(|| format!("Invalid source variable: {}", t.source))?;
                 let source_text = variables
                     .get(source_var)
-                    .ok_or_else(|| format!("Variable not found: {}", source_var))?;
+                    .ok_or_else(|| format!("Variable not found: {source_var}"))?;
 
                 let regex = Regex::new(&t.replace)
                     .map_err(|e| format!("Invalid regex '{}': {}", t.replace, e))?;
@@ -857,7 +850,7 @@ impl AstGrepRefactorTool {
                     .ok_or_else(|| format!("Invalid source variable: {}", t.source))?;
                 let source_text = variables
                     .get(source_var)
-                    .ok_or_else(|| format!("Variable not found: {}", source_var))?;
+                    .ok_or_else(|| format!("Variable not found: {source_var}"))?;
 
                 Ok(Self::convert_case(
                     source_text,
@@ -892,14 +885,11 @@ impl AstGrepRefactorTool {
     }
 
     /// Apply replacement template with variables
-    fn apply_replacement_template(
-        template: &str,
-        variables: &HashMap<String, String>,
-    ) -> String {
+    fn apply_replacement_template(template: &str, variables: &HashMap<String, String>) -> String {
         let mut result = template.to_string();
         for (name, value) in variables {
             // Replace $NAME with value
-            let var_pattern = format!("${}", name);
+            let var_pattern = format!("${name}");
             result = result.replace(&var_pattern, value);
         }
         result
@@ -1103,7 +1093,10 @@ mod tests {
     fn test_cleanup_blank_lines() {
         let input = "line1\n\n\n\nline2\n\nline3";
         let result = AstGrepRefactorTool::cleanup_blank_lines(input);
-        assert!(!result.contains("\n\n\n"), "Should not have 3+ consecutive newlines");
+        assert!(
+            !result.contains("\n\n\n"),
+            "Should not have 3+ consecutive newlines"
+        );
         assert!(result.contains("line1"), "Should preserve content");
         assert!(result.contains("line2"), "Should preserve content");
         assert!(result.contains("line3"), "Should preserve content");

@@ -187,9 +187,12 @@ fn normalize_action_type(action_type: &str) -> &'static str {
         // Open page variations
         "open_page" | "openpage" | "open" | "navigate" | "goto" | "url" => "open_page",
         // Find in page variations
-        "find_in_page" | "findinpage" | "find" | "search_in_page" | "searchinpage" | "pattern" => "find_in_page",
+        "find_in_page" | "findinpage" | "find" | "search_in_page" | "searchinpage" | "pattern" => {
+            "find_in_page"
+        }
         // Screenshot variations
-        "capture_screenshot" | "capturescreenshot" | "screenshot" | "take_screenshot" | "takescreenshot" => "capture_screenshot",
+        "capture_screenshot" | "capturescreenshot" | "screenshot" | "take_screenshot"
+        | "takescreenshot" => "capture_screenshot",
         // Unknown - return as-is to let serde handle the error
         _ => "unknown",
     }
@@ -406,7 +409,11 @@ impl Tool for WebSearchTool {
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::CaptureScreenshot { url, output_path, full_page } => {
+            WebSearchAction::CaptureScreenshot {
+                url,
+                output_path,
+                full_page,
+            } => {
                 let url = url.as_deref().unwrap_or("");
                 if url.is_empty() {
                     return Err(ToolError::Validation {
@@ -533,7 +540,11 @@ fn fetch_page_content(url: &str) -> Result<String, ChromeError> {
 }
 
 /// Capture a screenshot of a web page using Chrome
-fn capture_page_screenshot(url: &str, output_path: Option<String>, full_page: bool) -> Result<String, ChromeError> {
+fn capture_page_screenshot(
+    url: &str,
+    output_path: Option<String>,
+    full_page: bool,
+) -> Result<String, ChromeError> {
     let url = url.to_string();
     with_browser_retry(|browser| {
         let tab = browser.new_tab()?;
@@ -616,7 +627,8 @@ mod tests {
     fn test_action_type_normalization_gemini_web_search() {
         // Gemini sends "web_search" instead of "search"
         let json = r#"{"action": {"type": "web_search", "query": "latest news"}}"#;
-        let request: WebSearchRequest = serde_json::from_str(json).expect("Should parse Gemini format");
+        let request: WebSearchRequest =
+            serde_json::from_str(json).expect("Should parse Gemini format");
         match request.action {
             WebSearchAction::Search { query } => {
                 assert_eq!(query, Some("latest news".to_string()));
@@ -631,24 +643,56 @@ mod tests {
         let test_cases = vec![
             // Search variations
             (r#"{"action": {"type": "search", "query": "q"}}"#, "search"),
-            (r#"{"action": {"type": "web_search", "query": "q"}}"#, "search"),
+            (
+                r#"{"action": {"type": "web_search", "query": "q"}}"#,
+                "search",
+            ),
             (r#"{"action": {"type": "SEARCH", "query": "q"}}"#, "search"),
-            (r#"{"action": {"type": "WebSearch", "query": "q"}}"#, "search"),
+            (
+                r#"{"action": {"type": "WebSearch", "query": "q"}}"#,
+                "search",
+            ),
             (r#"{"action": {"type": "query", "query": "q"}}"#, "search"), // Gemini uses parameter name as type
             // Open page variations
-            (r#"{"action": {"type": "open_page", "url": "http://x"}}"#, "open_page"),
-            (r#"{"action": {"type": "openPage", "url": "http://x"}}"#, "open_page"),
-            (r#"{"action": {"type": "open", "url": "http://x"}}"#, "open_page"),
-            (r#"{"action": {"type": "navigate", "url": "http://x"}}"#, "open_page"),
+            (
+                r#"{"action": {"type": "open_page", "url": "http://x"}}"#,
+                "open_page",
+            ),
+            (
+                r#"{"action": {"type": "openPage", "url": "http://x"}}"#,
+                "open_page",
+            ),
+            (
+                r#"{"action": {"type": "open", "url": "http://x"}}"#,
+                "open_page",
+            ),
+            (
+                r#"{"action": {"type": "navigate", "url": "http://x"}}"#,
+                "open_page",
+            ),
             // Find in page variations
-            (r#"{"action": {"type": "find_in_page", "url": "http://x", "pattern": "p"}}"#, "find_in_page"),
-            (r#"{"action": {"type": "findInPage", "url": "http://x", "pattern": "p"}}"#, "find_in_page"),
-            (r#"{"action": {"type": "find", "url": "http://x", "pattern": "p"}}"#, "find_in_page"),
+            (
+                r#"{"action": {"type": "find_in_page", "url": "http://x", "pattern": "p"}}"#,
+                "find_in_page",
+            ),
+            (
+                r#"{"action": {"type": "findInPage", "url": "http://x", "pattern": "p"}}"#,
+                "find_in_page",
+            ),
+            (
+                r#"{"action": {"type": "find", "url": "http://x", "pattern": "p"}}"#,
+                "find_in_page",
+            ),
         ];
 
         for (json, expected_type) in test_cases {
             let request: Result<WebSearchRequest, _> = serde_json::from_str(json);
-            assert!(request.is_ok(), "Failed to parse: {} (expected {})", json, expected_type);
+            assert!(
+                request.is_ok(),
+                "Failed to parse: {} (expected {})",
+                json,
+                expected_type
+            );
             let action = request.unwrap().action;
             match (expected_type, &action) {
                 ("search", WebSearchAction::Search { .. }) => {}

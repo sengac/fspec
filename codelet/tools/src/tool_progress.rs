@@ -41,8 +41,9 @@ static TOOL_PROGRESS_CALLBACK: RwLock<Option<ToolProgressCallback>> = RwLock::ne
 /// Uses RwLock for thread-safe access. Multiple threads can emit progress
 /// concurrently while a callback is registered.
 pub fn set_tool_progress_callback(callback: Option<ToolProgressCallback>) {
-    let mut guard = TOOL_PROGRESS_CALLBACK.write().unwrap();
-    *guard = callback;
+    if let Ok(mut guard) = TOOL_PROGRESS_CALLBACK.write() {
+        *guard = callback;
+    }
 }
 
 /// Emit a tool progress event
@@ -53,9 +54,10 @@ pub fn set_tool_progress_callback(callback: Option<ToolProgressCallback>) {
 /// # Arguments
 /// * `output_chunk` - New output text since last progress event
 pub fn emit_tool_progress(output_chunk: &str) {
-    let guard = TOOL_PROGRESS_CALLBACK.read().unwrap();
-    if let Some(callback) = guard.as_ref() {
-        callback(output_chunk);
+    if let Ok(guard) = TOOL_PROGRESS_CALLBACK.read() {
+        if let Some(callback) = guard.as_ref() {
+            callback(output_chunk);
+        }
     }
 }
 

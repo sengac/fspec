@@ -284,6 +284,11 @@
       "prefix": "TOOLS",
       "description": "Work units related to codelet-napi tool implementations",
       "createdAt": "2025-12-29T01:18:26.609Z"
+    },
+    "PROV": {
+      "prefix": "PROV",
+      "description": "Provider and API Client Functionality",
+      "createdAt": "2025-12-31T04:43:52.518Z"
     }
   }
 }

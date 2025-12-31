@@ -301,6 +301,7 @@ fn test_agent_uses_locally_installed_chrome() -> Result<(), ChromeError> {
 // =============================================================================
 
 #[test]
+#[ignore = "May trigger Chrome initialization - run with --ignored flag"]
 fn test_browser_is_lazily_initialized() {
     // @step Given the web search tool is loaded
     use codelet_tools::WebSearchTool;

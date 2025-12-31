@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-31T02:18:21.418Z"
+    "lastUpdated": "2025-12-31T05:58:07.836Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -58916,6 +58916,119 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-31T02:18:21.446Z"
+    },
+    "PROV-001": {
+      "id": "PROV-001",
+      "title": "Optimize Prompt Caching for Multi-Turn Conversations",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2025-12-31T04:43:56.631Z",
+      "updatedAt": "2025-12-31T05:58:07.863Z",
+      "description": "Fix transform_user_message_cache_control to cache conversation history prefix instead of only the first user message",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PROV-001/PROV-007-prompt-caching-analysis.md",
+        "spec/attachments/PROV-001/ast-research-caching-client.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2025-12-31T04:46:39.991Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2025-12-31T04:50:17.161Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2025-12-31T05:56:55.622Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2025-12-31T05:57:05.382Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2025-12-31T05:58:07.864Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec for multi-turn conversations",
+        "action": "have my conversation history cached efficiently",
+        "benefit": "I reduce API costs and latency in long conversations"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Anthropic caches content as a prefix from the beginning of the request up to and including the cache_control breakpoint",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:14.209Z"
+        },
+        {
+          "id": 1,
+          "text": "The cache_control breakpoint should be placed on the second-to-last user message to cache the entire conversation prefix",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:15.936Z"
+        },
+        {
+          "id": 2,
+          "text": "For single-turn conversations (only one user message), cache_control should be on that first user message",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:17.659Z"
+        },
+        {
+          "id": 3,
+          "text": "System prompt should always have cache_control applied (already working correctly)",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:19.647Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Single turn: system(cached) + user1(cache_control) - first user message gets cache_control",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:31.065Z"
+        },
+        {
+          "id": 1,
+          "text": "Two turns: system(cached) + user1(cache_control) + assistant1 + user2 - first user message gets cache_control (second-to-last)",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:32.857Z"
+        },
+        {
+          "id": 2,
+          "text": "Three turns: system(cached) + user1 + assistant1 + user2(cache_control) + assistant2 + user3 - second user message gets cache_control",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:34.644Z"
+        },
+        {
+          "id": 3,
+          "text": "Multi-turn with tool use: system(cached) + user1 + assistant1(tool_use) + user2(tool_result) + assistant2 + user3(cache_control) + assistant3 + user4 - third user message gets cache_control",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:36.895Z"
+        },
+        {
+          "id": 4,
+          "text": "Session token usage shows cache_read_tokens increasing with each turn as more conversation history is cached",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:47:44.199Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Modify transform_user_message_cache_control in codelet/providers/src/caching_client.rs to find the second-to-last user message instead of the first. Implementation: 1) Collect indices of all user messages 2) If 2+ user messages exist, apply cache_control to second-to-last 3) If only 1 user message exists, apply cache_control to that message (current behavior for single turn). This aligns with Anthropic's caching documentation and existing caching patterns in the codebase.",
+          "deleted": false,
+          "createdAt": "2025-12-31T04:49:30.598Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2025-12-31T05:58:07.863Z"
     }
   },
   "states": {
@@ -58988,6 +59101,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "PROV-001",
       "TOOLS-004",
       "TOOLS-003",
       "REFAC-006",
@@ -59476,6 +59590,7 @@
     "TOOL": 11,
     "MODEL": 1,
     "TOOLS": 4,
-    "CONFIG": 4
+    "CONFIG": 4,
+    "PROV": 1
   }
 }

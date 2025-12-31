@@ -22,10 +22,7 @@ pub enum ReadOutput {
     /// Text content with line numbers
     Text { content: String },
     /// Image content as base64-encoded data
-    Image {
-        data: String,
-        media_type: String,
-    },
+    Image { data: String, media_type: String },
 }
 
 /// Read tool for reading file contents
@@ -41,16 +38,12 @@ impl ReadTool {
     async fn read_binary(path: &Path) -> Result<Vec<u8>, ToolError> {
         fs::read(path).await.map_err(|e| ToolError::File {
             tool: "read",
-            message: format!("Error reading file: {}", e),
+            message: format!("Error reading file: {e}"),
         })
     }
 
     /// Read file as text with line numbers (existing behavior)
-    fn format_text_with_line_numbers(
-        content: &str,
-        offset: usize,
-        limit: usize,
-    ) -> String {
+    fn format_text_with_line_numbers(content: &str, offset: usize, limit: usize) -> String {
         let lines: Vec<&str> = content.lines().collect();
         let total_lines = lines.len();
 
@@ -162,10 +155,11 @@ impl rig::tool::Tool for ReadTool {
             }
             FileType::Text => {
                 // For text files, use existing line-numbered format
-                let text_content = String::from_utf8(binary_content).map_err(|e| ToolError::File {
-                    tool: "read",
-                    message: format!("Error reading file: {}", e),
-                })?;
+                let text_content =
+                    String::from_utf8(binary_content).map_err(|e| ToolError::File {
+                        tool: "read",
+                        message: format!("Error reading file: {e}"),
+                    })?;
 
                 let offset = args.offset.unwrap_or(1);
                 let limit = args.limit.unwrap_or(OutputLimits::MAX_LINES);
@@ -178,7 +172,7 @@ impl rig::tool::Tool for ReadTool {
         // Serialize to JSON string for the tool output
         serde_json::to_string(&output).map_err(|e| ToolError::File {
             tool: "read",
-            message: format!("Error serializing output: {}", e),
+            message: format!("Error serializing output: {e}"),
         })
     }
 }

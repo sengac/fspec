@@ -13,7 +13,9 @@
 //! This dramatically reduces React state update frequency and eliminates
 //! the need for setImmediate workarounds in the JavaScript callback handler.
 
-use crate::types::{ContextFillInfo, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo, ToolResultInfo};
+use crate::types::{
+    ContextFillInfo, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo, ToolResultInfo,
+};
 use codelet_cli::interactive::{StreamEvent, StreamOutput};
 use napi::threadsafe_function::{
     ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue,

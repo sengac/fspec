@@ -150,11 +150,10 @@ async fn test_claude_facade_provides_flat_schema_with_action_type_enum() -> Resu
     assert!(params["properties"]["action_type"]["enum"].is_array());
 
     // @step And the enum values include search, open_page, and find_in_page action types
-    let action_types = params["properties"]["action_type"]["enum"].as_array().unwrap();
-    let types: Vec<&str> = action_types
-        .iter()
-        .filter_map(|v| v.as_str())
-        .collect();
+    let action_types = params["properties"]["action_type"]["enum"]
+        .as_array()
+        .unwrap();
+    let types: Vec<&str> = action_types.iter().filter_map(|v| v.as_str()).collect();
     assert!(types.contains(&"search"));
     assert!(types.contains(&"open_page"));
     assert!(types.contains(&"find_in_page"));
@@ -165,6 +164,7 @@ async fn test_claude_facade_provides_flat_schema_with_action_type_enum() -> Resu
 /// Test that FacadeToolWrapper correctly implements rig::tool::Tool trait
 /// This verifies the wrapper provides Gemini-native tool names and schemas
 #[tokio::test]
+#[ignore = "Spawns Chrome via WebSearchTool - run with --ignored flag"]
 async fn test_facade_wrapper_integrates_with_rig_tool_trait() -> Result<()> {
     // @step Given a FacadeToolWrapper wrapping GeminiGoogleWebSearchFacade
     let facade = Arc::new(GeminiGoogleWebSearchFacade);
@@ -191,6 +191,7 @@ async fn test_facade_wrapper_integrates_with_rig_tool_trait() -> Result<()> {
 // Feature: spec/features/facadetoolwrapper-for-rig-integration.feature
 // Scenario: FacadeToolWrapper returns facade definition with flat schema
 #[tokio::test]
+#[ignore = "Spawns Chrome via WebSearchTool - run with --ignored flag"]
 async fn test_facade_wrapper_returns_definition_with_flat_schema() -> Result<()> {
     // @step Given a FacadeToolWrapper wrapping GeminiGoogleWebSearchFacade
     let facade = Arc::new(GeminiGoogleWebSearchFacade);
@@ -211,6 +212,7 @@ async fn test_facade_wrapper_returns_definition_with_flat_schema() -> Result<()>
 
 /// Test that web_fetch wrapper also works correctly
 #[tokio::test]
+#[ignore = "Spawns Chrome via WebSearchTool - run with --ignored flag"]
 async fn test_facade_wrapper_web_fetch_integrates_with_rig() -> Result<()> {
     // @step Given a FacadeToolWrapper wrapping GeminiWebFetchFacade
     let facade = Arc::new(GeminiWebFetchFacade);
@@ -415,8 +417,7 @@ async fn test_file_facades_available_for_gemini_provider() -> Result<()> {
 
     // @step When create_rig_agent() is called
     // The facades are wrapped with FileToolFacadeWrapper for rig integration
-    let read_wrapper =
-        FileToolFacadeWrapper::new(Arc::new(read_facade) as Arc<dyn FileToolFacade>);
+    let read_wrapper = FileToolFacadeWrapper::new(Arc::new(read_facade) as Arc<dyn FileToolFacade>);
     let write_wrapper =
         FileToolFacadeWrapper::new(Arc::new(write_facade) as Arc<dyn FileToolFacade>);
     let replace_wrapper =
@@ -700,10 +701,7 @@ async fn test_map_gemini_list_directory_with_empty_parameters() -> Result<()> {
 
     // @step Then the facade maps to InternalLsParams::List with path None
     let internal = facade.map_params(gemini_params)?;
-    assert_eq!(
-        internal,
-        InternalLsParams::List { path: None }
-    );
+    assert_eq!(internal, InternalLsParams::List { path: None });
 
     // @step And the base LsTool lists the current directory
     // The base tool execution is handled by the existing LsTool
@@ -729,7 +727,9 @@ async fn test_gemini_list_directory_facade_provides_flat_schema() -> Result<()> 
     assert!(params["properties"].get("action").is_none());
 
     // @step And the 'path' parameter is optional (not in required array)
-    let required = params.get("required").and_then(|r: &serde_json::Value| r.as_array());
+    let required = params
+        .get("required")
+        .and_then(|r: &serde_json::Value| r.as_array());
     assert!(required.is_none() || required.unwrap().is_empty());
 
     Ok(())

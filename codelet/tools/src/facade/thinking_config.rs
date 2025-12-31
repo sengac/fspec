@@ -74,7 +74,9 @@ impl ThinkingConfigFacade for Gemini3ThinkingFacade {
     }
 
     fn is_thinking_part(&self, part: &Value) -> bool {
-        part.get("thought").and_then(|v| v.as_bool()).unwrap_or(false)
+        part.get("thought")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false)
     }
 
     fn extract_thinking_text(&self, part: &Value) -> Option<String> {
@@ -120,7 +122,9 @@ impl ThinkingConfigFacade for Gemini25ThinkingFacade {
 
     fn is_thinking_part(&self, part: &Value) -> bool {
         // Gemini 2.5 uses same response format as Gemini 3
-        part.get("thought").and_then(|v| v.as_bool()).unwrap_or(false)
+        part.get("thought")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(false)
     }
 
     fn extract_thinking_text(&self, part: &Value) -> Option<String> {
@@ -171,7 +175,9 @@ impl ThinkingConfigFacade for ClaudeThinkingFacade {
 
     fn extract_thinking_text(&self, part: &Value) -> Option<String> {
         if self.is_thinking_part(part) {
-            part.get("thinking").and_then(|v| v.as_str()).map(String::from)
+            part.get("thinking")
+                .and_then(|v| v.as_str())
+                .map(String::from)
         } else {
             None
         }
@@ -303,7 +309,10 @@ mod tests {
         let is_thinking = facade.is_thinking_part(&thinking_part);
 
         // @step Then it should return true
-        assert!(is_thinking, "Part with thought:true should be identified as thinking");
+        assert!(
+            is_thinking,
+            "Part with thought:true should be identified as thinking"
+        );
 
         // @step And extract_thinking_text should return the text content
         let text = facade.extract_thinking_text(&thinking_part);
@@ -332,7 +341,10 @@ mod tests {
         let is_thinking = facade.is_thinking_part(&response_part);
 
         // @step Then it should return false
-        assert!(!is_thinking, "Part without thought field should not be thinking");
+        assert!(
+            !is_thinking,
+            "Part without thought field should not be thinking"
+        );
 
         // @step And extract_thinking_text should return None
         let text = facade.extract_thinking_text(&response_part);
@@ -532,6 +544,9 @@ mod tests {
         let is_thinking = facade.is_thinking_part(&parsed);
 
         // @step Then it should return true
-        assert!(is_thinking, "NAPI should correctly identify thinking content");
+        assert!(
+            is_thinking,
+            "NAPI should correctly identify thinking content"
+        );
     }
 }
