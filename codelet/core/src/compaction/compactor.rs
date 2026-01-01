@@ -3,6 +3,7 @@
 //! Contains the compaction strategy and orchestrator.
 
 use anyhow::Result;
+use codelet_common::token_estimator::count_tokens;
 
 use super::anchor::{AnchorDetector, AnchorPoint, AnchorType};
 use super::metrics::{CompactionMetrics, CompactionResult};
@@ -159,8 +160,8 @@ impl ContextCompactor {
             "No turns summarized.".to_string()
         };
 
-        // Estimate summary tokens (rough approximation: 1 token ≈ 4 characters)
-        let summary_tokens = summary.len().div_ceil(4) as u64;
+        // PROV-002: Use tiktoken-rs for accurate token counting
+        let summary_tokens = count_tokens(&summary) as u64;
 
         let kept_tokens: u64 = kept_turns.iter().map(|t| t.tokens).sum();
         let compacted_tokens = summary_tokens + kept_tokens;

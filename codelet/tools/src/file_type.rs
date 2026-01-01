@@ -14,6 +14,16 @@ pub enum ImageMediaType {
     Svg,
 }
 
+/// File types that are exempt from token limits (PROV-002)
+/// These are processed differently and don't consume context window tokens
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExemptFileType {
+    /// PDF documents - processed as document content
+    Pdf,
+    /// Jupyter notebooks - processed as structured notebooks
+    Ipynb,
+}
+
 impl ImageMediaType {
     /// Get the MIME type string
     pub fn as_mime(&self) -> &'static str {
@@ -32,6 +42,8 @@ impl ImageMediaType {
 pub enum FileType {
     /// Image file with detected media type
     Image(ImageMediaType),
+    /// Token-limit exempt file type (PROV-002)
+    Exempt(ExemptFileType),
     /// Text file (default for unknown types)
     Text,
 }
@@ -40,11 +52,15 @@ pub enum FileType {
 pub fn detect_by_extension(path: &Path) -> Option<FileType> {
     let ext = path.extension()?.to_str()?.to_lowercase();
     match ext.as_str() {
+        // Image types
         "png" => Some(FileType::Image(ImageMediaType::Png)),
         "jpg" | "jpeg" => Some(FileType::Image(ImageMediaType::Jpeg)),
         "gif" => Some(FileType::Image(ImageMediaType::Gif)),
         "webp" => Some(FileType::Image(ImageMediaType::Webp)),
         "svg" => Some(FileType::Image(ImageMediaType::Svg)),
+        // Token-limit exempt types (PROV-002)
+        "pdf" => Some(FileType::Exempt(ExemptFileType::Pdf)),
+        "ipynb" => Some(FileType::Exempt(ExemptFileType::Ipynb)),
         _ => None,
     }
 }
@@ -83,6 +99,20 @@ pub fn detect_by_magic_bytes(data: &[u8]) -> Option<FileType> {
         let text = text.trim_start();
         if text.starts_with("<?xml") || text.starts_with("<svg") {
             return Some(FileType::Image(ImageMediaType::Svg));
+        }
+    }
+
+    // PDF: %PDF- (25 50 44 46 2D) - PROV-002
+    if data.len() >= 5 && &data[0..5] == b"%PDF-" {
+        return Some(FileType::Exempt(ExemptFileType::Pdf));
+    }
+
+    // IPYNB: JSON starting with { and containing "cells" key - PROV-002
+    // Note: IPYNB files are JSON, so we check for the opening brace and the characteristic key
+    if let Ok(text) = std::str::from_utf8(&data[..data.len().min(1024)]) {
+        let text = text.trim_start();
+        if text.starts_with('{') && text.contains("\"cells\"") {
+            return Some(FileType::Exempt(ExemptFileType::Ipynb));
         }
     }
 
@@ -167,5 +197,63 @@ mod tests {
         let path = PathBuf::from("/path/to/unknown");
         let data = [0x00, 0x01, 0x02, 0x03];
         assert_eq!(detect_file_type(&path, &data), FileType::Text);
+    }
+
+    // PROV-002: PDF and IPYNB exemption tests
+
+    #[test]
+    fn test_detect_pdf_by_extension() {
+        let path = PathBuf::from("/path/to/document.pdf");
+        assert_eq!(
+            detect_by_extension(&path),
+            Some(FileType::Exempt(ExemptFileType::Pdf))
+        );
+    }
+
+    #[test]
+    fn test_detect_pdf_by_magic_bytes() {
+        let pdf_signature = b"%PDF-1.4\n%more content";
+        assert_eq!(
+            detect_by_magic_bytes(pdf_signature),
+            Some(FileType::Exempt(ExemptFileType::Pdf))
+        );
+    }
+
+    #[test]
+    fn test_detect_ipynb_by_extension() {
+        let path = PathBuf::from("/path/to/notebook.ipynb");
+        assert_eq!(
+            detect_by_extension(&path),
+            Some(FileType::Exempt(ExemptFileType::Ipynb))
+        );
+    }
+
+    #[test]
+    fn test_detect_ipynb_by_magic_bytes() {
+        let ipynb_content = br#"{"cells": [], "metadata": {}, "nbformat": 4}"#;
+        assert_eq!(
+            detect_by_magic_bytes(ipynb_content),
+            Some(FileType::Exempt(ExemptFileType::Ipynb))
+        );
+    }
+
+    #[test]
+    fn test_pdf_falls_back_to_magic_bytes() {
+        let path = PathBuf::from("/path/to/file-without-extension");
+        let pdf_data = b"%PDF-1.7\n";
+        assert_eq!(
+            detect_file_type(&path, pdf_data),
+            FileType::Exempt(ExemptFileType::Pdf)
+        );
+    }
+
+    #[test]
+    fn test_ipynb_falls_back_to_magic_bytes() {
+        let path = PathBuf::from("/path/to/file-without-extension");
+        let ipynb_data = br#"{"cells": [{"cell_type": "code"}]}"#;
+        assert_eq!(
+            detect_file_type(&path, ipynb_data),
+            FileType::Exempt(ExemptFileType::Ipynb)
+        );
     }
 }

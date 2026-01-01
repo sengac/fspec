@@ -24,7 +24,7 @@ impl FileToolFacade for GeminiReadFileFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "read_file".to_string(),
-            description: "Read the contents of a file from the filesystem. This tool can read images (PNG, JPG, GIF, WEBP, SVG) - when reading an image file the contents are returned as base64-encoded data with media type. If the user provides a path to a screenshot or image, use this tool to view it.".to_string(),
+            description: "Read the contents of a file from the filesystem. Text files exceeding 25,000 tokens will return an error - use offset/limit for large files. This tool can read images (PNG, JPG, GIF, WEBP, SVG) - when reading an image file the contents are returned as base64-encoded data with media type. PDFs and Jupyter notebooks (.ipynb) are exempt from the token limit. If the user provides a path to a screenshot or image, use this tool to view it.".to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {

@@ -1,0 +1,68 @@
+/Users/rquast/projects/fspec/codelet/tools/src/grep.rs:48:1:pub struct GrepTool;
+/Users/rquast/projects/fspec/codelet/tools/src/grep.rs:357:1:pub struct GrepArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/edit.rs:15:1:pub struct EditTool;
+/Users/rquast/projects/fspec/codelet/tools/src/edit.rs:34:1:pub struct EditArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/ls.rs:34:1:pub struct LsTool;
+/Users/rquast/projects/fspec/codelet/tools/src/ls.rs:113:1:pub struct LsArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/chrome_browser.rs:48:1:pub struct ChromeConfig {
+/Users/rquast/projects/fspec/codelet/tools/src/chrome_browser.rs:94:1:pub struct ChromeBrowser {
+/Users/rquast/projects/fspec/codelet/tools/src/search_engine.rs:117:1:pub struct SearchResult {
+/Users/rquast/projects/fspec/codelet/tools/src/search_engine.rs:136:1:pub struct SearchEngine {
+/Users/rquast/projects/fspec/codelet/tools/src/bash.rs:29:1:pub struct BashTool {
+/Users/rquast/projects/fspec/codelet/tools/src/bash.rs:200:1:pub struct BashArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/lib.rs:49:1:pub struct ToolDefinition {
+/Users/rquast/projects/fspec/codelet/tools/src/lib.rs:60:1:pub struct ToolOutput {
+/Users/rquast/projects/fspec/codelet/tools/src/limits.rs:6:1:pub struct OutputLimits;
+/Users/rquast/projects/fspec/codelet/tools/src/write.rs:13:1:pub struct WriteTool;
+/Users/rquast/projects/fspec/codelet/tools/src/write.rs:32:1:pub struct WriteArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/file_ops.rs:13:1:pub struct GeminiReadFileFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/file_ops.rs:79:1:pub struct GeminiWriteFileFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/file_ops.rs:137:1:pub struct GeminiReplaceFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/thinking_config.rs:45:1:pub struct Gemini3ThinkingFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/thinking_config.rs:92:1:pub struct Gemini25ThinkingFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/thinking_config.rs:140:1:pub struct ClaudeThinkingFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/ls.rs:14:1:pub struct GeminiListDirectoryFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/registry.rs:15:1:pub struct ProviderToolRegistry {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/system_prompt.rs:214:1:pub struct ClaudeOAuthSystemPromptFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/system_prompt.rs:270:1:pub struct ClaudeApiKeySystemPromptFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/system_prompt.rs:307:1:pub struct GeminiSystemPromptFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/system_prompt.rs:338:1:pub struct OpenAISystemPromptFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/bash.rs:14:1:pub struct GeminiRunShellCommandFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:22:1:pub struct FacadeToolWrapper {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:31:1:pub struct FacadeArgs(pub Value);
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:170:1:pub struct FileOperationResult {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:180:1:pub struct FileToolFacadeWrapper {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:313:1:pub struct BashOperationResult {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:323:1:pub struct BashToolFacadeWrapper {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:402:1:pub struct SearchOperationResult {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:412:1:pub struct SearchToolFacadeWrapper {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:515:1:pub struct LsOperationResult {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/wrapper.rs:525:1:pub struct LsToolFacadeWrapper {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/web_search.rs:11:1:pub struct ClaudeWebSearchFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/web_search.rs:133:1:pub struct GeminiGoogleWebSearchFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/web_search.rs:179:1:pub struct GeminiWebFetchFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/web_search.rs:246:1:pub struct GeminiWebScreenshotFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/traits.rs:10:1:pub struct ToolDefinition {
+/Users/rquast/projects/fspec/codelet/tools/src/facade/search.rs:14:1:pub struct GeminiSearchFileContentFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/facade/search.rs:69:1:pub struct GeminiGlobFacade;
+/Users/rquast/projects/fspec/codelet/tools/src/read.rs:29:1:pub struct ReadTool;
+/Users/rquast/projects/fspec/codelet/tools/src/read.rs:91:1:pub struct ReadArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep.rs:21:1:pub struct AstGrepTool;
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep.rs:321:1:pub struct AstGrepArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/web_search.rs:166:1:pub struct WebSearchTool;
+/Users/rquast/projects/fspec/codelet/tools/src/web_search.rs:170:1:pub struct WebSearchRequest {
+/Users/rquast/projects/fspec/codelet/tools/src/web_search.rs:241:1:pub struct WebSearchResult {
+/Users/rquast/projects/fspec/codelet/tools/src/glob.rs:21:1:pub struct GlobTool;
+/Users/rquast/projects/fspec/codelet/tools/src/glob.rs:48:1:pub struct GlobArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/truncation.rs:9:1:pub struct TruncateResult {
+/Users/rquast/projects/fspec/codelet/tools/src/page_fetcher.rs:194:1:pub struct PageContent {
+/Users/rquast/projects/fspec/codelet/tools/src/page_fetcher.rs:216:1:pub struct Heading {
+/Users/rquast/projects/fspec/codelet/tools/src/page_fetcher.rs:226:1:pub struct Link {
+/Users/rquast/projects/fspec/codelet/tools/src/page_fetcher.rs:249:1:pub struct PageFetcher {
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep_refactor.rs:61:1:pub struct SubstringTransform {
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep_refactor.rs:75:1:pub struct ReplaceTransform {
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep_refactor.rs:87:1:pub struct ConvertTransform {
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep_refactor.rs:110:1:pub struct AstGrepRefactorTool;
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep_refactor.rs:909:1:pub struct AstGrepRefactorArgs {
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep_refactor.rs:944:1:pub struct MatchInfo {
+/Users/rquast/projects/fspec/codelet/tools/src/astgrep_refactor.rs:955:1:pub struct AstGrepRefactorResult {

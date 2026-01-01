@@ -31,6 +31,10 @@ dirs.workspace = true
 chrono.workspace = true
 uuid.workspace = true
 
+# Token Estimation (PROV-002)
+tiktoken-rs.workspace = true
+once_cell.workspace = true
+
 [dev-dependencies]
 tempfile.workspace = true
 tokio-test.workspace = true

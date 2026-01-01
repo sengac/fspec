@@ -42,6 +42,15 @@ pub enum ToolError {
     /// Language error - unsupported language (specific to AstGrep)
     #[error("[{tool}] Language error: {message}")]
     Language { tool: &'static str, message: String },
+
+    /// Token limit exceeded - file content exceeds maximum token limit (PROV-002)
+    #[error("[{tool}] Token limit exceeded: {file_path} has ~{estimated_tokens} tokens (limit: {max_tokens})")]
+    TokenLimit {
+        tool: &'static str,
+        file_path: String,
+        estimated_tokens: usize,
+        max_tokens: usize,
+    },
 }
 
 impl ToolError {
@@ -61,6 +70,7 @@ impl ToolError {
             ToolError::NotFound { .. } => false,
             ToolError::StringNotFound { .. } => false,
             ToolError::Language { .. } => false,
+            ToolError::TokenLimit { .. } => false,
         }
     }
 
@@ -75,6 +85,7 @@ impl ToolError {
             ToolError::NotFound { tool, .. } => tool,
             ToolError::StringNotFound { tool, .. } => tool,
             ToolError::Language { tool, .. } => tool,
+            ToolError::TokenLimit { tool, .. } => tool,
         }
     }
 }
