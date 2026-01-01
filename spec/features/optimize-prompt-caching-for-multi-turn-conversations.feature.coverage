@@ -1,7 +1,7 @@
 {
   "scenarios": [
     {
-      "name": "Single turn conversation caches first user message",
+      "name": "Single turn conversation caches final message",
       "testMappings": [
         {
           "file": "codelet/providers/src/caching_client.rs",
@@ -10,7 +10,6 @@
             {
               "file": "codelet/providers/src/caching_client.rs",
               "lines": [
-                98,
                 99,
                 100,
                 101,
@@ -51,62 +50,7 @@
                 136,
                 137,
                 138,
-                139,
-                140
-              ]
-            }
-          ]
-        },
-        {
-          "file": "codelet/providers/src/caching_client.rs",
-          "lines": "253-273",
-          "implMappings": [
-            {
-              "file": "codelet/providers/src/caching_client.rs",
-              "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
+                139
               ]
             }
           ]
@@ -114,16 +58,15 @@
       ]
     },
     {
-      "name": "Two turn conversation caches first user message as second-to-last",
+      "name": "Two turn conversation caches final message",
       "testMappings": [
         {
           "file": "codelet/providers/src/caching_client.rs",
-          "lines": "276-300",
+          "lines": "304-326",
           "implMappings": [
             {
               "file": "codelet/providers/src/caching_client.rs",
               "lines": [
-                98,
                 99,
                 100,
                 101,
@@ -164,62 +107,7 @@
                 136,
                 137,
                 138,
-                139,
-                140
-              ]
-            }
-          ]
-        },
-        {
-          "file": "codelet/providers/src/caching_client.rs",
-          "lines": "304-328",
-          "implMappings": [
-            {
-              "file": "codelet/providers/src/caching_client.rs",
-              "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
+                139
               ]
             }
           ]
@@ -227,16 +115,15 @@
       ]
     },
     {
-      "name": "Three turn conversation caches second user message",
+      "name": "Three turn conversation caches final message",
       "testMappings": [
         {
           "file": "codelet/providers/src/caching_client.rs",
-          "lines": "303-331",
+          "lines": "329-354",
           "implMappings": [
             {
               "file": "codelet/providers/src/caching_client.rs",
               "lines": [
-                98,
                 99,
                 100,
                 101,
@@ -277,62 +164,7 @@
                 136,
                 137,
                 138,
-                139,
-                140
-              ]
-            }
-          ]
-        },
-        {
-          "file": "codelet/providers/src/caching_client.rs",
-          "lines": "331-359",
-          "implMappings": [
-            {
-              "file": "codelet/providers/src/caching_client.rs",
-              "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
+                139
               ]
             }
           ]
@@ -340,16 +172,15 @@
       ]
     },
     {
-      "name": "Multi-turn conversation with tool use caches correct user message",
+      "name": "Multi-turn conversation with tool use caches final message",
       "testMappings": [
         {
           "file": "codelet/providers/src/caching_client.rs",
-          "lines": "334-366",
+          "lines": "357-389",
           "implMappings": [
             {
               "file": "codelet/providers/src/caching_client.rs",
               "lines": [
-                98,
                 99,
                 100,
                 101,
@@ -390,62 +221,7 @@
                 136,
                 137,
                 138,
-                139,
-                140
-              ]
-            }
-          ]
-        },
-        {
-          "file": "codelet/providers/src/caching_client.rs",
-          "lines": "362-394",
-          "implMappings": [
-            {
-              "file": "codelet/providers/src/caching_client.rs",
-              "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
-                117,
-                118,
-                119,
-                120,
-                121,
-                122,
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131,
-                132,
-                133,
-                134,
-                135,
-                136,
-                137,
-                138,
-                139,
-                140
+                139
               ]
             }
           ]
@@ -453,7 +229,7 @@
       ]
     },
     {
-      "name": "User message content is transformed to array format",
+      "name": "Message with string content is transformed to array format",
       "testMappings": [
         {
           "file": "codelet/providers/src/caching_client.rs",
@@ -462,25 +238,6 @@
             {
               "file": "codelet/providers/src/caching_client.rs",
               "lines": [
-                98,
-                99,
-                100,
-                101,
-                102,
-                103,
-                104,
-                105,
-                106,
-                107,
-                108,
-                109,
-                110,
-                111,
-                112,
-                113,
-                114,
-                115,
-                116,
                 117,
                 118,
                 119,
@@ -491,8 +248,23 @@
                 124,
                 125,
                 126,
-                127,
-                128,
+                127
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Message with array content has cache_control added to last block",
+      "testMappings": [
+        {
+          "file": "codelet/providers/src/caching_client.rs",
+          "lines": "392-419",
+          "implMappings": [
+            {
+              "file": "codelet/providers/src/caching_client.rs",
+              "lines": [
                 129,
                 130,
                 131,
@@ -501,10 +273,7 @@
                 134,
                 135,
                 136,
-                137,
-                138,
-                139,
-                140
+                137
               ]
             }
           ]
@@ -513,8 +282,8 @@
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "codelet/providers/src/caching_client.rs"
@@ -522,6 +291,6 @@
     "implFiles": [
       "codelet/providers/src/caching_client.rs"
     ],
-    "totalLinesCovered": 629
+    "totalLinesCovered": 341
   }
 }

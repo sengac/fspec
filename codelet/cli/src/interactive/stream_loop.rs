@@ -19,7 +19,7 @@ use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
-use codelet_core::{CompactionHook, RigAgent, TokenState};
+use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState};
 use codelet_tools::set_tool_progress_callback;
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
 use crossterm::event::KeyCode;
@@ -38,7 +38,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tokio::sync::Notify;
 use tokio::time::interval;
-use tracing::error;
+use tracing::{error, info};
 
 /// TUI-031: Tokens per second tracker with time-window and EMA smoothing
 /// All tok/s calculation is done in Rust for single source of truth
@@ -239,35 +239,33 @@ where
     let threshold = calculate_usable_context(context_window, max_output_tokens);
 
     // TUI-033: Helper to emit context fill percentage after token updates
-    // CTX-004: Fixed context fill calculation
-    // - input_tokens ALREADY includes cache_read_input_tokens (it's a subset, not additional)
-    // - output_tokens should be CURRENT API call output only (previous output is in input_tokens as history)
-    let emit_context_fill =
-        |output: &O, input_tokens: u64, output_tokens: u64, threshold: u64, context_window: u64| {
-            // CTX-004: input_tokens includes cache, and previous output is already in input as history
-            // So total context = input_tokens + current_api_output_tokens
-            let total_tokens = input_tokens + output_tokens;
-            // Calculate fill percentage (can exceed 100% near compaction)
-            let fill_percentage = if threshold > 0 {
-                ((total_tokens as f64 / threshold as f64) * 100.0) as u32
-            } else {
-                0
-            };
-            output.emit_context_fill(&ContextFillInfo {
-                fill_percentage,
-                effective_tokens: total_tokens,
-                threshold,
-                context_window,
-            });
+    // PROV-001: Uses ApiTokenUsage.total_context() for consistent calculation
+    let emit_context_fill_from_usage = |output: &O,
+                                        usage: &ApiTokenUsage,
+                                        threshold: u64,
+                                        context_window: u64| {
+        let total_tokens = usage.total_context();
+        // Calculate fill percentage (can exceed 100% near compaction)
+        let fill_percentage = if threshold > 0 {
+            ((total_tokens as f64 / threshold as f64) * 100.0) as u32
+        } else {
+            0
         };
+        output.emit_context_fill(&ContextFillInfo {
+            fill_percentage,
+            effective_tokens: total_tokens,
+            threshold,
+            context_window,
+        });
+    };
 
+    // PROV-001: session.token_tracker.input_tokens stores TOTAL context (input + cache_read + cache_creation)
+    // Initialize cache values to 0 to avoid double-counting in TokenState::total()
+    // During streaming, on_stream_completion_response_finish will update with actual API values
     let token_state = Arc::new(Mutex::new(TokenState {
-        input_tokens: session.token_tracker.input_tokens,
-        cache_read_input_tokens: session.token_tracker.cache_read_input_tokens.unwrap_or(0),
-        cache_creation_input_tokens: session
-            .token_tracker
-            .cache_creation_input_tokens
-            .unwrap_or(0),
+        input_tokens: session.token_tracker.input_tokens, // Already includes cache
+        cache_read_input_tokens: 0,                       // Don't double count
+        cache_creation_input_tokens: 0,                   // Don't double count
         // CTX-002: Include output tokens in TokenState for accurate total calculation
         output_tokens: session.token_tracker.output_tokens,
         compaction_needed: false,
@@ -385,12 +383,11 @@ where
         .cache_creation_input_tokens
         .unwrap_or(0);
 
-    // CTX-003: Track CURRENT CONTEXT tokens (overwritten with each API call, not accumulated)
-    // Anthropic's input_tokens represents TOTAL context per call (absolute, not incremental)
-    let mut current_api_input: u64 = 0;
-    let mut current_api_output: u64 = 0;
-    let mut turn_cache_read: u64 = 0;
-    let mut turn_cache_creation: u64 = 0;
+    // PROV-001: Track current turn's token usage with ApiTokenUsage for DRY calculations
+    // - input_tokens: raw (non-cached) input from current API call
+    // - cache_read/creation: initialized from previous session to avoid display reset
+    // - output_tokens: current API call's output (not cumulative)
+    let mut turn_usage = ApiTokenUsage::new(0, prev_cache_read, prev_cache_creation, 0);
 
     // TUI-031: Track CUMULATIVE output tokens across all API calls within this turn
     // Initialize to previous output so display doesn't flash to 0 at start of new turn
@@ -402,16 +399,22 @@ where
 
     // Emit initial token state at start of prompt so display shows current session state
     // (prevents flash to 0 when starting new prompt)
+    // PROV-001: prev_input_tokens ALREADY contains total context (stored that way)
+    info!(
+        "[PROV-001] Initial emit: prev_input_tokens={}, prev_output_tokens={}, cache_read={}, cache_creation={}",
+        prev_input_tokens, prev_output_tokens, prev_cache_read, prev_cache_creation
+    );
     output.emit_tokens(&TokenInfo {
-        input_tokens: prev_input_tokens,
+        input_tokens: prev_input_tokens, // Already total (includes cache)
         output_tokens: prev_output_tokens,
         cache_read_input_tokens: Some(prev_cache_read),
         cache_creation_input_tokens: Some(prev_cache_creation),
         tokens_per_second: None,
     });
     // CTX-004: For initial state, use 0 for output since no new output yet in this turn
-    // prev_output_tokens is from previous turns and is already counted in prev_input_tokens
-    emit_context_fill(output, prev_input_tokens, 0, threshold, context_window);
+    // PROV-001: Create initial usage with prev_input_tokens as raw (cache already counted in it)
+    let initial_usage = ApiTokenUsage::new(prev_input_tokens, 0, 0, 0);
+    emit_context_fill_from_usage(output, &initial_usage, threshold, context_window);
 
     loop {
         // Check interruption at start of each iteration (works for both modes)
@@ -487,14 +490,23 @@ where
 
                     // TUI-031: Track tok/s and emit update if not throttled
                     if let Some(rate) = tok_per_sec_tracker.record_chunk(&text.text) {
-                        let display_output = turn_cumulative_output + current_api_output;
-                        output.emit_tokens(&TokenInfo {
-                            input_tokens: current_api_input,
-                            output_tokens: display_output,
-                            cache_read_input_tokens: Some(turn_cache_read),
-                            cache_creation_input_tokens: Some(turn_cache_creation),
-                            tokens_per_second: Some(rate),
-                        });
+                        let display_output = turn_cumulative_output + turn_usage.output_tokens;
+                        // PROV-001: Use ApiTokenUsage for consistent total calculation
+                        let display_usage = ApiTokenUsage::new(
+                            turn_usage.input_tokens,
+                            turn_usage.cache_read_input_tokens,
+                            turn_usage.cache_creation_input_tokens,
+                            display_output,
+                        );
+                        info!(
+                            "[PROV-001] Streaming emit: raw_input={}, cache_read={}, cache_create={}, total_input={}, output={}",
+                            turn_usage.input_tokens,
+                            turn_usage.cache_read_input_tokens,
+                            turn_usage.cache_creation_input_tokens,
+                            display_usage.total_input(),
+                            display_output
+                        );
+                        output.emit_tokens(&TokenInfo::from_usage(display_usage, Some(rate)));
                     }
                 }
                 Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
@@ -520,104 +532,94 @@ where
                         output,
                     )?;
 
-                    // TUI-031: Emit CUMULATIVE output tokens after tool result (for display)
-                    let display_output = turn_cumulative_output + current_api_output;
-                    output.emit_tokens(&TokenInfo {
-                        input_tokens: current_api_input,
-                        output_tokens: display_output,
-                        cache_read_input_tokens: Some(turn_cache_read),
-                        cache_creation_input_tokens: Some(turn_cache_creation),
-                        tokens_per_second: tok_per_sec_tracker.current_rate(),
-                    });
-                    // CTX-004: Context fill uses CURRENT API output only (not cumulative)
-                    emit_context_fill(
-                        output,
-                        current_api_input,
-                        current_api_output,
-                        threshold,
-                        context_window,
-                    );
+                    // PROV-001: Don't emit token updates after tool results
+                    // This is when a new API segment is about to start, and the next
+                    // MessageStart may have very different input values (cache growing).
+                    // Emitting here causes "bouncing" in the display.
+                    // Token updates only occur during text streaming and at FinalResponse.
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
                     // Usage events come from:
                     // 1. MessageStart (input tokens, output=0) - marks start of new API call
                     // 2. MessageDelta (input + output tokens) - streaming updates
+                    //
+                    // PROV-001: Only emit token updates on MessageDelta (output > 0), NOT on
+                    // MessageStart. During tool loops, each new API segment starts with a
+                    // MessageStart that has very different input/cache values (context grows,
+                    // more content gets cached). Emitting on MessageStart causes "bouncing".
+                    // Token updates during streaming come from text chunks (tok/s tracking).
 
                     if usage.output_tokens == 0 {
                         // MessageStart - new API call starting
-                        // Reset current API output but keep cumulative for display
-                        current_api_input = usage.input_tokens;
-                        current_api_output = 0;
+                        // PROV-001 FIX: Accumulate previous segment's output BEFORE resetting
+                        // In multi-turn tool loops, FinalResponse only comes at the very end.
+                        // Without this, turn_cumulative_output stays at 0 during tool calls.
+                        turn_cumulative_output += turn_usage.output_tokens;
+
+                        // Update internal tracking but DON'T emit to display
+                        turn_usage.input_tokens = usage.input_tokens;
+                        turn_usage.output_tokens = 0;
+                        // Update cache tokens silently
+                        turn_usage.update_cache(
+                            usage.cache_read_input_tokens,
+                            usage.cache_creation_input_tokens,
+                        );
                     } else {
                         // MessageDelta - update current API call's output tokens
-                        current_api_output = usage.output_tokens;
+                        turn_usage.output_tokens = usage.output_tokens;
+
+                        // Update cache tokens
+                        turn_usage.update_cache(
+                            usage.cache_read_input_tokens,
+                            usage.cache_creation_input_tokens,
+                        );
+
+                        // Emit token update - safe because we're within a single API response
+                        // where input values are stable
+                        let display_output = turn_cumulative_output + turn_usage.output_tokens;
+                        let display_usage = ApiTokenUsage::new(
+                            turn_usage.input_tokens,
+                            turn_usage.cache_read_input_tokens,
+                            turn_usage.cache_creation_input_tokens,
+                            display_output,
+                        );
+                        output.emit_tokens(&TokenInfo::from_usage(
+                            display_usage,
+                            tok_per_sec_tracker.current_rate(),
+                        ));
+                        // CTX-004: Context fill uses CURRENT API output only (not cumulative)
+                        emit_context_fill_from_usage(output, &turn_usage, threshold, context_window);
                     }
-
-                    turn_cache_read = usage.cache_read_input_tokens.unwrap_or(turn_cache_read);
-                    turn_cache_creation = usage
-                        .cache_creation_input_tokens
-                        .unwrap_or(turn_cache_creation);
-
-                    // TUI-031: Emit CUMULATIVE output tokens for display (never decreases within turn)
-                    // Input tokens show current context size, output tokens show cumulative generation
-                    let display_output = turn_cumulative_output + current_api_output;
-                    output.emit_tokens(&TokenInfo {
-                        input_tokens: current_api_input,
-                        output_tokens: display_output,
-                        cache_read_input_tokens: Some(turn_cache_read),
-                        cache_creation_input_tokens: Some(turn_cache_creation),
-                        tokens_per_second: tok_per_sec_tracker.current_rate(),
-                    });
-                    // CTX-004: Context fill uses CURRENT API output only (not cumulative)
-                    emit_context_fill(
-                        output,
-                        current_api_input,
-                        current_api_output,
-                        threshold,
-                        context_window,
-                    );
                 }
                 Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
-                    // Get final usage directly from FinalResponse (most accurate source)
+                    // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values (sum of all
+                    // segments in multi-turn tool loops). For DISPLAY, we want the LAST segment's
+                    // values (current context size), which are already in turn_usage from Usage events.
+                    //
+                    // DON'T overwrite turn_usage.input_tokens or cache values with aggregated values!
+                    // They would show 290k (sum of 5 segments) instead of ~60k (actual context).
+                    //
+                    // For output: add the last segment's output to cumulative total.
+                    // The aggregated output in FinalResponse is for billing, not display.
+                    turn_cumulative_output += turn_usage.output_tokens;
+
+                    // Get aggregated usage for debug logging only (not for display)
                     let usage = final_resp.usage();
 
-                    // For non-Anthropic providers that don't emit Usage, use FinalResponse values
-                    if current_api_input == 0 {
-                        current_api_input = usage.input_tokens;
-                    }
-                    current_api_output = usage.output_tokens;
-
-                    // TUI-031: Accumulate output tokens for this turn
-                    // This happens when FinalResponse is received (end of an API call)
-                    turn_cumulative_output += current_api_output;
-
-                    // Update cache tokens from FinalResponse
-                    turn_cache_read = usage.cache_read_input_tokens.unwrap_or(turn_cache_read);
-                    turn_cache_creation = usage
-                        .cache_creation_input_tokens
-                        .unwrap_or(turn_cache_creation);
-
                     // TUI-031: Emit CUMULATIVE output tokens for display
-                    // Input tokens show current context size, output tokens show cumulative generation
-                    // Clear tok/s on final response (streaming is done)
-                    output.emit_tokens(&TokenInfo {
-                        input_tokens: current_api_input,
-                        output_tokens: turn_cumulative_output,
-                        cache_read_input_tokens: Some(turn_cache_read),
-                        cache_creation_input_tokens: Some(turn_cache_creation),
-                        tokens_per_second: None, // Streaming done, hide tok/s
-                    });
-                    // CTX-004: Context fill uses CURRENT API output only
-                    // At FinalResponse, current_api_output has the final output count for this API call
-                    emit_context_fill(
-                        output,
-                        current_api_input,
-                        current_api_output,
-                        threshold,
-                        context_window,
+                    // PROV-001: Use ApiTokenUsage for consistent total calculation
+                    let display_usage = ApiTokenUsage::new(
+                        turn_usage.input_tokens,
+                        turn_usage.cache_read_input_tokens,
+                        turn_usage.cache_creation_input_tokens,
+                        turn_cumulative_output,
                     );
+                    output.emit_tokens(&TokenInfo::from_usage(display_usage, None)); // Streaming done
+                    // CTX-004: Context fill uses CURRENT API output only
+                    emit_context_fill_from_usage(output, &turn_usage, threshold, context_window);
 
                     // CLI-022: Capture api.response.end event
+                    // PROV-001: Capture both aggregated (for billing) and display (for UI debugging) values
                     if let Ok(manager_arc) = get_debug_capture_manager() {
                         if let Ok(mut manager) = manager_arc.lock() {
                             if manager.is_enabled() {
@@ -626,11 +628,23 @@ where
                                     "api.response.end",
                                     serde_json::json!({
                                         "duration": duration_ms,
-                                        "usage": {
+                                        // Aggregated usage from FinalResponse (sum of all API segments - for billing)
+                                        "aggregatedUsage": {
                                             "inputTokens": usage.input_tokens,
                                             "outputTokens": usage.output_tokens,
                                             "cacheReadInputTokens": usage.cache_read_input_tokens,
                                             "cacheCreationInputTokens": usage.cache_creation_input_tokens,
+                                            "totalInputTokens": usage.input_tokens
+                                                + usage.cache_read_input_tokens.unwrap_or(0)
+                                                + usage.cache_creation_input_tokens.unwrap_or(0),
+                                        },
+                                        // Display usage (last segment's values - what UI shows)
+                                        "displayUsage": {
+                                            "inputTokens": turn_usage.input_tokens,
+                                            "outputTokens": turn_cumulative_output,
+                                            "cacheReadInputTokens": turn_usage.cache_read_input_tokens,
+                                            "cacheCreationInputTokens": turn_usage.cache_creation_input_tokens,
+                                            "totalInputTokens": display_usage.total_input(),
                                         },
                                         "responseLength": assistant_text.len(),
                                     }),
@@ -639,15 +653,17 @@ where
                                     }),
                                 );
 
+                                // PROV-001: token.update uses DISPLAY values (what user sees)
+                                // These are the last segment's values, not aggregated
                                 manager.capture(
                                     "token.update",
                                     serde_json::json!({
-                                        "inputTokens": usage.input_tokens,
-                                        "outputTokens": usage.output_tokens,
-                                        "cacheReadInputTokens": usage.cache_read_input_tokens,
-                                        "cacheCreationInputTokens": usage.cache_creation_input_tokens,
-                                        "totalInputTokens": usage.input_tokens,
-                                        "totalOutputTokens": usage.output_tokens,
+                                        "inputTokens": turn_usage.input_tokens,
+                                        "outputTokens": turn_cumulative_output,
+                                        "cacheReadInputTokens": turn_usage.cache_read_input_tokens,
+                                        "cacheCreationInputTokens": turn_usage.cache_creation_input_tokens,
+                                        "totalInputTokens": display_usage.total_input(),
+                                        "totalOutputTokens": turn_cumulative_output,
                                     }),
                                     None,
                                 );
@@ -811,18 +827,14 @@ where
                 });
 
                 // Create fresh hook and token state for the retry
+                // PROV-001: After compaction, input_tokens is the new estimated total
+                // Cache values were reset to None above, so they're 0 here
+                // This prevents double-counting in TokenState::total()
                 let retry_token_state = Arc::new(Mutex::new(TokenState {
                     input_tokens: session.token_tracker.input_tokens,
-                    cache_read_input_tokens: session
-                        .token_tracker
-                        .cache_read_input_tokens
-                        .unwrap_or(0),
-                    cache_creation_input_tokens: session
-                        .token_tracker
-                        .cache_creation_input_tokens
-                        .unwrap_or(0),
-                    // CTX-002: Include output tokens for accurate total calculation
-                    output_tokens: session.token_tracker.output_tokens,
+                    cache_read_input_tokens: 0, // Reset after compaction
+                    cache_creation_input_tokens: 0, // Reset after compaction
+                    output_tokens: 0, // Fresh start after compaction
                     compaction_needed: false,
                 }));
                 let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
@@ -841,12 +853,9 @@ where
                 let mut retry_tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
                 let mut retry_last_tool_name: Option<String> = None;
 
-                // TUI-031: Track tokens for retry loop (same pattern as main loop)
-                let mut retry_api_input: u64 = 0;
-                let mut retry_api_output: u64 = 0;
+                // PROV-001: Track tokens for retry loop using ApiTokenUsage (DRY)
+                let mut retry_usage = ApiTokenUsage::default();
                 let mut retry_cumulative_output: u64 = 0;
-                let mut retry_cache_read: u64 = 0;
-                let mut retry_cache_creation: u64 = 0;
                 let mut retry_tok_tracker = TokPerSecTracker::new();
 
                 // Process retry stream
@@ -873,14 +882,14 @@ where
 
                             // TUI-031: Track tok/s and emit update if not throttled
                             if let Some(rate) = retry_tok_tracker.record_chunk(&text.text) {
-                                let display_output = retry_cumulative_output + retry_api_output;
-                                output.emit_tokens(&TokenInfo {
-                                    input_tokens: retry_api_input,
-                                    output_tokens: display_output,
-                                    cache_read_input_tokens: Some(retry_cache_read),
-                                    cache_creation_input_tokens: Some(retry_cache_creation),
-                                    tokens_per_second: Some(rate),
-                                });
+                                let display_output = retry_cumulative_output + retry_usage.output_tokens;
+                                let display_usage = ApiTokenUsage::new(
+                                    retry_usage.input_tokens,
+                                    retry_usage.cache_read_input_tokens,
+                                    retry_usage.cache_creation_input_tokens,
+                                    display_output,
+                                );
+                                output.emit_tokens(&TokenInfo::from_usage(display_usage, Some(rate)));
                             }
                         }
                         Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
@@ -906,81 +915,97 @@ where
                                 output,
                             )?;
 
-                            // TUI-031: Emit CUMULATIVE output tokens after tool result
-                            let display_output = retry_cumulative_output + retry_api_output;
-                            output.emit_tokens(&TokenInfo {
-                                input_tokens: retry_api_input,
-                                output_tokens: display_output,
-                                cache_read_input_tokens: Some(retry_cache_read),
-                                cache_creation_input_tokens: Some(retry_cache_creation),
-                                tokens_per_second: retry_tok_tracker.current_rate(),
-                            });
-                            // CTX-004: Context fill uses CURRENT API output only
-                            emit_context_fill(
-                                output,
-                                retry_api_input,
-                                retry_api_output,
-                                threshold,
-                                context_window,
-                            );
+                            // PROV-001: Don't emit token updates after tool results
+                            // This is when a new API segment is about to start, and the next
+                            // MessageStart may have very different input values (cache growing).
+                            // Emitting here causes "bouncing" in the display.
+                            // Token updates only occur during text streaming and at FinalResponse.
                         }
                         Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
-                            // TUI-031: Track tokens with cumulative output (same pattern as main loop)
-                            if usage.output_tokens == 0 {
-                                retry_api_input = usage.input_tokens;
-                                retry_api_output = 0;
-                            } else {
-                                retry_api_output = usage.output_tokens;
-                            }
-                            retry_cache_read =
-                                usage.cache_read_input_tokens.unwrap_or(retry_cache_read);
-                            retry_cache_creation = usage
-                                .cache_creation_input_tokens
-                                .unwrap_or(retry_cache_creation);
+                            // Usage events come from:
+                            // 1. MessageStart (input tokens, output=0) - marks start of new API call
+                            // 2. MessageDelta (input + output tokens) - streaming updates
+                            //
+                            // PROV-001: Only emit token updates on MessageDelta (output > 0), NOT on
+                            // MessageStart. During tool loops, each new API segment starts with a
+                            // MessageStart that has very different input/cache values (context grows,
+                            // more content gets cached). Emitting on MessageStart causes "bouncing".
+                            // Token updates during streaming come from text chunks (tok/s tracking).
 
-                            let display_output = retry_cumulative_output + retry_api_output;
-                            output.emit_tokens(&TokenInfo {
-                                input_tokens: retry_api_input,
-                                output_tokens: display_output,
-                                cache_read_input_tokens: Some(retry_cache_read),
-                                cache_creation_input_tokens: Some(retry_cache_creation),
-                                tokens_per_second: retry_tok_tracker.current_rate(),
-                            });
-                            // CTX-004: Context fill uses CURRENT API output only
-                            emit_context_fill(
-                                output,
-                                retry_api_input,
-                                retry_api_output,
-                                threshold,
-                                context_window,
-                            );
+                            if usage.output_tokens == 0 {
+                                // MessageStart - new API call starting
+                                // PROV-001 FIX: Accumulate previous segment's output BEFORE resetting
+                                // In multi-turn tool loops, FinalResponse only comes at the very end.
+                                // Without this, retry_cumulative_output stays at 0 during tool calls.
+                                retry_cumulative_output += retry_usage.output_tokens;
+
+                                // Update internal tracking but DON'T emit to display
+                                retry_usage.input_tokens = usage.input_tokens;
+                                retry_usage.output_tokens = 0;
+                                // Update cache tokens silently
+                                retry_usage.update_cache(
+                                    usage.cache_read_input_tokens,
+                                    usage.cache_creation_input_tokens,
+                                );
+                            } else {
+                                // MessageDelta - update current API call's output tokens
+                                retry_usage.output_tokens = usage.output_tokens;
+
+                                // Update cache tokens
+                                retry_usage.update_cache(
+                                    usage.cache_read_input_tokens,
+                                    usage.cache_creation_input_tokens,
+                                );
+
+                                // Emit token update - safe because we're within a single API response
+                                // where input values are stable
+                                let display_output =
+                                    retry_cumulative_output + retry_usage.output_tokens;
+                                let display_usage = ApiTokenUsage::new(
+                                    retry_usage.input_tokens,
+                                    retry_usage.cache_read_input_tokens,
+                                    retry_usage.cache_creation_input_tokens,
+                                    display_output,
+                                );
+                                output.emit_tokens(&TokenInfo::from_usage(
+                                    display_usage,
+                                    retry_tok_tracker.current_rate(),
+                                ));
+                                // CTX-004: Context fill uses CURRENT API output only
+                                emit_context_fill_from_usage(
+                                    output,
+                                    &retry_usage,
+                                    threshold,
+                                    context_window,
+                                );
+                            }
                         }
                         Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
-                            // TUI-031: Accumulate output tokens from FinalResponse
-                            let usage = final_resp.usage();
-                            if retry_api_input == 0 {
-                                retry_api_input = usage.input_tokens;
-                            }
-                            retry_api_output = usage.output_tokens;
-                            retry_cumulative_output += retry_api_output;
-                            retry_cache_read =
-                                usage.cache_read_input_tokens.unwrap_or(retry_cache_read);
-                            retry_cache_creation = usage
-                                .cache_creation_input_tokens
-                                .unwrap_or(retry_cache_creation);
+                            // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values (sum of all
+                            // segments in multi-turn tool loops). For DISPLAY, we want the LAST segment's
+                            // values (current context size), which are already in retry_usage from Usage events.
+                            //
+                            // DON'T overwrite retry_usage.input_tokens or cache values with aggregated values!
+                            // For output: add the last segment's output to cumulative total.
+                            retry_cumulative_output += retry_usage.output_tokens;
 
-                            output.emit_tokens(&TokenInfo {
-                                input_tokens: retry_api_input,
-                                output_tokens: retry_cumulative_output,
-                                cache_read_input_tokens: Some(retry_cache_read),
-                                cache_creation_input_tokens: Some(retry_cache_creation),
-                                tokens_per_second: None, // Streaming done, hide tok/s
-                            });
+                            // Aggregated usage from FinalResponse - not used for display in retry loop
+                            // but keeping the call for consistency with main loop
+                            let _usage = final_resp.usage();
+
+                            // PROV-001: Use ApiTokenUsage for consistent calculation
+                            let display_usage = ApiTokenUsage::new(
+                                retry_usage.input_tokens,
+                                retry_usage.cache_read_input_tokens,
+                                retry_usage.cache_creation_input_tokens,
+                                retry_cumulative_output,
+                            );
+                            output
+                                .emit_tokens(&TokenInfo::from_usage(display_usage, None));
                             // CTX-004: Context fill uses CURRENT API output only
-                            emit_context_fill(
+                            emit_context_fill_from_usage(
                                 output,
-                                retry_api_input,
-                                retry_api_output,
+                                &retry_usage,
                                 threshold,
                                 context_window,
                             );
@@ -1009,14 +1034,17 @@ where
                     // TOOL-011: Tool progress is emitted directly via progress_emitter callback
                 }
 
-                // TUI-031: Update session state after retry completes (mirrors end-of-function logic)
+                // TUI-031: Update session state after retry completes
+                // PROV-001: Use ApiTokenUsage.total_input() for consistent calculation
                 if !is_interrupted.load(Acquire) {
-                    session.token_tracker.input_tokens = retry_api_input;
+                    session.token_tracker.input_tokens = retry_usage.total_input();
                     session.token_tracker.output_tokens = retry_cumulative_output;
-                    session.token_tracker.cumulative_billed_input += retry_api_input;
-                    session.token_tracker.cumulative_billed_output += retry_api_output;
-                    session.token_tracker.cache_read_input_tokens = Some(retry_cache_read);
-                    session.token_tracker.cache_creation_input_tokens = Some(retry_cache_creation);
+                    session.token_tracker.cumulative_billed_input += retry_usage.input_tokens;
+                    session.token_tracker.cumulative_billed_output += retry_usage.output_tokens;
+                    session.token_tracker.cache_read_input_tokens =
+                        Some(retry_usage.cache_read_input_tokens);
+                    session.token_tracker.cache_creation_input_tokens =
+                        Some(retry_usage.cache_creation_input_tokens);
                 }
 
                 return Ok(());
@@ -1050,25 +1078,36 @@ where
     }
 
     // CTX-003: Update session token tracker with BOTH current context AND cumulative billing
-    // Anthropic's input_tokens represents the TOTAL context size (absolute, not incremental).
+    // PROV-001: Use ApiTokenUsage.total_input() for consistent calculation
     //
     // Two distinct metrics:
-    // - input_tokens: CURRENT context size (for display and threshold checks)
+    // - input_tokens: TOTAL context size for display (uses turn_usage.total_input())
     // - output_tokens: CUMULATIVE output tokens across all API calls (TUI-031)
     // - cumulative_billed_input/output: Sum of all API calls (for billing analytics)
-    //
-    // This matches CompactionHook behavior which correctly OVERWRITES (not accumulates) for context.
     if !is_interrupted.load(Acquire) {
-        // Overwrite current context values (for display and threshold checks)
-        session.token_tracker.input_tokens = current_api_input;
+        // PROV-001: Store TOTAL context for display and threshold checks
+        session.token_tracker.input_tokens = turn_usage.total_input();
         // TUI-031: Save CUMULATIVE output tokens so next turn continues from correct value
         session.token_tracker.output_tokens = turn_cumulative_output;
-        // Accumulate for billing analytics (sum of all API calls in session)
-        session.token_tracker.cumulative_billed_input += current_api_input;
-        session.token_tracker.cumulative_billed_output += current_api_output;
+        // Accumulate for billing analytics (raw uncached input, not total context)
+        // PROV-001 DEBUG: Log values before accumulation
+        tracing::debug!(
+            "PROV-001: Before accumulation: cumulative_billed_input={}, turn_usage.input_tokens={}",
+            session.token_tracker.cumulative_billed_input,
+            turn_usage.input_tokens
+        );
+        session.token_tracker.cumulative_billed_input += turn_usage.input_tokens;
+        session.token_tracker.cumulative_billed_output += turn_usage.output_tokens;
+        // PROV-001 DEBUG: Log values after accumulation
+        tracing::debug!(
+            "PROV-001: After accumulation: cumulative_billed_input={}, cumulative_billed_output={}",
+            session.token_tracker.cumulative_billed_input,
+            session.token_tracker.cumulative_billed_output
+        );
         // Cache tokens are per-request, not cumulative (use latest values)
-        session.token_tracker.cache_read_input_tokens = Some(turn_cache_read);
-        session.token_tracker.cache_creation_input_tokens = Some(turn_cache_creation);
+        session.token_tracker.cache_read_input_tokens = Some(turn_usage.cache_read_input_tokens);
+        session.token_tracker.cache_creation_input_tokens =
+            Some(turn_usage.cache_creation_input_tokens);
     }
 
     Ok(())

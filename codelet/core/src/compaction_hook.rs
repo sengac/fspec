@@ -6,6 +6,7 @@
 //! This matches TypeScript's approach in runner.ts:829-836 where compaction
 //! is checked BEFORE each LLM call using actual API-reported token values.
 
+use crate::token_usage::ApiTokenUsage;
 use rig::agent::{CancelSignal, StreamingPromptHook};
 use rig::completion::{CompletionModel, GetTokenUsage};
 use rig::message::Message;
@@ -27,11 +28,41 @@ pub struct TokenState {
 }
 
 impl TokenState {
+    /// Create TokenState from ApiTokenUsage (PROV-001)
+    ///
+    /// Use this to ensure consistent token tracking across the codebase.
+    pub fn from_usage(usage: ApiTokenUsage) -> Self {
+        Self {
+            input_tokens: usage.input_tokens,
+            cache_read_input_tokens: usage.cache_read_input_tokens,
+            cache_creation_input_tokens: usage.cache_creation_input_tokens,
+            output_tokens: usage.output_tokens,
+            compaction_needed: false,
+        }
+    }
+
+    /// Convert to ApiTokenUsage for calculations
+    pub fn as_usage(&self) -> ApiTokenUsage {
+        ApiTokenUsage::new(
+            self.input_tokens,
+            self.cache_read_input_tokens,
+            self.cache_creation_input_tokens,
+            self.output_tokens,
+        )
+    }
+
     /// Calculate total token count (CTX-002: simple sum, no discounting)
     ///
-    /// Algorithm: count = input + cache_read + output
+    /// PROV-001: With Anthropic caching, total input = input + cache_read + cache_creation
+    /// These are three DISJOINT sets:
+    /// - input_tokens: fresh tokens not from cache and not being cached
+    /// - cache_read_input_tokens: tokens read from existing cache
+    /// - cache_creation_input_tokens: tokens being written to new cache
+    ///
+    /// Algorithm: count = input + cache_read + cache_creation + output
+    #[inline]
     pub fn total(&self) -> u64 {
-        self.input_tokens + self.cache_read_input_tokens + self.output_tokens
+        self.as_usage().total_context()
     }
 }
 
@@ -148,16 +179,16 @@ mod tests {
 
     #[test]
     fn test_token_state_total() {
-        // CTX-002: Test simple sum (input + cache_read + output)
+        // PROV-001: Test simple sum (input + cache_read + cache_creation + output)
         let state = TokenState {
             input_tokens: 100_000,
             cache_read_input_tokens: 50_000,
-            cache_creation_input_tokens: 0,
+            cache_creation_input_tokens: 5_000,
             output_tokens: 10_000,
             compaction_needed: false,
         };
-        // Simple sum: 100,000 + 50,000 + 10,000 = 160,000
-        assert_eq!(state.total(), 160_000);
+        // Simple sum: 100,000 + 50,000 + 5,000 + 10,000 = 165,000
+        assert_eq!(state.total(), 165_000);
     }
 
     #[test]

@@ -12,14 +12,33 @@
 use std::io::Write;
 
 /// Token usage information for streaming updates
+///
+/// PROV-001: input_tokens should be the TOTAL input (raw + cache_read + cache_creation)
+/// when displayed to users. Use `from_usage()` to create from ApiTokenUsage.
 #[derive(Debug, Clone)]
 pub struct TokenInfo {
+    /// Total input tokens for display (includes cache)
     pub input_tokens: u64,
     pub output_tokens: u64,
     pub cache_read_input_tokens: Option<u64>,
     pub cache_creation_input_tokens: Option<u64>,
     /// Tokens per second (smoothed with EMA for stable display)
     pub tokens_per_second: Option<f64>,
+}
+
+impl TokenInfo {
+    /// Create TokenInfo from ApiTokenUsage with tokens per second
+    ///
+    /// PROV-001: This automatically calculates total_input for display.
+    pub fn from_usage(usage: codelet_core::ApiTokenUsage, tokens_per_second: Option<f64>) -> Self {
+        Self {
+            input_tokens: usage.total_input(), // Display total, not raw
+            output_tokens: usage.output_tokens,
+            cache_read_input_tokens: Some(usage.cache_read_input_tokens),
+            cache_creation_input_tokens: Some(usage.cache_creation_input_tokens),
+            tokens_per_second,
+        }
+    }
 }
 
 /// Tool call information

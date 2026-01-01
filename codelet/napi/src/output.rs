@@ -22,6 +22,7 @@ use napi::threadsafe_function::{
 };
 use napi::Status;
 use std::sync::Mutex;
+use tracing::info;
 
 /// Type alias for our ThreadsafeFunction with CalleeHandled=false
 /// Generic params: <T, Return, CallJsBackArgs, ErrorStatus, CalleeHandled>
@@ -223,6 +224,15 @@ impl StreamOutput for NapiOutput {
                 );
             }
             StreamEvent::Tokens(tokens) => {
+                // PROV-001 DEBUG: Log token emission for display debugging
+                info!(
+                    "[PROV-001] Token emit to UI: input_tokens={} (TOTAL for display), output_tokens={}, cache_read={:?}, cache_creation={:?}, tok/s={:?}",
+                    tokens.input_tokens,
+                    tokens.output_tokens,
+                    tokens.cache_read_input_tokens,
+                    tokens.cache_creation_input_tokens,
+                    tokens.tokens_per_second
+                );
                 // Store token info to send with next flush
                 // This batches token updates with text for efficiency
                 let tracker = TokenTracker {
