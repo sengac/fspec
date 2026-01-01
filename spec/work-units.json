@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-31T06:30:25.812Z"
+    "lastUpdated": "2026-01-01T04:23:47.552Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -59041,6 +59041,188 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2025-12-31T06:30:25.842Z"
+    },
+    "PROV-002": {
+      "id": "PROV-002",
+      "title": "Limit File Reads to 25000 Tokens",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2026-01-01T03:58:46.092Z",
+      "updatedAt": "2026-01-01T04:30:27.364Z",
+      "description": "Implement token-based file read limits using tiktoken-rs (cl100k_base encoding) for accurate token counting. Files exceeding 25,000 tokens throw an error. Also migrates all existing byte-based estimation (len()/4) across the codebase to use a shared TokenEstimator utility.",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-01T03:58:52.915Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-01T04:23:54.529Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-01T04:30:27.364Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using codelet for code exploration",
+        "action": "have file reads automatically limited to 25,000 tokens",
+        "benefit": "my context window isn't bloated with excessively large files"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Token estimation uses bytes/4 approximation (same as vtcode and letta) - no external tokenizer dependencies",
+          "deleted": true,
+          "createdAt": "2026-01-01T03:59:12.714Z",
+          "deletedAt": "2026-01-01T04:03:28.177Z"
+        },
+        {
+          "id": 1,
+          "text": "File reads exceeding 25,000 tokens throw a descriptive error with file size, estimated tokens, and limit",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:14.356Z"
+        },
+        {
+          "id": 2,
+          "text": "Token limit applies only to text files - images and PDFs are exempt (they have different processing)",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:15.867Z"
+        },
+        {
+          "id": 3,
+          "text": "Token limit is configurable via environment variable or config, defaulting to 25,000",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:17.378Z"
+        },
+        {
+          "id": 4,
+          "text": "Partial reads (offset/limit parameters) are validated after extracting the requested portion, not the full file",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:19.097Z"
+        },
+        {
+          "id": 5,
+          "text": "Token estimation uses tiktoken-rs with cl100k_base encoding for accurate token counting",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:03:37.780Z"
+        },
+        {
+          "id": 6,
+          "text": "Create a shared TokenEstimator utility in codelet/core that wraps tiktoken-rs for reuse across the codebase",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:03:39.363Z"
+        },
+        {
+          "id": 7,
+          "text": "Replace existing byte-based token estimation (text.len() / 3.0) with tiktoken-rs throughout the codebase",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:03:40.834Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "A 50KB TypeScript file (~12,500 tokens at bytes/4) is read successfully",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:31.587Z"
+        },
+        {
+          "id": 1,
+          "text": "A 200KB minified JavaScript file (~50,000 tokens) throws error: 'File exceeds token limit: ~50,000 tokens estimated (limit: 25,000)'",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:33.309Z"
+        },
+        {
+          "id": 2,
+          "text": "A 5MB PNG image is read successfully (exempt from token limit)",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:34.745Z"
+        },
+        {
+          "id": 3,
+          "text": "A 10MB PDF is read successfully (exempt from token limit)",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:36.352Z"
+        },
+        {
+          "id": 4,
+          "text": "Partial read of lines 1-100 from a 500KB file succeeds if extracted content is under 25,000 tokens",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:37.875Z"
+        },
+        {
+          "id": 5,
+          "text": "Setting CODELET_MAX_FILE_TOKENS=50000 allows reading larger files up to 50,000 tokens",
+          "deleted": false,
+          "createdAt": "2026-01-01T03:59:39.883Z"
+        },
+        {
+          "id": 6,
+          "text": "Replace estimate_tokens() in interactive_helpers.rs with TokenEstimator::count_tokens()",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:04:05.076Z"
+        },
+        {
+          "id": 7,
+          "text": "Replace estimate_tokens() in napi/persistence/storage.rs with shared TokenEstimator",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:04:11.726Z"
+        },
+        {
+          "id": 8,
+          "text": "Update compactor.rs token estimation to use tiktoken-rs instead of len()/4 approximation",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:04:13.370Z"
+        }
+      ],
+      "nextExampleId": 9,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add tiktoken-rs = \"0.6\" to codelet/core/Cargo.toml dependencies",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:21:47.782Z"
+        },
+        {
+          "id": 1,
+          "text": "Create TokenEstimator struct in codelet/core/src/token_estimator.rs wrapping tiktoken_rs::cl100k_base()",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:21:49.552Z"
+        },
+        {
+          "id": 2,
+          "text": "TokenEstimator::new() -> Result<Self> initializes encoder once, count_tokens(&str) -> usize for counting",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:21:50.986Z"
+        },
+        {
+          "id": 3,
+          "text": "Add TokenLimitExceeded error to codelet/tools/src/errors.rs with file_path, estimated_tokens, max_tokens fields",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:21:52.514Z"
+        },
+        {
+          "id": 4,
+          "text": "Integrate token check in read tool (codelet/tools/src/read.rs) before returning content, after extracting partial reads",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:21:54.214Z"
+        },
+        {
+          "id": 5,
+          "text": "Use lazy_static or once_cell for global TokenEstimator instance to avoid repeated initialization",
+          "deleted": false,
+          "createdAt": "2026-01-01T04:21:55.934Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "attachments": [
+        "spec/attachments/PROV-002/ast-research-token-estimation.md",
+        "spec/attachments/PROV-002/ast-research-estimate-tokens.json"
+      ]
     }
   },
   "states": {
@@ -59110,7 +59292,9 @@
       "TOOLS-002"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "PROV-002"
+    ],
     "validating": [],
     "done": [
       "PROV-001",
@@ -59603,6 +59787,6 @@
     "MODEL": 1,
     "TOOLS": 4,
     "CONFIG": 4,
-    "PROV": 1
+    "PROV": 2
   }
 }

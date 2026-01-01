@@ -2,6 +2,9 @@
 //!
 //! Reads file contents with line numbers, supporting offset and limit.
 //! Supports multimodal content: images are returned as base64-encoded data.
+//!
+//! PROV-002: Text files are checked against token limits before being returned.
+//! Images, PDFs, and Jupyter notebooks are exempt from token limits (processed differently).
 
 use super::error::ToolError;
 use super::file_type::{detect_file_type, FileType};
@@ -9,6 +12,7 @@ use super::limits::OutputLimits;
 use super::truncation::{format_truncation_warning, truncate_line_default};
 use super::validation::{require_absolute_path, require_file_exists};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
+use codelet_common::token_estimator::check_token_limit;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
@@ -116,7 +120,9 @@ impl rig::tool::Tool for ReadTool {
                 - You can optionally specify a line offset and limit (especially handy for long files), but it's recommended to read the whole file by not providing these parameters\n\
                 - Any lines longer than 2000 characters will be truncated\n\
                 - Results are returned using cat -n format, with line numbers starting at 1\n\
+                - Text files exceeding 25,000 tokens will return an error - use offset/limit for large files\n\
                 - This tool can read images (PNG, JPG, GIF, WEBP, SVG). When reading an image file the contents are presented visually as base64-encoded data with media type.\n\
+                - PDFs and Jupyter notebooks (.ipynb) are exempt from the token limit\n\
                 - If the user provides a path to a screenshot or image, use this tool to view the file at that path.".to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(ReadArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),
@@ -153,8 +159,9 @@ impl rig::tool::Tool for ReadTool {
                     media_type: media_type.as_mime().to_string(),
                 }
             }
-            FileType::Text => {
-                // For text files, use existing line-numbered format
+            FileType::Exempt(_exempt_type) => {
+                // PROV-002: PDF and IPYNB files are exempt from token limits
+                // They are processed differently (as structured documents)
                 let text_content =
                     String::from_utf8(binary_content).map_err(|e| ToolError::File {
                         tool: "read",
@@ -164,6 +171,50 @@ impl rig::tool::Tool for ReadTool {
                 let offset = args.offset.unwrap_or(1);
                 let limit = args.limit.unwrap_or(OutputLimits::MAX_LINES);
                 let formatted = Self::format_text_with_line_numbers(&text_content, offset, limit);
+
+                // No token limit check for exempt file types
+                ReadOutput::Text { content: formatted }
+            }
+            FileType::Text => {
+                // For text files, use existing line-numbered format
+                let text_content =
+                    String::from_utf8(binary_content).map_err(|e| ToolError::File {
+                        tool: "read",
+                        message: format!("Error reading file: {e}"),
+                    })?;
+
+                // PROV-002: Check token limit on the raw content BEFORE applying line limits
+                // This ensures large files are rejected even if they would be truncated
+                // If user provides offset/limit, check only the requested portion
+                let has_custom_range = args.offset.is_some() || args.limit.is_some();
+
+                if !has_custom_range {
+                    // No custom range - check full file first
+                    if let Some((estimated_tokens, max_tokens)) = check_token_limit(&text_content) {
+                        return Err(ToolError::TokenLimit {
+                            tool: "read",
+                            file_path: args.file_path.clone(),
+                            estimated_tokens,
+                            max_tokens,
+                        });
+                    }
+                }
+
+                let offset = args.offset.unwrap_or(1);
+                let limit = args.limit.unwrap_or(OutputLimits::MAX_LINES);
+                let formatted = Self::format_text_with_line_numbers(&text_content, offset, limit);
+
+                // For partial reads, check the extracted portion
+                if has_custom_range {
+                    if let Some((estimated_tokens, max_tokens)) = check_token_limit(&formatted) {
+                        return Err(ToolError::TokenLimit {
+                            tool: "read",
+                            file_path: args.file_path.clone(),
+                            estimated_tokens,
+                            max_tokens,
+                        });
+                    }
+                }
 
                 ReadOutput::Text { content: formatted }
             }

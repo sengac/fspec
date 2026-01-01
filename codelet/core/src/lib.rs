@@ -14,6 +14,9 @@ pub use token_usage::ApiTokenUsage;
 pub use rig_agent::{RigAgent, DEFAULT_MAX_DEPTH};
 pub use tool_specs::ToolSpec;
 
+// Re-export token_estimator from codelet-common for backwards compatibility
+pub use codelet_common::token_estimator;
+
 // Re-export common types for convenience
 pub use codelet_common::web_search::{WebSearchAction, WebSearchBeginEvent, WebSearchEndEvent};
 pub use codelet_common::{ContentPart, Message, MessageContent, MessageRole};

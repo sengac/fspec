@@ -1,0 +1,2 @@
+/Users/rquast/projects/fspec/codelet/cli/src/interactive_helpers.rs:20:1:fn estimate_tokens(text: &str) -> u64 {
+/Users/rquast/projects/fspec/codelet/napi/src/persistence/storage.rs:405:1:fn estimate_tokens(content: &str) -> u32 {

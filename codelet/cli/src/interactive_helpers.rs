@@ -2,6 +2,7 @@
 
 use crate::session::Session;
 use anyhow::Result;
+use codelet_common::token_estimator::count_tokens;
 use codelet_core::compaction::{
     CompactionMetrics, ContextCompactor, ConversationTurn, ToolCall as CoreToolCall,
     ToolResult as CoreToolResult,
@@ -10,16 +11,6 @@ use rig::message::{Message, UserContent};
 use rig::OneOrMany;
 use std::time::SystemTime;
 use tracing::warn;
-
-/// Approximate bytes per token for estimation (matches codelet's APPROX_BYTES_PER_TOKEN)
-const APPROX_BYTES_PER_TOKEN: usize = 4;
-
-/// Estimate token count from text length
-///
-/// Used internally for compaction logic when calculating turn tokens.
-fn estimate_tokens(text: &str) -> u64 {
-    text.len().div_ceil(APPROX_BYTES_PER_TOKEN) as u64
-}
 
 /// Convert messages to conversation turns using lazy approach (following TypeScript implementation)
 ///
@@ -49,8 +40,9 @@ pub fn convert_messages_to_turns(messages: &[Message]) -> Vec<ConversationTurn> 
                         let tool_results = extract_tool_results(user_msg);
 
                         // Calculate tokens like TypeScript: userMsg.tokens + assistantMsg.tokens
-                        let user_tokens = estimate_tokens(&user_text);
-                        let assistant_tokens = estimate_tokens(&assistant_text);
+                        // PROV-002: Use tiktoken-rs for accurate token counting
+                        let user_tokens = count_tokens(&user_text) as u64;
+                        let assistant_tokens = count_tokens(&assistant_text) as u64;
                         let total_tokens = user_tokens + assistant_tokens;
 
                         // Create turn with full content extraction
@@ -242,12 +234,13 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
 
     // Step 7: Recalculate token tracker from ACTUAL messages (matches TypeScript)
     // TypeScript: newTotalTokens = messages.reduce(calculateMessageTokens, 0)
+    // PROV-002: Use tiktoken-rs for accurate token counting
     let new_total_tokens: u64 = session
         .messages
         .iter()
         .map(|msg| {
             let text = extract_message_text(msg);
-            estimate_tokens(&text)
+            count_tokens(&text) as u64
         })
         .sum();
 

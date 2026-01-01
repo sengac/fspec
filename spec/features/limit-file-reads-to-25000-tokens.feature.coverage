@@ -1,0 +1,124 @@
+{
+  "scenarios": [
+    {
+      "name": "Read file under token limit",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "62-85",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Read image file exempt from token limit",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "121-143",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Read PDF file exempt from token limit",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "146-164",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Partial read within token limit",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "167-184",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Read file exceeding token limit throws error",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "88-118",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Custom token limit via environment variable",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "187-215",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Token estimation uses tiktoken-rs cl100k_base encoding",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "18-44",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "TokenEstimator is shared across codebase",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "47-57",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Replace byte-based estimation in interactive_helpers",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "220-235",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Replace byte-based estimation in persistence storage",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "238-249",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Replace byte-based estimation in compactor",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/token_estimator_test.rs",
+          "lines": "252-263",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 11,
+    "coveredScenarios": 11,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/token_estimator_test.rs"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 222
+  }
+}

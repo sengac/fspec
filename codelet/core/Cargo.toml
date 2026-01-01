@@ -37,6 +37,10 @@ tracing.workspace = true
 uuid.workspace = true
 chrono.workspace = true
 regex.workspace = true
+once_cell.workspace = true
+
+# Token Estimation (PROV-002)
+tiktoken-rs.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true

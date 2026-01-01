@@ -3,6 +3,7 @@
 use super::types::*;
 use super::{ensure_directories, get_data_dir};
 use chrono::Utc;
+use codelet_common::token_estimator::count_tokens;
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
@@ -75,7 +76,7 @@ impl MessageStore {
             created_at: Utc::now(),
             role: role.to_string(),
             content: content.to_string(),
-            token_count: Some(estimate_tokens(content)),
+            token_count: Some(count_tokens(content) as u32),
             blob_refs: Vec::new(),
             metadata,
         };
@@ -399,11 +400,6 @@ pub fn compute_hash(content: &[u8]) -> String {
     hasher.update(content);
     let result = hasher.finalize();
     hex::encode(result)
-}
-
-/// Estimate token count (rough approximation: ~4 chars per token)
-fn estimate_tokens(content: &str) -> u32 {
-    (content.len() / 4).max(1) as u32
 }
 
 #[cfg(test)]

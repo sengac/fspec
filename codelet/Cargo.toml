@@ -84,6 +84,10 @@ uuid = { version = "1", features = ["v4"] }
 chrono = { version = "0.4", features = ["serde"] }
 regex = "1"
 ctrlc = "3.4"
+once_cell = "1.19"
+
+# === Token Estimation (PROV-002) ===
+tiktoken-rs = "0.6"
 
 # === Codex Provider ===
 keyring = "3.3"

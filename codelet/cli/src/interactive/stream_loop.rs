@@ -19,6 +19,7 @@ use crate::interactive_helpers::execute_compaction;
 use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
+use codelet_common::token_estimator::count_tokens;
 use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState};
 use codelet_tools::set_tool_progress_callback;
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
@@ -77,8 +78,8 @@ impl TokPerSecTracker {
     fn record_chunk(&mut self, text: &str) -> Option<f64> {
         let now = Instant::now();
 
-        // Estimate tokens (~4 chars per token, rounded up)
-        let chunk_tokens = text.len().div_ceil(4);
+        // PROV-002: Use tiktoken-rs for accurate token counting
+        let chunk_tokens = count_tokens(text);
         self.cumulative_tokens += chunk_tokens as u64;
 
         // Add sample
