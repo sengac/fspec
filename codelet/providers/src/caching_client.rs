@@ -33,8 +33,8 @@ pub fn should_transform_request(url: &str) -> bool {
 ///
 /// This function transforms:
 /// 1. System prompt from string to array format with cache_control
-/// 2. Second-to-last user message to include cache_control for prefix caching
-///    (or first user message if single-turn conversation)
+/// 2. Final message to include cache_control for incremental caching
+///    (per Anthropic docs: "mark the final block of the final message")
 ///
 /// # TOOL-008: Uses SystemPromptFacade
 /// For OAuth mode, the system prompt is expected to already have the prefix stripped.
@@ -66,7 +66,7 @@ pub fn transform_request_body(body: &Value, is_oauth: bool) -> Value {
         }
     }
 
-    // Transform second-to-last user message for prefix caching
+    // Transform final message for incremental caching (per Anthropic docs)
     transform_user_message_cache_control(&mut transformed);
 
     transformed
@@ -89,51 +89,50 @@ pub fn transform_system_prompt(preamble: &str, is_oauth: bool) -> Value {
     facade.format_for_api(preamble)
 }
 
-/// Transform second-to-last user message content to include cache_control
+/// Transform the final message content to include cache_control for incremental caching
 ///
-/// This enables caching of the entire conversation prefix (system + previous turns)
-/// rather than just the first user message. By placing the cache breakpoint on the
-/// second-to-last user message, Anthropic can cache everything up to that point.
+/// Per Anthropic's documentation: "During each turn, we mark the final block of the
+/// final message with cache_control so the conversation can be incrementally cached."
 ///
-/// For single-turn conversations (only one user message), that message gets cache_control.
+/// This enables caching of the entire conversation prefix on each turn, allowing
+/// subsequent requests to reuse the cached context.
 pub fn transform_user_message_cache_control(body: &mut Value) {
     if let Some(messages) = body.get_mut("messages").and_then(|m| m.as_array_mut()) {
-        // Collect indices of user messages with string content (cacheable messages)
-        let user_message_indices: Vec<usize> = messages
-            .iter()
-            .enumerate()
-            .filter(|(_, msg)| {
-                msg.get("role").and_then(|r| r.as_str()) == Some("user")
-                    && msg
-                        .get("content")
-                        .map(serde_json::Value::is_string)
-                        .unwrap_or(false)
-            })
-            .map(|(i, _)| i)
-            .collect();
+        if messages.is_empty() {
+            return;
+        }
 
-        // Determine which user message to cache:
-        // - If 2+ user messages: cache second-to-last (enables prefix caching)
-        // - If 1 user message: cache that one (single-turn conversation)
-        // - If 0 user messages: nothing to cache
-        let target_index = match user_message_indices.len() {
-            0 => return,
-            1 => user_message_indices[0],
-            n => user_message_indices[n - 2], // second-to-last
-        };
+        // Work backwards to find the last message with content
+        for i in (0..messages.len()).rev() {
+            let msg = &messages[i];
+            let content = msg.get("content");
 
-        // Apply cache_control to the target message
-        if let Some(msg) = messages.get_mut(target_index) {
-            if let Some(content) = msg.get("content") {
-                if content.is_string() {
-                    let text = content.as_str().unwrap_or_default();
-                    msg["content"] = json!([
-                        {
-                            "type": "text",
-                            "text": text,
-                            "cache_control": { "type": "ephemeral" }
-                        }
-                    ]);
+            if content.is_none() {
+                continue;
+            }
+
+            let content = content.unwrap();
+
+            // Handle string content - convert to array with cache_control
+            if content.is_string() {
+                let text = content.as_str().unwrap_or_default();
+                messages[i]["content"] = json!([
+                    {
+                        "type": "text",
+                        "text": text,
+                        "cache_control": { "type": "ephemeral" }
+                    }
+                ]);
+                return;
+            }
+
+            // Handle array content - add cache_control to the last block
+            if let Some(content_array) = content.as_array() {
+                if !content_array.is_empty() {
+                    let last_idx = content_array.len() - 1;
+                    messages[i]["content"][last_idx]["cache_control"] =
+                        json!({ "type": "ephemeral" });
+                    return;
                 }
             }
         }
@@ -251,7 +250,7 @@ mod tests {
     // PROV-001: Tests for multi-turn prompt caching optimization
 
     #[test]
-    fn test_single_turn_caches_first_user_message() {
+    fn test_single_turn_caches_final_message() {
         // @step Given a request body with system prompt and one user message
         let mut body = json!({
             "system": "System prompt",
@@ -263,7 +262,7 @@ mod tests {
         // @step When transform_user_message_cache_control is applied
         transform_user_message_cache_control(&mut body);
 
-        // @step Then the first user message should have cache_control applied
+        // @step Then the final message should have cache_control applied
         let messages = body["messages"].as_array().unwrap();
         let content = messages[0]["content"].as_array().unwrap();
         assert_eq!(content[0]["cache_control"]["type"], "ephemeral");
@@ -275,7 +274,7 @@ mod tests {
 
     #[test]
     fn test_user_message_content_transformed_to_array_format() {
-        // @step Given a user message with string content "Hello"
+        // @step Given a message with string content "Hello"
         let mut body = json!({
             "messages": [
                 { "role": "user", "content": "Hello" }
@@ -302,7 +301,7 @@ mod tests {
     }
 
     #[test]
-    fn test_two_turn_caches_first_user_message_as_second_to_last() {
+    fn test_two_turn_caches_final_message() {
         // @step Given a request body with system prompt, user1, assistant1, and user2
         let mut body = json!({
             "system": "System prompt",
@@ -318,18 +317,16 @@ mod tests {
 
         let messages = body["messages"].as_array().unwrap();
 
-        // @step Then the first user message should have cache_control applied
-        // (first user message IS the second-to-last user message in 2-user-message case)
-        let content1 = messages[0]["content"].as_array().unwrap();
-        assert_eq!(content1[0]["cache_control"]["type"], "ephemeral");
+        // @step Then the final message (user2) should have cache_control applied
+        let content2 = messages[2]["content"].as_array().unwrap();
+        assert_eq!(content2[0]["cache_control"]["type"], "ephemeral");
 
-        // @step And the second user message should not have cache_control applied
-        // Second user message should remain as string (not transformed)
-        assert!(messages[2]["content"].is_string());
+        // @step And the first user message should not have cache_control applied
+        assert!(messages[0]["content"].is_string());
     }
 
     #[test]
-    fn test_three_turn_caches_second_user_message() {
+    fn test_three_turn_caches_final_message() {
         // @step Given a request body with system prompt, user1, assistant1, user2, assistant2, and user3
         let mut body = json!({
             "system": "System prompt",
@@ -347,20 +344,17 @@ mod tests {
 
         let messages = body["messages"].as_array().unwrap();
 
-        // @step Then the second user message should have cache_control applied
-        // Second user message is the second-to-last in 3-user-message case
-        let content2 = messages[2]["content"].as_array().unwrap();
-        assert_eq!(content2[0]["cache_control"]["type"], "ephemeral");
+        // @step Then the final message (user3) should have cache_control applied
+        let content3 = messages[4]["content"].as_array().unwrap();
+        assert_eq!(content3[0]["cache_control"]["type"], "ephemeral");
 
-        // @step And the first user message should not have cache_control applied
+        // @step And no other messages should have cache_control applied
         assert!(messages[0]["content"].is_string());
-
-        // @step And the third user message should not have cache_control applied
-        assert!(messages[4]["content"].is_string());
+        assert!(messages[2]["content"].is_string());
     }
 
     #[test]
-    fn test_multi_turn_with_tool_use_caches_correct_user_message() {
+    fn test_multi_turn_with_tool_use_caches_final_message() {
         // @step Given a request body with system prompt, user1, assistant1 with tool_use, user2 with tool_result, assistant2, user3, assistant3, and user4
         let mut body = json!({
             "system": "System prompt",
@@ -380,17 +374,47 @@ mod tests {
 
         let messages = body["messages"].as_array().unwrap();
 
-        // @step Then the third user message should have cache_control applied
-        // (second-to-last user message in 4-user-message case)
-        let content3 = messages[4]["content"].as_array().unwrap();
-        assert_eq!(content3[0]["cache_control"]["type"], "ephemeral");
+        // @step Then the final message (user4) should have cache_control applied
+        let content4 = messages[6]["content"].as_array().unwrap();
+        assert_eq!(content4[0]["cache_control"]["type"], "ephemeral");
 
-        // @step And all other user messages should not have cache_control applied
+        // @step And all other messages should not have cache_control applied
         // First user message - should be string (no cache_control)
         assert!(messages[0]["content"].is_string());
-        // Second user message (tool_result) - should remain unchanged
-        assert!(messages[2]["content"].is_array());
-        // Fourth user message - should be string (no cache_control)
-        assert!(messages[6]["content"].is_string());
+        // Second user message (tool_result) - should remain unchanged array without cache_control
+        let tool_result = messages[2]["content"].as_array().unwrap();
+        assert!(tool_result[0].get("cache_control").is_none());
+        // Third user message - should be string (no cache_control)
+        assert!(messages[4]["content"].is_string());
+    }
+
+    #[test]
+    fn test_array_content_has_cache_control_added_to_last_block() {
+        // @step Given a message with array content containing multiple blocks
+        let mut body = json!({
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        { "type": "text", "text": "First block" },
+                        { "type": "text", "text": "Second block" },
+                        { "type": "text", "text": "Third block" }
+                    ]
+                }
+            ]
+        });
+
+        // @step When cache_control is applied to that message
+        transform_user_message_cache_control(&mut body);
+
+        let messages = body["messages"].as_array().unwrap();
+        let content = messages[0]["content"].as_array().unwrap();
+
+        // @step Then the last block of the array should have cache_control added
+        assert_eq!(content[2]["cache_control"]["type"], "ephemeral");
+
+        // @step And other blocks should not have cache_control added
+        assert!(content[0].get("cache_control").is_none());
+        assert!(content[1].get("cache_control").is_none());
     }
 }

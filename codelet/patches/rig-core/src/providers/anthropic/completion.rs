@@ -837,7 +837,14 @@ where
         span.record_model_input(&request.messages);
 
         async move {
-            let request: Vec<u8> = serde_json::to_vec(&request)?;
+            // Serialize to Value first so we can apply cache_control transformation
+            let mut request_value = serde_json::to_value(&request)?;
+
+            // Apply cache_control to final message for incremental caching (PROV-001)
+            // Per Anthropic docs: "mark the final block of the final message with cache_control"
+            apply_message_cache_control(&mut request_value);
+
+            let request: Vec<u8> = serde_json::to_vec(&request_value)?;
 
             let req = self
                 .client
@@ -913,6 +920,56 @@ struct ApiErrorResponse {
 enum ApiResponse<T> {
     Message(T),
     Error(ApiErrorResponse),
+}
+
+/// Apply cache_control to the final message for incremental caching (PROV-001)
+///
+/// Per Anthropic's documentation: "During each turn, we mark the final block of the
+/// final message with cache_control so the conversation can be incrementally cached."
+///
+/// This enables Anthropic to cache the entire conversation prefix on each turn,
+/// reducing costs and latency in multi-turn conversations.
+fn apply_message_cache_control(body: &mut serde_json::Value) {
+    if let Some(messages) = body.get_mut("messages").and_then(|m| m.as_array_mut()) {
+        if messages.is_empty() {
+            return;
+        }
+
+        // Work backwards to find the last message with content
+        for i in (0..messages.len()).rev() {
+            let msg = &messages[i];
+            let content = msg.get("content");
+
+            if content.is_none() {
+                continue;
+            }
+
+            let content = content.unwrap();
+
+            // Handle string content - convert to array with cache_control
+            if content.is_string() {
+                let text = content.as_str().unwrap_or_default();
+                messages[i]["content"] = serde_json::json!([
+                    {
+                        "type": "text",
+                        "text": text,
+                        "cache_control": { "type": "ephemeral" }
+                    }
+                ]);
+                return;
+            }
+
+            // Handle array content - add cache_control to the last block
+            if let Some(content_array) = content.as_array() {
+                if !content_array.is_empty() {
+                    let last_idx = content_array.len() - 1;
+                    messages[i]["content"][last_idx]["cache_control"] =
+                        serde_json::json!({ "type": "ephemeral" });
+                    return;
+                }
+            }
+        }
+    }
 }
 
 #[cfg(test)]
