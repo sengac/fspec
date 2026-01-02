@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2025-12-31T05:43:50.911Z"
+    "lastUpdated": "2026-01-02T08:34:55.860Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -1364,7 +1364,7 @@
       "type": "story",
       "status": "done",
       "createdAt": "2025-12-02T01:47:05.825Z",
-      "updatedAt": "2025-12-02T02:00:56.665Z",
+      "updatedAt": "2026-01-02T08:34:55.874Z",
       "description": "Port the Claude Code OAuth authentication from codelet TypeScript to support CLAUDE_CODE_OAUTH_TOKEN with proper anthropic-beta headers and Claude Code system prompt",
       "children": [],
       "stateHistory": [
@@ -1387,6 +1387,18 @@
         {
           "state": "done",
           "timestamp": "2025-12-02T02:00:56.665Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-02T02:26:13.927Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-02T02:26:48.681Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-02T08:34:55.874Z"
         }
       ],
       "userStory": {
@@ -1468,7 +1480,7 @@
       ],
       "questions": [],
       "nextQuestionId": 0,
-      "updated": "2025-12-02T02:00:56.665Z"
+      "updated": "2026-01-02T08:34:55.874Z"
     },
     "PROV-003": {
       "id": "PROV-003",
@@ -8681,6 +8693,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "PROV-002",
       "PROV-001",
       "CTX-003",
       "NAPI-003",
@@ -8732,7 +8745,6 @@
       "REFAC-003",
       "REFAC-002",
       "CORE-006",
-      "PROV-002",
       "AGENT-001",
       "CORE-005",
       "CORE-004",

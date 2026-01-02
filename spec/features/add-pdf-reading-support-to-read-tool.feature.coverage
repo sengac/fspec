@@ -1,0 +1,318 @@
+{
+  "scenarios": [
+    {
+      "name": "Read PDF with default visual mode renders pages as images",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "lines": "21-54",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Read PDF with explicit text mode extracts searchable text",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "lines": "60-101",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Read PDF with images mode extracts embedded images",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "lines": "107-141",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject password-protected PDF with clear error before parsing",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "lines": "147-182",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/pdf.rs",
+              "lines": [
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Visual mode includes page count for context awareness",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "lines": "188-221",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/pdf.rs",
+              "lines": [
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Text mode handles scanned PDFs gracefully",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "lines": "227-256",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/pdf.rs",
+              "lines": [
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "All PDF modes are exempt from text token limits",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "lines": "262-301",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid pdf_mode falls back to visual mode",
+      "testMappings": [
+        {
+          "file": "codelet/tools/tests/pdf_read_test.rs",
+          "lines": "307-334",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/read.rs",
+              "lines": [
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/tests/pdf_read_test.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/read.rs",
+      "codelet/tools/src/pdf.rs"
+    ],
+    "totalLinesCovered": 452
+  }
+}

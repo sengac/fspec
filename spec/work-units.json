@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-01T04:23:47.552Z"
+    "lastUpdated": "2026-01-02T08:41:00.274Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -57616,9 +57616,9 @@
       "id": "TOOLS-002",
       "title": "Add PDF Reading Support to Read Tool",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2025-12-29T01:27:02.712Z",
-      "updatedAt": "2025-12-29T01:27:53.621Z",
+      "updatedAt": "2026-01-02T06:42:49.770Z",
       "description": "Enable the Read tool to read PDF files, extracting both text content and visual page representations. PDFs should be processed page by page, similar to Claude Code's PDF reading functionality. This depends on TOOLS-001 (multimodal infrastructure).",
       "epic": "codelet-tools",
       "children": [],
@@ -57626,70 +57626,206 @@
         "TOOLS-001"
       ],
       "userStory": {
-        "role": "developer using the fspec agent",
-        "action": "read PDF documents and have the agent understand their content",
-        "benefit": "I can discuss technical documentation, diagrams, and reports without manually extracting text"
+        "role": "developer using codelet for code exploration",
+        "action": "read PDF files in different modes - visual rendering, text extraction, or embedded image extraction",
+        "benefit": "I can explore PDF documentation visually for diagrams, extract text for searching, or pull out embedded images as needed"
       },
       "stateHistory": [
         {
           "state": "specifying",
           "timestamp": "2025-12-29T01:27:20.223Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-02T02:34:22.601Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-02T02:36:15.733Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-02T02:41:36.300Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-02T02:43:41.978Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-02T06:09:47.758Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-02T06:29:37.788Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-02T06:33:32.697Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-02T06:41:59.391Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-02T06:42:49.771Z"
         }
       ],
       "rules": [
         {
           "id": 0,
-          "text": "PDFs MUST be processed page by page, extracting text content from each page",
+          "text": "Read tool MUST support three PDF modes via optional pdf_mode parameter: 'visual' (render pages as images), 'text' (extract text), 'images' (extract embedded images)",
           "deleted": false,
-          "createdAt": "2025-12-29T01:27:31.545Z"
+          "createdAt": "2026-01-02T06:26:37.449Z"
         },
         {
           "id": 1,
-          "text": "PDF pages with visual content (diagrams, charts, images) SHOULD be rendered as images for the LLM to see",
+          "text": "Default mode MUST be 'visual' because multimodal LLMs can see rendered pages, preserving ALL information (text, layout, diagrams, charts) that text extraction loses",
           "deleted": false,
-          "createdAt": "2025-12-29T01:27:33.595Z"
+          "createdAt": "2026-01-02T06:26:39.188Z"
         },
         {
           "id": 2,
-          "text": "PDF text extraction MUST preserve reading order and basic structure (paragraphs, lists)",
+          "text": "Visual mode MUST render each PDF page as a PNG image at 150 DPI and return as base64-encoded data array with page numbers",
           "deleted": false,
-          "createdAt": "2025-12-29T01:27:35.191Z"
+          "createdAt": "2026-01-02T06:26:41.005Z"
         },
         {
           "id": 3,
-          "text": "Password-protected PDFs MUST return a clear error message explaining the file cannot be read",
+          "text": "Text mode MUST extract text page-by-page with clear page number labels (--- Page N ---), preserving reading order",
           "deleted": false,
-          "createdAt": "2025-12-29T01:27:36.788Z"
+          "createdAt": "2026-01-02T06:26:42.633Z"
+        },
+        {
+          "id": 4,
+          "text": "Images mode MUST iterate PDF XObject streams to extract all embedded images, returning base64 array with media types and dimensions",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:26:44.745Z"
+        },
+        {
+          "id": 5,
+          "text": "Password-protected PDFs MUST be detected via /Encrypt dictionary marker in raw bytes BEFORE parsing, returning clear error: 'Cannot read password-protected PDF'",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:26:46.701Z"
+        },
+        {
+          "id": 6,
+          "text": "All PDF modes MUST be exempt from text token limits since they return structured content (base64 images or paginated text)",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:26:48.416Z"
+        },
+        {
+          "id": 7,
+          "text": "Visual mode SHOULD include page count in output so LLM knows total context being consumed",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:26:50.059Z"
         }
       ],
-      "nextRuleId": 4,
+      "nextRuleId": 8,
       "examples": [
         {
           "id": 0,
-          "text": "Developer asks agent to read API-documentation.pdf - agent returns text from each page with page numbers",
+          "text": "LLM reads architecture-diagram.pdf (no mode specified) → visual mode renders pages as images → LLM describes system components and their connections",
           "deleted": false,
-          "createdAt": "2025-12-29T01:27:48.160Z"
+          "createdAt": "2026-01-02T06:27:10.816Z"
         },
         {
           "id": 1,
-          "text": "Developer asks agent to read architecture-diagram.pdf - agent shows the diagram visually and describes what it sees",
+          "text": "LLM reads api-spec.pdf with pdf_mode=text to find endpoints → text mode extracts searchable text → LLM locates POST /users endpoint definition",
           "deleted": false,
-          "createdAt": "2025-12-29T01:27:49.994Z"
+          "createdAt": "2026-01-02T06:27:12.377Z"
         },
         {
           "id": 2,
-          "text": "Developer asks agent to read encrypted.pdf - agent returns error: 'Cannot read password-protected PDF'",
+          "text": "LLM reads flowchart.pdf to understand a business process → visual mode (default) shows the diagram → LLM traces decision paths and explains the flow",
           "deleted": false,
-          "createdAt": "2025-12-29T01:27:52.037Z"
+          "createdAt": "2026-01-02T06:27:14.098Z"
         },
         {
           "id": 3,
-          "text": "Developer asks agent to read large-report.pdf (50 pages) - agent processes all pages and can answer questions about any section",
+          "text": "LLM reads product-catalog.pdf with pdf_mode=images → images mode extracts 15 embedded product photos → LLM can analyze or describe each product image",
           "deleted": false,
-          "createdAt": "2025-12-29T01:27:53.621Z"
+          "createdAt": "2026-01-02T06:27:15.682Z"
+        },
+        {
+          "id": 4,
+          "text": "LLM reads contract.pdf with pdf_mode=text for legal analysis → all 30 pages extracted as text with page numbers → LLM searches for liability clauses",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:17.606Z"
+        },
+        {
+          "id": 5,
+          "text": "LLM tries to read encrypted.pdf → encryption detected before parsing → returns error 'Cannot read password-protected PDF: encrypted.pdf'",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:19.317Z"
+        },
+        {
+          "id": 6,
+          "text": "LLM reads presentation.pdf with slides and charts → visual mode (default) renders each slide → LLM can describe slide content including graphs and diagrams",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:21.000Z"
+        },
+        {
+          "id": 7,
+          "text": "LLM reads scanned-document.pdf (image-based PDF) → visual mode renders the scanned image → LLM can read text from the rendered image (text mode would return empty)",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:23.454Z"
+        },
+        {
+          "id": 8,
+          "text": "LLM reads UML-class-diagram.pdf → visual mode renders diagram → LLM identifies classes, inheritance relationships, and method signatures from the visual",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:25.789Z"
         }
       ],
-      "nextExampleId": 4
+      "nextExampleId": 9,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "VISUAL MODE: Uses pdfium-render crate (Rust wrapper for Google Pdfium C++ library). Renders pages via PdfPage::render_with_config() at 150 DPI to PdfBitmap, converts to image::DynamicImage, encodes as PNG base64. Returns array of {page_number, data, media_type} objects.",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:49.131Z"
+        },
+        {
+          "id": 1,
+          "text": "TEXT MODE: Uses lopdf crate (pure Rust). Loads via Document::load_mem(), iterates pages with get_pages(), extracts text with extract_text(&[page_num]). Returns paginated string with '--- Page N ---' separators. Already implemented in pdf.rs.",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:50.981Z"
+        },
+        {
+          "id": 2,
+          "text": "IMAGES MODE: Uses lopdf crate. Iterates PDF objects looking for XObject streams with /Subtype /Image. Extracts raw image bytes, determines format from /Filter (DCTDecode=JPEG, FlateDecode+decode=PNG). Returns array of {data, media_type, width, height} objects.",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:52.606Z"
+        },
+        {
+          "id": 3,
+          "text": "ENCRYPTION DETECTION: Check raw bytes for /Encrypt dictionary marker BEFORE lopdf parsing. Also check Document::is_encrypted() after load. Return PdfError::Encrypted early to avoid parsing errors on encrypted content streams.",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:54.898Z"
+        },
+        {
+          "id": 4,
+          "text": "API DESIGN: ReadArgs gains optional pdf_mode: Option<String> field. Values: 'visual' (default), 'text', 'images'. Invalid values fall back to visual. Output varies by mode: visual/images return JSON array of image objects, text returns paginated string.",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:27:58.248Z"
+        },
+        {
+          "id": 5,
+          "text": "DEPENDENCY: pdfium-render requires Pdfium C library. Use pdfium-render with 'static' feature to bundle Pdfium, or 'dynamic' to link at runtime. Consider platform-specific builds (pdfium-render supports Linux, macOS, Windows, WASM).",
+          "deleted": false,
+          "createdAt": "2026-01-02T06:28:00.043Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "attachments": [
+        "spec/attachments/TOOLS-002/ast-research-read-tool.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-02T06:42:49.770Z"
     },
     "BROWSE-002": {
       "id": "BROWSE-002",
@@ -59046,9 +59182,9 @@
       "id": "PROV-002",
       "title": "Limit File Reads to 25000 Tokens",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2026-01-01T03:58:46.092Z",
-      "updatedAt": "2026-01-01T04:30:27.364Z",
+      "updatedAt": "2026-01-02T08:41:00.305Z",
       "description": "Implement token-based file read limits using tiktoken-rs (cl100k_base encoding) for accurate token counting. Files exceeding 25,000 tokens throw an error. Also migrates all existing byte-based estimation (len()/4) across the codebase to use a shared TokenEstimator utility.",
       "children": [],
       "stateHistory": [
@@ -59063,6 +59199,14 @@
         {
           "state": "implementing",
           "timestamp": "2026-01-01T04:30:27.364Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-02T08:30:56.347Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-02T08:41:00.306Z"
         }
       ],
       "userStory": {
@@ -59073,55 +59217,48 @@
       "rules": [
         {
           "id": 0,
-          "text": "Token estimation uses bytes/4 approximation (same as vtcode and letta) - no external tokenizer dependencies",
-          "deleted": true,
-          "createdAt": "2026-01-01T03:59:12.714Z",
-          "deletedAt": "2026-01-01T04:03:28.177Z"
-        },
-        {
-          "id": 1,
           "text": "File reads exceeding 25,000 tokens throw a descriptive error with file size, estimated tokens, and limit",
           "deleted": false,
           "createdAt": "2026-01-01T03:59:14.356Z"
         },
         {
-          "id": 2,
+          "id": 1,
           "text": "Token limit applies only to text files - images and PDFs are exempt (they have different processing)",
           "deleted": false,
           "createdAt": "2026-01-01T03:59:15.867Z"
         },
         {
-          "id": 3,
+          "id": 2,
           "text": "Token limit is configurable via environment variable or config, defaulting to 25,000",
           "deleted": false,
           "createdAt": "2026-01-01T03:59:17.378Z"
         },
         {
-          "id": 4,
+          "id": 3,
           "text": "Partial reads (offset/limit parameters) are validated after extracting the requested portion, not the full file",
           "deleted": false,
           "createdAt": "2026-01-01T03:59:19.097Z"
         },
         {
-          "id": 5,
+          "id": 4,
           "text": "Token estimation uses tiktoken-rs with cl100k_base encoding for accurate token counting",
           "deleted": false,
           "createdAt": "2026-01-01T04:03:37.780Z"
         },
         {
-          "id": 6,
+          "id": 5,
           "text": "Create a shared TokenEstimator utility in codelet/core that wraps tiktoken-rs for reuse across the codebase",
           "deleted": false,
           "createdAt": "2026-01-01T04:03:39.363Z"
         },
         {
-          "id": 7,
+          "id": 6,
           "text": "Replace existing byte-based token estimation (text.len() / 3.0) with tiktoken-rs throughout the codebase",
           "deleted": false,
           "createdAt": "2026-01-01T04:03:40.834Z"
         }
       ],
-      "nextRuleId": 8,
+      "nextRuleId": 7,
       "examples": [
         {
           "id": 0,
@@ -59222,7 +59359,10 @@
       "attachments": [
         "spec/attachments/PROV-002/ast-research-token-estimation.md",
         "spec/attachments/PROV-002/ast-research-estimate-tokens.json"
-      ]
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-02T08:41:00.305Z"
     }
   },
   "states": {
@@ -59288,15 +59428,14 @@
       "BROWSE-001",
       "BOARD-020",
       "TOOL-001",
-      "MODEL-001",
-      "TOOLS-002"
+      "MODEL-001"
     ],
     "testing": [],
-    "implementing": [
-      "PROV-002"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "PROV-002",
+      "TOOLS-002",
       "PROV-001",
       "TOOLS-004",
       "TOOLS-003",

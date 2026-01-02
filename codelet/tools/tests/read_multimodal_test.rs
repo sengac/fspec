@@ -32,6 +32,7 @@ async fn test_read_png_image_and_display_visually() {
         file_path: png_path.to_string_lossy().to_string(),
         offset: None,
         limit: None,
+        pdf_mode: None,
     };
     let result = tool.call(args).await.unwrap();
 
@@ -63,6 +64,7 @@ async fn test_read_text_file_with_line_numbers() {
         file_path: json_path.to_string_lossy().to_string(),
         offset: None,
         limit: None,
+        pdf_mode: None,
     };
     let result = tool.call(args).await.unwrap();
 
@@ -96,6 +98,7 @@ async fn test_handle_corrupted_image_gracefully() {
         file_path: broken_path.to_string_lossy().to_string(),
         offset: None,
         limit: None,
+        pdf_mode: None,
     };
     let result = tool.call(args).await;
 
@@ -137,6 +140,7 @@ async fn test_detect_image_type_by_content_when_extension_missing() {
         file_path: no_ext_path.to_string_lossy().to_string(),
         offset: None,
         limit: None,
+        pdf_mode: None,
     };
     let result = tool.call(args).await.unwrap();
 

@@ -63,6 +63,11 @@ chrono.workspace = true
 # Base64 encoding for multimodal content
 base64 = "0.22"
 
+# PDF Reading (TOOLS-002)
+lopdf.workspace = true
+pdfium-render.workspace = true
+image.workspace = true
+
 # Signal handling for browser cleanup
 ctrlc.workspace = true
 
@@ -71,6 +76,7 @@ tempfile.workspace = true
 tokio-test.workspace = true
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 serial_test.workspace = true
+lopdf.workspace = true
 
 [lints]
 workspace = true

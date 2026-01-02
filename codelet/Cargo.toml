@@ -89,6 +89,12 @@ once_cell = "1.19"
 # === Token Estimation (PROV-002) ===
 tiktoken-rs = "0.6"
 
+# === PDF Reading (TOOLS-002) ===
+lopdf = "0.36"
+# pdfium-render requires the Pdfium C library to be installed
+pdfium-render = "0.8"
+image = { version = "0.25", default-features = false, features = ["png"] }
+
 # === Codex Provider ===
 keyring = "3.3"
 sha2 = "0.10"
