@@ -158,15 +158,18 @@ pub(super) fn handle_tool_result<O: StreamOutput>(
                 } else {
                     "tool.result"
                 };
-                manager.capture(
-                    event_type,
-                    serde_json::json!({
-                        "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
-                        "toolId": tool_result.id,
-                        "success": !is_error,
-                    }),
-                    None,
-                );
+                // Include error message in tool.error events for debugging
+                let mut data = serde_json::json!({
+                    "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
+                    "toolId": tool_result.id,
+                    "success": !is_error,
+                });
+                if is_error {
+                    // Truncate error message to avoid bloating the debug log
+                    let error_preview: String = result_text.chars().take(500).collect();
+                    data["error"] = serde_json::json!(error_preview);
+                }
+                manager.capture(event_type, data, None);
             }
         }
     }
