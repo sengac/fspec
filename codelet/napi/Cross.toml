@@ -1,0 +1,35 @@
+# Cross.toml - Configuration for cross-rs cross-compilation
+# Alternative to the custom Docker setup - use with `cross build --target <target>`
+# See: https://github.com/cross-rs/cross
+
+[build]
+# Use the custom Docker image for all targets
+default-image = "codelet-napi-cross"
+
+[build.env]
+# Pass through environment variables
+passthrough = [
+    "RUST_MIN_STACK",
+    "RUST_BACKTRACE",
+    "RUST_LOG",
+]
+
+# Linux x64 - use official cross image (faster, well-tested)
+[target.x86_64-unknown-linux-gnu]
+image = "ghcr.io/cross-rs/x86_64-unknown-linux-gnu:main"
+
+# Linux ARM64 - use official cross image
+[target.aarch64-unknown-linux-gnu]
+image = "ghcr.io/cross-rs/aarch64-unknown-linux-gnu:main"
+
+# Windows x64 - use custom image with cargo-xwin
+# Note: cross-rs doesn't have official MSVC images
+[target.x86_64-pc-windows-msvc]
+image = "codelet-napi-cross"
+# Override the runner since we can't test Windows binaries on Linux
+runner = ""
+
+# Windows ARM64 - use custom image with cargo-xwin
+[target.aarch64-pc-windows-msvc]
+image = "codelet-napi-cross"
+runner = ""

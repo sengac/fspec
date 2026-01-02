@@ -1,0 +1,60 @@
+# Multi-target cross-compilation Dockerfile for NAPI-RS
+# Builds: Linux (x64, arm64 glibc) targets only
+# For Windows targets, use messense/cargo-xwin image directly
+
+# Need latest Rust for napi-rs 3.x (requires 1.88+)
+FROM rust:latest
+
+# Install system dependencies (without Node.js - we'll install newer version)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # General build tools
+    build-essential \
+    pkg-config \
+    curl \
+    git \
+    ca-certificates \
+    # LLVM/Clang
+    clang \
+    llvm \
+    lld \
+    # Linux x86_64 cross-compilation (for ARM64 host building x64)
+    gcc-x86-64-linux-gnu \
+    g++-x86-64-linux-gnu \
+    libc6-dev-amd64-cross \
+    # Linux ARM64 cross-compilation (for x64 host building ARM64)
+    gcc-aarch64-linux-gnu \
+    g++-aarch64-linux-gnu \
+    libc6-dev-arm64-cross \
+    # Clean up
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Node.js 20 (required for NAPI-RS CLI)
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust targets for Linux
+RUN rustup target add \
+    x86_64-unknown-linux-gnu \
+    aarch64-unknown-linux-gnu
+
+# Install NAPI-RS CLI
+RUN npm install -g @napi-rs/cli
+
+# Configure linkers for cross-compilation
+# ARM64 cross-compilation (when building for ARM64 from x64 host)
+ENV CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc \
+    CC_aarch64_unknown_linux_gnu=aarch64-linux-gnu-gcc \
+    CXX_aarch64_unknown_linux_gnu=aarch64-linux-gnu-g++ \
+    AR_aarch64_unknown_linux_gnu=aarch64-linux-gnu-ar
+
+# x86_64 cross-compilation (when building for x64 from ARM64 host)
+ENV CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=x86_64-linux-gnu-gcc \
+    CC_x86_64_unknown_linux_gnu=x86_64-linux-gnu-gcc \
+    CXX_x86_64_unknown_linux_gnu=x86_64-linux-gnu-g++ \
+    AR_x86_64_unknown_linux_gnu=x86_64-linux-gnu-ar
+
+# Set working directory
+WORKDIR /build
+
+CMD ["echo", "Available targets: x86_64-unknown-linux-gnu, aarch64-unknown-linux-gnu"]
