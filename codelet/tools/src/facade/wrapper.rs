@@ -242,6 +242,7 @@ impl Tool for FileToolFacadeWrapper {
                     file_path,
                     offset,
                     limit,
+                    pdf_mode: None,
                 };
                 match self.read_tool.call(read_args).await {
                     Ok(content) => Ok(FileOperationResult {

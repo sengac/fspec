@@ -7,8 +7,9 @@
 //! Images, PDFs, and Jupyter notebooks are exempt from token limits (processed differently).
 
 use super::error::ToolError;
-use super::file_type::{detect_file_type, FileType};
+use super::file_type::{detect_file_type, ExemptFileType, FileType};
 use super::limits::OutputLimits;
+use super::pdf::{read_pdf_from_bytes, PdfError};
 use super::truncation::{format_truncation_warning, truncate_line_default};
 use super::validation::{require_absolute_path, require_file_exists};
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
@@ -101,6 +102,9 @@ pub struct ReadArgs {
     /// Number of lines to read (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub limit: Option<usize>,
+    /// PDF reading mode: "visual" (default), "text", or "images"
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pdf_mode: Option<String>,
 }
 
 impl rig::tool::Tool for ReadTool {
@@ -122,6 +126,11 @@ impl rig::tool::Tool for ReadTool {
                 - Results are returned using cat -n format, with line numbers starting at 1\n\
                 - Text files exceeding 25,000 tokens will return an error - use offset/limit for large files\n\
                 - This tool can read images (PNG, JPG, GIF, WEBP, SVG). When reading an image file the contents are presented visually as base64-encoded data with media type.\n\
+                - PDFs support three modes via the pdf_mode parameter:\n\
+                  * 'visual' (default): Renders each page as a PNG image for full visual understanding of diagrams, charts, and layouts\n\
+                  * 'text': Extracts text content page by page with page numbers (use for searchable text from text-heavy documents)\n\
+                  * 'images': Extracts all embedded images from the PDF (use for catalogs, presentations with photos)\n\
+                - Use visual mode for PDFs with diagrams, flowcharts, or complex layouts\n\
                 - PDFs and Jupyter notebooks (.ipynb) are exempt from the token limit\n\
                 - If the user provides a path to a screenshot or image, use this tool to view the file at that path.".to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(ReadArgs))
@@ -159,21 +168,83 @@ impl rig::tool::Tool for ReadTool {
                     media_type: media_type.as_mime().to_string(),
                 }
             }
-            FileType::Exempt(_exempt_type) => {
+            FileType::Exempt(exempt_type) => {
                 // PROV-002: PDF and IPYNB files are exempt from token limits
                 // They are processed differently (as structured documents)
-                let text_content =
-                    String::from_utf8(binary_content).map_err(|e| ToolError::File {
-                        tool: "read",
-                        message: format!("Error reading file: {e}"),
-                    })?;
+                match exempt_type {
+                    ExemptFileType::Pdf => {
+                        // TOOLS-002: Support three PDF reading modes
+                        let mode = args.pdf_mode.as_deref().unwrap_or("visual");
 
-                let offset = args.offset.unwrap_or(1);
-                let limit = args.limit.unwrap_or(OutputLimits::MAX_LINES);
-                let formatted = Self::format_text_with_line_numbers(&text_content, offset, limit);
+                        // Map errors for all modes
+                        let map_pdf_error = |e: PdfError| match e {
+                            PdfError::Encrypted(path) => ToolError::File {
+                                tool: "read",
+                                message: format!("Cannot read password-protected PDF: {path}"),
+                            },
+                            PdfError::LoadError(msg) => ToolError::File {
+                                tool: "read",
+                                message: format!("Error loading PDF: {msg}"),
+                            },
+                            PdfError::ExtractionError { page, message } => ToolError::File {
+                                tool: "read",
+                                message: format!("Error extracting text from page {page}: {message}"),
+                            },
+                            PdfError::RenderError { page, message } => ToolError::File {
+                                tool: "read",
+                                message: format!("Error rendering page {page}: {message}"),
+                            },
+                            PdfError::PdfiumNotAvailable(msg) => ToolError::File {
+                                tool: "read",
+                                message: msg,
+                            },
+                        };
 
-                // No token limit check for exempt file types
-                ReadOutput::Text { content: formatted }
+                        match mode {
+                            "text" => {
+                                // TEXT MODE: Extract text page by page
+                                let pdf_content = read_pdf_from_bytes(&binary_content, &args.file_path)
+                                    .map_err(map_pdf_error)?;
+                                ReadOutput::Text {
+                                    content: pdf_content.format_display(),
+                                }
+                            }
+                            "images" => {
+                                // IMAGES MODE: Extract embedded images
+                                let images = super::pdf::extract_pdf_images(&binary_content, &args.file_path)
+                                    .map_err(map_pdf_error)?;
+                                ReadOutput::Text {
+                                    content: serde_json::to_string_pretty(&images)
+                                        .unwrap_or_else(|_| "[]".to_string()),
+                                }
+                            }
+                            "visual" | _ => {
+                                // VISUAL MODE (default): Render pages as images
+                                let pages = super::pdf::render_pdf_pages(&binary_content, &args.file_path)
+                                    .map_err(map_pdf_error)?;
+                                ReadOutput::Text {
+                                    content: serde_json::to_string_pretty(&pages)
+                                        .unwrap_or_else(|_| "[]".to_string()),
+                                }
+                            }
+                        }
+                    }
+                    ExemptFileType::Ipynb => {
+                        // IPYNB files are JSON and can be read as text
+                        let text_content =
+                            String::from_utf8(binary_content).map_err(|e| ToolError::File {
+                                tool: "read",
+                                message: format!("Error reading file: {e}"),
+                            })?;
+
+                        let offset = args.offset.unwrap_or(1);
+                        let limit = args.limit.unwrap_or(OutputLimits::MAX_LINES);
+                        let formatted =
+                            Self::format_text_with_line_numbers(&text_content, offset, limit);
+
+                        ReadOutput::Text { content: formatted }
+                    }
+                }
             }
             FileType::Text => {
                 // For text files, use existing line-numbered format

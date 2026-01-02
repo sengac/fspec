@@ -209,6 +209,7 @@ async fn test_tools_can_be_tested_directly_using_rig_trait() {
         file_path: test_file.to_string_lossy().to_string(),
         offset: None,
         limit: None,
+        pdf_mode: None,
     };
 
     let result = tool.call(args).await;

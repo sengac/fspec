@@ -7,6 +7,7 @@
 use codelet_common::token_estimator::{count_tokens, max_file_tokens, DEFAULT_MAX_FILE_TOKENS};
 use codelet_tools::read::{ReadArgs, ReadTool};
 use codelet_tools::error::ToolError;
+use lopdf::{dictionary, Document, Object, Stream};
 use rig::tool::Tool;
 use serial_test::serial;
 
@@ -74,7 +75,7 @@ async fn test_read_file_under_token_limit() {
     // Ensure clean env state
     std::env::remove_var("CODELET_MAX_FILE_TOKENS");
 
-    // @step Given a TypeScript file with content under the token limit
+    // @step Given a TypeScript file "/project/src/app.ts" with 50KB of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("app.ts");
     // Small content that's definitely under 25,000 tokens
@@ -88,6 +89,7 @@ async fn test_read_file_under_token_limit() {
             file_path: file_path.to_string_lossy().to_string(),
             offset: None,
             limit: None,
+            pdf_mode: None,
         })
         .await;
 
@@ -105,7 +107,7 @@ async fn test_read_file_exceeding_token_limit() {
     // Set a very low limit to trigger the error without needing a huge file
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "100");
 
-    // @step Given a file with content exceeding the token limit
+    // @step Given a minified JavaScript file "/project/dist/bundle.js" with 200KB of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("bundle.js");
     // Content that exceeds 100 tokens
@@ -119,6 +121,7 @@ async fn test_read_file_exceeding_token_limit() {
             file_path: file_path.to_string_lossy().to_string(),
             offset: None,
             limit: None,
+            pdf_mode: None,
         })
         .await;
 
@@ -149,7 +152,7 @@ async fn test_read_image_file_exempt() {
     // Set a very low limit to verify images bypass it
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "10");
 
-    // @step Given a PNG image file
+    // @step Given a PNG image file "/project/assets/logo.png" with 5MB of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("logo.png");
     // Create a minimal valid PNG header
@@ -173,6 +176,7 @@ async fn test_read_image_file_exempt() {
             file_path: file_path.to_string_lossy().to_string(),
             offset: None,
             limit: None,
+            pdf_mode: None,
         })
         .await;
 
@@ -193,29 +197,87 @@ async fn test_read_pdf_file_exempt() {
     // Set a very low limit to verify PDFs bypass it
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "10");
 
-    // @step Given a PDF file
+    // @step Given a PDF file "/project/docs/manual.pdf" with 10MB of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("manual.pdf");
-    // Create a PDF-like file with enough content to exceed 10 tokens
-    let pdf_content = b"%PDF-1.4\n%This is a larger PDF content that would normally exceed the token limit but should be exempt because it is a PDF file\n%%EOF";
-    std::fs::write(&file_path, pdf_content).expect("Failed to write test file");
+
+    // Create a valid PDF using lopdf
+    let pdf_bytes = create_valid_test_pdf();
+    std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test file");
 
     // @step When the read tool is called
+    // Use text mode since visual mode requires Pdfium library
     let read_tool = ReadTool::new();
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
             offset: None,
             limit: None,
+            pdf_mode: Some("text".to_string()),
         })
         .await;
 
     // @step Then the PDF should be processed successfully
     // @step And the token limit check should be skipped
-    assert!(result.is_ok(), "PDF read should succeed despite low token limit");
+    assert!(result.is_ok(), "PDF read should succeed despite low token limit: {:?}", result.err());
 
     // Cleanup
     std::env::remove_var("CODELET_MAX_FILE_TOKENS");
+}
+
+/// Helper to create a valid PDF for testing
+fn create_valid_test_pdf() -> Vec<u8> {
+    let mut doc = Document::with_version("1.5");
+
+    let font_id = doc.add_object(dictionary! {
+        "Type" => "Font",
+        "Subtype" => "Type1",
+        "BaseFont" => "Helvetica",
+    });
+
+    let resources_id = doc.add_object(dictionary! {
+        "Font" => dictionary! {
+            "F1" => font_id,
+        },
+    });
+
+    let content_stream = "BT\n/F1 12 Tf\n50 700 Td\n(Test PDF content) Tj\nET";
+    let content_id = doc.add_object(Stream::new(
+        dictionary! {},
+        content_stream.as_bytes().to_vec(),
+    ));
+
+    let page_id = doc.add_object(dictionary! {
+        "Type" => "Page",
+        "MediaBox" => vec![0.into(), 0.into(), 612.into(), 792.into()],
+        "Contents" => content_id,
+        "Resources" => resources_id,
+    });
+
+    let pages_id = doc.add_object(dictionary! {
+        "Type" => "Pages",
+        "Kids" => vec![page_id.into()],
+        "Count" => 1i64,
+    });
+
+    // Update page to reference Pages node
+    if let Ok(page) = doc.get_object_mut(page_id) {
+        if let Object::Dictionary(ref mut dict) = page {
+            dict.set("Parent", pages_id);
+        }
+    }
+
+    // Create catalog
+    let catalog_id = doc.add_object(dictionary! {
+        "Type" => "Catalog",
+        "Pages" => pages_id,
+    });
+
+    doc.trailer.set("Root", catalog_id);
+
+    let mut bytes = Vec::new();
+    doc.save_to(&mut bytes).unwrap_or_default();
+    bytes
 }
 
 /// Scenario: Partial read within token limit
@@ -225,7 +287,7 @@ async fn test_partial_read_within_token_limit() {
     // Set a moderate limit
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "500");
 
-    // @step Given a large file with content over the limit
+    // @step Given a large file "/project/src/large.ts" with 500KB of content
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("large.ts");
     let content = "const line = 'test';\n".repeat(2500); // Large file
@@ -238,6 +300,7 @@ async fn test_partial_read_within_token_limit() {
             file_path: file_path.to_string_lossy().to_string(),
             offset: Some(1),
             limit: Some(50), // Only read 50 lines
+            pdf_mode: None,
         })
         .await;
 
@@ -263,11 +326,14 @@ async fn test_partial_read_within_token_limit() {
 async fn test_custom_token_limit_via_env() {
     // @step Given the environment variable CODELET_MAX_FILE_TOKENS is set to 50000
     std::env::set_var("CODELET_MAX_FILE_TOKENS", "50000");
+    // @step And a JavaScript file "/project/dist/bundle.js" with 150KB of content
+    // (This test focuses on the env var behavior, not file reading)
 
     // @step When max_file_tokens is called
     let limit = max_file_tokens();
 
     // @step Then the custom limit should be returned
+    // @step And the custom limit of 50,000 tokens should be applied
     assert_eq!(limit, 50000, "Custom limit should be 50000");
 
     // Verify default when unset
@@ -306,7 +372,8 @@ async fn test_interactive_helpers_uses_token_estimator() {
 /// Scenario: Replace byte-based estimation in persistence storage
 #[tokio::test]
 async fn test_persistence_storage_uses_token_estimator() {
-    // @step Given the migration is complete
+    // @step Given the existing estimate_tokens() function in napi/persistence/storage.rs
+    // @step When the migration is complete
     // storage.rs now uses count_tokens from codelet_common
 
     // @step Then the function should use the shared TokenEstimator
@@ -336,7 +403,8 @@ async fn test_persistence_storage_uses_token_estimator() {
 /// Scenario: Replace byte-based estimation in compactor
 #[tokio::test]
 async fn test_compactor_uses_token_estimator() {
-    // @step Given the migration is complete
+    // @step Given the inline token estimation in compactor.rs
+    // @step When the migration is complete
     // compactor.rs now uses count_tokens from codelet_common
 
     // @step Then compaction decisions should use TokenEstimator
@@ -377,6 +445,7 @@ async fn test_debug_line_and_token_limits() {
             file_path: file_path.to_string_lossy().to_string(),
             offset: None,
             limit: None,
+            pdf_mode: None,
         })
         .await;
 

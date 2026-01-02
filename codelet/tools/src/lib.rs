@@ -16,6 +16,7 @@ pub mod grep;
 pub mod limits;
 pub mod ls;
 pub mod page_fetcher;
+pub mod pdf;
 pub mod read;
 pub mod search_engine;
 pub mod tool_progress;

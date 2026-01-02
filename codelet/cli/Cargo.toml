@@ -61,6 +61,7 @@ assert_cmd.workspace = true
 predicates.workspace = true
 tokio-test.workspace = true
 serial_test.workspace = true
+lopdf.workspace = true
 
 [lints]
 workspace = true
