@@ -1,0 +1,29 @@
+# Windows MSVC cross-compilation Dockerfile for NAPI-RS
+# Based on messense/cargo-xwin but with latest Rust
+
+FROM rust:latest
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    pkg-config \
+    curl \
+    git \
+    ca-certificates \
+    clang \
+    llvm \
+    lld \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Windows targets
+RUN rustup target add \
+    x86_64-pc-windows-msvc \
+    aarch64-pc-windows-msvc
+
+# Install cargo-xwin
+RUN cargo install cargo-xwin
+
+# Set working directory
+WORKDIR /io
+
+CMD ["cargo", "xwin", "--help"]
