@@ -374,6 +374,57 @@ const extractModelIdForRegistry = (apiModelId: string): string => {
     .replace(/-\d{8}$/, '');               // Remove date suffix
 };
 
+// TUI-037: Claude Code style tool display helpers
+const STREAMING_WINDOW_SIZE = 10; // Number of lines visible during streaming
+const COLLAPSED_LINES = 4; // Number of lines visible when collapsed
+
+/**
+ * Format tool header in Claude Code style: ● ToolName(args)
+ */
+const formatToolHeader = (toolName: string, args: string): string => {
+  return `● ${toolName}(${args})`;
+};
+
+/**
+ * Format output with tree connector: L on first line, indent on rest
+ * Creates visual tree structure like:
+ *   L first line
+ *     second line
+ *     third line
+ */
+const formatWithTreeConnectors = (content: string): string => {
+  const lines = content.split('\n');
+  return lines.map((line, i) => {
+    if (i === 0) return `L ${line}`;  // First line gets L prefix
+    return `  ${line}`;                // Subsequent lines get indent
+  }).join('\n');
+};
+
+/**
+ * Format collapsed output with expand indicator
+ */
+const formatCollapsedOutput = (content: string, visibleLines: number = COLLAPSED_LINES): string => {
+  const lines = content.split('\n');
+  if (lines.length <= visibleLines) {
+    return formatWithTreeConnectors(content);
+  }
+  const visible = lines.slice(0, visibleLines);
+  const remaining = lines.length - visibleLines;
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (ctrl+o to expand)`;
+  return formatWithTreeConnectors(collapsedContent);
+};
+
+/**
+ * Create streaming window - keep only last N lines
+ */
+const createStreamingWindow = (content: string, windowSize: number = STREAMING_WINDOW_SIZE): string => {
+  const lines = content.split('\n');
+  if (lines.length <= windowSize) {
+    return content;
+  }
+  return lines.slice(-windowSize).join('\n');
+};
+
 export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const { stdout } = useStdout();
   const [session, setSession] = useState<CodeletSessionType | null>(null);
@@ -1407,23 +1458,44 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             input: parsedInput,
           });
 
-          let toolContent = `[Planning to use tool: ${toolCall.name}]`;
-          // Parse and display arguments
+          // TUI-037: Format tool header in Claude Code style: ● ToolName(args)
+          let argsDisplay = '';
           if (typeof parsedInput === 'object' && parsedInput !== null) {
-            for (const [key, value] of Object.entries(parsedInput as Record<string, unknown>)) {
-              const displayValue =
-                typeof value === 'string' ? value : JSON.stringify(value);
-              toolContent += `\n  ${key}: ${displayValue}`;
+            const inputObj = parsedInput as Record<string, unknown>;
+            // For Bash tool, show command; for others, show first arg or summary
+            if (inputObj.command) {
+              argsDisplay = String(inputObj.command);
+            } else if (inputObj.file_path) {
+              argsDisplay = String(inputObj.file_path);
+            } else if (inputObj.pattern) {
+              argsDisplay = String(inputObj.pattern);
+            } else {
+              // Show first key-value or JSON summary
+              const entries = Object.entries(inputObj);
+              if (entries.length > 0) {
+                const [key, value] = entries[0];
+                argsDisplay = typeof value === 'string' ? value : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
+              }
             }
           } else if (toolCall.input) {
-            toolContent += `\n  ${toolCall.input}`;
+            argsDisplay = toolCall.input;
           }
+          const toolContent = formatToolHeader(toolCall.name, argsDisplay);
           const toolContentSnapshot = toolContent;
           setConversation(prev => {
             const updated = [...prev];
+            // TUI-037: Remove empty streaming assistant messages before adding tool call
+            while (
+              updated.length > 0 &&
+              updated[updated.length - 1].role === 'assistant' &&
+              updated[updated.length - 1].isStreaming &&
+              !updated[updated.length - 1].content
+            ) {
+              updated.pop();
+            }
+            // Mark any remaining streaming message as complete
             const streamingIdx = updated.findLastIndex(m => m.isStreaming);
             if (streamingIdx >= 0) {
-              // Mark current segment as complete
               updated[streamingIdx] = {
                 ...updated[streamingIdx],
                 isStreaming: false,
@@ -1486,49 +1558,60 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             }
           }
 
-          // Sanitize content: replace tabs with spaces (Ink can't render tabs)
+          // TUI-037: Sanitize and format with collapsed output style
           const sanitizedContent = result.content.replace(/\t/g, '  ');
-          const preview = sanitizedContent.slice(0, 500);
-          const truncated = sanitizedContent.length > 500;
-          // Format like CLI: indented with separators
-          const indentedPreview = preview
-            .split('\n')
-            .map(line => `  ${line}`)
-            .join('\n');
-          const toolResultContent = `[Tool result preview]\n-------\n${indentedPreview}${truncated ? '...' : ''}\n-------`;
+          // Format with tree connectors and collapse if too long
+          const toolResultContent = formatCollapsedOutput(sanitizedContent);
           currentSegment = ''; // Reset for next text segment
 
-          // TOOL-011: If we streamed output, remove it and replace with preview
-          // This ensures consistency with restored sessions (which only have the preview)
+          // TOOL-011 + TUI-037: Combine tool header with result as ONE message
+          // First output line has NO L prefix (starts tree), subsequent lines have L prefix
+          // formatCollapsedOutput already applies this pattern via formatWithTreeConnectors
+
           if (hasStreamedToolProgress) {
             hasStreamedToolProgress = false; // Reset for next tool call
             setConversation(prev => {
               const updated = [...prev];
-              // Find and remove the streaming output message (contains streamed bash output)
-              // It's either appended to the tool call message or a separate "[Tool output]" message
+              // Find tool header and combine with result
               for (let i = updated.length - 1; i >= 0; i--) {
                 const msg = updated[i];
-                if (msg.role === 'tool' && (msg.content.includes('[Tool output]') ||
-                    (msg.content.startsWith('[Planning to use tool:') && msg.content.includes('\n')))) {
-                  // Remove the streaming output - we'll replace with preview
+                // Remove [Tool output] messages (streaming placeholder)
+                if (msg.role === 'tool' && msg.content.includes('[Tool output]')) {
                   updated.splice(i, 1);
+                  continue;
+                }
+                // TUI-037: Combine tool header with formatted result
+                if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                  const headerLine = msg.content.split('\n')[0];
+                  updated[i] = { ...msg, content: `${headerLine}\n${toolResultContent}` };
                   break;
                 }
               }
               return [
                 ...updated,
-                { role: 'tool' as const, content: toolResultContent },
                 // Add new streaming placeholder for AI continuation
                 { role: 'assistant' as const, content: '', isStreaming: true },
               ];
             });
           } else {
-            setConversation(prev => [
-              ...prev,
-              { role: 'tool' as const, content: toolResultContent },
-              // Add new streaming placeholder for AI continuation
-              { role: 'assistant' as const, content: '', isStreaming: true },
-            ]);
+            // Non-streaming: find the last tool header and combine with result
+            setConversation(prev => {
+              const updated = [...prev];
+              // Find tool header (search backwards)
+              for (let i = updated.length - 1; i >= 0; i--) {
+                const msg = updated[i];
+                if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                  const headerLine = msg.content.split('\n')[0];
+                  updated[i] = { ...msg, content: `${headerLine}\n${toolResultContent}` };
+                  break;
+                }
+              }
+              return [
+                ...updated,
+                // Add new streaming placeholder for AI continuation
+                { role: 'assistant' as const, content: '', isStreaming: true },
+              ];
+            });
           }
         } else if (chunk.type === 'Done') {
           // Mark streaming complete and remove empty trailing assistant messages
@@ -1567,13 +1650,42 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           ]);
         } else if (chunk.type === 'Interrupted') {
           // Agent was interrupted by user
-          // Use ⚠ (U+26A0) without emoji selector - width 1 in both string-width and terminal
+          // TUI-037: Only append to tool if it's still streaming (no collapse indicator)
+          // If tool has collapse indicator, it completed - interrupt is for AI continuation
           setConversation(prev => {
-            const updated = [
-              ...prev,
-              { role: 'tool' as const, content: '⚠ Agent interrupted' },
-            ];
-            // Mark any streaming message as complete
+            const updated = [...prev];
+
+            // First, remove empty streaming assistant messages
+            while (
+              updated.length > 0 &&
+              updated[updated.length - 1].role === 'assistant' &&
+              updated[updated.length - 1].isStreaming &&
+              !updated[updated.length - 1].content
+            ) {
+              updated.pop();
+            }
+
+            // Find the last tool message
+            let handledInterrupt = false;
+            for (let i = updated.length - 1; i >= 0; i--) {
+              const msg = updated[i];
+              if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
+                if (!msg.content.includes('(ctrl+o to expand)')) {
+                  updated[i] = { ...msg, content: `${msg.content}\nL ⚠ Interrupted` };
+                  handledInterrupt = true;
+                }
+                // If tool has collapse indicator, it completed - don't append
+                break;
+              }
+            }
+
+            // If no tool was streaming, add interrupt as status (not appended to anything)
+            if (!handledInterrupt) {
+              updated.push({ role: 'tool' as const, content: '⚠ Interrupted' });
+            }
+
+            // Mark any remaining streaming message as complete
             const lastAssistantIdx = updated.findLastIndex(
               m => m.role === 'assistant' && m.isStreaming
             );
@@ -1598,28 +1710,47 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           // TUI-033: Display context fill percentage from Rust
           setContextFillPercentage(chunk.contextFill.fillPercentage);
         } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
-          // TOOL-011: Stream tool execution progress (bash output) in real-time
-          // Display the output chunk by appending to a tool output message
+          // TOOL-011 + TUI-037: Stream tool execution progress with rolling window
+          // Display the output chunk in a fixed-height window (last N lines)
           hasStreamedToolProgress = true;
           const outputChunk = chunk.toolProgress.outputChunk;
           setConversation(prev => {
             const updated = [...prev];
-            // Find the last tool message (should be showing tool execution)
-            // or the last streaming assistant message with tool call
             const lastIdx = updated.length - 1;
             if (lastIdx >= 0) {
               const lastMsg = updated[lastIdx];
-              // If last message is a tool message (from ToolCall), append to it
-              if (lastMsg.role === 'tool' && lastMsg.content.startsWith('[Planning to use tool:')) {
+              // TUI-037: If last message is a tool header (●), append streaming output with tree connectors
+              if (lastMsg.role === 'tool' && lastMsg.content.startsWith('●')) {
+                // Separate header from streaming content
+                const lines = lastMsg.content.split('\n');
+                const header = lines[0]; // ● ToolName(args)
+                // Extract raw output by removing tree prefixes (L or indent)
+                const existingOutput = lines.slice(1).map(l => {
+                  if (l.startsWith('L ')) return l.slice(2);
+                  if (l.startsWith('  ')) return l.slice(2);
+                  return l;
+                }).join('\n');
+                const newOutput = existingOutput + outputChunk;
+                // Apply streaming window - keep only last N lines of output
+                const windowedOutput = createStreamingWindow(newOutput);
+                // Format with tree connectors: L on first line, indent on rest
+                const windowedLines = windowedOutput.split('\n');
+                const formattedOutput = windowedLines.map((l, i) => {
+                  if (i === 0) return `L ${l}`;
+                  return `  ${l}`;
+                }).join('\n');
                 updated[lastIdx] = {
                   ...lastMsg,
-                  content: lastMsg.content + outputChunk,
+                  content: `${header}\n${formattedOutput}`,
                 };
               } else if (lastMsg.role === 'tool' && lastMsg.content.includes('[Tool output]')) {
-                // Already showing tool output, append to it
+                // Already showing tool output, append and apply window
+                const existingContent = lastMsg.content.replace('[Tool output]\n', '');
+                const newOutput = existingContent + outputChunk;
+                const windowedOutput = createStreamingWindow(newOutput);
                 updated[lastIdx] = {
                   ...lastMsg,
-                  content: lastMsg.content + outputChunk,
+                  content: `[Tool output]\n${windowedOutput}`,
                 };
               } else {
                 // Create new tool output message
@@ -2220,28 +2351,41 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                   restored.push({ role: 'assistant', content: textContent, isStreaming: false });
                   textContent = '';
                 }
-                // Tool call
-                let toolContent = `[Planning to use tool: ${content.name}]`;
+                // TUI-037: Tool call in Claude Code style: ● ToolName(args)
                 const input = content.input;
+                let argsDisplay = '';
                 if (typeof input === 'object' && input !== null) {
-                  for (const [key, value] of Object.entries(input)) {
-                    const displayValue = typeof value === 'string' ? value : JSON.stringify(value);
-                    toolContent += `\n  ${key}: ${displayValue}`;
+                  const inputObj = input as Record<string, unknown>;
+                  if (inputObj.command) {
+                    argsDisplay = String(inputObj.command);
+                  } else if (inputObj.file_path) {
+                    argsDisplay = String(inputObj.file_path);
+                  } else if (inputObj.pattern) {
+                    argsDisplay = String(inputObj.pattern);
+                  } else {
+                    const entries = Object.entries(inputObj);
+                    if (entries.length > 0) {
+                      const [key, value] = entries[0];
+                      argsDisplay = typeof value === 'string' ? value : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
+                    }
                   }
                 }
-                restored.push({ role: 'tool', content: toolContent, isStreaming: false });
+                const toolHeader = formatToolHeader(content.name, argsDisplay);
 
-                // Immediately show the tool result (interleaved)
+                // TUI-037: Combine tool header with result as ONE message
+                // First output line has NO L prefix (starts tree), subsequent lines have L prefix
                 const toolResult = toolResultsByUseId.get(content.id);
                 if (toolResult) {
-                  const preview = toolResult.content.slice(0, 500);
-                  const truncated = toolResult.content.length > 500;
-                  const indentedPreview = preview.split('\n').map((line: string) => `  ${line}`).join('\n');
+                  const sanitizedContent = toolResult.content.replace(/\t/g, '  ');
+                  const resultContent = formatCollapsedOutput(sanitizedContent);
                   restored.push({
                     role: 'tool',
-                    content: `[Tool result preview]\n-------\n${indentedPreview}${truncated ? '...' : ''}\n-------`,
+                    content: `${toolHeader}\n${resultContent}`,
                     isStreaming: false,
                   });
+                } else {
+                  // No result yet, just show header
+                  restored.push({ role: 'tool', content: toolHeader, isStreaming: false });
                 }
               } else if (content.type === 'thinking' && content.thinking) {
                 // Thinking block (could show or hide based on preference)

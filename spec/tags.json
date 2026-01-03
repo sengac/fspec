@@ -774,6 +774,10 @@
           "description": "Tool discovery and listing features"
         },
         {
+          "name": "@tool-display",
+          "description": "Tool output display and formatting features"
+        },
+        {
           "name": "@tool-execution",
           "description": "Tool execution and subprocess management features"
         },
@@ -2186,7 +2190,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2025-12-31T04:48:57.501Z",
+    "lastUpdated": "2026-01-03T10:54:49.264Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
