@@ -21,9 +21,10 @@ use crate::{
     tool::ToolSetError,
 };
 
-/// Parse tool result string and convert to appropriate ToolResultContent.
+/// Parse tool result string and convert to appropriate ToolResultContent(s).
 /// Detects image responses from Read tool and converts to ToolResultContent::Image.
-fn parse_tool_result_content(result: &str) -> ToolResultContent {
+/// Returns a Vec to support multiple images (e.g., PDF visual mode pages).
+fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
     // Try to parse as JSON to detect structured tool output
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(result) {
         // Handle FileOperationResult wrapper: {"success":true,"content":"..."}
@@ -33,7 +34,7 @@ fn parse_tool_result_content(result: &str) -> ToolResultContent {
                 // Parse the content field as JSON
                 match serde_json::from_str::<serde_json::Value>(content_str) {
                     Ok(inner_json) => inner_json,
-                    Err(_) => return ToolResultContent::text(content_str),
+                    Err(_) => return vec![ToolResultContent::text(content_str)],
                 }
             } else {
                 json
@@ -43,11 +44,33 @@ fn parse_tool_result_content(result: &str) -> ToolResultContent {
             // This happens when tool results are JSON-encoded strings containing JSON
             match serde_json::from_str::<serde_json::Value>(inner_str) {
                 Ok(inner_json) => inner_json,
-                Err(_) => return ToolResultContent::text(inner_str),
+                Err(_) => return vec![ToolResultContent::text(inner_str)],
             }
         } else {
             json
         };
+
+        // Check for PDF visual mode: {"path":"...", "total_pages":N, "pages":[{"page_number":N, "data":"...", "media_type":"..."}]}
+        if json.get("pages").is_some() && json.get("total_pages").is_some() {
+            if let Some(pages) = json.get("pages").and_then(|p| p.as_array()) {
+                let mut contents = Vec::with_capacity(pages.len());
+                for page in pages {
+                    let data = page.get("data").and_then(|d| d.as_str());
+                    let media_type_str = page.get("media_type").and_then(|m| m.as_str());
+
+                    if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
+                        if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
+                            let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
+                            tracing::info!("parse_tool_result_content: PDF page {} as Image, media_type={:?}", page_num, media_type);
+                            contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
+                        }
+                    }
+                }
+                if !contents.is_empty() {
+                    return contents;
+                }
+            }
+        }
 
         // Check for image type from Read tool: {"type":"image","data":"...","media_type":"..."}
         let type_field = json.get("type").and_then(|t| t.as_str());
@@ -60,19 +83,54 @@ fn parse_tool_result_content(result: &str) -> ToolResultContent {
                 // Parse the media type string to ImageMediaType
                 if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
                     tracing::info!("parse_tool_result_content: returning Image, media_type={:?}", media_type);
-                    return ToolResultContent::image_base64(data, Some(media_type), None);
+                    return vec![ToolResultContent::image_base64(data, Some(media_type), None)];
                 }
             }
         }
         // Check for text type from Read tool: {"type":"text","content":"..."}
+        // The content might contain nested JSON (e.g., PDF visual mode output)
         if type_field == Some("text") {
             if let Some(content) = json.get("content").and_then(|c| c.as_str()) {
-                return ToolResultContent::text(content);
+                // Try to parse content as JSON to check for nested PDF pages
+                if let Ok(inner_json) = serde_json::from_str::<serde_json::Value>(content) {
+                    // Check if the nested JSON is PDF visual mode output
+                    if inner_json.get("pages").is_some() && inner_json.get("total_pages").is_some() {
+                        if let Some(pages) = inner_json.get("pages").and_then(|p| p.as_array()) {
+                            let mut contents = Vec::with_capacity(pages.len());
+                            for page in pages {
+                                let data = page.get("data").and_then(|d| d.as_str());
+                                let media_type_str = page.get("media_type").and_then(|m| m.as_str());
+
+                                if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
+                                    if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
+                                        let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
+                                        tracing::info!("parse_tool_result_content: nested PDF page {} as Image, media_type={:?}", page_num, media_type);
+                                        contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
+                                    }
+                                }
+                            }
+                            if !contents.is_empty() {
+                                return contents;
+                            }
+                        }
+                    }
+                }
+                // Not nested PDF, return as plain text
+                return vec![ToolResultContent::text(content)];
             }
         }
     }
     // Default: treat as plain text
-    ToolResultContent::text(result)
+    vec![ToolResultContent::text(result)]
+}
+
+/// Convert Vec<ToolResultContent> to OneOrMany<ToolResultContent>
+fn vec_to_one_or_many(contents: Vec<ToolResultContent>) -> OneOrMany<ToolResultContent> {
+    match contents.len() {
+        0 => OneOrMany::one(ToolResultContent::text("")), // Fallback for empty
+        1 => OneOrMany::one(contents.into_iter().next().unwrap()),
+        _ => OneOrMany::many(contents).expect("Vec with >1 items should succeed"),
+    }
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -396,7 +454,7 @@ where
 
                             match tc_result {
                                 Ok(text) => {
-                                    let tr = ToolResult { id: tool_call.id, call_id: tool_call.call_id, content: OneOrMany::one(parse_tool_result_content(&text)) };
+                                    let tr = ToolResult { id: tool_call.id, call_id: tool_call.call_id, content: vec_to_one_or_many(parse_tool_result_content(&text)) };
                                     yield Ok(MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(tr)));
                                 }
                                 Err(e) => {
@@ -478,14 +536,14 @@ where
                             content: OneOrMany::one(UserContent::tool_result_with_call_id(
                                 &id,
                                 call_id.clone(),
-                                OneOrMany::one(parse_tool_result_content(&tool_result)),
+                                vec_to_one_or_many(parse_tool_result_content(&tool_result)),
                             )),
                         });
                     } else {
                         chat_history.write().await.push(Message::User {
                             content: OneOrMany::one(UserContent::tool_result(
                                 &id,
-                                OneOrMany::one(parse_tool_result_content(&tool_result)),
+                                vec_to_one_or_many(parse_tool_result_content(&tool_result)),
                             )),
                         });
                     }
