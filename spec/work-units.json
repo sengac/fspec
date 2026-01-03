@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-03T11:09:39.360Z"
+    "lastUpdated": "2026-01-03T12:00:00.553Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -59567,6 +59567,112 @@
         "spec/attachments/TUI-037/ast-research-agent-modal.md"
       ],
       "updated": "2026-01-03T11:09:39.545Z"
+    },
+    "TUI-038": {
+      "id": "TUI-038",
+      "title": "Diff View for Write/Edit Tool Output",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2026-01-03T11:54:17.480Z",
+      "updatedAt": "2026-01-03T12:11:17.454Z",
+      "description": "Display Write and Edit tool results with colored diff view showing added lines in green and removed lines in red, matching the FileDiffViewer style used for git changes",
+      "epic": "interactive-tui-foundation",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-03T11:54:24.253Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-03T12:00:08.069Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-03T12:04:30.156Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-03T12:11:17.454Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using AI agents",
+        "action": "see colored diff output when Write/Edit tools modify files",
+        "benefit": "I can quickly understand what changes were made with visual red/green highlighting"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Edit tool shows old_string lines as removed (red background #8B0000) and new_string lines as added (green background #006400)",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:54:48.996Z"
+        },
+        {
+          "id": 1,
+          "text": "Write tool shows all content as additions (green) for new files, or full diff for existing file overwrites",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:54:50.625Z"
+        },
+        {
+          "id": 2,
+          "text": "Diff colors match FileDiffViewer style: white text on dark red/green backgrounds",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:54:52.774Z"
+        },
+        {
+          "id": 3,
+          "text": "Diff view uses tree connector pattern: L prefix on first line, indent on subsequent lines",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:54:54.384Z"
+        },
+        {
+          "id": 4,
+          "text": "Long diffs are collapsed with '... +N lines (ctrl+o to expand)' indicator",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:54:56.206Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Edit replaces 'const x = 1' with 'const x = 2': shows '-const x = 1' in red, '+const x = 2' in green",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:55:06.718Z"
+        },
+        {
+          "id": 1,
+          "text": "Write creates new file with 3 lines: all 3 lines shown with '+' prefix in green",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:55:08.585Z"
+        },
+        {
+          "id": 2,
+          "text": "Edit with multi-line replacement: consecutive removed lines grouped together, followed by consecutive added lines",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:55:10.254Z"
+        },
+        {
+          "id": 3,
+          "text": "Edit with 100+ line diff: first 4 lines visible, then '... +96 lines (ctrl+o to expand)' indicator",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:55:11.858Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation in AgentModal.tsx: Modify tool result formatting to detect Edit/Write tools and render diff output with colored backgrounds using Ink Text component. Reuse parseDiff from diff-parser.ts for line classification. Colors: removed=#8B0000, added=#006400. Maintain tree connector pattern (L prefix). Apply same collapse logic for long diffs.",
+          "deleted": false,
+          "createdAt": "2026-01-03T11:58:55.909Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/TUI-038/ast-research-format-functions.md"
+      ]
     }
   },
   "states": {
@@ -59636,7 +59742,9 @@
     ],
     "testing": [],
     "implementing": [],
-    "validating": [],
+    "validating": [
+      "TUI-038"
+    ],
     "done": [
       "TUI-037",
       "PROV-002",
@@ -60096,7 +60204,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 37,
+    "TUI": 38,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,
