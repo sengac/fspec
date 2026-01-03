@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-02T08:41:00.274Z"
+    "lastUpdated": "2026-01-03T11:09:39.360Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -59363,6 +59363,210 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2026-01-02T08:41:00.305Z"
+    },
+    "TUI-037": {
+      "id": "TUI-037",
+      "title": "Claude Code Style Tool Output Display",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-03T10:47:46.142Z",
+      "updatedAt": "2026-01-03T11:09:39.545Z",
+      "description": "Change fspec/codelet tool output display from current format ([Tool result preview] with dashed separators) to Claude Code format (● ToolName(command) with tree connectors L and collapsible ... +N lines)",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec/codelet agent",
+        "action": "see tool outputs displayed in Claude Code's visual style",
+        "benefit": "I have a familiar, consistent experience matching Claude Code's polished UI"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-03T10:48:19.285Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-03T10:57:20.232Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-03T10:59:57.820Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-03T11:09:00.333Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-03T11:09:39.545Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tool header must display as bullet point followed by ToolName(command/args) - e.g., '● Bash(fspec bootstrap)'",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:27.492Z"
+        },
+        {
+          "id": 1,
+          "text": "Tool output content must use tree connectors (L character with vertical lines) for nested/indented content display",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:29.733Z"
+        },
+        {
+          "id": 2,
+          "text": "Long tool output must be collapsible with '... +N lines (ctrl+o to expand)' indicator showing remaining line count",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:31.493Z"
+        },
+        {
+          "id": 3,
+          "text": "Initial display shows first few lines of output before collapse indicator, user can press ctrl+o to expand full content",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:33.087Z"
+        },
+        {
+          "id": 4,
+          "text": "During Bash streaming, output is displayed in a fixed-height window (e.g., 10 lines) that scrolls - new lines push old lines up and out of view",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:50:39.095Z"
+        },
+        {
+          "id": 5,
+          "text": "Tool call header (e.g., '● Bash(command)') must ALWAYS remain visible - before, during, and after execution - it should never disappear",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:51:31.862Z"
+        },
+        {
+          "id": 6,
+          "text": "This display format applies to ALL tool types, not just Bash",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:53:31.016Z"
+        },
+        {
+          "id": 7,
+          "text": "Changes are TUI only (AgentModal.tsx) - CLI output.rs is not in scope",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:53:33.165Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Bash tool shows: '● Bash(fspec --sync-version 0.9.3)' with output tree-structured below using L connectors",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:42.257Z"
+        },
+        {
+          "id": 1,
+          "text": "Long output (753 lines) shows first 3-4 lines then '... +753 lines (ctrl+o to expand)' indicator",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:44.539Z"
+        },
+        {
+          "id": 2,
+          "text": "system-reminder content displayed as nested tree node with L connector: 'L <system-reminder>' followed by indented content",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:46.300Z"
+        },
+        {
+          "id": 3,
+          "text": "While fspec bootstrap runs, user sees last 10 lines of output scrolling in real-time, not the full 753+ lines flooding the screen",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:50:40.666Z"
+        },
+        {
+          "id": 4,
+          "text": "After 'fspec bootstrap' completes, user still sees '● Bash(fspec bootstrap)' header above the collapsed output - it never vanishes",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:51:34.501Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: How many lines of tool output should be shown before collapsing? (Claude Code appears to show ~3-4 lines)",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:57.256Z",
+          "selected": true,
+          "answered": true,
+          "answer": "About 10 lines for streaming window, and ~3-4 lines shown in collapsed state after completion"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should this apply to all tool types (Bash, Read, Edit, Write, Grep, Glob) or just Bash?",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:48:59.836Z",
+          "selected": true,
+          "answered": true,
+          "answer": "All tools (Bash, Read, Edit, Write, Grep, Glob, etc.) should use this display format"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the expand/collapse be toggleable (press ctrl+o to expand, then ctrl+o again to collapse)?",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:49:01.520Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No toggle in this story - just expand with ctrl+o, no collapse back"
+        },
+        {
+          "id": 3,
+          "text": "@human: This change affects both AgentModal.tsx (TUI) and output.rs (CLI). Should both be updated, or just the TUI?",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:49:03.041Z",
+          "selected": true,
+          "answered": true,
+          "answer": "TUI only (AgentModal.tsx) - CLI output.rs is not used"
+        },
+        {
+          "id": 4,
+          "text": "@human: For the streaming window - should it be exactly 10 lines, or configurable? And should it show a visual indicator that more content exists above (e.g., scroll bar or '... N lines above')?",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:50:50.668Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Fixed 10 lines for streaming window is fine"
+        },
+        {
+          "id": 5,
+          "text": "@human: Is this a bug fix (tool header currently disappearing) combined with the new display format? Or is the disappearing header a separate issue to track?",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:51:36.172Z",
+          "selected": true,
+          "answered": true,
+          "answer": "It's a bug - fix the disappearing tool header as part of this story"
+        }
+      ],
+      "nextQuestionId": 6,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation in src/tui/components/AgentModal.tsx - modify tool message rendering in conversationLines memo (lines ~2914-3008) and tool content formatting (lines ~1410-1498)",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:56:11.385Z"
+        },
+        {
+          "id": 1,
+          "text": "Streaming window: Modify toolProgress handling (lines ~1600-1633) to maintain fixed 10-line buffer, replacing full output accumulation with rolling window",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:56:12.967Z"
+        },
+        {
+          "id": 2,
+          "text": "Bug fix: Tool header disappearing - investigate why toolCall messages are being removed/replaced during streaming and ensure header persists through all states",
+          "deleted": false,
+          "createdAt": "2026-01-03T10:56:14.684Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/TUI-037/ast-research-agent-modal.md"
+      ],
+      "updated": "2026-01-03T11:09:39.545Z"
     }
   },
   "states": {
@@ -59434,6 +59638,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-037",
       "PROV-002",
       "TOOLS-002",
       "PROV-001",
@@ -59891,7 +60096,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 35,
+    "TUI": 37,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

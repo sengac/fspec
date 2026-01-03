@@ -211,6 +211,7 @@ Tags that categorize features by functional area.
 | `@testing` | Testing and quality assurance features |
 | `@thinking-detection` | Features related to thinking/reasoning level detection and configuration |
 | `@tool-discovery` | Tool discovery and listing features |
+| `@tool-display` | Tool output display and formatting features |
 | `@tool-execution` | Tool execution and subprocess management features |
 | `@tracking` | Metric tracking operations |
 | `@ui-enhancement` | TUI user interface enhancements and visual improvements |
@@ -788,7 +789,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2025-12-31T04:48:57.501Z_
+_Last updated: 2026-01-03T10:54:49.264Z_
 
 **Update Command**: `fspec tag-stats`
 
