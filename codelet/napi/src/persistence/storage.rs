@@ -61,6 +61,10 @@ impl MessageStore {
     }
 
     /// Store a new message with metadata and return its ID
+    ///
+    /// If metadata contains `_actualTokenCount`, that value is used instead of
+    /// calculating tokens from content. This is critical for blob-stored messages
+    /// where the content is a summary/reference, not the actual data.
     pub fn store_with_metadata(
         &mut self,
         role: &str,
@@ -70,13 +74,21 @@ impl MessageStore {
         let id = Uuid::new_v4();
         let content_hash = compute_hash(content.as_bytes());
 
+        // Use _actualTokenCount from metadata if present (for blob-stored messages)
+        // Otherwise fall back to counting tokens from the content string
+        let token_count = metadata
+            .get("_actualTokenCount")
+            .and_then(|v| v.as_u64())
+            .map(|v| v as u32)
+            .unwrap_or_else(|| count_tokens(content) as u32);
+
         let msg = StoredMessage {
             id,
             content_hash,
             created_at: Utc::now(),
             role: role.to_string(),
             content: content.to_string(),
-            token_count: Some(count_tokens(content) as u32),
+            token_count: Some(token_count),
             blob_refs: Vec::new(),
             metadata,
         };
