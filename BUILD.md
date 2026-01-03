@@ -170,7 +170,3 @@ Test the local bindings (macOS only):
 cd codelet/napi
 node -e "const { CodeletSession } = require('./index.js'); console.log('OK')"
 ```
-
-## CI/CD
-
-For automated builds, see `.github/workflows/build-codelet-napi.yml`. The CI workflow builds each platform on its native runner for maximum compatibility.

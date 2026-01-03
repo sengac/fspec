@@ -10,158 +10,250 @@ You are implementing the `/publish` slash command for conditionally publishing t
 - **MUST have run `/release` command first** (CLI-008)
 - Assumes tests and build have already passed (validated by `/release`)
 
-### Version Verification (MUST CHECK FIRST)
+### Pre-Publish Validation (MUST CHECK FIRST)
 
-Before publishing, you MUST verify:
+Before publishing, you MUST verify in this EXACT order:
 
-1. **Get current git tag:**
+1. **Verify npm authentication:**
+   - Run `npm whoami`
+   - If not logged in, ABORT with error: "Not logged in to npm. Run `npm login` first."
+
+2. **Get current git tag:**
    - Run `git describe --tags --exact-match 2>/dev/null`
    - Parse version from tag (e.g., `v0.3.1` → `0.3.1`)
-   - If no tag, ABORT with error: "No git tag found. Run /release first."
+   - If no tag at HEAD, ABORT with error: "No git tag found at HEAD. Run /release first."
 
-2. **Get package.json version:**
-   - Read `package.json`
-   - Extract `"version"` field value
-
-3. **Verify git tag matches package.json:**
-   - Compare git tag version with package.json version
-   - If mismatch, ABORT with error:
+3. **Verify all versions match:**
+   - Read root `package.json` version
+   - Read `codelet/napi/package.json` version
+   - Compare both with git tag version
+   - If ANY mismatch, ABORT with error:
      ```
-     Version mismatch: git tag (v{tag-version}) does not match package.json ({pkg-version}).
-     Run /release first to ensure versions are synchronized.
+     Version mismatch detected!
+     Git tag: v{tag-version}
+     package.json: {root-version}
+     codelet/napi/package.json: {napi-version}
+
+     All versions must match. Run /release first.
      ```
 
-4. **Get npm registry version:**
+4. **Verify codelet-napi binaries exist:**
+   - Check that `codelet/napi/*.node` files exist for all 6 platforms:
+     - `codelet-napi.darwin-arm64.node`
+     - `codelet-napi.darwin-x64.node`
+     - `codelet-napi.linux-arm64-gnu.node`
+     - `codelet-napi.linux-x64-gnu.node`
+     - `codelet-napi.win32-arm64-msvc.node`
+     - `codelet-napi.win32-x64-msvc.node`
+   - If ANY missing, ABORT with error listing missing binaries
+
+### Publishing @sengac/fspec
+
+1. **Get npm registry version for fspec:**
    - Run `npm view @sengac/fspec version 2>/dev/null || echo ""`
-   - If package not found in registry, treat as version `0.0.0` (first publish)
+   - If package not found in registry, treat as first publish
 
-5. **Compare versions:**
+2. **Compare versions:**
    - If npm registry version equals package.json version:
-     - Display: `Version {version} already published to npm. Skipping.`
-     - Exit successfully (exit code 0)
-     - **DO NOT publish**
+     - Display: `@sengac/fspec v{version} already published. Skipping.`
    - If versions differ:
-     - Proceed with publishing
+     - Run `npm publish`
+     - Display success message
 
-### Publishing
+### Publishing @sengac/codelet-napi
 
-1. **Run npm publish:**
-   - Execute `npm publish`
-   - **DO NOT run tests or build** (assumes `/release` already validated)
-   - Capture output for display
+1. **Get npm registry version for codelet-napi:**
+   - Run `npm view @sengac/codelet-napi version 2>/dev/null || echo ""`
+   - If package not found in registry, treat as first publish
 
-2. **Display success message:**
-   - Show published version
-   - Show npm package URL
-   - Reminder that package is now live
+2. **Compare versions:**
+   - If npm registry version equals codelet/napi/package.json version:
+     - Display: `@sengac/codelet-napi v{version} already published. Skipping.`
+   - If versions differ:
+     - Run `cd codelet/napi && npm publish --access public`
+     - Display success message
+
+### Post-Publish
+
+- Display summary with:
+  - Which packages were published (or skipped)
+  - npm package URLs for published packages
+  - Confirmation that packages are live
 
 ## Workflow Summary
 
 ```bash
-# 1. Version verification
-git describe --tags --exact-match  # Get current tag
-# Parse version from tag (v0.3.1 → 0.3.1)
+# 1. Verify authentication
+npm whoami  # ABORT if not logged in
+
+# 2. Verify git tag at HEAD
+git describe --tags --exact-match  # ABORT if no tag
+
+# 3. Verify all versions match
 # Read package.json version
-# Compare git tag vs package.json (ABORT if mismatch)
+# Read codelet/napi/package.json version
+# Compare both with tag version - ABORT if any mismatch
 
-# 2. Check npm registry
-npm view @sengac/fspec version  # Get published version
-# Compare with package.json version
+# 4. Verify codelet-napi binaries exist
+ls codelet/napi/*.node  # ABORT if any missing
 
-# 3. Conditional publish
-if [ "$pkg_version" == "$npm_version" ]; then
-  echo "Version already published. Skipping."
-  exit 0
-else
-  npm publish
-fi
+# 5. Publish fspec if needed
+npm view @sengac/fspec version 2>/dev/null || echo ""
+# Skip if already published, otherwise:
+npm publish
+
+# 6. Publish codelet-napi if needed
+npm view @sengac/codelet-napi version 2>/dev/null || echo ""
+# Skip if already published, otherwise:
+cd codelet/napi && npm publish --access public
+
+# 7. Display summary
 ```
 
 ## Example Scenarios
 
-### Scenario 1: Version already published (skip)
+### Scenario 1: Both packages need publishing
 ```
 $ /publish
 
-Checking versions...
-  Git tag: v0.3.0
-  package.json: 0.3.0
+Checking npm authentication...
+  ✓ Logged in as: sengac
+
+Checking git tag...
+  ✓ Tag at HEAD: v0.3.1
+
+Verifying versions...
+  package.json: 0.3.1
+  codelet/napi/package.json: 0.3.1
+  ✓ All versions match tag
+
+Checking codelet-napi binaries...
+  ✓ codelet-napi.darwin-arm64.node
+  ✓ codelet-napi.darwin-x64.node
+  ✓ codelet-napi.linux-arm64-gnu.node
+  ✓ codelet-napi.linux-x64-gnu.node
+  ✓ codelet-napi.win32-arm64-msvc.node
+  ✓ codelet-napi.win32-x64-msvc.node
+
+Publishing @sengac/fspec...
   npm registry: 0.3.0
+  Local version: 0.3.1
+  ✓ Publishing new version...
+  ✓ Published @sengac/fspec@0.3.1
 
-✓ Versions match locally
-⚠ Version 0.3.0 already published to npm. Skipping.
+Publishing @sengac/codelet-napi...
+  npm registry: 0.3.0
+  Local version: 0.3.1
+  ✓ Publishing new version...
+  ✓ Published @sengac/codelet-napi@0.3.1
 
-No action needed. Package is up to date.
+═══════════════════════════════════════════════════════════
+  Successfully published:
+  📦 @sengac/fspec@0.3.1
+     https://www.npmjs.com/package/@sengac/fspec
+  📦 @sengac/codelet-napi@0.3.1
+     https://www.npmjs.com/package/@sengac/codelet-napi
+═══════════════════════════════════════════════════════════
 ```
 
-### Scenario 2: Version mismatch (error)
+### Scenario 2: Already published (skip both)
 ```
 $ /publish
 
-Checking versions...
-  Git tag: v0.3.1
-  package.json: 0.3.0
+Checking npm authentication...
+  ✓ Logged in as: sengac
+
+Checking git tag...
+  ✓ Tag at HEAD: v0.3.0
+
+Verifying versions...
+  ✓ All versions match tag (0.3.0)
+
+Checking codelet-napi binaries...
+  ✓ All 6 binaries present
+
+Publishing @sengac/fspec...
   npm registry: 0.3.0
+  Local version: 0.3.0
+  ⚠ Already published. Skipping.
+
+Publishing @sengac/codelet-napi...
+  npm registry: 0.3.0
+  Local version: 0.3.0
+  ⚠ Already published. Skipping.
+
+✓ Both packages already up to date on npm.
+```
+
+### Scenario 3: Version mismatch (error)
+```
+$ /publish
+
+Checking git tag...
+  Tag at HEAD: v0.3.1
+
+Verifying versions...
+  package.json: 0.3.1
+  codelet/napi/package.json: 0.3.0  ← MISMATCH
 
 ✗ Version mismatch detected!
 
-Git tag (v0.3.1) does not match package.json (0.3.0).
-Run /release first to ensure versions are synchronized.
+Git tag: v0.3.1
+package.json: 0.3.1
+codelet/napi/package.json: 0.3.0
+
+All versions must match. Run /release first.
 ```
 
-### Scenario 3: New version to publish (success)
-```
-$ /publish
-
-Checking versions...
-  Git tag: v0.3.1
-  package.json: 0.3.1
-  npm registry: 0.3.0
-
-✓ Versions match locally
-✓ New version detected (0.3.1 > 0.3.0)
-
-Publishing to npm...
-npm publish
-
-✓ Successfully published @sengac/fspec@0.3.1 to npm
-  📦 https://www.npmjs.com/package/@sengac/fspec
-
-Package is now live on npm registry.
-```
-
-### Scenario 4: First publish (no npm version)
+### Scenario 4: Missing binaries
 ```
 $ /publish
 
-Checking versions...
-  Git tag: v0.1.0
-  package.json: 0.1.0
-  npm registry: (not found)
+Checking codelet-napi binaries...
+  ✓ codelet-napi.darwin-arm64.node
+  ✓ codelet-napi.darwin-x64.node
+  ✗ codelet-napi.linux-arm64-gnu.node  ← MISSING
+  ✓ codelet-napi.linux-x64-gnu.node
+  ✗ codelet-napi.win32-arm64-msvc.node  ← MISSING
+  ✓ codelet-napi.win32-x64-msvc.node
 
-✓ Versions match locally
-✓ First publish detected
+✗ Missing binaries! Run /release first to build all platforms.
+```
 
-Publishing to npm...
-npm publish
+### Scenario 5: No tag at HEAD
+```
+$ /publish
 
-✓ Successfully published @sengac/fspec@0.1.0 to npm
-  📦 https://www.npmjs.com/package/@sengac/fspec
+Checking git tag...
+  ✗ No git tag found at HEAD
 
-Package is now live on npm registry.
+Run /release first to create a tagged release.
+```
+
+### Scenario 6: Not logged in
+```
+$ /publish
+
+Checking npm authentication...
+  ✗ Not logged in to npm
+
+Please run `npm login` first, then retry.
 ```
 
 ## Error Handling
 
-- **No git tag:** ABORT with error "No git tag found. Run /release first."
-- **Version mismatch:** ABORT with detailed error showing git tag vs package.json
-- **npm publish fails:** Display npm error output, explain potential causes
+- **Not logged in:** ABORT with instructions to run `npm login`
+- **No git tag at HEAD:** ABORT with error "Run /release first"
+- **Version mismatch:** ABORT with detailed error showing all versions
+- **Missing binaries:** ABORT with list of missing binaries
+- **npm publish fails:** Display npm error output, suggest checking npm status
 - **Network issues:** Catch and display connection errors
 
 ## Implementation Notes
 
 - **DO NOT run tests or build** - Assumes `/release` already validated everything
-- **Exit successfully (code 0)** even when skipping publish (already published is not an error)
+- **Exit successfully (code 0)** when skipping already-published packages (not an error)
 - Check npm registry BEFORE publishing to avoid unnecessary errors
 - Display clear, actionable error messages
-- Use package name `@sengac/fspec` for npm registry checks
+- Verify ALL versions match (tag, root package.json, codelet/napi/package.json)
+- Both packages should always have the same version number
