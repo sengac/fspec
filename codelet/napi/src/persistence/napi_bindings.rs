@@ -580,6 +580,13 @@ pub fn persistence_store_message_envelope(
     let envelope: super::MessageEnvelope = serde_json::from_str(&envelope_json)
         .map_err(|e| Error::from_reason(format!("Invalid message envelope JSON: {}", e)))?;
 
+    // CRITICAL FIX: Calculate actual token count BEFORE blob storage processing.
+    // This ensures we track the real content size, not the blob reference size.
+    // Without this, tool results like file reads get counted as ~42 tokens (blob ref)
+    // instead of their actual ~6000+ tokens, causing context tracking to be wildly
+    // underestimated and leading to "Payload Too Large" API errors.
+    let actual_token_count = calculate_envelope_tokens(&envelope);
+
     // Process envelope for blob storage (extracts large content)
     let (processed_envelope, blob_refs) =
         process_envelope_impl(&envelope).map_err(Error::from_reason)?;
@@ -591,6 +598,13 @@ pub fn persistence_store_message_envelope(
     let mut metadata_map: HashMap<String, serde_json::Value> =
         serde_json::from_str(&serde_json::to_string(&processed_envelope).unwrap())
             .map_err(|e| Error::from_reason(format!("Failed to serialize envelope: {}", e)))?;
+
+    // Add the actual token count (calculated from original content before blob processing)
+    // This will be used by store_with_metadata to set the correct token_count
+    metadata_map.insert(
+        "_actualTokenCount".to_string(),
+        serde_json::json!(actual_token_count),
+    );
 
     // Add blob references to metadata if any content was stored in blobs
     if !blob_refs.is_empty() {
@@ -718,6 +732,58 @@ fn truncate_chars(s: &str, max_chars: usize) -> String {
         let truncated: String = s.chars().take(max_chars).collect();
         format!("{}...", truncated)
     }
+}
+
+/// Calculate the actual token count from the ORIGINAL envelope content before blob processing.
+/// This is critical for accurate context tracking - blob references are much shorter than actual content.
+fn calculate_envelope_tokens(envelope: &super::MessageEnvelope) -> u32 {
+    use codelet_common::token_estimator::count_tokens;
+
+    let mut total_tokens: usize = 0;
+
+    match &envelope.message {
+        super::MessagePayload::User(user_msg) => {
+            for content in &user_msg.content {
+                match content {
+                    super::UserContent::Text { text } => {
+                        total_tokens += count_tokens(text);
+                    }
+                    super::UserContent::ToolResult { content, .. } => {
+                        // This is the critical fix - count tokens from actual tool result content
+                        total_tokens += count_tokens(content);
+                    }
+                    super::UserContent::Image { .. } => {
+                        // Images are sent as base64, estimate ~85 tokens for image content block
+                        // (actual tokens depend on image size, but base64 is large)
+                        total_tokens += 85;
+                    }
+                    super::UserContent::Document { .. } => {
+                        // Documents similarly estimated
+                        total_tokens += 100;
+                    }
+                }
+            }
+        }
+        super::MessagePayload::Assistant(assistant_msg) => {
+            for content in &assistant_msg.content {
+                match content {
+                    super::AssistantContent::Text { text } => {
+                        total_tokens += count_tokens(text);
+                    }
+                    super::AssistantContent::ToolUse { input, .. } => {
+                        // Count tokens in tool input JSON
+                        let input_str = serde_json::to_string(input).unwrap_or_default();
+                        total_tokens += count_tokens(&input_str);
+                    }
+                    super::AssistantContent::Thinking { thinking, .. } => {
+                        total_tokens += count_tokens(thinking);
+                    }
+                }
+            }
+        }
+    }
+
+    total_tokens as u32
 }
 
 /// Helper function to extract a text summary from a message envelope
