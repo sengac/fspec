@@ -2675,17 +2675,6 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         });
       }
 
-      // Build confirmation message with compaction info
-      let confirmationMsg = `Session resumed: "${selectedSession.name}" (${selectedSession.messageCount} messages)`;
-      if (selectedSession.compaction) {
-        confirmationMsg += `\n[Compaction: ${selectedSession.compaction.summary}]`;
-      }
-
-      // Add confirmation message
-      setConversation(prev => [
-        ...prev,
-        { role: 'tool', content: confirmationMsg },
-      ]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to restore session';
       setConversation(prev => [
@@ -3216,7 +3205,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     conversation.forEach((msg, msgIndex) => {
       // Add role prefix to first line
       const prefix =
-        msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? 'AI: ' : '';
+        msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? '● ' : '';
       // Normalize emoji variation selectors for consistent width calculation
       const normalizedContent = normalizeEmojiWidth(msg.content);
       const contentLines = normalizedContent.split('\n');
