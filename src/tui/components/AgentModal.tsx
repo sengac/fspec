@@ -41,6 +41,7 @@ import {
   getProviderRegistryEntry,
   type ProviderRegistryEntry,
 } from '../../utils/provider-config';
+import { computeLineDiff, changesToDiffLines, type DiffLine } from '../../git/diff-parser';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -376,7 +377,8 @@ const extractModelIdForRegistry = (apiModelId: string): string => {
 
 // TUI-037: Claude Code style tool display helpers
 const STREAMING_WINDOW_SIZE = 10; // Number of lines visible during streaming
-const COLLAPSED_LINES = 4; // Number of lines visible when collapsed
+const COLLAPSED_LINES = 4; // Number of lines visible when collapsed for normal output
+const DIFF_COLLAPSED_LINES = 25; // Number of lines visible when collapsed for diff output (like Claude Code)
 
 /**
  * Format tool header in Claude Code style: ● ToolName(args)
@@ -425,6 +427,85 @@ const createStreamingWindow = (content: string, windowSize: number = STREAMING_W
   return lines.slice(-windowSize).join('\n');
 };
 
+// TUI-038: Diff view color constants matching FileDiffViewer
+const DIFF_COLORS = {
+  removed: '#8B0000', // Dark red
+  added: '#006400',   // Dark green
+};
+
+/**
+ * TUI-038: Format diff output for Edit tool (old_string -> new_string)
+ * Returns formatted content with color markers for each line
+ */
+interface DiffOutputLine {
+  content: string;
+  color: string | null;
+}
+
+const formatEditDiff = (oldString: string, newString: string): DiffOutputLine[] => {
+  const changes = computeLineDiff(oldString, newString);
+  const diffLines = changesToDiffLines(changes);
+  return diffLines.map(line => ({
+    content: line.content,
+    color: line.type === 'removed' ? DIFF_COLORS.removed :
+           line.type === 'added' ? DIFF_COLORS.added : null,
+  }));
+};
+
+/**
+ * TUI-038: Format diff output for Write tool (new file = all additions)
+ */
+const formatWriteDiff = (content: string): DiffOutputLine[] => {
+  const lines = content.split('\n');
+  return lines.map(line => ({
+    content: `+${line}`,
+    color: DIFF_COLORS.added,
+  }));
+};
+
+/**
+ * TUI-038: Convert diff output lines to display format with tree connectors
+ * Matches Claude Code format exactly:
+ * - Changed lines: ENTIRE line has colored background (including line number)
+ * - Format: "[R]  1   -   content" for removed, "[A]  1   +   content" for added
+ * - Context lines: dim, no background, no +/-
+ * - Shows ~25 lines before collapsing
+ */
+const formatDiffForDisplay = (diffLines: DiffOutputLine[], visibleLines: number = DIFF_COLLAPSED_LINES): string => {
+  // Calculate line number width for padding (based on total lines)
+  const maxLineNum = diffLines.length;
+  const lineNumWidth = Math.max(String(maxLineNum).length, 3); // Min 3 chars for alignment
+
+  // Format: for changed lines, ENTIRE line (including line number) is inside color marker
+  // Color markers: [R] for removed (red), [A] for added (green)
+  const formattedLines = diffLines.map((line, idx) => {
+    const lineNum = String(idx + 1).padStart(lineNumWidth, ' ');
+    // First char is the diff prefix: + (added), - (removed), or space (context)
+    const prefix = line.content.charAt(0);
+    const restOfLine = line.content.slice(1);
+
+    if (line.color === DIFF_COLORS.removed) {
+      // Format: "[R]  1   -   content" - entire line inside color marker
+      return `[R]${lineNum}   -   ${restOfLine}`;
+    } else if (line.color === DIFF_COLORS.added) {
+      // Format: "[A]  1   +   content" - entire line inside color marker
+      return `[A]${lineNum}   +   ${restOfLine}`;
+    }
+    // Context lines - dim, no +/-, just spacing to align with changed lines
+    return `${lineNum}       ${restOfLine}`;
+  });
+
+  // Apply collapse logic
+  if (formattedLines.length <= visibleLines) {
+    return formatWithTreeConnectors(formattedLines.join('\n'));
+  }
+
+  const visible = formattedLines.slice(0, visibleLines);
+  const remaining = formattedLines.length - visibleLines;
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (ctrl+o to expand)`;
+  return formatWithTreeConnectors(collapsedContent);
+};
+
 export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const { stdout } = useStdout();
   const [session, setSession] = useState<CodeletSessionType | null>(null);
@@ -443,6 +524,16 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
   const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021
   const sessionRef = useRef<CodeletSessionType | null>(null);
+
+  // TUI-038: Store pending Edit/Write tool inputs for diff display
+  interface PendingToolDiff {
+    toolName: string;
+    toolCallId: string;
+    oldString?: string;  // For Edit tool
+    newString?: string;  // For Edit tool
+    content?: string;    // For Write tool
+  }
+  const pendingToolDiffsRef = useRef<Map<string, PendingToolDiff>>(new Map());
 
   // TUI-034: Model selection state
   const [currentModel, setCurrentModel] = useState<ModelSelection | null>(null);
@@ -1458,6 +1549,29 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             input: parsedInput,
           });
 
+          // TUI-038: Store Edit/Write tool inputs for diff display
+          // Tool names are lowercase from the streaming API (edit, write, replace, write_file)
+          if (typeof parsedInput === 'object' && parsedInput !== null) {
+            const inputObj = parsedInput as Record<string, unknown>;
+            const toolNameLower = toolCall.name.toLowerCase();
+            // Handle both Claude (edit) and Gemini (replace) tool names
+            if ((toolNameLower === 'edit' || toolNameLower === 'replace') && typeof inputObj.old_string === 'string' && typeof inputObj.new_string === 'string') {
+              pendingToolDiffsRef.current.set(toolCall.id, {
+                toolName: 'Edit',
+                toolCallId: toolCall.id,
+                oldString: inputObj.old_string,
+                newString: inputObj.new_string,
+              });
+            // Handle both Claude (write) and Gemini (write_file) tool names
+            } else if ((toolNameLower === 'write' || toolNameLower === 'write_file') && typeof inputObj.content === 'string') {
+              pendingToolDiffsRef.current.set(toolCall.id, {
+                toolName: 'Write',
+                toolCallId: toolCall.id,
+                content: inputObj.content,
+              });
+            }
+          }
+
           // TUI-037: Format tool header in Claude Code style: ● ToolName(args)
           let argsDisplay = '';
           if (typeof parsedInput === 'object' && parsedInput !== null) {
@@ -1558,10 +1672,30 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             }
           }
 
-          // TUI-037: Sanitize and format with collapsed output style
-          const sanitizedContent = result.content.replace(/\t/g, '  ');
-          // Format with tree connectors and collapse if too long
-          const toolResultContent = formatCollapsedOutput(sanitizedContent);
+          // TUI-037 + TUI-038: Sanitize and format with collapsed output style
+          // Check for Edit/Write tool diff display
+          const pendingDiff = pendingToolDiffsRef.current.get(result.toolCallId);
+          let toolResultContent: string;
+
+          if (pendingDiff) {
+            // TUI-038: Format as diff for Edit/Write tools
+            pendingToolDiffsRef.current.delete(result.toolCallId); // Clean up
+            if (pendingDiff.toolName === 'Edit' && pendingDiff.oldString !== undefined && pendingDiff.newString !== undefined) {
+              const diffLines = formatEditDiff(pendingDiff.oldString, pendingDiff.newString);
+              toolResultContent = formatDiffForDisplay(diffLines);
+            } else if (pendingDiff.toolName === 'Write' && pendingDiff.content !== undefined) {
+              const diffLines = formatWriteDiff(pendingDiff.content);
+              toolResultContent = formatDiffForDisplay(diffLines);
+            } else {
+              // Fallback to normal formatting
+              const sanitizedContent = result.content.replace(/\t/g, '  ');
+              toolResultContent = formatCollapsedOutput(sanitizedContent);
+            }
+          } else {
+            // Normal tool result formatting
+            const sanitizedContent = result.content.replace(/\t/g, '  ');
+            toolResultContent = formatCollapsedOutput(sanitizedContent);
+          }
           currentSegment = ''; // Reset for next text segment
 
           // TOOL-011 + TUI-037: Combine tool header with result as ONE message
@@ -2372,12 +2506,32 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 }
                 const toolHeader = formatToolHeader(content.name, argsDisplay);
 
-                // TUI-037: Combine tool header with result as ONE message
-                // First output line has NO L prefix (starts tree), subsequent lines have L prefix
+                // TUI-037 + TUI-038: Combine tool header with result as ONE message
+                // Check if this is Edit/Write tool to regenerate diff formatting
                 const toolResult = toolResultsByUseId.get(content.id);
                 if (toolResult) {
-                  const sanitizedContent = toolResult.content.replace(/\t/g, '  ');
-                  const resultContent = formatCollapsedOutput(sanitizedContent);
+                  let resultContent: string;
+                  const toolNameLower = content.name?.toLowerCase() || '';
+                  const inputObj = (typeof input === 'object' && input !== null) ? input as Record<string, unknown> : {};
+
+                  // TUI-038: Regenerate diff for Edit/Write tools on restore
+                  if ((toolNameLower === 'edit' || toolNameLower === 'replace') &&
+                      typeof inputObj.old_string === 'string' &&
+                      typeof inputObj.new_string === 'string') {
+                    // Edit tool - generate diff from old/new strings
+                    const diffLines = formatEditDiff(inputObj.old_string, inputObj.new_string);
+                    resultContent = formatDiffForDisplay(diffLines);
+                  } else if ((toolNameLower === 'write' || toolNameLower === 'write_file') &&
+                             typeof inputObj.content === 'string') {
+                    // Write tool - generate diff (all additions)
+                    const diffLines = formatWriteDiff(inputObj.content);
+                    resultContent = formatDiffForDisplay(diffLines);
+                  } else {
+                    // Normal tool - use collapsed output
+                    const sanitizedContent = toolResult.content.replace(/\t/g, '  ');
+                    resultContent = formatCollapsedOutput(sanitizedContent);
+                  }
+
                   restored.push({
                     role: 'tool',
                     content: `${toolHeader}\n${resultContent}`,
@@ -3650,15 +3804,85 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           <VirtualList
             items={conversationLines}
             renderItem={(line) => {
+              // TUI-038: Check for diff color markers and render with background colors
+              const content = line.content;
+
+              // Parse diff color markers: [R] for removed (red), [A] for added (green)
+              // Format: "[R]  1   -   content" - entire changed line has colored background
+              // Context lines have no marker and are dim
+              if (line.role === 'tool' && (content.includes('[R]') || content.includes('[A]'))) {
+                // Render each segment with appropriate background color
+                const segments: React.ReactNode[] = [];
+                let remaining = content;
+                let keyIdx = 0;
+
+                while (remaining.length > 0) {
+                  const rIdx = remaining.indexOf('[R]');
+                  const aIdx = remaining.indexOf('[A]');
+
+                  // Find the next marker
+                  let nextMarkerIdx = -1;
+                  let markerType: 'R' | 'A' | null = null;
+
+                  if (rIdx >= 0 && (aIdx < 0 || rIdx < aIdx)) {
+                    nextMarkerIdx = rIdx;
+                    markerType = 'R';
+                  } else if (aIdx >= 0) {
+                    nextMarkerIdx = aIdx;
+                    markerType = 'A';
+                  }
+
+                  if (nextMarkerIdx < 0) {
+                    // No more markers - context lines are dim
+                    if (remaining.length > 0) {
+                      segments.push(<Text key={keyIdx++} dimColor>{remaining}</Text>);
+                    }
+                    break;
+                  }
+
+                  // Add text before marker as dim (context lines, tree connectors)
+                  if (nextMarkerIdx > 0) {
+                    segments.push(<Text key={keyIdx++} dimColor>{remaining.slice(0, nextMarkerIdx)}</Text>);
+                  }
+
+                  // Find end of line (next newline or end of remaining string after marker)
+                  const afterMarker = remaining.slice(nextMarkerIdx + 3);
+                  const newlineIdx = afterMarker.indexOf('\n');
+                  const lineEnd = newlineIdx >= 0 ? newlineIdx : afterMarker.length;
+                  const lineContent = afterMarker.slice(0, lineEnd);
+
+                  // Add colored segment with background - ENTIRE line including line number
+                  if (markerType === 'R') {
+                    segments.push(<Text key={keyIdx++} backgroundColor={DIFF_COLORS.removed} color="white">{lineContent}</Text>);
+                  } else {
+                    segments.push(<Text key={keyIdx++} backgroundColor={DIFF_COLORS.added} color="white">{lineContent}</Text>);
+                  }
+
+                  // Include newline if present
+                  if (newlineIdx >= 0) {
+                    segments.push(<Text key={keyIdx++}>{'\n'}</Text>);
+                    remaining = afterMarker.slice(lineEnd + 1);
+                  } else {
+                    remaining = '';
+                  }
+                }
+
+                return (
+                  <Box flexGrow={1}>
+                    <Text>{segments}</Text>
+                  </Box>
+                );
+              }
+
+              // Default rendering for non-diff content
+              // Tool output is white (not yellow), user input is green
               const color =
                 line.role === 'user'
                   ? 'green'
-                  : line.role === 'tool'
-                    ? 'yellow'
-                    : 'white';
+                  : 'white';
               return (
                 <Box flexGrow={1}>
-                  <Text color={color}>{line.content}</Text>
+                  <Text color={color}>{content}</Text>
                 </Box>
               );
             }}

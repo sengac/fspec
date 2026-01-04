@@ -231,7 +231,8 @@
         "BOARD-011",
         "BUG-046",
         "BOARD-012",
-        "ITF-007"
+        "ITF-007",
+        "TUI-038"
       ]
     },
     "domain-knowledge-graph": {
