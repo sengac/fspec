@@ -466,9 +466,10 @@ const formatWriteDiff = (content: string): DiffOutputLine[] => {
 /**
  * TUI-038: Convert diff output lines to display format with tree connectors
  * Matches Claude Code format exactly:
- * - Changed lines: ENTIRE line has colored background (including line number)
- * - Format: "[R]  1   -   content" for removed, "[A]  1   +   content" for added
- * - Context lines: dim, no background, no +/-
+ * - Line numbers are ALWAYS dim/gray (outside color marker)
+ * - Only +/- and content have colored background
+ * - Format: "2513 [R]- content" for removed, "2513 [A]+ content" for added
+ * - Context lines: "2535   content" (all dim)
  * - Shows ~25 lines before collapsing
  */
 const formatDiffForDisplay = (diffLines: DiffOutputLine[], visibleLines: number = DIFF_COLLAPSED_LINES): string => {
@@ -476,23 +477,22 @@ const formatDiffForDisplay = (diffLines: DiffOutputLine[], visibleLines: number 
   const maxLineNum = diffLines.length;
   const lineNumWidth = Math.max(String(maxLineNum).length, 3); // Min 3 chars for alignment
 
-  // Format: for changed lines, ENTIRE line (including line number) is inside color marker
+  // Format: line number is OUTSIDE color marker (always dim), only +/- and content inside
   // Color markers: [R] for removed (red), [A] for added (green)
   const formattedLines = diffLines.map((line, idx) => {
     const lineNum = String(idx + 1).padStart(lineNumWidth, ' ');
     // First char is the diff prefix: + (added), - (removed), or space (context)
-    const prefix = line.content.charAt(0);
     const restOfLine = line.content.slice(1);
 
     if (line.color === DIFF_COLORS.removed) {
-      // Format: "[R]  1   -   content" - entire line inside color marker
-      return `[R]${lineNum}   -   ${restOfLine}`;
+      // Format: "2513 [R]- content" - linenum outside (dim), minus+content inside (colored)
+      return `${lineNum} [R]- ${restOfLine}`;
     } else if (line.color === DIFF_COLORS.added) {
-      // Format: "[A]  1   +   content" - entire line inside color marker
-      return `[A]${lineNum}   +   ${restOfLine}`;
+      // Format: "2513 [A]+ content" - linenum outside (dim), plus+content inside (colored)
+      return `${lineNum} [A]+ ${restOfLine}`;
     }
-    // Context lines - dim, no +/-, just spacing to align with changed lines
-    return `${lineNum}       ${restOfLine}`;
+    // Context lines - all dim, 3 spaces to align with " X " pattern
+    return `${lineNum}   ${restOfLine}`;
   });
 
   // Apply collapse logic
@@ -3808,70 +3808,51 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               const content = line.content;
 
               // Parse diff color markers: [R] for removed (red), [A] for added (green)
-              // Format: "[R]  1   -   content" - entire changed line has colored background
-              // Context lines have no marker and are dim
-              if (line.role === 'tool' && (content.includes('[R]') || content.includes('[A]'))) {
-                // Render each segment with appropriate background color
-                const segments: React.ReactNode[] = [];
-                let remaining = content;
-                let keyIdx = 0;
+              // Changed lines: line numbers WHITE, +/- content colored
+              // Context lines (no marker): gray
+              // Diff line pattern: starts with "L " or spaces, followed by digits and spaces
+              const isDiffContextLine = (text: string): boolean => {
+                // Match: "L  123   content" or "   123   content" (tree connector + line number + spaces + content)
+                return /^[L ]?\s*\d+\s{3}/.test(text);
+              };
 
-                while (remaining.length > 0) {
-                  const rIdx = remaining.indexOf('[R]');
-                  const aIdx = remaining.indexOf('[A]');
+              if (line.role === 'tool') {
+                const rIdx = content.indexOf('[R]');
+                const aIdx = content.indexOf('[A]');
 
-                  // Find the next marker
-                  let nextMarkerIdx = -1;
-                  let markerType: 'R' | 'A' | null = null;
+                // Changed line with [R] or [A] marker - entire line gets colored background
+                if (rIdx >= 0 || aIdx >= 0) {
+                  const markerIdx = rIdx >= 0 ? rIdx : aIdx;
+                  const markerType = rIdx >= 0 ? 'R' : 'A';
+                  // Remove the [R] or [A] marker, keep everything else
+                  const lineWithoutMarker = content.slice(0, markerIdx) + content.slice(markerIdx + 3);
 
-                  if (rIdx >= 0 && (aIdx < 0 || rIdx < aIdx)) {
-                    nextMarkerIdx = rIdx;
-                    markerType = 'R';
-                  } else if (aIdx >= 0) {
-                    nextMarkerIdx = aIdx;
-                    markerType = 'A';
-                  }
-
-                  if (nextMarkerIdx < 0) {
-                    // No more markers - context lines are dim
-                    if (remaining.length > 0) {
-                      segments.push(<Text key={keyIdx++} dimColor>{remaining}</Text>);
-                    }
-                    break;
-                  }
-
-                  // Add text before marker as dim (context lines, tree connectors)
-                  if (nextMarkerIdx > 0) {
-                    segments.push(<Text key={keyIdx++} dimColor>{remaining.slice(0, nextMarkerIdx)}</Text>);
-                  }
-
-                  // Find end of line (next newline or end of remaining string after marker)
-                  const afterMarker = remaining.slice(nextMarkerIdx + 3);
-                  const newlineIdx = afterMarker.indexOf('\n');
-                  const lineEnd = newlineIdx >= 0 ? newlineIdx : afterMarker.length;
-                  const lineContent = afterMarker.slice(0, lineEnd);
-
-                  // Add colored segment with background - ENTIRE line including line number
-                  if (markerType === 'R') {
-                    segments.push(<Text key={keyIdx++} backgroundColor={DIFF_COLORS.removed} color="white">{lineContent}</Text>);
-                  } else {
-                    segments.push(<Text key={keyIdx++} backgroundColor={DIFF_COLORS.added} color="white">{lineContent}</Text>);
-                  }
-
-                  // Include newline if present
-                  if (newlineIdx >= 0) {
-                    segments.push(<Text key={keyIdx++}>{'\n'}</Text>);
-                    remaining = afterMarker.slice(lineEnd + 1);
-                  } else {
-                    remaining = '';
-                  }
+                  return (
+                    <Box flexGrow={1}>
+                      <Text backgroundColor={markerType === 'R' ? DIFF_COLORS.removed : DIFF_COLORS.added} color="white">{lineWithoutMarker}</Text>
+                    </Box>
+                  );
                 }
 
-                return (
-                  <Box flexGrow={1}>
-                    <Text>{segments}</Text>
-                  </Box>
-                );
+                // Context line (diff line without marker) - line number gray, content white
+                if (isDiffContextLine(content)) {
+                  // Split at the 3 spaces after line number to separate line num from content
+                  const match = content.match(/^([L ]?\s*\d+\s{3})(.*)$/);
+                  if (match) {
+                    const [, lineNumPart, contentPart] = match;
+                    return (
+                      <Box flexGrow={1}>
+                        <Text color="gray">{lineNumPart}</Text>
+                        <Text>{contentPart}</Text>
+                      </Box>
+                    );
+                  }
+                  return (
+                    <Box flexGrow={1}>
+                      <Text color="gray">{content}</Text>
+                    </Box>
+                  );
+                }
               }
 
               // Default rendering for non-diff content
