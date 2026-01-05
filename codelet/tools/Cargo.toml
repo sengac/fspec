@@ -71,6 +71,10 @@ image.workspace = true
 # Signal handling for browser cleanup
 ctrlc.workspace = true
 
+# Unix process management (for process group killing)
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
 [dev-dependencies]
 tempfile.workspace = true
 tokio-test.workspace = true

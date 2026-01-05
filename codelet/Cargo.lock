@@ -623,6 +623,7 @@ dependencies = [
  "headless_chrome",
  "ignore",
  "image",
+ "libc",
  "lopdf",
  "pdfium-render",
  "regex",

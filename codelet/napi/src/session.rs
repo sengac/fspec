@@ -206,6 +206,8 @@ impl CodeletSession {
     #[napi]
     pub fn interrupt(&self) {
         self.is_interrupted.store(true, Release);
+        // Also request bash tool abortion for any running commands
+        codelet_tools::request_bash_abort();
         // Wake any waiting stream loop immediately (NAPI-004)
         // Uses notify_one() to store permit if not currently waiting in select
         self.interrupt_notify.notify_one();
@@ -218,6 +220,8 @@ impl CodeletSession {
     #[napi]
     pub fn reset_interrupt(&self) {
         self.is_interrupted.store(false, Release);
+        // Also clear bash abort flag
+        codelet_tools::clear_bash_abort();
     }
 
     /// Toggle debug capture mode (AGENT-021)

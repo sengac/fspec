@@ -386,6 +386,7 @@ const DIFF_COLORS = {
 interface DiffOutputLine {
   content: string;
   color: string | null;
+  type: 'context' | 'added' | 'removed';
 }
 
 const formatEditDiff = (
@@ -396,6 +397,7 @@ const formatEditDiff = (
   const diffLines = changesToDiffLines(changes);
   return diffLines.map(line => ({
     content: line.content,
+    type: line.type,
     color:
       line.type === 'removed'
         ? DIFF_COLORS.removed
@@ -412,54 +414,143 @@ const formatWriteDiff = (content: string): DiffOutputLine[] => {
   const lines = content.split('\n');
   return lines.map(line => ({
     content: `+${line}`,
+    type: 'added' as const,
     color: DIFF_COLORS.added,
   }));
 };
 
 /**
  * TUI-038: Convert diff output lines to display format with tree connectors
- * Matches Claude Code format exactly:
- * - Line numbers are ALWAYS dim/gray (outside color marker)
- * - Only +/- and content have colored background
+ * 
+ * Shows only the changed lines and minimal context (3 lines before/after changes).
+ * This provides a focused view of what actually changed, similar to unified diff format.
+ * 
+ * Format:
+ * - Line numbers reflect actual position in the file (with startLine offset)
+ * - Only shows context around actual changes
+ * - "..." indicates skipped context lines
  * - Format: "2513 [R]- content" for removed, "2513 [A]+ content" for added
  * - Context lines: "2535   content" (all dim)
- * - Shows ~25 lines before collapsing
+ * 
+ * @param diffLines - Array of diff output lines
+ * @param visibleLines - Maximum lines to show before collapsing
+ * @param startLine - Starting line number in the original file (1-based, default 1)
  */
 const formatDiffForDisplay = (
   diffLines: DiffOutputLine[],
-  visibleLines: number = DIFF_COLLAPSED_LINES
+  visibleLines: number = DIFF_COLLAPSED_LINES,
+  startLine: number = 1
 ): string => {
-  // Calculate line number width for padding (based on total lines)
-  const maxLineNum = diffLines.length;
-  const lineNumWidth = Math.max(String(maxLineNum).length, 3); // Min 3 chars for alignment
-
-  // Format: line number is OUTSIDE color marker (always dim), only +/- and content inside
-  // Color markers: [R] for removed (red), [A] for added (green)
-  const formattedLines = diffLines.map((line, idx) => {
-    const lineNum = String(idx + 1).padStart(lineNumWidth, ' ');
-    // First char is the diff prefix: + (added), - (removed), or space (context)
-    const restOfLine = line.content.slice(1);
-
-    if (line.color === DIFF_COLORS.removed) {
-      // Format: "2513 [R]- content" - linenum outside (dim), minus+content inside (colored)
-      return `${lineNum} [R]- ${restOfLine}`;
-    } else if (line.color === DIFF_COLORS.added) {
-      // Format: "2513 [A]+ content" - linenum outside (dim), plus+content inside (colored)
-      return `${lineNum} [A]+ ${restOfLine}`;
+  // Find lines that have actual changes (not context)
+  const changedIndices: number[] = [];
+  diffLines.forEach((line, idx) => {
+    if (line.type === 'added' || line.type === 'removed') {
+      changedIndices.push(idx);
     }
-    // Context lines - all dim, 3 spaces to align with " X " pattern
-    return `${lineNum}   ${restOfLine}`;
   });
 
-  // Apply collapse logic
-  if (formattedLines.length <= visibleLines) {
+  // Calculate max line number for width padding (considering startLine offset)
+  const maxLineNum = startLine + diffLines.length - 1;
+  const lineNumWidth = Math.max(String(maxLineNum).length, 3);
+
+  // If no changes, just show collapsed context
+  if (changedIndices.length === 0) {
+    const formattedLines = diffLines.slice(0, visibleLines).map((line, idx) => {
+      const lineNum = String(startLine + idx).padStart(lineNumWidth, ' ');
+      const restOfLine = line.content.slice(1);
+      return `${lineNum}   ${restOfLine}`;
+    });
+    if (diffLines.length > visibleLines) {
+      formattedLines.push(`... +${diffLines.length - visibleLines} lines (ctrl+o to expand)`);
+    }
     return formatWithTreeConnectors(formattedLines.join('\n'));
   }
 
-  const visible = formattedLines.slice(0, visibleLines);
-  const remaining = formattedLines.length - visibleLines;
+  // Build set of indices to show: changed lines + 3 lines of context around each change
+  const CONTEXT_LINES = 3;
+  const indicesToShow = new Set<number>();
+  
+  changedIndices.forEach(idx => {
+    // Add the changed line
+    indicesToShow.add(idx);
+    // Add context before
+    for (let i = Math.max(0, idx - CONTEXT_LINES); i < idx; i++) {
+      indicesToShow.add(i);
+    }
+    // Add context after
+    for (let i = idx + 1; i <= Math.min(diffLines.length - 1, idx + CONTEXT_LINES); i++) {
+      indicesToShow.add(i);
+    }
+  });
+
+  // Convert to sorted array
+  const sortedIndices = Array.from(indicesToShow).sort((a, b) => a - b);
+
+  // Format the lines, adding "..." for gaps
+  const outputLines: string[] = [];
+  let lastShownIdx = -1;
+
+  for (const idx of sortedIndices) {
+    // Add "..." if there's a gap
+    if (lastShownIdx >= 0 && idx > lastShownIdx + 1) {
+      const skipped = idx - lastShownIdx - 1;
+      outputLines.push(`${''.padStart(lineNumWidth, ' ')} ... (${skipped} lines)`);
+    }
+
+    const line = diffLines[idx];
+    const lineNum = String(startLine + idx).padStart(lineNumWidth, ' ');
+    const restOfLine = line.content.slice(1);
+
+    if (line.color === DIFF_COLORS.removed) {
+      outputLines.push(`${lineNum} [R]- ${restOfLine}`);
+    } else if (line.color === DIFF_COLORS.added) {
+      outputLines.push(`${lineNum} [A]+ ${restOfLine}`);
+    } else {
+      outputLines.push(`${lineNum}   ${restOfLine}`);
+    }
+
+    lastShownIdx = idx;
+  }
+
+  // Add trailing "..." if there are more lines after
+  if (lastShownIdx < diffLines.length - 1) {
+    const remaining = diffLines.length - 1 - lastShownIdx;
+    outputLines.push(`${''.padStart(lineNumWidth, ' ')} ... (${remaining} lines)`);
+  }
+
+  // Apply collapse logic if still too many lines
+  if (outputLines.length <= visibleLines) {
+    return formatWithTreeConnectors(outputLines.join('\n'));
+  }
+
+  const visible = outputLines.slice(0, visibleLines);
+  const remaining = outputLines.length - visibleLines;
   const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (ctrl+o to expand)`;
   return formatWithTreeConnectors(collapsedContent);
+};
+
+/**
+ * Calculate the starting line number of old_string in a file
+ * Returns 1 if file can't be read or old_string not found
+ */
+const calculateStartLine = (filePath: string | undefined, oldString: string | undefined): number => {
+  if (!filePath || !oldString) return 1;
+  
+  try {
+    // Use synchronous fs for simplicity in render context
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const fs = require('fs');
+    const fileContent = fs.readFileSync(filePath, 'utf-8');
+    const idx = fileContent.indexOf(oldString);
+    if (idx === -1) return 1;
+    
+    // Count newlines before the match to get line number
+    const beforeMatch = fileContent.substring(0, idx);
+    const lineNumber = (beforeMatch.match(/\n/g) || []).length + 1;
+    return lineNumber;
+  } catch {
+    return 1; // Default to 1 if file can't be read
+  }
 };
 
 export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
@@ -485,6 +576,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   interface PendingToolDiff {
     toolName: string;
     toolCallId: string;
+    filePath?: string; // Path to the file being edited
     oldString?: string; // For Edit tool
     newString?: string; // For Edit tool
     content?: string; // For Write tool
@@ -1737,6 +1829,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 pendingToolDiffsRef.current.set(toolCall.id, {
                   toolName: 'Edit',
                   toolCallId: toolCall.id,
+                  filePath: typeof inputObj.file_path === 'string' ? inputObj.file_path : undefined,
                   oldString: inputObj.old_string,
                   newString: inputObj.new_string,
                 });
@@ -1900,7 +1993,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                   pendingDiff.oldString,
                   pendingDiff.newString
                 );
-                toolResultContent = formatDiffForDisplay(diffLines);
+                const startLine = calculateStartLine(pendingDiff.filePath, pendingDiff.oldString);
+                toolResultContent = formatDiffForDisplay(diffLines, DIFF_COLLAPSED_LINES, startLine);
               } else if (
                 pendingDiff.toolName === 'Write' &&
                 pendingDiff.content !== undefined
@@ -2897,6 +2991,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                       : {};
 
                   // TUI-038: Regenerate diff for Edit/Write tools on restore
+                  // Note: We don't calculate startLine on restore because the file has already
+                  // been edited - old_string no longer exists in the current file content.
+                  // Line numbers will be relative to the diff (starting at 1).
                   if (
                     (toolNameLower === 'edit' || toolNameLower === 'replace') &&
                     typeof inputObj.old_string === 'string' &&
