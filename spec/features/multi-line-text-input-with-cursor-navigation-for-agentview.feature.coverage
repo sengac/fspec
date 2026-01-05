@@ -1,0 +1,422 @@
+{
+  "scenarios": [
+    {
+      "name": "Move cursor left within a line",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "13-27",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Move cursor right and stop at end",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "29-43",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Move cursor down to shorter line clamps column",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "45-64",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backspace at line start merges lines",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "66-87",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Alt+Backspace deletes word before cursor",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "89-106",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Insert character at cursor position",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "108-127",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Enter inserts newline and splits line",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "129-149",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                293,
+                294,
+                295,
+                296,
+                297,
+                298,
+                299,
+                300,
+                301,
+                302,
+                303,
+                304,
+                305
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Home key moves cursor to line start",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "151-166",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                177,
+                178,
+                179,
+                180
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Alt+Right moves cursor to end of word",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "168-185",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Right arrow at end of line wraps to next line",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "187-203",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Left arrow at start of line wraps to previous line",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "205-221",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Scroll viewport when content exceeds 5 lines",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "223-247",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Up triggers history navigation callback",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/MultiLineInput.test.tsx",
+          "lines": "249-266",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useMultiLineInput.ts",
+              "lines": [
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/MultiLineInput.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/hooks/useMultiLineInput.ts"
+    ],
+    "totalLinesCovered": 440
+  }
+}

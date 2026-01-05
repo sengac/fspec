@@ -25,6 +25,7 @@ import React, {
 } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
+import { MultiLineInput } from './MultiLineInput';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
@@ -191,113 +192,6 @@ const formatContextWindow = (contextWindow: number): string => {
     return `${(contextWindow / 1000000).toFixed(0)}M`;
   }
   return `${Math.round(contextWindow / 1000)}k`;
-};
-
-// NAPI-006: Callbacks for history navigation
-interface SafeTextInputCallbacks {
-  onHistoryPrev?: () => void;
-  onHistoryNext?: () => void;
-}
-
-// Custom TextInput that ignores mouse escape sequences
-const SafeTextInput: React.FC<
-  {
-    value: string;
-    onChange: (value: string) => void;
-    onSubmit: () => void;
-    placeholder?: string;
-    isActive?: boolean;
-  } & SafeTextInputCallbacks
-> = ({
-  value,
-  onChange,
-  onSubmit,
-  placeholder = '',
-  isActive = true,
-  onHistoryPrev,
-  onHistoryNext,
-}) => {
-  // Use ref to avoid stale closure issues with rapid typing
-  const valueRef = useRef(value);
-  valueRef.current = value;
-
-  useInput(
-    (input, key) => {
-      // Ignore mouse escape sequences
-      if (key.mouse || input.includes('[M') || input.includes('[<')) {
-        return;
-      }
-
-      if (key.return) {
-        onSubmit();
-        return;
-      }
-
-      if (key.backspace || key.delete) {
-        const newValue = valueRef.current.slice(0, -1);
-        valueRef.current = newValue; // Update immediately to handle rapid keystrokes
-        onChange(newValue);
-        return;
-      }
-
-      // NAPI-006: Shift+Arrow for history navigation (check before ignoring arrow keys)
-
-      // Check raw escape sequences first (most reliable for Shift+Arrow)
-      if (input.includes('[1;2A') || input.includes('\x1b[1;2A')) {
-        onHistoryPrev?.();
-        return;
-      }
-      if (input.includes('[1;2B') || input.includes('\x1b[1;2B')) {
-        onHistoryNext?.();
-        return;
-      }
-      // ink may set key.shift when shift is held
-      if (key.shift && key.upArrow) {
-        onHistoryPrev?.();
-        return;
-      }
-      if (key.shift && key.downArrow) {
-        onHistoryNext?.();
-        return;
-      }
-
-      // Ignore navigation keys (handled by other components)
-      if (
-        key.escape ||
-        key.tab ||
-        key.upArrow ||
-        key.downArrow ||
-        key.pageUp ||
-        key.pageDown
-      ) {
-        return;
-      }
-
-      // Filter to only printable characters, removing any escape sequence remnants
-      const clean = input
-        .split('')
-        .filter(ch => {
-          const code = ch.charCodeAt(0);
-          // Only allow printable ASCII (space through tilde)
-          return code >= 32 && code <= 126;
-        })
-        .join('');
-
-      if (clean) {
-        const newValue = valueRef.current + clean;
-        valueRef.current = newValue; // Update immediately to handle rapid keystrokes
-        onChange(newValue);
-      }
-    },
-    { isActive }
-  );
-
-  return (
-    <Text>
-      {value || <Text dimColor>{placeholder}</Text>}
-      <Text inverse> </Text>
-    </Text>
-  );
 };
 
 // Types from codelet-napi
@@ -3229,6 +3123,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // Handle keyboard input
   useInput(
     (input, key) => {
+      // Log ALL keyboard input in AgentView for debugging
+      logger.info(`[AgentView] useInput called: input=${JSON.stringify(input)} (length=${input.length}) inputCodes=${input.split('').map(c => c.charCodeAt(0)).join(',')} key=${JSON.stringify(key)}`);
+      logger.info(`[AgentView] State: isLoading=${isLoading} isSearchMode=${isSearchMode} isResumeMode=${isResumeMode} showProviderSelector=${showProviderSelector} showModelSelector=${showModelSelector} showSettingsTab=${showSettingsTab}`);
+      
       // Handle mouse scroll for model selector and settings tab
       // Mouse scroll moves the SELECTION (like VirtualList item mode), scroll offset auto-adjusts
       if (input.startsWith('[M') || key.mouse) {
@@ -3670,13 +3568,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
 
-      // Esc key handling - interrupt if loading, exit if not
+      // Esc key handling - clear input first, then interrupt/exit
       if (key.escape) {
         if (isLoading && sessionRef.current) {
           // Interrupt the agent execution
           sessionRef.current.interrupt();
+        } else if (inputValue.trim() !== '') {
+          // Clear the input if there's text
+          setInputValue('');
         } else {
-          // Exit the agent view
+          // Exit the agent view only if input is already empty
           onExit();
         }
         return;
@@ -4548,13 +4449,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           {isLoading ? (
             <Text dimColor>Thinking... (Esc to stop)</Text>
           ) : (
-            <SafeTextInput
+            <MultiLineInput
               value={inputValue}
               onChange={setInputValue}
               onSubmit={handleSubmit}
               placeholder="Type your message... (Shift+↑↓ history)"
               onHistoryPrev={handleHistoryPrev}
               onHistoryNext={handleHistoryNext}
+              maxVisibleLines={5}
             />
           )}
         </Box>

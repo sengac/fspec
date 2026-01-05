@@ -8,6 +8,7 @@ import React, {
   memo,
 } from 'react';
 import { Box, Text, useInput, measureElement, type DOMElement } from 'ink';
+import { logger } from '../../utils/logger';
 import { useTerminalSize } from '../hooks/useTerminalSize';
 
 // Unicode characters for scrollbar
@@ -409,23 +410,31 @@ export function VirtualList<T>({
   // Keyboard navigation - respects isFocused
   useInput(
     (input, key) => {
+      // Log ALL keyboard input in VirtualList for debugging
+      logger.info(`[VirtualList] useInput called: input=${JSON.stringify(input)} (length=${input.length}) key=${JSON.stringify(key)} isFocused=${isFocused} selectionMode=${selectionMode}`);
+      
       if (items.length === 0) {
+        logger.info('[VirtualList] No items, returning');
         return;
       }
 
       // Skip mouse events (handled above)
       if (input.startsWith('[M') || key.mouse) {
+        logger.info('[VirtualList] Skipping mouse event');
         return;
       }
 
       // Skip Shift+Arrow (used for history navigation in AgentView)
       if (key.shift && (key.upArrow || key.downArrow)) {
+        logger.info('[VirtualList] Skipping shift+arrow (history)');
         return;
       }
 
       if (selectionMode === 'scroll') {
+        logger.info('[VirtualList] Handling scroll navigation');
         handleScrollNavigation(key);
       } else {
+        logger.info('[VirtualList] Handling item navigation');
         handleItemNavigation(key);
       }
     },

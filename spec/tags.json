@@ -70,6 +70,10 @@
           "description": "Initialization and setup features"
         },
         {
+          "name": "@input-components",
+          "description": "TUI input components for text editing and user interaction"
+        },
+        {
           "name": "@integration",
           "description": "Cross-Component Integration"
         },
@@ -2190,7 +2194,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-03T10:54:49.264Z",
+    "lastUpdated": "2026-01-05T05:35:02.265Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
