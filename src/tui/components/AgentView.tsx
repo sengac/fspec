@@ -3874,8 +3874,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         <Box
           flexDirection="column"
           flexGrow={1}
-          borderStyle="double"
-          borderColor="cyan"
           backgroundColor="black"
         >
           <Box flexDirection="column" padding={2} flexGrow={1}>
@@ -4034,8 +4032,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         <Box
           flexDirection="column"
           flexGrow={1}
-          borderStyle="double"
-          borderColor="yellow"
           backgroundColor="black"
         >
           <Box flexDirection="column" padding={2} flexGrow={1}>
