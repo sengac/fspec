@@ -110,12 +110,11 @@ export function sendIPCMessage(message: IPCMessage): Promise<void> {
       // Write and immediately call destroy to force flush
       client.write(messageStr);
       // Small delay to allow write to complete before destroying
-      // eslint-disable-next-line no-undef
-      setImmediate(() => {
+      setTimeout(() => {
         logger.debug(`[IPC CLIENT] Destroying connection to force flush`);
         client.destroy();
         resolve(); // Resolve promise after destroying connection
-      });
+      }, 0);
     });
 
     client.on('close', () => {
