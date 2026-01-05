@@ -187,6 +187,8 @@ async function showAgentSwitchPrompt(
         stdout: process.stdout,
         // Enable incremental rendering to reduce flickering by only updating changed lines
         incrementalRendering: true,
+        // Increase FPS from default 30 to 60 for smoother rendering
+        maxFps: 60,
       }
     );
     void waitUntilExit();
@@ -335,6 +337,8 @@ export function registerInitCommand(program: Command): void {
                 stdout: process.stdout,
                 // Enable incremental rendering to reduce flickering by only updating changed lines
                 incrementalRendering: true,
+                // Increase FPS from default 30 to 60 for smoother rendering
+                maxFps: 60,
               }
             );
             void waitUntilExit();
