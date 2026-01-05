@@ -26,6 +26,7 @@ import React, {
 import { Box, Text, useInput, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { MultiLineInput } from './MultiLineInput';
+import { InputTransition } from './InputTransition';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
@@ -4308,7 +4309,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               [{formatContextWindow(currentModel.contextWindow)}]
             </Text>
           )}
-          {isLoading && <Text color="yellow"> (streaming...)</Text>}
           {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
           {isDebugEnabled && (
             <Text color="red" bold>
@@ -4446,19 +4446,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       >
         <Text color="green">&gt; </Text>
         <Box flexGrow={1}>
-          {isLoading ? (
-            <Text dimColor>Thinking... (Esc to stop)</Text>
-          ) : (
-            <MultiLineInput
-              value={inputValue}
-              onChange={setInputValue}
-              onSubmit={handleSubmit}
-              placeholder="Type your message... (Shift+↑↓ history)"
-              onHistoryPrev={handleHistoryPrev}
-              onHistoryNext={handleHistoryNext}
-              maxVisibleLines={5}
-            />
-          )}
+          <InputTransition
+            isLoading={isLoading}
+            value={inputValue}
+            onChange={setInputValue}
+            onSubmit={handleSubmit}
+            placeholder="Type your message... (Shift+↑↓ history)"
+            onHistoryPrev={handleHistoryPrev}
+            onHistoryNext={handleHistoryNext}
+            maxVisibleLines={5}
+          />
         </Box>
       </Box>
     </Box>
