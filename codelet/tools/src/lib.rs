@@ -33,6 +33,7 @@ use serde_json::Value;
 pub use astgrep::AstGrepTool;
 pub use astgrep_refactor::AstGrepRefactorTool;
 pub use bash::BashTool;
+pub use bash::{clear_bash_abort, request_bash_abort};
 pub use chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
 pub use edit::EditTool;
 pub use glob::GlobTool;
