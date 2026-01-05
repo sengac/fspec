@@ -1,0 +1,537 @@
+{
+  "scenarios": [
+    {
+      "name": "D key opens three-button delete confirmation dialog",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "35-55",
+          "implMappings": [
+            {
+              "file": "src/components/ThreeButtonDialog.tsx",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3397,
+                3398,
+                3399,
+                3400,
+                3401,
+                3402,
+                3403,
+                3404,
+                3405,
+                3406,
+                3407,
+                3408,
+                3409,
+                3410,
+                3411,
+                3412,
+                3413,
+                3414,
+                3415,
+                3416,
+                3417,
+                3418,
+                3419,
+                3420,
+                3421,
+                3422,
+                3423,
+                3424,
+                3425,
+                3426,
+                3427,
+                3428,
+                3429,
+                3430
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel option closes dialog without deleting",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "57-82",
+          "implMappings": [
+            {
+              "file": "src/components/ThreeButtonDialog.tsx",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ESC key cancels delete dialog",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "84-106",
+          "implMappings": [
+            {
+              "file": "src/components/ThreeButtonDialog.tsx",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resume mode footer displays delete keybinding",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "108-122",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4522,
+                4523
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session deletion triggers orphaned message cleanup",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "124-142",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3117,
+                3118,
+                3119,
+                3120,
+                3121,
+                3122,
+                3123,
+                3124,
+                3125,
+                3126,
+                3127,
+                3128,
+                3129,
+                3130,
+                3131,
+                3132,
+                3133,
+                3134,
+                3135,
+                3136,
+                3137,
+                3138,
+                3139,
+                3140,
+                3141,
+                3142,
+                3143,
+                3144,
+                3145,
+                3146,
+                3147,
+                3148,
+                3149,
+                3150,
+                3151,
+                3152,
+                3153,
+                3154,
+                3155,
+                3156,
+                3157,
+                3158,
+                3159,
+                3160,
+                3161,
+                3162,
+                3163,
+                3164,
+                3165,
+                3166,
+                3167,
+                3168,
+                3169,
+                3170,
+                3171,
+                3172,
+                3173,
+                3174,
+                3175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete This Session removes selected session and refreshes list",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "144-173",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3117,
+                3118,
+                3119,
+                3120,
+                3121,
+                3122,
+                3123,
+                3124,
+                3125,
+                3126,
+                3127,
+                3128,
+                3129,
+                3130,
+                3131,
+                3132,
+                3133,
+                3134,
+                3135,
+                3136,
+                3137,
+                3138,
+                3139,
+                3140,
+                3141,
+                3142,
+                3143,
+                3144,
+                3145,
+                3146,
+                3147,
+                3148,
+                3149,
+                3150,
+                3151,
+                3152,
+                3153,
+                3154,
+                3155,
+                3156,
+                3157,
+                3158,
+                3159,
+                3160,
+                3161,
+                3162,
+                3163,
+                3164,
+                3165,
+                3166,
+                3167,
+                3168,
+                3169,
+                3170,
+                3171,
+                3172,
+                3173,
+                3174,
+                3175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete ALL Sessions removes all sessions and exits resume mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "175-203",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3117,
+                3118,
+                3119,
+                3120,
+                3121,
+                3122,
+                3123,
+                3124,
+                3125,
+                3126,
+                3127,
+                3128,
+                3129,
+                3130,
+                3131,
+                3132,
+                3133,
+                3134,
+                3135,
+                3136,
+                3137,
+                3138,
+                3139,
+                3140,
+                3141,
+                3142,
+                3143,
+                3144,
+                3145,
+                3146,
+                3147,
+                3148,
+                3149,
+                3150,
+                3151,
+                3152,
+                3153,
+                3154,
+                3155,
+                3156,
+                3157,
+                3158,
+                3159,
+                3160,
+                3161,
+                3162,
+                3163,
+                3164,
+                3165,
+                3166,
+                3167,
+                3168,
+                3169,
+                3170,
+                3171,
+                3172,
+                3173,
+                3174,
+                3175
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Arrow keys navigate between dialog buttons",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "205-235",
+          "implMappings": [
+            {
+              "file": "src/components/ThreeButtonDialog.tsx",
+              "lines": [
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Deleting last session exits resume mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx",
+          "lines": "237-263",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3117,
+                3118,
+                3119,
+                3120,
+                3121,
+                3122,
+                3123,
+                3124,
+                3125,
+                3126,
+                3127,
+                3128,
+                3129,
+                3130,
+                3131,
+                3132,
+                3133,
+                3134,
+                3135,
+                3136,
+                3137,
+                3138,
+                3139,
+                3140,
+                3141,
+                3142,
+                3143,
+                3144,
+                3145,
+                3146,
+                3147,
+                3148,
+                3149,
+                3150,
+                3151,
+                3152,
+                3153,
+                3154,
+                3155,
+                3156,
+                3157,
+                3158,
+                3159,
+                3160,
+                3161,
+                3162,
+                3163,
+                3164,
+                3165,
+                3166,
+                3167,
+                3168,
+                3169,
+                3170,
+                3171,
+                3172,
+                3173,
+                3174,
+                3175
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/ThreeButtonDialog-session-delete.test.tsx"
+    ],
+    "implFiles": [
+      "src/components/ThreeButtonDialog.tsx",
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 592
+  }
+}

@@ -59,6 +59,7 @@ import {
   changesToDiffLines,
   type DiffLine,
 } from '../../git/diff-parser';
+import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -550,6 +551,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   );
   const [resumeSessionIndex, setResumeSessionIndex] = useState(0);
   const [resumeScrollOffset, setResumeScrollOffset] = useState(0);
+
+  // TUI-040: Delete session dialog state
+  const [showSessionDeleteDialog, setShowSessionDeleteDialog] = useState(false);
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
@@ -3101,6 +3105,74 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     setAvailableSessions([]);
     setResumeSessionIndex(0);
     setResumeScrollOffset(0);
+    setShowSessionDeleteDialog(false);
+  }, []);
+
+  // TUI-040: Handle session delete dialog selection
+  const handleSessionDeleteSelect = useCallback(
+    async (index: number, option: string) => {
+      setShowSessionDeleteDialog(false);
+
+      if (option === 'Cancel') {
+        return;
+      }
+
+      try {
+        const { persistenceDeleteSession, persistenceCleanupOrphanedMessages } =
+          await import('@sengac/codelet-napi');
+
+        if (option === 'Delete This Session') {
+          // Delete single session
+          const selectedSession = availableSessions[resumeSessionIndex];
+          if (selectedSession) {
+            await persistenceDeleteSession(selectedSession.id);
+            // Cleanup orphaned messages
+            persistenceCleanupOrphanedMessages();
+            // Refresh session list
+            const { persistenceListSessions } = await import(
+              '@sengac/codelet-napi'
+            );
+            const sessions = persistenceListSessions(currentProjectRef.current);
+            const sorted = [...sessions].sort(
+              (a: SessionManifest, b: SessionManifest) =>
+                new Date(b.updatedAt).getTime() -
+                new Date(a.updatedAt).getTime()
+            );
+            setAvailableSessions(sorted);
+            // Adjust index if needed
+            if (sorted.length === 0) {
+              setIsResumeMode(false);
+            } else {
+              setResumeSessionIndex(prev =>
+                Math.min(prev, sorted.length - 1)
+              );
+            }
+          }
+        } else if (option === 'Delete ALL Sessions') {
+          // Delete all sessions
+          for (const session of availableSessions) {
+            await persistenceDeleteSession(session.id);
+          }
+          // Cleanup orphaned messages
+          persistenceCleanupOrphanedMessages();
+          setAvailableSessions([]);
+          setIsResumeMode(false);
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to delete session';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Delete failed: ${errorMessage}` },
+        ]);
+      }
+    },
+    [availableSessions, resumeSessionIndex]
+  );
+
+  // TUI-040: Cancel session delete dialog
+  const handleSessionDeleteCancel = useCallback(() => {
+    setShowSessionDeleteDialog(false);
   }, []);
 
   // Mouse scroll acceleration state (like VirtualList)
@@ -3324,6 +3396,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
       // NAPI-003: Resume mode keyboard handling
       if (isResumeMode) {
+        // TUI-040: Handle delete dialog keyboard input first
+        if (showSessionDeleteDialog) {
+          // Dialog handles its own input via useInput
+          return;
+        }
         if (key.escape) {
           handleResumeCancel();
           return;
@@ -3340,6 +3417,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           setResumeSessionIndex(prev =>
             Math.min(availableSessions.length - 1, prev + 1)
           );
+          return;
+        }
+        // TUI-040: D key opens delete confirmation dialog
+        if (input.toLowerCase() === 'd' && availableSessions.length > 0) {
+          setShowSessionDeleteDialog(true);
           return;
         }
         // No text input in resume mode - just navigation
@@ -4389,6 +4471,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                           <Text
                             backgroundColor={isSelected ? 'blue' : undefined}
                             color={isSelected ? 'black' : 'white'}
+                            wrap="truncate"
                           >
                             {isSelected ? '> ' : '  '}
                             {session.name}
@@ -4401,6 +4484,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                             backgroundColor={isSelected ? 'blue' : undefined}
                             color={isSelected ? 'black' : 'gray'}
                             dimColor={!isSelected}
+                            wrap="truncate"
                           >
                             {'    '}
                             {session.messageCount} messages | {provider} | {timeAgo}
@@ -4437,10 +4521,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               )}
             </Box>
             <Box marginTop={1}>
-              <Text dimColor>Enter Select | ↑↓ Navigate | Esc Cancel</Text>
+              <Text dimColor>Enter Select | ↑↓ Navigate | D Delete | Esc Cancel</Text>
             </Box>
           </Box>
         </Box>
+        {/* TUI-040: Delete session confirmation dialog */}
+        {showSessionDeleteDialog && (
+          <ThreeButtonDialog
+            message={`Delete session "${availableSessions[resumeSessionIndex]?.name || 'Unknown'}"?`}
+            options={['Delete This Session', 'Delete ALL Sessions', 'Cancel']}
+            onSelect={handleSessionDeleteSelect}
+            onCancel={handleSessionDeleteCancel}
+          />
+        )}
       </Box>
     );
   }

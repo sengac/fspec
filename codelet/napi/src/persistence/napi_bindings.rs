@@ -204,12 +204,31 @@ pub fn persistence_get_message(id: String) -> Result<Option<NapiStoredMessage>> 
         .map_err(Error::from_reason)
 }
 
-/// Get all messages for a session
+/// Get all messages for a session (respects compaction - use for LLM context)
+///
+/// If the session has been compacted, this returns:
+/// 1. A synthetic summary message containing the compaction summary
+/// 2. Only messages from the compaction boundary onward
+///
+/// For the full uncompacted history, use `persistence_get_session_messages_full`.
 #[napi]
 pub fn persistence_get_session_messages(session_id: String) -> Result<Vec<NapiStoredMessage>> {
     let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
     let session = load_session(uuid).map_err(Error::from_reason)?;
     get_session_messages(&session)
+        .map(|msgs| msgs.into_iter().map(|m| m.into()).collect())
+        .map_err(Error::from_reason)
+}
+
+/// Get ALL messages for a session (ignores compaction - use for debugging/export)
+///
+/// This returns the complete message history regardless of compaction state.
+/// For LLM context, use `persistence_get_session_messages` which respects compaction.
+#[napi]
+pub fn persistence_get_session_messages_full(session_id: String) -> Result<Vec<NapiStoredMessage>> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let session = load_session(uuid).map_err(Error::from_reason)?;
+    get_session_messages_full(&session)
         .map(|msgs| msgs.into_iter().map(|m| m.into()).collect())
         .map_err(Error::from_reason)
 }
@@ -677,11 +696,53 @@ pub fn persistence_get_message_envelope_raw(id: String) -> Result<Option<String>
 }
 
 /// Get all messages for a session as envelope JSON array with blob content rehydrated
+/// (respects compaction - use for LLM context)
 #[napi]
 pub fn persistence_get_session_message_envelopes(session_id: String) -> Result<Vec<String>> {
     let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
     let session = load_session(uuid).map_err(Error::from_reason)?;
     let messages = get_session_messages(&session).map_err(Error::from_reason)?;
+
+    let mut envelopes: Vec<String> = Vec::with_capacity(messages.len());
+    for stored_msg in messages {
+        // Skip synthetic compaction summary messages (they don't have envelope metadata)
+        if stored_msg.id == uuid::Uuid::nil() {
+            // For synthetic messages, create a simple envelope-like structure
+            let synthetic_envelope = serde_json::json!({
+                "message_type": "user",
+                "message": {
+                    "role": "user",
+                    "content": [{"type": "text", "text": stored_msg.content}]
+                },
+                "_synthetic": true,
+                "_compactionSummary": true
+            });
+            envelopes.push(serde_json::to_string(&synthetic_envelope).unwrap_or_default());
+            continue;
+        }
+
+        let metadata_value = serde_json::Value::Object(
+            stored_msg
+                .metadata
+                .into_iter()
+                .collect::<serde_json::Map<String, serde_json::Value>>(),
+        );
+        let envelope_json = serde_json::to_string(&metadata_value).unwrap_or_default();
+
+        // Rehydrate blob references to restore original content
+        let rehydrated = rehydrate_envelope_impl(&envelope_json).map_err(Error::from_reason)?;
+        envelopes.push(rehydrated);
+    }
+
+    Ok(envelopes)
+}
+
+/// Get all messages for a session as envelope JSON array - FULL history (ignores compaction)
+#[napi]
+pub fn persistence_get_session_message_envelopes_full(session_id: String) -> Result<Vec<String>> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let session = load_session(uuid).map_err(Error::from_reason)?;
+    let messages = get_session_messages_full(&session).map_err(Error::from_reason)?;
 
     let mut envelopes: Vec<String> = Vec::with_capacity(messages.len());
     for stored_msg in messages {
@@ -702,11 +763,51 @@ pub fn persistence_get_session_message_envelopes(session_id: String) -> Result<V
 }
 
 /// Get all messages for a session WITHOUT blob rehydration (returns blob references as-is)
+/// (respects compaction)
 #[napi]
 pub fn persistence_get_session_message_envelopes_raw(session_id: String) -> Result<Vec<String>> {
     let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
     let session = load_session(uuid).map_err(Error::from_reason)?;
     let messages = get_session_messages(&session).map_err(Error::from_reason)?;
+
+    let envelopes: Vec<String> = messages
+        .into_iter()
+        .map(|stored_msg| {
+            // Skip synthetic compaction summary messages
+            if stored_msg.id == uuid::Uuid::nil() {
+                let synthetic_envelope = serde_json::json!({
+                    "message_type": "user",
+                    "message": {
+                        "role": "user",
+                        "content": [{"type": "text", "text": stored_msg.content}]
+                    },
+                    "_synthetic": true,
+                    "_compactionSummary": true
+                });
+                return serde_json::to_string(&synthetic_envelope).unwrap_or_default();
+            }
+
+            let metadata_value = serde_json::Value::Object(
+                stored_msg
+                    .metadata
+                    .into_iter()
+                    .collect::<serde_json::Map<String, serde_json::Value>>(),
+            );
+            serde_json::to_string(&metadata_value).unwrap_or_default()
+        })
+        .collect();
+
+    Ok(envelopes)
+}
+
+/// Get all messages for a session WITHOUT blob rehydration - FULL history (ignores compaction)
+#[napi]
+pub fn persistence_get_session_message_envelopes_raw_full(
+    session_id: String,
+) -> Result<Vec<String>> {
+    let uuid = uuid::Uuid::parse_str(&session_id).map_err(|e| Error::from_reason(e.to_string()))?;
+    let session = load_session(uuid).map_err(Error::from_reason)?;
+    let messages = get_session_messages_full(&session).map_err(Error::from_reason)?;
 
     let envelopes: Vec<String> = messages
         .into_iter()
