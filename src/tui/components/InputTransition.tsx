@@ -7,10 +7,11 @@
  * Animation sequence:
  * 1. When isLoading becomes false, animate out the thinking text (right to left)
  * 2. Then animate in the placeholder text (left to right reveal)
+ * 3. User can interrupt animation by typing - immediately shows input
  */
 
-import React, { useState, useEffect, useRef } from 'react';
-import { Text } from 'ink';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Text, useInput } from 'ink';
 import { useThinkingText, SPINNERS } from './ThinkingIndicator';
 import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
 
@@ -45,6 +46,10 @@ export interface InputTransitionProps extends MultiLineInputProps {
  *
  * Wraps ThinkingIndicator and MultiLineInput with smooth character
  * animation when transitioning between loading and input states.
+ * 
+ * User can interrupt the animation by pressing any key - the animation
+ * will immediately complete and the input will be focused with the
+ * typed character captured.
  */
 export const InputTransition: React.FC<InputTransitionProps> = ({
   isLoading,
@@ -64,6 +69,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   );
   const [visibleChars, setVisibleChars] = useState(0);
   const [capturedText, setCapturedText] = useState('');
+  const [pendingInput, setPendingInput] = useState('');
   const wasLoadingRef = useRef(isLoading);
 
   // Get the current thinking text (stays in sync with ThinkingIndicator)
@@ -81,14 +87,49 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
       setCapturedText(currentThinkingText);
       setAnimationPhase('hiding');
       setVisibleChars(currentThinkingText.length);
+      setPendingInput(''); // Reset pending input
     } else if (!wasLoadingRef.current && isLoading) {
       // Loading just started
       setAnimationPhase('loading');
       setVisibleChars(0);
       setCapturedText('');
+      setPendingInput('');
     }
     wasLoadingRef.current = isLoading;
   }, [isLoading, currentThinkingText]);
+
+  // Handle keyboard input during animation to interrupt it
+  const isAnimating = animationPhase === 'hiding' || animationPhase === 'showing';
+  
+  useInput(
+    (input, key) => {
+      // Ignore control keys that shouldn't trigger input
+      if (key.escape || key.ctrl || key.meta) {
+        return;
+      }
+      
+      // For printable characters, capture them and skip animation
+      if (input && input.length > 0 && !key.return) {
+        // Capture the typed character to pass to input
+        setPendingInput(input);
+        // Immediately complete the animation
+        setAnimationPhase('complete');
+      } else if (key.return || key.backspace || key.delete) {
+        // For return/backspace/delete, just skip animation without capturing
+        setAnimationPhase('complete');
+      }
+    },
+    { isActive: isActive && isAnimating }
+  );
+
+  // When animation completes with pending input, update the value
+  useEffect(() => {
+    if (animationPhase === 'complete' && pendingInput && onChange) {
+      // Append the pending input to the current value
+      onChange(value + pendingInput);
+      setPendingInput('');
+    }
+  }, [animationPhase, pendingInput, onChange, value]);
 
   // Handle hiding animation (right to left)
   useEffect(() => {
