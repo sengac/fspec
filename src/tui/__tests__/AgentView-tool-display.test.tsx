@@ -3,7 +3,7 @@
  *
  * Tests for Claude Code Style Tool Output Display (TUI-037)
  *
- * These tests verify the tool output display format in AgentModal matches
+ * These tests verify the tool output display format in AgentView matches
  * Claude Code's visual style with bullet points, tree connectors, and collapsible output.
  */
 

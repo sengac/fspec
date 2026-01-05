@@ -9,18 +9,17 @@
  */
 
 import React, { useEffect, useState } from 'react';
-import { Box, Text, useInput, useStdout } from 'ink';
+import { Box, Text, useInput } from 'ink';
 import { useFspecStore } from '../store/fspecStore';
 import fs from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
 import { UnifiedBoardLayout } from './UnifiedBoardLayout';
 import { FullScreenWrapper } from './FullScreenWrapper';
-import { VirtualList } from './VirtualList';
 import { CheckpointViewer } from './CheckpointViewer';
 import { ChangedFilesViewer } from './ChangedFilesViewer';
 import { AttachmentDialog } from './AttachmentDialog';
-import { AgentModal } from './AgentModal';
+import { AgentView } from './AgentView';
 import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
 import type { Server } from 'net';
 import type { Server as HttpServer } from 'http';
@@ -53,16 +52,12 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
   const [focusedColumnIndex, setFocusedColumnIndex] = useState(0);
   const [selectedWorkUnitIndex, setSelectedWorkUnitIndex] = useState(0);
-  const [viewMode, setViewMode] = useState<'board' | 'detail' | 'checkpoint-viewer' | 'changed-files-viewer'>('board');
+  const [viewMode, setViewMode] = useState<'board' | 'checkpoint-viewer' | 'changed-files-viewer' | 'agent'>('board');
   const [initialFocusSet, setInitialFocusSet] = useState(false);
   const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
   const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
-  const [showAgentModal, setShowAgentModal] = useState(false);
   const [attachmentServerPort, setAttachmentServerPort] = useState<number | null>(null);
-
-  // Fix: Call useStdout unconditionally at top level (Rules of Hooks)
-  const { stdout } = useStdout();
 
   const columns = [
     'backlog',
@@ -266,7 +261,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   // Handle keyboard navigation
   useInput((input, key) => {
     if (key.escape) {
-      if (viewMode === 'detail' || viewMode === 'checkpoint-viewer' || viewMode === 'changed-files-viewer') {
+      if (viewMode === 'checkpoint-viewer' || viewMode === 'changed-files-viewer') {
         setViewMode('board');
         setSelectedWorkUnit(null);
         return;
@@ -313,12 +308,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       return;
     }
 
-    // G key to open AI agent modal (NAPI-002)
-    if (input === 'g' || input === 'G') {
-      setShowAgentModal(true);
-      return;
-    }
-
     // Tab key to switch panels (BOARD-003)
     if (key.tab) {
       if (focusedPanel === 'board') {
@@ -330,7 +319,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       }
       return;
     }
-  }, { isActive: viewMode === 'board' && !showAttachmentDialog && !showAgentModal });
+  }, { isActive: viewMode === 'board' && !showAttachmentDialog });
 
   // Checkpoint viewer (GIT-004)
   if (viewMode === 'checkpoint-viewer') {
@@ -351,6 +340,17 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           onExit={() => setViewMode('board')}
           terminalWidth={terminalWidth}
           terminalHeight={terminalHeight}
+        />
+      </FullScreenWrapper>
+    );
+  }
+
+  // Agent view (NAPI-002)
+  if (viewMode === 'agent') {
+    return (
+      <FullScreenWrapper>
+        <AgentView
+          onExit={() => setViewMode('board')}
         />
       </FullScreenWrapper>
     );
@@ -407,64 +407,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     );
   }
 
-  // Work unit detail view
-  if (viewMode === 'detail' && selectedWorkUnit) {
-    const availableHeight = (terminalHeight || stdout?.rows || 24) - 10; // Reserve space for header and footer
-
-    // Split description into lines for scrollable display
-    const descriptionText = selectedWorkUnit.description || 'No description';
-    const descriptionLines = descriptionText.split('\n');
-
-    // Render a single line with selection indicator
-    const renderLine = (line: string, _index: number, isSelected: boolean): React.ReactNode => {
-      const indicator = isSelected ? '>' : ' ';
-      return (
-        <Box flexGrow={1}>
-          <Text color={isSelected ? 'cyan' : 'white'}>
-            {indicator} {line || ' '}
-          </Text>
-        </Box>
-      );
-    };
-
-    // Detail view component with ESC key handler
-    const DetailViewContent = () => {
-      // Handle ESC key to exit detail view
-      useInput((input, key) => {
-        if (key.escape) {
-          setViewMode('board');
-          setSelectedWorkUnit(null);
-        }
-      }, { isActive: true });
-
-      return (
-        <Box flexDirection="column" padding={1} flexGrow={1} flexShrink={1}>
-          <Text bold>{selectedWorkUnit.id} - {selectedWorkUnit.title}</Text>
-          <Text>Type: {selectedWorkUnit.type}</Text>
-          <Text>Status: {selectedWorkUnit.status}</Text>
-          {selectedWorkUnit.estimate && <Text>Estimate: {selectedWorkUnit.estimate} points</Text>}
-          <Text>{'\n'}Description:</Text>
-
-          <VirtualList
-            items={descriptionLines}
-            height={availableHeight}
-            renderItem={renderLine}
-            showScrollbar={true}
-            emptyMessage="No description"
-          />
-
-          <Text dimColor>{'\n'}Press ESC to return | Use ↑↓ to scroll | PgUp/PgDn, Home/End</Text>
-        </Box>
-      );
-    };
-
-    return (
-      <FullScreenWrapper>
-        <DetailViewContent />
-      </FullScreenWrapper>
-    );
-  }
-
   return (
     <FullScreenWrapper>
       <UnifiedBoardLayout
@@ -475,7 +417,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         terminalWidth={terminalWidth}
         terminalHeight={terminalHeight}
         cwd={cwd}
-        isDialogOpen={showAttachmentDialog || showAgentModal}
+        isDialogOpen={showAttachmentDialog}
         onColumnChange={(delta) => {
           setFocusedColumnIndex(prev => {
             const newIndex = prev + delta;
@@ -497,13 +439,13 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           }
         }}
         onEnter={() => {
-          // Handle Enter key based on focused panel (BOARD-003)
+          // Handle Enter key - open agent view for selected work unit
           if (focusedPanel === 'board') {
             const currentColumn = groupedWorkUnits[focusedColumnIndex];
             if (currentColumn.units.length > 0) {
               const workUnit = currentColumn.units[selectedWorkUnitIndex];
               setSelectedWorkUnit(workUnit);
-              setViewMode('detail');
+              setViewMode('agent');
             }
           }
         }}
@@ -530,14 +472,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           }
         }}
       />
-
-      {/* NAPI-002: AI Agent modal overlay */}
-      {showAgentModal && (
-        <AgentModal
-          isOpen={showAgentModal}
-          onClose={() => setShowAgentModal(false)}
-        />
-      )}
 
       {/* TUI-019: Attachment selection dialog */}
       {showAttachmentDialog && hasAttachments() && (

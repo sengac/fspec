@@ -1,9 +1,9 @@
 /**
  * Feature: spec/features/session-persistence-with-fork-and-merge.feature
  *
- * Tests for Session Persistence Integration in AgentModal
+ * Tests for Session Persistence Integration in AgentView
  *
- * These tests verify that AgentModal integrates with the codelet-napi
+ * These tests verify that AgentView integrates with the codelet-napi
  * persistence module for command history and session management.
  *
  * NAPI-006: Session Persistence with Fork and Merge
@@ -217,7 +217,7 @@ vi.mock('ink', async () => {
 });
 
 // Import the component after mocks are set up
-import { AgentModal } from '../components/AgentModal';
+import { AgentView } from '../components/AgentView';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -287,7 +287,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       ];
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150); // Allow time for async initSession to load history
@@ -328,7 +328,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
     it('should persist new commands to history when submitted', async () => {
       const { stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame();
@@ -361,7 +361,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       ];
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -407,7 +407,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       ];
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150); // Allow time for async initSession to load history
@@ -451,7 +451,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       vi.mocked(persistenceGetHistory).mockClear();
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -501,7 +501,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step And I run "codelet --resume" (or /resume in modal)
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -541,7 +541,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       ];
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -575,7 +575,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step And session B contains an auth solution at messages 3 and 4
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -607,7 +607,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step Given I have multiple sessions for the current project
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame();
@@ -635,7 +635,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step And I have session "Bug Fix" available
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame();
@@ -662,7 +662,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step Given I have a session named "New Session 2025-01-15"
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -695,7 +695,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step Given session B has a question at message 6 and answer at message 7
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -731,7 +731,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       // @step When I open the agent modal
       const { unmount } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150); // Allow time for async initSession
@@ -750,7 +750,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
       const { stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -781,7 +781,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
       const { stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -811,7 +811,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
       const { stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);
@@ -838,7 +838,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
 
       const { stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(150);

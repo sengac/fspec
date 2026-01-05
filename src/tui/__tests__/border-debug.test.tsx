@@ -557,7 +557,7 @@ describe('Border rendering with VirtualList', () => {
 
   it('should verify normalizeEmojiWidth function strips ALL VS16', () => {
     // Test the normalization function that fixes the bug
-    // This function is used in AgentModal to normalize incoming text
+    // This function is used in AgentView to normalize incoming text
 
     // The fix: strip ALL U+FE0F variation selectors
     function normalizeEmojiWidth(text: string): string {

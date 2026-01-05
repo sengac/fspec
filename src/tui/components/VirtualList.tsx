@@ -418,7 +418,7 @@ export function VirtualList<T>({
         return;
       }
 
-      // Skip Shift+Arrow (used for history navigation in AgentModal)
+      // Skip Shift+Arrow (used for history navigation in AgentView)
       if (key.shift && (key.upArrow || key.downArrow)) {
         return;
       }

@@ -68,8 +68,8 @@ describe('Feature: Interactive Kanban board CLI', () => {
     });
   });
 
-  describe('Scenario: Open detail view with Enter key', () => {
-    it('should display work unit details when Enter is pressed', async () => {
+  describe('Scenario: Open agent view with Enter key', () => {
+    it('should display agent view when Enter is pressed', async () => {
       // @step Given the board is displaying with a work unit selected
       const { stdin, frames } = render(<BoardView />);
 
@@ -84,32 +84,19 @@ describe('Feature: Interactive Kanban board CLI', () => {
       stdin.write('\r'); // Enter key
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // @step Then the detail view should open
-      const frame = frames.find(f => f.includes('Description:') && f.includes('Press ESC to return')) || frames[frames.length - 1];
+      // @step Then the agent view should open
+      const frame = frames.find(f => f.includes('Agent:')) || frames[frames.length - 1];
 
-      // @step And the detail view should show work unit ID (any work unit)
-      // EST-002 is currently first in specifying column
-      expect(frame).toMatch(/[A-Z]+-[0-9]+/); // Match any work unit ID pattern
+      // @step And the agent view should show the Agent header
+      expect(frame).toContain('Agent:');
 
-      // @step And the detail view should show title
-      expect(frame).toMatch(/AI token usage tracking|Interactive Kanban|[\w\s]+/);
-
-      // @step And the detail view should show type "story"
-      expect(frame).toContain('story');
-
-      // @step And the detail view should show status
-      expect(frame).toMatch(/Status: (backlog|specifying|testing|implementing|validating|done|blocked)/);
-
-      // @step And the detail view should show "Description:" section
-      expect(frame).toContain('Description:');
-
-      // @step And the detail view should show "Press ESC to return" message
-      expect(frame).toMatch(/Press ESC to return/i);
+      // @step And the agent view should show tokens display
+      expect(frame).toContain('tokens');
     });
   });
 
-  describe('Scenario: Close detail view with ESC key', () => {
-    it('should return to board view when ESC is pressed in detail view', async () => {
+  describe('Scenario: Close agent view with ESC key', () => {
+    it('should return to board view when ESC is pressed in agent view', async () => {
       // @step Given the board is displaying with a work unit selected
       const { stdin, frames } = render(<BoardView />);
 
@@ -119,28 +106,28 @@ describe('Feature: Interactive Kanban board CLI', () => {
       stdin.write('\x1B[C');
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // @step And the user has opened the detail view
-      stdin.write('\r'); // Enter key to open detail view
+      // @step And the user has opened the agent view
+      stdin.write('\r'); // Enter key to open agent view
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // Verify we're in detail view
-      const detailFrame = frames.find(f => f.includes('Description:') && f.includes('Press ESC to return')) || frames[frames.length - 1];
-      expect(detailFrame).toContain('Description:');
+      // Verify we're in agent view
+      const agentFrame = frames.find(f => f.includes('Agent:')) || frames[frames.length - 1];
+      expect(agentFrame).toContain('Agent:');
 
       // @step When the user presses the ESC key
       stdin.write('\x1B'); // ESC key
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // @step Then the detail view should close
+      // @step Then the agent view should close
       // @step And the board view should be displayed
       const boardFrame = frames[frames.length - 1];
 
       // Verify we're back on the board by checking for column headers
       expect(boardFrame).toMatch(/BACKLOG|SPECIFYIN|TESTING/);
 
-      // @step And the detail view should not be visible
-      // The "Press ESC to return" message should not be present in the final frame
-      expect(boardFrame).not.toContain('Press ESC to return');
+      // @step And the agent view should not be visible
+      // The "Agent:" header should not be present in the final frame
+      expect(boardFrame).not.toContain('Agent:');
     });
   });
 

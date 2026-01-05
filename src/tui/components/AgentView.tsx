@@ -1,5 +1,5 @@
 /**
- * AgentModal - Full-screen modal for AI agent interactions
+ * AgentView - Full-screen view for AI agent interactions
  *
  * Integrates codelet-napi native module into fspec's TUI to enable
  * AI-powered conversations within the terminal interface.
@@ -7,7 +7,7 @@
  * Implements NAPI-003: Proper TUI Integration Using Existing Codelet Rust Infrastructure
  * - Uses the same streaming loop as codelet-cli (run_agent_stream)
  * - Supports Esc key interruption via session.interrupt()
- * - Full-screen modal for maximum conversation space
+ * - Full-screen view for maximum conversation space
  *
  * Implements NAPI-006: Session Persistence with Fork and Merge
  * - Shift+Arrow-Up/Down for command history navigation
@@ -383,9 +383,8 @@ interface CodeletSessionType {
   getContextFillInfo: () => { fillPercentage: number };
 }
 
-export interface AgentModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+export interface AgentViewProps {
+  onExit: () => void;
 }
 
 // Conversation message type for display
@@ -567,7 +566,7 @@ const formatDiffForDisplay = (
   return formatWithTreeConnectors(collapsedContent);
 };
 
-export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
+export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const { stdout } = useStdout();
   const [session, setSession] = useState<CodeletSessionType | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -856,39 +855,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     return () => clearTimeout(timeout);
   }, [isLoading, lastChunkTime]);
 
-  // Initialize session when modal opens
+  // Initialize session when view opens
   useEffect(() => {
-    if (!isOpen) {
-      // Reset state when modal closes (fresh session each time)
-      setSession(null);
-      setConversation([]);
-      setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-      setError(null);
-      setInputValue('');
-      setIsDebugEnabled(false); // AGENT-021: Reset debug state on modal close
-      setDetectedThinkingLevel(null); // TOOL-010: Reset thinking level
-      // TUI-031: Reset tok/s display
-      setDisplayedTokPerSec(null);
-      setLastChunkTime(null);
-      sessionRef.current = null;
-      // NAPI-006: Reset history and search state
-      setHistoryEntries([]);
-      setHistoryIndex(-1);
-      setSavedInput('');
-      setIsSearchMode(false);
-      setSearchQuery('');
-      setSearchResults([]);
-      setSearchResultIndex(0);
-      setCurrentSessionId(null);
-      // NAPI-003: Reset resume mode state
-      setIsResumeMode(false);
-      setAvailableSessions([]);
-      setResumeSessionIndex(0);
-      // PERF-002: Clear line cache on modal close
-      lineCacheRef.current.clear();
-      return;
-    }
-
     const initSession = async () => {
       try {
         // Dynamic import to handle ESM
@@ -1180,7 +1148,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     };
 
     void initSession();
-  }, [isOpen]);
+  }, []);
 
   // Handle sending a prompt
   const handleSubmit = useCallback(async () => {
@@ -3702,14 +3670,14 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
 
-      // Esc key handling - interrupt if loading, close if not
+      // Esc key handling - interrupt if loading, exit if not
       if (key.escape) {
         if (isLoading && sessionRef.current) {
           // Interrupt the agent execution
           sessionRef.current.interrupt();
         } else {
-          // Close the modal
-          onClose();
+          // Exit the agent view
+          onExit();
         }
         return;
       }
@@ -3730,10 +3698,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
     },
-    { isActive: isOpen }
+    { isActive: true }
   );
-
-  if (!isOpen) return null;
 
   // PERF-002: Helper function to wrap a single message into lines
   // Extracted to be reusable for incremental caching
@@ -4411,22 +4377,18 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     );
   }
 
-  // Main agent modal (full-screen overlay)
-  // Use two-layer structure: outer box for positioning, inner box for styling
-  // This prevents border rendering issues with position="absolute" + explicit dimensions
+  // Main agent view (full-screen)
+  // Remove position="absolute" since FullScreenWrapper handles positioning
   return (
     <Box
-      position="absolute"
       flexDirection="column"
-      width={terminalWidth}
-      height={terminalHeight}
+      flexGrow={1}
     >
       <Box
         flexDirection="column"
         flexGrow={1}
         borderStyle="double"
         borderColor="cyan"
-        backgroundColor="black"
       >
         {/* TUI-034: Header with model name, capability indicators, and token usage */}
         <Box

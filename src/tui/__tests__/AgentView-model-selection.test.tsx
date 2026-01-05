@@ -266,7 +266,7 @@ vi.mock('../../utils/config', () => ({
 }));
 
 // Import the component after mocks are set up
-import { AgentModal } from '../components/AgentModal';
+import { AgentView } from '../components/AgentView';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -347,9 +347,9 @@ describe('Feature: Agent Modal Model Selection', () => {
 
   describe('Scenario: Tab key opens model selector with providers as collapsible sections', () => {
     it('should open model selector with collapsible provider sections on Tab press', async () => {
-      // @step Given I am in the AgentModal with a valid session
+      // @step Given I am in the AgentView with a valid session
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
 
@@ -379,7 +379,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should navigate between provider headers with arrow keys', async () => {
       // @step Given the model selector is open
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -406,7 +406,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should expand collapsed provider section with Right arrow', async () => {
       // @step Given the model selector is open
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -441,7 +441,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should collapse expanded provider section with Left arrow', async () => {
       // @step Given the model selector is open
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -470,7 +470,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       resetMockSession({ selectModel: mockSelectModel });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -508,7 +508,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -539,7 +539,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should show [R] indicator for models with reasoning=true', async () => {
       // @step Given the model selector is open
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -569,7 +569,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should show [V] indicator for models with hasVision=true', async () => {
       // @step Given the model selector is open
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -587,7 +587,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should show formatted context window size indicator', async () => {
       // @step Given the model selector is open
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -607,7 +607,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       });
 
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
 
@@ -635,7 +635,7 @@ describe('Feature: Agent Modal Model Selection', () => {
 
       // @step When I open the model selector
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -653,7 +653,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should filter out models without tool_call=true', async () => {
       // @step Given the model selector is open
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -706,7 +706,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       );
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       await waitForFrame(); // Extra wait for model list to load
@@ -729,9 +729,9 @@ describe('Feature: Agent Modal Model Selection', () => {
 
   describe('Scenario: New session uses newWithModel factory method', () => {
     it('should use CodeletSession.newWithModel for session creation', async () => {
-      // @step Given I open the AgentModal
+      // @step Given I open the AgentView
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // @step When the session initializes
@@ -772,7 +772,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       mockState.persistenceCreateSessionWithProvider = mockCreateSession;
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for model loading to complete (header shows model name)
@@ -840,7 +840,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       mockState.persistenceGetSessionMessageEnvelopes = vi.fn(() => []);
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
 
@@ -894,7 +894,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       mockState.persistenceGetSessionMessageEnvelopes = vi.fn(() => []);
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
 
@@ -932,14 +932,14 @@ describe('Feature: Agent Modal Model Selection', () => {
         Promise.reject(new Error('Cache corrupted'))
       );
 
-      // @step When I open the AgentModal
+      // @step When I open the AgentView
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
 
       // @step Then the embedded fallback models should be used
-      // AgentModal should still render without crashing
+      // AgentView should still render without crashing
       expect(lastFrame()).toContain('Agent');
 
       // @step And model selection should still function
@@ -957,7 +957,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -1002,7 +1002,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       mockState.persistenceGetSessionMessageEnvelopes = vi.fn(() => []);
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
 
@@ -1087,7 +1087,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       ]);
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for model loading to complete (header shows model name instead of just provider)
@@ -1107,7 +1107,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should display models in consistent format with indicators', async () => {
       // @step Given the model selector is open
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
       stdin.write('\t'); // Open model selector
@@ -1127,7 +1127,7 @@ describe('Feature: Agent Modal Model Selection', () => {
     it('should show Tab hint when multiple models are available', async () => {
       // @step Given multiple models are available
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
       await waitForFrame();
 

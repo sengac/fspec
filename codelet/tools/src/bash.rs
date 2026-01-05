@@ -1,6 +1,6 @@
 //! Bash tool implementation
 //!
-//! Executes shell commands with output truncation and timeout support.
+//! Executes shell commands with output truncation.
 //! Supports streaming output to UI while buffering complete output for LLM.
 
 use super::error::ToolError;
@@ -12,33 +12,21 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::process::Stdio;
 use std::sync::Arc;
-use std::time::Duration;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command;
 use tokio::sync::Mutex;
-use tokio::time::timeout;
 
 /// Callback for streaming output chunks to UI
 /// Receives each line of output as it's produced
 pub type StreamCallback = Arc<dyn Fn(&str) + Send + Sync>;
 
-/// Default timeout for command execution (120 seconds)
-const DEFAULT_TIMEOUT_SECS: u64 = 120;
-
 /// Bash tool for executing shell commands
-pub struct BashTool {
-    timeout: Duration,
-}
+pub struct BashTool;
 
 impl BashTool {
-    /// Create a new Bash tool instance with default timeout
+    /// Create a new Bash tool instance
     pub fn new() -> Self {
-        Self::with_timeout(Duration::from_secs(DEFAULT_TIMEOUT_SECS))
-    }
-
-    /// Create a new Bash tool instance with custom timeout
-    pub fn with_timeout(timeout: Duration) -> Self {
-        Self { timeout }
+        Self
     }
 
     /// Execute command with streaming output to UI
@@ -121,68 +109,49 @@ impl BashTool {
             }
         });
 
-        // Wait for process with timeout
-        let wait_result = timeout(self.timeout, async {
-            // Wait for stdout/stderr tasks to complete
-            let _ = stdout_task.await;
-            let _ = stderr_task.await;
-            // Wait for process to exit
-            child.wait().await
-        })
-        .await;
+        // Wait for stdout/stderr tasks to complete
+        let _ = stdout_task.await;
+        let _ = stderr_task.await;
+        // Wait for process to exit
+        let status = child.wait().await.map_err(|e| ToolError::Execution {
+            tool: "bash",
+            message: e.to_string(),
+        })?;
 
-        match wait_result {
-            Ok(Ok(status)) => {
-                let stdout_content = output_buffer.lock().await.clone();
-                let stderr_content = stderr_buffer.lock().await.clone();
+        let stdout_content = output_buffer.lock().await.clone();
+        let stderr_content = stderr_buffer.lock().await.clone();
 
-                if status.success() {
-                    // Process successful output with truncation for LLM
-                    let lines = process_output_lines(&stdout_content);
-                    let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
+        if status.success() {
+            // Process successful output with truncation for LLM
+            let lines = process_output_lines(&stdout_content);
+            let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
 
-                    let mut final_output = truncate_result.output;
-                    let was_truncated =
-                        truncate_result.char_truncated || truncate_result.remaining_count > 0;
+            let mut final_output = truncate_result.output;
+            let was_truncated =
+                truncate_result.char_truncated || truncate_result.remaining_count > 0;
 
-                    if was_truncated {
-                        let warning = format_truncation_warning(
-                            truncate_result.remaining_count,
-                            "lines",
-                            truncate_result.char_truncated,
-                            OutputLimits::MAX_OUTPUT_CHARS,
-                        );
-                        final_output.push_str(&warning);
-                    }
-
-                    Ok(final_output)
-                } else {
-                    // Command failed
-                    Err(ToolError::Execution {
-                        tool: "bash",
-                        message: format!(
-                            "exit code {}\nStdout: {}\nStderr: {}",
-                            status.code().unwrap_or(-1),
-                            stdout_content.trim(),
-                            stderr_content.trim()
-                        ),
-                    })
-                }
+            if was_truncated {
+                let warning = format_truncation_warning(
+                    truncate_result.remaining_count,
+                    "lines",
+                    truncate_result.char_truncated,
+                    OutputLimits::MAX_OUTPUT_CHARS,
+                );
+                final_output.push_str(&warning);
             }
-            Ok(Err(e)) => Err(ToolError::Execution {
+
+            Ok(final_output)
+        } else {
+            // Command failed
+            Err(ToolError::Execution {
                 tool: "bash",
-                message: e.to_string(),
-            }),
-            Err(_) => {
-                // Timeout - kill the process
-                let _ = child.kill().await;
-                // Note: Partial output was already streamed to UI via callback
-
-                Err(ToolError::Timeout {
-                    tool: "bash",
-                    seconds: self.timeout.as_secs(),
-                })
-            }
+                message: format!(
+                    "exit code {}\nStdout: {}\nStderr: {}",
+                    status.code().unwrap_or(-1),
+                    stdout_content.trim(),
+                    stderr_content.trim()
+                ),
+            })
         }
     }
 }
@@ -212,8 +181,7 @@ impl rig::tool::Tool for BashTool {
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
             name: "bash".to_string(),
-            description: "Execute a bash command. Returns stdout or error message with stderr. \
-                Commands timeout after 120 seconds by default."
+            description: "Execute a bash command. Returns stdout or error message with stderr."
                 .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(BashArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),
@@ -282,66 +250,49 @@ impl rig::tool::Tool for BashTool {
             }
         });
 
-        // Wait for process with timeout
-        let wait_result = timeout(self.timeout, async {
-            // Wait for stdout/stderr tasks to complete
-            let _ = stdout_task.await;
-            let _ = stderr_task.await;
-            // Wait for process to exit
-            child.wait().await
-        })
-        .await;
+        // Wait for stdout/stderr tasks to complete
+        let _ = stdout_task.await;
+        let _ = stderr_task.await;
+        // Wait for process to exit
+        let status = child.wait().await.map_err(|e| ToolError::Execution {
+            tool: "bash",
+            message: e.to_string(),
+        })?;
 
-        match wait_result {
-            Ok(Ok(status)) => {
-                let stdout_content = output_buffer.lock().await.clone();
-                let stderr_content = stderr_buffer.lock().await.clone();
+        let stdout_content = output_buffer.lock().await.clone();
+        let stderr_content = stderr_buffer.lock().await.clone();
 
-                if status.success() {
-                    // Process successful output with truncation for LLM
-                    let lines = process_output_lines(&stdout_content);
-                    let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
+        if status.success() {
+            // Process successful output with truncation for LLM
+            let lines = process_output_lines(&stdout_content);
+            let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
 
-                    let mut final_output = truncate_result.output;
-                    let was_truncated =
-                        truncate_result.char_truncated || truncate_result.remaining_count > 0;
+            let mut final_output = truncate_result.output;
+            let was_truncated =
+                truncate_result.char_truncated || truncate_result.remaining_count > 0;
 
-                    if was_truncated {
-                        let warning = format_truncation_warning(
-                            truncate_result.remaining_count,
-                            "lines",
-                            truncate_result.char_truncated,
-                            OutputLimits::MAX_OUTPUT_CHARS,
-                        );
-                        final_output.push_str(&warning);
-                    }
-
-                    Ok(final_output)
-                } else {
-                    // Command failed
-                    Err(ToolError::Execution {
-                        tool: "bash",
-                        message: format!(
-                            "exit code {}\nStdout: {}\nStderr: {}",
-                            status.code().unwrap_or(-1),
-                            stdout_content.trim(),
-                            stderr_content.trim()
-                        ),
-                    })
-                }
+            if was_truncated {
+                let warning = format_truncation_warning(
+                    truncate_result.remaining_count,
+                    "lines",
+                    truncate_result.char_truncated,
+                    OutputLimits::MAX_OUTPUT_CHARS,
+                );
+                final_output.push_str(&warning);
             }
-            Ok(Err(e)) => Err(ToolError::Execution {
+
+            Ok(final_output)
+        } else {
+            // Command failed
+            Err(ToolError::Execution {
                 tool: "bash",
-                message: e.to_string(),
-            }),
-            Err(_) => {
-                // Timeout - kill the process
-                let _ = child.kill().await;
-                Err(ToolError::Timeout {
-                    tool: "bash",
-                    seconds: self.timeout.as_secs(),
-                })
-            }
+                message: format!(
+                    "exit code {}\nStdout: {}\nStderr: {}",
+                    status.code().unwrap_or(-1),
+                    stdout_content.trim(),
+                    stderr_content.trim()
+                ),
+            })
         }
     }
 }

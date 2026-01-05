@@ -3,7 +3,7 @@
  *
  * Tests for TUI Integration for Codelet AI Agent
  *
- * These tests verify the AgentModal component that integrates codelet-napi
+ * These tests verify the AgentView component that integrates codelet-napi
  * native module into fspec's TUI infrastructure.
  */
 
@@ -91,7 +91,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   modelsSetCacheDirectory: vi.fn(),
   modelsListAll: vi.fn(() => Promise.resolve([])),
   setRustLogCallback: vi.fn(),
-  // Persistence NAPI bindings required by AgentModal
+  // Persistence NAPI bindings required by AgentView
   persistenceSetDataDirectory: vi.fn(),
   persistenceStoreMessageEnvelope: vi.fn(),
   persistenceGetHistory: vi.fn(() => []),
@@ -136,7 +136,7 @@ vi.mock('ink', async () => {
 });
 
 // Import the component after mocks are set up
-import { AgentModal } from '../components/AgentModal';
+import { AgentView } from '../components/AgentView';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -185,14 +185,14 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
   describe('Scenario: Open agent modal and send prompt with streaming response', () => {
     it('should display modal overlay with provider name and stream responses', async () => {
       // @step Given I am viewing the TUI board
-      // The AgentModal renders as an overlay on top of existing views
+      // The AgentView renders as an overlay on top of existing views
 
       // @step And at least one AI provider is configured
       // Mocked CodeletSession returns 'claude' as available provider
 
       // @step When I press the agent modal hotkey
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization
@@ -219,7 +219,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
     it('should execute tool calls automatically without approval prompts', async () => {
       // @step Given I have the agent modal open
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization
@@ -256,7 +256,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       });
 
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization
@@ -288,7 +288,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // @step When I send a prompt and receive a response
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization
@@ -318,7 +318,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       const onClose = vi.fn();
       const { lastFrame, rerender } = render(
-        <AgentModal isOpen={true} onClose={onClose} />
+        <AgentView onExit={onClose} />
       );
 
       // Wait for async session initialization
@@ -326,7 +326,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // @step When I close the modal with Escape key
       // Escape key triggers onClose callback
-      rerender(<AgentModal isOpen={false} onClose={onClose} />);
+      rerender(<AgentView onExit={onClose} />);
 
       // @step And I reopen the agent modal
       // Create fresh session on reopen
@@ -335,7 +335,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
         messages: [],
       });
 
-      rerender(<AgentModal isOpen={true} onClose={onClose} />);
+      rerender(<AgentView onExit={onClose} />);
 
       // Wait for async session initialization
       await waitForFrame();
@@ -359,7 +359,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // @step When I open the agent modal
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization (and error)
@@ -394,7 +394,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization
@@ -443,7 +443,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame();
@@ -489,7 +489,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       const onClose = vi.fn();
       const { lastFrame, stdin, rerender } = render(
-        <AgentModal isOpen={true} onClose={onClose} />
+        <AgentView onExit={onClose} />
       );
 
       await waitForFrame();
@@ -504,14 +504,14 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).toContain('[DEBUG]');
 
       // @step When I close the modal
-      rerender(<AgentModal isOpen={false} onClose={onClose} />);
+      rerender(<AgentView onExit={onClose} />);
       await waitForFrame();
 
       // @step And I reopen the modal
       resetMockSession({
         toggleDebug: mockToggleDebug,
       });
-      rerender(<AgentModal isOpen={true} onClose={onClose} />);
+      rerender(<AgentView onExit={onClose} />);
       await waitForFrame();
 
       // @step Then the DEBUG indicator should not be shown
@@ -538,7 +538,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame();
@@ -593,7 +593,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame();
@@ -634,7 +634,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
   describe('Scenario: Successful manual compaction with compression feedback', () => {
     it('should compact context and show compression metrics when /compact is entered', async () => {
-      // @step Given I am in AgentModal with a conversation that has approximately 150k tokens
+      // @step Given I am in AgentView with a conversation that has approximately 150k tokens
       const mockCompact = vi.fn().mockReturnValue({
         originalTokens: 150000,
         compactedTokens: 40000,
@@ -652,7 +652,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization
@@ -684,7 +684,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
   describe('Scenario: Empty session shows nothing to compact', () => {
     it('should show nothing to compact message when session has no messages', async () => {
-      // @step Given I am in AgentModal with no messages in the conversation
+      // @step Given I am in AgentView with no messages in the conversation
       const mockCompact = vi.fn();
       resetMockSession({
         tokenTracker: { inputTokens: 0, outputTokens: 0 },
@@ -693,7 +693,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization
@@ -719,7 +719,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
   describe('Scenario: Compaction failure preserves context', () => {
     it('should show error message and preserve context when compaction fails', async () => {
-      // @step Given I am in AgentModal with an active conversation
+      // @step Given I am in AgentView with an active conversation
       const mockCompact = vi.fn().mockImplementation(() => {
         throw new Error('API rate limit exceeded');
       });
@@ -733,7 +733,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       });
 
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for async session initialization
