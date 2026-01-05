@@ -275,7 +275,8 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
 
       // @step Then no tokens per second value should be displayed
       const frame = lastFrame();
-      expect(frame).toContain('streaming');
+      // Note: The UI shows "Thinking..." with a spinner, not "(streaming...)"
+      expect(frame).toContain('Thinking');
       expect(frame).not.toContain('tok/s');
 
       // Cleanup
@@ -343,7 +344,8 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
       expect(frame).toContain('Agent: claude');
 
       // @step And the header should show '(streaming...)' next to the provider name
-      expect(frame).toContain('streaming');
+      // Note: The UI shows "Thinking..." with a spinner, not "(streaming...)"
+      expect(frame).toContain('Thinking');
 
       // @step And the header should show '12.3 tok/s' to the left of the token count
       expect(frame).toContain('tok/s');

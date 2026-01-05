@@ -19,13 +19,18 @@ import { join } from 'path';
 vi.mock('../../../utils/git-checkpoint');
 vi.mock('../../../utils/ipc');
 vi.mock('isomorphic-git');
-vi.mock('fs', () => ({
-  default: {
-    existsSync: vi.fn(),
-    readdirSync: vi.fn(),
-    readFileSync: vi.fn(),
-  },
-}));
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('fs')>();
+  return {
+    ...actual,
+    default: {
+      ...actual,
+      existsSync: vi.fn(),
+      readdirSync: vi.fn(),
+      readFileSync: vi.fn(),
+    },
+  };
+});
 
 // Import store for proper mocking
 import { useFspecStore } from '../../store/fspecStore';
