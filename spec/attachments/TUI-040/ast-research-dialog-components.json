@@ -1,0 +1,59 @@
+{
+  "description": "AST research for TUI-040: Delete Session from Resume View",
+  "date": "2026-01-05",
+  "searches": [
+    {
+      "pattern": "export const $NAME",
+      "lang": "tsx",
+      "path": "src/components/",
+      "purpose": "Find existing dialog components to understand patterns",
+      "results": [
+        {
+          "file": "src/components/StatusDialog.tsx",
+          "line": 31,
+          "match": "export const StatusDialog: React.FC<StatusDialogProps>"
+        },
+        {
+          "file": "src/components/ConfirmationDialog.tsx",
+          "line": 34,
+          "match": "export const ConfirmationDialog: React.FC<ConfirmationDialogProps>"
+        },
+        {
+          "file": "src/components/Dialog.tsx",
+          "line": 27,
+          "match": "export const Dialog: React.FC<DialogProps>"
+        }
+      ]
+    },
+    {
+      "pattern": "useInput",
+      "lang": "tsx",
+      "path": "src/tui/components/AgentView.tsx",
+      "purpose": "Find useInput hooks to understand keyboard handling pattern",
+      "results": [
+        {
+          "file": "src/tui/components/AgentView.tsx",
+          "line": 26,
+          "match": "useInput (import)"
+        },
+        {
+          "file": "src/tui/components/AgentView.tsx",
+          "line": 3212,
+          "match": "useInput (main keyboard handler)"
+        }
+      ]
+    }
+  ],
+  "findings": {
+    "dialogComponentPattern": "Components in src/components/ follow React.FC<Props> pattern with explicit interface definitions",
+    "baseDialog": "Dialog.tsx provides base modal infrastructure with ESC handling and borderColor prop",
+    "confirmationDialog": "ConfirmationDialog.tsx wraps Dialog and handles Y/N/typed/keypress confirmation modes",
+    "keyboardHandling": "AgentView.tsx uses single useInput hook at line 3212 for all keyboard input with mode-specific branches",
+    "resumeModeKeyHandling": "Resume mode keyboard handling is at lines 3325-3346, handles ESC, Enter, Up/Down arrows"
+  },
+  "implementationPlan": {
+    "newComponent": "Create ThreeButtonDialog.tsx in src/components/ extending Dialog pattern",
+    "agentViewChanges": "Add D key handler in resume mode section (around line 3325), add showDeleteDialog state",
+    "napiIntegration": "Import persistenceDeleteSession, implement cleanup logic after delete"
+  }
+}

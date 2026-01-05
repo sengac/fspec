@@ -862,18 +862,52 @@ export declare function persistenceGetMessageEnvelopeRaw(
   id: string
 ): string | null;
 
-/** Get all messages for a session as envelope JSON array with blob content rehydrated */
+/**
+ * Get all messages for a session as envelope JSON array with blob content rehydrated
+ * (respects compaction - use for LLM context)
+ */
 export declare function persistenceGetSessionMessageEnvelopes(
   sessionId: string
 ): Array<string>;
 
-/** Get all messages for a session WITHOUT blob rehydration (returns blob references as-is) */
+/** Get all messages for a session as envelope JSON array - FULL history (ignores compaction) */
+export declare function persistenceGetSessionMessageEnvelopesFull(
+  sessionId: string
+): Array<string>;
+
+/**
+ * Get all messages for a session WITHOUT blob rehydration (returns blob references as-is)
+ * (respects compaction)
+ */
 export declare function persistenceGetSessionMessageEnvelopesRaw(
   sessionId: string
 ): Array<string>;
 
-/** Get all messages for a session */
+/** Get all messages for a session WITHOUT blob rehydration - FULL history (ignores compaction) */
+export declare function persistenceGetSessionMessageEnvelopesRawFull(
+  sessionId: string
+): Array<string>;
+
+/**
+ * Get all messages for a session (respects compaction - use for LLM context)
+ *
+ * If the session has been compacted, this returns:
+ * 1. A synthetic summary message containing the compaction summary
+ * 2. Only messages from the compaction boundary onward
+ *
+ * For the full uncompacted history, use `persistence_get_session_messages_full`.
+ */
 export declare function persistenceGetSessionMessages(
+  sessionId: string
+): Array<NapiStoredMessage>;
+
+/**
+ * Get ALL messages for a session (ignores compaction - use for debugging/export)
+ *
+ * This returns the complete message history regardless of compaction state.
+ * For LLM context, use `persistence_get_session_messages` which respects compaction.
+ */
+export declare function persistenceGetSessionMessagesFull(
   sessionId: string
 ): Array<NapiStoredMessage>;
 

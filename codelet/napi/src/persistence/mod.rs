@@ -33,6 +33,8 @@ pub use types::*;
 #[cfg(not(feature = "noop"))]
 pub use napi_bindings::*;
 
+use codelet_common::token_estimator::count_tokens;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use uuid::Uuid;
@@ -530,8 +532,79 @@ pub fn get_message(id: Uuid) -> Result<Option<StoredMessage>, String> {
         .cloned())
 }
 
-/// Get all messages for a session
+/// Get all messages for a session, respecting compaction state
+///
+/// If the session has been compacted, this returns:
+/// 1. A synthetic summary message containing the compaction summary
+/// 2. Only messages from `compacted_before_index` onward
+///
+/// This ensures restored sessions use the compacted context, not the full history.
+/// Pattern borrowed from OpenCode's SummaryMessageID approach.
 pub fn get_session_messages(session: &SessionManifest) -> Result<Vec<StoredMessage>, String> {
+    init_stores()?;
+    let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
+    let store_ref = store.as_ref().ok_or("Message store not initialized")?;
+
+    let mut messages = Vec::new();
+
+    if let Some(ref compaction) = session.compaction {
+        // Inject summary as a synthetic "user" message (OpenCode pattern)
+        // This provides context for what came before the compaction boundary
+        let summary_content = format!(
+            "[Previous conversation summary]\n\n{}",
+            compaction.summary
+        );
+        let summary_tokens = count_tokens(&summary_content) as u32;
+
+        messages.push(StoredMessage {
+            id: Uuid::nil(), // Synthetic, not stored in message store
+            content_hash: String::new(),
+            created_at: compaction.compacted_at,
+            role: "user".to_string(),
+            content: summary_content,
+            token_count: Some(summary_tokens),
+            blob_refs: Vec::new(),
+            metadata: {
+                let mut meta = HashMap::new();
+                meta.insert(
+                    "_synthetic".to_string(),
+                    serde_json::json!(true),
+                );
+                meta.insert(
+                    "_compactionSummary".to_string(),
+                    serde_json::json!(true),
+                );
+                meta.insert(
+                    "_compactedBeforeIndex".to_string(),
+                    serde_json::json!(compaction.compacted_before_index),
+                );
+                meta
+            },
+        });
+
+        // Only load messages FROM the compaction boundary onward
+        for msg_ref in session.messages.iter().skip(compaction.compacted_before_index) {
+            if let Some(msg) = store_ref.get(msg_ref.message_id) {
+                messages.push(msg.clone());
+            }
+        }
+    } else {
+        // No compaction - load all messages
+        for msg_ref in &session.messages {
+            if let Some(msg) = store_ref.get(msg_ref.message_id) {
+                messages.push(msg.clone());
+            }
+        }
+    }
+
+    Ok(messages)
+}
+
+/// Get ALL messages for a session, ignoring compaction state
+///
+/// Use this for debugging, admin, export, or when you need the full history.
+/// For LLM context, use `get_session_messages()` which respects compaction.
+pub fn get_session_messages_full(session: &SessionManifest) -> Result<Vec<StoredMessage>, String> {
     init_stores()?;
     let store = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
     let store_ref = store.as_ref().ok_or("Message store not initialized")?;

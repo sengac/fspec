@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-05T06:12:12.263Z"
+    "lastUpdated": "2026-01-05T11:59:35.713Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -59936,6 +59936,214 @@
       "nextNoteId": 3,
       "estimate": 5,
       "updated": "2026-01-05T06:12:12.292Z"
+    },
+    "TUI-040": {
+      "id": "TUI-040",
+      "title": "Delete Session from Resume View with Confirmation Dialog",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-05T11:29:09.298Z",
+      "updatedAt": "2026-01-05T11:59:35.741Z",
+      "description": "Add D key binding to delete sessions from /resume view with a three-button confirmation dialog: Delete This Session, Delete ALL Sessions, Cancel",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-040/delete-session-research.md",
+        "spec/attachments/TUI-040/ast-research-dialog-components.json"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-05T11:30:55.617Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-05T11:47:36.025Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-05T11:49:38.023Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-05T11:59:07.098Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-05T11:59:35.742Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user managing agent sessions",
+        "action": "delete unwanted sessions from the /resume view",
+        "benefit": "I can clean up old sessions and maintain a tidy session history"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Resume view currently has read-only functionality - no delete operations exist",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:31:12.012Z"
+        },
+        {
+          "id": 1,
+          "text": "Session deletion must call persistenceDeleteSession from codelet-napi to remove session file and update storage",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:31:24.958Z"
+        },
+        {
+          "id": 2,
+          "text": "After successful deletion, session list must be refreshed and selection index adjusted",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:31:29.092Z"
+        },
+        {
+          "id": 3,
+          "text": "If all sessions are deleted, resume mode should exit automatically",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:31:33.086Z"
+        },
+        {
+          "id": 4,
+          "text": "ESC key cancels the delete dialog and returns to normal resume mode state",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:31:37.359Z"
+        },
+        {
+          "id": 5,
+          "text": "Footer must display available keybindings including delete options",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:31:42.357Z"
+        },
+        {
+          "id": 6,
+          "text": "Delete dialog uses existing ConfirmationDialog component for consistency with CheckpointViewer pattern",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:31:46.457Z"
+        },
+        {
+          "id": 7,
+          "text": "D key opens a three-button confirmation dialog with options: Delete This Session, Delete ALL Sessions, Cancel",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:33:44.016Z"
+        },
+        {
+          "id": 8,
+          "text": "Three-button dialog requires a new component or extended ConfirmationDialog since current component only supports Y/N binary confirmation",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:33:48.849Z"
+        },
+        {
+          "id": 9,
+          "text": "After deleting session(s), trigger cleanup of orphaned messages in the message store",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:34:53.990Z"
+        },
+        {
+          "id": 10,
+          "text": "Three-button dialog navigation: Left/Right arrow keys to navigate between buttons, Enter to select, ESC to cancel",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:35:37.058Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User deletes the last remaining session, session is deleted, resume mode automatically exits since no sessions remain",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:32:05.097Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses ESC while delete ALL dialog is showing, deletion is cancelled, all sessions remain intact",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:32:09.417Z"
+        },
+        {
+          "id": 2,
+          "text": "User selects a session, presses D, three-button dialog appears with 'Delete This Session', 'Delete ALL Sessions', 'Cancel' options",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:34:11.674Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses D, dialog appears, user selects 'Delete This Session', the selected session is deleted, list refreshes with next session selected",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:34:16.332Z"
+        },
+        {
+          "id": 4,
+          "text": "User presses D, dialog appears, user selects 'Delete ALL Sessions', all sessions are deleted, resume mode exits",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:34:20.743Z"
+        },
+        {
+          "id": 5,
+          "text": "User sees footer in resume mode showing 'Enter Select | ↑↓ Navigate | D Delete | Esc Cancel'",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:34:25.896Z"
+        },
+        {
+          "id": 6,
+          "text": "User presses D, dialog appears with 'Delete This Session' highlighted, user presses Right arrow to highlight 'Delete ALL Sessions', presses Enter to confirm",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:35:41.472Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should deleting a session also trigger any cleanup of orphaned messages in the message store, or is that handled separately?",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:32:19.868Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Arrow keys to navigate between buttons + Enter to select (Option A)"
+        },
+        {
+          "id": 1,
+          "text": "@human: For the keybinding, should we use Shift+D or A for delete all? The CheckpointViewer uses A for delete all.",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:32:24.755Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Use single D key which opens a three-button dialog: Delete This Session, Delete ALL Sessions, Cancel - not separate keybindings"
+        },
+        {
+          "id": 2,
+          "text": "@human: How should users navigate and select options in the three-button dialog? Options: (A) Arrow keys to navigate between buttons + Enter to select, (B) Number keys 1/2/3 to directly select, (C) Letter keys like D/A/C for Delete/All/Cancel?",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:35:05.245Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Arrow keys to navigate between buttons + Enter to select (Option A)"
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Creates new ThreeButtonDialog component extending base Dialog for three-option confirmation (Delete This/Delete ALL/Cancel)",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:46:36.203Z"
+        },
+        {
+          "id": 1,
+          "text": "Integrates with codelet-napi: persistenceDeleteSession for single delete, persistenceCleanupOrphans for message cleanup",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:46:41.810Z"
+        },
+        {
+          "id": 2,
+          "text": "Modifies AgentView.tsx resume mode: adds D key handler, showDeleteDialog state, and ThreeButtonDialog rendering",
+          "deleted": false,
+          "createdAt": "2026-01-05T11:46:46.981Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "updated": "2026-01-05T11:59:35.741Z"
     }
   },
   "states": {
@@ -60009,6 +60217,7 @@
       "TUI-038"
     ],
     "done": [
+      "TUI-040",
       "TUI-039",
       "TUI-037",
       "PROV-002",
@@ -60468,7 +60677,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 39,
+    "TUI": 40,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

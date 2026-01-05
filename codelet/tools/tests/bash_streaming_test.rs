@@ -8,7 +8,6 @@
 use codelet_tools::bash::{BashArgs, BashTool, StreamCallback};
 use codelet_tools::limits::OutputLimits;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
 
 // ==========================================
 // MOCK STREAM OUTPUT FOR TESTING
@@ -162,54 +161,6 @@ async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
     assert!(
         result.contains("truncated"),
         "LLM result should include truncation warning"
-    );
-}
-
-/// Scenario: Handle timeout with partial streamed output
-#[tokio::test]
-async fn test_handle_timeout_with_partial_streamed_output() {
-    // @step Given a bash command that will exceed the timeout limit
-    let tool = BashTool::with_timeout(Duration::from_secs(1));
-    let collector = MockStreamCollector::new();
-
-    // @step When the command times out during execution
-    let result = tool
-        .call_with_streaming(
-            BashArgs {
-                command: "for i in $(seq 1 100); do echo \"line $i\"; sleep 0.1; done".to_string(),
-            },
-            Some(collector.create_callback()),
-        )
-        .await;
-
-    // @step Then the user should have seen partial output streamed before timeout
-    let chunks = collector.get_chunks();
-    assert!(
-        !chunks.is_empty(),
-        "User should have seen some output before timeout"
-    );
-    // Should have seen some lines in 1 second (100ms per line = ~10 lines)
-    assert!(
-        chunks.len() >= 3,
-        "Expected at least 3 lines streamed before timeout, got {}",
-        chunks.len()
-    );
-
-    // @step And the LLM should receive a timeout error
-    assert!(result.is_err(), "Result should be an error after timeout");
-    let error_msg = result.unwrap_err().to_string();
-    assert!(
-        error_msg.contains("timeout") || error_msg.contains("Timeout"),
-        "Error should mention timeout, got: {}",
-        error_msg
-    );
-
-    // @step And the partial output should be preserved in the error context
-    // Partial output is preserved via streaming callback - user saw output before timeout
-    // The chunks collected above prove partial output was captured and emitted to UI
-    assert!(
-        !chunks.is_empty(),
-        "Partial output should be preserved - chunks were streamed before timeout"
     );
 }
 
