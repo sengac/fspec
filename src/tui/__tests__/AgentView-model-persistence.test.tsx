@@ -4,7 +4,7 @@
  * TUI-035: Persist Last Used Model Selection
  *
  * Tests that model selection is persisted to ~/.fspec/fspec-config.json
- * and restored when opening a new AgentModal session.
+ * and restored when opening a new AgentView session.
  */
 
 import React from 'react';
@@ -223,7 +223,7 @@ vi.mock('ink', async () => {
 });
 
 // Import the component after mocks are set up
-import { AgentModal } from '../components/AgentModal';
+import { AgentView } from '../components/AgentView';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -337,7 +337,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
   // RESTORATION ON NEW SESSION
   // ----------------------------------------
   // Note: Model switching via Tab and persistence on switch is tested in
-  // AgentModal-model-selection.test.tsx. These tests focus on restoration behavior.
+  // AgentView-model-selection.test.tsx. These tests focus on restoration behavior.
 
   describe('Scenario: Restore persisted model on new session', () => {
     it('should start with persisted model when config exists', async () => {
@@ -349,8 +349,8 @@ describe('Feature: Persist Last Used Model Selection', () => {
       // @step And ANTHROPIC_API_KEY is set
       resetMockSession({ availableProviders: ['claude'] });
 
-      // @step When I open the AgentModal
-      const { lastFrame } = render(<AgentModal isOpen={true} onClose={() => {}} />);
+      // @step When I open the AgentView
+      const { lastFrame } = render(<AgentView onExit={() => {}} />);
 
       // @step Then the session should start with "anthropic/claude-opus-4"
       // @step And the header should display "Agent: claude-opus-4"
@@ -374,8 +374,8 @@ describe('Feature: Persist Last Used Model Selection', () => {
       // @step And GOOGLE_GENERATIVE_AI_API_KEY is set
       resetMockSession({ availableProviders: ['gemini'] });
 
-      // @step When I open the AgentModal
-      const { lastFrame } = render(<AgentModal isOpen={true} onClose={() => {}} />);
+      // @step When I open the AgentView
+      const { lastFrame } = render(<AgentView onExit={() => {}} />);
 
       // @step Then the session should start with "google/gemini-2.5-pro"
       await vi.waitFor(
@@ -402,8 +402,8 @@ describe('Feature: Persist Last Used Model Selection', () => {
       // @step And GOOGLE_GENERATIVE_AI_API_KEY is set
       resetMockSession({ availableProviders: ['claude', 'gemini'] });
 
-      // @step When I open the AgentModal
-      const { lastFrame } = render(<AgentModal isOpen={true} onClose={() => {}} />);
+      // @step When I open the AgentView
+      const { lastFrame } = render(<AgentView onExit={() => {}} />);
 
       // @step Then the session should start with the first available model
       // @step And an informational message should indicate the persisted model was unavailable
@@ -429,8 +429,8 @@ describe('Feature: Persist Last Used Model Selection', () => {
       // @step And GOOGLE_GENERATIVE_AI_API_KEY is set
       resetMockSession({ availableProviders: ['gemini'] }); // Only gemini has credentials
 
-      // @step When I open the AgentModal
-      const { lastFrame } = render(<AgentModal isOpen={true} onClose={() => {}} />);
+      // @step When I open the AgentView
+      const { lastFrame } = render(<AgentView onExit={() => {}} />);
 
       // @step Then the session should start with a Google model instead
       // @step And an informational message should indicate the persisted provider was unavailable
@@ -452,8 +452,8 @@ describe('Feature: Persist Last Used Model Selection', () => {
       // @step And ANTHROPIC_API_KEY is set
       resetMockSession({ availableProviders: ['claude'] });
 
-      // @step When I open the AgentModal
-      const { lastFrame } = render(<AgentModal isOpen={true} onClose={() => {}} />);
+      // @step When I open the AgentView
+      const { lastFrame } = render(<AgentView onExit={() => {}} />);
 
       // @step Then the session should start with the first available model
       // @step And no error should be shown
@@ -476,8 +476,8 @@ describe('Feature: Persist Last Used Model Selection', () => {
       // @step And ANTHROPIC_API_KEY is set
       resetMockSession({ availableProviders: ['claude'] });
 
-      // @step When I open the AgentModal
-      const { lastFrame } = render(<AgentModal isOpen={true} onClose={() => {}} />);
+      // @step When I open the AgentView
+      const { lastFrame } = render(<AgentView onExit={() => {}} />);
 
       // @step Then the session should start with the first available model
       // @step And config read failure should be logged but not shown to user
@@ -498,11 +498,11 @@ describe('Feature: Persist Last Used Model Selection', () => {
 
   describe('Scenario: Config uses proper nested structure', () => {
     it('should write config with nested agent.lastUsedModel path', async () => {
-      // @step Given I am in the AgentModal
+      // @step Given I am in the AgentView
       mockConfig.loadConfig.mockResolvedValue({});
       resetMockSession({ availableProviders: ['claude', 'gemini'] });
 
-      const { lastFrame, stdin } = render(<AgentModal isOpen={true} onClose={() => {}} />);
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
 
       await vi.waitFor(
         () => {
@@ -543,7 +543,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
       mockConfig.loadConfig.mockResolvedValue(existingConfig);
       resetMockSession({ availableProviders: ['claude', 'gemini'] });
 
-      const { lastFrame, stdin } = render(<AgentModal isOpen={true} onClose={() => {}} />);
+      const { lastFrame, stdin } = render(<AgentView onExit={() => {}} />);
 
       await vi.waitFor(
         () => {

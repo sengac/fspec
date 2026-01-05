@@ -4,7 +4,7 @@
  * Tests for Context window fill percentage indicator in agent modal header
  *
  * These tests verify the context fill percentage calculation and color-coded display
- * in the AgentModal header.
+ * in the AgentView header.
  */
 
 import React from 'react';
@@ -79,7 +79,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   modelsSetCacheDirectory: vi.fn(),
   modelsListAll: vi.fn(() => Promise.resolve([])),
   setRustLogCallback: vi.fn(),
-  // Persistence NAPI bindings required by AgentModal
+  // Persistence NAPI bindings required by AgentView
   persistenceSetDataDirectory: vi.fn(),
   persistenceStoreMessageEnvelope: vi.fn(),
   persistenceGetHistory: vi.fn(() => []),
@@ -123,7 +123,7 @@ vi.mock('ink', async () => {
 });
 
 // Import the component after mocks are set up
-import { AgentModal } from '../components/AgentModal';
+import { AgentView } from '../components/AgentView';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -194,13 +194,13 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
     it('should display [0%] in green at start of conversation', async () => {
       // @step Given I start a fresh conversation in Claude Code
       const { lastFrame } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // @step And no tokens have been used yet
       await waitForFrame(100);
 
-      // @step When the AgentModal header renders
+      // @step When the AgentView header renders
       const frame = lastFrame();
 
       // @step Then I should see "[0%]" displayed in the header
@@ -217,7 +217,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
     it('should display [45%] in green when at 45% fill', async () => {
       // @step Given I am in a conversation with 81000 effective tokens used
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -229,7 +229,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       await waitForFrame(100);
 
       // @step And the context window threshold is 180000 tokens
-      // @step When the AgentModal header renders
+      // @step When the AgentView header renders
       await simulateContextFillUpdate(45, 81000, 180000, 200000);
 
       const frame = lastFrame();
@@ -249,7 +249,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
     it('should display [60%] in yellow when at 60% fill', async () => {
       // @step Given I am in a conversation with 108000 effective tokens used
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -260,7 +260,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       await waitForFrame(100);
 
       // @step And the context window threshold is 180000 tokens
-      // @step When the AgentModal header renders
+      // @step When the AgentView header renders
       await simulateContextFillUpdate(60, 108000, 180000, 200000);
 
       const frame = lastFrame();
@@ -280,7 +280,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
     it('should display [75%] in magenta when at 75% fill', async () => {
       // @step Given I am in a conversation with 135000 effective tokens used
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -291,7 +291,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       await waitForFrame(100);
 
       // @step And the context window threshold is 180000 tokens
-      // @step When the AgentModal header renders
+      // @step When the AgentView header renders
       await simulateContextFillUpdate(75, 135000, 180000, 200000);
 
       const frame = lastFrame();
@@ -311,7 +311,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
     it('should display [90%] in red when at 90% fill', async () => {
       // @step Given I am in a conversation with 162000 effective tokens used
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -322,7 +322,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       await waitForFrame(100);
 
       // @step And the context window threshold is 180000 tokens
-      // @step When the AgentModal header renders
+      // @step When the AgentView header renders
       await simulateContextFillUpdate(90, 162000, 180000, 200000);
 
       const frame = lastFrame();
@@ -343,7 +343,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       // @step Given I am in a conversation with 150000 raw input tokens
       // @step And 80000 tokens are cache read tokens
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -376,7 +376,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
     it('should show reduced percentage after compaction', async () => {
       // @step Given I am in a conversation that has just been compacted
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -393,7 +393,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
 
       // @step And the new effective token count is 50000
       // @step And the context window threshold is 180000 tokens
-      // @step When the AgentModal header renders after compaction
+      // @step When the AgentView header renders after compaction
       // Percentage = (50000 / 180000) * 100 = 27.8% ≈ 28%
       await simulateContextFillUpdate(28, 50000, 180000, 200000);
 
@@ -413,7 +413,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
     it('should position percentage between token count and Tab Switch', async () => {
       // @step Given I am in an active conversation
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -435,7 +435,7 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       }
       await waitForFrame(50);
 
-      // @step When the AgentModal header renders
+      // @step When the AgentView header renders
       const frame = lastFrame();
 
       // @step Then the percentage indicator should appear after the token count display

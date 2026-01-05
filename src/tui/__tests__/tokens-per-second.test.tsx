@@ -4,7 +4,7 @@
  * Tests for Real-time tokens per second display in agent modal header
  *
  * These tests verify the tokens per second calculation and display
- * in the AgentModal header during streaming responses.
+ * in the AgentView header during streaming responses.
  */
 
 import React from 'react';
@@ -79,7 +79,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   modelsSetCacheDirectory: vi.fn(),
   modelsListAll: vi.fn(() => Promise.resolve([])),
   setRustLogCallback: vi.fn(),
-  // Persistence NAPI bindings required by AgentModal
+  // Persistence NAPI bindings required by AgentView
   persistenceSetDataDirectory: vi.fn(),
   persistenceStoreMessageEnvelope: vi.fn(),
   persistenceGetHistory: vi.fn(() => []),
@@ -123,7 +123,7 @@ vi.mock('ink', async () => {
 });
 
 // Import the component after mocks are set up
-import { AgentModal } from '../components/AgentModal';
+import { AgentView } from '../components/AgentView';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -207,7 +207,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
     it('should display tok/s in header after multiple token updates', async () => {
       // @step Given the agent modal is open and streaming a response
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       // Wait for session initialization
@@ -250,7 +250,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
     it('should not display tok/s until multiple token updates received', async () => {
       // @step Given the agent modal is open and streaming a response
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -287,7 +287,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
     it('should hide tok/s display when streaming completes', async () => {
       // @step Given the agent modal was streaming a response
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -321,7 +321,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
     it('should display header with correct layout', async () => {
       // @step Given the agent modal is open with provider 'claude'
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -361,7 +361,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
     it('should display tok/s value for slow token generation', async () => {
       // @step Given the agent modal is open and streaming a response
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);
@@ -392,7 +392,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
     it('should update tok/s display as more tokens arrive', async () => {
       // @step Given the agent modal is streaming a response
       const { lastFrame, stdin } = render(
-        <AgentModal isOpen={true} onClose={() => {}} />
+        <AgentView onExit={() => {}} />
       );
 
       await waitForFrame(100);

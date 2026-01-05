@@ -45,7 +45,7 @@ function formatCollapsedOutput(
 
 /**
  * Format diff lines for tool output display
- * This is the function that will be implemented in AgentModal.tsx
+ * This is the function that will be implemented in AgentView.tsx
  */
 function formatDiffOutput(diffLines: DiffLine[]): { content: string; colors: Map<number, string> } {
   const colors = new Map<number, string>();
