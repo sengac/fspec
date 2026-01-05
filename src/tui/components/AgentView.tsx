@@ -549,6 +549,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     []
   );
   const [resumeSessionIndex, setResumeSessionIndex] = useState(0);
+  const [resumeScrollOffset, setResumeScrollOffset] = useState(0);
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
@@ -681,6 +682,26 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     terminalHeight - (isSettingsFilterMode ? 11 : 10)
   ); // Extra line for filter input
 
+  // Resume mode scrolling (each session takes 2 lines: name + details)
+  const resumeVisibleHeight = Math.max(1, Math.floor((terminalHeight - 10) / 2));
+
+  // Keep selected resume session visible by adjusting scroll offset
+  useEffect(() => {
+    if (!isResumeMode) return;
+    if (resumeSessionIndex < resumeScrollOffset) {
+      setResumeScrollOffset(resumeSessionIndex);
+    } else if (resumeSessionIndex >= resumeScrollOffset + resumeVisibleHeight) {
+      setResumeScrollOffset(resumeSessionIndex - resumeVisibleHeight + 1);
+    }
+  }, [resumeSessionIndex, resumeScrollOffset, resumeVisibleHeight, isResumeMode]);
+
+  // Reset scroll when resume mode opens
+  useEffect(() => {
+    if (isResumeMode) {
+      setResumeScrollOffset(0);
+    }
+  }, [isResumeMode]);
+
   // Filter settings providers by search string
   const filteredSettingsProviders = useMemo(() => {
     if (!settingsFilter) return SUPPORTED_PROVIDERS;
@@ -731,7 +752,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // Enable mouse tracking for model selector and settings tab scrolling
   useEffect(() => {
-    if (showModelSelector || showSettingsTab) {
+    if (showModelSelector || showSettingsTab || isResumeMode) {
       // Enable mouse button event tracking (clicks and scroll wheel)
       process.stdout.write('\x1b[?1000h');
       return () => {
@@ -739,7 +760,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         process.stdout.write('\x1b[?1000l');
       };
     }
-  }, [showModelSelector, showSettingsTab]);
+  }, [showModelSelector, showSettingsTab, isResumeMode]);
 
   // TUI-031: Hide tok/s after 10 seconds of no chunks
   useEffect(() => {
@@ -3045,6 +3066,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     setIsResumeMode(false);
     setAvailableSessions([]);
     setResumeSessionIndex(0);
+    setResumeScrollOffset(0);
   }, []);
 
   // Mouse scroll acceleration state (like VirtualList)
@@ -3052,6 +3074,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const modelSelectorScrollVelocity = useRef<number>(1);
   const settingsLastScrollTime = useRef<number>(0);
   const settingsScrollVelocity = useRef<number>(1);
+  const resumeLastScrollTime = useRef<number>(0);
+  const resumeScrollVelocity = useRef<number>(1);
 
   // Mouse scroll navigation helper for model selector (navigates through filtered flat list)
   const navigateModelSelectorByDelta = useCallback(
@@ -3121,6 +3145,35 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     [filteredSettingsProviders.length]
   );
 
+  // Mouse scroll navigation helper for resume mode
+  const navigateResumeByDelta = useCallback(
+    (delta: number) => {
+      if (availableSessions.length === 0) return;
+
+      // Acceleration: scroll faster when scrolling rapidly
+      const now = Date.now();
+      const timeDelta = now - resumeLastScrollTime.current;
+      if (timeDelta < 150) {
+        resumeScrollVelocity.current = Math.min(
+          resumeScrollVelocity.current + 1,
+          5
+        );
+      } else {
+        resumeScrollVelocity.current = 1;
+      }
+      resumeLastScrollTime.current = now;
+      const scrollAmount = resumeScrollVelocity.current * delta;
+
+      setResumeSessionIndex(prev =>
+        Math.max(
+          0,
+          Math.min(availableSessions.length - 1, prev + scrollAmount)
+        )
+      );
+    },
+    [availableSessions.length]
+  );
+
   // Handle keyboard input
   useInput(
     (input, key) => {
@@ -3128,13 +3181,22 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       logger.info(`[AgentView] useInput called: input=${JSON.stringify(input)} (length=${input.length}) inputCodes=${input.split('').map(c => c.charCodeAt(0)).join(',')} key=${JSON.stringify(key)}`);
       logger.info(`[AgentView] State: isLoading=${isLoading} isSearchMode=${isSearchMode} isResumeMode=${isResumeMode} showProviderSelector=${showProviderSelector} showModelSelector=${showModelSelector} showSettingsTab=${showSettingsTab}`);
       
-      // Handle mouse scroll for model selector and settings tab
+      // Handle mouse scroll for model selector, settings tab, and resume mode
       // Mouse scroll moves the SELECTION (like VirtualList item mode), scroll offset auto-adjusts
       if (input.startsWith('[M') || key.mouse) {
         // Parse raw mouse escape sequences for scroll wheel
         if (input.startsWith('[M')) {
           const buttonByte = input.charCodeAt(2);
           // Button codes: 96 = scroll up, 97 = scroll down (xterm encoding)
+          if (isResumeMode) {
+            if (buttonByte === 96) {
+              navigateResumeByDelta(-1);
+              return;
+            } else if (buttonByte === 97) {
+              navigateResumeByDelta(1);
+              return;
+            }
+          }
           if (showModelSelector) {
             if (buttonByte === 96) {
               navigateModelSelectorByDelta(-1);
@@ -3156,6 +3218,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         }
         // Handle parsed mouse events from Ink
         if (key.mouse) {
+          if (isResumeMode) {
+            if (key.mouse.button === 'wheelUp') {
+              navigateResumeByDelta(-1);
+              return;
+            } else if (key.mouse.button === 'wheelDown') {
+              navigateResumeByDelta(1);
+              return;
+            }
+          }
           if (showModelSelector) {
             if (key.mouse.button === 'wheelUp') {
               navigateModelSelectorByDelta(-1);
@@ -4226,8 +4297,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         <Box
           flexDirection="column"
           flexGrow={1}
-          borderStyle="double"
-          borderColor="blue"
           backgroundColor="black"
         >
           <Box flexDirection="column" padding={2} flexGrow={1}>
@@ -4235,39 +4304,86 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               <Text bold color="blue">
                 Resume Session ({availableSessions.length} available)
               </Text>
+              {availableSessions.length > resumeVisibleHeight && (
+                <Text dimColor>
+                  {' '}
+                  (showing {resumeScrollOffset + 1}-
+                  {Math.min(
+                    resumeScrollOffset + resumeVisibleHeight,
+                    availableSessions.length
+                  )}
+                  )
+                </Text>
+              )}
             </Box>
             {availableSessions.length === 0 && (
               <Box>
                 <Text dimColor>No sessions found for this project</Text>
               </Box>
             )}
-            {availableSessions.slice(0, 15).map((session, idx) => {
-              const isSelected = idx === resumeSessionIndex;
-              const updatedAt = new Date(session.updatedAt);
-              const timeAgo = formatTimeAgo(updatedAt);
-              const provider = session.provider || 'unknown';
-              return (
-                <Box key={session.id} flexDirection="column">
-                  <Text
-                    backgroundColor={isSelected ? 'blue' : undefined}
-                    color={isSelected ? 'black' : 'white'}
-                  >
-                    {isSelected ? '> ' : '  '}
-                    {session.name}
-                  </Text>
-                  <Text
-                    backgroundColor={isSelected ? 'blue' : undefined}
-                    color={isSelected ? 'black' : 'gray'}
-                    dimColor={!isSelected}
-                  >
-                    {'    '}
-                    {session.messageCount} messages | {provider} | {timeAgo}
-                  </Text>
+            {/* Scrollable session list */}
+            <Box flexDirection="row" flexGrow={1}>
+              <Box flexDirection="column" flexGrow={1}>
+                {availableSessions
+                  .slice(
+                    resumeScrollOffset,
+                    resumeScrollOffset + resumeVisibleHeight
+                  )
+                  .map((session, visibleIdx) => {
+                    const actualIdx = resumeScrollOffset + visibleIdx;
+                    const isSelected = actualIdx === resumeSessionIndex;
+                    const updatedAt = new Date(session.updatedAt);
+                    const timeAgo = formatTimeAgo(updatedAt);
+                    const provider = session.provider || 'unknown';
+                    return (
+                      <Box key={session.id} flexDirection="column">
+                        <Text
+                          backgroundColor={isSelected ? 'blue' : undefined}
+                          color={isSelected ? 'black' : 'white'}
+                        >
+                          {isSelected ? '> ' : '  '}
+                          {session.name}
+                        </Text>
+                        <Text
+                          backgroundColor={isSelected ? 'blue' : undefined}
+                          color={isSelected ? 'black' : 'gray'}
+                          dimColor={!isSelected}
+                        >
+                          {'    '}
+                          {session.messageCount} messages | {provider} | {timeAgo}
+                        </Text>
+                      </Box>
+                    );
+                  })}
+              </Box>
+              {/* Scrollbar - each session is 2 lines, so scrollbar needs 2x height */}
+              {availableSessions.length > resumeVisibleHeight && (
+                <Box flexDirection="column" marginLeft={1}>
+                  {Array.from({ length: resumeVisibleHeight * 2 }).map((_, i) => {
+                    const scrollbarHeight = resumeVisibleHeight * 2;
+                    const thumbHeight = Math.max(
+                      2,
+                      Math.floor(
+                        (resumeVisibleHeight / availableSessions.length) *
+                          scrollbarHeight
+                      )
+                    );
+                    const thumbPos = Math.floor(
+                      (resumeScrollOffset / availableSessions.length) *
+                        scrollbarHeight
+                    );
+                    const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
+                    return (
+                      <Text key={i} dimColor>
+                        {isThumb ? '■' : '│'}
+                      </Text>
+                    );
+                  })}
                 </Box>
-              );
-            })}
+              )}
+            </Box>
             <Box marginTop={1}>
-              <Text dimColor>Enter Select | Arrow Navigate | Esc Cancel</Text>
+              <Text dimColor>Enter Select | ↑↓ Navigate | Esc Cancel</Text>
             </Box>
           </Box>
         </Box>
