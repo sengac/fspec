@@ -142,6 +142,10 @@ export function VirtualList<T>({
   const lastScrollTime = useRef<number>(0);
   const scrollVelocity = useRef<number>(1);
 
+  // Track if user has manually scrolled away from bottom (for sticky scroll behavior)
+  // When true, auto-scroll to end is disabled until user scrolls back to bottom
+  const [userScrolledAway, setUserScrolledAway] = useState(false);
+
   // Track if measurement is scheduled to debounce
   const measurementScheduled = useRef(false);
 
@@ -221,8 +225,9 @@ export function VirtualList<T>({
   );
 
   // Auto-scroll to end when items change (for chat-style interfaces)
+  // Respects userScrolledAway: if user has scrolled away from bottom, don't auto-scroll
   useEffect(() => {
-    if (scrollToEnd && items.length > 0) {
+    if (scrollToEnd && items.length > 0 && !userScrolledAway) {
       const lastIndex = items.length - 1;
       // In scroll mode, only update scrollOffset (TUI-032)
       // In item mode, also update selectedIndex
@@ -233,7 +238,7 @@ export function VirtualList<T>({
       const newOffset = Math.max(0, lastIndex - visibleHeight + 1);
       setScrollOffset(newOffset);
     }
-  }, [scrollToEnd, items.length, visibleHeight, selectionMode]);
+  }, [scrollToEnd, items.length, visibleHeight, selectionMode, userScrolledAway]);
 
   // Adjust scroll offset to keep selected item visible (TUI-032: only in item mode)
   // In scroll mode, selection doesn't drive scrolling - viewport scrolls independently
@@ -286,6 +291,7 @@ export function VirtualList<T>({
 
   // Mouse scroll handler with acceleration (TUI-032: uses scrollTo in scroll mode)
   // Scroll faster when scrolling rapidly, slower for precise positioning
+  // Also tracks userScrolledAway state for sticky scroll behavior
   // OPTIMIZATION: useCallback for stable reference
   const handleScroll = useCallback(
     (direction: 'up' | 'down'): void => {
@@ -306,13 +312,26 @@ export function VirtualList<T>({
 
       if (selectionMode === 'scroll') {
         // In scroll mode, directly adjust scrollOffset (TUI-032)
-        scrollTo(scrollOffset + delta);
+        const newOffset = Math.max(0, Math.min(maxScrollOffset, scrollOffset + delta));
+        setScrollOffset(newOffset);
+        
+        // Track if user scrolled away from bottom (for sticky scroll behavior)
+        // If scrolling up and not at bottom, mark as scrolled away
+        // If at bottom (or within 1 line), re-enable auto-scroll
+        if (scrollToEnd) {
+          const isAtBottom = newOffset >= maxScrollOffset - 1;
+          if (direction === 'up' && !isAtBottom) {
+            setUserScrolledAway(true);
+          } else if (isAtBottom) {
+            setUserScrolledAway(false);
+          }
+        }
       } else {
         // In item mode, navigate through items (original behavior)
         navigateTo(selectedIndex + delta);
       }
     },
-    [scrollOffset, selectedIndex, selectionMode, scrollTo, navigateTo]
+    [scrollOffset, selectedIndex, selectionMode, maxScrollOffset, navigateTo, scrollToEnd]
   );
 
   // Mouse scroll handling - respects isFocused to only scroll the focused list
@@ -357,6 +376,7 @@ export function VirtualList<T>({
   );
 
   // Scroll mode navigation handler (TUI-032)
+  // Also tracks userScrolledAway state for sticky scroll behavior
   const handleScrollNavigation = (key: {
     upArrow?: boolean;
     downArrow?: boolean;
@@ -365,18 +385,36 @@ export function VirtualList<T>({
     home?: boolean;
     end?: boolean;
   }): void => {
+    let newOffset = scrollOffset;
+    let isScrollingUp = false;
+    
     if (key.upArrow) {
-      scrollTo(scrollOffset - 1);
+      newOffset = Math.max(0, scrollOffset - 1);
+      isScrollingUp = true;
     } else if (key.downArrow) {
-      scrollTo(scrollOffset + 1);
+      newOffset = Math.min(maxScrollOffset, scrollOffset + 1);
     } else if (key.pageUp) {
-      scrollTo(scrollOffset - visibleHeight);
+      newOffset = Math.max(0, scrollOffset - visibleHeight);
+      isScrollingUp = true;
     } else if (key.pageDown) {
-      scrollTo(scrollOffset + visibleHeight);
+      newOffset = Math.min(maxScrollOffset, scrollOffset + visibleHeight);
     } else if (key.home) {
-      scrollTo(0);
+      newOffset = 0;
+      isScrollingUp = true;
     } else if (key.end) {
-      scrollTo(maxScrollOffset);
+      newOffset = maxScrollOffset;
+    }
+    
+    setScrollOffset(newOffset);
+    
+    // Track if user scrolled away from bottom (for sticky scroll behavior)
+    if (scrollToEnd) {
+      const isAtBottom = newOffset >= maxScrollOffset - 1;
+      if (isScrollingUp && !isAtBottom) {
+        setUserScrolledAway(true);
+      } else if (isAtBottom) {
+        setUserScrolledAway(false);
+      }
     }
   };
 
