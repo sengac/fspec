@@ -4363,8 +4363,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // NAPI-006: Search mode overlay (Ctrl+R history search)
   if (isSearchMode) {
-    // Calculate available width for search text (terminal width minus border, padding, scrollbar)
-    const searchTextWidth = terminalWidth - 2 - 4 - 3; // 2 for border, 4 for padding, 3 for scrollbar margin
+    // Calculate available width for search text (terminal width minus padding, scrollbar)
+    const searchTextWidth = terminalWidth - 4 - 3; // 4 for padding, 3 for scrollbar margin
     return (
       <Box
         position="absolute"
@@ -4375,8 +4375,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         <Box
           flexDirection="column"
           flexGrow={1}
-          borderStyle="double"
-          borderColor="magenta"
           backgroundColor="black"
         >
           <Box flexDirection="column" padding={2} flexGrow={1}>
