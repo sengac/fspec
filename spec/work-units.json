@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-03T12:00:00.553Z"
+    "lastUpdated": "2026-01-05T06:12:12.263Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -59673,6 +59673,269 @@
       "attachments": [
         "spec/attachments/TUI-038/ast-research-format-functions.md"
       ]
+    },
+    "TUI-039": {
+      "id": "TUI-039",
+      "title": "Multi-line text input with cursor navigation for AgentView",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-05T05:22:22.240Z",
+      "updatedAt": "2026-01-05T06:12:12.292Z",
+      "description": "Implement a proper multi-line text input component for the AgentView message input area, supporting cursor navigation with arrow keys, word-level operations, and full text editing capabilities like in professional code editors",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-039/tui-039-research-findings.md",
+        "spec/attachments/TUI-039/ast-research-safetextinput.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-05T05:25:20.615Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-05T05:36:19.986Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-05T05:39:17.541Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-05T05:48:53.230Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-05T06:11:09.713Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-05T06:12:12.293Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using fspec's AgentView",
+        "action": "edit multi-line messages with full cursor navigation",
+        "benefit": "I can efficiently compose and modify complex prompts without retyping"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Cursor position must be tracked as (row, column) tuple within the text",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:25:33.222Z"
+        },
+        {
+          "id": 1,
+          "text": "Left/Right arrow keys move cursor by one character, wrapping across lines",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:25:37.313Z"
+        },
+        {
+          "id": 2,
+          "text": "Up/Down arrow keys move cursor to same column on adjacent line, clamping to line length",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:25:44.241Z"
+        },
+        {
+          "id": 3,
+          "text": "Home/End keys move cursor to start/end of current line",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:25:49.611Z"
+        },
+        {
+          "id": 4,
+          "text": "Alt+Left/Right moves cursor by word boundaries",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:25:54.157Z"
+        },
+        {
+          "id": 5,
+          "text": "Backspace deletes character before cursor; at line start, merges with previous line",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:25:58.011Z"
+        },
+        {
+          "id": 6,
+          "text": "Delete key removes character at cursor; at line end, merges with next line",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:02.947Z"
+        },
+        {
+          "id": 7,
+          "text": "Alt+Backspace deletes the word before cursor",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:07.206Z"
+        },
+        {
+          "id": 8,
+          "text": "Character insertion happens at cursor position, not at end of text",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:11.537Z"
+        },
+        {
+          "id": 9,
+          "text": "The cursor must be visually rendered using inverse text style on the character under cursor",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:17.141Z"
+        },
+        {
+          "id": 10,
+          "text": "Shift+Enter inserts a newline; Enter submits the message",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:21.345Z"
+        },
+        {
+          "id": 11,
+          "text": "The component must be separate from AgentView.tsx - create MultiLineInput.tsx",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:26.476Z"
+        },
+        {
+          "id": 12,
+          "text": "Maximum 5 visible lines; if content exceeds this, scroll to keep cursor visible",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:29:29.070Z"
+        },
+        {
+          "id": 13,
+          "text": "Shift+Up/Down must be preserved for history navigation (passed through to parent)",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:29:33.620Z"
+        }
+      ],
+      "nextRuleId": 14,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types 'hello world', cursor is at end (row 0, col 11); pressing Left moves cursor to (0, 10) before 'd'",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:32.105Z"
+        },
+        {
+          "id": 1,
+          "text": "User has 'hello|world' (cursor after 'o'), presses Right 5 times, cursor moves through 'world' and stops at end",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:37.230Z"
+        },
+        {
+          "id": 2,
+          "text": "User has two lines: 'first line' and 'second', cursor at (0, 8); pressing Down moves to (1, 6) - end of 'second'",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:42.353Z"
+        },
+        {
+          "id": 3,
+          "text": "User has cursor at start of line 2; pressing Backspace merges line 2 onto end of line 1",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:47.681Z"
+        },
+        {
+          "id": 4,
+          "text": "User has 'hello world' with cursor after 'o'; pressing Alt+Backspace deletes 'hello ' leaving 'world'",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:51.983Z"
+        },
+        {
+          "id": 5,
+          "text": "User has 'hello world' with cursor in middle; types 'X', and 'X' appears at cursor position, not at end",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:26:56.644Z"
+        },
+        {
+          "id": 6,
+          "text": "User presses Shift+Enter in middle of line; line splits at cursor into two lines",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:01.670Z"
+        },
+        {
+          "id": 7,
+          "text": "User presses Home on 'hello world' with cursor at end; cursor jumps to start of line",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:06.611Z"
+        },
+        {
+          "id": 8,
+          "text": "User presses Alt+Right on 'hello world' with cursor at start; cursor jumps to end of 'hello'",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:11.222Z"
+        },
+        {
+          "id": 9,
+          "text": "Cursor at end of line 1; pressing Right moves to start of line 2 (wrapping)",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:16.080Z"
+        },
+        {
+          "id": 10,
+          "text": "Cursor at start of line 2; pressing Left moves to end of line 1 (wrapping)",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:20.228Z"
+        }
+      ],
+      "nextExampleId": 11,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should Ctrl+A/Ctrl+E also work as Home/End (Emacs-style keybindings)?",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:27.331Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No - do not use Emacs or Vim style bindings. Only Home/End and arrow keys for navigation."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should we support Ctrl+U (delete to line start) and Ctrl+K (delete to line end)?",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:31.707Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No - do not support Ctrl+U or Ctrl+K. Keep keybindings simple."
+        },
+        {
+          "id": 2,
+          "text": "@human: Does the existing Shift+Up/Down for history navigation need to be preserved in the new component?",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:36.158Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes - preserve Shift+Up/Down for history navigation in the new component."
+        },
+        {
+          "id": 3,
+          "text": "@human: What's the maximum number of lines allowed in the input before we need scrolling?",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:27:40.147Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Maximum 5 visible lines. If content exceeds 5 lines, implement scrolling to keep cursor visible."
+        }
+      ],
+      "nextQuestionId": 4,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create MultiLineInput.tsx component in src/tui/components/ with props: value, onChange, onSubmit, onHistoryPrev, onHistoryNext, placeholder, isActive, maxVisibleLines",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:35:22.462Z"
+        },
+        {
+          "id": 1,
+          "text": "Create useMultiLineInput hook in src/tui/hooks/ that manages state: lines array, cursorRow, cursorCol, lastColIntent, scrollOffset",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:35:27.340Z"
+        },
+        {
+          "id": 2,
+          "text": "AgentView.tsx replaces SafeTextInput with MultiLineInput, passing through history callbacks and managing value state",
+          "deleted": false,
+          "createdAt": "2026-01-05T05:35:32.603Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "estimate": 5,
+      "updated": "2026-01-05T06:12:12.292Z"
     }
   },
   "states": {
@@ -59746,6 +60009,7 @@
       "TUI-038"
     ],
     "done": [
+      "TUI-039",
       "TUI-037",
       "PROV-002",
       "TOOLS-002",
@@ -60204,7 +60468,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 38,
+    "TUI": 39,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,
