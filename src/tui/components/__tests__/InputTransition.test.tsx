@@ -91,7 +91,7 @@ describe('InputTransition', () => {
       expect(output).toBeTruthy();
     });
 
-    it('should complete animation and show input', () => {
+    it('should complete animation and show input', async () => {
       const { lastFrame, rerender } = render(
         <InputTransition {...defaultProps} isLoading={true} />
       );
@@ -99,9 +99,13 @@ describe('InputTransition', () => {
       // Transition to not loading
       rerender(<InputTransition {...defaultProps} isLoading={false} />);
 
-      // Fast-forward through entire animation
-      // Hide: ~30 chars * 25ms = 750ms + delay 50ms + show: ~20 chars * 20ms = 400ms
-      vi.advanceTimersByTime(2000);
+      // Fast-forward through entire animation with multiple timer advances
+      // to allow React to process state updates between timer callbacks
+      // Hide: ~30 chars * 12ms = 360ms + delay 50ms + show: ~20 chars * 10ms = 200ms
+      for (let i = 0; i < 100; i++) {
+        vi.advanceTimersByTime(20);
+        await vi.runAllTimersAsync();
+      }
 
       const output = lastFrame();
       // Should eventually show the input placeholder

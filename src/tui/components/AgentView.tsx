@@ -1753,8 +1753,25 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             let argsDisplay = '';
             if (typeof parsedInput === 'object' && parsedInput !== null) {
               const inputObj = parsedInput as Record<string, unknown>;
-              // For Bash tool, show command; for others, show first arg or summary
-              if (inputObj.command) {
+              const toolNameLower = toolCall.name.toLowerCase();
+              
+              // Handle web_search specially - show action_type and key param
+              if (toolNameLower === 'web_search') {
+                const parts: string[] = [];
+                if (inputObj.action_type) {
+                  parts.push(`${inputObj.action_type}`);
+                }
+                // Show the relevant parameter based on action
+                if (inputObj.query) {
+                  parts.push(`query: "${inputObj.query}"`);
+                } else if (inputObj.url) {
+                  parts.push(`url: "${inputObj.url}"`);
+                } else if (inputObj.pattern) {
+                  parts.push(`pattern: "${inputObj.pattern}"`);
+                }
+                argsDisplay = parts.join(', ');
+              } else if (inputObj.command) {
+                // For Bash tool, show command
                 argsDisplay = String(inputObj.command);
               } else if (inputObj.file_path) {
                 argsDisplay = String(inputObj.file_path);
@@ -2828,7 +2845,24 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 let argsDisplay = '';
                 if (typeof input === 'object' && input !== null) {
                   const inputObj = input as Record<string, unknown>;
-                  if (inputObj.command) {
+                  const toolNameLower = (content.name || '').toLowerCase();
+                  
+                  // Handle web_search specially - show action_type and key param
+                  if (toolNameLower === 'web_search') {
+                    const parts: string[] = [];
+                    if (inputObj.action_type) {
+                      parts.push(`${inputObj.action_type}`);
+                    }
+                    // Show the relevant parameter based on action
+                    if (inputObj.query) {
+                      parts.push(`query: "${inputObj.query}"`);
+                    } else if (inputObj.url) {
+                      parts.push(`url: "${inputObj.url}"`);
+                    } else if (inputObj.pattern) {
+                      parts.push(`pattern: "${inputObj.pattern}"`);
+                    }
+                    argsDisplay = parts.join(', ');
+                  } else if (inputObj.command) {
                     argsDisplay = String(inputObj.command);
                   } else if (inputObj.file_path) {
                     argsDisplay = String(inputObj.file_path);
