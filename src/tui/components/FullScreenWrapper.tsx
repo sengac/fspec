@@ -5,10 +5,14 @@
  *
  * Ensures the BoardView fills the entire terminal screen with no wasted space.
  * Uses useStdout hook to detect terminal dimensions and responds to resize events.
- * Similar to CAGE's FullScreenWrapper implementation.
+ *
+ * Key optimization: Sets height to (rows - 1) to enable Ink's incremental rendering.
+ * When output height >= terminal rows, Ink falls back to clearTerminal on every render.
+ * By keeping height at rows-1, we stay below that threshold and Ink uses line-by-line
+ * diffing instead, dramatically reducing flicker.
  */
 
-import React, { type ReactNode, useEffect } from 'react';
+import React, { type ReactNode } from 'react';
 import { Box, useStdout } from 'ink';
 
 interface FullScreenWrapperProps {
@@ -17,25 +21,27 @@ interface FullScreenWrapperProps {
 
 /**
  * A full-screen wrapper that ensures the content fills the entire terminal.
- * - Full terminal width and height
- * - Clears screen on mount to start from position (0,0)
+ * - Full terminal width
+ * - Height set to rows-1 to enable Ink's incremental rendering
  * - Responsive to terminal resize events
+ *
+ * Note: We intentionally do NOT manage alternate screen buffer or cursor visibility
+ * here because:
+ * 1. Ink's log-update already manages cursor visibility
+ * 2. useEffect runs AFTER Ink's first render, causing timing issues with alt screen
+ * 3. Alt screen management is better done at the render() call site if needed
  */
 export const FullScreenWrapper: React.FC<FullScreenWrapperProps> = ({
   children,
 }) => {
   const { stdout } = useStdout();
 
-  // Clear screen before rendering to eliminate artifacts
-  useEffect(() => {
-    // Clear screen: ESC c (reset terminal)
-    // This moves cursor to (0,0) and clears previous output
-    stdout?.write('\x1Bc');
-  }, [stdout]);
-
   // Get terminal dimensions
   const width = stdout?.columns ?? 80;
-  const height = stdout?.rows ?? 24;
+  // Use height-1 to keep output below terminal rows threshold
+  // This enables Ink's incremental rendering instead of full clearTerminal
+  // See ink.tsx line 270: if (lastOutputHeight >= stdout.rows) { clearTerminal... }
+  const height = Math.max(1, (stdout?.rows ?? 24) - 1);
 
   return (
     <Box
