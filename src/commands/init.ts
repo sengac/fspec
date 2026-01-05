@@ -185,6 +185,8 @@ async function showAgentSwitchPrompt(
         // Enable mouse events (trackpad, scroll wheel, clicks)
         stdin: process.stdin,
         stdout: process.stdout,
+        // Enable incremental rendering to reduce flickering by only updating changed lines
+        incrementalRendering: true,
       }
     );
     void waitUntilExit();
@@ -331,6 +333,8 @@ export function registerInitCommand(program: Command): void {
                 // Enable mouse events (trackpad, scroll wheel, clicks)
                 stdin: process.stdin,
                 stdout: process.stdout,
+                // Enable incremental rendering to reduce flickering by only updating changed lines
+                incrementalRendering: true,
               }
             );
             void waitUntilExit();

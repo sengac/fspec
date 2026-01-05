@@ -404,6 +404,8 @@ async function main(): Promise<void> {
         debug: false,
         // PatchConsole is useful for development
         patchConsole: false,
+        // Enable incremental rendering to reduce flickering by only updating changed lines
+        incrementalRendering: true,
       }
     );
     await waitUntilExit();

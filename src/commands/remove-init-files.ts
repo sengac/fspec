@@ -102,6 +102,8 @@ async function showKeepConfigPrompt(): Promise<boolean> {
         // Enable mouse events (trackpad, scroll wheel, clicks)
         stdin: process.stdin,
         stdout: process.stdout,
+        // Enable incremental rendering to reduce flickering by only updating changed lines
+        incrementalRendering: true,
       }
     );
     void waitUntilExit();

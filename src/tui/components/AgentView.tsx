@@ -4379,190 +4379,184 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // Main agent view (full-screen)
   // Remove position="absolute" since FullScreenWrapper handles positioning
+  // Removed outer border to maximize usable space and reduce rendering overhead
   return (
     <Box
       flexDirection="column"
       flexGrow={1}
     >
+      {/* TUI-034: Header with model name, capability indicators, and token usage */}
       <Box
-        flexDirection="column"
-        flexGrow={1}
-        borderStyle="double"
-        borderColor="cyan"
+        borderStyle="single"
+        borderBottom={true}
+        borderTop={false}
+        borderLeft={false}
+        borderRight={false}
+        paddingX={1}
       >
-        {/* TUI-034: Header with model name, capability indicators, and token usage */}
-        <Box
-          borderStyle="single"
-          borderBottom={true}
-          borderTop={false}
-          borderLeft={false}
-          borderRight={false}
-          paddingX={1}
-        >
-          <Box flexGrow={1}>
-            <Text bold color="cyan">
-              Agent: {currentModel?.modelId || currentProvider}
-            </Text>
-            {/* TUI-034: Model capability indicators */}
-            {currentModel?.reasoning && <Text color="magenta"> [R]</Text>}
-            {currentModel?.hasVision && <Text color="blue"> [V]</Text>}
-            {currentModel?.contextWindow && (
-              <Text dimColor>
-                {' '}
-                [{formatContextWindow(currentModel.contextWindow)}]
-              </Text>
-            )}
-            {isLoading && <Text color="yellow"> (streaming...)</Text>}
-            {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
-            {isDebugEnabled && (
-              <Text color="red" bold>
-                {' '}
-                [DEBUG]
-              </Text>
-            )}
-            {/* TOOL-010: Thinking level indicator - only show while streaming */}
-            {isLoading &&
-              detectedThinkingLevel !== null &&
-              detectedThinkingLevel !== JsThinkingLevel.Off && (
-                <Text color="magenta" bold>
-                  {' '}
-                  {getThinkingLevelLabel(detectedThinkingLevel)}
-                </Text>
-              )}
-          </Box>
-          {/* TUI-031: Tokens per second display during streaming */}
-          {isLoading && displayedTokPerSec !== null && (
-            <Box marginRight={2}>
-              <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s</Text>
-            </Box>
-          )}
-          <Box>
+        <Box flexGrow={1}>
+          <Text bold color="cyan">
+            Agent: {currentModel?.modelId || currentProvider}
+          </Text>
+          {/* TUI-034: Model capability indicators */}
+          {currentModel?.reasoning && <Text color="magenta"> [R]</Text>}
+          {currentModel?.hasVision && <Text color="blue"> [V]</Text>}
+          {currentModel?.contextWindow && (
             <Text dimColor>
-              tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
+              {' '}
+              [{formatContextWindow(currentModel.contextWindow)}]
             </Text>
-          </Box>
-          {/* TUI-033: Context window fill percentage indicator */}
-          <Box marginLeft={2}>
-            <Text color={getContextFillColor(contextFillPercentage)}>
-              [{contextFillPercentage}%]
-            </Text>
-          </Box>
-          {/* TUI-034: Tab to switch model */}
-          {providerSections.length > 0 && (
-            <Box marginLeft={2}>
-              <Text dimColor>[Tab]</Text>
-            </Box>
           )}
+          {isLoading && <Text color="yellow"> (streaming...)</Text>}
+          {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
+          {isDebugEnabled && (
+            <Text color="red" bold>
+              {' '}
+              [DEBUG]
+            </Text>
+          )}
+          {/* TOOL-010: Thinking level indicator - only show while streaming */}
+          {isLoading &&
+            detectedThinkingLevel !== null &&
+            detectedThinkingLevel !== JsThinkingLevel.Off && (
+              <Text color="magenta" bold>
+                {' '}
+                {getThinkingLevelLabel(detectedThinkingLevel)}
+              </Text>
+            )}
         </Box>
+        {/* TUI-031: Tokens per second display during streaming */}
+        {isLoading && displayedTokPerSec !== null && (
+          <Box marginRight={2}>
+            <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s</Text>
+          </Box>
+        )}
+        <Box>
+          <Text dimColor>
+            tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
+          </Text>
+        </Box>
+        {/* TUI-033: Context window fill percentage indicator */}
+        <Box marginLeft={2}>
+          <Text color={getContextFillColor(contextFillPercentage)}>
+            [{contextFillPercentage}%]
+          </Text>
+        </Box>
+        {/* TUI-034: Tab to switch model */}
+        {providerSections.length > 0 && (
+          <Box marginLeft={2}>
+            <Text dimColor>[Tab]</Text>
+          </Box>
+        )}
+      </Box>
 
-        {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
-        <Box flexGrow={1} flexBasis={0}>
-          <VirtualList
-            items={conversationLines}
-            renderItem={line => {
-              // TUI-038: Check for diff color markers and render with background colors
-              const content = line.content;
+      {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
+      <Box flexGrow={1} flexBasis={0}>
+        <VirtualList
+          items={conversationLines}
+          renderItem={line => {
+            // TUI-038: Check for diff color markers and render with background colors
+            const content = line.content;
 
-              // Parse diff color markers: [R] for removed (red), [A] for added (green)
-              // Changed lines: line numbers WHITE, +/- content colored
-              // Context lines (no marker): gray
-              // Diff line pattern: starts with "L " or spaces, followed by digits and spaces
-              const isDiffContextLine = (text: string): boolean => {
-                // Match: "L  123   content" or "   123   content" (tree connector + line number + spaces + content)
-                return /^[L ]?\s*\d+\s{3}/.test(text);
-              };
+            // Parse diff color markers: [R] for removed (red), [A] for added (green)
+            // Changed lines: line numbers WHITE, +/- content colored
+            // Context lines (no marker): gray
+            // Diff line pattern: starts with "L " or spaces, followed by digits and spaces
+            const isDiffContextLine = (text: string): boolean => {
+              // Match: "L  123   content" or "   123   content" (tree connector + line number + spaces + content)
+              return /^[L ]?\s*\d+\s{3}/.test(text);
+            };
 
-              if (line.role === 'tool') {
-                const rIdx = content.indexOf('[R]');
-                const aIdx = content.indexOf('[A]');
+            if (line.role === 'tool') {
+              const rIdx = content.indexOf('[R]');
+              const aIdx = content.indexOf('[A]');
 
-                // Changed line with [R] or [A] marker - entire line gets colored background
-                if (rIdx >= 0 || aIdx >= 0) {
-                  const markerIdx = rIdx >= 0 ? rIdx : aIdx;
-                  const markerType = rIdx >= 0 ? 'R' : 'A';
-                  // Remove the [R] or [A] marker, keep everything else
-                  const lineWithoutMarker =
-                    content.slice(0, markerIdx) + content.slice(markerIdx + 3);
+              // Changed line with [R] or [A] marker - entire line gets colored background
+              if (rIdx >= 0 || aIdx >= 0) {
+                const markerIdx = rIdx >= 0 ? rIdx : aIdx;
+                const markerType = rIdx >= 0 ? 'R' : 'A';
+                // Remove the [R] or [A] marker, keep everything else
+                const lineWithoutMarker =
+                  content.slice(0, markerIdx) + content.slice(markerIdx + 3);
 
-                  return (
-                    <Box flexGrow={1}>
-                      <Text
-                        backgroundColor={
-                          markerType === 'R'
-                            ? DIFF_COLORS.removed
-                            : DIFF_COLORS.added
-                        }
-                        color="white"
-                      >
-                        {lineWithoutMarker}
-                      </Text>
-                    </Box>
-                  );
-                }
-
-                // Context line (diff line without marker) - line number gray, content white
-                if (isDiffContextLine(content)) {
-                  // Split at the 3 spaces after line number to separate line num from content
-                  const match = content.match(/^([L ]?\s*\d+\s{3})(.*)$/);
-                  if (match) {
-                    const [, lineNumPart, contentPart] = match;
-                    return (
-                      <Box flexGrow={1}>
-                        <Text color="gray">{lineNumPart}</Text>
-                        <Text>{contentPart}</Text>
-                      </Box>
-                    );
-                  }
-                  return (
-                    <Box flexGrow={1}>
-                      <Text color="gray">{content}</Text>
-                    </Box>
-                  );
-                }
+                return (
+                  <Box flexGrow={1}>
+                    <Text
+                      backgroundColor={
+                        markerType === 'R'
+                          ? DIFF_COLORS.removed
+                          : DIFF_COLORS.added
+                      }
+                      color="white"
+                    >
+                      {lineWithoutMarker}
+                    </Text>
+                  </Box>
+                );
               }
 
-              // Default rendering for non-diff content
-              // Tool output is white (not yellow), user input is green
-              const color = line.role === 'user' ? 'green' : 'white';
-              return (
-                <Box flexGrow={1}>
-                  <Text color={color}>{content}</Text>
-                </Box>
-              );
-            }}
-            keyExtractor={(_line, index) => `line-${index}`}
-            emptyMessage="Type a message to start..."
-            showScrollbar={!isLoading}
-            isFocused={!isLoading && !showProviderSelector}
-            scrollToEnd={true}
-            selectionMode="scroll"
-          />
-        </Box>
+              // Context line (diff line without marker) - line number gray, content white
+              if (isDiffContextLine(content)) {
+                // Split at the 3 spaces after line number to separate line num from content
+                const match = content.match(/^([L ]?\s*\d+\s{3})(.*)$/);
+                if (match) {
+                  const [, lineNumPart, contentPart] = match;
+                  return (
+                    <Box flexGrow={1}>
+                      <Text color="gray">{lineNumPart}</Text>
+                      <Text>{contentPart}</Text>
+                    </Box>
+                  );
+                }
+                return (
+                  <Box flexGrow={1}>
+                    <Text color="gray">{content}</Text>
+                  </Box>
+                );
+              }
+            }
 
-        {/* Input area */}
-        <Box
-          borderStyle="single"
-          borderTop={true}
-          borderBottom={false}
-          borderLeft={false}
-          borderRight={false}
-          paddingX={1}
-        >
-          <Text color="green">&gt; </Text>
-          <Box flexGrow={1}>
-            {isLoading ? (
-              <Text dimColor>Thinking... (Esc to stop)</Text>
-            ) : (
-              <SafeTextInput
-                value={inputValue}
-                onChange={setInputValue}
-                onSubmit={handleSubmit}
-                placeholder="Type your message... (Shift+↑↓ history)"
-                onHistoryPrev={handleHistoryPrev}
-                onHistoryNext={handleHistoryNext}
-              />
-            )}
-          </Box>
+            // Default rendering for non-diff content
+            // Tool output is white (not yellow), user input is green
+            const color = line.role === 'user' ? 'green' : 'white';
+            return (
+              <Box flexGrow={1}>
+                <Text color={color}>{content}</Text>
+              </Box>
+            );
+          }}
+          keyExtractor={(_line, index) => `line-${index}`}
+          emptyMessage="Type a message to start..."
+          showScrollbar={!isLoading}
+          isFocused={!isLoading && !showProviderSelector}
+          scrollToEnd={true}
+          selectionMode="scroll"
+        />
+      </Box>
+
+      {/* Input area */}
+      <Box
+        borderStyle="single"
+        borderTop={true}
+        borderBottom={false}
+        borderLeft={false}
+        borderRight={false}
+        paddingX={1}
+      >
+        <Text color="green">&gt; </Text>
+        <Box flexGrow={1}>
+          {isLoading ? (
+            <Text dimColor>Thinking... (Esc to stop)</Text>
+          ) : (
+            <SafeTextInput
+              value={inputValue}
+              onChange={setInputValue}
+              onSubmit={handleSubmit}
+              placeholder="Type your message... (Shift+↑↓ history)"
+              onHistoryPrev={handleHistoryPrev}
+              onHistoryNext={handleHistoryNext}
+            />
+          )}
         </Box>
       </Box>
     </Box>
