@@ -21,15 +21,26 @@ import React, {
   useCallback,
   useRef,
   useMemo,
-  useReducer,
+  useDeferredValue,
 } from 'react';
 import { Box, Text, useInput, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
-import { persistenceStoreMessageEnvelope, getThinkingConfig, JsThinkingLevel, modelsListAll, modelsRefreshCache, type NapiProviderModels, type NapiModelInfo } from '@sengac/codelet-napi';
-import { detectThinkingLevel, getThinkingLevelLabel } from '../../utils/thinkingLevel';
+import {
+  persistenceStoreMessageEnvelope,
+  getThinkingConfig,
+  JsThinkingLevel,
+  modelsListAll,
+  modelsRefreshCache,
+  type NapiProviderModels,
+  type NapiModelInfo,
+} from '@sengac/codelet-napi';
+import {
+  detectThinkingLevel,
+  getThinkingLevelLabel,
+} from '../../utils/thinkingLevel';
 import {
   saveCredential,
   deleteCredential,
@@ -41,32 +52,47 @@ import {
   getProviderRegistryEntry,
   type ProviderRegistryEntry,
 } from '../../utils/provider-config';
-import { computeLineDiff, changesToDiffLines, type DiffLine } from '../../git/diff-parser';
+import {
+  computeLineDiff,
+  changesToDiffLines,
+  type DiffLine,
+} from '../../git/diff-parser';
 
 // TUI-034: Model selection types
 interface ModelSelection {
-  providerId: string;      // "anthropic"
-  modelId: string;         // "claude-sonnet-4"
-  apiModelId: string;      // "claude-sonnet-4-20250514" (for API calls)
-  displayName: string;     // "Claude Sonnet 4"
+  providerId: string; // "anthropic"
+  modelId: string; // "claude-sonnet-4"
+  apiModelId: string; // "claude-sonnet-4-20250514" (for API calls)
+  displayName: string; // "Claude Sonnet 4"
   reasoning: boolean;
   hasVision: boolean;
-  contextWindow: number;   // 200000
-  maxOutput: number;       // 16000
+  contextWindow: number; // 200000
+  maxOutput: number; // 16000
 }
 
 interface ProviderSection {
-  providerId: string;      // "anthropic"
-  providerName: string;    // "Anthropic"
-  internalName: string;    // "claude" (for provider manager)
+  providerId: string; // "anthropic"
+  providerName: string; // "Anthropic"
+  internalName: string; // "claude" (for provider manager)
   models: NapiModelInfo[]; // Filtered to tool_call=true
   hasCredentials: boolean; // From availableProviders check
 }
 
 // Flattened item type for VirtualList-based model selector scrolling
 type ModelSelectorItem =
-  | { type: 'section'; sectionIdx: number; section: ProviderSection; isExpanded: boolean }
-  | { type: 'model'; sectionIdx: number; modelIdx: number; section: ProviderSection; model: NapiModelInfo };
+  | {
+      type: 'section';
+      sectionIdx: number;
+      section: ProviderSection;
+      isExpanded: boolean;
+    }
+  | {
+      type: 'model';
+      sectionIdx: number;
+      modelIdx: number;
+      section: ProviderSection;
+      model: NapiModelInfo;
+    };
 
 // Build flattened list from sections and expanded state
 const buildFlatModelList = (
@@ -107,10 +133,18 @@ const sectionModelToFlatIndex = (
 ): number => {
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
-    if (item.type === 'section' && item.sectionIdx === sectionIdx && modelIdx === -1) {
+    if (
+      item.type === 'section' &&
+      item.sectionIdx === sectionIdx &&
+      modelIdx === -1
+    ) {
       return i;
     }
-    if (item.type === 'model' && item.sectionIdx === sectionIdx && item.modelIdx === modelIdx) {
+    if (
+      item.type === 'model' &&
+      item.sectionIdx === sectionIdx &&
+      item.modelIdx === modelIdx
+    ) {
       return i;
     }
   }
@@ -120,17 +154,23 @@ const sectionModelToFlatIndex = (
 // TUI-034: Provider ID mapping (models.dev to internal)
 const mapProviderIdToInternal = (providerId: string): string => {
   switch (providerId) {
-    case 'anthropic': return 'claude';
-    case 'google': return 'gemini';
-    default: return providerId;
+    case 'anthropic':
+      return 'claude';
+    case 'google':
+      return 'gemini';
+    default:
+      return providerId;
   }
 };
 
 const mapInternalToProviderId = (internalName: string): string => {
   switch (internalName) {
-    case 'claude': return 'anthropic';
-    case 'gemini': return 'google';
-    default: return internalName;
+    case 'claude':
+      return 'anthropic';
+    case 'gemini':
+      return 'google';
+    default:
+      return internalName;
   }
 };
 
@@ -138,8 +178,10 @@ const mapInternalToProviderId = (internalName: string): string => {
 // models.dev uses "google" but our registry/credentials uses "gemini"
 const mapModelsDevToRegistryId = (modelsDevProviderId: string): string => {
   switch (modelsDevProviderId) {
-    case 'google': return 'gemini';
-    default: return modelsDevProviderId;
+    case 'google':
+      return 'gemini';
+    default:
+      return modelsDevProviderId;
   }
 };
 
@@ -158,13 +200,15 @@ interface SafeTextInputCallbacks {
 }
 
 // Custom TextInput that ignores mouse escape sequences
-const SafeTextInput: React.FC<{
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit: () => void;
-  placeholder?: string;
-  isActive?: boolean;
-} & SafeTextInputCallbacks> = ({
+const SafeTextInput: React.FC<
+  {
+    value: string;
+    onChange: (value: string) => void;
+    onSubmit: () => void;
+    placeholder?: string;
+    isActive?: boolean;
+  } & SafeTextInputCallbacks
+> = ({
   value,
   onChange,
   onSubmit,
@@ -195,7 +239,6 @@ const SafeTextInput: React.FC<{
         onChange(newValue);
         return;
       }
-
 
       // NAPI-006: Shift+Arrow for history navigation (check before ignoring arrow keys)
 
@@ -233,7 +276,7 @@ const SafeTextInput: React.FC<{
       // Filter to only printable characters, removing any escape sequence remnants
       const clean = input
         .split('')
-        .filter((ch) => {
+        .filter(ch => {
           const code = ch.charCodeAt(0);
           // Only allow printable ASCII (space through tilde)
           return code >= 32 && code <= 126;
@@ -371,8 +414,8 @@ interface ConversationLine {
  */
 const extractModelIdForRegistry = (apiModelId: string): string => {
   return apiModelId
-    .replace(/-preview-\d{2}-\d{2}$/, '')  // Remove Gemini preview suffix
-    .replace(/-\d{8}$/, '');               // Remove date suffix
+    .replace(/-preview-\d{2}-\d{2}$/, '') // Remove Gemini preview suffix
+    .replace(/-\d{8}$/, ''); // Remove date suffix
 };
 
 // TUI-037: Claude Code style tool display helpers
@@ -396,16 +439,21 @@ const formatToolHeader = (toolName: string, args: string): string => {
  */
 const formatWithTreeConnectors = (content: string): string => {
   const lines = content.split('\n');
-  return lines.map((line, i) => {
-    if (i === 0) return `L ${line}`;  // First line gets L prefix
-    return `  ${line}`;                // Subsequent lines get indent
-  }).join('\n');
+  return lines
+    .map((line, i) => {
+      if (i === 0) return `L ${line}`; // First line gets L prefix
+      return `  ${line}`; // Subsequent lines get indent
+    })
+    .join('\n');
 };
 
 /**
  * Format collapsed output with expand indicator
  */
-const formatCollapsedOutput = (content: string, visibleLines: number = COLLAPSED_LINES): string => {
+const formatCollapsedOutput = (
+  content: string,
+  visibleLines: number = COLLAPSED_LINES
+): string => {
   const lines = content.split('\n');
   if (lines.length <= visibleLines) {
     return formatWithTreeConnectors(content);
@@ -419,7 +467,10 @@ const formatCollapsedOutput = (content: string, visibleLines: number = COLLAPSED
 /**
  * Create streaming window - keep only last N lines
  */
-const createStreamingWindow = (content: string, windowSize: number = STREAMING_WINDOW_SIZE): string => {
+const createStreamingWindow = (
+  content: string,
+  windowSize: number = STREAMING_WINDOW_SIZE
+): string => {
   const lines = content.split('\n');
   if (lines.length <= windowSize) {
     return content;
@@ -430,7 +481,7 @@ const createStreamingWindow = (content: string, windowSize: number = STREAMING_W
 // TUI-038: Diff view color constants matching FileDiffViewer
 const DIFF_COLORS = {
   removed: '#8B0000', // Dark red
-  added: '#006400',   // Dark green
+  added: '#006400', // Dark green
 };
 
 /**
@@ -442,13 +493,20 @@ interface DiffOutputLine {
   color: string | null;
 }
 
-const formatEditDiff = (oldString: string, newString: string): DiffOutputLine[] => {
+const formatEditDiff = (
+  oldString: string,
+  newString: string
+): DiffOutputLine[] => {
   const changes = computeLineDiff(oldString, newString);
   const diffLines = changesToDiffLines(changes);
   return diffLines.map(line => ({
     content: line.content,
-    color: line.type === 'removed' ? DIFF_COLORS.removed :
-           line.type === 'added' ? DIFF_COLORS.added : null,
+    color:
+      line.type === 'removed'
+        ? DIFF_COLORS.removed
+        : line.type === 'added'
+          ? DIFF_COLORS.added
+          : null,
   }));
 };
 
@@ -472,7 +530,10 @@ const formatWriteDiff = (content: string): DiffOutputLine[] => {
  * - Context lines: "2535   content" (all dim)
  * - Shows ~25 lines before collapsing
  */
-const formatDiffForDisplay = (diffLines: DiffOutputLine[], visibleLines: number = DIFF_COLLAPSED_LINES): string => {
+const formatDiffForDisplay = (
+  diffLines: DiffOutputLine[],
+  visibleLines: number = DIFF_COLLAPSED_LINES
+): string => {
   // Calculate line number width for padding (based on total lines)
   const maxLineNum = diffLines.length;
   const lineNumWidth = Math.max(String(maxLineNum).length, 3); // Min 3 chars for alignment
@@ -529,22 +590,27 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   interface PendingToolDiff {
     toolName: string;
     toolCallId: string;
-    oldString?: string;  // For Edit tool
-    newString?: string;  // For Edit tool
-    content?: string;    // For Write tool
+    oldString?: string; // For Edit tool
+    newString?: string; // For Edit tool
+    content?: string; // For Write tool
   }
   const pendingToolDiffsRef = useRef<Map<string, PendingToolDiff>>(new Map());
 
   // TUI-034: Model selection state
   const [currentModel, setCurrentModel] = useState<ModelSelection | null>(null);
-  const [providerSections, setProviderSections] = useState<ProviderSection[]>([]);
+  const [providerSections, setProviderSections] = useState<ProviderSection[]>(
+    []
+  );
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [selectedSectionIdx, setSelectedSectionIdx] = useState(0);
   const [selectedModelIdx, setSelectedModelIdx] = useState(-1); // -1 = on section header
-  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(new Set());
+  const [expandedProviders, setExpandedProviders] = useState<Set<string>>(
+    new Set()
+  );
   const [modelSelectorScrollOffset, setModelSelectorScrollOffset] = useState(0);
   const [modelSelectorFilter, setModelSelectorFilter] = useState('');
-  const [isModelSelectorFilterMode, setIsModelSelectorFilterMode] = useState(false);
+  const [isModelSelectorFilterMode, setIsModelSelectorFilterMode] =
+    useState(false);
 
   // CONFIG-004: Settings tab state
   const [showSettingsTab, setShowSettingsTab] = useState(false);
@@ -552,10 +618,18 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const [settingsScrollOffset, setSettingsScrollOffset] = useState(0);
   const [settingsFilter, setSettingsFilter] = useState('');
   const [isSettingsFilterMode, setIsSettingsFilterMode] = useState(false);
-  const [editingProviderId, setEditingProviderId] = useState<string | null>(null);
+  const [editingProviderId, setEditingProviderId] = useState<string | null>(
+    null
+  );
   const [editingApiKey, setEditingApiKey] = useState('');
-  const [providerStatuses, setProviderStatuses] = useState<Record<string, { hasKey: boolean; maskedKey?: string }>>({});
-  const [connectionTestResult, setConnectionTestResult] = useState<{ providerId: string; success: boolean; message: string } | null>(null);
+  const [providerStatuses, setProviderStatuses] = useState<
+    Record<string, { hasKey: boolean; maskedKey?: string }>
+  >({});
+  const [connectionTestResult, setConnectionTestResult] = useState<{
+    providerId: string;
+    success: boolean;
+    message: string;
+  } | null>(null);
   const [isRefreshingModels, setIsRefreshingModels] = useState(false);
 
   // NAPI-006: History navigation state
@@ -577,18 +651,39 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
   // NAPI-003: Resume mode state (session selection overlay)
   const [isResumeMode, setIsResumeMode] = useState(false);
-  const [availableSessions, setAvailableSessions] = useState<SessionManifest[]>([]);
+  const [availableSessions, setAvailableSessions] = useState<SessionManifest[]>(
+    []
+  );
   const [resumeSessionIndex, setResumeSessionIndex] = useState(0);
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
-  const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(null);
+  const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
+    null
+  );
   const [lastChunkTime, setLastChunkTime] = useState<number | null>(null);
 
   // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
   const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
 
   // TOOL-010: Detected thinking level (for UI indicator)
-  const [detectedThinkingLevel, setDetectedThinkingLevel] = useState<number | null>(null);
+  const [detectedThinkingLevel, setDetectedThinkingLevel] = useState<
+    number | null
+  >(null);
+
+  // PERF-002: Incremental line computation cache
+  // Cache wrapped lines per message to avoid recomputing entire conversation
+  // This is the main optimization - line wrapping is expensive (getVisualWidth for each char)
+  interface CachedMessageLines {
+    content: string;
+    isStreaming: boolean;
+    terminalWidth: number;
+    lines: ConversationLine[];
+  }
+  const lineCacheRef = useRef<Map<number, CachedMessageLines>>(new Map());
+
+  // PERF-003: Use deferred value for conversation to prioritize user input
+  // This tells React that conversation updates are lower priority than user interactions
+  const deferredConversation = useDeferredValue(conversation);
 
   // TUI-033: Get color based on fill percentage
   const getContextFillColor = (percentage: number): string => {
@@ -614,19 +709,31 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     const filterLower = modelSelectorFilter.toLowerCase();
     return flatModelItems.filter(item => {
       if (item.type === 'section') {
-        return item.section.providerId.toLowerCase().includes(filterLower) ||
-               item.section.providerName.toLowerCase().includes(filterLower);
+        return (
+          item.section.providerId.toLowerCase().includes(filterLower) ||
+          item.section.providerName.toLowerCase().includes(filterLower)
+        );
       } else {
-        return item.model.id.toLowerCase().includes(filterLower) ||
-               item.model.name.toLowerCase().includes(filterLower) ||
-               item.section.providerId.toLowerCase().includes(filterLower);
+        return (
+          item.model.id.toLowerCase().includes(filterLower) ||
+          item.model.name.toLowerCase().includes(filterLower) ||
+          item.section.providerId.toLowerCase().includes(filterLower)
+        );
       }
     });
   }, [flatModelItems, modelSelectorFilter]);
 
-  const modelSelectorVisibleHeight = Math.max(1, terminalHeight - (isModelSelectorFilterMode ? 11 : 10)); // Extra line for filter input
+  const modelSelectorVisibleHeight = Math.max(
+    1,
+    terminalHeight - (isModelSelectorFilterMode ? 11 : 10)
+  ); // Extra line for filter input
   const selectedFlatIdx = useMemo(
-    () => sectionModelToFlatIndex(selectedSectionIdx, selectedModelIdx, filteredFlatModelItems),
+    () =>
+      sectionModelToFlatIndex(
+        selectedSectionIdx,
+        selectedModelIdx,
+        filteredFlatModelItems
+      ),
     [selectedSectionIdx, selectedModelIdx, filteredFlatModelItems]
   );
 
@@ -635,10 +742,20 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     if (!showModelSelector) return;
     if (selectedFlatIdx < modelSelectorScrollOffset) {
       setModelSelectorScrollOffset(selectedFlatIdx);
-    } else if (selectedFlatIdx >= modelSelectorScrollOffset + modelSelectorVisibleHeight) {
-      setModelSelectorScrollOffset(selectedFlatIdx - modelSelectorVisibleHeight + 1);
+    } else if (
+      selectedFlatIdx >=
+      modelSelectorScrollOffset + modelSelectorVisibleHeight
+    ) {
+      setModelSelectorScrollOffset(
+        selectedFlatIdx - modelSelectorVisibleHeight + 1
+      );
     }
-  }, [selectedFlatIdx, modelSelectorScrollOffset, modelSelectorVisibleHeight, showModelSelector]);
+  }, [
+    selectedFlatIdx,
+    modelSelectorScrollOffset,
+    modelSelectorVisibleHeight,
+    showModelSelector,
+  ]);
 
   // Reset scroll/filter when model selector opens
   useEffect(() => {
@@ -665,7 +782,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   }, [modelSelectorFilter]);
 
   // Settings tab scrolling
-  const settingsVisibleHeight = Math.max(1, terminalHeight - (isSettingsFilterMode ? 11 : 10)); // Extra line for filter input
+  const settingsVisibleHeight = Math.max(
+    1,
+    terminalHeight - (isSettingsFilterMode ? 11 : 10)
+  ); // Extra line for filter input
 
   // Filter settings providers by search string
   const filteredSettingsProviders = useMemo(() => {
@@ -673,8 +793,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     const filterLower = settingsFilter.toLowerCase();
     return SUPPORTED_PROVIDERS.filter(providerId => {
       const registryEntry = getProviderRegistryEntry(providerId);
-      return providerId.toLowerCase().includes(filterLower) ||
-             (registryEntry?.name?.toLowerCase().includes(filterLower) ?? false);
+      return (
+        providerId.toLowerCase().includes(filterLower) ||
+        (registryEntry?.name?.toLowerCase().includes(filterLower) ?? false)
+      );
     });
   }, [settingsFilter]);
 
@@ -683,10 +805,18 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     if (!showSettingsTab) return;
     if (selectedSettingsIdx < settingsScrollOffset) {
       setSettingsScrollOffset(selectedSettingsIdx);
-    } else if (selectedSettingsIdx >= settingsScrollOffset + settingsVisibleHeight) {
+    } else if (
+      selectedSettingsIdx >=
+      settingsScrollOffset + settingsVisibleHeight
+    ) {
       setSettingsScrollOffset(selectedSettingsIdx - settingsVisibleHeight + 1);
     }
-  }, [selectedSettingsIdx, settingsScrollOffset, settingsVisibleHeight, showSettingsTab]);
+  }, [
+    selectedSettingsIdx,
+    settingsScrollOffset,
+    settingsVisibleHeight,
+    showSettingsTab,
+  ]);
 
   // Reset scroll/filter when settings tab opens
   useEffect(() => {
@@ -754,6 +884,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setIsResumeMode(false);
       setAvailableSessions([]);
       setResumeSessionIndex(0);
+      // PERF-002: Clear line cache on modal close
+      lineCacheRef.current.clear();
       return;
     }
 
@@ -761,7 +893,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       try {
         // Dynamic import to handle ESM
         const codeletNapi = await import('@sengac/codelet-napi');
-        const { CodeletSession, persistenceSetDataDirectory, persistenceGetHistory, modelsListAll: loadModels, modelsSetCacheDirectory } = codeletNapi;
+        const {
+          CodeletSession,
+          persistenceSetDataDirectory,
+          persistenceGetHistory,
+          modelsListAll: loadModels,
+          modelsSetCacheDirectory,
+        } = codeletNapi;
 
         // NAPI-006: Set up persistence data directory
         const fspecDir = getFspecUserDir();
@@ -811,9 +949,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             const registryId = mapModelsDevToRegistryId(pm.providerId);
             const registryEntry = getProviderRegistryEntry(registryId);
             const providerConfig = await getProviderConfig(registryId);
-            const hasCredentials = registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
+            const hasCredentials =
+              registryEntry?.requiresApiKey === false ||
+              !!providerConfig.apiKey;
             const toolCallModels = pm.models.filter(m => m.toolCall);
-            logger.debug(`Provider ${pm.providerId}: registryId=${registryId}, hasApiKey=${!!providerConfig.apiKey}, source=${providerConfig.source}, hasCredentials=${hasCredentials}`);
+            logger.debug(
+              `Provider ${pm.providerId}: registryId=${registryId}, hasApiKey=${!!providerConfig.apiKey}, source=${providerConfig.source}, hasCredentials=${hasCredentials}`
+            );
             return {
               providerId: pm.providerId,
               providerName: pm.providerName,
@@ -823,12 +965,18 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             };
           })
         );
-        const sections: ProviderSection[] = sectionsWithCreds.filter(s => s.hasCredentials);
-        logger.debug(`Found ${sections.length} providers with credentials (from ${sectionsWithCreds.length} total)`);
+        const sections: ProviderSection[] = sectionsWithCreds.filter(
+          s => s.hasCredentials
+        );
+        logger.debug(
+          `Found ${sections.length} providers with credentials (from ${sectionsWithCreds.length} total)`
+        );
 
         setProviderSections(sections);
         // TUI-034: Only include providers with compatible models in availableProviders for actual use
-        setAvailableProviders(sections.filter(s => s.models.length > 0).map(s => s.internalName));
+        setAvailableProviders(
+          sections.filter(s => s.models.length > 0).map(s => s.internalName)
+        );
 
         // TUI-035: Load persisted model selection from config
         let persistedModelString: string | null = null;
@@ -836,10 +984,15 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           const config = await loadConfig();
           persistedModelString = config?.tui?.lastUsedModel || null;
           if (persistedModelString) {
-            logger.debug(`Found persisted model selection: ${persistedModelString}`);
+            logger.debug(
+              `Found persisted model selection: ${persistedModelString}`
+            );
           }
         } catch (err) {
-          logger.warn('Failed to load config for persisted model, using default', { error: err });
+          logger.warn(
+            'Failed to load config for persisted model, using default',
+            { error: err }
+          );
         }
 
         // Find default model (first available with tool_call=true)
@@ -849,13 +1002,16 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
         // TUI-035: Check if persisted model is available and has credentials
         if (persistedModelString && persistedModelString.includes('/')) {
-          const [persistedProviderId, persistedModelId] = persistedModelString.split('/');
-          const persistedSection = sections.find(s => s.providerId === persistedProviderId);
+          const [persistedProviderId, persistedModelId] =
+            persistedModelString.split('/');
+          const persistedSection = sections.find(
+            s => s.providerId === persistedProviderId
+          );
 
           if (persistedSection && persistedSection.hasCredentials) {
             // Find the model in the section
-            const persistedModel = persistedSection.models.find(m =>
-              extractModelIdForRegistry(m.id) === persistedModelId
+            const persistedModel = persistedSection.models.find(
+              m => extractModelIdForRegistry(m.id) === persistedModelId
             );
 
             if (persistedModel) {
@@ -865,12 +1021,18 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               defaultSection = persistedSection;
               logger.info(`Restored persisted model: ${persistedModelString}`);
             } else {
-              logger.info(`Persisted model ${persistedModelId} not found in ${persistedProviderId}, using default`);
+              logger.info(
+                `Persisted model ${persistedModelId} not found in ${persistedProviderId}, using default`
+              );
             }
           } else if (persistedSection && !persistedSection.hasCredentials) {
-            logger.info(`Persisted provider ${persistedProviderId} has no credentials, using default`);
+            logger.info(
+              `Persisted provider ${persistedProviderId} has no credentials, using default`
+            );
           } else {
-            logger.info(`Persisted provider ${persistedProviderId} not available, using default`);
+            logger.info(
+              `Persisted provider ${persistedProviderId} not available, using default`
+            );
           }
         }
 
@@ -895,24 +1057,33 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           newSession = await CodeletSession.newWithModel(defaultModelString);
           sessionHasModelSupport = true;
         } catch (err) {
-          logger.warn(`Failed to create session with model ${defaultModelString}, trying fallbacks`, { error: err });
+          logger.warn(
+            `Failed to create session with model ${defaultModelString}, trying fallbacks`,
+            { error: err }
+          );
 
           // TUI-034 FIX: Try fallback models to maintain model support
           // Without model support, Tab key model switching won't work
-          const fallbackModels = ['anthropic/claude-sonnet-4', 'google/gemini-2.0-flash', 'openai/gpt-4o'];
+          const fallbackModels = [
+            'anthropic/claude-sonnet-4',
+            'google/gemini-2.0-flash',
+            'openai/gpt-4o',
+          ];
 
           for (const fallbackModel of fallbackModels) {
             if (fallbackModel === defaultModelString) continue; // Skip if same as already tried
             try {
               newSession = await CodeletSession.newWithModel(fallbackModel);
               sessionHasModelSupport = true;
-              logger.info(`Successfully created session with fallback model: ${fallbackModel}`);
+              logger.info(
+                `Successfully created session with fallback model: ${fallbackModel}`
+              );
               // Update defaultModelInfo to match what we actually created
               const [providerId, modelId] = fallbackModel.split('/');
               const section = sections.find(s => s.providerId === providerId);
               if (section) {
-                const model = section.models.find(m =>
-                  extractModelIdForRegistry(m.id) === modelId
+                const model = section.models.find(
+                  m => extractModelIdForRegistry(m.id) === modelId
                 );
                 if (model) {
                   defaultModelInfo = model;
@@ -921,13 +1092,17 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               }
               break;
             } catch (fallbackErr) {
-              logger.warn(`Fallback model ${fallbackModel} also failed`, { error: fallbackErr });
+              logger.warn(`Fallback model ${fallbackModel} also failed`, {
+                error: fallbackErr,
+              });
             }
           }
 
           // Last resort: basic session without model support
           if (!sessionHasModelSupport) {
-            logger.error('All newWithModel attempts failed, falling back to basic session (model switching disabled)');
+            logger.error(
+              'All newWithModel attempts failed, falling back to basic session (model switching disabled)'
+            );
             newSession = new CodeletSession('claude');
             // Clear model info since model switching won't work
             defaultModelInfo = null;
@@ -967,20 +1142,29 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
         // NAPI-006: Load history for current project
         try {
-
           const history = persistenceGetHistory(currentProjectRef.current, 100);
 
           // Convert NAPI history entries (camelCase from NAPI-RS) to our interface
-          const entries: HistoryEntry[] = history.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({
-            display: h.display,
-            timestamp: h.timestamp,
-            project: h.project,
-            sessionId: h.sessionId,
-            hasPastedContent: h.hasPastedContent ?? false,
-          }));
+          const entries: HistoryEntry[] = history.map(
+            (h: {
+              display: string;
+              timestamp: string;
+              project: string;
+              sessionId: string;
+              hasPastedContent?: boolean;
+            }) => ({
+              display: h.display,
+              timestamp: h.timestamp,
+              project: h.project,
+              sessionId: h.sessionId,
+              hasPastedContent: h.hasPastedContent ?? false,
+            })
+          );
           setHistoryEntries(entries);
         } catch (err) {
-          logger.error(`Failed to load history: ${err instanceof Error ? err.message : String(err)}`);
+          logger.error(
+            `Failed to load history: ${err instanceof Error ? err.message : String(err)}`
+          );
         }
 
         setError(null);
@@ -1017,7 +1201,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           { role: 'tool', content: result.message },
         ]);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to toggle debug mode';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to toggle debug mode';
         setError(errorMessage);
       }
       return;
@@ -1042,7 +1227,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         setContextFillPercentage(0);
         // Note: currentProvider, isDebugEnabled, and historyEntries are preserved
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to clear session';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to clear session';
         setError(errorMessage);
       }
       return;
@@ -1054,23 +1240,29 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       const allProjects = userMessage.includes('--all-projects');
       try {
         const { persistenceGetHistory } = await import('@sengac/codelet-napi');
-        const history = persistenceGetHistory(allProjects ? null : currentProjectRef.current, 20);
+        const history = persistenceGetHistory(
+          allProjects ? null : currentProjectRef.current,
+          20
+        );
         if (history.length === 0) {
           setConversation(prev => [
             ...prev,
             { role: 'tool', content: 'No history entries found' },
           ]);
         } else {
-          const historyList = history.map((h: { display: string; timestamp: string }) =>
-            `- ${h.display}`
-          ).join('\n');
+          const historyList = history
+            .map(
+              (h: { display: string; timestamp: string }) => `- ${h.display}`
+            )
+            .join('\n');
           setConversation(prev => [
             ...prev,
             { role: 'tool', content: `Command history:\n${historyList}` },
           ]);
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to get history';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to get history';
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `History failed: ${errorMessage}` },
@@ -1090,7 +1282,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     if (userMessage === '/sessions') {
       setInputValue('');
       try {
-        const { persistenceListSessions } = await import('@sengac/codelet-napi');
+        const { persistenceListSessions } = await import(
+          '@sengac/codelet-napi'
+        );
         const sessions = persistenceListSessions(currentProjectRef.current);
         if (sessions.length === 0) {
           setConversation(prev => [
@@ -1098,16 +1292,20 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             { role: 'tool', content: 'No sessions found for this project' },
           ]);
         } else {
-          const sessionList = sessions.map((s: SessionManifest) =>
-            `- ${s.name} (${s.messageCount} messages, ${s.id.slice(0, 8)}...)`
-          ).join('\n');
+          const sessionList = sessions
+            .map(
+              (s: SessionManifest) =>
+                `- ${s.name} (${s.messageCount} messages, ${s.id.slice(0, 8)}...)`
+            )
+            .join('\n');
           setConversation(prev => [
             ...prev,
             { role: 'tool', content: `Sessions:\n${sessionList}` },
           ]);
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to list sessions';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to list sessions';
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `List sessions failed: ${errorMessage}` },
@@ -1121,9 +1319,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setInputValue('');
       const targetName = userMessage.slice(8).trim();
       try {
-        const { persistenceListSessions, persistenceLoadSession } = await import('@sengac/codelet-napi');
+        const { persistenceListSessions, persistenceLoadSession } =
+          await import('@sengac/codelet-napi');
         const sessions = persistenceListSessions(currentProjectRef.current);
-        const target = sessions.find((s: SessionManifest) => s.name === targetName);
+        const target = sessions.find(
+          (s: SessionManifest) => s.name === targetName
+        );
         if (target) {
           setCurrentSessionId(target.id);
           setConversation(prev => [
@@ -1137,7 +1338,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           ]);
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to switch session';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to switch session';
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `Switch failed: ${errorMessage}` },
@@ -1158,14 +1360,17 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         return;
       }
       try {
-        const { persistenceRenameSession } = await import('@sengac/codelet-napi');
+        const { persistenceRenameSession } = await import(
+          '@sengac/codelet-napi'
+        );
         persistenceRenameSession(currentSessionId, newName);
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `Session renamed to: "${newName}"` },
         ]);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to rename session';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to rename session';
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `Rename failed: ${errorMessage}` },
@@ -1196,14 +1401,22 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       }
       try {
         const { persistenceForkSession } = await import('@sengac/codelet-napi');
-        const forkedSession = persistenceForkSession(currentSessionId, index, name);
+        const forkedSession = persistenceForkSession(
+          currentSessionId,
+          index,
+          name
+        );
         setCurrentSessionId(forkedSession.id);
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Session forked at index ${index}: "${name}"` },
+          {
+            role: 'tool',
+            content: `Session forked at index ${index}: "${name}"`,
+          },
         ]);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to fork session';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to fork session';
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `Fork failed: ${errorMessage}` },
@@ -1228,29 +1441,49 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       if (!sourceName || !indicesStr) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'Usage: /merge <session-name> <indices> (e.g., /merge session-b 3,4)' },
+          {
+            role: 'tool',
+            content:
+              'Usage: /merge <session-name> <indices> (e.g., /merge session-b 3,4)',
+          },
         ]);
         return;
       }
       try {
-        const { persistenceListSessions, persistenceMergeMessages } = await import('@sengac/codelet-napi');
+        const { persistenceListSessions, persistenceMergeMessages } =
+          await import('@sengac/codelet-napi');
         const sessions = persistenceListSessions(currentProjectRef.current);
-        const source = sessions.find((s: SessionManifest) => s.name === sourceName || s.id === sourceName);
+        const source = sessions.find(
+          (s: SessionManifest) => s.name === sourceName || s.id === sourceName
+        );
         if (!source) {
           setConversation(prev => [
             ...prev,
-            { role: 'tool', content: `Source session not found: "${sourceName}"` },
+            {
+              role: 'tool',
+              content: `Source session not found: "${sourceName}"`,
+            },
           ]);
           return;
         }
-        const indices = indicesStr.split(',').map((s: string) => parseInt(s.trim(), 10));
-        const result = persistenceMergeMessages(currentSessionId, source.id, indices);
+        const indices = indicesStr
+          .split(',')
+          .map((s: string) => parseInt(s.trim(), 10));
+        const result = persistenceMergeMessages(
+          currentSessionId,
+          source.id,
+          indices
+        );
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Merged ${indices.length} messages from "${source.name}"` },
+          {
+            role: 'tool',
+            content: `Merged ${indices.length} messages from "${source.name}"`,
+          },
         ]);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to merge messages';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to merge messages';
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `Merge failed: ${errorMessage}` },
@@ -1279,28 +1512,47 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       if (!sourceName || isNaN(index)) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'Usage: /cherry-pick <session> <index> [--context N]' },
+          {
+            role: 'tool',
+            content: 'Usage: /cherry-pick <session> <index> [--context N]',
+          },
         ]);
         return;
       }
       try {
-        const { persistenceListSessions, persistenceCherryPick } = await import('@sengac/codelet-napi');
+        const { persistenceListSessions, persistenceCherryPick } = await import(
+          '@sengac/codelet-napi'
+        );
         const sessions = persistenceListSessions(currentProjectRef.current);
-        const source = sessions.find((s: SessionManifest) => s.name === sourceName || s.id === sourceName);
+        const source = sessions.find(
+          (s: SessionManifest) => s.name === sourceName || s.id === sourceName
+        );
         if (!source) {
           setConversation(prev => [
             ...prev,
-            { role: 'tool', content: `Source session not found: "${sourceName}"` },
+            {
+              role: 'tool',
+              content: `Source session not found: "${sourceName}"`,
+            },
           ]);
           return;
         }
-        const result = persistenceCherryPick(currentSessionId, source.id, index, context);
+        const result = persistenceCherryPick(
+          currentSessionId,
+          source.id,
+          index,
+          context
+        );
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Cherry-picked message ${index} with ${context} context messages from "${source.name}"` },
+          {
+            role: 'tool',
+            content: `Cherry-picked message ${index} with ${context} context messages from "${source.name}"`,
+          },
         ]);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to cherry-pick';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to cherry-pick';
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `Cherry-pick failed: ${errorMessage}` },
@@ -1333,10 +1585,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Show success message with metrics
         const compressionPct = result.compressionRatio.toFixed(0);
         const message = `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression]\n[Summarized ${result.turnsSummarized} turns, kept ${result.turnsKept} turns]`;
-        setConversation(prev => [
-          ...prev,
-          { role: 'tool', content: message },
-        ]);
+        setConversation(prev => [...prev, { role: 'tool', content: message }]);
         // Update token tracker and context fill to reflect reduced context
         const finalTokens = sessionRef.current.tokenTracker;
         setTokenUsage(finalTokens);
@@ -1346,11 +1595,18 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Persist compaction state and token usage
         if (currentSessionId) {
           try {
-            const { persistenceSetCompactionState, persistenceSetSessionTokens } = await import('@sengac/codelet-napi');
+            const {
+              persistenceSetCompactionState,
+              persistenceSetSessionTokens,
+            } = await import('@sengac/codelet-napi');
             // Create summary for persistence (includes key metrics)
             const summary = `Compacted ${result.turnsSummarized} turns (${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression)`;
             // compacted_before_index = turnsSummarized (messages 0 to turnsSummarized-1 were compacted)
-            persistenceSetCompactionState(currentSessionId, summary, result.turnsSummarized);
+            persistenceSetCompactionState(
+              currentSessionId,
+              summary,
+              result.turnsSummarized
+            );
             persistenceSetSessionTokens(
               currentSessionId,
               finalTokens.inputTokens,
@@ -1365,7 +1621,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           }
         }
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to compact context';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to compact context';
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `Compaction failed: ${errorMessage}` },
@@ -1389,10 +1646,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     let activeSessionId = currentSessionId;
     if (!activeSessionId && isFirstMessageRef.current) {
       try {
-        const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
+        const { persistenceCreateSessionWithProvider } = await import(
+          '@sengac/codelet-napi'
+        );
         const project = currentProjectRef.current;
         // Use first message as session name (truncated to 50 chars)
-        const sessionName = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
+        const sessionName =
+          userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
 
         // TUI-034: Use full model path if available, fallback to provider
         const modelPath = currentModel
@@ -1418,17 +1678,26 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     if (activeSessionId) {
       try {
         const { persistenceAddHistory } = await import('@sengac/codelet-napi');
-        persistenceAddHistory(userMessage, currentProjectRef.current, activeSessionId);
+        persistenceAddHistory(
+          userMessage,
+          currentProjectRef.current,
+          activeSessionId
+        );
         // Update local history entries
-        setHistoryEntries(prev => [{
-          display: userMessage,
-          timestamp: new Date().toISOString(),
-          project: currentProjectRef.current,
-          sessionId: activeSessionId,
-          hasPastedContent: false,
-        }, ...prev]);
+        setHistoryEntries(prev => [
+          {
+            display: userMessage,
+            timestamp: new Date().toISOString(),
+            project: currentProjectRef.current,
+            sessionId: activeSessionId,
+            hasPastedContent: false,
+          },
+          ...prev,
+        ]);
       } catch (err) {
-        logger.error(`Failed to save history: ${err instanceof Error ? err.message : String(err)}`);
+        logger.error(
+          `Failed to save history: ${err instanceof Error ? err.message : String(err)}`
+        );
       }
     } else {
       logger.warn('No activeSessionId - history will not be saved');
@@ -1488,433 +1757,522 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       // Track full assistant response for persistence (includes ALL content blocks)
       let fullAssistantResponse = '';
       // Track assistant message content blocks for envelope storage
-      const assistantContentBlocks: Array<{ type: string; text?: string; thinking?: string; id?: string; name?: string; input?: unknown }> = [];
+      const assistantContentBlocks: Array<{
+        type: string;
+        text?: string;
+        thinking?: string;
+        id?: string;
+        name?: string;
+        input?: unknown;
+      }> = [];
       // TOOL-011: Track if we've streamed tool progress (to skip redundant tool result preview)
       let hasStreamedToolProgress = false;
-      await sessionRef.current.prompt(userMessage, thinkingConfig, (chunk: StreamChunk) => {
-        if (!chunk) return;
+      await sessionRef.current.prompt(
+        userMessage,
+        thinkingConfig,
+        (chunk: StreamChunk) => {
+          if (!chunk) return;
 
-        if (chunk.type === 'Text' && chunk.text) {
-          // Text chunks are batched in Rust for efficiency
-          currentSegment += chunk.text;
-          fullAssistantResponse += chunk.text; // Accumulate for display persistence
-          // Add to content blocks for envelope storage
-          const lastBlock = assistantContentBlocks[assistantContentBlocks.length - 1];
-          if (lastBlock && lastBlock.type === 'text') {
-            lastBlock.text = (lastBlock.text || '') + chunk.text;
-          } else {
-            assistantContentBlocks.push({ type: 'text', text: chunk.text });
-          }
-          const segmentSnapshot = currentSegment;
-          setConversation(prev => {
-            const updated = [...prev];
-            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-            if (streamingIdx >= 0) {
-              updated[streamingIdx] = {
-                ...updated[streamingIdx],
-                content: segmentSnapshot,
-              };
-            }
-            return updated;
-          });
-        } else if (chunk.type === 'Thinking' && chunk.thinking) {
-          // TOOL-010: Handle thinking/reasoning content from extended thinking
-          // Store thinking block for envelope persistence
-          assistantContentBlocks.push({ type: 'thinking', thinking: chunk.thinking });
-          // Display thinking content in a distinct way (could be collapsible in future)
-          setConversation(prev => {
-            const updated = [...prev];
-            // Add thinking as a separate tool-style message with distinct formatting
-            updated.push({
-              role: 'tool',
-              content: `[Thinking]\n${chunk.thinking}`,
-            });
-            return updated;
-          });
-        } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
-          // Finalize current streaming message and add tool call (match CLI format)
-          const toolCall = chunk.toolCall;
-
-          // Add tool_use block to content blocks for envelope storage
-          let parsedInput: unknown;
-          try {
-            parsedInput = JSON.parse(toolCall.input);
-          } catch {
-            parsedInput = toolCall.input;
-          }
-          assistantContentBlocks.push({
-            type: 'tool_use',
-            id: toolCall.id,
-            name: toolCall.name,
-            input: parsedInput,
-          });
-
-          // TUI-038: Store Edit/Write tool inputs for diff display
-          // Tool names are lowercase from the streaming API (edit, write, replace, write_file)
-          if (typeof parsedInput === 'object' && parsedInput !== null) {
-            const inputObj = parsedInput as Record<string, unknown>;
-            const toolNameLower = toolCall.name.toLowerCase();
-            // Handle both Claude (edit) and Gemini (replace) tool names
-            if ((toolNameLower === 'edit' || toolNameLower === 'replace') && typeof inputObj.old_string === 'string' && typeof inputObj.new_string === 'string') {
-              pendingToolDiffsRef.current.set(toolCall.id, {
-                toolName: 'Edit',
-                toolCallId: toolCall.id,
-                oldString: inputObj.old_string,
-                newString: inputObj.new_string,
-              });
-            // Handle both Claude (write) and Gemini (write_file) tool names
-            } else if ((toolNameLower === 'write' || toolNameLower === 'write_file') && typeof inputObj.content === 'string') {
-              pendingToolDiffsRef.current.set(toolCall.id, {
-                toolName: 'Write',
-                toolCallId: toolCall.id,
-                content: inputObj.content,
-              });
-            }
-          }
-
-          // TUI-037: Format tool header in Claude Code style: ● ToolName(args)
-          let argsDisplay = '';
-          if (typeof parsedInput === 'object' && parsedInput !== null) {
-            const inputObj = parsedInput as Record<string, unknown>;
-            // For Bash tool, show command; for others, show first arg or summary
-            if (inputObj.command) {
-              argsDisplay = String(inputObj.command);
-            } else if (inputObj.file_path) {
-              argsDisplay = String(inputObj.file_path);
-            } else if (inputObj.pattern) {
-              argsDisplay = String(inputObj.pattern);
+          if (chunk.type === 'Text' && chunk.text) {
+            // Text chunks are batched in Rust for efficiency
+            currentSegment += chunk.text;
+            fullAssistantResponse += chunk.text; // Accumulate for display persistence
+            // Add to content blocks for envelope storage
+            const lastBlock =
+              assistantContentBlocks[assistantContentBlocks.length - 1];
+            if (lastBlock && lastBlock.type === 'text') {
+              lastBlock.text = (lastBlock.text || '') + chunk.text;
             } else {
-              // Show first key-value or JSON summary
-              const entries = Object.entries(inputObj);
-              if (entries.length > 0) {
-                const [key, value] = entries[0];
-                argsDisplay = typeof value === 'string' ? value : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
-              }
+              assistantContentBlocks.push({ type: 'text', text: chunk.text });
             }
-          } else if (toolCall.input) {
-            argsDisplay = toolCall.input;
-          }
-          const toolContent = formatToolHeader(toolCall.name, argsDisplay);
-          const toolContentSnapshot = toolContent;
-          setConversation(prev => {
-            const updated = [...prev];
-            // TUI-037: Remove empty streaming assistant messages before adding tool call
-            while (
-              updated.length > 0 &&
-              updated[updated.length - 1].role === 'assistant' &&
-              updated[updated.length - 1].isStreaming &&
-              !updated[updated.length - 1].content
-            ) {
-              updated.pop();
-            }
-            // Mark any remaining streaming message as complete
-            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-            if (streamingIdx >= 0) {
-              updated[streamingIdx] = {
-                ...updated[streamingIdx],
-                isStreaming: false,
-              };
-            }
-            // Add tool call message
-            updated.push({
-              role: 'tool',
-              content: toolContentSnapshot,
-            });
-            return updated;
-          });
-        } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
-          // Show tool result in CLI format, then start new streaming message
-          const result = chunk.toolResult;
-
-          // NAPI-008: Store current assistant envelope BEFORE the tool_result
-          // This ensures the assistant message with tool_use is separate from the continuation
-          if (activeSessionId && assistantContentBlocks.length > 0) {
-            try {
-              const assistantEnvelope = {
-                uuid: crypto.randomUUID(),
-                timestamp: new Date().toISOString(),
-                type: 'assistant',
-                provider: currentProvider,
-                message: {
-                  role: 'assistant',
-                  content: [...assistantContentBlocks], // Clone before clearing
-                },
-              };
-              persistenceStoreMessageEnvelope(activeSessionId, JSON.stringify(assistantEnvelope));
-              // Clear for continuation after tool_result
-              assistantContentBlocks.length = 0;
-            } catch {
-              // Persistence failed - continue
-            }
-          }
-
-          // Store tool_result as user message immediately
-          if (activeSessionId) {
-            try {
-              const toolResultEnvelope = {
-                uuid: crypto.randomUUID(),
-                timestamp: new Date().toISOString(),
-                type: 'user',
-                provider: currentProvider,
-                message: {
-                  role: 'user',
-                  content: [{
-                    type: 'tool_result',
-                    tool_use_id: result.toolCallId,
-                    content: result.content,
-                    is_error: result.isError,
-                  }],
-                },
-              };
-              persistenceStoreMessageEnvelope(activeSessionId, JSON.stringify(toolResultEnvelope));
-            } catch {
-              // Persistence failed - continue
-            }
-          }
-
-          // TUI-037 + TUI-038: Sanitize and format with collapsed output style
-          // Check for Edit/Write tool diff display
-          const pendingDiff = pendingToolDiffsRef.current.get(result.toolCallId);
-          let toolResultContent: string;
-
-          if (pendingDiff) {
-            // TUI-038: Format as diff for Edit/Write tools
-            pendingToolDiffsRef.current.delete(result.toolCallId); // Clean up
-            if (pendingDiff.toolName === 'Edit' && pendingDiff.oldString !== undefined && pendingDiff.newString !== undefined) {
-              const diffLines = formatEditDiff(pendingDiff.oldString, pendingDiff.newString);
-              toolResultContent = formatDiffForDisplay(diffLines);
-            } else if (pendingDiff.toolName === 'Write' && pendingDiff.content !== undefined) {
-              const diffLines = formatWriteDiff(pendingDiff.content);
-              toolResultContent = formatDiffForDisplay(diffLines);
-            } else {
-              // Fallback to normal formatting
-              const sanitizedContent = result.content.replace(/\t/g, '  ');
-              toolResultContent = formatCollapsedOutput(sanitizedContent);
-            }
-          } else {
-            // Normal tool result formatting
-            const sanitizedContent = result.content.replace(/\t/g, '  ');
-            toolResultContent = formatCollapsedOutput(sanitizedContent);
-          }
-          currentSegment = ''; // Reset for next text segment
-
-          // TOOL-011 + TUI-037: Combine tool header with result as ONE message
-          // First output line has NO L prefix (starts tree), subsequent lines have L prefix
-          // formatCollapsedOutput already applies this pattern via formatWithTreeConnectors
-
-          if (hasStreamedToolProgress) {
-            hasStreamedToolProgress = false; // Reset for next tool call
+            // Update streaming message content
+            // Note: Ink already throttles terminal output to 30fps, so direct state
+            // updates are fine here. The expensive part (line wrapping) is cached by PERF-002.
+            const segmentSnapshot = currentSegment;
             setConversation(prev => {
               const updated = [...prev];
-              // Find tool header and combine with result
-              for (let i = updated.length - 1; i >= 0; i--) {
-                const msg = updated[i];
-                // Remove [Tool output] messages (streaming placeholder)
-                if (msg.role === 'tool' && msg.content.includes('[Tool output]')) {
-                  updated.splice(i, 1);
-                  continue;
-                }
-                // TUI-037: Combine tool header with formatted result
-                if (msg.role === 'tool' && msg.content.startsWith('●')) {
-                  const headerLine = msg.content.split('\n')[0];
-                  updated[i] = { ...msg, content: `${headerLine}\n${toolResultContent}` };
-                  break;
-                }
+              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+              if (streamingIdx >= 0) {
+                updated[streamingIdx] = {
+                  ...updated[streamingIdx],
+                  content: segmentSnapshot,
+                };
               }
-              return [
-                ...updated,
-                // Add new streaming placeholder for AI continuation
-                { role: 'assistant' as const, content: '', isStreaming: true },
-              ];
+              return updated;
             });
-          } else {
-            // Non-streaming: find the last tool header and combine with result
+          } else if (chunk.type === 'Thinking' && chunk.thinking) {
+            // TOOL-010: Handle thinking/reasoning content from extended thinking
+            // Store thinking block for envelope persistence
+            assistantContentBlocks.push({
+              type: 'thinking',
+              thinking: chunk.thinking,
+            });
+            // Display thinking content in a distinct way (could be collapsible in future)
             setConversation(prev => {
               const updated = [...prev];
-              // Find tool header (search backwards)
-              for (let i = updated.length - 1; i >= 0; i--) {
-                const msg = updated[i];
-                if (msg.role === 'tool' && msg.content.startsWith('●')) {
-                  const headerLine = msg.content.split('\n')[0];
-                  updated[i] = { ...msg, content: `${headerLine}\n${toolResultContent}` };
-                  break;
-                }
-              }
-              return [
-                ...updated,
-                // Add new streaming placeholder for AI continuation
-                { role: 'assistant' as const, content: '', isStreaming: true },
-              ];
+              // Add thinking as a separate tool-style message with distinct formatting
+              updated.push({
+                role: 'tool',
+                content: `[Thinking]\n${chunk.thinking}`,
+              });
+              return updated;
             });
-          }
-        } else if (chunk.type === 'Done') {
-          // Mark streaming complete and remove empty trailing assistant messages
-          setConversation(prev => {
-            const updated = [...prev];
-            // Remove empty streaming assistant messages at the end
-            while (
-              updated.length > 0 &&
-              updated[updated.length - 1].role === 'assistant' &&
-              updated[updated.length - 1].isStreaming &&
-              !updated[updated.length - 1].content
-            ) {
-              updated.pop();
-            }
-            // Mark any remaining streaming message as complete
-            const lastAssistantIdx = updated.findLastIndex(
-              m => m.role === 'assistant' && m.isStreaming
-            );
-            if (lastAssistantIdx >= 0) {
-              updated[lastAssistantIdx] = {
-                ...updated[lastAssistantIdx],
-                isStreaming: false,
-              };
-            }
-            return updated;
-          });
-        } else if (chunk.type === 'Status' && chunk.status) {
-          const statusMessage = chunk.status;
-          // Status messages (e.g., compaction notifications)
-          setConversation(prev => [
-            ...prev,
-            {
-              role: 'tool',
-              content: statusMessage,
-            },
-          ]);
-        } else if (chunk.type === 'Interrupted') {
-          // Agent was interrupted by user
-          // TUI-037: Only append to tool if it's still streaming (no collapse indicator)
-          // If tool has collapse indicator, it completed - interrupt is for AI continuation
-          setConversation(prev => {
-            const updated = [...prev];
+          } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+            // Finalize current streaming message and add tool call (match CLI format)
+            const toolCall = chunk.toolCall;
 
-            // First, remove empty streaming assistant messages
-            while (
-              updated.length > 0 &&
-              updated[updated.length - 1].role === 'assistant' &&
-              updated[updated.length - 1].isStreaming &&
-              !updated[updated.length - 1].content
-            ) {
-              updated.pop();
+            // Add tool_use block to content blocks for envelope storage
+            let parsedInput: unknown;
+            try {
+              parsedInput = JSON.parse(toolCall.input);
+            } catch {
+              parsedInput = toolCall.input;
             }
+            assistantContentBlocks.push({
+              type: 'tool_use',
+              id: toolCall.id,
+              name: toolCall.name,
+              input: parsedInput,
+            });
 
-            // Find the last tool message
-            let handledInterrupt = false;
-            for (let i = updated.length - 1; i >= 0; i--) {
-              const msg = updated[i];
-              if (msg.role === 'tool' && msg.content.startsWith('●')) {
-                // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
-                if (!msg.content.includes('(ctrl+o to expand)')) {
-                  updated[i] = { ...msg, content: `${msg.content}\nL ⚠ Interrupted` };
-                  handledInterrupt = true;
-                }
-                // If tool has collapse indicator, it completed - don't append
-                break;
-              }
-            }
-
-            // If no tool was streaming, add interrupt as status (not appended to anything)
-            if (!handledInterrupt) {
-              updated.push({ role: 'tool' as const, content: '⚠ Interrupted' });
-            }
-
-            // Mark any remaining streaming message as complete
-            const lastAssistantIdx = updated.findLastIndex(
-              m => m.role === 'assistant' && m.isStreaming
-            );
-            if (lastAssistantIdx >= 0) {
-              updated[lastAssistantIdx] = {
-                ...updated[lastAssistantIdx],
-                isStreaming: false,
-              };
-            }
-            return updated;
-          });
-        } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
-          // TUI-031: Display token counts and tok/s from Rust
-          setTokenUsage(chunk.tokens);
-          if (chunk.tokens.tokensPerSecond !== undefined) {
-            setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
-            if (chunk.tokens.tokensPerSecond !== null) {
-              setLastChunkTime(Date.now());
-            }
-          }
-        } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
-          // TUI-033: Display context fill percentage from Rust
-          setContextFillPercentage(chunk.contextFill.fillPercentage);
-        } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
-          // TOOL-011 + TUI-037: Stream tool execution progress with rolling window
-          // Display the output chunk in a fixed-height window (last N lines)
-          hasStreamedToolProgress = true;
-          const outputChunk = chunk.toolProgress.outputChunk;
-          setConversation(prev => {
-            const updated = [...prev];
-            const lastIdx = updated.length - 1;
-            if (lastIdx >= 0) {
-              const lastMsg = updated[lastIdx];
-              // TUI-037: If last message is a tool header (●), append streaming output with tree connectors
-              if (lastMsg.role === 'tool' && lastMsg.content.startsWith('●')) {
-                // Separate header from streaming content
-                const lines = lastMsg.content.split('\n');
-                const header = lines[0]; // ● ToolName(args)
-                // Extract raw output by removing tree prefixes (L or indent)
-                const existingOutput = lines.slice(1).map(l => {
-                  if (l.startsWith('L ')) return l.slice(2);
-                  if (l.startsWith('  ')) return l.slice(2);
-                  return l;
-                }).join('\n');
-                const newOutput = existingOutput + outputChunk;
-                // Apply streaming window - keep only last N lines of output
-                const windowedOutput = createStreamingWindow(newOutput);
-                // Format with tree connectors: L on first line, indent on rest
-                const windowedLines = windowedOutput.split('\n');
-                const formattedOutput = windowedLines.map((l, i) => {
-                  if (i === 0) return `L ${l}`;
-                  return `  ${l}`;
-                }).join('\n');
-                updated[lastIdx] = {
-                  ...lastMsg,
-                  content: `${header}\n${formattedOutput}`,
-                };
-              } else if (lastMsg.role === 'tool' && lastMsg.content.includes('[Tool output]')) {
-                // Already showing tool output, append and apply window
-                const existingContent = lastMsg.content.replace('[Tool output]\n', '');
-                const newOutput = existingContent + outputChunk;
-                const windowedOutput = createStreamingWindow(newOutput);
-                updated[lastIdx] = {
-                  ...lastMsg,
-                  content: `[Tool output]\n${windowedOutput}`,
-                };
-              } else {
-                // Create new tool output message
-                updated.push({
-                  role: 'tool',
-                  content: `[Tool output]\n${outputChunk}`,
+            // TUI-038: Store Edit/Write tool inputs for diff display
+            // Tool names are lowercase from the streaming API (edit, write, replace, write_file)
+            if (typeof parsedInput === 'object' && parsedInput !== null) {
+              const inputObj = parsedInput as Record<string, unknown>;
+              const toolNameLower = toolCall.name.toLowerCase();
+              // Handle both Claude (edit) and Gemini (replace) tool names
+              if (
+                (toolNameLower === 'edit' || toolNameLower === 'replace') &&
+                typeof inputObj.old_string === 'string' &&
+                typeof inputObj.new_string === 'string'
+              ) {
+                pendingToolDiffsRef.current.set(toolCall.id, {
+                  toolName: 'Edit',
+                  toolCallId: toolCall.id,
+                  oldString: inputObj.old_string,
+                  newString: inputObj.new_string,
+                });
+                // Handle both Claude (write) and Gemini (write_file) tool names
+              } else if (
+                (toolNameLower === 'write' || toolNameLower === 'write_file') &&
+                typeof inputObj.content === 'string'
+              ) {
+                pendingToolDiffsRef.current.set(toolCall.id, {
+                  toolName: 'Write',
+                  toolCallId: toolCall.id,
+                  content: inputObj.content,
                 });
               }
             }
-            return updated;
-          });
-        } else if (chunk.type === 'Error' && chunk.error) {
-          // API error occurred - clean up streaming placeholder and show error in conversation
-          setConversation(prev => {
-            const updated = [...prev];
-            // Remove empty streaming assistant messages at the end
-            while (
-              updated.length > 0 &&
-              updated[updated.length - 1].role === 'assistant' &&
-              updated[updated.length - 1].isStreaming &&
-              !updated[updated.length - 1].content
-            ) {
-              updated.pop();
+
+            // TUI-037: Format tool header in Claude Code style: ● ToolName(args)
+            let argsDisplay = '';
+            if (typeof parsedInput === 'object' && parsedInput !== null) {
+              const inputObj = parsedInput as Record<string, unknown>;
+              // For Bash tool, show command; for others, show first arg or summary
+              if (inputObj.command) {
+                argsDisplay = String(inputObj.command);
+              } else if (inputObj.file_path) {
+                argsDisplay = String(inputObj.file_path);
+              } else if (inputObj.pattern) {
+                argsDisplay = String(inputObj.pattern);
+              } else {
+                // Show first key-value or JSON summary
+                const entries = Object.entries(inputObj);
+                if (entries.length > 0) {
+                  const [key, value] = entries[0];
+                  argsDisplay =
+                    typeof value === 'string'
+                      ? value
+                      : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
+                }
+              }
+            } else if (toolCall.input) {
+              argsDisplay = toolCall.input;
             }
-            // Add error as tool message so it's visible in conversation
-            updated.push({ role: 'tool', content: `API Error: ${chunk.error}` });
-            return updated;
-          });
+            const toolContent = formatToolHeader(toolCall.name, argsDisplay);
+            const toolContentSnapshot = toolContent;
+            setConversation(prev => {
+              const updated = [...prev];
+              // TUI-037: Remove empty streaming assistant messages before adding tool call
+              while (
+                updated.length > 0 &&
+                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].isStreaming &&
+                !updated[updated.length - 1].content
+              ) {
+                updated.pop();
+              }
+              // Mark any remaining streaming message as complete
+              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+              if (streamingIdx >= 0) {
+                updated[streamingIdx] = {
+                  ...updated[streamingIdx],
+                  isStreaming: false,
+                };
+              }
+              // Add tool call message
+              updated.push({
+                role: 'tool',
+                content: toolContentSnapshot,
+              });
+              return updated;
+            });
+          } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
+            // Show tool result in CLI format, then start new streaming message
+            const result = chunk.toolResult;
+
+            // NAPI-008: Store current assistant envelope BEFORE the tool_result
+            // This ensures the assistant message with tool_use is separate from the continuation
+            if (activeSessionId && assistantContentBlocks.length > 0) {
+              try {
+                const assistantEnvelope = {
+                  uuid: crypto.randomUUID(),
+                  timestamp: new Date().toISOString(),
+                  type: 'assistant',
+                  provider: currentProvider,
+                  message: {
+                    role: 'assistant',
+                    content: [...assistantContentBlocks], // Clone before clearing
+                  },
+                };
+                persistenceStoreMessageEnvelope(
+                  activeSessionId,
+                  JSON.stringify(assistantEnvelope)
+                );
+                // Clear for continuation after tool_result
+                assistantContentBlocks.length = 0;
+              } catch {
+                // Persistence failed - continue
+              }
+            }
+
+            // Store tool_result as user message immediately
+            if (activeSessionId) {
+              try {
+                const toolResultEnvelope = {
+                  uuid: crypto.randomUUID(),
+                  timestamp: new Date().toISOString(),
+                  type: 'user',
+                  provider: currentProvider,
+                  message: {
+                    role: 'user',
+                    content: [
+                      {
+                        type: 'tool_result',
+                        tool_use_id: result.toolCallId,
+                        content: result.content,
+                        is_error: result.isError,
+                      },
+                    ],
+                  },
+                };
+                persistenceStoreMessageEnvelope(
+                  activeSessionId,
+                  JSON.stringify(toolResultEnvelope)
+                );
+              } catch {
+                // Persistence failed - continue
+              }
+            }
+
+            // TUI-037 + TUI-038: Sanitize and format with collapsed output style
+            // Check for Edit/Write tool diff display
+            const pendingDiff = pendingToolDiffsRef.current.get(
+              result.toolCallId
+            );
+            let toolResultContent: string;
+
+            if (pendingDiff) {
+              // TUI-038: Format as diff for Edit/Write tools
+              pendingToolDiffsRef.current.delete(result.toolCallId); // Clean up
+              if (
+                pendingDiff.toolName === 'Edit' &&
+                pendingDiff.oldString !== undefined &&
+                pendingDiff.newString !== undefined
+              ) {
+                const diffLines = formatEditDiff(
+                  pendingDiff.oldString,
+                  pendingDiff.newString
+                );
+                toolResultContent = formatDiffForDisplay(diffLines);
+              } else if (
+                pendingDiff.toolName === 'Write' &&
+                pendingDiff.content !== undefined
+              ) {
+                const diffLines = formatWriteDiff(pendingDiff.content);
+                toolResultContent = formatDiffForDisplay(diffLines);
+              } else {
+                // Fallback to normal formatting
+                const sanitizedContent = result.content.replace(/\t/g, '  ');
+                toolResultContent = formatCollapsedOutput(sanitizedContent);
+              }
+            } else {
+              // Normal tool result formatting
+              const sanitizedContent = result.content.replace(/\t/g, '  ');
+              toolResultContent = formatCollapsedOutput(sanitizedContent);
+            }
+            currentSegment = ''; // Reset for next text segment
+
+            // TOOL-011 + TUI-037: Combine tool header with result as ONE message
+            // First output line has NO L prefix (starts tree), subsequent lines have L prefix
+            // formatCollapsedOutput already applies this pattern via formatWithTreeConnectors
+
+            if (hasStreamedToolProgress) {
+              hasStreamedToolProgress = false; // Reset for next tool call
+              setConversation(prev => {
+                const updated = [...prev];
+                // Find tool header and combine with result
+                for (let i = updated.length - 1; i >= 0; i--) {
+                  const msg = updated[i];
+                  // Remove [Tool output] messages (streaming placeholder)
+                  if (
+                    msg.role === 'tool' &&
+                    msg.content.includes('[Tool output]')
+                  ) {
+                    updated.splice(i, 1);
+                    continue;
+                  }
+                  // TUI-037: Combine tool header with formatted result
+                  if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                    const headerLine = msg.content.split('\n')[0];
+                    updated[i] = {
+                      ...msg,
+                      content: `${headerLine}\n${toolResultContent}`,
+                    };
+                    break;
+                  }
+                }
+                return [
+                  ...updated,
+                  // Add new streaming placeholder for AI continuation
+                  {
+                    role: 'assistant' as const,
+                    content: '',
+                    isStreaming: true,
+                  },
+                ];
+              });
+            } else {
+              // Non-streaming: find the last tool header and combine with result
+              setConversation(prev => {
+                const updated = [...prev];
+                // Find tool header (search backwards)
+                for (let i = updated.length - 1; i >= 0; i--) {
+                  const msg = updated[i];
+                  if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                    const headerLine = msg.content.split('\n')[0];
+                    updated[i] = {
+                      ...msg,
+                      content: `${headerLine}\n${toolResultContent}`,
+                    };
+                    break;
+                  }
+                }
+                return [
+                  ...updated,
+                  // Add new streaming placeholder for AI continuation
+                  {
+                    role: 'assistant' as const,
+                    content: '',
+                    isStreaming: true,
+                  },
+                ];
+              });
+            }
+          } else if (chunk.type === 'Done') {
+            // Mark streaming complete and remove empty trailing assistant messages
+            setConversation(prev => {
+              const updated = [...prev];
+              // Remove empty streaming assistant messages at the end
+              while (
+                updated.length > 0 &&
+                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].isStreaming &&
+                !updated[updated.length - 1].content
+              ) {
+                updated.pop();
+              }
+              // Mark any remaining streaming message as complete
+              const lastAssistantIdx = updated.findLastIndex(
+                m => m.role === 'assistant' && m.isStreaming
+              );
+              if (lastAssistantIdx >= 0) {
+                updated[lastAssistantIdx] = {
+                  ...updated[lastAssistantIdx],
+                  isStreaming: false,
+                };
+              }
+              return updated;
+            });
+          } else if (chunk.type === 'Status' && chunk.status) {
+            const statusMessage = chunk.status;
+            // Status messages (e.g., compaction notifications)
+            setConversation(prev => [
+              ...prev,
+              {
+                role: 'tool',
+                content: statusMessage,
+              },
+            ]);
+          } else if (chunk.type === 'Interrupted') {
+            // Agent was interrupted by user
+            // TUI-037: Only append to tool if it's still streaming (no collapse indicator)
+            // If tool has collapse indicator, it completed - interrupt is for AI continuation
+            setConversation(prev => {
+              const updated = [...prev];
+
+              // First, remove empty streaming assistant messages
+              while (
+                updated.length > 0 &&
+                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].isStreaming &&
+                !updated[updated.length - 1].content
+              ) {
+                updated.pop();
+              }
+
+              // Find the last tool message
+              let handledInterrupt = false;
+              for (let i = updated.length - 1; i >= 0; i--) {
+                const msg = updated[i];
+                if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                  // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
+                  if (!msg.content.includes('(ctrl+o to expand)')) {
+                    updated[i] = {
+                      ...msg,
+                      content: `${msg.content}\nL ⚠ Interrupted`,
+                    };
+                    handledInterrupt = true;
+                  }
+                  // If tool has collapse indicator, it completed - don't append
+                  break;
+                }
+              }
+
+              // If no tool was streaming, add interrupt as status (not appended to anything)
+              if (!handledInterrupt) {
+                updated.push({
+                  role: 'tool' as const,
+                  content: '⚠ Interrupted',
+                });
+              }
+
+              // Mark any remaining streaming message as complete
+              const lastAssistantIdx = updated.findLastIndex(
+                m => m.role === 'assistant' && m.isStreaming
+              );
+              if (lastAssistantIdx >= 0) {
+                updated[lastAssistantIdx] = {
+                  ...updated[lastAssistantIdx],
+                  isStreaming: false,
+                };
+              }
+              return updated;
+            });
+          } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
+            // TUI-031: Display token counts and tok/s from Rust
+            setTokenUsage(chunk.tokens);
+            if (
+              chunk.tokens.tokensPerSecond !== undefined &&
+              chunk.tokens.tokensPerSecond !== null
+            ) {
+              setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
+              setLastChunkTime(Date.now());
+            }
+          } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
+            // TUI-033: Display context fill percentage from Rust
+            setContextFillPercentage(chunk.contextFill.fillPercentage);
+          } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
+            // TOOL-011 + TUI-037: Stream tool execution progress with rolling window
+            // Display the output chunk in a fixed-height window (last N lines)
+            hasStreamedToolProgress = true;
+            const outputChunk = chunk.toolProgress.outputChunk;
+            setConversation(prev => {
+              const updated = [...prev];
+              const lastIdx = updated.length - 1;
+              if (lastIdx >= 0) {
+                const lastMsg = updated[lastIdx];
+                // TUI-037: If last message is a tool header (●), append streaming output with tree connectors
+                if (
+                  lastMsg.role === 'tool' &&
+                  lastMsg.content.startsWith('●')
+                ) {
+                  // Separate header from streaming content
+                  const lines = lastMsg.content.split('\n');
+                  const header = lines[0]; // ● ToolName(args)
+                  // Extract raw output by removing tree prefixes (L or indent)
+                  const existingOutput = lines
+                    .slice(1)
+                    .map(l => {
+                      if (l.startsWith('L ')) return l.slice(2);
+                      if (l.startsWith('  ')) return l.slice(2);
+                      return l;
+                    })
+                    .join('\n');
+                  const newOutput = existingOutput + outputChunk;
+                  // Apply streaming window - keep only last N lines of output
+                  const windowedOutput = createStreamingWindow(newOutput);
+                  // Format with tree connectors: L on first line, indent on rest
+                  const windowedLines = windowedOutput.split('\n');
+                  const formattedOutput = windowedLines
+                    .map((l, i) => {
+                      if (i === 0) return `L ${l}`;
+                      return `  ${l}`;
+                    })
+                    .join('\n');
+                  updated[lastIdx] = {
+                    ...lastMsg,
+                    content: `${header}\n${formattedOutput}`,
+                  };
+                } else if (
+                  lastMsg.role === 'tool' &&
+                  lastMsg.content.includes('[Tool output]')
+                ) {
+                  // Already showing tool output, append and apply window
+                  const existingContent = lastMsg.content.replace(
+                    '[Tool output]\n',
+                    ''
+                  );
+                  const newOutput = existingContent + outputChunk;
+                  const windowedOutput = createStreamingWindow(newOutput);
+                  updated[lastIdx] = {
+                    ...lastMsg,
+                    content: `[Tool output]\n${windowedOutput}`,
+                  };
+                } else {
+                  // Create new tool output message
+                  updated.push({
+                    role: 'tool',
+                    content: `[Tool output]\n${outputChunk}`,
+                  });
+                }
+              }
+              return updated;
+            });
+          } else if (chunk.type === 'Error' && chunk.error) {
+            // API error occurred - clean up streaming placeholder and show error in conversation
+            setConversation(prev => {
+              const updated = [...prev];
+              // Remove empty streaming assistant messages at the end
+              while (
+                updated.length > 0 &&
+                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].isStreaming &&
+                !updated[updated.length - 1].content
+              ) {
+                updated.pop();
+              }
+              // Add error as tool message so it's visible in conversation
+              updated.push({
+                role: 'tool',
+                content: `API Error: ${chunk.error}`,
+              });
+              return updated;
+            });
+          }
         }
-      });
+      );
 
       // Persist full envelopes to session (includes tool calls and results)
       if (activeSessionId) {
@@ -1935,12 +2293,16 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 role: 'assistant',
                 content: assistantContentBlocks,
               },
-              usage: currentTokens ? {
-                input_tokens: currentTokens.inputTokens,
-                output_tokens: currentTokens.outputTokens,
-                cache_read_input_tokens: currentTokens.cacheReadInputTokens ?? 0,
-                cache_creation_input_tokens: currentTokens.cacheCreationInputTokens ?? 0,
-              } : undefined,
+              usage: currentTokens
+                ? {
+                    input_tokens: currentTokens.inputTokens,
+                    output_tokens: currentTokens.outputTokens,
+                    cache_read_input_tokens:
+                      currentTokens.cacheReadInputTokens ?? 0,
+                    cache_creation_input_tokens:
+                      currentTokens.cacheCreationInputTokens ?? 0,
+                  }
+                : undefined,
             };
             const assistantJson = JSON.stringify(assistantEnvelope);
             persistenceStoreMessageEnvelope(activeSessionId, assistantJson);
@@ -1959,7 +2321,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Persist token usage to session manifest (for restore)
         if (activeSessionId) {
           try {
-            const { persistenceSetSessionTokens } = await import('@sengac/codelet-napi');
+            const { persistenceSetSessionTokens } = await import(
+              '@sengac/codelet-napi'
+            );
             persistenceSetSessionTokens(
               activeSessionId,
               finalTokens.inputTokens,
@@ -2018,7 +2382,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
   // CONFIG-004: Load provider statuses (API key presence and masked display)
   const loadProviderStatuses = useCallback(async () => {
-    const statuses: Record<string, { hasKey: boolean; maskedKey?: string }> = {};
+    const statuses: Record<string, { hasKey: boolean; maskedKey?: string }> =
+      {};
     for (const providerId of SUPPORTED_PROVIDERS) {
       try {
         const config = await getProviderConfig(providerId);
@@ -2038,93 +2403,123 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   }, []);
 
   // CONFIG-004: Handle saving API key for a provider
-  const handleSaveApiKey = useCallback(async (providerId: string, apiKey: string) => {
-    try {
-      await saveCredential(providerId, apiKey);
-      setEditingProviderId(null);
-      setEditingApiKey('');
-      setConnectionTestResult(null);
-      // Reload statuses to reflect the change
-      await loadProviderStatuses();
-      // Show success message briefly
-      setConversation(prev => [
-        ...prev,
-        { role: 'tool', content: `✓ API key saved for ${providerId}. Refreshing models...` },
-      ]);
-      // Refresh models to pick up newly available providers
-      // Use setTimeout to allow the success message to appear first
-      setTimeout(async () => {
-        await modelsRefreshCache();
-        // Rebuild provider sections with new credentials
-        const codeletNapi = await import('@sengac/codelet-napi');
-        const { modelsListAll: loadModels } = codeletNapi;
-
-        let allModels: NapiProviderModels[] = [];
-        try {
-          allModels = await loadModels();
-        } catch {
-          // Ignore
-        }
-
-        // CONFIG-004: Use TypeScript-side credential check for all 19 providers
-        const sectionsWithCreds = await Promise.all(
-          allModels.map(async pm => {
-            const internalName = mapProviderIdToInternal(pm.providerId);
-            const registryId = mapModelsDevToRegistryId(pm.providerId);
-            const registryEntry = getProviderRegistryEntry(registryId);
-            const providerConfig = await getProviderConfig(registryId);
-            const hasCredentials = registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
-            const toolCallModels = pm.models.filter(m => m.toolCall);
-            return {
-              providerId: pm.providerId,
-              providerName: pm.providerName,
-              internalName,
-              models: toolCallModels,
-              hasCredentials,
-            };
-          })
-        );
-        const sections: ProviderSection[] = sectionsWithCreds.filter(s => s.hasCredentials);
-
-        setProviderSections(sections);
-        setAvailableProviders(sections.filter(s => s.models.length > 0).map(s => s.internalName));
-
+  const handleSaveApiKey = useCallback(
+    async (providerId: string, apiKey: string) => {
+      try {
+        await saveCredential(providerId, apiKey);
+        setEditingProviderId(null);
+        setEditingApiKey('');
+        setConnectionTestResult(null);
+        // Reload statuses to reflect the change
+        await loadProviderStatuses();
+        // Show success message briefly
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `✓ Models refreshed - ${sections.length} providers available` },
+          {
+            role: 'tool',
+            content: `✓ API key saved for ${providerId}. Refreshing models...`,
+          },
         ]);
-      }, 100);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save API key';
-      setConversation(prev => [
-        ...prev,
-        { role: 'tool', content: `✗ Failed to save API key: ${errorMessage}` },
-      ]);
-    }
-  }, [loadProviderStatuses]);
+        // Refresh models to pick up newly available providers
+        // Use setTimeout to allow the success message to appear first
+        setTimeout(async () => {
+          await modelsRefreshCache();
+          // Rebuild provider sections with new credentials
+          const codeletNapi = await import('@sengac/codelet-napi');
+          const { modelsListAll: loadModels } = codeletNapi;
+
+          let allModels: NapiProviderModels[] = [];
+          try {
+            allModels = await loadModels();
+          } catch {
+            // Ignore
+          }
+
+          // CONFIG-004: Use TypeScript-side credential check for all 19 providers
+          const sectionsWithCreds = await Promise.all(
+            allModels.map(async pm => {
+              const internalName = mapProviderIdToInternal(pm.providerId);
+              const registryId = mapModelsDevToRegistryId(pm.providerId);
+              const registryEntry = getProviderRegistryEntry(registryId);
+              const providerConfig = await getProviderConfig(registryId);
+              const hasCredentials =
+                registryEntry?.requiresApiKey === false ||
+                !!providerConfig.apiKey;
+              const toolCallModels = pm.models.filter(m => m.toolCall);
+              return {
+                providerId: pm.providerId,
+                providerName: pm.providerName,
+                internalName,
+                models: toolCallModels,
+                hasCredentials,
+              };
+            })
+          );
+          const sections: ProviderSection[] = sectionsWithCreds.filter(
+            s => s.hasCredentials
+          );
+
+          setProviderSections(sections);
+          setAvailableProviders(
+            sections.filter(s => s.models.length > 0).map(s => s.internalName)
+          );
+
+          setConversation(prev => [
+            ...prev,
+            {
+              role: 'tool',
+              content: `✓ Models refreshed - ${sections.length} providers available`,
+            },
+          ]);
+        }, 100);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to save API key';
+        setConversation(prev => [
+          ...prev,
+          {
+            role: 'tool',
+            content: `✗ Failed to save API key: ${errorMessage}`,
+          },
+        ]);
+      }
+    },
+    [loadProviderStatuses]
+  );
 
   // CONFIG-004: Handle deleting API key for a provider
-  const handleDeleteApiKey = useCallback(async (providerId: string) => {
-    try {
-      await deleteCredential(providerId);
-      setConnectionTestResult(null);
-      await loadProviderStatuses();
-      setConversation(prev => [
-        ...prev,
-        { role: 'tool', content: `✓ API key deleted for ${providerId}` },
-      ]);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete API key';
-      setConversation(prev => [
-        ...prev,
-        { role: 'tool', content: `✗ Failed to delete API key: ${errorMessage}` },
-      ]);
-    }
-  }, [loadProviderStatuses]);
+  const handleDeleteApiKey = useCallback(
+    async (providerId: string) => {
+      try {
+        await deleteCredential(providerId);
+        setConnectionTestResult(null);
+        await loadProviderStatuses();
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `✓ API key deleted for ${providerId}` },
+        ]);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to delete API key';
+        setConversation(prev => [
+          ...prev,
+          {
+            role: 'tool',
+            content: `✗ Failed to delete API key: ${errorMessage}`,
+          },
+        ]);
+      }
+    },
+    [loadProviderStatuses]
+  );
 
   // CONFIG-004: Test provider connection with a lightweight API call
   const handleTestConnection = useCallback(async (providerId: string) => {
-    setConnectionTestResult({ providerId, success: false, message: 'Testing...' });
+    setConnectionTestResult({
+      providerId,
+      success: false,
+      message: 'Testing...',
+    });
     try {
       // Get the internal name for the provider
       const internalName = mapProviderIdToInternal(providerId);
@@ -2144,7 +2539,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         });
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Connection failed';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Connection failed';
       setConnectionTestResult({
         providerId,
         success: false,
@@ -2182,7 +2578,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           // Check credentials using TypeScript side (supports all 19 providers)
           const providerConfig = await getProviderConfig(registryId);
           // Provider is configured if: no API key required (e.g., Ollama) OR has API key
-          const hasCredentials = registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
+          const hasCredentials =
+            registryEntry?.requiresApiKey === false || !!providerConfig.apiKey;
           const toolCallModels = pm.models.filter(m => m.toolCall);
           return {
             providerId: pm.providerId,
@@ -2193,18 +2590,26 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           };
         })
       );
-      const sections: ProviderSection[] = sectionsWithCreds.filter(s => s.hasCredentials);
+      const sections: ProviderSection[] = sectionsWithCreds.filter(
+        s => s.hasCredentials
+      );
 
       setProviderSections(sections);
-      setAvailableProviders(sections.filter(s => s.models.length > 0).map(s => s.internalName));
+      setAvailableProviders(
+        sections.filter(s => s.models.length > 0).map(s => s.internalName)
+      );
 
       // Show success message
       setConversation(prev => [
         ...prev,
-        { role: 'tool', content: `✓ Models refreshed (${allModels.reduce((acc, pm) => acc + pm.models.length, 0)} models from ${allModels.length} providers)` },
+        {
+          role: 'tool',
+          content: `✓ Models refreshed (${allModels.reduce((acc, pm) => acc + pm.models.length, 0)} models from ${allModels.length} providers)`,
+        },
       ]);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to refresh models';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to refresh models';
       setConversation(prev => [
         ...prev,
         { role: 'tool', content: `✗ Refresh failed: ${errorMessage}` },
@@ -2215,67 +2620,72 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   }, []);
 
   // TUI-034: Handle model selection
-  const handleSelectModel = useCallback(async (section: ProviderSection, model: NapiModelInfo) => {
-    if (!sessionRef.current) return;
+  const handleSelectModel = useCallback(
+    async (section: ProviderSection, model: NapiModelInfo) => {
+      if (!sessionRef.current) return;
 
-    try {
-      setIsLoading(true);
-      // Extract model-id from the API ID for registry matching
-      // IMPORTANT: Do NOT use model.family - it may be a generic family name (e.g., "gemini-pro")
-      // that doesn't match registry keys. Instead, extract from model.id by stripping suffixes.
-      // Examples:
-      //   "claude-sonnet-4-20250514" -> "claude-sonnet-4" (strip date suffix)
-      //   "gemini-2.5-pro-preview-06-05" -> "gemini-2.5-pro" (strip preview suffix)
-      //   "gpt-4o" -> "gpt-4o" (no change)
-      const modelId = extractModelIdForRegistry(model.id);
-      const modelString = `${section.providerId}/${modelId}`;
-
-      // Use selectModel to switch the model
-      await sessionRef.current.selectModel(modelString);
-
-      // Update state
-      setCurrentModel({
-        providerId: section.providerId,
-        modelId,
-        apiModelId: model.id,
-        displayName: model.name,
-        reasoning: model.reasoning,
-        hasVision: model.hasVision,
-        contextWindow: model.contextWindow,
-        maxOutput: model.maxOutput,
-      });
-      setCurrentProvider(section.internalName);
-      setShowModelSelector(false);
-
-      // TUI-035: Persist model selection to user config
       try {
-        const existingConfig = await loadConfig();
-        const updatedConfig = {
-          ...existingConfig,
-          tui: {
-            ...existingConfig?.tui,
-            lastUsedModel: modelString,
-          },
-        };
-        await writeConfig('user', updatedConfig);
-        logger.debug(`Persisted model selection: ${modelString}`);
-      } catch (persistErr) {
-        // Log but don't fail - persistence is not critical
-        logger.warn('Failed to persist model selection', { error: persistErr });
+        setIsLoading(true);
+        // Extract model-id from the API ID for registry matching
+        // IMPORTANT: Do NOT use model.family - it may be a generic family name (e.g., "gemini-pro")
+        // that doesn't match registry keys. Instead, extract from model.id by stripping suffixes.
+        // Examples:
+        //   "claude-sonnet-4-20250514" -> "claude-sonnet-4" (strip date suffix)
+        //   "gemini-2.5-pro-preview-06-05" -> "gemini-2.5-pro" (strip preview suffix)
+        //   "gpt-4o" -> "gpt-4o" (no change)
+        const modelId = extractModelIdForRegistry(model.id);
+        const modelString = `${section.providerId}/${modelId}`;
+
+        // Use selectModel to switch the model
+        await sessionRef.current.selectModel(modelString);
+
+        // Update state
+        setCurrentModel({
+          providerId: section.providerId,
+          modelId,
+          apiModelId: model.id,
+          displayName: model.name,
+          reasoning: model.reasoning,
+          hasVision: model.hasVision,
+          contextWindow: model.contextWindow,
+          maxOutput: model.maxOutput,
+        });
+        setCurrentProvider(section.internalName);
+        setShowModelSelector(false);
+
+        // TUI-035: Persist model selection to user config
+        try {
+          const existingConfig = await loadConfig();
+          const updatedConfig = {
+            ...existingConfig,
+            tui: {
+              ...existingConfig?.tui,
+              lastUsedModel: modelString,
+            },
+          };
+          await writeConfig('user', updatedConfig);
+          logger.debug(`Persisted model selection: ${modelString}`);
+        } catch (persistErr) {
+          // Log but don't fail - persistence is not critical
+          logger.warn('Failed to persist model selection', {
+            error: persistErr,
+          });
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to switch model';
+        // TUI-034: Display error in conversation instead of global error state
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Model selection failed: ${errorMessage}` },
+        ]);
+        setShowModelSelector(false);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to switch model';
-      // TUI-034: Display error in conversation instead of global error state
-      setConversation(prev => [
-        ...prev,
-        { role: 'tool', content: `Model selection failed: ${errorMessage}` },
-      ]);
-      setShowModelSelector(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   // NAPI-006: Navigate to previous history entry (Shift+Arrow-Up)
   const handleHistoryPrev = useCallback(() => {
@@ -2288,7 +2698,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       setSavedInput(inputValue);
     }
 
-    const newIndex = historyIndex === -1 ? 0 : Math.min(historyIndex + 1, historyEntries.length - 1);
+    const newIndex =
+      historyIndex === -1
+        ? 0
+        : Math.min(historyIndex + 1, historyEntries.length - 1);
     setHistoryIndex(newIndex);
     setInputValue(historyEntries[newIndex].display);
   }, [historyEntries, historyIndex, inputValue]);
@@ -2326,14 +2739,25 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
     try {
       const { persistenceSearchHistory } = await import('@sengac/codelet-napi');
-      const results = persistenceSearchHistory(query, currentProjectRef.current);
-      const entries: HistoryEntry[] = results.map((h: { display: string; timestamp: string; project: string; sessionId: string; hasPastedContent?: boolean }) => ({
-        display: h.display,
-        timestamp: h.timestamp,
-        project: h.project,
-        sessionId: h.sessionId,
-        hasPastedContent: h.hasPastedContent ?? false,
-      }));
+      const results = persistenceSearchHistory(
+        query,
+        currentProjectRef.current
+      );
+      const entries: HistoryEntry[] = results.map(
+        (h: {
+          display: string;
+          timestamp: string;
+          project: string;
+          sessionId: string;
+          hasPastedContent?: boolean;
+        }) => ({
+          display: h.display,
+          timestamp: h.timestamp,
+          project: h.project,
+          sessionId: h.sessionId,
+          hasPastedContent: h.hasPastedContent ?? false,
+        })
+      );
       setSearchResults(entries);
       setSearchResultIndex(0);
     } catch {
@@ -2367,7 +2791,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
     const diffDays = Math.floor(diffMs / 86400000);
 
     // Format time as HH:MM
-    const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const timeStr = date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
 
     if (diffMins < 1) return 'just now';
     if (diffMins < 60) return `${diffMins}m ago`;
@@ -2378,7 +2806,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       return `${dayName} ${timeStr}`;
     }
     // For older sessions, show date and time
-    const monthDay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const monthDay = date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
     return `${monthDay} ${timeStr}`;
   }, []);
 
@@ -2389,15 +2820,17 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       const sessions = persistenceListSessions(currentProjectRef.current);
 
       // Sort by updatedAt descending (most recent first)
-      const sorted = [...sessions].sort((a: SessionManifest, b: SessionManifest) =>
-        new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+      const sorted = [...sessions].sort(
+        (a: SessionManifest, b: SessionManifest) =>
+          new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
 
       setAvailableSessions(sorted);
       setResumeSessionIndex(0);
       setIsResumeMode(true);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to list sessions';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to list sessions';
       setConversation(prev => [
         ...prev,
         { role: 'tool', content: `Resume failed: ${errorMessage}` },
@@ -2407,18 +2840,26 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
   // NAPI-003: Select session and restore conversation
   const handleResumeSelect = useCallback(async () => {
-    if (availableSessions.length === 0 || resumeSessionIndex >= availableSessions.length) {
+    if (
+      availableSessions.length === 0 ||
+      resumeSessionIndex >= availableSessions.length
+    ) {
       return;
     }
 
     const selectedSession = availableSessions[resumeSessionIndex];
 
     try {
-      const { persistenceGetSessionMessages, persistenceGetSessionMessageEnvelopes } = await import('@sengac/codelet-napi');
+      const {
+        persistenceGetSessionMessages,
+        persistenceGetSessionMessageEnvelopes,
+      } = await import('@sengac/codelet-napi');
       const messages = persistenceGetSessionMessages(selectedSession.id);
 
       // Get FULL envelopes with all content blocks (ToolUse, ToolResult, Text, etc.)
-      const envelopes: string[] = persistenceGetSessionMessageEnvelopes(selectedSession.id);
+      const envelopes: string[] = persistenceGetSessionMessageEnvelopes(
+        selectedSession.id
+      );
 
       // Convert full envelopes to conversation format for UI display
       // This properly restores tool calls, tool results, thinking, etc.
@@ -2428,11 +2869,15 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       const restored: ConversationMessage[] = [];
 
       // First pass: collect all tool results by their tool_use_id
-      const toolResultsByUseId = new Map<string, { content: string; isError: boolean }>();
+      const toolResultsByUseId = new Map<
+        string,
+        { content: string; isError: boolean }
+      >();
       for (const envelopeJson of envelopes) {
         try {
           const envelope = JSON.parse(envelopeJson);
-          const messageType = envelope.type || envelope.message_type || envelope.messageType;
+          const messageType =
+            envelope.type || envelope.message_type || envelope.messageType;
           const message = envelope.message;
           if (!message) continue;
 
@@ -2456,7 +2901,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
       for (const envelopeJson of envelopes) {
         try {
           const envelope = JSON.parse(envelopeJson);
-          const messageType = envelope.type || envelope.message_type || envelope.messageType;
+          const messageType =
+            envelope.type || envelope.message_type || envelope.messageType;
           const message = envelope.message;
 
           if (!message) continue;
@@ -2466,7 +2912,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             const contents = message.content || [];
             for (const content of contents) {
               if (content.type === 'text' && content.text) {
-                restored.push({ role: 'user', content: `${content.text}`, isStreaming: false });
+                restored.push({
+                  role: 'user',
+                  content: `${content.text}`,
+                  isStreaming: false,
+                });
               }
               // Skip tool_result here - they're interleaved with tool_use below
             }
@@ -2482,7 +2932,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               } else if (content.type === 'tool_use') {
                 // Flush accumulated text first
                 if (textContent) {
-                  restored.push({ role: 'assistant', content: textContent, isStreaming: false });
+                  restored.push({
+                    role: 'assistant',
+                    content: textContent,
+                    isStreaming: false,
+                  });
                   textContent = '';
                 }
                 // TUI-037: Tool call in Claude Code style: ● ToolName(args)
@@ -2500,7 +2954,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                     const entries = Object.entries(inputObj);
                     if (entries.length > 0) {
                       const [key, value] = entries[0];
-                      argsDisplay = typeof value === 'string' ? value : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
+                      argsDisplay =
+                        typeof value === 'string'
+                          ? value
+                          : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
                     }
                   }
                 }
@@ -2512,23 +2969,37 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 if (toolResult) {
                   let resultContent: string;
                   const toolNameLower = content.name?.toLowerCase() || '';
-                  const inputObj = (typeof input === 'object' && input !== null) ? input as Record<string, unknown> : {};
+                  const inputObj =
+                    typeof input === 'object' && input !== null
+                      ? (input as Record<string, unknown>)
+                      : {};
 
                   // TUI-038: Regenerate diff for Edit/Write tools on restore
-                  if ((toolNameLower === 'edit' || toolNameLower === 'replace') &&
-                      typeof inputObj.old_string === 'string' &&
-                      typeof inputObj.new_string === 'string') {
+                  if (
+                    (toolNameLower === 'edit' || toolNameLower === 'replace') &&
+                    typeof inputObj.old_string === 'string' &&
+                    typeof inputObj.new_string === 'string'
+                  ) {
                     // Edit tool - generate diff from old/new strings
-                    const diffLines = formatEditDiff(inputObj.old_string, inputObj.new_string);
+                    const diffLines = formatEditDiff(
+                      inputObj.old_string,
+                      inputObj.new_string
+                    );
                     resultContent = formatDiffForDisplay(diffLines);
-                  } else if ((toolNameLower === 'write' || toolNameLower === 'write_file') &&
-                             typeof inputObj.content === 'string') {
+                  } else if (
+                    (toolNameLower === 'write' ||
+                      toolNameLower === 'write_file') &&
+                    typeof inputObj.content === 'string'
+                  ) {
                     // Write tool - generate diff (all additions)
                     const diffLines = formatWriteDiff(inputObj.content);
                     resultContent = formatDiffForDisplay(diffLines);
                   } else {
                     // Normal tool - use collapsed output
-                    const sanitizedContent = toolResult.content.replace(/\t/g, '  ');
+                    const sanitizedContent = toolResult.content.replace(
+                      /\t/g,
+                      '  '
+                    );
                     resultContent = formatCollapsedOutput(sanitizedContent);
                   }
 
@@ -2539,7 +3010,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                   });
                 } else {
                   // No result yet, just show header
-                  restored.push({ role: 'tool', content: toolHeader, isStreaming: false });
+                  restored.push({
+                    role: 'tool',
+                    content: toolHeader,
+                    isStreaming: false,
+                  });
                 }
               } else if (content.type === 'thinking' && content.thinking) {
                 // Thinking block (could show or hide based on preference)
@@ -2549,12 +3024,18 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
             // Flush remaining text
             if (textContent) {
-              restored.push({ role: 'assistant', content: textContent, isStreaming: false });
+              restored.push({
+                role: 'assistant',
+                content: textContent,
+                isStreaming: false,
+              });
             }
           }
         } catch {
           // If envelope parsing fails, fall back to simple format
-          logger.warn('Failed to parse envelope, falling back to simple format');
+          logger.warn(
+            'Failed to parse envelope, falling back to simple format'
+          );
         }
       }
 
@@ -2588,9 +3069,11 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               const internalName = mapProviderIdToInternal(providerId);
               setCurrentProvider(internalName);
               // Find matching model info from provider sections
-              const section = providerSections.find(s => s.providerId === providerId);
-              const model = section?.models.find(m =>
-                extractModelIdForRegistry(m.id) === modelId
+              const section = providerSections.find(
+                s => s.providerId === providerId
+              );
+              const model = section?.models.find(
+                m => extractModelIdForRegistry(m.id) === modelId
               );
               if (model && section) {
                 setCurrentModel({
@@ -2605,7 +3088,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 });
               }
             } catch (modelErr) {
-              logger.warn(`Failed to select model ${storedProvider}: ${modelErr instanceof Error ? modelErr.message : String(modelErr)}`);
+              logger.warn(
+                `Failed to select model ${storedProvider}: ${modelErr instanceof Error ? modelErr.message : String(modelErr)}`
+              );
               // Fallback: try switching provider only
               const [providerId, modelId] = storedProvider.split('/');
               const internalName = mapProviderIdToInternal(providerId);
@@ -2625,14 +3110,18 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 });
               }
             }
-          } else if (storedProvider !== sessionRef.current.currentProviderName) {
+          } else if (
+            storedProvider !== sessionRef.current.currentProviderName
+          ) {
             // Legacy provider-only format
             try {
               await sessionRef.current.switchProvider(storedProvider);
               setCurrentProvider(storedProvider);
             } catch (providerErr) {
               // Provider switch failed - continue with current provider
-              logger.warn(`Failed to switch to session provider ${storedProvider}: ${providerErr instanceof Error ? providerErr.message : String(providerErr)}`);
+              logger.warn(
+                `Failed to switch to session provider ${storedProvider}: ${providerErr instanceof Error ? providerErr.message : String(providerErr)}`
+              );
             }
           }
         }
@@ -2641,12 +3130,12 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // CTX-003: Restore current context, output, cache tokens, and cumulative billing fields
         if (selectedSession.tokenUsage) {
           sessionRef.current.restoreTokenState(
-            selectedSession.tokenUsage.currentContextTokens,           // current input context
-            selectedSession.tokenUsage.cumulativeBilledOutput,         // output tokens (use cumulative as we don't store current separately)
-            selectedSession.tokenUsage.cacheReadTokens ?? 0,           // cache read
-            selectedSession.tokenUsage.cacheCreationTokens ?? 0,       // cache creation
-            selectedSession.tokenUsage.cumulativeBilledInput ?? 0,     // cumulative billed input
-            selectedSession.tokenUsage.cumulativeBilledOutput ?? 0     // cumulative billed output
+            selectedSession.tokenUsage.currentContextTokens, // current input context
+            selectedSession.tokenUsage.cumulativeBilledOutput, // output tokens (use cumulative as we don't store current separately)
+            selectedSession.tokenUsage.cacheReadTokens ?? 0, // cache read
+            selectedSession.tokenUsage.cacheCreationTokens ?? 0, // cache creation
+            selectedSession.tokenUsage.cumulativeBilledInput ?? 0, // cumulative billed input
+            selectedSession.tokenUsage.cumulativeBilledOutput ?? 0 // cumulative billed output
           );
         }
 
@@ -2671,12 +3160,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           inputTokens: selectedSession.tokenUsage.currentContextTokens,
           outputTokens: selectedSession.tokenUsage.cumulativeBilledOutput,
           cacheReadInputTokens: selectedSession.tokenUsage.cacheReadTokens,
-          cacheCreationInputTokens: selectedSession.tokenUsage.cacheCreationTokens,
+          cacheCreationInputTokens:
+            selectedSession.tokenUsage.cacheCreationTokens,
         });
       }
-
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to restore session';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to restore session';
       setConversation(prev => [
         ...prev,
         { role: 'tool', content: `Resume failed: ${errorMessage}` },
@@ -2701,42 +3191,72 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
   const settingsScrollVelocity = useRef<number>(1);
 
   // Mouse scroll navigation helper for model selector (navigates through filtered flat list)
-  const navigateModelSelectorByDelta = useCallback((delta: number) => {
-    if (filteredFlatModelItems.length === 0) return;
+  const navigateModelSelectorByDelta = useCallback(
+    (delta: number) => {
+      if (filteredFlatModelItems.length === 0) return;
 
-    // Acceleration: scroll faster when scrolling rapidly
-    const now = Date.now();
-    const timeDelta = now - modelSelectorLastScrollTime.current;
-    if (timeDelta < 150) {
-      modelSelectorScrollVelocity.current = Math.min(modelSelectorScrollVelocity.current + 1, 5);
-    } else {
-      modelSelectorScrollVelocity.current = 1;
-    }
-    modelSelectorLastScrollTime.current = now;
-    const scrollAmount = modelSelectorScrollVelocity.current * delta;
+      // Acceleration: scroll faster when scrolling rapidly
+      const now = Date.now();
+      const timeDelta = now - modelSelectorLastScrollTime.current;
+      if (timeDelta < 150) {
+        modelSelectorScrollVelocity.current = Math.min(
+          modelSelectorScrollVelocity.current + 1,
+          5
+        );
+      } else {
+        modelSelectorScrollVelocity.current = 1;
+      }
+      modelSelectorLastScrollTime.current = now;
+      const scrollAmount = modelSelectorScrollVelocity.current * delta;
 
-    const currentFlatIdx = sectionModelToFlatIndex(selectedSectionIdx, selectedModelIdx, filteredFlatModelItems);
-    const newFlatIdx = Math.max(0, Math.min(filteredFlatModelItems.length - 1, currentFlatIdx + scrollAmount));
-    const { sectionIdx, modelIdx } = flatIndexToSectionModel(newFlatIdx, filteredFlatModelItems);
-    setSelectedSectionIdx(sectionIdx);
-    setSelectedModelIdx(modelIdx);
-  }, [filteredFlatModelItems, selectedSectionIdx, selectedModelIdx]);
+      const currentFlatIdx = sectionModelToFlatIndex(
+        selectedSectionIdx,
+        selectedModelIdx,
+        filteredFlatModelItems
+      );
+      const newFlatIdx = Math.max(
+        0,
+        Math.min(
+          filteredFlatModelItems.length - 1,
+          currentFlatIdx + scrollAmount
+        )
+      );
+      const { sectionIdx, modelIdx } = flatIndexToSectionModel(
+        newFlatIdx,
+        filteredFlatModelItems
+      );
+      setSelectedSectionIdx(sectionIdx);
+      setSelectedModelIdx(modelIdx);
+    },
+    [filteredFlatModelItems, selectedSectionIdx, selectedModelIdx]
+  );
 
   // Mouse scroll navigation helper for settings tab (navigates through filtered list)
-  const navigateSettingsByDelta = useCallback((delta: number) => {
-    // Acceleration: scroll faster when scrolling rapidly
-    const now = Date.now();
-    const timeDelta = now - settingsLastScrollTime.current;
-    if (timeDelta < 150) {
-      settingsScrollVelocity.current = Math.min(settingsScrollVelocity.current + 1, 5);
-    } else {
-      settingsScrollVelocity.current = 1;
-    }
-    settingsLastScrollTime.current = now;
-    const scrollAmount = settingsScrollVelocity.current * delta;
+  const navigateSettingsByDelta = useCallback(
+    (delta: number) => {
+      // Acceleration: scroll faster when scrolling rapidly
+      const now = Date.now();
+      const timeDelta = now - settingsLastScrollTime.current;
+      if (timeDelta < 150) {
+        settingsScrollVelocity.current = Math.min(
+          settingsScrollVelocity.current + 1,
+          5
+        );
+      } else {
+        settingsScrollVelocity.current = 1;
+      }
+      settingsLastScrollTime.current = now;
+      const scrollAmount = settingsScrollVelocity.current * delta;
 
-    setSelectedSettingsIdx(prev => Math.max(0, Math.min(filteredSettingsProviders.length - 1, prev + scrollAmount)));
-  }, [filteredSettingsProviders.length]);
+      setSelectedSettingsIdx(prev =>
+        Math.max(
+          0,
+          Math.min(filteredSettingsProviders.length - 1, prev + scrollAmount)
+        )
+      );
+    },
+    [filteredSettingsProviders.length]
+  );
 
   // Handle keyboard input
   useInput(
@@ -2807,7 +3327,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           return;
         }
         if (key.downArrow) {
-          setSearchResultIndex(prev => Math.min(searchResults.length - 1, prev + 1));
+          setSearchResultIndex(prev =>
+            Math.min(searchResults.length - 1, prev + 1)
+          );
           return;
         }
         if (key.backspace || key.delete) {
@@ -2817,7 +3339,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Accept printable characters for search query
         const clean = input
           .split('')
-          .filter((ch) => {
+          .filter(ch => {
             const code = ch.charCodeAt(0);
             return code >= 32 && code <= 126;
           })
@@ -2843,7 +3365,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           return;
         }
         if (key.downArrow) {
-          setResumeSessionIndex(prev => Math.min(availableSessions.length - 1, prev + 1));
+          setResumeSessionIndex(prev =>
+            Math.min(availableSessions.length - 1, prev + 1)
+          );
           return;
         }
         // No text input in resume mode - just navigation
@@ -2923,7 +3447,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Left arrow: collapse current section
         if (key.leftArrow) {
           const currentSection = providerSections[selectedSectionIdx];
-          if (currentSection && expandedProviders.has(currentSection.providerId)) {
+          if (
+            currentSection &&
+            expandedProviders.has(currentSection.providerId)
+          ) {
             setExpandedProviders(prev => {
               const next = new Set(prev);
               next.delete(currentSection.providerId);
@@ -2937,8 +3464,13 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Right arrow: expand current section
         if (key.rightArrow) {
           const currentSection = providerSections[selectedSectionIdx];
-          if (currentSection && !expandedProviders.has(currentSection.providerId)) {
-            setExpandedProviders(prev => new Set([...prev, currentSection.providerId]));
+          if (
+            currentSection &&
+            !expandedProviders.has(currentSection.providerId)
+          ) {
+            setExpandedProviders(
+              prev => new Set([...prev, currentSection.providerId])
+            );
           }
           return;
         }
@@ -2946,7 +3478,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Up arrow: navigate up through models and sections
         if (key.upArrow) {
           const currentSection = providerSections[selectedSectionIdx];
-          const isExpanded = currentSection && expandedProviders.has(currentSection.providerId);
+          const isExpanded =
+            currentSection && expandedProviders.has(currentSection.providerId);
 
           if (selectedModelIdx > 0 && isExpanded) {
             // Move up within models
@@ -2972,7 +3505,8 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         // Down arrow: navigate down through models and sections
         if (key.downArrow) {
           const currentSection = providerSections[selectedSectionIdx];
-          const isExpanded = currentSection && expandedProviders.has(currentSection.providerId);
+          const isExpanded =
+            currentSection && expandedProviders.has(currentSection.providerId);
           const modelCount = currentSection?.models.length ?? 0;
 
           if (selectedModelIdx === -1 && isExpanded && modelCount > 0) {
@@ -3001,7 +3535,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                 return next;
               });
             } else {
-              setExpandedProviders(prev => new Set([...prev, currentSection.providerId]));
+              setExpandedProviders(
+                prev => new Set([...prev, currentSection.providerId])
+              );
             }
           } else {
             // On model - select it
@@ -3098,7 +3634,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             setConnectionTestResult(null);
             return;
           }
-          if (key.downArrow && selectedSettingsIdx < filteredSettingsProviders.length - 1) {
+          if (
+            key.downArrow &&
+            selectedSettingsIdx < filteredSettingsProviders.length - 1
+          ) {
             setSelectedSettingsIdx(prev => prev + 1);
             setConnectionTestResult(null);
             return;
@@ -3196,103 +3735,166 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  // Flatten conversation messages into individual lines for VirtualList
-  // Pre-wrap lines to fit terminal width since VirtualList expects single-line items
+  // PERF-002: Helper function to wrap a single message into lines
+  // Extracted to be reusable for incremental caching
+  const wrapMessageToLines = (
+    msg: ConversationMessage,
+    msgIndex: number,
+    maxWidth: number
+  ): ConversationLine[] => {
+    const lines: ConversationLine[] = [];
+    // Add role prefix to first line
+    const prefix =
+      msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? '● ' : '';
+    // Normalize emoji variation selectors for consistent width calculation
+    const normalizedContent = normalizeEmojiWidth(msg.content);
+    const contentLines = normalizedContent.split('\n');
+
+    contentLines.forEach((lineContent, lineIndex) => {
+      let displayContent =
+        lineIndex === 0 ? `${prefix}${lineContent}` : lineContent;
+      // Add streaming indicator to last line of streaming message
+      const isLastLine = lineIndex === contentLines.length - 1;
+      if (msg.isStreaming && isLastLine) {
+        displayContent += '...';
+      }
+
+      // Wrap long lines manually to fit terminal width (using visual width for Unicode)
+      if (getVisualWidth(displayContent) === 0) {
+        lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+      } else {
+        // Split into words, keeping whitespace
+        const words = displayContent.split(/(\s+)/);
+        let currentLine = '';
+        let currentWidth = 0;
+
+        for (const word of words) {
+          const wordWidth = getVisualWidth(word);
+
+          if (wordWidth === 0) continue;
+
+          // If word alone exceeds max width, force break it character by character
+          if (wordWidth > maxWidth) {
+            // Flush current line first
+            if (currentLine) {
+              lines.push({
+                role: msg.role,
+                content: currentLine,
+                messageIndex: msgIndex,
+              });
+              currentLine = '';
+              currentWidth = 0;
+            }
+            // Break long word by visual width
+            let chunk = '';
+            let chunkWidth = 0;
+            for (const char of word) {
+              const charWidth = getVisualWidth(char);
+              if (chunkWidth + charWidth > maxWidth && chunk) {
+                lines.push({
+                  role: msg.role,
+                  content: chunk,
+                  messageIndex: msgIndex,
+                });
+                chunk = char;
+                chunkWidth = charWidth;
+              } else {
+                chunk += char;
+                chunkWidth += charWidth;
+              }
+            }
+            if (chunk) {
+              currentLine = chunk;
+              currentWidth = chunkWidth;
+            }
+            continue;
+          }
+
+          // Check if word fits on current line
+          if (currentWidth + wordWidth > maxWidth) {
+            // Flush current line and start new one
+            if (currentLine.trim()) {
+              lines.push({
+                role: msg.role,
+                content: currentLine.trimEnd(),
+                messageIndex: msgIndex,
+              });
+            }
+            // Don't start line with whitespace
+            currentLine = word.trim() ? word : '';
+            currentWidth = word.trim() ? wordWidth : 0;
+          } else {
+            currentLine += word;
+            currentWidth += wordWidth;
+          }
+        }
+
+        // Flush remaining content
+        if (currentLine.trim()) {
+          lines.push({
+            role: msg.role,
+            content: currentLine.trimEnd(),
+            messageIndex: msgIndex,
+          });
+        } else if (lines.length === 0) {
+          // Ensure at least one line per content section
+          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+        }
+      }
+    });
+
+    // Add empty line after each message for spacing (use space to ensure line renders)
+    lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+
+    return lines;
+  };
+
+  // PERF-002: Incremental line computation with caching
+  // Only recompute lines for messages that changed, reuse cached lines for unchanged messages
+  // PERF-003: Uses deferredConversation to prioritize user input over streaming updates
   const conversationLines = useMemo((): ConversationLine[] => {
     const maxWidth = terminalWidth - 6; // Account for borders and padding
     const lines: ConversationLine[] = [];
+    const cache = lineCacheRef.current;
 
-    conversation.forEach((msg, msgIndex) => {
-      // Add role prefix to first line
-      const prefix =
-        msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? '● ' : '';
-      // Normalize emoji variation selectors for consistent width calculation
-      const normalizedContent = normalizeEmojiWidth(msg.content);
-      const contentLines = normalizedContent.split('\n');
+    // Track which message indices are still valid
+    const validIndices = new Set<number>();
 
-      contentLines.forEach((lineContent, lineIndex) => {
-        let displayContent =
-          lineIndex === 0 ? `${prefix}${lineContent}` : lineContent;
-        // Add streaming indicator to last line of streaming message
-        const isLastLine = lineIndex === contentLines.length - 1;
-        if (msg.isStreaming && isLastLine) {
-          displayContent += '...';
-        }
+    deferredConversation.forEach((msg, msgIndex) => {
+      validIndices.add(msgIndex);
 
-        // Wrap long lines manually to fit terminal width (using visual width for Unicode)
-        if (getVisualWidth(displayContent) === 0) {
-          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
-        } else {
-          // Split into words, keeping whitespace
-          const words = displayContent.split(/(\s+)/);
-          let currentLine = '';
-          let currentWidth = 0;
-
-          for (const word of words) {
-            const wordWidth = getVisualWidth(word);
-
-            if (wordWidth === 0) continue;
-
-            // If word alone exceeds max width, force break it character by character
-            if (wordWidth > maxWidth) {
-              // Flush current line first
-              if (currentLine) {
-                lines.push({ role: msg.role, content: currentLine, messageIndex: msgIndex });
-                currentLine = '';
-                currentWidth = 0;
-              }
-              // Break long word by visual width
-              let chunk = '';
-              let chunkWidth = 0;
-              for (const char of word) {
-                const charWidth = getVisualWidth(char);
-                if (chunkWidth + charWidth > maxWidth && chunk) {
-                  lines.push({ role: msg.role, content: chunk, messageIndex: msgIndex });
-                  chunk = char;
-                  chunkWidth = charWidth;
-                } else {
-                  chunk += char;
-                  chunkWidth += charWidth;
-                }
-              }
-              if (chunk) {
-                currentLine = chunk;
-                currentWidth = chunkWidth;
-              }
-              continue;
-            }
-
-            // Check if word fits on current line
-            if (currentWidth + wordWidth > maxWidth) {
-              // Flush current line and start new one
-              if (currentLine.trim()) {
-                lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });
-              }
-              // Don't start line with whitespace
-              currentLine = word.trim() ? word : '';
-              currentWidth = word.trim() ? wordWidth : 0;
-            } else {
-              currentLine += word;
-              currentWidth += wordWidth;
-            }
-          }
-
-          // Flush remaining content
-          if (currentLine.trim()) {
-            lines.push({ role: msg.role, content: currentLine.trimEnd(), messageIndex: msgIndex });
-          } else if (lines.length === 0 || lines[lines.length - 1]?.messageIndex !== msgIndex) {
-            // Ensure at least one line per content section
-            lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
-          }
-        }
-      });
-
-      // Add empty line after each message for spacing (use space to ensure line renders)
-      lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+      // Check cache for this message
+      const cached = cache.get(msgIndex);
+      if (
+        cached &&
+        cached.content === msg.content &&
+        cached.isStreaming === msg.isStreaming &&
+        cached.terminalWidth === terminalWidth
+      ) {
+        // Cache hit - reuse cached lines
+        lines.push(...cached.lines);
+      } else {
+        // Cache miss - compute lines and cache them
+        const messageLines = wrapMessageToLines(msg, msgIndex, maxWidth);
+        cache.set(msgIndex, {
+          content: msg.content,
+          isStreaming: msg.isStreaming ?? false,
+          terminalWidth,
+          lines: messageLines,
+        });
+        lines.push(...messageLines);
+      }
     });
 
+    // Clean up stale cache entries (messages that were removed)
+    for (const cachedIndex of cache.keys()) {
+      if (!validIndices.has(cachedIndex)) {
+        cache.delete(cachedIndex);
+      }
+    }
+
     return lines;
-  }, [conversation, terminalWidth]);
+  }, [deferredConversation, terminalWidth]);
 
   // Error state - show setup instructions (full-screen overlay)
   if (error && !session) {
@@ -3408,11 +4010,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           borderColor="cyan"
           backgroundColor="black"
         >
-          <Box
-            flexDirection="column"
-            padding={2}
-            flexGrow={1}
-          >
+          <Box flexDirection="column" padding={2} flexGrow={1}>
             <Box marginBottom={1}>
               <Text bold color="cyan">
                 Select Model
@@ -3420,7 +4018,16 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               {isRefreshingModels && (
                 <Text color="yellow"> (refreshing...)</Text>
               )}
-              <Text dimColor> ({filteredFlatModelItems.length} items, showing {modelSelectorScrollOffset + 1}-{Math.min(modelSelectorScrollOffset + modelSelectorVisibleHeight, filteredFlatModelItems.length)})</Text>
+              <Text dimColor>
+                {' '}
+                ({filteredFlatModelItems.length} items, showing{' '}
+                {modelSelectorScrollOffset + 1}-
+                {Math.min(
+                  modelSelectorScrollOffset + modelSelectorVisibleHeight,
+                  filteredFlatModelItems.length
+                )}
+                )
+              </Text>
             </Box>
             {/* Filter input box */}
             {(isModelSelectorFilterMode || modelSelectorFilter) && (
@@ -3434,38 +4041,71 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             <Box flexDirection="row" flexGrow={1}>
               <Box flexDirection="column" flexGrow={1}>
                 {filteredFlatModelItems
-                  .slice(modelSelectorScrollOffset, modelSelectorScrollOffset + modelSelectorVisibleHeight)
-                  .map((item) => {
+                  .slice(
+                    modelSelectorScrollOffset,
+                    modelSelectorScrollOffset + modelSelectorVisibleHeight
+                  )
+                  .map(item => {
                     if (item.type === 'section') {
-                      const isSectionSelected = item.sectionIdx === selectedSectionIdx && selectedModelIdx === -1;
+                      const isSectionSelected =
+                        item.sectionIdx === selectedSectionIdx &&
+                        selectedModelIdx === -1;
                       const sectionIcon = item.isExpanded ? '▼' : '▶';
                       return (
                         <Box key={`section-${item.section.providerId}`}>
                           <Text
-                            backgroundColor={isSectionSelected ? 'cyan' : undefined}
+                            backgroundColor={
+                              isSectionSelected ? 'cyan' : undefined
+                            }
                             color={isSectionSelected ? 'black' : 'white'}
                           >
                             {isSectionSelected ? '> ' : '  '}
-                            {sectionIcon} [{item.section.providerId}] ({item.section.models.length} models)
+                            {sectionIcon} [{item.section.providerId}] (
+                            {item.section.models.length} models)
                           </Text>
                         </Box>
                       );
                     } else {
-                      const isModelSelected = item.sectionIdx === selectedSectionIdx && item.modelIdx === selectedModelIdx;
-                      const isCurrent = currentModel?.apiModelId === item.model.id;
+                      const isModelSelected =
+                        item.sectionIdx === selectedSectionIdx &&
+                        item.modelIdx === selectedModelIdx;
+                      const isCurrent =
+                        currentModel?.apiModelId === item.model.id;
                       const modelId = extractModelIdForRegistry(item.model.id);
                       return (
                         <Box key={`model-${item.model.id}`}>
                           <Text
-                            backgroundColor={isModelSelected ? 'cyan' : undefined}
+                            backgroundColor={
+                              isModelSelected ? 'cyan' : undefined
+                            }
                             color={isModelSelected ? 'black' : 'white'}
                           >
                             {isModelSelected ? '  > ' : '    '}
                             {modelId} ({item.model.name})
-                            {item.model.reasoning && <Text color={isModelSelected ? 'black' : 'magenta'}> [R]</Text>}
-                            {item.model.hasVision && <Text color={isModelSelected ? 'black' : 'blue'}> [V]</Text>}
-                            <Text color={isModelSelected ? 'black' : 'gray'}> [{formatContextWindow(item.model.contextWindow)}]</Text>
-                            {isCurrent && <Text color={isModelSelected ? 'black' : 'green'}> (current)</Text>}
+                            {item.model.reasoning && (
+                              <Text
+                                color={isModelSelected ? 'black' : 'magenta'}
+                              >
+                                {' '}
+                                [R]
+                              </Text>
+                            )}
+                            {item.model.hasVision && (
+                              <Text color={isModelSelected ? 'black' : 'blue'}>
+                                {' '}
+                                [V]
+                              </Text>
+                            )}
+                            <Text color={isModelSelected ? 'black' : 'gray'}>
+                              {' '}
+                              [{formatContextWindow(item.model.contextWindow)}]
+                            </Text>
+                            {isCurrent && (
+                              <Text color={isModelSelected ? 'black' : 'green'}>
+                                {' '}
+                                (current)
+                              </Text>
+                            )}
                           </Text>
                         </Box>
                       );
@@ -3475,17 +4115,38 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               {/* Scrollbar */}
               {filteredFlatModelItems.length > modelSelectorVisibleHeight && (
                 <Box flexDirection="column" marginLeft={1}>
-                  {Array.from({ length: modelSelectorVisibleHeight }).map((_, i) => {
-                    const thumbHeight = Math.max(1, Math.floor((modelSelectorVisibleHeight / filteredFlatModelItems.length) * modelSelectorVisibleHeight));
-                    const thumbPos = Math.floor((modelSelectorScrollOffset / filteredFlatModelItems.length) * modelSelectorVisibleHeight);
-                    const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
-                    return <Text key={i} dimColor>{isThumb ? '■' : '│'}</Text>;
-                  })}
+                  {Array.from({ length: modelSelectorVisibleHeight }).map(
+                    (_, i) => {
+                      const thumbHeight = Math.max(
+                        1,
+                        Math.floor(
+                          (modelSelectorVisibleHeight /
+                            filteredFlatModelItems.length) *
+                            modelSelectorVisibleHeight
+                        )
+                      );
+                      const thumbPos = Math.floor(
+                        (modelSelectorScrollOffset /
+                          filteredFlatModelItems.length) *
+                          modelSelectorVisibleHeight
+                      );
+                      const isThumb =
+                        i >= thumbPos && i < thumbPos + thumbHeight;
+                      return (
+                        <Text key={i} dimColor>
+                          {isThumb ? '■' : '│'}
+                        </Text>
+                      );
+                    }
+                  )}
                 </Box>
               )}
             </Box>
             <Box marginTop={1}>
-              <Text dimColor>Enter Select | ←→ Expand/Collapse | ↑↓ Navigate | / Filter | r Refresh | Tab Settings | Esc Cancel</Text>
+              <Text dimColor>
+                Enter Select | ←→ Expand/Collapse | ↑↓ Navigate | / Filter | r
+                Refresh | Tab Settings | Esc Cancel
+              </Text>
             </Box>
           </Box>
         </Box>
@@ -3509,16 +4170,21 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           borderColor="yellow"
           backgroundColor="black"
         >
-          <Box
-            flexDirection="column"
-            padding={2}
-            flexGrow={1}
-          >
+          <Box flexDirection="column" padding={2} flexGrow={1}>
             <Box marginBottom={1}>
               <Text bold color="yellow">
                 Provider Settings
               </Text>
-              <Text dimColor> ({filteredSettingsProviders.length} providers, showing {settingsScrollOffset + 1}-{Math.min(settingsScrollOffset + settingsVisibleHeight, filteredSettingsProviders.length)})</Text>
+              <Text dimColor>
+                {' '}
+                ({filteredSettingsProviders.length} providers, showing{' '}
+                {settingsScrollOffset + 1}-
+                {Math.min(
+                  settingsScrollOffset + settingsVisibleHeight,
+                  filteredSettingsProviders.length
+                )}
+                )
+              </Text>
             </Box>
             {/* Filter input box */}
             {(isSettingsFilterMode || settingsFilter) && (
@@ -3533,20 +4199,32 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             <Box flexDirection="row" flexGrow={1}>
               <Box flexDirection="column" flexGrow={1}>
                 {filteredSettingsProviders
-                  .slice(settingsScrollOffset, settingsScrollOffset + settingsVisibleHeight)
+                  .slice(
+                    settingsScrollOffset,
+                    settingsScrollOffset + settingsVisibleHeight
+                  )
                   .map((providerId, visibleIdx) => {
                     const actualIdx = settingsScrollOffset + visibleIdx;
                     const isSelected = actualIdx === selectedSettingsIdx;
                     const status = providerStatuses[providerId];
                     const registryEntry = getProviderRegistryEntry(providerId);
                     const isEditing = editingProviderId === providerId;
-                    const testResult = connectionTestResult?.providerId === providerId ? connectionTestResult : null;
+                    const testResult =
+                      connectionTestResult?.providerId === providerId
+                        ? connectionTestResult
+                        : null;
 
                     return (
-                      <Box key={providerId} flexDirection="column" marginBottom={0}>
+                      <Box
+                        key={providerId}
+                        flexDirection="column"
+                        marginBottom={0}
+                      >
                         <Box>
                           <Text
-                            backgroundColor={isSelected && !isEditing ? 'yellow' : undefined}
+                            backgroundColor={
+                              isSelected && !isEditing ? 'yellow' : undefined
+                            }
                             color={isSelected && !isEditing ? 'black' : 'white'}
                           >
                             {isSelected ? '> ' : '  '}
@@ -3558,7 +4236,10 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                             <Text color="gray"> (not configured)</Text>
                           )}
                           {testResult && (
-                            <Text color={testResult.success ? 'green' : 'red'}> {testResult.message}</Text>
+                            <Text color={testResult.success ? 'green' : 'red'}>
+                              {' '}
+                              {testResult.message}
+                            </Text>
                           )}
                         </Box>
 
@@ -3567,7 +4248,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                           <Box marginLeft={4}>
                             <Text color="yellow">API Key: </Text>
                             <Text>
-                              {editingApiKey ? '•'.repeat(editingApiKey.length) : ''}
+                              {editingApiKey
+                                ? '•'.repeat(editingApiKey.length)
+                                : ''}
                               <Text inverse> </Text>
                             </Text>
                           </Box>
@@ -3580,10 +4263,25 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
               {filteredSettingsProviders.length > settingsVisibleHeight && (
                 <Box flexDirection="column" marginLeft={1}>
                   {Array.from({ length: settingsVisibleHeight }).map((_, i) => {
-                    const thumbHeight = Math.max(1, Math.floor((settingsVisibleHeight / filteredSettingsProviders.length) * settingsVisibleHeight));
-                    const thumbPos = Math.floor((settingsScrollOffset / filteredSettingsProviders.length) * settingsVisibleHeight);
+                    const thumbHeight = Math.max(
+                      1,
+                      Math.floor(
+                        (settingsVisibleHeight /
+                          filteredSettingsProviders.length) *
+                          settingsVisibleHeight
+                      )
+                    );
+                    const thumbPos = Math.floor(
+                      (settingsScrollOffset /
+                        filteredSettingsProviders.length) *
+                        settingsVisibleHeight
+                    );
                     const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
-                    return <Text key={i} dimColor>{isThumb ? '■' : '│'}</Text>;
+                    return (
+                      <Text key={i} dimColor>
+                        {isThumb ? '■' : '│'}
+                      </Text>
+                    );
                   })}
                 </Box>
               )}
@@ -3618,11 +4316,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           borderColor="magenta"
           backgroundColor="black"
         >
-          <Box
-            flexDirection="column"
-            padding={2}
-            flexGrow={1}
-          >
+          <Box flexDirection="column" padding={2} flexGrow={1}>
             <Box marginBottom={1}>
               <Text bold color="magenta">
                 (search): {searchQuery}
@@ -3637,7 +4331,9 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             {searchResults.slice(0, 10).map((entry, idx) => (
               <Box key={`${entry.sessionId}-${entry.timestamp}`}>
                 <Text
-                  backgroundColor={idx === searchResultIndex ? 'magenta' : undefined}
+                  backgroundColor={
+                    idx === searchResultIndex ? 'magenta' : undefined
+                  }
                   color={idx === searchResultIndex ? 'black' : 'white'}
                 >
                   {idx === searchResultIndex ? '> ' : '  '}
@@ -3670,11 +4366,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
           borderColor="blue"
           backgroundColor="black"
         >
-          <Box
-            flexDirection="column"
-            padding={2}
-            flexGrow={1}
-          >
+          <Box flexDirection="column" padding={2} flexGrow={1}>
             <Box marginBottom={1}>
               <Text bold color="blue">
                 Resume Session ({availableSessions.length} available)
@@ -3753,15 +4445,28 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
             {currentModel?.reasoning && <Text color="magenta"> [R]</Text>}
             {currentModel?.hasVision && <Text color="blue"> [V]</Text>}
             {currentModel?.contextWindow && (
-              <Text dimColor> [{formatContextWindow(currentModel.contextWindow)}]</Text>
+              <Text dimColor>
+                {' '}
+                [{formatContextWindow(currentModel.contextWindow)}]
+              </Text>
             )}
             {isLoading && <Text color="yellow"> (streaming...)</Text>}
             {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
-            {isDebugEnabled && <Text color="red" bold> [DEBUG]</Text>}
-            {/* TOOL-010: Thinking level indicator - only show while streaming */}
-            {isLoading && detectedThinkingLevel !== null && detectedThinkingLevel !== JsThinkingLevel.Off && (
-              <Text color="magenta" bold> {getThinkingLevelLabel(detectedThinkingLevel)}</Text>
+            {isDebugEnabled && (
+              <Text color="red" bold>
+                {' '}
+                [DEBUG]
+              </Text>
             )}
+            {/* TOOL-010: Thinking level indicator - only show while streaming */}
+            {isLoading &&
+              detectedThinkingLevel !== null &&
+              detectedThinkingLevel !== JsThinkingLevel.Off && (
+                <Text color="magenta" bold>
+                  {' '}
+                  {getThinkingLevelLabel(detectedThinkingLevel)}
+                </Text>
+              )}
           </Box>
           {/* TUI-031: Tokens per second display during streaming */}
           {isLoading && displayedTokPerSec !== null && (
@@ -3792,7 +4497,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
         <Box flexGrow={1} flexBasis={0}>
           <VirtualList
             items={conversationLines}
-            renderItem={(line) => {
+            renderItem={line => {
               // TUI-038: Check for diff color markers and render with background colors
               const content = line.content;
 
@@ -3814,11 +4519,21 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
                   const markerIdx = rIdx >= 0 ? rIdx : aIdx;
                   const markerType = rIdx >= 0 ? 'R' : 'A';
                   // Remove the [R] or [A] marker, keep everything else
-                  const lineWithoutMarker = content.slice(0, markerIdx) + content.slice(markerIdx + 3);
+                  const lineWithoutMarker =
+                    content.slice(0, markerIdx) + content.slice(markerIdx + 3);
 
                   return (
                     <Box flexGrow={1}>
-                      <Text backgroundColor={markerType === 'R' ? DIFF_COLORS.removed : DIFF_COLORS.added} color="white">{lineWithoutMarker}</Text>
+                      <Text
+                        backgroundColor={
+                          markerType === 'R'
+                            ? DIFF_COLORS.removed
+                            : DIFF_COLORS.added
+                        }
+                        color="white"
+                      >
+                        {lineWithoutMarker}
+                      </Text>
                     </Box>
                   );
                 }
@@ -3846,10 +4561,7 @@ export const AgentModal: React.FC<AgentModalProps> = ({ isOpen, onClose }) => {
 
               // Default rendering for non-diff content
               // Tool output is white (not yellow), user input is green
-              const color =
-                line.role === 'user'
-                  ? 'green'
-                  : 'white';
+              const color = line.role === 'user' ? 'green' : 'white';
               return (
                 <Box flexGrow={1}>
                   <Text color={color}>{content}</Text>
