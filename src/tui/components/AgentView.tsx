@@ -4594,8 +4594,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           }}
           keyExtractor={(_line, index) => `line-${index}`}
           emptyMessage=""
-          showScrollbar={!isLoading}
-          isFocused={!isLoading && !showProviderSelector}
+          showScrollbar={true}
+          isFocused={!showProviderSelector && !showModelSelector && !showSettingsTab && !isResumeMode && !isSearchMode}
           scrollToEnd={true}
           selectionMode="scroll"
         />
