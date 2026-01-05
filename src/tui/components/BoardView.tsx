@@ -77,12 +77,16 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   }, [cwd, setCwd]);
 
   // Enable mouse tracking for board view (TUI-010)
+  // Re-enable when returning from AgentView/CheckpointViewer/ChangedFilesViewer
+  // since those views disable mouse tracking in their cleanup
   useEffect(() => {
-    process.stdout.write('\x1b[?1000h'); // Enable button event tracking
-    return () => {
-      process.stdout.write('\x1b[?1000l'); // Disable on unmount
-    };
-  }, []);
+    if (viewMode === 'board') {
+      process.stdout.write('\x1b[?1000h'); // Enable button event tracking
+      return () => {
+        process.stdout.write('\x1b[?1000l'); // Disable on unmount
+      };
+    }
+  }, [viewMode]);
 
   // Load data on mount
   useEffect(() => {
