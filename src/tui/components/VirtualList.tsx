@@ -4,6 +4,8 @@ import React, {
   useMemo,
   useRef,
   useLayoutEffect,
+  useCallback,
+  memo,
 } from 'react';
 import { Box, Text, useInput, measureElement, type DOMElement } from 'ink';
 import { useTerminalSize } from '../hooks/useTerminalSize';
@@ -12,7 +14,62 @@ import { useTerminalSize } from '../hooks/useTerminalSize';
 const SCROLLBAR_CHARS = {
   square: '■',
   line: '│',
-};
+} as const;
+
+// Pre-computed scrollbar string cache - avoids creating new strings on each render
+const scrollbarCache = new Map<string, string>();
+function getScrollbarString(height: number, thumbPos: number, thumbHeight: number): string {
+  const key = `${height}-${thumbPos}-${thumbHeight}`;
+  const cached = scrollbarCache.get(key);
+  if (cached !== undefined) {
+    return cached;
+  }
+  
+  const chars: string[] = [];
+  for (let i = 0; i < height; i++) {
+    if (i >= thumbPos && i < thumbPos + thumbHeight) {
+      chars.push(SCROLLBAR_CHARS.square);
+    } else {
+      chars.push(SCROLLBAR_CHARS.line);
+    }
+  }
+  const result = chars.join('\n');
+  
+  // Limit cache size to prevent memory leaks
+  if (scrollbarCache.size > 1000) {
+    const firstKey = scrollbarCache.keys().next().value;
+    if (firstKey) scrollbarCache.delete(firstKey);
+  }
+  scrollbarCache.set(key, result);
+  return result;
+}
+
+// Optimized scrollbar component - single Text element instead of N elements
+const Scrollbar = memo(function Scrollbar({ 
+  itemCount, 
+  visibleHeight, 
+  scrollOffset 
+}: { 
+  itemCount: number; 
+  visibleHeight: number; 
+  scrollOffset: number;
+}): React.ReactElement | null {
+  if (itemCount <= visibleHeight) {
+    return null;
+  }
+
+  const scrollbarHeight = visibleHeight;
+  const thumbHeight = Math.max(1, Math.floor((visibleHeight / itemCount) * scrollbarHeight));
+  const thumbPosition = Math.floor((scrollOffset / itemCount) * scrollbarHeight);
+
+  const scrollbarText = getScrollbarString(scrollbarHeight, thumbPosition, thumbHeight);
+
+  return (
+    <Box flexDirection="column" marginLeft={1}>
+      <Text dimColor>{scrollbarText}</Text>
+    </Box>
+  );
+});
 
 interface VirtualListProps<T> {
   items: T[];
@@ -27,6 +84,7 @@ interface VirtualListProps<T> {
   isFocused?: boolean; // Whether this VirtualList should respond to keyboard input (default: true)
   scrollToEnd?: boolean; // Auto-scroll to end when items change (default: false)
   selectionMode?: 'item' | 'scroll'; // 'item' = individual item selection (default), 'scroll' = pure viewport scrolling (TUI-032)
+  fixedHeight?: number; // Optional fixed height to skip measureElement overhead
 }
 
 export function VirtualList<T>({
@@ -42,9 +100,13 @@ export function VirtualList<T>({
   isFocused = true,
   scrollToEnd = false,
   selectionMode = 'item',
+  fixedHeight,
 }: VirtualListProps<T>): React.ReactElement {
   // Enable mouse tracking mode for button events only (not mouse movement)
+  // OPTIMIZATION: Only enable when focused to reduce overhead
   useEffect(() => {
+    if (!isFocused) return;
+    
     // \x1b[?1000h enables "button event" tracking (clicks and scroll only)
     process.stdout.write('\x1b[?1000h');
 
@@ -52,7 +114,7 @@ export function VirtualList<T>({
       // Disable mouse tracking mode on unmount
       process.stdout.write('\x1b[?1000l');
     };
-  }, []);
+  }, [isFocused]);
 
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -64,29 +126,56 @@ export function VirtualList<T>({
 
   // Track last scroll time for acceleration
   const lastScrollTime = useRef<number>(0);
-  const scrollVelocity = useRef<number>(0);
+  const scrollVelocity = useRef<number>(1);
+  
+  // Track if measurement is scheduled to debounce
+  const measurementScheduled = useRef(false);
 
   // Measure container height after layout using Yoga layout engine
+  // OPTIMIZATION: Debounce measurements and skip when fixedHeight provided
   useLayoutEffect(() => {
-    if (containerRef.current) {
-      const dimensions = measureElement(containerRef.current);
-      // Use measured height (lines = height, since each item is 1 line in terminal)
-      // This respects flexbox layout and gives us the ACTUAL allocated space
-      // Floor first to handle fractional heights, then subtract 2 for safety margin
-      // This prevents overflow from accumulated rounding errors in nested flexbox containers
-      // with borders that may consume partial lines
-      if (dimensions.height > 0) {
-        setMeasuredHeight(Math.max(1, Math.floor(dimensions.height) - 2));
-      }
+    if (fixedHeight !== undefined) {
+      // Skip measurement if fixed height provided
+      setMeasuredHeight(fixedHeight);
+      return;
     }
-  }, [items.length, terminalHeight]); // Re-measure when items or terminal changes
+    
+    if (!containerRef.current || measurementScheduled.current) return;
+    
+    // Debounce measurements using setImmediate (Node.js equivalent of requestAnimationFrame)
+    measurementScheduled.current = true;
+    const immediateId = setImmediate(() => {
+      if (containerRef.current) {
+        const dimensions = measureElement(containerRef.current);
+        // Use measured height (lines = height, since each item is 1 line in terminal)
+        // This respects flexbox layout and gives us the ACTUAL allocated space
+        // Floor first to handle fractional heights, then subtract 2 for safety margin
+        // This prevents overflow from accumulated rounding errors in nested flexbox containers
+        // with borders that may consume partial lines
+        if (dimensions.height > 0) {
+          const newHeight = Math.max(1, Math.floor(dimensions.height) - 2);
+          // Only update if changed to prevent unnecessary re-renders
+          setMeasuredHeight(prev => prev !== newHeight ? newHeight : prev);
+        }
+      }
+      measurementScheduled.current = false;
+    });
+    
+    return () => {
+      clearImmediate(immediateId);
+      measurementScheduled.current = false;
+    };
+  }, [terminalHeight, fixedHeight]); // Removed items.length - only re-measure on terminal resize
 
   // Calculate visible window from measured container height (if available) or terminal size
-  // Priority: measured container height > terminal height calculation
-  const visibleHeight =
-    measuredHeight !== null
+  // Priority: fixed height > measured container height > terminal height calculation
+  // OPTIMIZATION: Memoize visibleHeight calculation
+  const visibleHeight = useMemo(() => {
+    if (fixedHeight !== undefined) return fixedHeight;
+    return measuredHeight !== null
       ? Math.max(1, measuredHeight)
       : Math.max(1, terminalHeight - reservedLines);
+  }, [measuredHeight, terminalHeight, reservedLines, fixedHeight]);
   const visibleItems = useMemo(() => {
     const start = scrollOffset;
     const end = Math.min(items.length, scrollOffset + visibleHeight);
@@ -101,14 +190,18 @@ export function VirtualList<T>({
   }, [items.length, selectedIndex]);
 
   // Compute max scroll offset for scroll mode (TUI-032)
-  const maxScrollOffset = Math.max(0, items.length - visibleHeight);
+  // OPTIMIZATION: Memoize to avoid recalculation
+  const maxScrollOffset = useMemo(() => 
+    Math.max(0, items.length - visibleHeight),
+    [items.length, visibleHeight]
+  );
 
   // Direct scroll offset manipulation for scroll mode (TUI-032)
   // This bypasses selection tracking and directly moves the viewport
-  const scrollTo = (offset: number): void => {
-    const clampedOffset = Math.max(0, Math.min(maxScrollOffset, offset));
-    setScrollOffset(clampedOffset);
-  };
+  // OPTIMIZATION: useCallback for stable reference
+  const scrollTo = useCallback((offset: number): void => {
+    setScrollOffset(Math.max(0, Math.min(maxScrollOffset, offset)));
+  }, [maxScrollOffset]);
 
   // Auto-scroll to end when items change (for chat-style interfaces)
   useEffect(() => {
@@ -151,7 +244,7 @@ export function VirtualList<T>({
     }
   }, [selectedIndex, items, onFocus, selectionMode]);
 
-  const navigateTo = (newIndex: number): void => {
+  const navigateTo = useCallback((newIndex: number): void => {
     if (items.length === 0) {
       return;
     }
@@ -169,11 +262,12 @@ export function VirtualList<T>({
     }
 
     setSelectedIndex(targetIndex);
-  };
+  }, [items.length, enableWrapAround]);
 
   // Mouse scroll handler with acceleration (TUI-032: uses scrollTo in scroll mode)
   // Scroll faster when scrolling rapidly, slower for precise positioning
-  const handleScroll = (direction: 'up' | 'down'): void => {
+  // OPTIMIZATION: useCallback for stable reference
+  const handleScroll = useCallback((direction: 'up' | 'down'): void => {
     const now = Date.now();
     const timeDelta = now - lastScrollTime.current;
 
@@ -187,23 +281,16 @@ export function VirtualList<T>({
 
     lastScrollTime.current = now;
     const scrollAmount = scrollVelocity.current;
+    const delta = direction === 'down' ? scrollAmount : -scrollAmount;
 
     if (selectionMode === 'scroll') {
       // In scroll mode, directly adjust scrollOffset (TUI-032)
-      if (direction === 'down') {
-        scrollTo(scrollOffset + scrollAmount);
-      } else if (direction === 'up') {
-        scrollTo(scrollOffset - scrollAmount);
-      }
+      scrollTo(scrollOffset + delta);
     } else {
       // In item mode, navigate through items (original behavior)
-      if (direction === 'down') {
-        navigateTo(selectedIndex + scrollAmount);
-      } else if (direction === 'up') {
-        navigateTo(selectedIndex - scrollAmount);
-      }
+      navigateTo(selectedIndex + delta);
     }
-  };
+  }, [scrollOffset, selectedIndex, selectionMode, scrollTo, navigateTo]);
 
   // Mouse scroll handling - respects isFocused to only scroll the focused list
   useInput(
@@ -323,41 +410,6 @@ export function VirtualList<T>({
     { isActive: isFocused }
   );
 
-  // Render scrollbar
-  const renderScrollbar = (): React.ReactNode => {
-    if (!showScrollbar || items.length <= visibleHeight) {
-      return null;
-    }
-
-    const scrollbarHeight = visibleHeight;
-    const thumbHeight = Math.max(
-      1,
-      Math.floor((visibleHeight / items.length) * scrollbarHeight)
-    );
-    const thumbPosition = Math.floor(
-      (scrollOffset / items.length) * scrollbarHeight
-    );
-
-    const scrollbarChars: string[] = [];
-    for (let i = 0; i < scrollbarHeight; i++) {
-      if (i >= thumbPosition && i < thumbPosition + thumbHeight) {
-        scrollbarChars.push(SCROLLBAR_CHARS.square);
-      } else {
-        scrollbarChars.push(SCROLLBAR_CHARS.line);
-      }
-    }
-
-    return (
-      <Box flexDirection="column" marginLeft={1}>
-        {scrollbarChars.map((char, i) => (
-          <Text key={i} dimColor>
-            {char}
-          </Text>
-        ))}
-      </Box>
-    );
-  };
-
   if (items.length === 0) {
     return (
       <Box ref={containerRef} flexGrow={1} flexDirection="column">
@@ -380,7 +432,13 @@ export function VirtualList<T>({
           );
         })}
       </Box>
-      {renderScrollbar()}
+      {showScrollbar && (
+        <Scrollbar 
+          itemCount={items.length} 
+          visibleHeight={visibleHeight} 
+          scrollOffset={scrollOffset} 
+        />
+      )}
     </Box>
   );
 }
