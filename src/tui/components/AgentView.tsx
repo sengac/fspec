@@ -1534,9 +1534,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           '@sengac/codelet-napi'
         );
         const project = currentProjectRef.current;
-        // Use first message as session name (truncated to 50 chars)
+        // Use first message as session name (truncated to 500 chars to allow wrapping in UI)
         const sessionName =
-          userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
+          userMessage.slice(0, 500) + (userMessage.length > 500 ? '...' : '');
 
         // TUI-034: Use full model path if available, fallback to provider
         const modelPath = currentModel
@@ -3918,6 +3918,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // Provider selector overlay (full-screen overlay)
   if (showProviderSelector) {
+    // Calculate available width for provider text (terminal width minus border, padding)
+    const providerTextWidth = terminalWidth - 2 - 4; // 2 for border, 4 for padding
     return (
       <Box
         position="absolute"
@@ -3945,12 +3947,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               </Text>
             </Box>
             {availableProviders.map((provider, idx) => (
-              <Box key={provider}>
+              <Box key={provider} width={providerTextWidth}>
                 <Text
                   backgroundColor={
                     idx === selectedProviderIndex ? 'cyan' : undefined
                   }
                   color={idx === selectedProviderIndex ? 'black' : 'white'}
+                  wrap="truncate"
                 >
                   {idx === selectedProviderIndex ? '> ' : '  '}
                   {provider}
@@ -3969,6 +3972,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // TUI-034: Model selector overlay (hierarchical with collapsible sections)
   if (showModelSelector) {
+    // Calculate available width for model text (terminal width minus padding and scrollbar)
+    const modelTextWidth = terminalWidth - 4 - 3; // 4 for padding (2 each side), 3 for scrollbar margin
     return (
       <Box
         position="absolute"
@@ -4023,12 +4028,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                         selectedModelIdx === -1;
                       const sectionIcon = item.isExpanded ? '▼' : '▶';
                       return (
-                        <Box key={`section-${item.section.providerId}`}>
+                        <Box key={`section-${item.section.providerId}`} width={modelTextWidth}>
                           <Text
                             backgroundColor={
                               isSectionSelected ? 'cyan' : undefined
                             }
                             color={isSectionSelected ? 'black' : 'white'}
+                            wrap="truncate"
                           >
                             {isSectionSelected ? '> ' : '  '}
                             {sectionIcon} [{item.section.providerId}] (
@@ -4044,12 +4050,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                         currentModel?.apiModelId === item.model.id;
                       const modelId = extractModelIdForRegistry(item.model.id);
                       return (
-                        <Box key={`model-${item.model.id}`}>
+                        <Box key={`model-${item.model.id}`} width={modelTextWidth}>
                           <Text
                             backgroundColor={
                               isModelSelected ? 'cyan' : undefined
                             }
                             color={isModelSelected ? 'black' : 'white'}
+                            wrap="truncate"
                           >
                             {isModelSelected ? '  > ' : '    '}
                             {modelId} ({item.model.name})
@@ -4127,6 +4134,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // CONFIG-004: Settings tab overlay (provider API key management)
   if (showSettingsTab) {
+    // Calculate available width for settings text (terminal width minus padding and scrollbar)
+    const settingsTextWidth = terminalWidth - 4 - 3; // 4 for padding (2 each side), 3 for scrollbar margin
     return (
       <Box
         position="absolute"
@@ -4189,27 +4198,28 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                         flexDirection="column"
                         marginBottom={0}
                       >
-                        <Box>
+                        <Box width={settingsTextWidth}>
                           <Text
                             backgroundColor={
                               isSelected && !isEditing ? 'yellow' : undefined
                             }
                             color={isSelected && !isEditing ? 'black' : 'white'}
+                            wrap="truncate"
                           >
                             {isSelected ? '> ' : '  '}
                             {registryEntry?.name || providerId}
+                            {status?.hasKey ? (
+                              <Text color="green"> ✓ {status.maskedKey}</Text>
+                            ) : (
+                              <Text color="gray"> (not configured)</Text>
+                            )}
+                            {testResult && (
+                              <Text color={testResult.success ? 'green' : 'red'}>
+                                {' '}
+                                {testResult.message}
+                              </Text>
+                            )}
                           </Text>
-                          {status?.hasKey ? (
-                            <Text color="green"> ✓ {status.maskedKey}</Text>
-                          ) : (
-                            <Text color="gray"> (not configured)</Text>
-                          )}
-                          {testResult && (
-                            <Text color={testResult.success ? 'green' : 'red'}>
-                              {' '}
-                              {testResult.message}
-                            </Text>
-                          )}
                         </Box>
 
                         {/* Editing input */}
@@ -4271,6 +4281,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // NAPI-006: Search mode overlay (Ctrl+R history search)
   if (isSearchMode) {
+    // Calculate available width for search text (terminal width minus border, padding, scrollbar)
+    const searchTextWidth = terminalWidth - 2 - 4 - 3; // 2 for border, 4 for padding, 3 for scrollbar margin
     return (
       <Box
         position="absolute"
@@ -4298,15 +4310,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               </Box>
             )}
             {searchResults.slice(0, 10).map((entry, idx) => (
-              <Box key={`${entry.sessionId}-${entry.timestamp}`}>
+              <Box key={`${entry.sessionId}-${entry.timestamp}`} width={searchTextWidth}>
                 <Text
                   backgroundColor={
                     idx === searchResultIndex ? 'magenta' : undefined
                   }
                   color={idx === searchResultIndex ? 'black' : 'white'}
+                  wrap="truncate"
                 >
                   {idx === searchResultIndex ? '> ' : '  '}
-                  {entry.display.slice(0, terminalWidth - 10)}
+                  {entry.display}
                 </Text>
               </Box>
             ))}
@@ -4351,7 +4364,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               )}
             </Box>
             {availableSessions.length === 0 && (
-              <Box>
+              <Box flexGrow={1}>
                 <Text dimColor>No sessions found for this project</Text>
               </Box>
             )}
@@ -4363,31 +4376,38 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                     resumeScrollOffset,
                     resumeScrollOffset + resumeVisibleHeight
                   )
-                  .map((session, visibleIdx) => {
+                  .flatMap((session, visibleIdx) => {
                     const actualIdx = resumeScrollOffset + visibleIdx;
                     const isSelected = actualIdx === resumeSessionIndex;
                     const updatedAt = new Date(session.updatedAt);
                     const timeAgo = formatTimeAgo(updatedAt);
                     const provider = session.provider || 'unknown';
-                    return (
-                      <Box key={session.id} flexDirection="column">
-                        <Text
-                          backgroundColor={isSelected ? 'blue' : undefined}
-                          color={isSelected ? 'black' : 'white'}
-                        >
-                          {isSelected ? '> ' : '  '}
-                          {session.name}
-                        </Text>
-                        <Text
-                          backgroundColor={isSelected ? 'blue' : undefined}
-                          color={isSelected ? 'black' : 'gray'}
-                          dimColor={!isSelected}
-                        >
-                          {'    '}
-                          {session.messageCount} messages | {provider} | {timeAgo}
-                        </Text>
-                      </Box>
-                    );
+                    // Return two separate row items for each session (name line and detail line)
+                    return [
+                      <Box key={`${session.id}-name`}>
+                        <Box flexGrow={1}>
+                          <Text
+                            backgroundColor={isSelected ? 'blue' : undefined}
+                            color={isSelected ? 'black' : 'white'}
+                          >
+                            {isSelected ? '> ' : '  '}
+                            {session.name}
+                          </Text>
+                        </Box>
+                      </Box>,
+                      <Box key={`${session.id}-detail`}>
+                        <Box flexGrow={1}>
+                          <Text
+                            backgroundColor={isSelected ? 'blue' : undefined}
+                            color={isSelected ? 'black' : 'gray'}
+                            dimColor={!isSelected}
+                          >
+                            {'    '}
+                            {session.messageCount} messages | {provider} | {timeAgo}
+                          </Text>
+                        </Box>
+                      </Box>,
+                    ];
                   })}
               </Box>
               {/* Scrollbar - each session is 2 lines, so scrollbar needs 2x height */}
