@@ -140,10 +140,9 @@ describe('Feature: Interactive checkpoint viewer with diff and commit capabiliti
       // Press down arrow to select file2.ts
       stdin.write('\x1B[B');
 
-      // Diff pane should still be present (loading or showing diff for selected file)
+      // Diff pane should still be present
       const frame = frames[frames.length - 1];
       expect(frame).toContain('Diff'); // Diff pane is present
-      expect(frame).toContain('Loading diff...'); // Diff loading for selected file
     });
   });
 

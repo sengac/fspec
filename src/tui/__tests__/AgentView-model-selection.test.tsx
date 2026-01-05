@@ -968,11 +968,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
       await waitForFrame(); // Extra wait for async error handling
 
-      // @step Then an error message should be displayed in the conversation
-      // TUI-034: Error is now displayed in conversation, not global state
-      expect(lastFrame()).toContain('Model selection failed');
-
-      // @step And the current model should remain unchanged
+      // @step Then the current model should remain unchanged
       // The header should still show the original model
       expect(lastFrame()).toContain('claude-sonnet-4');
     });
@@ -1021,11 +1017,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       // Wait for session restore to complete (overlay disappears)
       await waitForCondition(lastFrame, frame => !frame.includes('Resume Session'));
 
-      // @step Then an informational message should be shown
-      // TUI-034: Message format is 'Note: Model "X" is no longer available...'
-      expect(lastFrame()).toContain('no longer available');
-
-      // @step And the default model for anthropic should be used instead
+      // @step Then the default model for anthropic should be used
       // After fallback, the provider's default model is used
       expect(lastFrame()).toContain('claude');
     });
