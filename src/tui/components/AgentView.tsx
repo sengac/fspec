@@ -23,6 +23,7 @@ import React, {
   useMemo,
   useDeferredValue,
 } from 'react';
+import fs from 'fs';
 import { Box, Text, useInput, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { MultiLineInput } from './MultiLineInput';
@@ -530,26 +531,46 @@ const formatDiffForDisplay = (
 };
 
 /**
- * Calculate the starting line number of old_string in a file
- * Returns 1 if file can't be read or old_string not found
+ * Calculate the starting line number of an edit in a file.
+ * 
+ * Since the edit has already been applied by the time the TUI receives the event,
+ * we search for new_string (which is now in the file) rather than old_string.
+ * 
+ * Returns 1 if file can't be read or string not found.
  */
-const calculateStartLine = (filePath: string | undefined, oldString: string | undefined): number => {
-  if (!filePath || !oldString) return 1;
+const calculateStartLine = (
+  filePath: string | undefined,
+  oldString: string | undefined,
+  newString: string | undefined
+): number => {
+  if (!filePath) return 1;
   
   try {
-    // Use synchronous fs for simplicity in render context
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const fs = require('fs');
     const fileContent = fs.readFileSync(filePath, 'utf-8');
-    const idx = fileContent.indexOf(oldString);
-    if (idx === -1) return 1;
     
-    // Count newlines before the match to get line number
-    const beforeMatch = fileContent.substring(0, idx);
-    const lineNumber = (beforeMatch.match(/\n/g) || []).length + 1;
-    return lineNumber;
+    // The edit has already been applied, so search for new_string first
+    if (newString) {
+      const idx = fileContent.indexOf(newString);
+      if (idx !== -1) {
+        const beforeMatch = fileContent.substring(0, idx);
+        const lineNumber = (beforeMatch.match(/\n/g) || []).length + 1;
+        return lineNumber;
+      }
+    }
+    
+    // Fallback: try old_string (in case edit hasn't been applied yet)
+    if (oldString) {
+      const idx = fileContent.indexOf(oldString);
+      if (idx !== -1) {
+        const beforeMatch = fileContent.substring(0, idx);
+        const lineNumber = (beforeMatch.match(/\n/g) || []).length + 1;
+        return lineNumber;
+      }
+    }
+    
+    return 1;
   } catch {
-    return 1; // Default to 1 if file can't be read
+    return 1;
   }
 };
 
@@ -580,6 +601,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     oldString?: string; // For Edit tool
     newString?: string; // For Edit tool
     content?: string; // For Write tool
+    startLine?: number; // Pre-calculated line number for Edit tool
   }
   const pendingToolDiffsRef = useRef<Map<string, PendingToolDiff>>(new Map());
 
@@ -1826,12 +1848,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 typeof inputObj.old_string === 'string' &&
                 typeof inputObj.new_string === 'string'
               ) {
+                // Calculate start line (edit has already been applied, so we search for new_string)
+                const filePath = typeof inputObj.file_path === 'string' ? inputObj.file_path : undefined;
+                const startLine = calculateStartLine(filePath, inputObj.old_string, inputObj.new_string);
                 pendingToolDiffsRef.current.set(toolCall.id, {
                   toolName: 'Edit',
                   toolCallId: toolCall.id,
-                  filePath: typeof inputObj.file_path === 'string' ? inputObj.file_path : undefined,
+                  filePath,
                   oldString: inputObj.old_string,
                   newString: inputObj.new_string,
+                  startLine,
                 });
                 // Handle both Claude (write) and Gemini (write_file) tool names
               } else if (
@@ -1993,7 +2019,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                   pendingDiff.oldString,
                   pendingDiff.newString
                 );
-                const startLine = calculateStartLine(pendingDiff.filePath, pendingDiff.oldString);
+                // Use pre-calculated startLine (or fallback to 1)
+                const startLine = pendingDiff.startLine ?? 1;
                 toolResultContent = formatDiffForDisplay(diffLines, DIFF_COLLAPSED_LINES, startLine);
               } else if (
                 pendingDiff.toolName === 'Write' &&

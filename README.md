@@ -4,7 +4,7 @@
   <img alt="fspec" src="fspec-logo-light.svg" width="248">
 </picture>
 
-**Stop micromanaging AI. Start shipping tested code.**
+**Stop micromanaging AI. Start shipping tested, reliable code.**
 
 [![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
