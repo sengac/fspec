@@ -107,6 +107,10 @@ interface VirtualListProps<T> {
   getIsSelected?: (index: number, selectedIndex: number, items: T[]) => boolean;
   // TUI-043: Ref to expose selected index to parent component (for /expand command)
   selectionRef?: React.MutableRefObject<{ selectedIndex: number }>;
+  // TUI-044: Get the visible range for a selection (for turn-based selection where top/bottom separators need to be visible)
+  // Returns [firstIndex, lastIndex] of lines that should all be visible when this item is selected
+  // If not provided, assumes single item selection (visible range = [selectedIndex, selectedIndex])
+  getVisibleRange?: (selectedIndex: number, items: T[]) => [number, number];
 }
 
 export function VirtualList<T>({
@@ -126,6 +130,7 @@ export function VirtualList<T>({
   getNextIndex,
   getIsSelected,
   selectionRef,
+  getVisibleRange,
 }: VirtualListProps<T>): React.ReactElement {
   // Enable mouse tracking mode for button events only (not mouse movement)
   // OPTIMIZATION: Only enable when focused to reduce overhead
@@ -260,15 +265,33 @@ export function VirtualList<T>({
 
   // Adjust scroll offset to keep selected item visible (TUI-032: only in item mode)
   // In scroll mode, selection doesn't drive scrolling - viewport scrolls independently
+  // TUI-044: Use getVisibleRange to determine the full range that needs to be visible
   useEffect(() => {
     if (selectionMode === 'item') {
-      if (selectedIndex < scrollOffset) {
-        setScrollOffset(selectedIndex);
-      } else if (selectedIndex >= scrollOffset + visibleHeight) {
-        setScrollOffset(selectedIndex - visibleHeight + 1);
+      // Get the range that needs to be visible (for turn-based selection, includes separator lines)
+      const [rangeStart, rangeEnd] = getVisibleRange 
+        ? getVisibleRange(selectedIndex, items) 
+        : [selectedIndex, selectedIndex];
+      
+      // Check if range start is above viewport
+      if (rangeStart < scrollOffset) {
+        setScrollOffset(rangeStart);
+      } 
+      // Check if range end is below viewport
+      else if (rangeEnd >= scrollOffset + visibleHeight) {
+        // Scroll so that rangeEnd is at the bottom of the viewport
+        // But ensure rangeStart is still visible if the range fits in viewport
+        const rangeSize = rangeEnd - rangeStart + 1;
+        if (rangeSize <= visibleHeight) {
+          // Range fits in viewport - scroll to show entire range
+          setScrollOffset(rangeEnd - visibleHeight + 1);
+        } else {
+          // Range is larger than viewport - show rangeStart at top
+          setScrollOffset(rangeStart);
+        }
       }
     }
-  }, [selectedIndex, scrollOffset, visibleHeight, selectionMode]);
+  }, [selectedIndex, scrollOffset, visibleHeight, selectionMode, getVisibleRange, items]);
 
   // Call onFocus when selection changes (TUI-032: only in item mode)
   // In scroll mode, no item is ever focused so onFocus is never called

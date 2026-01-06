@@ -5021,6 +5021,41 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             if (items.length === 0) return false;
             return items[index]?.messageIndex === items[selectedIndex]?.messageIndex;
           } : undefined}
+          // TUI-044: Get visible range for turn-based selection (includes separator lines above and below)
+          getVisibleRange={isTurnSelectMode ? (selectedIndex, items) => {
+            if (items.length === 0) return [0, 0];
+            const selectedMessageIndex = items[selectedIndex]?.messageIndex;
+            if (selectedMessageIndex === undefined) return [selectedIndex, selectedIndex];
+            
+            // Find the first line of this turn (skip separator from previous turn)
+            let rangeStart = selectedIndex;
+            for (let i = selectedIndex - 1; i >= 0; i--) {
+              if (items[i].messageIndex === selectedMessageIndex) {
+                rangeStart = i;
+              } else {
+                // Check if previous line is a separator that belongs to this turn's "top bar"
+                // The separator before this turn has a different messageIndex but we need to include it
+                // Actually, separators belong to the turn BEFORE them (the turn that just ended)
+                // So we need to find the separator that precedes this turn
+                if (items[i].isSeparator) {
+                  rangeStart = i; // Include the separator as the top bar
+                }
+                break;
+              }
+            }
+            
+            // Find the last line of this turn (including its separator)
+            let rangeEnd = selectedIndex;
+            for (let i = selectedIndex + 1; i < items.length; i++) {
+              if (items[i].messageIndex === selectedMessageIndex) {
+                rangeEnd = i;
+              } else {
+                break;
+              }
+            }
+            
+            return [rangeStart, rangeEnd];
+          } : undefined}
           // TUI-043: Expose selection state to parent for /expand command
           selectionRef={virtualListSelectionRef}
         />
