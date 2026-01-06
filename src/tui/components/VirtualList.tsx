@@ -143,6 +143,9 @@ export function VirtualList<T>({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
   const { height: terminalHeight } = useTerminalSize();
+  
+  // Track previous selectionMode to detect transitions
+  const prevSelectionModeRef = useRef(selectionMode);
 
   // Track selected group ID to preserve selection when content changes
   const selectedGroupIdRef = useRef<string | number | null>(null);
@@ -223,6 +226,19 @@ export function VirtualList<T>({
       setSelectedIndex(Math.max(0, items.length - 1));
     }
   }, [items.length, selectedIndex]);
+
+  // Select last item when transitioning from scroll mode to item mode (with scrollToEnd)
+  // This ensures the last turn is selected when entering turn selection mode
+  // Note: Don't set scrollOffset here - the scroll adjustment effect (below) will
+  // properly position the viewport using getVisibleRange which accounts for groupPaddingBefore
+  useEffect(() => {
+    const wasScrollMode = prevSelectionModeRef.current === 'scroll';
+    prevSelectionModeRef.current = selectionMode;
+    
+    if (wasScrollMode && selectionMode === 'item' && scrollToEnd && items.length > 0) {
+      setSelectedIndex(items.length - 1);
+    }
+  }, [selectionMode, scrollToEnd, items.length]);
 
   const maxScrollOffset = useMemo(
     () => Math.max(0, items.length - visibleHeight),

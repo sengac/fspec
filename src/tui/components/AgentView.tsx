@@ -358,7 +358,7 @@ const formatCollapsedOutput = (
   }
   const visible = lines.slice(0, visibleLines);
   const remaining = lines.length - visibleLines;
-  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (use /select and /expand)`;
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (use Tab and /expand)`;
   return formatWithTreeConnectors(collapsedContent);
 };
 
@@ -471,7 +471,7 @@ const formatDiffForDisplay = (
       return `${lineNum}   ${restOfLine}`;
     });
     if (diffLines.length > visibleLines) {
-      formattedLines.push(`... +${diffLines.length - visibleLines} lines (use /select and /expand)`);
+      formattedLines.push(`... +${diffLines.length - visibleLines} lines (use Tab and /expand)`);
     }
     return formatWithTreeConnectors(formattedLines.join('\n'));
   }
@@ -535,7 +535,7 @@ const formatDiffForDisplay = (
 
   const visible = outputLines.slice(0, visibleLines);
   const remaining = outputLines.length - visibleLines;
-  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (use /select and /expand)`;
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (use Tab and /expand)`;
   return formatWithTreeConnectors(collapsedContent);
 };
 
@@ -1213,18 +1213,35 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // Handle sending a prompt
   const handleSubmit = useCallback(async () => {
-    // TUI-042: Handle /select command - toggle turn selection mode (doesn't require session)
     const userMessage = inputValue.trim();
-    if (userMessage === '/select') {
+    
+    // TUI-034: Handle /model command - open model selector view (doesn't require session)
+    if (userMessage === '/model') {
       setInputValue('');
-      const newMode = !isTurnSelectMode;
-      setIsTurnSelectMode(newMode);
-      // TUI-043: Clear expanded state when disabling turn selection mode
-      if (!newMode) {
-        setExpandedMessageIndices(new Set());
+      if (providerSections.length > 0) {
+        setShowModelSelector(true);
+        // Find current section and expand it
+        const currentSectionIdx = providerSections.findIndex(
+          s => s.providerId === currentModel?.providerId
+        );
+        setSelectedSectionIdx(currentSectionIdx >= 0 ? currentSectionIdx : 0);
+        setSelectedModelIdx(-1); // Start on section header
+        // Expand current provider's section
+        if (currentModel?.providerId) {
+          setExpandedProviders(new Set([currentModel.providerId]));
+        }
       }
-      // Note: VirtualList will auto-select last item via scrollToEnd when enabled
-      // No message added to conversation - silent mode toggle
+      return;
+    }
+    
+    // CONFIG-004: Handle /provider command - open provider settings view (doesn't require session)
+    if (userMessage === '/provider') {
+      setInputValue('');
+      setShowSettingsTab(true);
+      setSelectedSettingsIdx(0);
+      setEditingProviderId(null);
+      setEditingApiKey('');
+      void loadProviderStatuses();
       return;
     }
 
@@ -2268,7 +2285,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 const msg = updated[i];
                 if (msg.role === 'tool' && msg.content.startsWith('●')) {
                   // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
-                  if (!msg.content.includes('(use /select and /expand)')) {
+                  if (!msg.content.includes('(use Tab and /expand)')) {
                     updated[i] = {
                       ...msg,
                       content: `${msg.content}\nL ⚠ Interrupted`,
@@ -4009,19 +4026,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
 
-      // TUI-034: Tab to toggle model selector (replaces provider-only selector)
-      if (key.tab && providerSections.length > 0) {
-        setShowModelSelector(true);
-        // Find current section and expand it
-        const currentSectionIdx = providerSections.findIndex(
-          s => s.providerId === currentModel?.providerId
-        );
-        setSelectedSectionIdx(currentSectionIdx >= 0 ? currentSectionIdx : 0);
-        setSelectedModelIdx(-1); // Start on section header
-        // Expand current provider's section
-        if (currentModel?.providerId) {
-          setExpandedProviders(new Set([currentModel.providerId]));
+      // TUI-042: Tab to toggle turn selection mode (replaces /select command)
+      if (key.tab) {
+        const newMode = !isTurnSelectMode;
+        setIsTurnSelectMode(newMode);
+        // TUI-043: Clear expanded state when disabling turn selection mode
+        if (!newMode) {
+          setExpandedMessageIndices(new Set());
         }
+        // Note: VirtualList will auto-select last item via scrollToEnd when enabled
         return;
       }
       // Note: TUI-042 turn navigation is handled by VirtualList via getNextIndex/getIsSelected
@@ -4858,12 +4871,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             [{contextFillPercentage}%{compactionReduction !== null ? `: COMPACTED -${compactionReduction}%` : ''}]
           </Text>
         </Box>
-        {/* TUI-034: Tab to switch model */}
-        {providerSections.length > 0 && (
-          <Box marginLeft={2}>
-            <Text dimColor>[Tab]</Text>
-          </Box>
-        )}
       </Box>
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
@@ -5027,7 +5034,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
-            placeholder="Type your message... (Shift+↑↓ history)"
+            placeholder="Shift+↑↓ history | Tab select"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
             maxVisibleLines={5}

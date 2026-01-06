@@ -320,7 +320,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       // @step Then I should return to the empty prompt for new input
       // Input should be empty
-      expect(lastFrame()).toContain('Type your message');
+      expect(lastFrame()).toContain('Shift+↑↓ history | Tab select');
 
       // @step And history is navigated with Shift+Arrow-Up (older) and Shift+Arrow-Down (newer)
       // Verified by the navigation above

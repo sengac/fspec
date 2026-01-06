@@ -1,12 +1,12 @@
 /**
  * Feature: spec/features/toggle-line-selection-mode-with-select-command.feature
  *
- * Tests for /select command that toggles between scroll mode and turn selection mode
+ * Tests for Tab key that toggles between scroll mode and turn selection mode
  * in the AgentView conversation area.
  *
  * TUI-041: Toggle line selection mode with /select command
  * NOTE: TUI-042 replaced line-based selection with turn-based selection.
- *       The /select command now enables turn selection mode.
+ *       Tab key now enables turn selection mode (replacing /select command).
  */
 
 import React from 'react';
@@ -186,7 +186,7 @@ const pressKey = (stdin: { write: (s: string) => void }, key: string): void => {
 const waitForFrame = (ms = 50): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms));
 
-describe('Feature: Toggle line selection mode with /select command', () => {
+describe('Feature: Toggle line selection mode with Tab key', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockState.shouldThrow = false;
@@ -198,7 +198,7 @@ describe('Feature: Toggle line selection mode with /select command', () => {
     vi.restoreAllMocks();
   });
 
-  describe('Scenario: Enable line selection mode with /select command', () => {
+  describe('Scenario: Enable line selection mode with Tab key', () => {
     it('should enable line selection mode and show SELECT indicator', async () => {
       // @step Given AgentView is open in scroll mode
       // AgentView starts in scroll mode by default (isLineSelectMode = false)
@@ -220,10 +220,8 @@ describe('Feature: Toggle line selection mode with /select command', () => {
       expect(frame).toBeDefined();
       expect(frame).not.toContain('[SELECT]');
 
-      // @step When I type /select and press Enter
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r'); // Enter key
+      // @step When I press Tab key
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step Then line selection mode should be enabled
@@ -236,7 +234,7 @@ describe('Feature: Toggle line selection mode with /select command', () => {
     });
   });
 
-  describe('Scenario: Disable line selection mode with /select command', () => {
+  describe('Scenario: Disable line selection mode with Tab key', () => {
     it('should disable line selection mode and hide SELECT indicator', async () => {
       // @step Given AgentView is open in line selection mode
       const { AgentView } = await import('../components/AgentView');
@@ -251,20 +249,16 @@ describe('Feature: Toggle line selection mode with /select command', () => {
       // Wait for async session initialization
       await waitForFrame();
 
-      // First enable line selection mode
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      // First enable line selection mode with Tab
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step And the header bar shows a SELECT indicator
       let frame = lastFrame();
       expect(frame).toContain('[SELECT]');
 
-      // @step When I type /select and press Enter
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      // @step When I press Tab key again
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step Then line selection mode should be disabled
@@ -331,10 +325,8 @@ describe('Feature: Toggle line selection mode with /select command', () => {
         </Box>
       );
 
-      // Enable line selection mode first
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      // Enable line selection mode first with Tab key
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step When I press the down arrow key 3 times
@@ -364,10 +356,8 @@ describe('Feature: Toggle line selection mode with /select command', () => {
         </Box>
       );
 
-      // Enable line selection mode
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      // Enable line selection mode with Tab key
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step And the conversation is scrolled to the bottom
