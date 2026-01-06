@@ -294,6 +294,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ddd` | Domain-Driven Design concepts, Event Storming, bounded contexts, aggregates |
 | `@debugging` | Debugging and diagnostic features for troubleshooting |
 | `@deduplication` | Content deduplication scenarios |
+| `@default` | Scenarios testing default behavior or state |
 | `@destructive-action` | Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.) |
 | `@development-tools` | Development tooling and utilities |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
@@ -320,6 +321,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@github-integration` | Features integrating with GitHub API or URLs |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
+| `@highlighting` | Scenarios testing visual highlighting behavior |
 | `@http-server` | HTTP server implementation and lifecycle management |
 | `@idempotent` | Operations that can be safely repeated without changing results |
 | `@image` | Image content type scenarios |
@@ -391,13 +393,16 @@ Tags for specific technical concerns or architectural patterns.
 | `@rust` | Rust implementation components |
 | `@schema-validation` | JSON Schema validation features and commands |
 | `@scroll-mode` | Scroll mode for virtual list components |
+| `@scrolling` | Scenarios testing viewport scrolling behavior |
 | `@search` | Search and query functionality for finding scenarios, work units, and code patterns |
+| `@selection-mode` | Scenarios testing line selection mode behavior |
 | `@server` | Server-side components and HTTP endpoints |
 | `@session-based` | Session-based interactive command pattern (similar to discover-foundation) |
 | `@setup` | Setup and initialization commands |
 | `@similarity-matching` | Text similarity and matching algorithms |
 | `@slash-command` | Slash command features for Claude Code |
 | `@slash-commands` | Claude Code slash command implementations |
+| `@smart-scroll` | Scenarios testing smart scrolling with sticky scroll behavior |
 | `@sms` | SMS-related functionality |
 | `@stable-indices` | Stable indices system for maintaining unique IDs across soft-delete operations |
 | `@state` | Session state scenarios |
@@ -420,6 +425,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@tokens` | Token tracking scenarios |
 | `@toml` | TOML configuration file parsing and manipulation |
 | `@tool-call` | Tool call content type scenarios |
+| `@tool-messages` | Scenarios testing tool output message handling |
 | `@tool-result` | Tool result content type scenarios |
 | `@tool-use` | Tool use content type scenarios |
 | `@traceability` | Scenario-to-test-to-implementation traceability and coverage tracking |
@@ -427,6 +433,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@tree-sitter` | Tree-sitter library for language-agnostic AST parsing |
 | `@triggers` | CI/CD trigger configuration |
 | `@truncation` | Output truncation and limit handling |
+| `@turn-selection` | Scenarios testing turn-based selection in conversation |
 | `@turn-sequence` | Message turn sequence scenarios |
 | `@turns` | Turn boundary scenarios |
 | `@type-system` | Work unit type system features for categorizing work (story, task, bug) |
@@ -790,7 +797,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-05T05:35:02.265Z_
+_Last updated: 2026-01-05T23:43:16.701Z_
 
 **Update Command**: `fspec tag-stats`
 

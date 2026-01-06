@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-05T11:59:35.713Z"
+    "lastUpdated": "2026-01-06T00:12:41.757Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -60144,6 +60144,312 @@
       ],
       "nextNoteId": 3,
       "updated": "2026-01-05T11:59:35.741Z"
+    },
+    "TUI-041": {
+      "id": "TUI-041",
+      "title": "Toggle line selection mode with /select command",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-05T22:58:25.677Z",
+      "updatedAt": "2026-01-05T23:28:26.944Z",
+      "description": "Add /select command to toggle between scroll-only mode and line selection mode in AgentView conversation area",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-041/TUI-select-command-research.md",
+        "spec/attachments/TUI-041/ast-research-agentview-integration-points.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec AgentView",
+        "action": "toggle between scroll-only mode and line selection mode using /select command",
+        "benefit": "I can either smoothly scroll through conversation content like a chat, or select individual lines to copy or reference them"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-05T22:58:55.037Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-05T23:12:50.484Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-05T23:16:07.421Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-05T23:27:14.516Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-05T23:28:26.945Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The /select command toggles between two modes: scroll mode (default, current behavior) and line selection mode (new)",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:58:59.786Z"
+        },
+        {
+          "id": 1,
+          "text": "In scroll mode (default), arrow keys scroll the viewport without selecting individual lines (isSelected always false)",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:04.394Z"
+        },
+        {
+          "id": 2,
+          "text": "In line selection mode, arrow keys navigate between individual lines with visual selection indicator (cyan highlight)",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:09.020Z"
+        },
+        {
+          "id": 3,
+          "text": "A [SELECT] indicator must appear in the header bar when line selection mode is active (similar to [DEBUG] indicator)",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:19.320Z"
+        },
+        {
+          "id": 4,
+          "text": "The toggle state persists until explicitly toggled again or the AgentView is closed",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:23.587Z"
+        },
+        {
+          "id": 5,
+          "text": "In scroll mode, sticky scroll behavior is preserved - if user scrolls away from bottom, new messages do not auto-scroll (userScrolledAway tracking)",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:09:10.876Z"
+        },
+        {
+          "id": 6,
+          "text": "In line selection mode, new messages always auto-select the last line (no sticky scroll - intentional for quick copy operations)",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:09:15.369Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types '/select' in input, mode toggles to line selection, [SELECT] indicator appears, confirmation message shows 'Line selection mode enabled'",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:28.617Z"
+        },
+        {
+          "id": 1,
+          "text": "User types '/select' again to toggle back, mode returns to scroll-only, [SELECT] indicator disappears, message shows 'Line selection mode disabled'",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:32.961Z"
+        },
+        {
+          "id": 2,
+          "text": "In scroll mode, user presses down arrow 3 times, conversation scrolls down 3 lines, no line is highlighted",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:37.044Z"
+        },
+        {
+          "id": 3,
+          "text": "In line selection mode, user presses down arrow 3 times, selection moves down 3 lines with cyan highlighting",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:41.818Z"
+        },
+        {
+          "id": 4,
+          "text": "In line selection mode with auto-scroll enabled, new message arrives, selection automatically moves to the new last line",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:46.534Z"
+        },
+        {
+          "id": 5,
+          "text": "In scroll mode, user scrolls up to read older messages, new message arrives but view stays at current position (sticky scroll)",
+          "deleted": false,
+          "createdAt": "2026-01-05T22:59:51.670Z"
+        },
+        {
+          "id": 6,
+          "text": "AgentView starts in scroll mode by default (no [SELECT] indicator), matching current behavior",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:00:01.075Z"
+        },
+        {
+          "id": 7,
+          "text": "In scroll mode, user scrolls back to bottom of conversation, auto-scroll re-enables for new messages",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:09:24.980Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add isLineSelectMode boolean state to AgentView (default false). Parse /select command in handleSubmit callback. Pass selectionMode={isLineSelectMode ? 'item' : 'scroll'} to VirtualList. Add [SELECT] cyan indicator in header bar. Update renderItem to show cyan highlight with > prefix when isSelected is true. Only modifies AgentView.tsx - VirtualList already supports both modes via TUI-032.",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:11:41.099Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-05T23:28:26.944Z"
+    },
+    "TUI-042": {
+      "id": "TUI-042",
+      "title": "Select turns instead of lines with /select command",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-05T23:36:21.844Z",
+      "updatedAt": "2026-01-06T00:12:41.787Z",
+      "description": "Change /select command to select entire conversation turns (messages) rather than individual lines, allowing users to navigate between and highlight complete user/assistant exchanges",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-042/turn-selection-implementation-plan.md",
+        "spec/attachments/TUI-042/ast-research-turn-selection-integration.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec AgentView",
+        "action": "select entire conversation turns (messages) with /select command",
+        "benefit": "I can navigate between and copy complete user/assistant exchanges rather than individual lines"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-05T23:37:52.792Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-05T23:47:55.676Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-05T23:56:24.275Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-06T00:01:41.005Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-06T00:12:41.787Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "The /select command toggles turn selection mode - when enabled, arrow keys navigate between entire conversation turns (messages) rather than individual lines",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:37:57.925Z"
+        },
+        {
+          "id": 1,
+          "text": "When a turn is selected, ALL lines belonging to that turn (same messageIndex) are highlighted with cyan color and > prefix",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:03.456Z"
+        },
+        {
+          "id": 2,
+          "text": "A turn consists of a single conversation message (user prompt, assistant response, or tool output) which may span multiple display lines",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:08.054Z"
+        },
+        {
+          "id": 3,
+          "text": "When entering turn selection mode, the last turn in the conversation is automatically selected",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:11.979Z"
+        },
+        {
+          "id": 4,
+          "text": "The viewport automatically scrolls to show the first line of the selected turn when navigating",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:16.378Z"
+        },
+        {
+          "id": 5,
+          "text": "Up arrow on the first turn stays on the first turn (no wrap-around), down arrow on the last turn stays on the last turn",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:22.893Z"
+        },
+        {
+          "id": 6,
+          "text": "The [SELECT] indicator in the header bar shows when turn selection mode is active",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:27.418Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /select, mode enables, [SELECT] indicator appears, last turn (all its lines) is highlighted in cyan with > prefix",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:31.928Z"
+        },
+        {
+          "id": 1,
+          "text": "Conversation has 5 turns, user enables turn selection (last turn selected), presses up arrow twice, third turn is now selected with all its lines highlighted",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:36.950Z"
+        },
+        {
+          "id": 2,
+          "text": "Assistant response spans 15 lines, when that turn is selected, all 15 lines show > prefix and cyan highlighting",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:41.226Z"
+        },
+        {
+          "id": 3,
+          "text": "User types /select again while in turn selection mode, mode disables, [SELECT] indicator disappears, no turns are highlighted",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:45.266Z"
+        },
+        {
+          "id": 4,
+          "text": "First turn is selected, user presses up arrow, selection stays on first turn (does not wrap to last turn)",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:49.364Z"
+        },
+        {
+          "id": 5,
+          "text": "Turn is scrolled out of view, user navigates to it with arrow keys, viewport scrolls to show the start of that turn",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:54.311Z"
+        },
+        {
+          "id": 6,
+          "text": "AgentView opens, no [SELECT] indicator visible, arrow keys scroll the viewport (default scroll mode)",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:38:59.094Z"
+        },
+        {
+          "id": 7,
+          "text": "Tool output message appears (e.g., 'Turn selection mode enabled'), it becomes its own selectable turn separate from user/assistant messages",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:39:03.762Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Leverage existing messageIndex field in ConversationLine to identify turns. Add selectedTurnIndex state and turnBoundaries memo. Use VirtualList in scroll mode when turn selection is active, handle turn navigation at AgentView level with useInput. Add scrollToIndex prop to VirtualList for programmatic scrolling to selected turn. Modify renderItem to highlight all lines where line.messageIndex === selectedTurnIndex.",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:39:15.734Z"
+        },
+        {
+          "id": 1,
+          "text": "This REPLACES TUI-041's line-based selection with turn-based selection. Same /select command, upgraded semantics. Files to modify: AgentView.tsx (state, navigation, renderItem) and VirtualList.tsx (add scrollToIndex prop).",
+          "deleted": false,
+          "createdAt": "2026-01-05T23:41:40.025Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 5,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-06T00:12:41.787Z"
     }
   },
   "states": {
@@ -60217,6 +60523,8 @@
       "TUI-038"
     ],
     "done": [
+      "TUI-042",
+      "TUI-041",
       "TUI-040",
       "TUI-039",
       "TUI-037",
@@ -60677,7 +60985,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 40,
+    "TUI": 42,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

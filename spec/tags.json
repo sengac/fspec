@@ -1078,6 +1078,10 @@
           "description": "Content deduplication scenarios"
         },
         {
+          "name": "@default",
+          "description": "Scenarios testing default behavior or state"
+        },
+        {
           "name": "@destructive-action",
           "description": "Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.)"
         },
@@ -1180,6 +1184,10 @@
         {
           "name": "@guidance",
           "description": "Features that provide AI guidance/prompts rather than code implementation"
+        },
+        {
+          "name": "@highlighting",
+          "description": "Scenarios testing visual highlighting behavior"
         },
         {
           "name": "@http-server",
@@ -1466,8 +1474,16 @@
           "description": "Scroll mode for virtual list components"
         },
         {
+          "name": "@scrolling",
+          "description": "Scenarios testing viewport scrolling behavior"
+        },
+        {
           "name": "@search",
           "description": "Search and query functionality for finding scenarios, work units, and code patterns"
+        },
+        {
+          "name": "@selection-mode",
+          "description": "Scenarios testing line selection mode behavior"
         },
         {
           "name": "@server",
@@ -1492,6 +1508,10 @@
         {
           "name": "@slash-commands",
           "description": "Claude Code slash command implementations"
+        },
+        {
+          "name": "@smart-scroll",
+          "description": "Scenarios testing smart scrolling with sticky scroll behavior"
         },
         {
           "name": "@sms",
@@ -1582,6 +1602,10 @@
           "description": "Tool call content type scenarios"
         },
         {
+          "name": "@tool-messages",
+          "description": "Scenarios testing tool output message handling"
+        },
+        {
           "name": "@tool-result",
           "description": "Tool result content type scenarios"
         },
@@ -1608,6 +1632,10 @@
         {
           "name": "@truncation",
           "description": "Output truncation and limit handling"
+        },
+        {
+          "name": "@turn-selection",
+          "description": "Scenarios testing turn-based selection in conversation"
         },
         {
           "name": "@turn-sequence",
@@ -2194,7 +2222,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-05T05:35:02.265Z",
+    "lastUpdated": "2026-01-05T23:43:16.701Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
