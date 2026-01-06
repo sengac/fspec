@@ -296,6 +296,7 @@ interface ConversationLine {
   role: 'user' | 'assistant' | 'tool';
   content: string;
   messageIndex: number;
+  isSeparator?: boolean; // TUI-042: Empty line used as turn separator
 }
 
 /**
@@ -591,6 +592,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const [showProviderSelector, setShowProviderSelector] = useState(false);
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
   const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021
+  const [isTurnSelectMode, setIsTurnSelectMode] = useState(false); // TUI-042: Turn selection mode toggle (replaces TUI-041 line selection)
   const sessionRef = useRef<CodeletSessionType | null>(null);
 
   // TUI-038: Store pending Edit/Write tool inputs for diff display
@@ -1186,9 +1188,28 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // Handle sending a prompt
   const handleSubmit = useCallback(async () => {
-    if (!sessionRef.current || !inputValue.trim() || isLoading) return;
-
+    // TUI-042: Handle /select command - toggle turn selection mode (doesn't require session)
     const userMessage = inputValue.trim();
+    if (userMessage === '/select') {
+      setInputValue('');
+      const newMode = !isTurnSelectMode;
+      setIsTurnSelectMode(newMode);
+      // Note: VirtualList will auto-select last item via scrollToEnd when enabled
+      setConversation(prev => [
+        ...prev,
+        {
+          role: 'tool',
+          content: `Turn selection mode ${newMode ? 'enabled' : 'disabled'}. ${
+            newMode
+              ? 'Arrow keys now navigate between conversation turns.'
+              : 'Arrow keys now scroll the viewport.'
+          }`,
+        },
+      ]);
+      return;
+    }
+
+    if (!sessionRef.current || !inputValue.trim() || isLoading) return;
 
     // AGENT-021: Handle /debug command - toggle debug capture mode
     if (userMessage === '/debug') {
@@ -3418,6 +3439,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         if (input.startsWith('[M')) {
           const buttonByte = input.charCodeAt(2);
           // Button codes: 96 = scroll up, 97 = scroll down (xterm encoding)
+          // Note: TUI-042 turn selection scroll is handled by VirtualList via getNextIndex
           if (isResumeMode) {
             if (buttonByte === 96) {
               navigateResumeByDelta(-1);
@@ -3447,6 +3469,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           }
         }
         // Handle parsed mouse events from Ink
+        // Note: TUI-042 turn selection scroll is handled by VirtualList via getNextIndex
         if (key.mouse) {
           if (isResumeMode) {
             if (key.mouse.button === 'wheelUp') {
@@ -3910,6 +3933,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         }
         return;
       }
+      // Note: TUI-042 turn navigation is handled by VirtualList via getNextIndex/getIsSelected
     },
     { isActive: true }
   );
@@ -4023,7 +4047,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     });
 
     // Add empty line after each message for spacing (use space to ensure line renders)
-    lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+    // TUI-042: Mark separator lines for turn selection highlighting
+    lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex, isSeparator: true });
 
     return lines;
   };
@@ -4697,6 +4722,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               [DEBUG]
             </Text>
           )}
+          {/* TUI-042: SELECT indicator when turn selection mode is enabled */}
+          {isTurnSelectMode && (
+            <Text color="cyan" bold>
+              {' '}
+              [SELECT]
+            </Text>
+          )}
           {/* TOOL-010: Thinking level indicator - only show while streaming */}
           {isLoading &&
             detectedThinkingLevel !== null &&
@@ -4736,7 +4768,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       <Box flexGrow={1} flexBasis={0}>
         <VirtualList
           items={conversationLines}
-          renderItem={line => {
+          renderItem={(line, index, isSelected, selectedIndex) => {
             // TUI-038: Check for diff color markers and render with background colors
             const content = line.content;
 
@@ -4748,6 +4780,61 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               // Match: "L  123   content" or "   123   content" (tree connector + line number + spaces + content)
               return /^[L ]?\s*\d+\s{3}/.test(text);
             };
+
+            // TUI-042: Check if this separator line should have selection indicator background
+            // Returns 'top' if before selected turn, 'bottom' if after, or null if not a selection separator
+            const getSelectionSeparatorType = (): 'top' | 'bottom' | null => {
+              if (!line.isSeparator || !isTurnSelectMode) return null;
+              const items = conversationLines;
+              
+              // Get the selected turn's messageIndex
+              const selectedMessageIndex = items[selectedIndex]?.messageIndex;
+              if (selectedMessageIndex === undefined) return null;
+              
+              // Case 1: This separator is AFTER the selected turn (bottom bar)
+              // (separator belongs to the selected turn)
+              if (line.messageIndex === selectedMessageIndex) {
+                return 'bottom';
+              }
+              
+              // Case 2: This separator is BEFORE the selected turn (top bar)
+              // Check if the next non-separator line belongs to the selected turn
+              for (let i = index + 1; i < items.length; i++) {
+                const nextLine = items[i];
+                if (!nextLine.isSeparator) {
+                  // Found the next turn's first content line
+                  if (nextLine.messageIndex === selectedMessageIndex) {
+                    return 'top';
+                  }
+                  break;
+                }
+              }
+              
+              return null;
+            };
+
+            // TUI-042: Render separator lines with dark gray background and arrows when selected
+            const separatorType = getSelectionSeparatorType();
+            if (line.isSeparator && separatorType) {
+              // Full width dark gray background with arrows
+              const arrow = separatorType === 'top' ? '▼' : '▲';
+              const lineWidth = terminalWidth - 4;
+              // Create pattern of arrows with spaces: "▼   ▼   ▼   ▼" or "▲   ▲   ▲   ▲"
+              const arrowSpacing = 4; // Arrow every 4 characters
+              let arrowLine = '';
+              for (let i = 0; i < lineWidth; i++) {
+                if (i % arrowSpacing === 0) {
+                  arrowLine += arrow;
+                } else {
+                  arrowLine += ' ';
+                }
+              }
+              return (
+                <Box flexGrow={1}>
+                  <Text backgroundColor="gray" color="white">{arrowLine}</Text>
+                </Box>
+              );
+            }
 
             if (line.role === 'tool') {
               const rIdx = content.indexOf('[R]');
@@ -4800,10 +4887,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
             // Default rendering for non-diff content
             // Tool output is white (not yellow), user input is green
-            const color = line.role === 'user' ? 'green' : 'white';
+            const baseColor = line.role === 'user' ? 'green' : 'white';
             return (
               <Box flexGrow={1}>
-                <Text color={color}>{content}</Text>
+                <Text color={baseColor}>{content}</Text>
               </Box>
             );
           }}
@@ -4812,7 +4899,54 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           showScrollbar={true}
           isFocused={!showProviderSelector && !showModelSelector && !showSettingsTab && !isResumeMode && !isSearchMode}
           scrollToEnd={true}
-          selectionMode="scroll"
+          selectionMode={isTurnSelectMode ? 'item' : 'scroll'}
+          // TUI-042: Custom navigation for turn-based selection
+          getNextIndex={isTurnSelectMode ? (currentIndex, direction, items) => {
+            if (items.length === 0) return 0;
+            const currentTurn = items[currentIndex]?.messageIndex ?? -1;
+            
+            if (direction === 'up') {
+              // Find first line of previous turn
+              for (let i = currentIndex - 1; i >= 0; i--) {
+                if (items[i].messageIndex !== currentTurn) {
+                  // Found a different turn, now find its first line
+                  const prevTurn = items[i].messageIndex;
+                  for (let j = i; j >= 0; j--) {
+                    if (items[j].messageIndex !== prevTurn) {
+                      return j + 1; // First line of prevTurn
+                    }
+                  }
+                  return 0; // prevTurn starts at beginning
+                }
+              }
+              // Already at first turn, stay at first line
+              for (let i = 0; i < items.length; i++) {
+                if (items[i].messageIndex === currentTurn) {
+                  return i;
+                }
+              }
+              return 0;
+            } else {
+              // Find first line of next turn
+              for (let i = currentIndex + 1; i < items.length; i++) {
+                if (items[i].messageIndex !== currentTurn) {
+                  return i; // First line of next turn
+                }
+              }
+              // Already at last turn, find first line of current turn
+              for (let i = 0; i < items.length; i++) {
+                if (items[i].messageIndex === currentTurn) {
+                  return i;
+                }
+              }
+              return currentIndex;
+            }
+          } : undefined}
+          // TUI-042: Custom selection highlighting for turn-based selection
+          getIsSelected={isTurnSelectMode ? (index, selectedIndex, items) => {
+            if (items.length === 0) return false;
+            return items[index]?.messageIndex === items[selectedIndex]?.messageIndex;
+          } : undefined}
         />
       </Box>
 

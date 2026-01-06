@@ -87,7 +87,7 @@ const Scrollbar = memo(function Scrollbar({
 
 interface VirtualListProps<T> {
   items: T[];
-  renderItem: (item: T, index: number, isSelected: boolean) => React.ReactNode;
+  renderItem: (item: T, index: number, isSelected: boolean, selectedIndex: number) => React.ReactNode;
   onSelect?: (item: T, index: number) => void;
   onFocus?: (item: T, index: number) => void;
   keyExtractor?: (item: T, index: number) => string;
@@ -99,6 +99,12 @@ interface VirtualListProps<T> {
   scrollToEnd?: boolean; // Auto-scroll to end when items change (default: false)
   selectionMode?: 'item' | 'scroll'; // 'item' = individual item selection (default), 'scroll' = pure viewport scrolling (TUI-032)
   fixedHeight?: number; // Optional fixed height to skip measureElement overhead
+  // TUI-042: Custom navigation logic - returns new index when navigating
+  // If not provided, uses ±1 (single item navigation)
+  getNextIndex?: (currentIndex: number, direction: 'up' | 'down', items: T[]) => number;
+  // TUI-042: Custom selection check - returns true if item at index should be highlighted
+  // If not provided, uses index === selectedIndex (single item selection)
+  getIsSelected?: (index: number, selectedIndex: number, items: T[]) => boolean;
 }
 
 export function VirtualList<T>({
@@ -115,6 +121,8 @@ export function VirtualList<T>({
   scrollToEnd = false,
   selectionMode = 'item',
   fixedHeight,
+  getNextIndex,
+  getIsSelected,
 }: VirtualListProps<T>): React.ReactElement {
   // Enable mouse tracking mode for button events only (not mouse movement)
   // OPTIMIZATION: Only enable when focused to reduce overhead
@@ -327,11 +335,18 @@ export function VirtualList<T>({
           }
         }
       } else {
-        // In item mode, navigate through items (original behavior)
-        navigateTo(selectedIndex + delta);
+        // In item mode, navigate through items
+        // TUI-042: Use custom navigation if provided (e.g., for turn-based selection)
+        if (getNextIndex) {
+          const newIndex = getNextIndex(selectedIndex, direction, items);
+          navigateTo(newIndex);
+        } else {
+          // Default: move by delta (with acceleration)
+          navigateTo(selectedIndex + delta);
+        }
       }
     },
-    [scrollOffset, selectedIndex, selectionMode, maxScrollOffset, navigateTo, scrollToEnd]
+    [scrollOffset, selectedIndex, selectionMode, maxScrollOffset, navigateTo, scrollToEnd, getNextIndex, items]
   );
 
   // Mouse scroll handling - respects isFocused to only scroll the focused list
@@ -419,6 +434,7 @@ export function VirtualList<T>({
   };
 
   // Item mode navigation handler
+  // TUI-042: Uses getNextIndex for custom navigation (e.g., turn-based selection)
   const handleItemNavigation = (key: {
     upArrow?: boolean;
     downArrow?: boolean;
@@ -429,10 +445,19 @@ export function VirtualList<T>({
     return?: boolean;
   }): void => {
     if (key.upArrow) {
-      navigateTo(selectedIndex - 1);
+      if (getNextIndex) {
+        navigateTo(getNextIndex(selectedIndex, 'up', items));
+      } else {
+        navigateTo(selectedIndex - 1);
+      }
     } else if (key.downArrow) {
-      navigateTo(selectedIndex + 1);
+      if (getNextIndex) {
+        navigateTo(getNextIndex(selectedIndex, 'down', items));
+      } else {
+        navigateTo(selectedIndex + 1);
+      }
     } else if (key.pageUp) {
+      // Page up/down always use line-based navigation for now
       navigateTo(Math.max(0, selectedIndex - visibleHeight));
     } else if (key.pageDown) {
       navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));
@@ -493,11 +518,18 @@ export function VirtualList<T>({
         {visibleItems.map((item, visibleIndex) => {
           const actualIndex = scrollOffset + visibleIndex;
           // In scroll mode, isSelected is always false (TUI-032)
-          const isSelected =
-            selectionMode === 'item' && actualIndex === selectedIndex;
+          // TUI-042: Use custom getIsSelected if provided (e.g., for turn-based selection)
+          let isSelected: boolean;
+          if (selectionMode !== 'item') {
+            isSelected = false;
+          } else if (getIsSelected) {
+            isSelected = getIsSelected(actualIndex, selectedIndex, items);
+          } else {
+            isSelected = actualIndex === selectedIndex;
+          }
           return (
             <Box key={keyExtractor(item, actualIndex)}>
-              {renderItem(item, actualIndex, isSelected)}
+              {renderItem(item, actualIndex, isSelected, selectedIndex)}
             </Box>
           );
         })}

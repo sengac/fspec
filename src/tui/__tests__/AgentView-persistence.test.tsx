@@ -783,7 +783,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledTimes(1);
     });
 
-    it('should truncate long first messages to 50 characters for session name', async () => {
+    it('should truncate long first messages to 500 characters for session name', async () => {
       // @step Given the agent modal is open
       const { persistenceCreateSessionWithProvider } = await import('@sengac/codelet-napi');
       vi.mocked(persistenceCreateSessionWithProvider).mockClear();
@@ -794,17 +794,17 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       await waitForFrame(150);
 
-      // @step When I send a message longer than 50 characters
-      const longMessage = 'This is a very long message that exceeds fifty characters and should be truncated';
+      // @step When I send a message longer than 500 characters
+      const longMessage = 'A'.repeat(600); // 600 characters
       stdin.write(longMessage);
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame(150);
 
-      // @step Then the session name should be truncated to 50 characters with "..."
-      // Note: slice(0, 50) gives exactly 50 chars, then "..." is appended
+      // @step Then the session name should be truncated to 500 characters with "..."
+      // Note: slice(0, 500) gives exactly 500 chars, then "..." is appended
       expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledWith(
-        'This is a very long message that exceeds fifty cha...',
+        'A'.repeat(500) + '...',
         expect.any(String),
         expect.any(String)
       );
