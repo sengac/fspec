@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-06T02:10:30.952Z"
+    "lastUpdated": "2026-01-06T06:39:47.107Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -60606,6 +60606,135 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2026-01-06T02:10:30.983Z"
+    },
+    "TUI-044": {
+      "id": "TUI-044",
+      "title": "Markdown Table Rendering in AI Output",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-06T06:19:01.689Z",
+      "updatedAt": "2026-01-06T06:39:47.138Z",
+      "children": [],
+      "userStory": {
+        "role": "user viewing AI agent output in the TUI",
+        "action": "see markdown tables rendered with proper column alignment",
+        "benefit": "I can read tabular data clearly without misaligned columns"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-06T06:22:13.468Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-06T06:26:10.113Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-06T06:27:16.910Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-06T06:29:29.519Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-06T06:39:47.138Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Table rendering occurs only after the assistant turn is complete (isStreaming: false)",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:18.068Z"
+        },
+        {
+          "id": 1,
+          "text": "Must detect and parse standard GFM markdown tables with pipe delimiters and header separator row",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:24.157Z"
+        },
+        {
+          "id": 2,
+          "text": "Must respect column alignment specifiers (:--- left, :---: center, ---: right)",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:28.668Z"
+        },
+        {
+          "id": 3,
+          "text": "Column widths calculated based on max content width in each column",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:32.627Z"
+        },
+        {
+          "id": 4,
+          "text": "Use the marked library (already a dependency) to parse markdown and extract table tokens",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:37.370Z"
+        },
+        {
+          "id": 5,
+          "text": "Tables rendered with box-drawing characters for borders (┌─┬─┐ │ ├─┼─┤ └─┴─┘)",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:41.831Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Input: '| Name | Age |\\n|---|---|\\n| Alice | 30 |' renders as aligned table with box borders",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:46.132Z"
+        },
+        {
+          "id": 1,
+          "text": "Input: '| Left | Center | Right |\\n|:---|:---:|---:|\\n| A | B | C |' renders with correct alignment in each column",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:50.606Z"
+        },
+        {
+          "id": 2,
+          "text": "Table with varying content widths: column widths adjust to fit longest cell in each column",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:54.554Z"
+        },
+        {
+          "id": 3,
+          "text": "Tables mixed with other text: only table portions get rendered, surrounding text stays as-is",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:22:58.848Z"
+        },
+        {
+          "id": 4,
+          "text": "Table header row rendered in bold",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:23:02.641Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation in AgentView.tsx chunk.type === Done handler - when isStreaming becomes false, apply formatMarkdownTables() to assistant message content",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:25:22.957Z"
+        },
+        {
+          "id": 1,
+          "text": "Create formatMarkdownTables() utility in src/tui/utils/ that uses marked.lexer() to parse content and identify Tokens.Table, then renders with box-drawing characters",
+          "deleted": false,
+          "createdAt": "2026-01-06T06:25:29.612Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "attachments": [
+        "spec/attachments/TUI-044/ast-research-agentview-done-handler.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-06T06:39:47.138Z"
     }
   },
   "states": {
@@ -60679,6 +60808,7 @@
       "TUI-038"
     ],
     "done": [
+      "TUI-044",
       "TUI-043",
       "TUI-042",
       "TUI-041",
@@ -61142,7 +61272,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 43,
+    "TUI": 44,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

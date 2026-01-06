@@ -61,6 +61,7 @@ import {
   type DiffLine,
 } from '../../git/diff-parser';
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
+import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -2218,6 +2219,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             }
           } else if (chunk.type === 'Done') {
             // Mark streaming complete and remove empty trailing assistant messages
+            // TUI-044: Also apply markdown table formatting to completed assistant messages
             setConversation(prev => {
               const updated = [...prev];
               // Remove empty streaming assistant messages at the end
@@ -2230,12 +2232,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 updated.pop();
               }
               // Mark any remaining streaming message as complete
+              // TUI-044: Apply markdown table formatting when marking complete
               const lastAssistantIdx = updated.findLastIndex(
                 m => m.role === 'assistant' && m.isStreaming
               );
               if (lastAssistantIdx >= 0) {
+                const originalContent = updated[lastAssistantIdx].content;
+                const formattedContent = formatMarkdownTables(originalContent);
                 updated[lastAssistantIdx] = {
                   ...updated[lastAssistantIdx],
+                  content: formattedContent,
                   isStreaming: false,
                 };
               }
@@ -3079,9 +3085,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               } else if (content.type === 'tool_use') {
                 // Flush accumulated text first
                 if (textContent) {
+                  // TUI-044: Apply markdown table formatting to restored assistant text
                   restored.push({
                     role: 'assistant',
-                    content: textContent,
+                    content: formatMarkdownTables(textContent),
                     isStreaming: false,
                   });
                   textContent = '';
@@ -3199,9 +3206,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
             // Flush remaining text
             if (textContent) {
+              // TUI-044: Apply markdown table formatting to restored assistant text
               restored.push({
                 role: 'assistant',
-                content: textContent,
+                content: formatMarkdownTables(textContent),
                 isStreaming: false,
               });
             }
@@ -3217,9 +3225,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       // If envelope parsing yielded nothing, fall back to simple messages
       if (restored.length === 0) {
         for (const m of messages) {
+          // TUI-044: Apply markdown table formatting to restored assistant messages
+          const formattedContent = m.role === 'assistant' ? formatMarkdownTables(m.content) : m.content;
           restored.push({
             role: m.role === 'user' ? 'user' : 'assistant',
-            content: m.content,
+            content: formattedContent,
             isStreaming: false,
           });
         }
