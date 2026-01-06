@@ -129,36 +129,69 @@ mod tests {
         assert!(tokens > 0, "Code should have tokens");
     }
 
+    // NOTE: These tests manipulate environment variables and must run serially.
+    // Use `cargo test --package codelet-common -- --test-threads=1` if tests fail intermittently.
+    // The tests save/restore the original env var value to minimize interference.
+
     #[test]
     fn test_max_file_tokens_default() {
+        // Save original value
+        let original = std::env::var("CODELET_MAX_FILE_TOKENS").ok();
         // Clear env var to test default
         std::env::remove_var("CODELET_MAX_FILE_TOKENS");
-        assert_eq!(max_file_tokens(), DEFAULT_MAX_FILE_TOKENS);
+        let result = max_file_tokens();
+        // Restore original value
+        if let Some(val) = original {
+            std::env::set_var("CODELET_MAX_FILE_TOKENS", val);
+        }
+        assert_eq!(result, DEFAULT_MAX_FILE_TOKENS);
     }
 
     #[test]
     fn test_max_file_tokens_custom() {
+        // Save original value
+        let original = std::env::var("CODELET_MAX_FILE_TOKENS").ok();
+        // Set custom value
         std::env::set_var("CODELET_MAX_FILE_TOKENS", "50000");
-        assert_eq!(max_file_tokens(), 50000);
-        std::env::remove_var("CODELET_MAX_FILE_TOKENS");
+        let result = max_file_tokens();
+        // Restore original value
+        match original {
+            Some(val) => std::env::set_var("CODELET_MAX_FILE_TOKENS", val),
+            None => std::env::remove_var("CODELET_MAX_FILE_TOKENS"),
+        }
+        assert_eq!(result, 50000);
     }
 
     #[test]
     fn test_check_token_limit_under() {
+        // Save original value
+        let original = std::env::var("CODELET_MAX_FILE_TOKENS").ok();
+        // Ensure default limit (25000) is used
         std::env::remove_var("CODELET_MAX_FILE_TOKENS");
         let small_text = "Hello, world!";
-        assert!(check_token_limit(small_text).is_none());
+        let result = check_token_limit(small_text);
+        // Restore original value
+        if let Some(val) = original {
+            std::env::set_var("CODELET_MAX_FILE_TOKENS", val);
+        }
+        assert!(result.is_none());
     }
 
     #[test]
     fn test_check_token_limit_over() {
+        // Save original value
+        let original = std::env::var("CODELET_MAX_FILE_TOKENS").ok();
         // Set a very low limit to test
         std::env::set_var("CODELET_MAX_FILE_TOKENS", "1");
         let text = "Hello, world! This is a longer text that will exceed 1 token.";
         let result = check_token_limit(text);
+        // Restore original value
+        match original {
+            Some(val) => std::env::set_var("CODELET_MAX_FILE_TOKENS", val),
+            None => std::env::remove_var("CODELET_MAX_FILE_TOKENS"),
+        }
         assert!(result.is_some());
         let (tokens, limit) = result.unwrap();
         assert!(tokens > limit);
-        std::env::remove_var("CODELET_MAX_FILE_TOKENS");
     }
 }

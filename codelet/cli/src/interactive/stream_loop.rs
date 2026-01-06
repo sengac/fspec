@@ -228,16 +228,54 @@ where
     let request_id = Uuid::new_v4().to_string();
     let api_start_time = Instant::now();
 
-    // CRITICAL: Add user prompt to message history for persistence (CLI-008)
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(prompt)),
-    });
-
     // HOOK-BASED COMPACTION (CTX-002: Optimized compaction trigger)
     let context_window = session.provider_manager().context_window() as u64;
     let max_output_tokens = session.provider_manager().max_output_tokens() as u64;
     // CTX-002: Use usable_context (context_window - output_reservation) instead of 90% threshold
     let threshold = calculate_usable_context(context_window, max_output_tokens);
+
+    // CTX-005: PRE-PROMPT COMPACTION CHECK
+    // Before adding the new prompt, estimate if current context + new prompt would exceed threshold.
+    // This prevents "prompt is too long" API errors when resuming a session at high context fill.
+    // The hook only checks AFTER API responses, but we need to check BEFORE the first API call.
+    let prompt_tokens = count_tokens(prompt) as u64;
+    let current_tokens = session.token_tracker.input_tokens + session.token_tracker.output_tokens;
+    let estimated_total = current_tokens + prompt_tokens;
+
+    if estimated_total > threshold && !session.messages.is_empty() {
+        info!(
+            "[CTX-005] Pre-prompt compaction triggered: estimated {} > threshold {}",
+            estimated_total, threshold
+        );
+        output.emit_status("\n[Context near limit, generating summary...]");
+
+        match execute_compaction(session).await {
+            Ok(metrics) => {
+                output.emit_status(&format!(
+                    "[Context compacted: {}→{} tokens, {:.0}% compression]",
+                    metrics.original_tokens,
+                    metrics.compacted_tokens,
+                    metrics.compression_ratio * 100.0
+                ));
+                output.emit_status("[Continuing with compacted context...]\n");
+
+                // Reset output and cache metrics after compaction
+                session.token_tracker.output_tokens = 0;
+                session.token_tracker.cache_read_input_tokens = None;
+                session.token_tracker.cache_creation_input_tokens = None;
+            }
+            Err(e) => {
+                // Log but continue - the API might still work, or will fail with clear error
+                error!("[CTX-005] Pre-prompt compaction failed: {}", e);
+                output.emit_status(&format!("[Compaction failed: {e}, continuing anyway...]"));
+            }
+        }
+    }
+
+    // CRITICAL: Add user prompt to message history for persistence (CLI-008)
+    session.messages.push(Message::User {
+        content: OneOrMany::one(UserContent::text(prompt)),
+    });
 
     // TUI-033: Helper to emit context fill percentage after token updates
     // PROV-001: Uses ApiTokenUsage.total_context() for consistent calculation
