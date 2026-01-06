@@ -544,6 +544,7 @@ Tags for test-related scenarios and requirements.
 | `@overwrite` | Tests overwrite behavior (file replacement without prompts) |
 | `@prerequisites` | Prerequisite validation scenarios |
 | `@regression` | Regression tests - comprehensive validation of existing functionality |
+| `@removal` | Scenario for removed or deprecated functionality |
 | `@simple-command` | Simple command with minimal options |
 | `@single-message` | Single message edge case scenarios |
 | `@smoke` | Smoke tests - quick validation of critical functionality |
@@ -797,7 +798,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-05T23:43:16.701Z_
+_Last updated: 2026-01-06T07:59:06.898Z_
 
 **Update Command**: `fspec tag-stats`
 

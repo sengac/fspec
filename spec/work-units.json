@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-06T06:39:47.107Z"
+    "lastUpdated": "2026-01-06T08:16:12.839Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -59572,9 +59572,9 @@
       "id": "TUI-038",
       "title": "Diff View for Write/Edit Tool Output",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2026-01-03T11:54:17.480Z",
-      "updatedAt": "2026-01-03T12:11:17.454Z",
+      "updatedAt": "2026-01-06T07:39:25.254Z",
       "description": "Display Write and Edit tool results with colored diff view showing added lines in green and removed lines in red, matching the FileDiffViewer style used for git changes",
       "epic": "interactive-tui-foundation",
       "children": [],
@@ -59594,6 +59594,10 @@
         {
           "state": "validating",
           "timestamp": "2026-01-03T12:11:17.454Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-06T07:39:25.255Z"
         }
       ],
       "userStory": {
@@ -59672,7 +59676,10 @@
       "nextNoteId": 1,
       "attachments": [
         "spec/attachments/TUI-038/ast-research-format-functions.md"
-      ]
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-06T07:39:25.254Z"
     },
     "TUI-039": {
       "id": "TUI-039",
@@ -60735,6 +60742,246 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2026-01-06T06:39:47.138Z"
+    },
+    "TUI-045": {
+      "id": "TUI-045",
+      "title": "Select mode enter key opens full turn modal",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2026-01-06T07:47:49.973Z",
+      "updatedAt": "2026-01-06T08:19:17.450Z",
+      "children": [],
+      "userStory": {
+        "role": "user in select mode navigating turns in AgentView",
+        "action": "press Enter to open the selected turn in a full-screen scrollable modal, and use Esc to close the modal or exit select mode",
+        "benefit": "I can view large turns (with long tool outputs) in their entirety in a dedicated modal view, replacing the inline /expand command"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-06T07:49:02.071Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-06T08:16:19.839Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-06T08:19:17.450Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Pressing Enter in select mode opens the selected turn's full content (fullContent field) in a modal dialog",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:06.087Z"
+        },
+        {
+          "id": 1,
+          "text": "The modal displays the turn content in a scrollable VirtualList (not collapsed/truncated)",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:10.544Z"
+        },
+        {
+          "id": 2,
+          "text": "Pressing Esc while the modal is open closes the modal and returns to select mode",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:14.621Z"
+        },
+        {
+          "id": 3,
+          "text": "Pressing Esc while in select mode (and modal is NOT open) disables select mode",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:19.519Z"
+        },
+        {
+          "id": 4,
+          "text": "The /expand command is removed - Enter key in modal view replaces it entirely",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:23.915Z"
+        },
+        {
+          "id": 5,
+          "text": "The expandedMessageIndices state is removed - no longer needed for inline expansion",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:28.693Z"
+        },
+        {
+          "id": 6,
+          "text": "VirtualList onSelect callback is used to open the modal when Enter is pressed in select mode (no custom Enter key handler needed)",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:07.094Z"
+        },
+        {
+          "id": 7,
+          "text": "Modal state consists of showTurnModal boolean and modalMessageIndex number to track which conversation message is displayed",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:14.091Z"
+        },
+        {
+          "id": 8,
+          "text": "Main VirtualList isFocused must include '&& !showTurnModal' to prevent input capture when modal is open",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:19.884Z"
+        },
+        {
+          "id": 9,
+          "text": "The collapse hint text changes from '(select turn to /expand)' to '(Enter to view full)' in formatCollapsedOutput function",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:24.596Z"
+        },
+        {
+          "id": 10,
+          "text": "Modal VirtualList uses selectionMode='scroll' with scrollToEnd=false to start at top and allow free scrolling",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:30.538Z"
+        },
+        {
+          "id": 11,
+          "text": "Esc key priority order: 1) close modal, 2) disable select mode, 3) interrupt loading, 4) clear input, 5) exit view",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:37.815Z"
+        },
+        {
+          "id": 12,
+          "text": "Diff coloring logic ([R]/[A] markers, context lines) is shared between main view and modal via extracted renderConversationLine function",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:45.903Z"
+        },
+        {
+          "id": 13,
+          "text": "Modal content is prepared by wrapping (fullContent || content) into ConversationLine[] with word-wrapping for terminal width",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:51.275Z"
+        }
+      ],
+      "nextRuleId": 14,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User presses Tab to enter select mode, navigates to an assistant turn with truncated tool output, presses Enter - modal opens showing full untruncated content",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:36.155Z"
+        },
+        {
+          "id": 1,
+          "text": "User has modal open showing a long tool output, presses Esc - modal closes and user is back in select mode with same turn selected",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:40.935Z"
+        },
+        {
+          "id": 2,
+          "text": "User is in select mode with no modal open, presses Esc - select mode is disabled and user returns to normal conversation view",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:45.314Z"
+        },
+        {
+          "id": 3,
+          "text": "User selects a user turn (green 'You:' message), presses Enter - modal shows the full user message content scrollable",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:50.172Z"
+        },
+        {
+          "id": 4,
+          "text": "Modal shows full content with proper diff coloring preserved (red for removed, green for added lines) from Edit tool outputs",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:49:55.047Z"
+        },
+        {
+          "id": 5,
+          "text": "User is NOT in select mode, presses Esc - normal behavior (interrupt/clear/exit) occurs, no select mode toggle",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:56:57.894Z"
+        },
+        {
+          "id": 6,
+          "text": "Modal shows title indicating message role: 'User Message', 'Assistant Response', or 'Tool Output'",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:02.491Z"
+        },
+        {
+          "id": 7,
+          "text": "Modal footer shows navigation hints: '↑↓ Scroll | Esc Close'",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:07.950Z"
+        },
+        {
+          "id": 8,
+          "text": "User selects a short assistant text response (no truncation), presses Enter - modal shows the same content since fullContent is undefined, content field is used",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:13.851Z"
+        },
+        {
+          "id": 9,
+          "text": "Collapsed tool output in main view shows '... +42 lines (Enter to view full)' instead of old /expand hint",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:18.672Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "attachments": [
+        "spec/attachments/TUI-045/TUI-045-select-mode-modal-research.md",
+        "spec/attachments/TUI-045/ast-research-agentview-analysis.md"
+      ],
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Use existing VirtualList onSelect prop rather than custom Enter key handler - VirtualList already calls onSelect on Enter in item mode (line 473-474)",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:25.002Z"
+        },
+        {
+          "id": 1,
+          "text": "Extract renderConversationLine function from inline renderItem to share diff coloring logic between main VirtualList and modal VirtualList",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:30.228Z"
+        },
+        {
+          "id": 2,
+          "text": "Modal positioning: Use Dialog component pattern with position='absolute' width='100%' height='100%' for full-screen overlay",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:35.195Z"
+        },
+        {
+          "id": 3,
+          "text": "Modify existing Esc handler (line 4028-4039) to check showTurnModal and isTurnSelectMode BEFORE existing checks for isLoading and inputValue",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:40.679Z"
+        },
+        {
+          "id": 4,
+          "text": "Remove /expand command handler block (lines 1249-1281) and expandedMessageIndices state (line 605) and its usage in conversationLines useMemo",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:46.678Z"
+        },
+        {
+          "id": 5,
+          "text": "Create modalLines useMemo that wraps (fullContent || content) for modalMessageIndex using similar logic to wrapMessageToLines but without role prefix or separator",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:57:53.994Z"
+        },
+        {
+          "id": 6,
+          "text": "Update formatCollapsedOutput (line 352-364) to change hint from '(select turn to /expand)' to '(Enter to view full)'",
+          "deleted": false,
+          "createdAt": "2026-01-06T07:58:00.976Z"
+        },
+        {
+          "id": 7,
+          "text": "Update main VirtualList isFocused prop to include '&& !showTurnModal' to prevent keyboard capture when modal is open (currently line 5022)",
+          "deleted": false,
+          "createdAt": "2026-01-06T08:02:05.425Z"
+        },
+        {
+          "id": 8,
+          "text": "Modal must have its own useInput handler for Esc key OR main useInput handles it when showTurnModal is true (architectural choice: use main useInput with priority check)",
+          "deleted": false,
+          "createdAt": "2026-01-06T08:02:13.758Z"
+        }
+      ],
+      "nextNoteId": 9,
+      "estimate": 5
     }
   },
   "states": {
@@ -60803,11 +61050,12 @@
       "MODEL-001"
     ],
     "testing": [],
-    "implementing": [],
-    "validating": [
-      "TUI-038"
+    "implementing": [
+      "TUI-045"
     ],
+    "validating": [],
     "done": [
+      "TUI-038",
       "TUI-044",
       "TUI-043",
       "TUI-042",
@@ -61272,7 +61520,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 44,
+    "TUI": 45,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

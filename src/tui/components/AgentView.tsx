@@ -28,6 +28,7 @@ import { Box, Text, useInput, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { MultiLineInput } from './MultiLineInput';
 import { InputTransition } from './InputTransition';
+import { TurnContentModal } from './TurnContentModal';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
@@ -359,7 +360,8 @@ const formatCollapsedOutput = (
   }
   const visible = lines.slice(0, visibleLines);
   const remaining = lines.length - visibleLines;
-  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (select turn to /expand)`;
+  // TUI-045: Updated hint text for modal-based viewing
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (Enter to view full)`;
   return formatWithTreeConnectors(collapsedContent);
 };
 
@@ -602,7 +604,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
   const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021
   const [isTurnSelectMode, setIsTurnSelectMode] = useState(false); // TUI-042: Turn selection mode toggle (replaces TUI-041 line selection)
-  const [expandedMessageIndices, setExpandedMessageIndices] = useState<Set<number>>(new Set()); // TUI-043: Track expanded message indices
+  // TUI-045: Modal state for full turn viewing (replaces expandedMessageIndices)
+  const [showTurnModal, setShowTurnModal] = useState(false);
+  const [modalMessageIndex, setModalMessageIndex] = useState<number | null>(null);
   const virtualListSelectionRef = useRef<{ selectedIndex: number }>({ selectedIndex: 0 }); // TUI-043: Ref to get selected index from VirtualList
   const sessionRef = useRef<CodeletSessionType | null>(null);
 
@@ -1246,40 +1250,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       return;
     }
 
-    // TUI-043: Handle /expand command - toggle expansion of selected turn
-    if (userMessage === '/expand') {
-      setInputValue('');
-      // Silently do nothing if not in turn selection mode
-      if (!isTurnSelectMode) {
-        return;
-      }
-      
-      // Get the selected line index from VirtualList and find its message index
-      // Use ref to avoid stale closure issue with conversationLines
-      const currentLines = conversationLinesRef.current;
-      const selectedLineIndex = virtualListSelectionRef.current.selectedIndex;
-      const selectedMessageIndex = currentLines[selectedLineIndex]?.messageIndex;
-      
-      // Silently do nothing if no turn selected
-      if (selectedMessageIndex === undefined) {
-        return;
-      }
-      
-      // Invalidate cache for this message to force re-render (do this BEFORE state update)
-      lineCacheRef.current.delete(selectedMessageIndex);
-      
-      // Toggle expansion state
-      setExpandedMessageIndices(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(selectedMessageIndex)) {
-          newSet.delete(selectedMessageIndex);
-        } else {
-          newSet.add(selectedMessageIndex);
-        }
-        return newSet;
-      });
-      return;
-    }
+    // TUI-045: /expand command removed - now handled by Enter key opening modal
+    // (intentionally removed - /expand will be sent to agent as regular message)
 
     if (!sessionRef.current || !inputValue.trim() || isLoading) return;
 
@@ -4024,18 +3996,31 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
 
-      // Esc key handling - clear input first, then interrupt/exit
+      // TUI-045: Esc key handling with priority order:
+      // 1) Close modal, 2) Disable select mode, 3) Interrupt loading, 4) Clear input, 5) Exit view
       if (key.escape) {
-        if (isLoading && sessionRef.current) {
-          // Interrupt the agent execution
-          sessionRef.current.interrupt();
-        } else if (inputValue.trim() !== '') {
-          // Clear the input if there's text
-          setInputValue('');
-        } else {
-          // Exit the agent view only if input is already empty
-          onExit();
+        // Priority 1: Close modal first
+        if (showTurnModal) {
+          setShowTurnModal(false);
+          return;
         }
+        // Priority 2: Disable select mode
+        if (isTurnSelectMode) {
+          setIsTurnSelectMode(false);
+          return;
+        }
+        // Priority 3: Interrupt loading
+        if (isLoading && sessionRef.current) {
+          sessionRef.current.interrupt();
+          return;
+        }
+        // Priority 4: Clear input
+        if (inputValue.trim() !== '') {
+          setInputValue('');
+          return;
+        }
+        // Priority 5: Exit view
+        onExit();
         return;
       }
 
@@ -4043,9 +4028,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       if (key.tab) {
         const newMode = !isTurnSelectMode;
         setIsTurnSelectMode(newMode);
-        // TUI-043: Clear expanded state when disabling turn selection mode
+        // TUI-045: Close modal and clear modal state when disabling select mode
         if (!newMode) {
-          setExpandedMessageIndices(new Set());
+          setShowTurnModal(false);
+          setModalMessageIndex(null);
         }
         // Note: VirtualList will auto-select last item via scrollToEnd when enabled
         return;
@@ -4173,7 +4159,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // PERF-002: Incremental line computation with caching
   // Only recompute lines for messages that changed, reuse cached lines for unchanged messages
   // PERF-003: Uses deferredConversation to prioritize user input over streaming updates
-  // TUI-043: Check expandedMessageIndices to swap content/fullContent for expanded messages
+  // TUI-045: Removed expansion logic - modal now handles full content viewing
   const conversationLines = useMemo((): ConversationLine[] => {
     const maxWidth = terminalWidth - 6; // Account for borders and padding
     const lines: ConversationLine[] = [];
@@ -4185,14 +4171,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     deferredConversation.forEach((msg, msgIndex) => {
       validIndices.add(msgIndex);
 
-      // TUI-043: Use fullContent if message is expanded, otherwise use content
-      const isExpanded = expandedMessageIndices.has(msgIndex);
-      const effectiveContent = isExpanded && msg.fullContent ? msg.fullContent : msg.content;
+      // TUI-045: Always use collapsed content in main view (modal shows full content)
+      const effectiveContent = msg.content;
       
-      // Create effective message with swapped content for cache check
+      // Create effective message for cache check
       const effectiveMsg = { ...msg, content: effectiveContent };
 
-      // Check cache for this message (include expansion state in cache key via content)
+      // Check cache for this message
       const cached = cache.get(msgIndex);
       if (
         cached &&
@@ -4223,7 +4208,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     }
 
     return lines;
-  }, [deferredConversation, terminalWidth, expandedMessageIndices]);
+  }, [deferredConversation, terminalWidth]);
 
   // TUI-043: Keep ref in sync with conversationLines for use in callbacks
   conversationLinesRef.current = conversationLines;
@@ -5019,14 +5004,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           keyExtractor={(_line, index) => `line-${index}`}
           emptyMessage=""
           showScrollbar={true}
-          isFocused={!showProviderSelector && !showModelSelector && !showSettingsTab && !isResumeMode && !isSearchMode}
+          isFocused={!showProviderSelector && !showModelSelector && !showSettingsTab && !isResumeMode && !isSearchMode && !showTurnModal}
           scrollToEnd={true}
           selectionMode={isTurnSelectMode ? 'item' : 'scroll'}
-          // TUI-042/043/044: Group-based selection for turn navigation
-          // Groups lines by messageIndex, navigates between groups, preserves selection on expand/collapse
+          // TUI-042/044: Group-based selection for turn navigation
+          // Groups lines by messageIndex, navigates between groups
           groupBy={isTurnSelectMode ? (line) => line.messageIndex : undefined}
           groupPaddingBefore={isTurnSelectMode ? 1 : 0}
-          // TUI-043: Expose selection state to parent for /expand command
+          // TUI-045: onSelect opens modal when Enter is pressed in select mode
+          onSelect={isTurnSelectMode ? (line) => {
+            setModalMessageIndex(line.messageIndex);
+            setShowTurnModal(true);
+          } : undefined}
+          // TUI-043: Expose selection state to parent
           selectionRef={virtualListSelectionRef}
         />
       </Box>
@@ -5054,6 +5044,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           />
         </Box>
       </Box>
+
+      {/* TUI-045: Full turn content modal */}
+      {showTurnModal && modalMessageIndex !== null && conversation[modalMessageIndex] && (
+        <TurnContentModal
+          content={conversation[modalMessageIndex].fullContent || conversation[modalMessageIndex].content}
+          role={conversation[modalMessageIndex].role}
+          terminalWidth={terminalWidth}
+          terminalHeight={terminalHeight}
+          isFocused={showTurnModal}
+        />
+      )}
     </Box>
   );
 };

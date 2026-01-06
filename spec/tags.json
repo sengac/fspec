@@ -1966,6 +1966,10 @@
           "description": "Regression tests - comprehensive validation of existing functionality"
         },
         {
+          "name": "@removal",
+          "description": "Scenario for removed or deprecated functionality"
+        },
+        {
           "name": "@simple-command",
           "description": "Simple command with minimal options"
         },
@@ -2222,7 +2226,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-05T23:43:16.701Z",
+    "lastUpdated": "2026-01-06T07:59:06.898Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
