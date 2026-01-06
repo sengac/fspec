@@ -1,0 +1,134 @@
+{
+  "scenarios": [
+    {
+      "name": "Open truncated tool output in modal via Enter key",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "96-131",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Close modal with Esc returns to select mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "133-155",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Exit select mode with Esc when modal is not open",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "157-175",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Open user message in modal",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "177-204",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Diff coloring preserved in modal for Edit tool output",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "206-243",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Esc behavior when not in select mode clears input",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "245-268",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Modal displays role-specific title for <role> messages",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "270-293",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Modal displays navigation hints in footer",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "295-313",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Open short message with no fullContent falls back to content",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "315-346",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Collapsed output shows updated hint text",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "348-369",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Esc key closes modal before disabling select mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "371-398",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "The /expand command is no longer recognized",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/turn-modal.test.ts",
+          "lines": "400-418",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 12,
+    "coveredScenarios": 12,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/turn-modal.test.ts"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 312
+  }
+}
