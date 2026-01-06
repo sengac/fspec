@@ -6,7 +6,17 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "96-131",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                605,
+                606,
+                607,
+                608
+              ]
+            }
+          ]
         }
       ]
     },
@@ -16,7 +26,18 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "133-155",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4001,
+                4002,
+                4003,
+                4004,
+                4005
+              ]
+            }
+          ]
         }
       ]
     },
@@ -26,7 +47,18 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "157-175",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4006,
+                4007,
+                4008,
+                4009,
+                4010
+              ]
+            }
+          ]
         }
       ]
     },
@@ -36,7 +68,25 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "177-204",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/TurnContentModal.tsx",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
         }
       ]
     },
@@ -46,7 +96,47 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "206-243",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/TurnContentModal.tsx",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
         }
       ]
     },
@@ -56,7 +146,17 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "245-268",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4016,
+                4017,
+                4018,
+                4019
+              ]
+            }
+          ]
         }
       ]
     },
@@ -66,7 +166,25 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "270-293",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/TurnContentModal.tsx",
+              "lines": [
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
         }
       ]
     },
@@ -76,7 +194,17 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "295-313",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/TurnContentModal.tsx",
+              "lines": [
+                173,
+                174,
+                175,
+                176
+              ]
+            }
+          ]
         }
       ]
     },
@@ -86,7 +214,14 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "315-346",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5051
+              ]
+            }
+          ]
         }
       ]
     },
@@ -96,7 +231,15 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "348-369",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                362,
+                363
+              ]
+            }
+          ]
         }
       ]
     },
@@ -106,7 +249,40 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "371-398",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3998,
+                3999,
+                4000,
+                4001,
+                4002,
+                4003,
+                4004,
+                4005,
+                4006,
+                4007,
+                4008,
+                4009,
+                4010,
+                4011,
+                4012,
+                4013,
+                4014,
+                4015,
+                4016,
+                4017,
+                4018,
+                4019,
+                4020,
+                4021,
+                4022,
+                4023,
+                4024
+              ]
+            }
+          ]
         }
       ]
     },
@@ -116,7 +292,16 @@
         {
           "file": "src/tui/components/__tests__/turn-modal.test.ts",
           "lines": "400-418",
-          "implMappings": []
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1252,
+                1253,
+                1254
+              ]
+            }
+          ]
         }
       ]
     }
@@ -128,7 +313,10 @@
     "testFiles": [
       "src/tui/components/__tests__/turn-modal.test.ts"
     ],
-    "implFiles": [],
-    "totalLinesCovered": 312
+    "implFiles": [
+      "src/tui/components/AgentView.tsx",
+      "src/tui/components/TurnContentModal.tsx"
+    ],
+    "totalLinesCovered": 425
   }
 }
