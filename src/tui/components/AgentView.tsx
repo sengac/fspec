@@ -2258,6 +2258,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               // Don't add to conversation - just show notification indicator
             } else if (statusMessage.includes('Continuing with compacted context')) {
               // Skip this status message too - it's part of the compaction notification
+            } else if (statusMessage.includes('[Generating summary...]')) {
+              // Skip - this is the compaction "generating summary" notification from Rust
             } else {
               // Other status messages still go to conversation
               setConversation(prev => [
@@ -4827,7 +4829,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         borderRight={false}
         paddingX={1}
       >
-        <Box flexGrow={1}>
+        <Box flexGrow={1} flexShrink={1}>
           <Text bold color="cyan">
             Agent: {currentModel?.modelId || currentProvider}
           </Text>
@@ -4866,19 +4868,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         </Box>
         {/* TUI-031: Tokens per second display during streaming */}
         {isLoading && displayedTokPerSec !== null && (
-          <Box marginRight={2}>
+          <Box flexShrink={0} marginRight={2}>
             <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s</Text>
           </Box>
         )}
-        <Box>
+        <Box flexShrink={0}>
           <Text dimColor>
             tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
           </Text>
         </Box>
         {/* TUI-033 + TUI-044: Context window fill percentage indicator with compaction notification */}
-        <Box marginLeft={2}>
+        {/* Format: [X%] normal, [X%↓Y%] after compaction (compact format to stay on one line) */}
+        <Box flexShrink={0} marginLeft={1}>
           <Text color={getContextFillColor(contextFillPercentage)}>
-            [{contextFillPercentage}%{compactionReduction !== null ? `: COMPACTED -${compactionReduction}%` : ''}]
+            [{contextFillPercentage}%{compactionReduction !== null ? `↓${compactionReduction}%` : ''}]
           </Text>
         </Box>
       </Box>

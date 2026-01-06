@@ -10,6 +10,7 @@
 
 import { marked, type Token, type Tokens } from 'marked';
 import chalk from 'chalk';
+import { getVisualWidth } from './stringWidth';
 
 /**
  * Render inline tokens (text, strong, em, etc.) to plain text with ANSI styling
@@ -46,13 +47,14 @@ function renderInlineTokens(tokens: Token[] | undefined): string {
 }
 
 /**
- * Get the visual width of a string (accounting for ANSI codes)
+ * Get the visual width of a string in terminal columns.
+ * Accounts for ANSI codes and Unicode characters (emojis, CJK, etc.)
  */
 function getTextWidth(text: string): number {
-  // Strip ANSI escape codes for width calculation
+  // Strip ANSI escape codes first, then get proper Unicode visual width
   // eslint-disable-next-line no-control-regex
   const stripped = text.replace(/\x1b\[[0-9;]*m/g, '');
-  return stripped.length;
+  return getVisualWidth(stripped);
 }
 
 /**
@@ -271,7 +273,8 @@ function renderParsedTable(table: ParsedTable): string {
     '└─' + colWidths.map(w => '─'.repeat(w)).join('─┴─') + '─┘';
   lines.push(bottomBorder);
 
-  return lines.join('\n');
+  // Add trailing newline so content after the table starts on a new line
+  return lines.join('\n') + '\n';
 }
 
 /**
@@ -328,7 +331,8 @@ function renderTable(table: Tokens.Table): string {
     '└─' + colWidths.map(w => '─'.repeat(w)).join('─┴─') + '─┘';
   lines.push(bottomBorder);
 
-  return lines.join('\n');
+  // Add trailing newline so content after the table starts on a new line
+  return lines.join('\n') + '\n';
 }
 
 /**
