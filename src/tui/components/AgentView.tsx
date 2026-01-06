@@ -690,6 +690,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
   const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
 
+  // TUI-044: Compaction notification indicator (shows in percentage indicator for 10 seconds)
+  const [compactionReduction, setCompactionReduction] = useState<number | null>(null);
+
   // TOOL-010: Detected thinking level (for UI indicator)
   const [detectedThinkingLevel, setDetectedThinkingLevel] = useState<
     number | null
@@ -903,6 +906,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     }, 10000);
     return () => clearTimeout(timeout);
   }, [isLoading, lastChunkTime]);
+
+  // TUI-044: Hide compaction notification after 10 seconds
+  useEffect(() => {
+    if (compactionReduction === null) return;
+    const timeout = setTimeout(() => {
+      setCompactionReduction(null);
+    }, 10000);
+    return () => clearTimeout(timeout);
+  }, [compactionReduction]);
 
   // Initialize session when view opens
   useEffect(() => {
@@ -1647,15 +1659,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
       try {
         const result = await sessionRef.current.compact();
-        // Show success message with metrics
-        const compressionPct = result.compressionRatio.toFixed(0);
-        const message = `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression]\n[Summarized ${result.turnsSummarized} turns, kept ${result.turnsKept} turns]`;
-        setConversation(prev => [...prev, { role: 'tool', content: message }]);
+        // TUI-044: Show compaction notification indicator instead of chat message
+        const compressionPct = Math.round(result.compressionRatio);
+        setCompactionReduction(compressionPct);
+        
         // Update token tracker and context fill to reflect reduced context
         const finalTokens = sessionRef.current.tokenTracker;
         setTokenUsage(finalTokens);
         const contextFillInfo = sessionRef.current.getContextFillInfo();
         setContextFillPercentage(contextFillInfo.fillPercentage);
+
+        // Remove the "[Compacting context...]" message since we're showing notification indicator
+        setConversation(prev => prev.filter(m => m.content !== '[Compacting context...]'));
 
         // Persist compaction state and token usage
         if (currentSessionId) {
@@ -1686,6 +1701,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           }
         }
       } catch (err) {
+        // Remove the "[Compacting context...]" message on failure too
+        setConversation(prev => prev.filter(m => m.content !== '[Compacting context...]'));
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to compact context';
         setConversation(prev => [
@@ -2209,14 +2226,25 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             });
           } else if (chunk.type === 'Status' && chunk.status) {
             const statusMessage = chunk.status;
-            // Status messages (e.g., compaction notifications)
-            setConversation(prev => [
-              ...prev,
-              {
-                role: 'tool',
-                content: statusMessage,
-              },
-            ]);
+            // TUI-044: Parse compaction notifications and show in percentage indicator
+            // Format: "[Context compacted: 95000→30000 tokens, 68% compression]"
+            const compactionMatch = statusMessage.match(/Context compacted:.*?(\d+)% compression/);
+            if (compactionMatch) {
+              const reductionPct = parseInt(compactionMatch[1], 10);
+              setCompactionReduction(reductionPct);
+              // Don't add to conversation - just show notification indicator
+            } else if (statusMessage.includes('Continuing with compacted context')) {
+              // Skip this status message too - it's part of the compaction notification
+            } else {
+              // Other status messages still go to conversation
+              setConversation(prev => [
+                ...prev,
+                {
+                  role: 'tool',
+                  content: statusMessage,
+                },
+              ]);
+            }
           } else if (chunk.type === 'Interrupted') {
             // Agent was interrupted by user
             // TUI-037: Only append to tool if it's still streaming (no collapse indicator)
@@ -4824,10 +4852,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
           </Text>
         </Box>
-        {/* TUI-033: Context window fill percentage indicator */}
+        {/* TUI-033 + TUI-044: Context window fill percentage indicator with compaction notification */}
         <Box marginLeft={2}>
           <Text color={getContextFillColor(contextFillPercentage)}>
-            [{contextFillPercentage}%]
+            [{contextFillPercentage}%{compactionReduction !== null ? `: COMPACTED -${compactionReduction}%` : ''}]
           </Text>
         </Box>
         {/* TUI-034: Tab to switch model */}
