@@ -55,7 +55,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   isLoading,
   thinkingMessage = 'Thinking',
   thinkingHint = '(Esc to stop)',
-  placeholder = 'Shift+↑↓ history | Tab select',
+  placeholder = "Type a message... ('Shift+↑/↓' history | 'Tab' select turn)",
   value,
   onChange,
   onSubmit,
