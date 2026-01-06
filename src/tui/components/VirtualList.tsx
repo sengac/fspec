@@ -98,6 +98,9 @@ interface VirtualListProps<T> {
   isFocused?: boolean; // Whether this VirtualList should respond to keyboard input (default: true)
   scrollToEnd?: boolean; // Auto-scroll to end when items change (default: false)
   selectionMode?: 'item' | 'scroll'; // 'item' = individual item selection (default), 'scroll' = pure viewport scrolling (TUI-032)
+  // TUI-044: When true, preserve selection position by messageIndex instead of line index
+  // This prevents selection from jumping when content changes (e.g., expand/collapse)
+  preserveSelectionOnContentChange?: boolean;
   fixedHeight?: number; // Optional fixed height to skip measureElement overhead
   // TUI-042: Custom navigation logic - returns new index when navigating
   // If not provided, uses ±1 (single item navigation)
@@ -111,6 +114,10 @@ interface VirtualListProps<T> {
   // Returns [firstIndex, lastIndex] of lines that should all be visible when this item is selected
   // If not provided, assumes single item selection (visible range = [selectedIndex, selectedIndex])
   getVisibleRange?: (selectedIndex: number, items: T[]) => [number, number];
+  // TUI-044: Get a stable identifier for an item (for preserving selection when content changes)
+  // When items change, the selection is preserved by finding the first item with the same identifier
+  // If not provided, selection is based on index which may jump when content changes
+  getItemIdentifier?: (item: T, index: number) => string | number;
 }
 
 export function VirtualList<T>({
@@ -131,6 +138,7 @@ export function VirtualList<T>({
   getIsSelected,
   selectionRef,
   getVisibleRange,
+  getItemIdentifier,
 }: VirtualListProps<T>): React.ReactElement {
   // Enable mouse tracking mode for button events only (not mouse movement)
   // OPTIMIZATION: Only enable when focused to reduce overhead
@@ -150,12 +158,36 @@ export function VirtualList<T>({
   const [scrollOffset, setScrollOffset] = useState(0);
   const { height: terminalHeight } = useTerminalSize();
 
+  // TUI-044: Track the selected item's identifier to preserve selection when content changes
+  const selectedIdentifierRef = useRef<string | number | null>(null);
+
   // TUI-043: Update selectionRef when selectedIndex changes
   useEffect(() => {
     if (selectionRef) {
       selectionRef.current = { selectedIndex };
     }
-  }, [selectedIndex, selectionRef]);
+    // TUI-044: Update the selected identifier when selection changes
+    if (getItemIdentifier && items[selectedIndex]) {
+      selectedIdentifierRef.current = getItemIdentifier(items[selectedIndex], selectedIndex);
+    }
+  }, [selectedIndex, selectionRef, getItemIdentifier, items]);
+
+  // TUI-044: When items change and we have a getItemIdentifier, try to find the item with the same identifier
+  // This preserves selection when content changes (e.g., expand/collapse)
+  useEffect(() => {
+    if (!getItemIdentifier || selectedIdentifierRef.current === null) return;
+    
+    // Find the first item with the same identifier
+    for (let i = 0; i < items.length; i++) {
+      if (getItemIdentifier(items[i], i) === selectedIdentifierRef.current) {
+        if (i !== selectedIndex) {
+          setSelectedIndex(i);
+        }
+        return;
+      }
+    }
+    // If not found, the selection will remain at the old index (or be clamped later)
+  }, [items, getItemIdentifier, selectedIndex]);
 
   // Measure actual container height after flexbox layout
   const containerRef = useRef<DOMElement>(null);
@@ -249,15 +281,14 @@ export function VirtualList<T>({
 
   // Auto-scroll to end when items change (for chat-style interfaces)
   // Respects userScrolledAway: if user has scrolled away from bottom, don't auto-scroll
+  // TUI-044: Also skip auto-scroll in item mode when preserveSelectionOnContentChange is true
+  // (e.g., when expanding/collapsing content, we want to keep the selection stable)
   useEffect(() => {
-    if (scrollToEnd && items.length > 0 && !userScrolledAway) {
-      const lastIndex = items.length - 1;
+    if (scrollToEnd && items.length > 0 && !userScrolledAway && selectionMode !== 'item') {
       // In scroll mode, only update scrollOffset (TUI-032)
-      // In item mode, also update selectedIndex
-      if (selectionMode === 'item') {
-        setSelectedIndex(lastIndex);
-      }
+      // In item mode, skip auto-scroll to preserve selection position
       // Scroll to show the last item at the bottom
+      const lastIndex = items.length - 1;
       const newOffset = Math.max(0, lastIndex - visibleHeight + 1);
       setScrollOffset(newOffset);
     }
