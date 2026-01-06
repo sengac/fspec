@@ -1,11 +1,11 @@
 /**
  * Feature: spec/features/select-turns-instead-of-lines-with-select-command.feature
  *
- * Tests for /select command that toggles between scroll mode and turn selection mode
+ * Tests for Tab key that toggles between scroll mode and turn selection mode
  * in the AgentView conversation area. Turn selection highlights entire conversation
  * turns (messages) rather than individual lines.
  *
- * TUI-042: Select turns instead of lines with /select command
+ * TUI-042: Select turns instead of lines with Tab key (replaced /select command)
  */
 
 import React from 'react';
@@ -185,7 +185,7 @@ const pressKey = (stdin: { write: (s: string) => void }, key: string): void => {
 const waitForFrame = (ms = 50): Promise<void> =>
   new Promise(resolve => setTimeout(resolve, ms));
 
-describe('Feature: Select turns instead of lines with /select command', () => {
+describe('Feature: Select turns instead of lines with Tab key', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockState.shouldThrow = false;
@@ -197,7 +197,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
     vi.restoreAllMocks();
   });
 
-  describe('Scenario: Enable turn selection mode with /select command', () => {
+  describe('Scenario: Enable turn selection mode with Tab key', () => {
     it('should enable turn selection mode, show SELECT indicator, and highlight last turn', async () => {
       // @step Given AgentView is open in scroll mode
       const { AgentView } = await import('../components/AgentView');
@@ -224,10 +224,8 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       expect(frame).toBeDefined();
       expect(frame).not.toContain('[SELECT]');
 
-      // @step When I type /select and press Enter
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      // @step When I press Tab key
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step Then turn selection mode should be enabled
@@ -266,9 +264,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       await waitForFrame();
 
       // Enable turn selection mode first
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step And turn selection mode is enabled
@@ -316,9 +312,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       await waitForFrame();
 
       // Enable turn selection mode
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step When I navigate to select that turn
@@ -333,7 +327,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
     });
   });
 
-  describe('Scenario: Disable turn selection mode with /select command', () => {
+  describe('Scenario: Disable turn selection mode with Tab key', () => {
     it('should disable turn selection mode and remove highlighting', async () => {
       // @step Given AgentView is open in turn selection mode
       const { AgentView } = await import('../components/AgentView');
@@ -353,9 +347,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       await waitForFrame();
 
       // Enable turn selection mode first
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step And the header bar shows a SELECT indicator
@@ -364,10 +356,8 @@ describe('Feature: Select turns instead of lines with /select command', () => {
 
       // @step And a turn is currently selected and highlighted
 
-      // @step When I type /select and press Enter
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      // @step When I press Tab key again
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step Then turn selection mode should be disabled
@@ -401,9 +391,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       await waitForFrame();
 
       // Enable turn selection mode
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // Navigate to first turn (up twice from last)
@@ -448,9 +436,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       await waitForFrame();
 
       // Enable turn selection mode - last turn is auto-selected
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step And the last turn in the conversation is selected
@@ -490,9 +476,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       await waitForFrame();
 
       // Enable turn selection mode
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step And a turn near the bottom is currently selected
@@ -559,9 +543,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       await waitForFrame();
 
       // Enable turn selection mode - this now does NOT add a tool message (TUI-043: silent mode)
-      stdin.write('/select');
-      await waitForFrame();
-      stdin.write('\r');
+      pressKey(stdin, 'tab');
       await waitForFrame(100);
 
       // @step When I navigate through the turns with arrow keys

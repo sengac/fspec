@@ -345,8 +345,8 @@ describe('Feature: Agent Modal Model Selection', () => {
   // BASIC SELECTOR BEHAVIOR
   // ========================================
 
-  describe('Scenario: Tab key opens model selector with providers as collapsible sections', () => {
-    it('should open model selector with collapsible provider sections on Tab press', async () => {
+  describe('Scenario: /model command opens model selector with providers as collapsible sections', () => {
+    it('should open model selector with collapsible provider sections on /model command', async () => {
       // @step Given I am in the AgentView with a valid session
       const { lastFrame, stdin } = render(
         <AgentView onExit={() => {}} />
@@ -356,8 +356,10 @@ describe('Feature: Agent Modal Model Selection', () => {
       // @step And multiple providers have valid credentials
       expect(lastFrame()).toContain('claude');
 
-      // @step When I press Tab
-      stdin.write('\t');
+      // @step When I type /model and press Enter
+      stdin.write('/model');
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step Then the model selector overlay should appear
@@ -382,7 +384,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step And the "anthropic" provider section is collapsed
@@ -409,7 +413,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step And the "google" provider section is collapsed and highlighted
@@ -444,7 +450,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step And I am on a model within the expanded "anthropic" section
@@ -473,7 +481,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step And "anthropic/claude-opus-4" is highlighted
@@ -511,7 +521,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step And I have navigated to a different model
@@ -542,7 +554,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step When I view a model with reasoning=true
@@ -572,7 +586,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step When I view a model with hasVision=true
@@ -590,7 +606,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step When I view any model
@@ -638,7 +656,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step Then I should see the "anthropic" provider section
@@ -656,7 +676,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step When I view the model list
@@ -710,7 +732,9 @@ describe('Feature: Agent Modal Model Selection', () => {
       );
       await waitForFrame();
       await waitForFrame(); // Extra wait for model list to load
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step When I expand that provider section (it starts collapsed since no models)
@@ -960,7 +984,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
       stdin.write('\x1b[B'); // Navigate to different model (claude-opus-4)
       await waitForFrame();
@@ -1086,7 +1112,9 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForCondition(lastFrame, frame => frame.includes('claude-sonnet'));
 
       // @step When I view the model selector
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForCondition(lastFrame, frame => frame.includes('[anthropic]'));
 
       // @step Then the header should show "[anthropic] (3 models)"
@@ -1102,7 +1130,9 @@ describe('Feature: Agent Modal Model Selection', () => {
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
-      stdin.write('\t'); // Open model selector
+      stdin.write('/model'); // Open model selector
+      await waitForFrame();
+      stdin.write('\r');
       await waitForFrame();
 
       // @step Then each model should display in format: "  model-id (Display Name) [indicators]"
@@ -1115,16 +1145,17 @@ describe('Feature: Agent Modal Model Selection', () => {
     });
   });
 
-  describe('Scenario: Tab hint in header shows model switching available', () => {
-    it('should show Tab hint when multiple models are available', async () => {
+  describe('Scenario: Selection mode hint shows in input placeholder', () => {
+    it('should show Tab select hint in placeholder when models are available', async () => {
       // @step Given multiple models are available
       const { lastFrame } = render(
         <AgentView onExit={() => {}} />
       );
       await waitForFrame();
 
-      // @step Then the header should show "[Tab]" hint for model switching
-      expect(lastFrame()).toContain('[Tab]');
+      // @step Then the placeholder should show "Tab select" hint for turn selection mode
+      // Note: Tab now toggles turn selection mode (use /model command for model switching)
+      expect(lastFrame()).toContain('Tab select');
     });
   });
 });

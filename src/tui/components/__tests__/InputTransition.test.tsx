@@ -24,7 +24,7 @@ describe('InputTransition', () => {
     value: '',
     onChange: vi.fn(),
     onSubmit: vi.fn(),
-    placeholder: 'Type your message...',
+    placeholder: 'Shift+↑↓ history | Tab select',
   };
 
   describe('loading state', () => {
@@ -60,7 +60,7 @@ describe('InputTransition', () => {
       const output = lastFrame();
 
       // Should show placeholder when no value
-      expect(output).toContain('Type your message...');
+      expect(output).toContain('Shift+↑↓ history | Tab select');
     });
 
     it('should show input value when provided', () => {
@@ -109,7 +109,7 @@ describe('InputTransition', () => {
 
       const output = lastFrame();
       // Should eventually show the input placeholder
-      expect(output).toContain('Type your message...');
+      expect(output).toContain('Shift+↑↓ history | Tab select');
     });
   });
 });
