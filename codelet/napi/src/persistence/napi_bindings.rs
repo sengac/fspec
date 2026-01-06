@@ -705,15 +705,22 @@ pub fn persistence_get_session_message_envelopes(session_id: String) -> Result<V
 
     let mut envelopes: Vec<String> = Vec::with_capacity(messages.len());
     for stored_msg in messages {
-        // Skip synthetic compaction summary messages (they don't have envelope metadata)
+        // Handle synthetic compaction summary messages
         if stored_msg.id == uuid::Uuid::nil() {
-            // For synthetic messages, create a simple envelope-like structure
+            // Create a proper MessageEnvelope-compatible structure for compaction summaries
+            // MessageEnvelope uses #[serde(rename_all = "camelCase")] and #[serde(rename = "type")]
+            // Required fields: uuid, timestamp, type, provider, message
             let synthetic_envelope = serde_json::json!({
-                "message_type": "user",
+                "uuid": "00000000-0000-0000-0000-000000000000",
+                "parentUuid": null,
+                "timestamp": stored_msg.created_at.to_rfc3339(),
+                "type": "user",
+                "provider": "compaction",
                 "message": {
                     "role": "user",
                     "content": [{"type": "text", "text": stored_msg.content}]
                 },
+                "requestId": null,
                 "_synthetic": true,
                 "_compactionSummary": true
             });
@@ -773,14 +780,20 @@ pub fn persistence_get_session_message_envelopes_raw(session_id: String) -> Resu
     let envelopes: Vec<String> = messages
         .into_iter()
         .map(|stored_msg| {
-            // Skip synthetic compaction summary messages
+            // Handle synthetic compaction summary messages
             if stored_msg.id == uuid::Uuid::nil() {
+                // Create a proper MessageEnvelope-compatible structure for compaction summaries
                 let synthetic_envelope = serde_json::json!({
-                    "message_type": "user",
+                    "uuid": "00000000-0000-0000-0000-000000000000",
+                    "parentUuid": null,
+                    "timestamp": stored_msg.created_at.to_rfc3339(),
+                    "type": "user",
+                    "provider": "compaction",
                     "message": {
                         "role": "user",
                         "content": [{"type": "text", "text": stored_msg.content}]
                     },
+                    "requestId": null,
                     "_synthetic": true,
                     "_compactionSummary": true
                 });
