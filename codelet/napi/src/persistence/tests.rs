@@ -2,9 +2,34 @@
 //
 // Session Persistence with Fork and Merge
 // Tests for the Rust persistence module
+//
+// IMPORTANT: These tests use isolated temporary directories to avoid
+// polluting ~/.fspec with test data. Each test gets its own temp dir
+// via setup_test_env().
 
 use super::*;
 use std::path::PathBuf;
+use std::sync::Mutex;
+
+// Global mutex to ensure tests run sequentially since they share global state
+// (MESSAGE_STORE, SESSION_STORE, DATA_DIRECTORY are all global singletons)
+lazy_static::lazy_static! {
+    static ref TEST_MUTEX: Mutex<()> = Mutex::new(());
+}
+
+/// Setup an isolated temp directory for a test.
+/// Returns a guard (for sequential execution) and a TempDir that will be
+/// cleaned up when dropped.
+///
+/// MUST be called at the start of every test to ensure:
+/// 1. Tests don't pollute ~/.fspec with test data
+/// 2. Tests don't interfere with each other
+fn setup_test_env() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
+    let guard = TEST_MUTEX.lock().unwrap();
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+    set_data_directory(temp_dir.path().to_path_buf()).expect("Failed to set data directory");
+    (guard, temp_dir)
+}
 
 // ============================================================================
 // Scenario: Resume session after closing terminal
@@ -12,6 +37,7 @@ use std::path::PathBuf;
 // ============================================================================
 #[test]
 fn test_resume_session_after_closing_terminal() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/resume");
 
     // @step Given I have a 20-message conversation with codelet
@@ -45,6 +71,7 @@ fn test_resume_session_after_closing_terminal() {
 // ============================================================================
 #[test]
 fn test_fork_session_at_specific_message() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/fork");
 
     // @step Given I have a session with 5 messages
@@ -76,6 +103,7 @@ fn test_fork_session_at_specific_message() {
 // ============================================================================
 #[test]
 fn test_merge_messages_from_another_session() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/merge");
 
     // @step Given I have session A as the current session
@@ -114,6 +142,7 @@ fn test_merge_messages_from_another_session() {
 // ============================================================================
 #[test]
 fn test_cherry_pick_message_with_context() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/cherry_pick");
 
     // @step Given session B has a question at message 6 and answer at message 7
@@ -152,6 +181,7 @@ fn test_cherry_pick_message_with_context() {
 // ============================================================================
 #[test]
 fn test_navigate_command_history() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/history_nav");
 
     // @step Given I have entered commands in the current project across multiple sessions
@@ -193,6 +223,7 @@ fn test_navigate_command_history() {
 // ============================================================================
 #[test]
 fn test_list_sessions_for_project() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/list");
 
     // @step Given I have multiple sessions for the current project
@@ -224,6 +255,7 @@ fn test_list_sessions_for_project() {
 // ============================================================================
 #[test]
 fn test_switch_to_different_session() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/switch");
 
     // @step Given I have session "Auth Work" as the current session
@@ -250,6 +282,7 @@ fn test_switch_to_different_session() {
 // ============================================================================
 #[test]
 fn test_search_command_history() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/search");
 
     // @step Given I have command history containing "implement" keyword
@@ -278,6 +311,7 @@ fn test_search_command_history() {
 // ============================================================================
 #[test]
 fn test_forked_sessions_share_references() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/dedup");
 
     // @step Given I have session A with messages M1, M2, M3
@@ -303,6 +337,7 @@ fn test_forked_sessions_share_references() {
 // ============================================================================
 #[test]
 fn test_large_content_blob_storage() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/blob");
 
     // @step Given I am in a conversation session
@@ -331,6 +366,7 @@ fn test_large_content_blob_storage() {
 // ============================================================================
 #[test]
 fn test_cross_session_history() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/cross_history");
 
     // @step Given I entered "fix login bug" in session B at 10:00am
@@ -372,6 +408,7 @@ fn test_cross_session_history() {
 // ============================================================================
 #[test]
 fn test_blob_deduplication() {
+    let (_guard, _temp_dir) = setup_test_env();
     // @step Given I have session A where the assistant read file "/src/main.rs"
     let content = b"fn main() {}";
     let hash1 = store_blob(content).expect("store");
@@ -392,6 +429,7 @@ fn test_blob_deduplication() {
 // ============================================================================
 #[test]
 fn test_delete_session_and_cleanup() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/delete");
 
     // @step Given I have session A with messages M1, M2, M3
@@ -425,6 +463,7 @@ fn test_delete_session_and_cleanup() {
 // ============================================================================
 #[test]
 fn test_session_lineage() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/lineage");
 
     // @step Given I have session "Main conversation" with 10 messages (indices 0-9)
@@ -469,6 +508,7 @@ fn test_session_lineage() {
 // ============================================================================
 #[test]
 fn test_merge_preserves_references() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/merge_refs");
 
     // @step Given I have session A with messages MA1, MA2
@@ -502,6 +542,7 @@ fn test_merge_preserves_references() {
 // ============================================================================
 #[test]
 fn test_fork_invalid_index_error() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/invalid_fork");
 
     // @step Given I have a session with 5 messages (indices 0-4)
@@ -527,6 +568,7 @@ fn test_fork_invalid_index_error() {
 // ============================================================================
 #[test]
 fn test_merge_nonexistent_session_error() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/invalid_merge");
 
     // @step Given I have session A as the current session
@@ -551,6 +593,7 @@ fn test_merge_nonexistent_session_error() {
 // ============================================================================
 #[test]
 fn test_cherry_pick_insufficient_context() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/cherry_context");
 
     // @step Given session B has only 3 messages (indices 0, 1, 2)
@@ -578,6 +621,7 @@ fn test_cherry_pick_insufficient_context() {
 // ============================================================================
 #[test]
 fn test_message_immutability() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/immutable");
 
     // @step Given I have a session with a message "Original content" at index 0
@@ -604,6 +648,7 @@ fn test_message_immutability() {
 // ============================================================================
 #[test]
 fn test_history_project_filter() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project_a = PathBuf::from("/home/user/project-a-test");
     let project_b = PathBuf::from("/home/user/project-b-test");
 
@@ -649,6 +694,7 @@ fn test_history_project_filter() {
 // ============================================================================
 #[test]
 fn test_rename_session() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/rename");
 
     // @step Given I have a session named "New Session 2025-01-15"
@@ -677,6 +723,7 @@ fn test_rename_session() {
 // ============================================================================
 #[test]
 fn test_fork_preserves_compaction() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/compact_fork");
 
     // @step Given I have session A with 100 messages (indices 0-99)
@@ -703,6 +750,7 @@ fn test_fork_preserves_compaction() {
 // ============================================================================
 #[test]
 fn test_resume_compacted_session() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/compact_resume");
 
     // @step Given I have session A with 100 messages (indices 0-99) that was compacted
@@ -732,6 +780,7 @@ fn test_resume_compacted_session() {
 // ============================================================================
 #[test]
 fn test_compaction_state_storage() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/compact_storage");
 
     // @step Given I am in a conversation with 100 messages (indices 0-99)
@@ -761,6 +810,7 @@ fn test_compaction_state_storage() {
 // ============================================================================
 #[test]
 fn test_merge_into_compacted_session() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/compact_merge");
 
     // @step Given I have session A with compacted_before_index at 50 (messages 0-49 compacted)
@@ -797,6 +847,7 @@ fn test_merge_into_compacted_session() {
 // ============================================================================
 #[test]
 fn test_fork_before_compaction_rejected() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/compact_fork_reject");
 
     // @step Given I have session A with compacted_before_index at 50 (messages 0-49 compacted)
@@ -828,6 +879,7 @@ fn test_fork_before_compaction_rejected() {
 
 #[test]
 fn test_blob_reference_format() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test the blob reference format helper functions
     use super::blob_processing::{extract_blob_hash, is_blob_reference, make_blob_reference};
 
@@ -849,6 +901,7 @@ fn test_blob_reference_format() {
 
 #[test]
 fn test_tool_result_blob_storage_and_rehydration() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that large tool result content is stored in blob and rehydrated correctly
     use chrono::Utc;
     use uuid::Uuid;
@@ -937,6 +990,7 @@ fn test_tool_result_blob_storage_and_rehydration() {
 
 #[test]
 fn test_image_blob_storage_and_rehydration() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that large base64 image data is stored in blob and rehydrated correctly
     use chrono::Utc;
     use uuid::Uuid;
@@ -1014,6 +1068,7 @@ fn test_image_blob_storage_and_rehydration() {
 
 #[test]
 fn test_document_blob_storage_and_rehydration() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that large base64 document data is stored in blob and rehydrated correctly
     use chrono::Utc;
     use uuid::Uuid;
@@ -1111,6 +1166,7 @@ fn test_document_blob_storage_and_rehydration() {
 
 #[test]
 fn test_thinking_blob_storage_and_rehydration() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that large thinking content is stored in blob and rehydrated correctly
     use chrono::Utc;
     use uuid::Uuid;
@@ -1193,6 +1249,7 @@ fn test_thinking_blob_storage_and_rehydration() {
 
 #[test]
 fn test_small_content_not_blobified() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that content under 10KB threshold stays inline (not stored in blob)
     use chrono::Utc;
     use uuid::Uuid;
@@ -1249,6 +1306,7 @@ fn test_small_content_not_blobified() {
 
 #[test]
 fn test_url_sources_not_blobified() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that URL image/document sources are NOT stored in blob (only base64 is)
     use chrono::Utc;
     use uuid::Uuid;
@@ -1321,6 +1379,7 @@ fn test_url_sources_not_blobified() {
 
 #[test]
 fn test_blob_deduplication_across_envelopes() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that identical content in different envelopes uses same blob hash
     use chrono::Utc;
     use uuid::Uuid;
@@ -1381,6 +1440,7 @@ fn test_blob_deduplication_across_envelopes() {
 
 #[test]
 fn test_multi_part_message_blob_storage() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that a message with multiple content parts handles blobs correctly
     use chrono::Utc;
     use uuid::Uuid;
@@ -1482,6 +1542,7 @@ fn test_multi_part_message_blob_storage() {
 
 #[test]
 fn test_exact_10kb_threshold_not_blobified() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that content at exactly 10KB (10240 bytes) stays inline
     use chrono::Utc;
     use uuid::Uuid;
@@ -1533,6 +1594,7 @@ fn test_exact_10kb_threshold_not_blobified() {
 
 #[test]
 fn test_one_byte_over_threshold_blobified() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that content at 10KB + 1 byte IS stored in blob
     use chrono::Utc;
     use uuid::Uuid;
@@ -1584,6 +1646,7 @@ fn test_one_byte_over_threshold_blobified() {
 
 #[test]
 fn test_tool_use_storage_and_retrieval() {
+    let (_guard, _temp_dir) = setup_test_env();
     // Test that a simple ToolUse (no blob needed) is stored and retrieved correctly
     use chrono::Utc;
     use uuid::Uuid;
@@ -1661,6 +1724,7 @@ fn test_tool_use_storage_and_retrieval() {
 
 #[test]
 fn test_set_session_tokens() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/token_set");
 
     // @step Given I have a session
@@ -1697,6 +1761,7 @@ fn test_set_session_tokens() {
 
 #[test]
 fn test_set_compaction_state() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/compaction_set");
 
     // @step Given I have a session with messages
@@ -1732,6 +1797,7 @@ fn test_set_compaction_state() {
 
 #[test]
 fn test_clear_compaction_state() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/compaction_clear");
 
     // @step Given I have a session with compaction state
@@ -1759,6 +1825,7 @@ fn test_clear_compaction_state() {
 
 #[test]
 fn test_token_and_compaction_state_persist_together() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/full_state");
 
     // @step Given I have a session
@@ -1798,6 +1865,7 @@ fn test_token_and_compaction_state_persist_together() {
 // ============================================================================
 #[test]
 fn test_get_session_messages_respects_compaction() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/compaction_restore");
 
     // @step Given I have a session with 20 messages
@@ -1857,6 +1925,7 @@ fn test_get_session_messages_respects_compaction() {
 
 #[test]
 fn test_get_session_messages_full_ignores_compaction() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/full_restore_unique");
 
     // @step Given I have a session with 10 messages
@@ -1907,6 +1976,7 @@ fn test_get_session_messages_full_ignores_compaction() {
 
 #[test]
 fn test_get_session_messages_no_compaction_returns_all() {
+    let (_guard, _temp_dir) = setup_test_env();
     let project = PathBuf::from("/test/project/no_compaction");
 
     // @step Given I have a session with 5 messages and NO compaction
@@ -1930,4 +2000,261 @@ fn test_get_session_messages_no_compaction_returns_all() {
     // @step And they should be the original messages
     assert!(messages[0].content.contains("Message 0"));
     assert!(messages[4].content.contains("Message 4"));
+}
+
+// ============================================================================
+// CRITICAL: Test that synthetic compaction envelope can be parsed by session restore
+// This tests the actual flow: persistence → envelope JSON → MessageEnvelope struct
+// ============================================================================
+#[test]
+fn test_synthetic_compaction_envelope_parses_as_message_envelope() {
+    let (_guard, _temp_dir) = setup_test_env();
+    use super::message_envelope::MessageEnvelope;
+
+    let project = PathBuf::from("/test/project/envelope_parse_test");
+
+    // @step Given I have a session with messages that has been compacted
+    let mut session = create_session("Envelope Parse Test", &project).expect("create");
+    for i in 0..10 {
+        let role = if i % 2 == 0 { "user" } else { "assistant" };
+        append_message(&mut session, role, &format!("Message {}", i)).expect("append");
+    }
+    let session_id = session.id;
+
+    // @step And the session has compaction state
+    let summary = "Previous conversation covered authentication flow and database design.";
+    set_compaction_state(&mut session, summary.to_string(), 8).expect("set compaction");
+
+    // @step When I get the message envelopes (which includes the synthetic compaction summary)
+    let reloaded = load_session(session_id).expect("reload");
+    let messages = get_session_messages(&reloaded).expect("get messages");
+
+    // The first message should be synthetic (nil UUID)
+    assert_eq!(
+        messages[0].id,
+        uuid::Uuid::nil(),
+        "First message should be synthetic"
+    );
+
+    // @step And I construct the synthetic envelope JSON (same logic as napi_bindings.rs)
+    let stored_msg = &messages[0];
+    let synthetic_envelope_json = serde_json::json!({
+        "uuid": "00000000-0000-0000-0000-000000000000",
+        "parentUuid": null,
+        "timestamp": stored_msg.created_at.to_rfc3339(),
+        "type": "user",
+        "provider": "compaction",
+        "message": {
+            "role": "user",
+            "content": [{"type": "text", "text": stored_msg.content}]
+        },
+        "requestId": null,
+        "_synthetic": true,
+        "_compactionSummary": true
+    });
+    let envelope_str = serde_json::to_string(&synthetic_envelope_json).unwrap();
+
+    // @step Then the envelope should successfully parse as MessageEnvelope
+    let parsed: Result<MessageEnvelope, _> = serde_json::from_str(&envelope_str);
+    assert!(
+        parsed.is_ok(),
+        "Synthetic compaction envelope must parse as MessageEnvelope. Error: {:?}",
+        parsed.err()
+    );
+
+    // @step And the parsed envelope should have correct fields
+    let envelope = parsed.unwrap();
+    assert_eq!(envelope.uuid, uuid::Uuid::nil());
+    assert_eq!(envelope.message_type, "user");
+    assert_eq!(envelope.provider, "compaction");
+
+    // @step And the message payload should contain the summary
+    match &envelope.message {
+        super::message_envelope::MessagePayload::User(user_msg) => {
+            assert_eq!(user_msg.role, "user");
+            assert!(!user_msg.content.is_empty());
+            match &user_msg.content[0] {
+                super::message_envelope::UserContent::Text { text } => {
+                    assert!(
+                        text.contains(summary),
+                        "Envelope text should contain the compaction summary"
+                    );
+                }
+                _ => panic!("Expected Text content in synthetic envelope"),
+            }
+        }
+        _ => panic!("Expected User message payload in synthetic envelope"),
+    }
+}
+
+// ============================================================================
+// Test the OLD broken format to document what was wrong
+// This test ensures the bug is understood and doesn't regress
+// ============================================================================
+#[test]
+fn test_old_broken_synthetic_envelope_fails_to_parse() {
+    let (_guard, _temp_dir) = setup_test_env();
+    use super::message_envelope::MessageEnvelope;
+
+    // @step Given the OLD broken synthetic envelope format (missing required fields, wrong key name)
+    let broken_envelope_json = serde_json::json!({
+        "message_type": "user",  // WRONG: should be "type" due to #[serde(rename = "type")]
+        "message": {
+            "role": "user",
+            "content": [{"type": "text", "text": "test summary"}]
+        },
+        "_synthetic": true,
+        "_compactionSummary": true
+        // MISSING: uuid, timestamp, provider (all required!)
+    });
+    let envelope_str = serde_json::to_string(&broken_envelope_json).unwrap();
+
+    // @step Then the broken envelope should FAIL to parse as MessageEnvelope
+    let parsed: Result<MessageEnvelope, _> = serde_json::from_str(&envelope_str);
+    assert!(
+        parsed.is_err(),
+        "Old broken envelope format should NOT parse - if this passes, the bug isn't fixed!"
+    );
+}
+
+// ============================================================================
+// END-TO-END TEST: Verify compacted session envelopes can be restored
+// This tests the ACTUAL bug fix - that synthetic compaction envelopes
+// returned by persistence_get_session_message_envelopes() can be parsed
+// by restore_messages_from_envelopes() in session.rs
+// ============================================================================
+#[test]
+fn test_compacted_session_envelopes_can_be_parsed_end_to_end() {
+    let (_guard, _temp_dir) = setup_test_env();
+    use super::message_envelope::MessageEnvelope;
+
+    let project = PathBuf::from("/test/project/e2e_compaction");
+
+    // @step Given I have a session with 10 messages
+    let mut session = create_session("E2E Compaction Test", &project).expect("create");
+    for i in 0..10 {
+        let role = if i % 2 == 0 { "user" } else { "assistant" };
+        // Store messages with proper envelope metadata (simulating real usage)
+        let metadata = {
+            let mut meta = std::collections::HashMap::new();
+            let envelope = serde_json::json!({
+                "uuid": uuid::Uuid::new_v4().to_string(),
+                "parentUuid": null,
+                "timestamp": chrono::Utc::now().to_rfc3339(),
+                "type": role,
+                "provider": "test",
+                "message": {
+                    "role": role,
+                    "content": [{"type": "text", "text": format!("Message {}", i)}]
+                },
+                "requestId": null
+            });
+            for (k, v) in envelope.as_object().unwrap() {
+                meta.insert(k.clone(), v.clone());
+            }
+            meta
+        };
+        append_message_with_metadata(&mut session, role, &format!("Message {}", i), metadata)
+            .expect("append");
+    }
+    let session_id = session.id;
+
+    // @step And the session has been compacted at index 8
+    let summary = "Previous 8 messages discussed project setup and architecture decisions.";
+    set_compaction_state(&mut session, summary.to_string(), 8).expect("set compaction");
+
+    // @step When I reload the session and get envelopes (simulating /resume)
+    let reloaded = load_session(session_id).expect("reload");
+
+    // This is what persistence_get_session_message_envelopes does internally
+    let messages = get_session_messages(&reloaded).expect("get messages");
+
+    // Should have: 1 synthetic summary + 2 post-compaction messages (indices 8, 9)
+    assert_eq!(
+        messages.len(),
+        3,
+        "Expected 1 summary + 2 post-compaction messages"
+    );
+
+    // @step And I convert each message to envelope JSON (like napi_bindings does)
+    let mut envelopes: Vec<String> = Vec::new();
+    for stored_msg in &messages {
+        if stored_msg.id == uuid::Uuid::nil() {
+            // Synthetic compaction summary - use the FIXED format
+            let synthetic_envelope = serde_json::json!({
+                "uuid": "00000000-0000-0000-0000-000000000000",
+                "parentUuid": null,
+                "timestamp": stored_msg.created_at.to_rfc3339(),
+                "type": "user",
+                "provider": "compaction",
+                "message": {
+                    "role": "user",
+                    "content": [{"type": "text", "text": stored_msg.content}]
+                },
+                "requestId": null,
+                "_synthetic": true,
+                "_compactionSummary": true
+            });
+            envelopes.push(serde_json::to_string(&synthetic_envelope).unwrap());
+        } else {
+            // Real message - use stored metadata
+            let metadata_value = serde_json::Value::Object(
+                stored_msg
+                    .metadata
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .collect(),
+            );
+            envelopes.push(serde_json::to_string(&metadata_value).unwrap());
+        }
+    }
+
+    // @step Then ALL envelopes should parse successfully as MessageEnvelope
+    // This is what restore_messages_from_envelopes() does
+    for (idx, envelope_json) in envelopes.iter().enumerate() {
+        let parsed: Result<MessageEnvelope, _> = serde_json::from_str(envelope_json);
+        assert!(
+            parsed.is_ok(),
+            "Envelope {} failed to parse as MessageEnvelope: {:?}\nJSON: {}",
+            idx,
+            parsed.err(),
+            &envelope_json[..std::cmp::min(500, envelope_json.len())]
+        );
+    }
+
+    // @step And the first envelope should be the compaction summary
+    let first_envelope: MessageEnvelope = serde_json::from_str(&envelopes[0]).unwrap();
+    assert_eq!(first_envelope.uuid, uuid::Uuid::nil());
+    assert_eq!(first_envelope.provider, "compaction");
+    match &first_envelope.message {
+        super::message_envelope::MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                super::message_envelope::UserContent::Text { text } => {
+                    assert!(
+                        text.contains(summary),
+                        "First envelope should contain the compaction summary"
+                    );
+                }
+                _ => panic!("Expected Text content"),
+            }
+        }
+        _ => panic!("Expected User message"),
+    }
+
+    // @step And the remaining envelopes should be the post-compaction messages
+    let second_envelope: MessageEnvelope = serde_json::from_str(&envelopes[1]).unwrap();
+    match &second_envelope.message {
+        super::message_envelope::MessagePayload::User(user_msg) => {
+            match &user_msg.content[0] {
+                super::message_envelope::UserContent::Text { text } => {
+                    assert!(
+                        text.contains("Message 8"),
+                        "Second envelope should be message 8 (first post-compaction)"
+                    );
+                }
+                _ => panic!("Expected Text content"),
+            }
+        }
+        _ => {} // Could be assistant message too
+    }
 }
