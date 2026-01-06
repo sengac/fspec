@@ -232,8 +232,7 @@ describe('Feature: Toggle line selection mode with /select command', () => {
       expect(frame).toContain('[SELECT]');
 
       // @step And the conversation should show a confirmation message
-      // TUI-042: Now says "Turn selection mode enabled" instead of "Line selection mode enabled"
-      expect(frame).toContain('Turn selection mode enabled');
+      // TUI-043: Turn selection mode is now silent (no message), only [SELECT] indicator shows
     });
   });
 
@@ -273,8 +272,7 @@ describe('Feature: Toggle line selection mode with /select command', () => {
       // @step And scroll mode should be restored
       frame = lastFrame();
       expect(frame).not.toContain('[SELECT]');
-      // TUI-042: Now says "Turn selection mode disabled" instead of "Line selection mode disabled"
-      expect(frame).toContain('Turn selection mode disabled');
+      // TUI-043: Turn selection mode is now silent (no message), only [SELECT] indicator disappears
     });
   });
 

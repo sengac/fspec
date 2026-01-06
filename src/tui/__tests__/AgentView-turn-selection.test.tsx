@@ -237,8 +237,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
 
       // @step And the last turn in the conversation should be selected
       // @step And all lines of the selected turn should be highlighted in cyan with > prefix
-      // TUI-042: Should say "Turn selection mode enabled" (not "Line selection mode enabled")
-      expect(frame).toContain('Turn selection mode enabled');
+      // TUI-043: Turn selection mode is now silent (no message), only [SELECT] indicator shows
       // The last turn (assistant response "The answer is 4.") should be highlighted
       // All lines of that turn should have > prefix
     });
@@ -377,8 +376,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       // @step And scroll mode should be restored
       frame = lastFrame();
       expect(frame).not.toContain('[SELECT]');
-      // TUI-042: Should say "Turn selection mode disabled" (not "Line selection mode disabled")
-      expect(frame).toContain('Turn selection mode disabled');
+      // TUI-043: Turn selection mode is now silent (no message), only [SELECT] indicator disappears
     });
   });
 
@@ -560,14 +558,14 @@ describe('Feature: Select turns instead of lines with /select command', () => {
 
       await waitForFrame();
 
-      // Enable turn selection mode - this adds a tool message
+      // Enable turn selection mode - this now does NOT add a tool message (TUI-043: silent mode)
       stdin.write('/select');
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame(100);
 
       // @step When I navigate through the turns with arrow keys
-      // The tool message "Turn selection mode enabled" is now the last turn
+      // TUI-043: No "Turn selection mode enabled" message - mode is now silent
       // Navigate up to select previous turns
       pressKey(stdin, 'up');
       await waitForFrame(50);
@@ -577,7 +575,7 @@ describe('Feature: Select turns instead of lines with /select command', () => {
       const frame = lastFrame();
       expect(frame).toBeDefined();
       expect(frame).toContain('[SELECT]');
-      // The assistant response should now be selected, not the tool message
+      // The previous turn should now be selected
     });
   });
 });
