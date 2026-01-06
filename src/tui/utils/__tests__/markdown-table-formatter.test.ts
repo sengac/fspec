@@ -9,6 +9,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { formatMarkdownTables } from '../markdown-table-formatter';
+import { getVisualWidth } from '../stringWidth';
 
 describe('Feature: Markdown Table Rendering in AI Output', () => {
   describe('Scenario: Simple table with two columns renders with box borders', () => {
@@ -160,6 +161,57 @@ describe('Feature: Markdown Table Rendering in AI Output', () => {
       expect(result).toContain('30');
       // Code fence markers should be gone
       expect(result).not.toContain('```');
+    });
+
+    it('should correctly align columns with emojis', () => {
+      // Emojis have visual width 2 in terminals but JS .length reports different values
+      // ✅ (U+2705) - BMP emoji, .length=1 but visual width=2
+      // 🚧 (U+1F6A7) - non-BMP emoji, .length=2, visual width=2
+      // ❌ (U+274C) - BMP emoji, .length=1 but visual width=2
+      const input = `| Feature | Status | Notes |
+|-|-|-|
+| Login | ✅ Complete | Deployed v1.2 |
+| Dashboard | 🚧 WIP | *In progress* |
+| API | ❌ Blocked | Waiting on spec |`;
+
+      const result = formatMarkdownTables(input);
+
+      // All rows should have the same visual width for proper alignment
+      // Filter out empty lines (trailing newline creates empty last line)
+      const lines = result.split('\n').filter(line => line.length > 0);
+      const widths = lines.map(line => getVisualWidth(line));
+
+      // All lines should have equal visual width
+      const firstWidth = widths[0];
+      widths.forEach((width, idx) => {
+        expect(width).toBe(
+          firstWidth,
+          `Row ${idx} has width ${width}, expected ${firstWidth}`
+        );
+      });
+
+      // Verify the table structure is correct
+      expect(result).toContain('┌');
+      expect(result).toContain('✅');
+      expect(result).toContain('🚧');
+      expect(result).toContain('❌');
+    });
+
+    it('should add trailing newline after table for proper separation', () => {
+      const input = '| A | B |\n|---|---|\n| 1 | 2 |';
+      const result = formatMarkdownTables(input);
+
+      // Result should end with a newline
+      expect(result.endsWith('\n')).toBe(true);
+
+      // Content after table should start on new line
+      const inputWithContent =
+        '| A | B |\n|---|---|\n| 1 | 2 |\n\n---\n\nMore text';
+      const resultWithContent = formatMarkdownTables(inputWithContent);
+
+      // The --- should not be stuck to the table
+      expect(resultWithContent).toContain('┘\n');
+      expect(resultWithContent).toContain('---');
     });
   });
 });
