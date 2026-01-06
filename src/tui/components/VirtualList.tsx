@@ -94,30 +94,23 @@ interface VirtualListProps<T> {
   emptyMessage?: string;
   showScrollbar?: boolean;
   enableWrapAround?: boolean;
-  reservedLines?: number; // Lines reserved for headers/footers (default: 4)
-  isFocused?: boolean; // Whether this VirtualList should respond to keyboard input (default: true)
-  scrollToEnd?: boolean; // Auto-scroll to end when items change (default: false)
-  selectionMode?: 'item' | 'scroll'; // 'item' = individual item selection (default), 'scroll' = pure viewport scrolling (TUI-032)
-  // TUI-044: When true, preserve selection position by messageIndex instead of line index
-  // This prevents selection from jumping when content changes (e.g., expand/collapse)
-  preserveSelectionOnContentChange?: boolean;
-  fixedHeight?: number; // Optional fixed height to skip measureElement overhead
-  // TUI-042: Custom navigation logic - returns new index when navigating
-  // If not provided, uses ±1 (single item navigation)
-  getNextIndex?: (currentIndex: number, direction: 'up' | 'down', items: T[]) => number;
-  // TUI-042: Custom selection check - returns true if item at index should be highlighted
-  // If not provided, uses index === selectedIndex (single item selection)
-  getIsSelected?: (index: number, selectedIndex: number, items: T[]) => boolean;
-  // TUI-043: Ref to expose selected index to parent component (for /expand command)
+  reservedLines?: number;
+  isFocused?: boolean;
+  scrollToEnd?: boolean;
+  selectionMode?: 'item' | 'scroll';
+  fixedHeight?: number;
+  
+  // TUI-042/043/044: Group-based selection (for turn selection)
+  // When provided, items are grouped by the returned identifier.
+  // Navigation moves between groups, selection highlights entire group,
+  // and selection is preserved by group ID when content changes.
+  groupBy?: (item: T) => string | number;
+  
+  // Extra lines to include before the group when scrolling (for separator bars)
+  groupPaddingBefore?: number;
+  
+  // Ref to expose selected index to parent (for /expand command)
   selectionRef?: React.MutableRefObject<{ selectedIndex: number }>;
-  // TUI-044: Get the visible range for a selection (for turn-based selection where top/bottom separators need to be visible)
-  // Returns [firstIndex, lastIndex] of lines that should all be visible when this item is selected
-  // If not provided, assumes single item selection (visible range = [selectedIndex, selectedIndex])
-  getVisibleRange?: (selectedIndex: number, items: T[]) => [number, number];
-  // TUI-044: Get a stable identifier for an item (for preserving selection when content changes)
-  // When items change, the selection is preserved by finding the first item with the same identifier
-  // If not provided, selection is based on index which may jump when content changes
-  getItemIdentifier?: (item: T, index: number) => string | number;
 }
 
 export function VirtualList<T>({
@@ -134,22 +127,15 @@ export function VirtualList<T>({
   scrollToEnd = false,
   selectionMode = 'item',
   fixedHeight,
-  getNextIndex,
-  getIsSelected,
+  groupBy,
+  groupPaddingBefore = 0,
   selectionRef,
-  getVisibleRange,
-  getItemIdentifier,
 }: VirtualListProps<T>): React.ReactElement {
   // Enable mouse tracking mode for button events only (not mouse movement)
-  // OPTIMIZATION: Only enable when focused to reduce overhead
   useEffect(() => {
     if (!isFocused) return;
-
-    // \x1b[?1000h enables "button event" tracking (clicks and scroll only)
     process.stdout.write('\x1b[?1000h');
-
     return () => {
-      // Disable mouse tracking mode on unmount
       process.stdout.write('\x1b[?1000l');
     };
   }, [isFocused]);
@@ -158,370 +144,309 @@ export function VirtualList<T>({
   const [scrollOffset, setScrollOffset] = useState(0);
   const { height: terminalHeight } = useTerminalSize();
 
-  // TUI-044: Track the selected item's identifier to preserve selection when content changes
-  const selectedIdentifierRef = useRef<string | number | null>(null);
+  // Track selected group ID to preserve selection when content changes
+  const selectedGroupIdRef = useRef<string | number | null>(null);
 
-  // TUI-043: Update selectionRef when selectedIndex changes
+  // Update selectionRef and track group ID
   useEffect(() => {
     if (selectionRef) {
       selectionRef.current = { selectedIndex };
     }
-    // TUI-044: Update the selected identifier when selection changes
-    if (getItemIdentifier && items[selectedIndex]) {
-      selectedIdentifierRef.current = getItemIdentifier(items[selectedIndex], selectedIndex);
+    if (groupBy && items[selectedIndex]) {
+      selectedGroupIdRef.current = groupBy(items[selectedIndex]);
     }
-  }, [selectedIndex, selectionRef, getItemIdentifier, items]);
+  }, [selectedIndex, selectionRef, groupBy, items]);
 
-  // TUI-044: When items change and we have a getItemIdentifier, try to find the item with the same identifier
-  // This preserves selection when content changes (e.g., expand/collapse)
+  // Preserve selection by group ID when items change
   useEffect(() => {
-    if (!getItemIdentifier || selectedIdentifierRef.current === null) return;
+    if (!groupBy || selectedGroupIdRef.current === null || items.length === 0) return;
     
-    // Find the first item with the same identifier
+    const targetGroupId = selectedGroupIdRef.current;
+    // Find first item with same group ID
     for (let i = 0; i < items.length; i++) {
-      if (getItemIdentifier(items[i], i) === selectedIdentifierRef.current) {
+      if (groupBy(items[i]) === targetGroupId) {
         if (i !== selectedIndex) {
           setSelectedIndex(i);
         }
         return;
       }
     }
-    // If not found, the selection will remain at the old index (or be clamped later)
-  }, [items, getItemIdentifier, selectedIndex]);
+  }, [items, groupBy, selectedIndex]);
 
-  // Measure actual container height after flexbox layout
+  // Measure container height
   const containerRef = useRef<DOMElement>(null);
   const [measuredHeight, setMeasuredHeight] = useState<number | null>(null);
-
-  // Track last scroll time for acceleration
   const lastScrollTime = useRef<number>(0);
   const scrollVelocity = useRef<number>(1);
-
-  // Track if user has manually scrolled away from bottom (for sticky scroll behavior)
-  // When true, auto-scroll to end is disabled until user scrolls back to bottom
   const [userScrolledAway, setUserScrolledAway] = useState(false);
-
-  // Track if measurement is scheduled to debounce
   const measurementScheduled = useRef(false);
 
-  // Measure container height after layout using Yoga layout engine
-  // OPTIMIZATION: Debounce measurements and skip when fixedHeight provided
   useLayoutEffect(() => {
     if (fixedHeight !== undefined) {
-      // Skip measurement if fixed height provided
       setMeasuredHeight(fixedHeight);
       return;
     }
-
     if (!containerRef.current || measurementScheduled.current) return;
-
-    // Debounce measurements using setTimeout(0) to coalesce multiple calls
     measurementScheduled.current = true;
     const timeoutId = setTimeout(() => {
       if (containerRef.current) {
         const dimensions = measureElement(containerRef.current);
-        // Use measured height (lines = height, since each item is 1 line in terminal)
-        // This respects flexbox layout and gives us the ACTUAL allocated space
-        // Floor first to handle fractional heights, then subtract 2 for safety margin
-        // This prevents overflow from accumulated rounding errors in nested flexbox containers
-        // with borders that may consume partial lines
         if (dimensions.height > 0) {
           const newHeight = Math.max(1, Math.floor(dimensions.height) - 2);
-          // Only update if changed to prevent unnecessary re-renders
           setMeasuredHeight(prev => (prev !== newHeight ? newHeight : prev));
         }
       }
       measurementScheduled.current = false;
     }, 0);
-
     return () => {
       clearTimeout(timeoutId);
       measurementScheduled.current = false;
     };
-  }, [terminalHeight, fixedHeight]); // Removed items.length - only re-measure on terminal resize
+  }, [terminalHeight, fixedHeight]);
 
-  // Calculate visible window from measured container height (if available) or terminal size
-  // Priority: fixed height > measured container height > terminal height calculation
-  // OPTIMIZATION: Memoize visibleHeight calculation
   const visibleHeight = useMemo(() => {
     if (fixedHeight !== undefined) return fixedHeight;
     return measuredHeight !== null
       ? Math.max(1, measuredHeight)
       : Math.max(1, terminalHeight - reservedLines);
   }, [measuredHeight, terminalHeight, reservedLines, fixedHeight]);
+
   const visibleItems = useMemo(() => {
     const start = scrollOffset;
     const end = Math.min(items.length, scrollOffset + visibleHeight);
     return items.slice(start, end);
   }, [items, scrollOffset, visibleHeight]);
 
-  // Reset selection if items change
+  // Clamp selection if items shrink
   useEffect(() => {
     if (items.length > 0 && selectedIndex >= items.length) {
       setSelectedIndex(Math.max(0, items.length - 1));
     }
   }, [items.length, selectedIndex]);
 
-  // Compute max scroll offset for scroll mode (TUI-032)
-  // OPTIMIZATION: Memoize to avoid recalculation
   const maxScrollOffset = useMemo(
     () => Math.max(0, items.length - visibleHeight),
     [items.length, visibleHeight]
   );
 
-  // Direct scroll offset manipulation for scroll mode (TUI-032)
-  // This bypasses selection tracking and directly moves the viewport
-  // OPTIMIZATION: useCallback for stable reference
-  const scrollTo = useCallback(
-    (offset: number): void => {
-      setScrollOffset(Math.max(0, Math.min(maxScrollOffset, offset)));
-    },
-    [maxScrollOffset]
-  );
-
-  // Auto-scroll to end when items change (for chat-style interfaces)
-  // Respects userScrolledAway: if user has scrolled away from bottom, don't auto-scroll
-  // TUI-044: Also skip auto-scroll in item mode when preserveSelectionOnContentChange is true
-  // (e.g., when expanding/collapsing content, we want to keep the selection stable)
+  // Auto-scroll to end (only in scroll mode to preserve selection in item mode)
   useEffect(() => {
     if (scrollToEnd && items.length > 0 && !userScrolledAway && selectionMode !== 'item') {
-      // In scroll mode, only update scrollOffset (TUI-032)
-      // In item mode, skip auto-scroll to preserve selection position
-      // Scroll to show the last item at the bottom
       const lastIndex = items.length - 1;
       const newOffset = Math.max(0, lastIndex - visibleHeight + 1);
       setScrollOffset(newOffset);
     }
   }, [scrollToEnd, items.length, visibleHeight, selectionMode, userScrolledAway]);
 
-  // Adjust scroll offset to keep selected item visible (TUI-032: only in item mode)
-  // In scroll mode, selection doesn't drive scrolling - viewport scrolls independently
-  // TUI-044: Use getVisibleRange to determine the full range that needs to be visible
-  useEffect(() => {
-    if (selectionMode === 'item') {
-      // Get the range that needs to be visible (for turn-based selection, includes separator lines)
-      const [rangeStart, rangeEnd] = getVisibleRange 
-        ? getVisibleRange(selectedIndex, items) 
-        : [selectedIndex, selectedIndex];
-      
-      // Check if range start is above viewport
-      if (rangeStart < scrollOffset) {
-        setScrollOffset(rangeStart);
-      } 
-      // Check if range end is below viewport
-      else if (rangeEnd >= scrollOffset + visibleHeight) {
-        // Scroll so that rangeEnd is at the bottom of the viewport
-        // But ensure rangeStart is still visible if the range fits in viewport
-        const rangeSize = rangeEnd - rangeStart + 1;
-        if (rangeSize <= visibleHeight) {
-          // Range fits in viewport - scroll to show entire range
-          setScrollOffset(rangeEnd - visibleHeight + 1);
-        } else {
-          // Range is larger than viewport - show rangeStart at top
-          setScrollOffset(rangeStart);
-        }
+  // Get visible range for current selection (including group padding)
+  const getVisibleRange = useCallback((index: number): [number, number] => {
+    if (!groupBy || items.length === 0) {
+      return [index, index];
+    }
+    
+    const groupId = items[index] ? groupBy(items[index]) : null;
+    if (groupId === null) return [index, index];
+    
+    // Find first and last item in group
+    let rangeStart = index;
+    let rangeEnd = index;
+    
+    for (let i = index - 1; i >= 0; i--) {
+      if (groupBy(items[i]) === groupId) {
+        rangeStart = i;
+      } else {
+        break;
       }
     }
-  }, [selectedIndex, scrollOffset, visibleHeight, selectionMode, getVisibleRange, items]);
-
-  // Call onFocus when selection changes (TUI-032: only in item mode)
-  // In scroll mode, no item is ever focused so onFocus is never called
-  useEffect(() => {
-    if (selectionMode === 'item') {
-      if (
-        items.length > 0 &&
-        selectedIndex >= 0 &&
-        selectedIndex < items.length
-      ) {
-        onFocus?.(items[selectedIndex], selectedIndex);
+    
+    for (let i = index + 1; i < items.length; i++) {
+      if (groupBy(items[i]) === groupId) {
+        rangeEnd = i;
+      } else {
+        break;
       }
+    }
+    
+    // Apply padding before (for separator lines)
+    rangeStart = Math.max(0, rangeStart - groupPaddingBefore);
+    
+    return [rangeStart, rangeEnd];
+  }, [groupBy, items, groupPaddingBefore]);
+
+  // Adjust scroll to keep selection visible
+  useEffect(() => {
+    if (selectionMode !== 'item') return;
+    
+    const [rangeStart, rangeEnd] = getVisibleRange(selectedIndex);
+    
+    if (rangeStart < scrollOffset) {
+      setScrollOffset(rangeStart);
+    } else if (rangeEnd >= scrollOffset + visibleHeight) {
+      const rangeSize = rangeEnd - rangeStart + 1;
+      if (rangeSize <= visibleHeight) {
+        setScrollOffset(rangeEnd - visibleHeight + 1);
+      } else {
+        setScrollOffset(rangeStart);
+      }
+    }
+  }, [selectedIndex, scrollOffset, visibleHeight, selectionMode, getVisibleRange]);
+
+  // Call onFocus when selection changes
+  useEffect(() => {
+    if (selectionMode === 'item' && items.length > 0 && selectedIndex >= 0 && selectedIndex < items.length) {
+      onFocus?.(items[selectedIndex], selectedIndex);
     }
   }, [selectedIndex, items, onFocus, selectionMode]);
 
-  const navigateTo = useCallback(
-    (newIndex: number): void => {
-      if (items.length === 0) {
-        return;
-      }
-
-      let targetIndex = newIndex;
-
-      if (enableWrapAround) {
-        if (targetIndex < 0) {
-          targetIndex = items.length - 1;
-        } else if (targetIndex >= items.length) {
-          targetIndex = 0;
-        }
-      } else {
-        targetIndex = Math.max(0, Math.min(items.length - 1, targetIndex));
-      }
-
-      setSelectedIndex(targetIndex);
-    },
-    [items.length, enableWrapAround]
-  );
-
-  // Mouse scroll handler with acceleration (TUI-032: uses scrollTo in scroll mode)
-  // Scroll faster when scrolling rapidly, slower for precise positioning
-  // Also tracks userScrolledAway state for sticky scroll behavior
-  // OPTIMIZATION: useCallback for stable reference
-  const handleScroll = useCallback(
-    (direction: 'up' | 'down'): void => {
-      const now = Date.now();
-      const timeDelta = now - lastScrollTime.current;
-
-      // If scrolling within 150ms, increase velocity (acceleration)
-      // If paused longer, reset to base speed for precise control
-      if (timeDelta < 150) {
-        scrollVelocity.current = Math.min(scrollVelocity.current + 1, 5); // Max 5 items
-      } else {
-        scrollVelocity.current = 1; // Reset to 1 item for precise control
-      }
-
-      lastScrollTime.current = now;
-      const scrollAmount = scrollVelocity.current;
-      const delta = direction === 'down' ? scrollAmount : -scrollAmount;
-
-      if (selectionMode === 'scroll') {
-        // In scroll mode, directly adjust scrollOffset (TUI-032)
-        const newOffset = Math.max(0, Math.min(maxScrollOffset, scrollOffset + delta));
-        setScrollOffset(newOffset);
-        
-        // Track if user scrolled away from bottom (for sticky scroll behavior)
-        // If scrolling up and not at bottom, mark as scrolled away
-        // If at bottom (or within 1 line), re-enable auto-scroll
-        if (scrollToEnd) {
-          const isAtBottom = newOffset >= maxScrollOffset - 1;
-          if (direction === 'up' && !isAtBottom) {
-            setUserScrolledAway(true);
-          } else if (isAtBottom) {
-            setUserScrolledAway(false);
+  // Navigate to previous/next group (or item if no groupBy)
+  const navigateToGroup = useCallback((direction: 'up' | 'down'): void => {
+    if (items.length === 0) return;
+    
+    if (!groupBy) {
+      // No grouping - standard single item navigation
+      const newIndex = direction === 'up' 
+        ? Math.max(0, selectedIndex - 1)
+        : Math.min(items.length - 1, selectedIndex + 1);
+      setSelectedIndex(newIndex);
+      return;
+    }
+    
+    const currentGroupId = items[selectedIndex] ? groupBy(items[selectedIndex]) : null;
+    
+    if (direction === 'up') {
+      // Find first line of previous group
+      for (let i = selectedIndex - 1; i >= 0; i--) {
+        if (groupBy(items[i]) !== currentGroupId) {
+          const prevGroupId = groupBy(items[i]);
+          // Find first line of that group
+          for (let j = i; j >= 0; j--) {
+            if (groupBy(items[j]) !== prevGroupId) {
+              setSelectedIndex(j + 1);
+              return;
+            }
           }
+          setSelectedIndex(0);
+          return;
         }
+      }
+      // Already at first group - stay at first line of current group
+      for (let i = 0; i < items.length; i++) {
+        if (groupBy(items[i]) === currentGroupId) {
+          setSelectedIndex(i);
+          return;
+        }
+      }
+    } else {
+      // Find first line of next group
+      for (let i = selectedIndex + 1; i < items.length; i++) {
+        if (groupBy(items[i]) !== currentGroupId) {
+          setSelectedIndex(i);
+          return;
+        }
+      }
+      // Already at last group - stay at first line of current group
+      for (let i = 0; i < items.length; i++) {
+        if (groupBy(items[i]) === currentGroupId) {
+          setSelectedIndex(i);
+          return;
+        }
+      }
+    }
+  }, [items, selectedIndex, groupBy]);
+
+  const navigateTo = useCallback((newIndex: number): void => {
+    if (items.length === 0) return;
+    let targetIndex = newIndex;
+    if (enableWrapAround) {
+      if (targetIndex < 0) targetIndex = items.length - 1;
+      else if (targetIndex >= items.length) targetIndex = 0;
+    } else {
+      targetIndex = Math.max(0, Math.min(items.length - 1, targetIndex));
+    }
+    setSelectedIndex(targetIndex);
+  }, [items.length, enableWrapAround]);
+
+  // Mouse scroll handler with acceleration
+  const handleScroll = useCallback((direction: 'up' | 'down'): void => {
+    const now = Date.now();
+    const timeDelta = now - lastScrollTime.current;
+    if (timeDelta < 150) {
+      scrollVelocity.current = Math.min(scrollVelocity.current + 1, 5);
+    } else {
+      scrollVelocity.current = 1;
+    }
+    lastScrollTime.current = now;
+    const scrollAmount = scrollVelocity.current;
+    const delta = direction === 'down' ? scrollAmount : -scrollAmount;
+
+    if (selectionMode === 'scroll') {
+      const newOffset = Math.max(0, Math.min(maxScrollOffset, scrollOffset + delta));
+      setScrollOffset(newOffset);
+      if (scrollToEnd) {
+        const isAtBottom = newOffset >= maxScrollOffset - 1;
+        if (direction === 'up' && !isAtBottom) setUserScrolledAway(true);
+        else if (isAtBottom) setUserScrolledAway(false);
+      }
+    } else {
+      if (groupBy) {
+        navigateToGroup(direction);
       } else {
-        // In item mode, navigate through items
-        // TUI-042: Use custom navigation if provided (e.g., for turn-based selection)
-        if (getNextIndex) {
-          const newIndex = getNextIndex(selectedIndex, direction, items);
-          navigateTo(newIndex);
-        } else {
-          // Default: move by delta (with acceleration)
-          navigateTo(selectedIndex + delta);
-        }
+        navigateTo(selectedIndex + delta);
       }
-    },
-    [scrollOffset, selectedIndex, selectionMode, maxScrollOffset, navigateTo, scrollToEnd, getNextIndex, items]
-  );
+    }
+  }, [scrollOffset, selectedIndex, selectionMode, maxScrollOffset, navigateTo, navigateToGroup, scrollToEnd, groupBy]);
 
-  // Mouse scroll handling - respects isFocused to only scroll the focused list
-  useInput(
-    (input, key) => {
-      if (items.length === 0) {
-        return;
-      }
+  // Mouse scroll input handler
+  useInput((input, key) => {
+    if (items.length === 0) return;
+    if (input.startsWith('[M')) {
+      const buttonByte = input.charCodeAt(2);
+      if (buttonByte === 96) { handleScroll('up'); return; }
+      if (buttonByte === 97) { handleScroll('down'); return; }
+    }
+    if (key.mouse) {
+      if (key.mouse.button === 'wheelDown') { handleScroll('down'); return; }
+      if (key.mouse.button === 'wheelUp') { handleScroll('up'); return; }
+    }
+  }, { isActive: isFocused });
 
-      // Parse raw mouse escape sequences manually (for terminals where Ink doesn't parse them)
-      // Format: ESC[M<btn><x><y> where btn encodes button and action
-      if (input.startsWith('[M')) {
-        const buttonByte = input.charCodeAt(2);
-
-        // Button encoding for scroll wheel (standard xterm):
-        // Button codes: 64 = scroll up, 65 = scroll down
-        // With 32-byte offset in escape sequence: 96 = scroll up, 97 = scroll down
-        if (buttonByte === 96) {
-          // ASCII 96 = '`' = button 64 = scroll up
-          handleScroll('up');
-          return;
-        } else if (buttonByte === 97) {
-          // ASCII 97 = 'a' = button 65 = scroll down
-          handleScroll('down');
-          return;
-        }
-      }
-
-      // Mouse scroll handling (key.mouse exists for mouse events - when Ink parses them)
-      if (key.mouse) {
-        // Traditional scrolling: scroll down shows items below, scroll up shows items above
-        if (key.mouse.button === 'wheelDown') {
-          handleScroll('down');
-          return;
-        } else if (key.mouse.button === 'wheelUp') {
-          handleScroll('up');
-          return;
-        }
-      }
-    },
-    { isActive: isFocused }
-  );
-
-  // Scroll mode navigation handler (TUI-032)
-  // Also tracks userScrolledAway state for sticky scroll behavior
+  // Scroll mode navigation
   const handleScrollNavigation = (key: {
-    upArrow?: boolean;
-    downArrow?: boolean;
-    pageUp?: boolean;
-    pageDown?: boolean;
-    home?: boolean;
-    end?: boolean;
+    upArrow?: boolean; downArrow?: boolean;
+    pageUp?: boolean; pageDown?: boolean;
+    home?: boolean; end?: boolean;
   }): void => {
     let newOffset = scrollOffset;
     let isScrollingUp = false;
     
-    if (key.upArrow) {
-      newOffset = Math.max(0, scrollOffset - 1);
-      isScrollingUp = true;
-    } else if (key.downArrow) {
-      newOffset = Math.min(maxScrollOffset, scrollOffset + 1);
-    } else if (key.pageUp) {
-      newOffset = Math.max(0, scrollOffset - visibleHeight);
-      isScrollingUp = true;
-    } else if (key.pageDown) {
-      newOffset = Math.min(maxScrollOffset, scrollOffset + visibleHeight);
-    } else if (key.home) {
-      newOffset = 0;
-      isScrollingUp = true;
-    } else if (key.end) {
-      newOffset = maxScrollOffset;
-    }
+    if (key.upArrow) { newOffset = Math.max(0, scrollOffset - 1); isScrollingUp = true; }
+    else if (key.downArrow) { newOffset = Math.min(maxScrollOffset, scrollOffset + 1); }
+    else if (key.pageUp) { newOffset = Math.max(0, scrollOffset - visibleHeight); isScrollingUp = true; }
+    else if (key.pageDown) { newOffset = Math.min(maxScrollOffset, scrollOffset + visibleHeight); }
+    else if (key.home) { newOffset = 0; isScrollingUp = true; }
+    else if (key.end) { newOffset = maxScrollOffset; }
     
     setScrollOffset(newOffset);
-    
-    // Track if user scrolled away from bottom (for sticky scroll behavior)
     if (scrollToEnd) {
       const isAtBottom = newOffset >= maxScrollOffset - 1;
-      if (isScrollingUp && !isAtBottom) {
-        setUserScrolledAway(true);
-      } else if (isAtBottom) {
-        setUserScrolledAway(false);
-      }
+      if (isScrollingUp && !isAtBottom) setUserScrolledAway(true);
+      else if (isAtBottom) setUserScrolledAway(false);
     }
   };
 
-  // Item mode navigation handler
-  // TUI-042: Uses getNextIndex for custom navigation (e.g., turn-based selection)
+  // Item mode navigation
   const handleItemNavigation = (key: {
-    upArrow?: boolean;
-    downArrow?: boolean;
-    pageUp?: boolean;
-    pageDown?: boolean;
-    home?: boolean;
-    end?: boolean;
-    return?: boolean;
+    upArrow?: boolean; downArrow?: boolean;
+    pageUp?: boolean; pageDown?: boolean;
+    home?: boolean; end?: boolean; return?: boolean;
   }): void => {
     if (key.upArrow) {
-      if (getNextIndex) {
-        navigateTo(getNextIndex(selectedIndex, 'up', items));
-      } else {
-        navigateTo(selectedIndex - 1);
-      }
+      if (groupBy) navigateToGroup('up');
+      else navigateTo(selectedIndex - 1);
     } else if (key.downArrow) {
-      if (getNextIndex) {
-        navigateTo(getNextIndex(selectedIndex, 'down', items));
-      } else {
-        navigateTo(selectedIndex + 1);
-      }
+      if (groupBy) navigateToGroup('down');
+      else navigateTo(selectedIndex + 1);
     } else if (key.pageUp) {
-      // Page up/down always use line-based navigation for now
       navigateTo(Math.max(0, selectedIndex - visibleHeight));
     } else if (key.pageDown) {
       navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));
@@ -534,39 +459,27 @@ export function VirtualList<T>({
     }
   };
 
-  // Keyboard navigation - respects isFocused
-  useInput(
-    (input, key) => {
-      // Log ALL keyboard input in VirtualList for debugging
-      logger.info(`[VirtualList] useInput called: input=${JSON.stringify(input)} (length=${input.length}) key=${JSON.stringify(key)} isFocused=${isFocused} selectionMode=${selectionMode}`);
-      
-      if (items.length === 0) {
-        logger.info('[VirtualList] No items, returning');
-        return;
-      }
+  // Keyboard navigation
+  useInput((input, key) => {
+    logger.info(`[VirtualList] useInput: input=${JSON.stringify(input)} key=${JSON.stringify(key)} isFocused=${isFocused} selectionMode=${selectionMode}`);
+    if (items.length === 0) return;
+    if (input.startsWith('[M') || key.mouse) return;
+    if (key.shift && (key.upArrow || key.downArrow)) return;
 
-      // Skip mouse events (handled above)
-      if (input.startsWith('[M') || key.mouse) {
-        logger.info('[VirtualList] Skipping mouse event');
-        return;
-      }
+    if (selectionMode === 'scroll') {
+      handleScrollNavigation(key);
+    } else {
+      handleItemNavigation(key);
+    }
+  }, { isActive: isFocused });
 
-      // Skip Shift+Arrow (used for history navigation in AgentView)
-      if (key.shift && (key.upArrow || key.downArrow)) {
-        logger.info('[VirtualList] Skipping shift+arrow (history)');
-        return;
-      }
-
-      if (selectionMode === 'scroll') {
-        logger.info('[VirtualList] Handling scroll navigation');
-        handleScrollNavigation(key);
-      } else {
-        logger.info('[VirtualList] Handling item navigation');
-        handleItemNavigation(key);
-      }
-    },
-    { isActive: isFocused }
-  );
+  // Check if item is selected (for group selection, all items in group are selected)
+  const isItemSelected = useCallback((index: number): boolean => {
+    if (selectionMode !== 'item') return false;
+    if (!groupBy) return index === selectedIndex;
+    if (!items[index] || !items[selectedIndex]) return false;
+    return groupBy(items[index]) === groupBy(items[selectedIndex]);
+  }, [selectionMode, groupBy, items, selectedIndex]);
 
   if (items.length === 0) {
     return (
@@ -581,16 +494,7 @@ export function VirtualList<T>({
       <Box flexDirection="column" flexGrow={1}>
         {visibleItems.map((item, visibleIndex) => {
           const actualIndex = scrollOffset + visibleIndex;
-          // In scroll mode, isSelected is always false (TUI-032)
-          // TUI-042: Use custom getIsSelected if provided (e.g., for turn-based selection)
-          let isSelected: boolean;
-          if (selectionMode !== 'item') {
-            isSelected = false;
-          } else if (getIsSelected) {
-            isSelected = getIsSelected(actualIndex, selectedIndex, items);
-          } else {
-            isSelected = actualIndex === selectedIndex;
-          }
+          const isSelected = isItemSelected(actualIndex);
           return (
             <Box key={keyExtractor(item, actualIndex)}>
               {renderItem(item, actualIndex, isSelected, selectedIndex)}

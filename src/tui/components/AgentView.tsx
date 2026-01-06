@@ -4974,93 +4974,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           isFocused={!showProviderSelector && !showModelSelector && !showSettingsTab && !isResumeMode && !isSearchMode}
           scrollToEnd={true}
           selectionMode={isTurnSelectMode ? 'item' : 'scroll'}
-          // TUI-042: Custom navigation for turn-based selection
-          getNextIndex={isTurnSelectMode ? (currentIndex, direction, items) => {
-            if (items.length === 0) return 0;
-            const currentTurn = items[currentIndex]?.messageIndex ?? -1;
-            
-            if (direction === 'up') {
-              // Find first line of previous turn
-              for (let i = currentIndex - 1; i >= 0; i--) {
-                if (items[i].messageIndex !== currentTurn) {
-                  // Found a different turn, now find its first line
-                  const prevTurn = items[i].messageIndex;
-                  for (let j = i; j >= 0; j--) {
-                    if (items[j].messageIndex !== prevTurn) {
-                      return j + 1; // First line of prevTurn
-                    }
-                  }
-                  return 0; // prevTurn starts at beginning
-                }
-              }
-              // Already at first turn, stay at first line
-              for (let i = 0; i < items.length; i++) {
-                if (items[i].messageIndex === currentTurn) {
-                  return i;
-                }
-              }
-              return 0;
-            } else {
-              // Find first line of next turn
-              for (let i = currentIndex + 1; i < items.length; i++) {
-                if (items[i].messageIndex !== currentTurn) {
-                  return i; // First line of next turn
-                }
-              }
-              // Already at last turn, find first line of current turn
-              for (let i = 0; i < items.length; i++) {
-                if (items[i].messageIndex === currentTurn) {
-                  return i;
-                }
-              }
-              return currentIndex;
-            }
-          } : undefined}
-          // TUI-042: Custom selection highlighting for turn-based selection
-          getIsSelected={isTurnSelectMode ? (index, selectedIndex, items) => {
-            if (items.length === 0) return false;
-            return items[index]?.messageIndex === items[selectedIndex]?.messageIndex;
-          } : undefined}
-          // TUI-044: Get visible range for turn-based selection (includes separator lines above and below)
-          getVisibleRange={isTurnSelectMode ? (selectedIndex, items) => {
-            if (items.length === 0) return [0, 0];
-            const selectedMessageIndex = items[selectedIndex]?.messageIndex;
-            if (selectedMessageIndex === undefined) return [selectedIndex, selectedIndex];
-            
-            // Find the first line of this turn (skip separator from previous turn)
-            let rangeStart = selectedIndex;
-            for (let i = selectedIndex - 1; i >= 0; i--) {
-              if (items[i].messageIndex === selectedMessageIndex) {
-                rangeStart = i;
-              } else {
-                // Check if previous line is a separator that belongs to this turn's "top bar"
-                // The separator before this turn has a different messageIndex but we need to include it
-                // Actually, separators belong to the turn BEFORE them (the turn that just ended)
-                // So we need to find the separator that precedes this turn
-                if (items[i].isSeparator) {
-                  rangeStart = i; // Include the separator as the top bar
-                }
-                break;
-              }
-            }
-            
-            // Find the last line of this turn (including its separator)
-            let rangeEnd = selectedIndex;
-            for (let i = selectedIndex + 1; i < items.length; i++) {
-              if (items[i].messageIndex === selectedMessageIndex) {
-                rangeEnd = i;
-              } else {
-                break;
-              }
-            }
-            
-            return [rangeStart, rangeEnd];
-          } : undefined}
+          // TUI-042/043/044: Group-based selection for turn navigation
+          // Groups lines by messageIndex, navigates between groups, preserves selection on expand/collapse
+          groupBy={isTurnSelectMode ? (line) => line.messageIndex : undefined}
+          groupPaddingBefore={isTurnSelectMode ? 1 : 0}
           // TUI-043: Expose selection state to parent for /expand command
           selectionRef={virtualListSelectionRef}
-          // TUI-044: Preserve selection when content changes (e.g., expand/collapse)
-          // Use messageIndex as identifier so selection stays on same turn when line count changes
-          getItemIdentifier={isTurnSelectMode ? (line) => line.messageIndex : undefined}
         />
       </Box>
 
