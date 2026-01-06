@@ -5058,6 +5058,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           } : undefined}
           // TUI-043: Expose selection state to parent for /expand command
           selectionRef={virtualListSelectionRef}
+          // TUI-044: Preserve selection when content changes (e.g., expand/collapse)
+          // Use messageIndex as identifier so selection stays on same turn when line count changes
+          getItemIdentifier={isTurnSelectMode ? (line) => line.messageIndex : undefined}
         />
       </Box>
 
