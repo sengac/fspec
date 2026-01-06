@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-06T08:16:12.839Z"
+    "lastUpdated": "2026-01-06T08:29:57.722Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -60747,9 +60747,9 @@
       "id": "TUI-045",
       "title": "Select mode enter key opens full turn modal",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2026-01-06T07:47:49.973Z",
-      "updatedAt": "2026-01-06T08:19:17.450Z",
+      "updatedAt": "2026-01-06T08:29:57.753Z",
       "children": [],
       "userStory": {
         "role": "user in select mode navigating turns in AgentView",
@@ -60768,6 +60768,14 @@
         {
           "state": "implementing",
           "timestamp": "2026-01-06T08:19:17.450Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-06T08:29:37.216Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-06T08:29:57.753Z"
         }
       ],
       "rules": [
@@ -60981,7 +60989,10 @@
         }
       ],
       "nextNoteId": 9,
-      "estimate": 5
+      "estimate": 5,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-06T08:29:57.753Z"
     }
   },
   "states": {
@@ -61050,11 +61061,10 @@
       "MODEL-001"
     ],
     "testing": [],
-    "implementing": [
-      "TUI-045"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "TUI-045",
       "TUI-038",
       "TUI-044",
       "TUI-043",
