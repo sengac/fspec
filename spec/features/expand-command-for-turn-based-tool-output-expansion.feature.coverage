@@ -1,0 +1,294 @@
+{
+  "scenarios": [
+    {
+      "name": "Expand collapsed tool output in turn selection mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/expand-command.test.ts",
+          "lines": "84-113",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1203,
+                1204,
+                1205,
+                1206,
+                1207,
+                1208,
+                1209,
+                1210,
+                1211,
+                1212,
+                1213,
+                1214,
+                1215,
+                1216,
+                1217,
+                1218,
+                1219,
+                1220,
+                1221,
+                1222,
+                1223,
+                1224,
+                1225,
+                1226,
+                1227,
+                1228,
+                1229,
+                1230,
+                1231,
+                1232,
+                1233,
+                1234,
+                1235,
+                1236,
+                1237,
+                1238,
+                1239,
+                1240,
+                1241,
+                1242,
+                1243,
+                1244,
+                1245,
+                1246,
+                1247,
+                1248,
+                1249,
+                1250,
+                1251,
+                1252
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Collapse expanded turn by running expand again",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/expand-command.test.ts",
+          "lines": "115-140",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1229,
+                1230,
+                1231,
+                1232,
+                1233,
+                1234,
+                1235,
+                1236,
+                1237,
+                1238,
+                1239,
+                1240,
+                1241,
+                1242,
+                1243,
+                1244,
+                1245,
+                1246,
+                1247,
+                1248,
+                1249,
+                1250,
+                1251,
+                1252
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Updated hint message in collapsed tool output",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/expand-command.test.ts",
+          "lines": "157-171",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expand collapsed diff output from Edit tool",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/expand-command.test.ts",
+          "lines": "173-196",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                2093,
+                2094,
+                2095,
+                2096,
+                2097,
+                2098,
+                2099,
+                2100,
+                2101,
+                2102,
+                2103,
+                2104,
+                2105,
+                2106,
+                2107,
+                2108,
+                2109,
+                2110,
+                2111,
+                2112,
+                2113,
+                2114,
+                2115,
+                2116,
+                2117,
+                2118,
+                2119,
+                2120,
+                2121,
+                2122,
+                2123,
+                2124,
+                2125,
+                2126,
+                2127,
+                2128,
+                2129,
+                2130,
+                2131,
+                2132,
+                2133,
+                2134,
+                2135,
+                2136,
+                2137,
+                2138,
+                2139,
+                2140,
+                2141,
+                2142,
+                2143,
+                2144,
+                2145,
+                2146,
+                2147,
+                2148,
+                2149,
+                2150,
+                2151,
+                2152,
+                2153,
+                2154,
+                2155,
+                2156,
+                2157,
+                2158,
+                2159,
+                2160,
+                2161,
+                2162,
+                2163,
+                2164,
+                2165,
+                2166,
+                2167,
+                2168,
+                2169,
+                2170
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expansion state persists when navigating between turns",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/expand-command.test.ts",
+          "lines": "198-236",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                603,
+                604,
+                605
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Silently ignore expand when not in turn selection mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/expand-command.test.ts",
+          "lines": "142-155",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1229,
+                1230,
+                1231,
+                1232,
+                1233,
+                1234,
+                1235
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/expand-command.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 330
+  }
+}

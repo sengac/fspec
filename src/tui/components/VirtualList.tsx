@@ -105,6 +105,8 @@ interface VirtualListProps<T> {
   // TUI-042: Custom selection check - returns true if item at index should be highlighted
   // If not provided, uses index === selectedIndex (single item selection)
   getIsSelected?: (index: number, selectedIndex: number, items: T[]) => boolean;
+  // TUI-043: Ref to expose selected index to parent component (for /expand command)
+  selectionRef?: React.MutableRefObject<{ selectedIndex: number }>;
 }
 
 export function VirtualList<T>({
@@ -123,6 +125,7 @@ export function VirtualList<T>({
   fixedHeight,
   getNextIndex,
   getIsSelected,
+  selectionRef,
 }: VirtualListProps<T>): React.ReactElement {
   // Enable mouse tracking mode for button events only (not mouse movement)
   // OPTIMIZATION: Only enable when focused to reduce overhead
@@ -141,6 +144,13 @@ export function VirtualList<T>({
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
   const { height: terminalHeight } = useTerminalSize();
+
+  // TUI-043: Update selectionRef when selectedIndex changes
+  useEffect(() => {
+    if (selectionRef) {
+      selectionRef.current = { selectedIndex };
+    }
+  }, [selectedIndex, selectionRef]);
 
   // Measure actual container height after flexbox layout
   const containerRef = useRef<DOMElement>(null);

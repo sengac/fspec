@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-06T00:12:41.757Z"
+    "lastUpdated": "2026-01-06T02:10:30.952Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -60450,6 +60450,162 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2026-01-06T00:12:41.787Z"
+    },
+    "TUI-043": {
+      "id": "TUI-043",
+      "title": "Expand command for turn-based tool output expansion",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-06T01:03:04.532Z",
+      "updatedAt": "2026-01-06T02:10:30.983Z",
+      "description": "Add /expand command to toggle expansion of collapsed tool output when a turn is selected via /select. When run, it expands the selected turn completely. When run again (toggled), it collapses it. Also update the hint message from 'ctrl+o to expand' to 'use /select and /expand'.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-043/expand-command-research.md",
+        "spec/attachments/TUI-043/ast-research-agentview-structure.md"
+      ],
+      "userStory": {
+        "role": "developer using the AI agent TUI",
+        "action": "toggle expansion of collapsed tool output for a selected turn",
+        "benefit": "I can see the full output without scrolling through the collapsed content hints"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-06T01:03:27.163Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-06T01:12:26.730Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-06T01:14:32.824Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-06T01:52:31.053Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-06T02:10:30.983Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "/expand command only works when turn selection mode is active (after /select)",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:03:31.898Z"
+        },
+        {
+          "id": 1,
+          "text": "/expand toggles expansion state for the currently selected turn",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:03:36.400Z"
+        },
+        {
+          "id": 2,
+          "text": "Expanded turn shows full tool output without truncation or '...+N lines' hint",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:03:41.765Z"
+        },
+        {
+          "id": 3,
+          "text": "Collapsed output hint message changed from 'ctrl+o to expand' to 'use /select and /expand'",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:03:46.146Z"
+        },
+        {
+          "id": 4,
+          "text": "Expansion state persists when navigating between turns",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:03:51.694Z"
+        },
+        {
+          "id": 5,
+          "text": "/expand shows error message if not in turn selection mode",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:03:56.249Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User runs /select, navigates to a collapsed tool output turn, runs /expand → turn expands to show full output",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:04:01.776Z"
+        },
+        {
+          "id": 1,
+          "text": "User runs /expand on already expanded turn → turn collapses back to truncated view",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:04:06.362Z"
+        },
+        {
+          "id": 2,
+          "text": "User runs /expand without first enabling /select → error message 'Must be in turn selection mode. Use /select first.'",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:04:10.666Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool output with 50 lines shows '...+46 lines (use /select and /expand)' instead of old 'ctrl+o to expand'",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:04:15.451Z"
+        },
+        {
+          "id": 4,
+          "text": "Edit tool diff output with 100 lines shows collapsed view, /expand shows full diff with all changes visible",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:04:22.920Z"
+        },
+        {
+          "id": 5,
+          "text": "User expands turn A, navigates to turn B (collapsed), navigates back to turn A → turn A is still expanded",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:04:27.578Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Primary file: src/tui/components/AgentView.tsx - add expandedMessageIndices state (Set<number>) and fullContent field to ConversationMessage interface",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:10:50.933Z"
+        },
+        {
+          "id": 1,
+          "text": "VirtualList integration: Add selectionRef prop to src/tui/components/VirtualList.tsx to expose selectedIndex to parent component",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:10:55.192Z"
+        },
+        {
+          "id": 2,
+          "text": "Hint message update: Modify formatCollapsedOutput, formatDiffForDisplay, formatDiffForDisplayReadTool functions to use '(use /select and /expand)' instead of '(ctrl+o to expand)'",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:10:59.604Z"
+        },
+        {
+          "id": 3,
+          "text": "Tool result handler: Store both collapsed (content) and full (fullContent) when processing ToolResult events; swap in conversationLines computation based on expandedMessageIndices",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:11:04.502Z"
+        },
+        {
+          "id": 4,
+          "text": "Cache invalidation: Delete lineCacheRef entry for message index when expansion state toggles to force re-render",
+          "deleted": false,
+          "createdAt": "2026-01-06T01:11:08.696Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-06T02:10:30.983Z"
     }
   },
   "states": {
@@ -60523,6 +60679,7 @@
       "TUI-038"
     ],
     "done": [
+      "TUI-043",
       "TUI-042",
       "TUI-041",
       "TUI-040",
@@ -60985,7 +61142,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 42,
+    "TUI": 43,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

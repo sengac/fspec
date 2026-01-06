@@ -288,6 +288,7 @@ export interface AgentViewProps {
 interface ConversationMessage {
   role: 'user' | 'assistant' | 'tool';
   content: string;
+  fullContent?: string; // TUI-043: Full uncollapsed content for expandable messages
   isStreaming?: boolean;
 }
 
@@ -357,8 +358,15 @@ const formatCollapsedOutput = (
   }
   const visible = lines.slice(0, visibleLines);
   const remaining = lines.length - visibleLines;
-  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (ctrl+o to expand)`;
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (use /select and /expand)`;
   return formatWithTreeConnectors(collapsedContent);
+};
+
+/**
+ * TUI-043: Format full output without truncation (for expanded view)
+ */
+const formatFullOutput = (content: string): string => {
+  return formatWithTreeConnectors(content);
 };
 
 /**
@@ -463,7 +471,7 @@ const formatDiffForDisplay = (
       return `${lineNum}   ${restOfLine}`;
     });
     if (diffLines.length > visibleLines) {
-      formattedLines.push(`... +${diffLines.length - visibleLines} lines (ctrl+o to expand)`);
+      formattedLines.push(`... +${diffLines.length - visibleLines} lines (use /select and /expand)`);
     }
     return formatWithTreeConnectors(formattedLines.join('\n'));
   }
@@ -527,7 +535,7 @@ const formatDiffForDisplay = (
 
   const visible = outputLines.slice(0, visibleLines);
   const remaining = outputLines.length - visibleLines;
-  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (ctrl+o to expand)`;
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (use /select and /expand)`;
   return formatWithTreeConnectors(collapsedContent);
 };
 
@@ -593,6 +601,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
   const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021
   const [isTurnSelectMode, setIsTurnSelectMode] = useState(false); // TUI-042: Turn selection mode toggle (replaces TUI-041 line selection)
+  const [expandedMessageIndices, setExpandedMessageIndices] = useState<Set<number>>(new Set()); // TUI-043: Track expanded message indices
+  const virtualListSelectionRef = useRef<{ selectedIndex: number }>({ selectedIndex: 0 }); // TUI-043: Ref to get selected index from VirtualList
   const sessionRef = useRef<CodeletSessionType | null>(null);
 
   // TUI-038: Store pending Edit/Write tool inputs for diff display
@@ -695,6 +705,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     lines: ConversationLine[];
   }
   const lineCacheRef = useRef<Map<number, CachedMessageLines>>(new Map());
+
+  // TUI-043: Ref to store current conversationLines for use in callbacks (avoids stale closure)
+  const conversationLinesRef = useRef<ConversationLine[]>([]);
 
   // PERF-003: Use deferred value for conversation to prioritize user input
   // This tells React that conversation updates are lower priority than user interactions
@@ -1194,18 +1207,47 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       setInputValue('');
       const newMode = !isTurnSelectMode;
       setIsTurnSelectMode(newMode);
+      // TUI-043: Clear expanded state when disabling turn selection mode
+      if (!newMode) {
+        setExpandedMessageIndices(new Set());
+      }
       // Note: VirtualList will auto-select last item via scrollToEnd when enabled
-      setConversation(prev => [
-        ...prev,
-        {
-          role: 'tool',
-          content: `Turn selection mode ${newMode ? 'enabled' : 'disabled'}. ${
-            newMode
-              ? 'Arrow keys now navigate between conversation turns.'
-              : 'Arrow keys now scroll the viewport.'
-          }`,
-        },
-      ]);
+      // No message added to conversation - silent mode toggle
+      return;
+    }
+
+    // TUI-043: Handle /expand command - toggle expansion of selected turn
+    if (userMessage === '/expand') {
+      setInputValue('');
+      // Silently do nothing if not in turn selection mode
+      if (!isTurnSelectMode) {
+        return;
+      }
+      
+      // Get the selected line index from VirtualList and find its message index
+      // Use ref to avoid stale closure issue with conversationLines
+      const currentLines = conversationLinesRef.current;
+      const selectedLineIndex = virtualListSelectionRef.current.selectedIndex;
+      const selectedMessageIndex = currentLines[selectedLineIndex]?.messageIndex;
+      
+      // Silently do nothing if no turn selected
+      if (selectedMessageIndex === undefined) {
+        return;
+      }
+      
+      // Invalidate cache for this message to force re-render (do this BEFORE state update)
+      lineCacheRef.current.delete(selectedMessageIndex);
+      
+      // Toggle expansion state
+      setExpandedMessageIndices(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(selectedMessageIndex)) {
+          newSet.delete(selectedMessageIndex);
+        } else {
+          newSet.add(selectedMessageIndex);
+        }
+        return newSet;
+      });
       return;
     }
 
@@ -2027,6 +2069,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               result.toolCallId
             );
             let toolResultContent: string;
+            let toolResultFullContent: string; // TUI-043: Full content for expansion
 
             if (pendingDiff) {
               // TUI-038: Format as diff for Edit/Write tools
@@ -2043,21 +2086,29 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 // Use pre-calculated startLine (or fallback to 1)
                 const startLine = pendingDiff.startLine ?? 1;
                 toolResultContent = formatDiffForDisplay(diffLines, DIFF_COLLAPSED_LINES, startLine);
+                // TUI-043: Full content shows all diff lines
+                toolResultFullContent = formatDiffForDisplay(diffLines, diffLines.length, startLine);
               } else if (
                 pendingDiff.toolName === 'Write' &&
                 pendingDiff.content !== undefined
               ) {
                 const diffLines = formatWriteDiff(pendingDiff.content);
                 toolResultContent = formatDiffForDisplay(diffLines);
+                // TUI-043: Full content shows all diff lines
+                toolResultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
               } else {
                 // Fallback to normal formatting
                 const sanitizedContent = result.content.replace(/\t/g, '  ');
                 toolResultContent = formatCollapsedOutput(sanitizedContent);
+                // TUI-043: Full content without truncation
+                toolResultFullContent = formatFullOutput(sanitizedContent);
               }
             } else {
               // Normal tool result formatting
               const sanitizedContent = result.content.replace(/\t/g, '  ');
               toolResultContent = formatCollapsedOutput(sanitizedContent);
+              // TUI-043: Full content without truncation
+              toolResultFullContent = formatFullOutput(sanitizedContent);
             }
             currentSegment = ''; // Reset for next text segment
 
@@ -2081,11 +2132,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                     continue;
                   }
                   // TUI-037: Combine tool header with formatted result
+                  // TUI-043: Store both collapsed and full content
                   if (msg.role === 'tool' && msg.content.startsWith('●')) {
                     const headerLine = msg.content.split('\n')[0];
                     updated[i] = {
                       ...msg,
                       content: `${headerLine}\n${toolResultContent}`,
+                      fullContent: `${headerLine}\n${toolResultFullContent}`,
                     };
                     break;
                   }
@@ -2107,11 +2160,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 // Find tool header (search backwards)
                 for (let i = updated.length - 1; i >= 0; i--) {
                   const msg = updated[i];
+                  // TUI-043: Store both collapsed and full content
                   if (msg.role === 'tool' && msg.content.startsWith('●')) {
                     const headerLine = msg.content.split('\n')[0];
                     updated[i] = {
                       ...msg,
                       content: `${headerLine}\n${toolResultContent}`,
+                      fullContent: `${headerLine}\n${toolResultFullContent}`,
                     };
                     break;
                   }
@@ -2185,7 +2240,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 const msg = updated[i];
                 if (msg.role === 'tool' && msg.content.startsWith('●')) {
                   // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
-                  if (!msg.content.includes('(ctrl+o to expand)')) {
+                  if (!msg.content.includes('(use /select and /expand)')) {
                     updated[i] = {
                       ...msg,
                       content: `${msg.content}\nL ⚠ Interrupted`,
@@ -3032,6 +3087,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 const toolResult = toolResultsByUseId.get(content.id);
                 if (toolResult) {
                   let resultContent: string;
+                  let resultFullContent: string; // TUI-043: Full content for expansion
                   const toolNameLower = content.name?.toLowerCase() || '';
                   const inputObj =
                     typeof input === 'object' && input !== null
@@ -3053,6 +3109,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                       inputObj.new_string
                     );
                     resultContent = formatDiffForDisplay(diffLines);
+                    // TUI-043: Full content shows all diff lines
+                    resultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
                   } else if (
                     (toolNameLower === 'write' ||
                       toolNameLower === 'write_file') &&
@@ -3061,6 +3119,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                     // Write tool - generate diff (all additions)
                     const diffLines = formatWriteDiff(inputObj.content);
                     resultContent = formatDiffForDisplay(diffLines);
+                    // TUI-043: Full content shows all diff lines
+                    resultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
                   } else {
                     // Normal tool - use collapsed output
                     const sanitizedContent = toolResult.content.replace(
@@ -3068,11 +3128,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                       '  '
                     );
                     resultContent = formatCollapsedOutput(sanitizedContent);
+                    // TUI-043: Full content without truncation
+                    resultFullContent = formatFullOutput(sanitizedContent);
                   }
 
                   restored.push({
                     role: 'tool',
                     content: `${toolHeader}\n${resultContent}`,
+                    fullContent: `${toolHeader}\n${resultFullContent}`, // TUI-043
                     isStreaming: false,
                   });
                 } else {
@@ -4056,6 +4119,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // PERF-002: Incremental line computation with caching
   // Only recompute lines for messages that changed, reuse cached lines for unchanged messages
   // PERF-003: Uses deferredConversation to prioritize user input over streaming updates
+  // TUI-043: Check expandedMessageIndices to swap content/fullContent for expanded messages
   const conversationLines = useMemo((): ConversationLine[] => {
     const maxWidth = terminalWidth - 6; // Account for borders and padding
     const lines: ConversationLine[] = [];
@@ -4067,11 +4131,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     deferredConversation.forEach((msg, msgIndex) => {
       validIndices.add(msgIndex);
 
-      // Check cache for this message
+      // TUI-043: Use fullContent if message is expanded, otherwise use content
+      const isExpanded = expandedMessageIndices.has(msgIndex);
+      const effectiveContent = isExpanded && msg.fullContent ? msg.fullContent : msg.content;
+      
+      // Create effective message with swapped content for cache check
+      const effectiveMsg = { ...msg, content: effectiveContent };
+
+      // Check cache for this message (include expansion state in cache key via content)
       const cached = cache.get(msgIndex);
       if (
         cached &&
-        cached.content === msg.content &&
+        cached.content === effectiveContent &&
         cached.isStreaming === msg.isStreaming &&
         cached.terminalWidth === terminalWidth
       ) {
@@ -4079,9 +4150,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         lines.push(...cached.lines);
       } else {
         // Cache miss - compute lines and cache them
-        const messageLines = wrapMessageToLines(msg, msgIndex, maxWidth);
+        const messageLines = wrapMessageToLines(effectiveMsg, msgIndex, maxWidth);
         cache.set(msgIndex, {
-          content: msg.content,
+          content: effectiveContent,
           isStreaming: msg.isStreaming ?? false,
           terminalWidth,
           lines: messageLines,
@@ -4098,7 +4169,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     }
 
     return lines;
-  }, [deferredConversation, terminalWidth]);
+  }, [deferredConversation, terminalWidth, expandedMessageIndices]);
+
+  // TUI-043: Keep ref in sync with conversationLines for use in callbacks
+  conversationLinesRef.current = conversationLines;
 
   // Error state - show setup instructions (full-screen overlay)
   if (error && !session) {
@@ -4947,6 +5021,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             if (items.length === 0) return false;
             return items[index]?.messageIndex === items[selectedIndex]?.messageIndex;
           } : undefined}
+          // TUI-043: Expose selection state to parent for /expand command
+          selectionRef={virtualListSelectionRef}
         />
       </Box>
 
