@@ -358,7 +358,7 @@ const formatCollapsedOutput = (
   }
   const visible = lines.slice(0, visibleLines);
   const remaining = lines.length - visibleLines;
-  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (use Tab and /expand)`;
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (select turn to /expand)`;
   return formatWithTreeConnectors(collapsedContent);
 };
 
@@ -471,7 +471,7 @@ const formatDiffForDisplay = (
       return `${lineNum}   ${restOfLine}`;
     });
     if (diffLines.length > visibleLines) {
-      formattedLines.push(`... +${diffLines.length - visibleLines} lines (use Tab and /expand)`);
+      formattedLines.push(`... +${diffLines.length - visibleLines} lines (select turn to /expand)`);
     }
     return formatWithTreeConnectors(formattedLines.join('\n'));
   }
@@ -535,7 +535,7 @@ const formatDiffForDisplay = (
 
   const visible = outputLines.slice(0, visibleLines);
   const remaining = outputLines.length - visibleLines;
-  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (use Tab and /expand)`;
+  const collapsedContent = `${visible.join('\n')}\n... +${remaining} lines (select turn to /expand)`;
   return formatWithTreeConnectors(collapsedContent);
 };
 
@@ -2285,7 +2285,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 const msg = updated[i];
                 if (msg.role === 'tool' && msg.content.startsWith('●')) {
                   // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
-                  if (!msg.content.includes('(use Tab and /expand)')) {
+                  if (!msg.content.includes('(select turn to /expand)')) {
                     updated[i] = {
                       ...msg,
                       content: `${msg.content}\nL ⚠ Interrupted`,
@@ -5034,7 +5034,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
-            placeholder="Shift+↑↓ history | Tab select"
+            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn)"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
             maxVisibleLines={5}

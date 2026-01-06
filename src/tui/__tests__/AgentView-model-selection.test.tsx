@@ -1153,9 +1153,9 @@ describe('Feature: Agent Modal Model Selection', () => {
       );
       await waitForFrame();
 
-      // @step Then the placeholder should show "Tab select" hint for turn selection mode
+      // @step Then the placeholder should show "'Tab' select turn" hint for turn selection mode
       // Note: Tab now toggles turn selection mode (use /model command for model switching)
-      expect(lastFrame()).toContain('Tab select');
+      expect(lastFrame()).toContain("'Tab' select turn");
     });
   });
 });
