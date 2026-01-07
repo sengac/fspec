@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-06T08:29:57.722Z"
+    "lastUpdated": "2026-01-06T11:35:51.599Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -60993,6 +60993,123 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2026-01-06T08:29:57.753Z"
+    },
+    "PROV-003": {
+      "id": "PROV-003",
+      "title": "Implement Gemini Provider Behavior Facade",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2026-01-06T11:34:04.843Z",
+      "updatedAt": "2026-01-06T11:35:51.599Z",
+      "description": "Add a ProviderBehavior facade trait to abstract Gemini-specific behaviors like thought/reasoning extraction, next-speaker checks, thought signatures for Gemini 3, and model-specific prompt additions. This follows the existing facade pattern used for tools and prompts.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PROV-003/gemini.md"
+      ],
+      "userStory": {
+        "role": "codelet developer",
+        "action": "configure provider-specific agentic loop behaviors through a facade pattern",
+        "benefit": "I can support Gemini 3's unique requirements (thought signatures, next-speaker checks, pre-tool explanations) without polluting the core streaming loop with provider conditionals"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-06T11:34:38.169Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "ProviderBehavior trait must be defined in codelet-providers crate with methods for: extract_thought(), needs_speaker_check(), format_tool_response(), get_prompt_additions(), prepare_history(), strip_thinking_from_history()",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:34:43.479Z"
+        },
+        {
+          "id": 1,
+          "text": "ClaudeBehavior implementation returns None/false for all Gemini-specific behaviors since Claude handles these internally through rig",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:34:48.798Z"
+        },
+        {
+          "id": 2,
+          "text": "GeminiBehavior implementation must add synthetic thoughtSignature to function calls for Gemini 3 Preview models to prevent 400 API errors",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:34:53.918Z"
+        },
+        {
+          "id": 3,
+          "text": "GeminiBehavior.needs_speaker_check() returns true - Gemini may stop mid-explanation requiring a 'Please continue' prompt",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:34:58.824Z"
+        },
+        {
+          "id": 4,
+          "text": "GeminiBehavior.get_prompt_additions() returns 'Do not call tools in silence' instruction for Gemini 3 models only",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:03.526Z"
+        },
+        {
+          "id": 5,
+          "text": "stream_loop.rs must accept ProviderBehavior as a parameter and delegate provider-specific behaviors to it instead of containing provider conditionals",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:09.186Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "When streaming with Claude: extract_thought() returns None, needs_speaker_check() returns false, prepare_history() is no-op",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:14.758Z"
+        },
+        {
+          "id": 1,
+          "text": "When streaming with Gemini 3: extract_thought() parses thought parts, needs_speaker_check() returns true, prepare_history() adds thoughtSignature to function calls",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:19.893Z"
+        },
+        {
+          "id": 2,
+          "text": "When Gemini 3 stream ends without tool calls, check_next_speaker() is called to determine if 'Please continue' should be sent",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:24.616Z"
+        },
+        {
+          "id": 3,
+          "text": "Gemini 3 system prompt includes 'Do not call tools in silence' instruction while Gemini 2 does not",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:29.266Z"
+        },
+        {
+          "id": 4,
+          "text": "Gemini 3 thought parts are extracted and emitted separately from regular content, following the same pattern as gemini-cli's parseThought()",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:34.629Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "ProviderBehavior trait follows the existing facade pattern in codelet-tools/src/facade/ - see traits.rs for ToolFacade, FileToolFacade, BashToolFacade as examples",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:40.248Z"
+        },
+        {
+          "id": 1,
+          "text": "See gemini.md attachment for full Gemini CLI code analysis including local-executor.ts, client.ts, geminiChat.ts, turn.ts, coreToolScheduler.ts, and prompts.ts",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:46.139Z"
+        },
+        {
+          "id": 2,
+          "text": "SYNTHETIC_THOUGHT_SIGNATURE constant ('skip_thought_signature_validator') must be added to first function call in each model turn within the active loop for Gemini 3 Preview models",
+          "deleted": false,
+          "createdAt": "2026-01-06T11:35:51.599Z"
+        }
+      ],
+      "nextNoteId": 3
     }
   },
   "states": {
@@ -61058,7 +61175,8 @@
       "BROWSE-001",
       "BOARD-020",
       "TOOL-001",
-      "MODEL-001"
+      "MODEL-001",
+      "PROV-003"
     ],
     "testing": [],
     "implementing": [],
@@ -61565,6 +61683,6 @@
     "MODEL": 1,
     "TOOLS": 4,
     "CONFIG": 4,
-    "PROV": 2
+    "PROV": 3
   }
 }
