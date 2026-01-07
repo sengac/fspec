@@ -5,11 +5,13 @@
 
 pub mod compaction;
 pub mod compaction_hook;
+pub mod message_estimator;
 pub mod rig_agent;
 pub mod token_usage;
 pub mod tool_specs;
 
 pub use compaction_hook::{CompactionHook, TokenState};
+pub use message_estimator::estimate_messages_tokens;
 pub use token_usage::ApiTokenUsage;
 pub use rig_agent::{RigAgent, DEFAULT_MAX_DEPTH};
 pub use tool_specs::ToolSpec;

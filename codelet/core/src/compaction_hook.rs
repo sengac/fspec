@@ -3,9 +3,10 @@
 //! Implements rig's StreamingPromptHook to capture per-request token usage
 //! and check compaction thresholds before each API call.
 //!
-//! This matches TypeScript's approach in runner.ts:829-836 where compaction
-//! is checked BEFORE each LLM call using actual API-reported token values.
+//! Now estimates payload tokens from actual messages BEFORE API call,
+//! not just checking stale token state from the previous response.
 
+use crate::message_estimator::estimate_messages_tokens;
 use crate::token_usage::ApiTokenUsage;
 use rig::agent::{CancelSignal, StreamingPromptHook};
 use rig::completion::{CompletionModel, GetTokenUsage};
@@ -107,6 +108,36 @@ impl CompactionHook {
             cancel_sig.cancel();
         }
     }
+
+    /// Check compaction with payload estimation (testable version of on_completion_call logic)
+    ///
+    /// Uses MAX(last_known_tokens, estimated_payload) to catch large tool results
+    /// that haven't been counted by the API yet.
+    #[cfg(test)]
+    pub fn check_compaction_with_payload(
+        &self,
+        prompt: &Message,
+        history: &[Message],
+        cancel_sig: &CancelSignal,
+    ) {
+        let Ok(mut state) = self.state.lock() else {
+            return;
+        };
+
+        // Estimate tokens from actual payload
+        let mut all_messages = history.to_vec();
+        all_messages.push(prompt.clone());
+        let estimated_payload = estimate_messages_tokens(&all_messages) as u64;
+
+        // Use MAX of last known API tokens vs estimated payload
+        let last_known_total = state.total();
+        let effective_total = last_known_total.max(estimated_payload);
+
+        if effective_total > self.threshold {
+            state.compaction_needed = true;
+            cancel_sig.cancel();
+        }
+    }
 }
 
 impl<M> StreamingPromptHook<M> for CompactionHook
@@ -116,30 +147,48 @@ where
 {
     /// Called BEFORE each API call - check if compaction is needed
     ///
-    /// If the last API call's total tokens exceed the threshold,
-    /// we cancel to prevent the next API call from failing with "prompt too long".
+    /// Estimates payload tokens from actual messages being sent, using the MAX of:
+    /// - Last known token count from previous API response (token_state.total())
+    /// - Estimated tokens from current payload (prompt + history)
     ///
-    /// CTX-002: Uses simple token sum (input + cache_read + output) instead of cache discount
+    /// This prevents "prompt is too long" errors when tool results add significant
+    /// content between API calls.
     async fn on_completion_call(
         &self,
-        _prompt: &Message,
-        _history: &[Message],
+        prompt: &Message,
+        history: &[Message],
         cancel_sig: CancelSignal,
     ) {
         // Handle mutex lock gracefully - if poisoned, skip the check
-        // A poisoned mutex indicates another thread panicked while holding it
         let Ok(mut state) = self.state.lock() else {
             tracing::warn!("CompactionHook state mutex poisoned, skipping compaction check");
             return;
         };
 
-        // CTX-002: Use total() for simple sum without cache discount
-        let total = state.total();
+        // Estimate tokens from actual payload being sent
+        let mut all_messages = history.to_vec();
+        all_messages.push(prompt.clone());
+        let estimated_payload = estimate_messages_tokens(&all_messages) as u64;
 
-        // Check threshold
-        if total > self.threshold {
-            // Signal that compaction is needed
+        // Use MAX of last known API tokens vs estimated payload
+        let last_known_total = state.total();
+        let effective_total = last_known_total.max(estimated_payload);
+
+        tracing::debug!(
+            "Compaction check: last_known={}, estimated={}, effective={}, threshold={}",
+            last_known_total,
+            estimated_payload,
+            effective_total,
+            self.threshold
+        );
+
+        if effective_total > self.threshold {
             state.compaction_needed = true;
+            tracing::info!(
+                "Compaction triggered: {} tokens > {} threshold",
+                effective_total,
+                self.threshold
+            );
             cancel_sig.cancel();
         }
     }
@@ -417,5 +466,153 @@ mod tests {
 
         // Should cancel (180,001 > 180,000)
         assert!(cancel_sig.is_cancelled());
+    }
+
+    /// Test Scenario 8: check_compaction_with_payload uses MAX of last_known vs estimated
+    /// When estimated payload is higher than last_known, it should trigger compaction
+    #[test]
+    fn test_check_compaction_with_payload_uses_estimated_when_higher() {
+        use rig::message::{Text, ToolResult, ToolResultContent, UserContent};
+        use rig::OneOrMany;
+
+        // Start with low token count from last API call
+        let state = Arc::new(Mutex::new(TokenState {
+            input_tokens: 100,
+            cache_read_input_tokens: 0,
+            cache_creation_input_tokens: 0,
+            output_tokens: 10,
+            // Last known total: only 110 tokens
+            compaction_needed: false,
+        }));
+        
+        // Set a low threshold that the estimated payload will exceed
+        let threshold = 500;
+        let hook = CompactionHook::new(Arc::clone(&state), threshold);
+
+        // Create a history with a large tool result that wasn't counted in last API response
+        // This simulates the bug scenario: tool result added but not yet sent to API
+        // 10,000 chars ≈ 2,500 tokens with cl100k_base
+        let large_content = "x".repeat(10_000);
+        let history = vec![
+            Message::User {
+                content: OneOrMany::one(UserContent::ToolResult(ToolResult {
+                    id: "call_1".to_string(),
+                    call_id: None,
+                    content: OneOrMany::one(ToolResultContent::Text(Text {
+                        text: large_content,
+                    })),
+                })),
+            },
+        ];
+
+        let prompt = Message::User {
+            content: OneOrMany::one(UserContent::Text(Text {
+                text: "Continue".to_string(),
+            })),
+        };
+
+        let cancel_sig = CancelSignal::new();
+
+        // Call the hook - it should see estimated > threshold even though last_known < threshold
+        hook.check_compaction_with_payload(&prompt, &history, &cancel_sig);
+
+        // Should trigger compaction based on estimated payload (~2,500 > 500)
+        // even though last_known was only 110
+        assert!(
+            cancel_sig.is_cancelled(),
+            "Should trigger compaction based on estimated payload"
+        );
+        assert!(
+            state.lock().unwrap().compaction_needed,
+            "compaction_needed flag should be set"
+        );
+    }
+
+    /// Test Scenario 9: check_compaction_with_payload uses last_known when it's higher
+    /// When last_known is higher than estimated (e.g., cached content), use last_known
+    #[test]
+    fn test_check_compaction_with_payload_uses_last_known_when_higher() {
+        use rig::message::{Text, UserContent};
+        use rig::OneOrMany;
+
+        // High token count from last API call (includes cached content)
+        let state = Arc::new(Mutex::new(TokenState {
+            input_tokens: 100_000,
+            cache_read_input_tokens: 50_000,
+            cache_creation_input_tokens: 0,
+            output_tokens: 10_000,
+            // Last known total: 160,000 tokens
+            compaction_needed: false,
+        }));
+
+        let threshold = 150_000;
+        let hook = CompactionHook::new(Arc::clone(&state), threshold);
+
+        // Small prompt and history (estimated would be low)
+        let history = vec![Message::User {
+            content: OneOrMany::one(UserContent::Text(Text {
+                text: "Previous message".to_string(),
+            })),
+        }];
+
+        let prompt = Message::User {
+            content: OneOrMany::one(UserContent::Text(Text {
+                text: "Continue".to_string(),
+            })),
+        };
+
+        let cancel_sig = CancelSignal::new();
+
+        // Call the hook - it should use last_known (160k) since it's higher than estimated
+        hook.check_compaction_with_payload(&prompt, &history, &cancel_sig);
+
+        // Should trigger compaction based on last_known (160k > 150k threshold)
+        assert!(
+            cancel_sig.is_cancelled(),
+            "Should trigger compaction based on last_known tokens"
+        );
+    }
+
+    /// Test Scenario 10: check_compaction_with_payload does not trigger when both are under threshold
+    #[test]
+    fn test_check_compaction_with_payload_no_trigger_when_under_threshold() {
+        use rig::message::{Text, UserContent};
+        use rig::OneOrMany;
+
+        let state = Arc::new(Mutex::new(TokenState {
+            input_tokens: 1_000,
+            cache_read_input_tokens: 0,
+            cache_creation_input_tokens: 0,
+            output_tokens: 100,
+            compaction_needed: false,
+        }));
+
+        let threshold = 50_000; // High threshold
+        let hook = CompactionHook::new(Arc::clone(&state), threshold);
+
+        let history = vec![Message::User {
+            content: OneOrMany::one(UserContent::Text(Text {
+                text: "Small message".to_string(),
+            })),
+        }];
+
+        let prompt = Message::User {
+            content: OneOrMany::one(UserContent::Text(Text {
+                text: "Continue".to_string(),
+            })),
+        };
+
+        let cancel_sig = CancelSignal::new();
+        hook.check_compaction_with_payload(&prompt, &history, &cancel_sig);
+
+        // Should NOT trigger compaction
+        assert!(
+            !cancel_sig.is_cancelled(),
+            "Should not trigger when under threshold"
+        );
+        assert!(
+            !state.lock().unwrap().compaction_needed,
+            "compaction_needed should remain false"
+        );
     }
 }

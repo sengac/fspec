@@ -41,6 +41,18 @@ use tokio::sync::Notify;
 use tokio::time::interval;
 use tracing::{error, info};
 
+/// Check if an error indicates the prompt/context is too long
+fn is_prompt_too_long_error(error_str: &str) -> bool {
+    let error_lower = error_str.to_lowercase();
+    error_lower.contains("prompt is too long")
+        || error_lower.contains("maximum context length")
+        || error_lower.contains("context_length_exceeded")
+        || error_lower.contains("too many tokens")
+        || error_lower.contains("exceeds the model")
+        || (error_lower.contains("invalid_request_error")
+            && (error_lower.contains("token") || error_lower.contains("maximum")))
+}
+
 /// TUI-031: Tokens per second tracker with time-window and EMA smoothing
 /// All tok/s calculation is done in Rust for single source of truth
 struct TokPerSecTracker {
@@ -729,6 +741,29 @@ where
                     if is_compaction_cancel && compaction_triggered {
                         // This is a compaction cancellation - break to run compaction logic
                         // Don't log as error, this is expected behavior
+                        break;
+                    }
+
+                    // Check if this is a "prompt is too long" error from the API
+                    let is_prompt_too_long = is_prompt_too_long_error(&error_str);
+
+                    if is_prompt_too_long && !session.messages.is_empty() {
+                        info!("Received 'prompt is too long' error, triggering recovery compaction");
+                        output.emit_status("\n[Context exceeded limit, triggering emergency compaction...]");
+
+                        // Pop the last user message we added at the start of this function
+                        if let Some(last_msg) = session.messages.last() {
+                            if matches!(last_msg, rig::message::Message::User { .. }) {
+                                session.messages.pop();
+                                info!("Popped last user message from context");
+                            }
+                        }
+
+                        // Set compaction_needed flag so the post-loop logic handles it
+                        if let Ok(mut state) = token_state.lock() {
+                            state.compaction_needed = true;
+                        }
+
                         break;
                     }
 
