@@ -4990,6 +4990,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                   </Box>
                 );
               }
+
+              // Stderr output from bash tool - render in red
+              // Format: "Stderr: <content>" or lines after "Stderr:" header
+              if (content.includes('Stderr:')) {
+                const stderrIdx = content.indexOf('Stderr:');
+                const beforeStderr = content.slice(0, stderrIdx);
+                const stderrPart = content.slice(stderrIdx);
+                return (
+                  <Box flexGrow={1}>
+                    <Text>{beforeStderr}</Text>
+                    <Text color="red">{stderrPart}</Text>
+                  </Box>
+                );
+              }
             }
 
             // Default rendering for non-diff content
