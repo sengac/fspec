@@ -274,6 +274,12 @@ impl BashTool {
                 final_output.push_str(&warning);
             }
 
+            // Append stderr if present (even on success, some commands write warnings to stderr)
+            if !stderr_content.trim().is_empty() {
+                final_output.push_str("\nStderr: ");
+                final_output.push_str(stderr_content.trim());
+            }
+
             Ok(final_output)
         } else {
             // Command failed
@@ -475,6 +481,12 @@ impl rig::tool::Tool for BashTool {
                     OutputLimits::MAX_OUTPUT_CHARS,
                 );
                 final_output.push_str(&warning);
+            }
+
+            // Append stderr if present (even on success, some commands write warnings to stderr)
+            if !stderr_content.trim().is_empty() {
+                final_output.push_str("\nStderr: ");
+                final_output.push_str(stderr_content.trim());
             }
 
             Ok(final_output)
