@@ -48,7 +48,7 @@ pub use thinking_config::{
     ThinkingLevel,
 };
 pub use gemini_history::{
-    DefaultHistoryFacade, DefaultTurnCompletionFacade, GeminiHistoryFacade,
+    ContinuationStrategy, DefaultHistoryFacade, DefaultTurnCompletionFacade, GeminiHistoryFacade,
     GeminiTurnCompletionFacade, HistoryPreparationFacade, TurnCompletionFacade,
     SYNTHETIC_THOUGHT_SIGNATURE,
 };

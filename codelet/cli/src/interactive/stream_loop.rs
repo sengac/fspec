@@ -20,7 +20,7 @@ use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_common::token_estimator::count_tokens;
-use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState, ensure_thought_signatures, GeminiTurnCompletionFacade, TurnCompletionFacade};
+use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState, ensure_thought_signatures, GeminiTurnCompletionFacade, TurnCompletionFacade, ContinuationStrategy};
 use codelet_tools::set_tool_progress_callback;
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
 use crossterm::event::KeyCode;
@@ -751,121 +751,323 @@ where
                     // GEMINI-TURN: Check if Gemini model returned empty response after tool call
                     // and needs a continuation prompt to nudge it to respond with the results.
                     // 
-                    // NOTE: We detect this condition and handle it by recursively calling
-                    // this function with the continuation prompt. The continuation message
-                    // is added to session.messages and we call the function again.
+                    // The facade returns a ContinuationStrategy that tells us HOW to continue:
+                    // - None: Response is complete, proceed normally
+                    // - FullLoop: Re-run the full agentic loop (handles tool calls in continuation)
                     let provider_name = session.current_provider_name();
                     let model_id = session.current_model_id().unwrap_or_default();
                     
                     if provider_name == "gemini" {
                         let turn_completion = GeminiTurnCompletionFacade;
-                        if turn_completion.requires_turn_completion_check(&model_id)
-                            && turn_completion.needs_continuation(&assistant_text, &session.messages)
-                        {
-                            // Log that we need a continuation prompt
-                            info!(
-                                "GEMINI-TURN: Empty response after tool call detected for model {}, sending continuation",
-                                model_id
-                            );
+                        if turn_completion.requires_turn_completion_check(&model_id) {
+                            let strategy = turn_completion.continuation_strategy(&assistant_text, &session.messages);
                             
-                            // Capture continuation event for debugging
-                            if let Ok(manager_arc) = get_debug_capture_manager() {
-                                if let Ok(mut manager) = manager_arc.lock() {
-                                    if manager.is_enabled() {
-                                        manager.capture(
-                                            "gemini.continuation",
-                                            serde_json::json!({
-                                                "reason": "empty_response_after_tool",
-                                                "model": model_id,
-                                                "prompt": turn_completion.continuation_prompt(),
-                                            }),
-                                            None,
-                                        );
-                                    }
-                                }
-                            }
-                            
-                            // Handle final response (add empty assistant text to history)
-                            handle_final_response(&assistant_text, &mut session.messages)?;
-                            
-
-                            // Create a new stream with the continuation prompt
-                            // This is equivalent to what Gemini CLI does with "Please continue."
-                            let continuation_prompt = turn_completion.continuation_prompt();
-                            
-                            // IMPORTANT: Instead of recursing (which would be complex with all the
-                            // parameters), we prepare the session.messages and DON'T emit done.
-                            // The calling code should recognize that the session needs to continue.
-                            //
-                            // However, since this is a single-shot function, we need to handle
-                            // the continuation inline by creating a new stream.
-                            
-                            // Add the continuation as a new user message
-                            session.messages.push(rig::message::Message::User {
-                                content: rig::OneOrMany::one(rig::message::UserContent::text(continuation_prompt)),
-                            });
-                            
-                            // Prepare history again for Gemini (add thought signatures)
-                            if let Some(model_id) = session.current_model_id() {
-                                ensure_thought_signatures(&mut session.messages, &model_id);
-                            }
-                            
-                            // Create a new hook and token state for the continuation
-                            let continuation_token_state = Arc::new(Mutex::new(TokenState {
-                                input_tokens: session.token_tracker.input_tokens,
-                                cache_read_input_tokens: turn_usage.cache_read_input_tokens,
-                                cache_creation_input_tokens: turn_usage.cache_creation_input_tokens,
-                                output_tokens: turn_cumulative_output,
-                                compaction_needed: false,
-                            }));
-                            let continuation_hook = CompactionHook::new(Arc::clone(&continuation_token_state), threshold);
-                            
-                            // Start a new stream for the continuation
-                            let mut continuation_stream = agent
-                                .prompt_streaming_with_history_and_hook(
-                                    continuation_prompt,
-                                    &mut session.messages,
-                                    continuation_hook,
-                                )
-                                .await;
-                            
-                            // Process the continuation stream
-                            let mut continuation_text = String::new();
-                            while let Some(content) = continuation_stream.next().await {
-                                match content {
-                                    Ok(MultiTurnStreamItem::StreamAssistantItem(
-                                        StreamedAssistantContent::Text(text),
-                                    )) => {
-                                        handle_text_chunk(&text.text, &mut continuation_text, None, output)?;
-                                    }
-                                    Ok(MultiTurnStreamItem::StreamAssistantItem(
-                                        StreamedAssistantContent::ReasoningDelta { reasoning, .. },
-                                    )) => {
-                                        output.emit_thinking(&reasoning);
-                                    }
-                                    Ok(MultiTurnStreamItem::FinalResponse(_)) => {
-                                        // Add continuation text to history
-                                        handle_final_response(&continuation_text, &mut session.messages)?;
-                                        break;
-                                    }
-                                    Ok(MultiTurnStreamItem::Usage(usage)) => {
-                                        // Update token tracking
-                                        if usage.output_tokens > 0 {
-                                            turn_usage.output_tokens = usage.output_tokens;
+                            if let ContinuationStrategy::FullLoop { prompt: continuation_prompt } = strategy {
+                                // Log that we need a continuation prompt
+                                info!(
+                                    "GEMINI-TURN: Empty response after tool call detected for model {}, using FullLoop strategy",
+                                    model_id
+                                );
+                                
+                                // Capture continuation event for debugging
+                                if let Ok(manager_arc) = get_debug_capture_manager() {
+                                    if let Ok(mut manager) = manager_arc.lock() {
+                                        if manager.is_enabled() {
+                                            manager.capture(
+                                                "gemini.continuation",
+                                                serde_json::json!({
+                                                    "reason": "empty_response_after_tool",
+                                                    "strategy": "FullLoop",
+                                                    "model": model_id,
+                                                    "prompt": continuation_prompt,
+                                                }),
+                                                None,
+                                            );
                                         }
                                     }
-                                    Err(e) => {
-                                        output.emit_error(&e.to_string());
-                                        return Err(anyhow::anyhow!("Gemini continuation error: {e}"));
-                                    }
-                                    _ => {}
                                 }
-                                output.flush();
+                                
+                                // Handle final response (add empty assistant text to history)
+                                handle_final_response(&assistant_text, &mut session.messages)?;
+                                
+                                // GEMINI-TURN-002: Use recursive full loop for continuation
+                                // This allows the continuation to handle tool calls properly,
+                                // unlike the previous inline approach that only handled text.
+                                //
+                                // We add the continuation prompt to messages, update session state,
+                                // and DON'T emit done - the outer loop will continue.
+                                
+                                // Add the continuation as a new user message
+                                session.messages.push(rig::message::Message::User {
+                                    content: rig::OneOrMany::one(rig::message::UserContent::text(continuation_prompt)),
+                                });
+                                
+                                // Prepare history again for Gemini (add thought signatures)
+                                if let Some(model_id) = session.current_model_id() {
+                                    ensure_thought_signatures(&mut session.messages, &model_id);
+                                }
+                                
+                                // Update session token tracker with current values before recursion
+                                session.token_tracker.input_tokens = turn_usage.total_input();
+                                session.token_tracker.output_tokens = turn_cumulative_output;
+                                session.token_tracker.cache_read_input_tokens = Some(turn_usage.cache_read_input_tokens);
+                                session.token_tracker.cache_creation_input_tokens = Some(turn_usage.cache_creation_input_tokens);
+                                
+                                // Create a new hook and token state for the continuation
+                                let continuation_token_state = Arc::new(Mutex::new(TokenState {
+                                    input_tokens: session.token_tracker.input_tokens,
+                                    cache_read_input_tokens: turn_usage.cache_read_input_tokens,
+                                    cache_creation_input_tokens: turn_usage.cache_creation_input_tokens,
+                                    output_tokens: turn_cumulative_output,
+                                    compaction_needed: false,
+                                }));
+                                let continuation_hook = CompactionHook::new(Arc::clone(&continuation_token_state), threshold);
+                                
+                                // Start a new FULL stream for the continuation
+                                // This stream can handle tool calls, unlike the previous simple approach
+                                let mut continuation_stream = agent
+                                    .prompt_streaming_with_history_and_hook(
+                                        continuation_prompt,
+                                        &mut session.messages,
+                                        continuation_hook,
+                                    )
+                                    .await;
+                                
+                                // Track continuation state
+                                let mut continuation_text = String::new();
+                                let mut continuation_tool_calls_buffer: Vec<rig::message::AssistantContent> = Vec::new();
+                                let mut continuation_last_tool_name: Option<String> = None;
+                                let mut continuation_usage = ApiTokenUsage::new(
+                                    turn_usage.input_tokens,
+                                    turn_usage.cache_read_input_tokens,
+                                    turn_usage.cache_creation_input_tokens,
+                                    0,
+                                );
+                                let mut continuation_cumulative_output = turn_cumulative_output;
+                                
+                                // Process the continuation stream - FULL loop with tool support
+                                loop {
+                                    // Check interruption
+                                    if is_interrupted.load(Acquire) {
+                                        let queued = if let Some(ref mut iq) = input_queue {
+                                            iq.dequeue_all()
+                                        } else {
+                                            vec![]
+                                        };
+                                        output.emit_interrupted(&queued);
+                                        if !continuation_text.is_empty() {
+                                            handle_final_response(&continuation_text, &mut session.messages)?;
+                                        }
+                                        
+                                        // Update session token tracker before returning
+                                        continuation_cumulative_output += continuation_usage.output_tokens;
+                                        session.token_tracker.input_tokens = continuation_usage.total_input();
+                                        session.token_tracker.output_tokens = continuation_cumulative_output;
+                                        session.token_tracker.cumulative_billed_input += continuation_usage.input_tokens;
+                                        session.token_tracker.cumulative_billed_output += continuation_usage.output_tokens;
+                                        session.token_tracker.cache_read_input_tokens = Some(continuation_usage.cache_read_input_tokens);
+                                        session.token_tracker.cache_creation_input_tokens = Some(continuation_usage.cache_creation_input_tokens);
+                                        
+                                        // Clear tool progress callback before returning
+                                        set_tool_progress_callback(None);
+                                        output.emit_done();
+                                        return Ok(());
+                                    }
+                                    
+                                    match continuation_stream.next().await {
+                                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                                            StreamedAssistantContent::Text(text),
+                                        ))) => {
+                                            handle_text_chunk(&text.text, &mut continuation_text, None, output)?;
+                                        }
+                                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                                            StreamedAssistantContent::ToolCall(tool_call),
+                                        ))) => {
+                                            // GEMINI-TURN-002: Handle tool calls in continuation
+                                            handle_tool_call(
+                                                &tool_call,
+                                                &mut session.messages,
+                                                &mut continuation_text,
+                                                &mut continuation_tool_calls_buffer,
+                                                &mut continuation_last_tool_name,
+                                                output,
+                                            )?;
+                                        }
+                                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                                            StreamedAssistantContent::ReasoningDelta { reasoning, .. },
+                                        ))) => {
+                                            output.emit_thinking(&reasoning);
+                                        }
+                                        Some(Ok(MultiTurnStreamItem::StreamUserItem(
+                                            StreamedUserContent::ToolResult(tool_result),
+                                        ))) => {
+                                            // GEMINI-TURN-002: Handle tool results in continuation
+                                            handle_tool_result(
+                                                &tool_result,
+                                                &mut session.messages,
+                                                &mut continuation_tool_calls_buffer,
+                                                &continuation_last_tool_name,
+                                                output,
+                                            )?;
+                                        }
+                                        Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
+                                            // Update token tracking (same pattern as main loop)
+                                            if usage.input_tokens > 0 && continuation_usage.input_tokens == 0 {
+                                                continuation_usage.input_tokens = usage.input_tokens;
+                                            }
+                                            if usage.output_tokens == 0 {
+                                                continuation_cumulative_output += continuation_usage.output_tokens;
+                                                continuation_usage.input_tokens = usage.input_tokens;
+                                                continuation_usage.output_tokens = 0;
+                                                continuation_usage.update_cache(
+                                                    usage.cache_read_input_tokens,
+                                                    usage.cache_creation_input_tokens,
+                                                );
+                                            } else {
+                                                continuation_usage.output_tokens = usage.output_tokens;
+                                                continuation_usage.update_cache(
+                                                    usage.cache_read_input_tokens,
+                                                    usage.cache_creation_input_tokens,
+                                                );
+                                            }
+                                        }
+                                        Some(Ok(MultiTurnStreamItem::FinalResponse(_))) => {
+                                            // GEMINI-TURN-002: Check if we need ANOTHER continuation
+                                            // This handles the case where multiple tool calls happen in sequence
+                                            let nested_strategy = turn_completion.continuation_strategy(
+                                                &continuation_text,
+                                                &session.messages,
+                                            );
+                                            
+                                            if let ContinuationStrategy::FullLoop { prompt: nested_prompt } = nested_strategy {
+                                                info!(
+                                                    "GEMINI-TURN: Nested empty response detected, continuing again"
+                                                );
+                                                
+                                                // Capture nested continuation for debugging
+                                                if let Ok(manager_arc) = get_debug_capture_manager() {
+                                                    if let Ok(mut manager) = manager_arc.lock() {
+                                                        if manager.is_enabled() {
+                                                            manager.capture(
+                                                                "gemini.continuation",
+                                                                serde_json::json!({
+                                                                    "reason": "nested_empty_response_after_tool",
+                                                                    "strategy": "FullLoop",
+                                                                    "model": model_id,
+                                                                    "prompt": nested_prompt,
+                                                                }),
+                                                                None,
+                                                            );
+                                                        }
+                                                    }
+                                                }
+                                                
+                                                // Add continuation text to history
+                                                handle_final_response(&continuation_text, &mut session.messages)?;
+                                                continuation_text.clear();
+                                                
+                                                // Add nested continuation prompt
+                                                session.messages.push(rig::message::Message::User {
+                                                    content: rig::OneOrMany::one(rig::message::UserContent::text(nested_prompt)),
+                                                });
+                                                
+                                                // Prepare history again
+                                                if let Some(model_id) = session.current_model_id() {
+                                                    ensure_thought_signatures(&mut session.messages, &model_id);
+                                                }
+                                                
+                                                // Create new stream for nested continuation
+                                                continuation_cumulative_output += continuation_usage.output_tokens;
+                                                let nested_token_state = Arc::new(Mutex::new(TokenState {
+                                                    input_tokens: continuation_usage.total_input(),
+                                                    cache_read_input_tokens: continuation_usage.cache_read_input_tokens,
+                                                    cache_creation_input_tokens: continuation_usage.cache_creation_input_tokens,
+                                                    output_tokens: continuation_cumulative_output,
+                                                    compaction_needed: false,
+                                                }));
+                                                let nested_hook = CompactionHook::new(Arc::clone(&nested_token_state), threshold);
+                                                
+                                                continuation_stream = agent
+                                                    .prompt_streaming_with_history_and_hook(
+                                                        nested_prompt,
+                                                        &mut session.messages,
+                                                        nested_hook,
+                                                    )
+                                                    .await;
+                                                
+                                                // Reset for next iteration
+                                                continuation_tool_calls_buffer.clear();
+                                                continuation_last_tool_name = None;
+                                                continuation_usage = ApiTokenUsage::new(
+                                                    continuation_usage.input_tokens,
+                                                    continuation_usage.cache_read_input_tokens,
+                                                    continuation_usage.cache_creation_input_tokens,
+                                                    0,
+                                                );
+                                                continue;
+                                            }
+                                            
+                                            // Normal completion - add text to history and exit
+                                            continuation_cumulative_output += continuation_usage.output_tokens;
+                                            handle_final_response(&continuation_text, &mut session.messages)?;
+                                            
+                                            // Update session token tracker (including billing)
+                                            session.token_tracker.input_tokens = continuation_usage.total_input();
+                                            session.token_tracker.output_tokens = continuation_cumulative_output;
+                                            session.token_tracker.cumulative_billed_input += continuation_usage.input_tokens;
+                                            session.token_tracker.cumulative_billed_output += continuation_usage.output_tokens;
+                                            session.token_tracker.cache_read_input_tokens = Some(continuation_usage.cache_read_input_tokens);
+                                            session.token_tracker.cache_creation_input_tokens = Some(continuation_usage.cache_creation_input_tokens);
+                                            
+                                            break;
+                                        }
+                                        Some(Err(e)) => {
+                                            // Check if this is a compaction cancellation
+                                            let error_str = e.to_string();
+                                            let is_compaction_cancel = error_str.contains("PromptCancelled");
+                                            
+                                            if is_compaction_cancel {
+                                                // Compaction needed during continuation - this is complex to handle
+                                                // For now, log and return error. Future: trigger compaction and retry.
+                                                error!(
+                                                    "Compaction triggered during Gemini continuation - not yet supported"
+                                                );
+                                            }
+                                            
+                                            // Clear tool progress callback before returning
+                                            set_tool_progress_callback(None);
+                                            output.emit_error(&e.to_string());
+                                            return Err(anyhow::anyhow!("Gemini continuation error: {e}"));
+                                        }
+                                        None => {
+                                            // Stream ended unexpectedly - update token tracker before exiting
+                                            if !continuation_text.is_empty() {
+                                                handle_final_response(&continuation_text, &mut session.messages)?;
+                                            }
+                                            
+                                            // Update session token tracker even on unexpected end (including billing)
+                                            continuation_cumulative_output += continuation_usage.output_tokens;
+                                            session.token_tracker.input_tokens = continuation_usage.total_input();
+                                            session.token_tracker.output_tokens = continuation_cumulative_output;
+                                            session.token_tracker.cumulative_billed_input += continuation_usage.input_tokens;
+                                            session.token_tracker.cumulative_billed_output += continuation_usage.output_tokens;
+                                            session.token_tracker.cache_read_input_tokens = Some(continuation_usage.cache_read_input_tokens);
+                                            session.token_tracker.cache_creation_input_tokens = Some(continuation_usage.cache_creation_input_tokens);
+                                            
+                                            break;
+                                        }
+                                        _ => {}
+                                    }
+                                    output.flush();
+                                }
+                                
+                                // Clear tool progress callback before returning
+                                set_tool_progress_callback(None);
+                                
+                                // Done with continuation
+                                output.emit_done();
+                                return Ok(());
                             }
-                            
-                            // Now we're done with the continuation
-                            output.emit_done();
-                            break;
                         }
                     }
 

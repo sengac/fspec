@@ -20,7 +20,7 @@ pub use tool_specs::ToolSpec;
 
 // Re-export turn completion facade from codelet-tools for convenience
 pub use codelet_tools::facade::{
-    GeminiTurnCompletionFacade, DefaultTurnCompletionFacade, TurnCompletionFacade,
+    ContinuationStrategy, GeminiTurnCompletionFacade, DefaultTurnCompletionFacade, TurnCompletionFacade,
 };
 
 // Re-export token_estimator from codelet-common for backwards compatibility

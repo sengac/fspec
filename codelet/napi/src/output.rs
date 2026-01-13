@@ -12,6 +12,10 @@
 //!
 //! This dramatically reduces React state update frequency and eliminates
 //! the need for setImmediate workarounds in the JavaScript callback handler.
+//!
+//! NOTE: Thinking chunks are NOT batched - they stream in real-time to the UI
+//! which handles accumulation into a single thinking message. This allows
+//! users to see Claude's reasoning as it happens.
 
 use crate::types::{
     ContextFillInfo, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo, ToolResultInfo,
@@ -279,8 +283,12 @@ impl StreamOutput for NapiOutput {
                 );
             }
             StreamEvent::Thinking(thinking) => {
-                // TOOL-010: Stream thinking/reasoning content to JavaScript
-                // Flush any pending text first to maintain event ordering
+                // CLAUDE-THINK: Stream thinking/reasoning content directly to JavaScript
+                // Unlike text which is batched for efficiency, thinking content is sent
+                // immediately to allow real-time streaming display. The UI (AgentView.tsx)
+                // handles accumulating chunks into a single thinking message.
+                //
+                // Flush any pending text first to maintain proper ordering
                 self.flush_text();
 
                 let _ = self.callback.call(
