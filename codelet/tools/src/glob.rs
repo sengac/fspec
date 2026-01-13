@@ -54,7 +54,7 @@ pub struct GlobArgs {
 }
 
 impl rig::tool::Tool for GlobTool {
-    const NAME: &'static str = "glob";
+    const NAME: &'static str = "Glob";
 
     type Error = ToolError;
     type Args = GlobArgs;
@@ -62,7 +62,7 @@ impl rig::tool::Tool for GlobTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "glob".to_string(),
+            name: "Glob".to_string(),
             description: "Fast file pattern matching tool that works with any codebase size. \
                 Supports glob patterns like \"**/*.js\" or \"src/**/*.ts\". \
                 Returns matching file paths one per line.\n\n\

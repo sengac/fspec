@@ -1,6 +1,6 @@
 [package]
 name = "rig-core"
-version = "0.25.0"
+version = "0.28.0"
 edition = "2024"
 license = "MIT"
 readme = "README.md"
@@ -36,16 +36,20 @@ serde_json = "1.0.140"
 thiserror = "2.0.12"
 tracing = "0.1.41"
 url = "2.5"
-worker = { version = "0.6", optional = true }
-rmcp = { version = "0.9", optional = true, features = ["client"] }
+rmcp = { version = "0.12", optional = true, features = ["client"] }
 tokio = { version = "1.45.1", features = ["rt", "sync"] }
 http = "1.3.1"
 tracing-futures = { version = "0.2.5", features = ["futures-03"] }
 serenity = { version = "0.12.4", optional = true }
+fastrand = "2.3.0"
+uuid = { version = "1", features = ["v4"] }
+dirs = "5"
 eventsource-stream = "0.2.3"
 pin-project-lite = "0.2.16"
 futures-timer = "3.0.3"
 wasm-bindgen-futures = { version = "0.4.54", optional = true }
+mime = "0.3.17"
+reqwest-middleware = { version = "0.4.2", optional = true, features = ["json", "multipart", "charset", "http2"] }
 
 [dev-dependencies]
 anyhow = "1.0.98"
@@ -58,7 +62,7 @@ base64 = "0.22.1"
 
 # Required for `rmcp` example
 hyper-util = { version = "0.1.14", features = ["service", "server"] }
-rmcp = { version = "0.9", features = [
+rmcp = { version = "0.12", features = [
   "client",
   "macros",
   "reqwest",
@@ -88,8 +92,7 @@ discord-bot = ["dep:serenity"]
 pdf = ["dep:lopdf"]
 epub = ["dep:epub", "dep:quick-xml"]
 rayon = ["dep:rayon"]
-worker = [
-  "dep:worker",
+wasm = [
   "dep:wasm-bindgen-futures",
   "futures-timer/wasm-bindgen",
 ]
@@ -102,6 +105,8 @@ reqwest-rustls = [
   "reqwest/http2",
   "reqwest/macos-system-configuration",
 ]
+reqwest-middleware = ["dep:reqwest-middleware"]
+reqwest-middleware-rustls = ["reqwest-middleware", "reqwest-middleware/rustls-tls"]
 
 # Empty workspace table to exclude from parent workspace
 [workspace]

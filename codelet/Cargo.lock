@@ -2577,17 +2577,20 @@ dependencies = [
 
 [[package]]
 name = "rig-core"
-version = "0.25.0"
+version = "0.28.0"
 dependencies = [
  "as-any",
  "async-stream",
  "base64 0.22.1",
  "bytes",
+ "dirs 5.0.1",
  "eventsource-stream",
+ "fastrand",
  "futures",
  "futures-timer",
  "glob",
  "http",
+ "mime",
  "mime_guess",
  "ordered-float",
  "pin-project-lite",
@@ -2600,6 +2603,7 @@ dependencies = [
  "tracing",
  "tracing-futures",
  "url",
+ "uuid",
 ]
 
 [[package]]

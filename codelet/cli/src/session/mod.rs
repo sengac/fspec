@@ -90,6 +90,11 @@ impl Session {
         self.provider_manager.current_provider_name()
     }
 
+    /// Get current model ID (if explicitly selected)
+    pub fn current_model_id(&self) -> Option<String> {
+        self.provider_manager.selected_model_id()
+    }
+
     /// Switch to a different provider
     ///
     /// CRITICAL: This clears the message history to start fresh with new provider

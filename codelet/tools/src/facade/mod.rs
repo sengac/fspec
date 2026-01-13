@@ -22,6 +22,7 @@
 
 mod bash;
 mod file_ops;
+mod gemini_history;
 mod ls;
 mod registry;
 mod search;
@@ -45,6 +46,11 @@ pub use system_prompt::{
 pub use thinking_config::{
     ClaudeThinkingFacade, Gemini25ThinkingFacade, Gemini3ThinkingFacade, ThinkingConfigFacade,
     ThinkingLevel,
+};
+pub use gemini_history::{
+    DefaultHistoryFacade, DefaultTurnCompletionFacade, GeminiHistoryFacade,
+    GeminiTurnCompletionFacade, HistoryPreparationFacade, TurnCompletionFacade,
+    SYNTHETIC_THOUGHT_SIGNATURE,
 };
 pub use traits::{
     BashToolFacade, BoxedBashToolFacade, BoxedFileToolFacade, BoxedLsToolFacade,

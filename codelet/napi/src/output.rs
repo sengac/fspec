@@ -278,6 +278,16 @@ impl StreamOutput for NapiOutput {
                     ThreadsafeFunctionCallMode::NonBlocking,
                 );
             }
+            StreamEvent::Thinking(thinking) => {
+                // TOOL-010: Stream thinking/reasoning content to JavaScript
+                // Flush any pending text first to maintain event ordering
+                self.flush_text();
+
+                let _ = self.callback.call(
+                    StreamChunk::thinking(thinking),
+                    ThreadsafeFunctionCallMode::NonBlocking,
+                );
+            }
         }
     }
 

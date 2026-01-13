@@ -258,7 +258,7 @@ impl WebSearchTool {
 }
 
 impl Tool for WebSearchTool {
-    const NAME: &'static str = "web_search";
+    const NAME: &'static str = "WebSearch";
 
     type Error = ToolError;
     type Args = WebSearchRequest;
@@ -267,7 +267,7 @@ impl Tool for WebSearchTool {
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         // This matches the schema structure that was working in the previous implementation
         ToolDefinition {
-            name: "web_search".to_string(),
+            name: "WebSearch".to_string(),
             description: "Perform web search, open web pages, find content within pages, or capture screenshots using Chrome-based web scraping with full JavaScript support".to_string(),
             parameters: json!({
                 "additionalProperties": false,

@@ -49,7 +49,7 @@ impl<T> TranscriptionModel<T> {
 }
 impl<T> transcription::TranscriptionModel for TranscriptionModel<T>
 where
-    T: HttpClientExt + Clone + WasmCompatSync,
+    T: HttpClientExt + Clone + WasmCompatSync + 'static,
 {
     type Response = TranscriptionResponse;
 
@@ -59,7 +59,6 @@ where
         TranscriptionModel::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn transcription(
         &self,
         request: transcription::TranscriptionRequest,

@@ -106,6 +106,8 @@ mod tests {
                     name: "read".to_string(),
                     arguments: serde_json::json!({"file_path": "/path/to/file.rs"}),
                 },
+                signature: None,
+                additional_params: None,
             })),
         };
         let tokens = estimate_message_tokens(&message);
@@ -161,6 +163,8 @@ mod tests {
                         name: "read".to_string(),
                         arguments: serde_json::json!({"file_path": "/src/main.rs"}),
                     },
+                    signature: None,
+                    additional_params: None,
                 })),
             },
             Message::User {

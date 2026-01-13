@@ -42,7 +42,7 @@ impl<T> EmbeddingModel<T> {
 
 impl<T> embeddings::EmbeddingModel for EmbeddingModel<T>
 where
-    T: HttpClientExt + Clone,
+    T: HttpClientExt + Clone + 'static,
 {
     type Client = Client<T>;
 
@@ -56,7 +56,6 @@ where
         self.ndims
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn embed_texts(
         &self,
         documents: impl IntoIterator<Item = String>,

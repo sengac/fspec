@@ -5,13 +5,13 @@ use crate::providers::cohere::CompletionModel;
 use crate::providers::cohere::completion::{
     AssistantContent, CohereCompletionRequest, Message, ToolCall, ToolCallFunction, ToolType, Usage,
 };
-use crate::streaming::RawStreamingChoice;
+use crate::streaming::{RawStreamingChoice, RawStreamingToolCall, ToolCallDeltaContent};
 use crate::telemetry::SpanCombinator;
 use crate::{json_utils, streaming};
 use async_stream::stream;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use tracing::info_span;
+use tracing::{Level, enabled, info_span};
 use tracing_futures::Instrument;
 
 #[derive(Debug, Deserialize)]
@@ -111,8 +111,6 @@ where
                 gen_ai.response.model = self.model,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
@@ -125,17 +123,19 @@ where
 
         request.additional_params = Some(params);
 
-        tracing::trace!(
-            target: "rig::streaming",
-            "Cohere streaming completion input: {}",
-            serde_json::to_string_pretty(&request)?
-        );
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                target: "rig::streaming",
+                "Cohere streaming completion input: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
 
         let req = self.client.post("/v2/chat")?.body(body).unwrap();
 
-        let mut event_source = GenericEventSource::new(self.client.http_client().clone(), req);
+        let mut event_source = GenericEventSource::new(self.client.clone(), req);
 
         let stream = stream! {
             let mut current_tool_call: Option<(String, String, String)> = None;
@@ -199,7 +199,12 @@ where
                                 let Some(name) = function.name.clone() else { continue; };
                                 let Some(arguments) = function.arguments.clone() else { continue; };
 
-                                current_tool_call = Some((id, name, arguments));
+                                current_tool_call = Some((id.clone(), name.clone(), arguments));
+
+                                yield Ok(RawStreamingChoice::ToolCallDelta {
+                                    id,
+                                    content: ToolCallDeltaContent::Name(name),
+                                });
                             },
 
                             StreamingEvent::ToolCallDelta { delta: Some(delta) } => {
@@ -214,7 +219,7 @@ where
                                 // Emit the delta so UI can show progress
                                 yield Ok(RawStreamingChoice::ToolCallDelta {
                                     id: tc.0,
-                                    delta: arguments,
+                                    content: ToolCallDeltaContent::Delta(arguments),
                                 });
                             },
 
@@ -231,12 +236,9 @@ where
                                     })
                                 });
 
-                                yield Ok(RawStreamingChoice::ToolCall {
-                                    id: tc.0,
-                                    name: tc.1,
-                                    arguments: args,
-                                    call_id: None
-                                });
+                                yield Ok(RawStreamingChoice::ToolCall(
+                                    RawStreamingToolCall::new(tc.0, tc.1, args)
+                                ));
 
                                 current_tool_call = None;
                             },

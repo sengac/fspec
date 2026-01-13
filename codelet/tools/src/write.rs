@@ -37,7 +37,7 @@ pub struct WriteArgs {
 }
 
 impl rig::tool::Tool for WriteTool {
-    const NAME: &'static str = "write";
+    const NAME: &'static str = "Write";
 
     type Error = ToolError;
     type Args = WriteArgs;
@@ -45,7 +45,7 @@ impl rig::tool::Tool for WriteTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "write".to_string(),
+            name: "Write".to_string(),
             description:
                 "Write content to a file (creates or overwrites). Requires absolute path. \
                 Creates parent directories if they don't exist."

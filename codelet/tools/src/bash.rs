@@ -312,7 +312,7 @@ pub struct BashArgs {
 }
 
 impl rig::tool::Tool for BashTool {
-    const NAME: &'static str = "bash";
+    const NAME: &'static str = "Bash";
 
     type Error = ToolError;
     type Args = BashArgs;
@@ -320,7 +320,7 @@ impl rig::tool::Tool for BashTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "bash".to_string(),
+            name: "Bash".to_string(),
             description: "Execute a bash command. Returns stdout or error message with stderr."
                 .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(BashArgs))

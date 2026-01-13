@@ -109,6 +109,8 @@ pub enum StreamEvent {
     ContextFill(ContextFillInfo),
     /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
     ToolProgress(ToolProgressEvent),
+    /// Thinking/reasoning content from extended thinking (TOOL-010)
+    Thinking(String),
 }
 
 /// Stream output handler trait
@@ -211,6 +213,12 @@ pub trait StreamOutput: Send + Sync {
             output_chunk: output_chunk.to_string(),
         }));
     }
+
+    /// Emit thinking/reasoning content from extended thinking (TOOL-010)
+    #[inline]
+    fn emit_thinking(&self, thinking: &str) {
+        self.emit(StreamEvent::Thinking(thinking.to_string()));
+    }
 }
 
 /// CLI output implementation - prints to stdout
@@ -304,6 +312,13 @@ impl StreamOutput for CliOutput {
                 // Replace \n with \r\n for proper terminal display in raw mode
                 let display_text = progress.output_chunk.replace('\n', "\r\n");
                 print!("{display_text}");
+                std::io::stdout().flush().ok();
+            }
+            StreamEvent::Thinking(thinking) => {
+                // TOOL-010: Display thinking/reasoning content
+                // Format similar to Gemini CLI's LoadingIndicator
+                let display_text = thinking.replace('\n', "\r\n");
+                print!("\r\n💭 {display_text}\r\n");
                 std::io::stdout().flush().ok();
             }
         }

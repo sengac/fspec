@@ -742,6 +742,8 @@ impl CodeletSession {
                                         name,
                                         arguments: input, // Already serde_json::Value
                                     },
+                                    signature: None,
+                                    additional_params: None,
                                 }));
                             }
                             EnvAssistantContent::Thinking { .. } => {

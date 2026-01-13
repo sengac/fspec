@@ -215,7 +215,7 @@ where
     fn ndims(&self) -> usize {
         self.ndims
     }
-    #[cfg_attr(feature = "worker", worker::send)]
+
     async fn embed_texts(
         &self,
         documents: impl IntoIterator<Item = String>,
@@ -233,7 +233,7 @@ where
             .body(body)
             .map_err(|e| EmbeddingError::HttpError(e.into()))?;
 
-        let response = HttpClientExt::send(self.client.http_client(), req).await?;
+        let response = self.client.send(req).await?;
 
         if !response.status().is_success() {
             let text = http_client::text(response).await?;
@@ -486,14 +486,10 @@ where
         Self::new(client.clone(), model.into().as_str())
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
     ) -> Result<completion::CompletionResponse<Self::Response>, CompletionError> {
-        let preamble = completion_request.preamble.clone();
-        let request = OllamaCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
-
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
                 target: "rig::completions",
@@ -501,17 +497,25 @@ where
                 gen_ai.operation.name = "chat",
                 gen_ai.provider.name = "ollama",
                 gen_ai.request.model = self.model,
-                gen_ai.system_instructions = preamble,
+                gen_ai.system_instructions = tracing::field::Empty,
                 gen_ai.response.id = tracing::field::Empty,
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
+
+        span.record("gen_ai.system_instructions", &completion_request.preamble);
+        let request = OllamaCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+
+        if tracing::enabled!(tracing::Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "Ollama completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
 
@@ -536,10 +540,6 @@ where
             let span = tracing::Span::current();
             span.record("gen_ai.response.model_name", &response.model);
             span.record(
-                "gen_ai.output.messages",
-                serde_json::to_string(&vec![&response.message]).unwrap(),
-            );
-            span.record(
                 "gen_ai.usage.input_tokens",
                 response.prompt_eval_count.unwrap_or_default(),
             );
@@ -548,11 +548,12 @@ where
                 response.eval_count.unwrap_or_default(),
             );
 
-            tracing::trace!(
-                target: "rig::completions",
-                "Ollama completion response: {}",
-                serde_json::to_string_pretty(&response)?
-            );
+            if tracing::enabled!(tracing::Level::TRACE) {
+                tracing::trace!(target: "rig::completions",
+                    "Ollama completion response: {}",
+                    serde_json::to_string_pretty(&response)?
+                );
+            }
 
             let response: completion::CompletionResponse<CompletionResponse> =
                 response.try_into()?;
@@ -563,16 +564,11 @@ where
         tracing::Instrument::instrument(async_block, span).await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         request: CompletionRequest,
     ) -> Result<streaming::StreamingCompletionResponse<Self::StreamingResponse>, CompletionError>
     {
-        let preamble = request.preamble.clone();
-        let mut request = OllamaCompletionRequest::try_from((self.model.as_ref(), request))?;
-        request.stream = true;
-
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
                 target: "rig::completions",
@@ -580,17 +576,27 @@ where
                 gen_ai.operation.name = "chat_streaming",
                 gen_ai.provider.name = "ollama",
                 gen_ai.request.model = self.model,
-                gen_ai.system_instructions = preamble,
+                gen_ai.system_instructions = tracing::field::Empty,
                 gen_ai.response.id = tracing::field::Empty,
                 gen_ai.response.model = self.model,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
+
+        span.record("gen_ai.system_instructions", &request.preamble);
+
+        let mut request = OllamaCompletionRequest::try_from((self.model.as_ref(), request))?;
+        request.stream = true;
+
+        if tracing::enabled!(tracing::Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "Ollama streaming completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
 
@@ -600,7 +606,7 @@ where
             .body(body)
             .map_err(http_client::Error::from)?;
 
-        let response = self.client.http_client().send_streaming(req).await?;
+        let response = self.client.send_streaming(req).await?;
         let status = response.status();
         let mut byte_stream = response.into_body();
 
@@ -657,10 +663,9 @@ where
                         if let Some(thinking_content) = thinking
                             && !thinking_content.is_empty() {
                             thinking_response += &thinking_content;
-                            yield RawStreamingChoice::Reasoning {
-                                reasoning: thinking_content,
+                            yield RawStreamingChoice::ReasoningDelta {
                                 id: None,
-                                signature: None,
+                                reasoning: thinking_content,
                             };
                         }
 
@@ -671,12 +676,9 @@ where
 
                         for tool_call in tool_calls {
                             tool_calls_final.push(tool_call.clone());
-                            yield RawStreamingChoice::ToolCall {
-                                id: String::new(),
-                                name: tool_call.function.name,
-                                arguments: tool_call.function.arguments,
-                                call_id: None,
-                            };
+                            yield RawStreamingChoice::ToolCall(
+                                crate::streaming::RawStreamingToolCall::new(String::new(), tool_call.function.name, tool_call.function.arguments)
+                            );
                         }
                     }
                 }

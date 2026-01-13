@@ -16,13 +16,13 @@ impl ToolFacade for ClaudeWebSearchFacade {
     }
 
     fn tool_name(&self) -> &'static str {
-        "web_search"
+        "WebSearch"
     }
 
     fn definition(&self) -> ToolDefinition {
         // Use flat schema to avoid Claude serializing nested objects as strings
         ToolDefinition {
-            name: "web_search".to_string(),
+            name: "WebSearch".to_string(),
             description: "Perform web search, open web pages, find content within pages, or capture screenshots. Use action_type to specify the operation.".to_string(),
             parameters: json!({
                 "type": "object",

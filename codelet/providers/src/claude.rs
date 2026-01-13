@@ -17,7 +17,7 @@ use codelet_common::{Message, MessageContent, MessageRole};
 // TOOL-008: Import CLAUDE_CODE_PROMPT_PREFIX from facade (single source of truth)
 use codelet_tools::facade::CLAUDE_CODE_PROMPT_PREFIX;
 use codelet_tools::ToolDefinition as OurToolDefinition;
-use reqwest::header::{HeaderValue, AUTHORIZATION};
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue, AUTHORIZATION};
 use rig::completion::CompletionRequestBuilder;
 use rig::providers::anthropic;
 use serde::{Deserialize, Serialize};
@@ -36,9 +36,14 @@ pub const MAX_OUTPUT_TOKENS: usize = 8192;
 // TOOL-008: CLAUDE_CODE_PROMPT_PREFIX is now imported from codelet_tools::facade
 // (single source of truth - see imports at top)
 
-/// Anthropic beta features header for OAuth and prompt caching
-const ANTHROPIC_BETA_HEADER: &str =
-    "prompt-caching-2024-07-31,oauth-2025-04-20,interleaved-thinking-2025-05-14,tool-examples-2025-10-29";
+/// Anthropic beta features header for API key mode (standard features)
+const ANTHROPIC_BETA_HEADER_API_KEY: &str =
+    "prompt-caching-2024-07-31,interleaved-thinking-2025-05-14";
+
+/// Anthropic beta features header for OAuth mode (must match Claude Code exactly)
+/// claude-code-20250219 identifies as Claude Code, oauth-2025-04-20 enables OAuth auth
+const ANTHROPIC_BETA_HEADER_OAUTH: &str =
+    "claude-code-20250219,oauth-2025-04-20,prompt-caching-2024-07-31,interleaved-thinking-2025-05-14";
 
 /// Cache control metadata for Anthropic prompt caching (CLI-017)
 ///
@@ -170,26 +175,16 @@ impl ClaudeProvider {
         // Use shared validation helper (REFAC-013)
         validate_api_key_static("claude", api_key)?;
 
-        // Parse beta headers for rig client
-        let beta_features: Vec<&str> = ANTHROPIC_BETA_HEADER.split(',').collect();
+        // Build rig client based on auth mode
+        // Note: The patched rig-core's AnthropicKey::into_header() automatically skips
+        // x-api-key for OAuth tokens (those starting with "sk-ant-oat")
+        let rig_client: anthropic::Client = if auth_mode == AuthMode::OAuth {
+            // For OAuth mode, use Claude Code headers exactly
+            let beta_features: Vec<&str> = ANTHROPIC_BETA_HEADER_OAUTH.split(',').collect();
 
-        // Build rig client with beta headers (using default reqwest::Client)
-        let mut rig_client: anthropic::Client = anthropic::Client::builder()
-            .api_key(api_key)
-            .anthropic_betas(&beta_features)
-            .build()
-            .map_err(|e| {
-                ProviderError::config("claude", format!("Failed to build Anthropic client: {e}"))
-            })?;
+            let mut headers = HeaderMap::new();
 
-        // For OAuth mode, replace x-api-key header with Bearer auth
-        if auth_mode == AuthMode::OAuth {
-            let mut headers = rig_client.headers().clone();
-
-            // Remove x-api-key header
-            headers.remove("x-api-key");
-
-            // Add Authorization: Bearer header
+            // Authorization: Bearer token (instead of x-api-key)
             headers.insert(
                 AUTHORIZATION,
                 HeaderValue::from_str(&format!("Bearer {api_key}")).map_err(|e| {
@@ -197,18 +192,44 @@ impl ClaudeProvider {
                 })?,
             );
 
-            // Rebuild client with modified headers
-            rig_client = anthropic::Client::from_parts(
-                rig_client.base_url().to_string(),
-                headers,
-                rig_client.http_client().clone(),
-                rig_client.ext().clone(),
+            // User-Agent must match Claude Code exactly
+            headers.insert(
+                reqwest::header::USER_AGENT,
+                HeaderValue::from_static("claude-cli/2.1.3 (external, cli)"),
             );
-        }
 
-        // Create completion model with specified model name
+            // x-app header identifies the application type
+            headers.insert(
+                HeaderName::from_static("x-app"),
+                HeaderValue::from_static("cli"),
+            );
+
+            anthropic::Client::builder()
+                .api_key(api_key)
+                .anthropic_betas(&beta_features)
+                .http_headers(headers)
+                .build()
+                .map_err(|e| {
+                    ProviderError::config("claude", format!("Failed to build Anthropic client: {e}"))
+                })?
+        } else {
+            // Standard API key mode - x-api-key header is added automatically
+            let beta_features: Vec<&str> = ANTHROPIC_BETA_HEADER_API_KEY.split(',').collect();
+
+            anthropic::Client::builder()
+                .api_key(api_key)
+                .anthropic_betas(&beta_features)
+                .build()
+                .map_err(|e| {
+                    ProviderError::config("claude", format!("Failed to build Anthropic client: {e}"))
+                })?
+        };
+
+        // Create completion model with specified model name and prompt caching enabled
+        // OAuth mode supports prompt caching via the prompt-caching-2024-07-31 beta header
         let completion_model =
-            anthropic::completion::CompletionModel::new(rig_client.clone(), model);
+            anthropic::completion::CompletionModel::new(rig_client.clone(), model)
+                .with_prompt_caching();
 
         Ok(Self {
             completion_model,
@@ -252,9 +273,13 @@ impl ClaudeProvider {
         CLAUDE_CODE_PROMPT_PREFIX
     }
 
-    /// Get the anthropic-beta header value
+    /// Get the anthropic-beta header value based on auth mode
     pub fn get_anthropic_beta_header(&self) -> &'static str {
-        ANTHROPIC_BETA_HEADER
+        if self.auth_mode == AuthMode::OAuth {
+            ANTHROPIC_BETA_HEADER_OAUTH
+        } else {
+            ANTHROPIC_BETA_HEADER_API_KEY
+        }
     }
 
     /// Create a rig Agent with all 10 tools configured for this provider
@@ -495,5 +520,97 @@ impl LlmProvider for ClaudeProvider {
 
         // Convert rig response to our CompletionResponse format
         self.rig_response_to_completion(response)
+    }
+}
+
+#[cfg(test)]
+mod oauth_header_tests {
+    use super::*;
+    use rig::client::Provider;
+
+    #[test]
+    fn test_oauth_headers_are_set_correctly() {
+        let provider = ClaudeProvider::from_api_key_with_mode_and_model(
+            "sk-ant-oat01-test-token",
+            AuthMode::OAuth,
+            "claude-sonnet-4-20250514",
+        ).expect("Should create provider");
+
+        let headers = provider.client().headers();
+
+        println!("\n=== OAuth Headers ===");
+        for (k, v) in headers.iter() {
+            println!("  {}: {}", k, v.to_str().unwrap_or("<binary>"));
+        }
+        println!("=====================\n");
+
+        // Check Authorization header
+        let auth = headers.get("authorization").expect("Should have authorization");
+        assert!(auth.to_str().unwrap().starts_with("Bearer "), "Should use Bearer auth");
+
+        // Check User-Agent
+        let ua = headers.get("user-agent").expect("Should have user-agent");
+        assert!(ua.to_str().unwrap().contains("claude-cli"), "User-Agent should contain claude-cli");
+
+        // Check x-app
+        let xapp = headers.get("x-app").expect("Should have x-app");
+        assert_eq!(xapp.to_str().unwrap(), "cli");
+
+        // Check anthropic-beta
+        let beta = headers.get("anthropic-beta").expect("Should have anthropic-beta");
+        let beta_str = beta.to_str().unwrap();
+        assert!(beta_str.contains("claude-code-20250219"), "anthropic-beta should contain claude-code-20250219");
+        assert!(beta_str.contains("oauth-2025-04-20"), "anthropic-beta should contain oauth-2025-04-20");
+
+        // Check NO x-api-key
+        assert!(headers.get("x-api-key").is_none(), "Should NOT have x-api-key");
+    }
+
+    #[test]
+    fn test_oauth_url_includes_beta_query_param() {
+        let provider = ClaudeProvider::from_api_key_with_mode_and_model(
+            "sk-ant-oat01-test-token",
+            AuthMode::OAuth,
+            "claude-sonnet-4-20250514",
+        ).expect("Should create provider");
+
+        // Get the ext from the client to test build_uri
+        let ext = provider.client().ext();
+        let url = ext.build_uri(
+            "https://api.anthropic.com",
+            "/v1/messages",
+            rig::client::Transport::Http,
+        );
+
+        println!("OAuth URL: {}", url);
+        assert!(
+            url.contains("?beta=true"),
+            "OAuth URL should contain ?beta=true, got: {}",
+            url
+        );
+    }
+
+    #[test]
+    fn test_api_key_url_does_not_include_beta_query_param() {
+        let provider = ClaudeProvider::from_api_key_with_mode_and_model(
+            "sk-ant-api03-test-key",
+            AuthMode::ApiKey,
+            "claude-sonnet-4-20250514",
+        ).expect("Should create provider");
+
+        // Get the ext from the client to test build_uri
+        let ext = provider.client().ext();
+        let url = ext.build_uri(
+            "https://api.anthropic.com",
+            "/v1/messages",
+            rig::client::Transport::Http,
+        );
+
+        println!("API Key URL: {}", url);
+        assert!(
+            !url.contains("?beta=true"),
+            "API Key URL should NOT contain ?beta=true, got: {}",
+            url
+        );
     }
 }

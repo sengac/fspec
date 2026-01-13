@@ -14,7 +14,7 @@ use crate::{
 };
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
-use tracing::{Instrument, info_span};
+use tracing::{Instrument, Level, enabled, info_span};
 
 // ================================================================
 // OpenRouter Completion API
@@ -170,11 +170,13 @@ pub enum Message {
         tool_calls: Vec<openai::ToolCall>,
         #[serde(skip_serializing_if = "Option::is_none")]
         reasoning: Option<String>,
+        #[serde(default, skip_serializing_if = "Vec::is_empty")]
+        reasoning_details: Vec<ReasoningDetails>,
     },
     #[serde(rename = "tool")]
     ToolResult {
         tool_call_id: String,
-        content: OneOrMany<openai::ToolResultContent>,
+        content: String,
     },
 }
 
@@ -185,6 +187,43 @@ impl Message {
             name: None,
         }
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[serde(tag = "type", rename_all = "snake_case")]
+pub enum ReasoningDetails {
+    #[serde(rename = "reasoning.summary")]
+    Summary {
+        id: Option<String>,
+        format: Option<String>,
+        index: Option<usize>,
+        summary: String,
+    },
+    #[serde(rename = "reasoning.encrypted")]
+    Encrypted {
+        id: Option<String>,
+        format: Option<String>,
+        index: Option<usize>,
+        data: String,
+    },
+    #[serde(rename = "reasoning.text")]
+    Text {
+        id: Option<String>,
+        format: Option<String>,
+        index: Option<usize>,
+        text: Option<String>,
+        signature: Option<String>,
+    },
+}
+
+#[derive(Debug, Deserialize, PartialEq, Clone)]
+#[serde(untagged)]
+enum ToolCallAdditionalParams {
+    ReasoningDetails(ReasoningDetails),
+    Minimal {
+        id: Option<String>,
+        format: Option<String>,
+    },
 }
 
 impl From<openai::Message> for Message {
@@ -205,13 +244,14 @@ impl From<openai::Message> for Message {
                 name,
                 tool_calls,
                 reasoning: None,
+                reasoning_details: Vec::new(),
             },
             openai::Message::ToolResult {
                 tool_call_id,
                 content,
             } => Self::ToolResult {
                 tool_call_id,
-                content,
+                content: content.as_text(),
             },
         }
     }
@@ -224,11 +264,51 @@ impl TryFrom<OneOrMany<message::AssistantContent>> for Vec<Message> {
         let mut text_content = Vec::new();
         let mut tool_calls = Vec::new();
         let mut reasoning = None;
+        let mut reasoning_details = Vec::new();
 
         for content in value.into_iter() {
             match content {
                 message::AssistantContent::Text(text) => text_content.push(text),
-                message::AssistantContent::ToolCall(tool_call) => tool_calls.push(tool_call),
+                message::AssistantContent::ToolCall(tool_call) => {
+                    // We usually want to provide back the reasoning to OpenRouter since some
+                    // providers require it.
+                    // 1. Full reasoning details passed back the user
+                    // 2. The signature, an id and a format if present
+                    // 3. The signature and the call_id if present
+                    if let Some(additional_params) = &tool_call.additional_params
+                        && let Ok(additional_params) =
+                            serde_json::from_value::<ToolCallAdditionalParams>(
+                                additional_params.clone(),
+                            )
+                    {
+                        match additional_params {
+                            ToolCallAdditionalParams::ReasoningDetails(full) => {
+                                reasoning_details.push(full);
+                            }
+                            ToolCallAdditionalParams::Minimal { id, format } => {
+                                let id = id.or_else(|| tool_call.call_id.clone());
+                                if let Some(signature) = &tool_call.signature
+                                    && let Some(id) = id
+                                {
+                                    reasoning_details.push(ReasoningDetails::Encrypted {
+                                        id: Some(id),
+                                        format,
+                                        index: None,
+                                        data: signature.clone(),
+                                    })
+                                }
+                            }
+                        }
+                    } else if let Some(signature) = &tool_call.signature {
+                        reasoning_details.push(ReasoningDetails::Encrypted {
+                            id: tool_call.call_id.clone(),
+                            format: None,
+                            index: None,
+                            data: signature.clone(),
+                        });
+                    }
+                    tool_calls.push(tool_call.into())
+                }
                 message::AssistantContent::Reasoning(r) => {
                     reasoning = r.reasoning.into_iter().next();
                 }
@@ -250,11 +330,9 @@ impl TryFrom<OneOrMany<message::AssistantContent>> for Vec<Message> {
             refusal: None,
             audio: None,
             name: None,
-            tool_calls: tool_calls
-                .into_iter()
-                .map(|tool_call| tool_call.into())
-                .collect::<Vec<_>>(),
+            tool_calls,
             reasoning,
+            reasoning_details,
         }])
     }
 }
@@ -316,20 +394,33 @@ pub enum ToolChoiceFunctionKind {
 pub(super) struct OpenrouterCompletionRequest {
     model: String,
     pub messages: Vec<Message>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     temperature: Option<f64>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     tools: Vec<crate::providers::openai::completion::ToolDefinition>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     tool_choice: Option<crate::providers::openai::completion::ToolChoice>,
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub additional_params: Option<serde_json::Value>,
 }
 
-impl TryFrom<(&str, CompletionRequest)> for OpenrouterCompletionRequest {
+/// Parameters for building an OpenRouter CompletionRequest
+pub struct OpenRouterRequestParams<'a> {
+    pub model: &'a str,
+    pub request: CompletionRequest,
+    pub strict_tools: bool,
+}
+
+impl TryFrom<OpenRouterRequestParams<'_>> for OpenrouterCompletionRequest {
     type Error = CompletionError;
 
-    fn try_from((model, req): (&str, CompletionRequest)) -> Result<Self, Self::Error> {
+    fn try_from(params: OpenRouterRequestParams) -> Result<Self, Self::Error> {
+        let OpenRouterRequestParams {
+            model,
+            request: req,
+            strict_tools,
+        } = params;
+
         let mut full_history: Vec<Message> = match &req.preamble {
             Some(preamble) => vec![Message::system(preamble)],
             None => vec![],
@@ -357,18 +448,35 @@ impl TryFrom<(&str, CompletionRequest)> for OpenrouterCompletionRequest {
             .map(crate::providers::openai::completion::ToolChoice::try_from)
             .transpose()?;
 
+        let tools: Vec<crate::providers::openai::completion::ToolDefinition> = req
+            .tools
+            .clone()
+            .into_iter()
+            .map(|tool| {
+                let def = crate::providers::openai::completion::ToolDefinition::from(tool);
+                if strict_tools { def.with_strict() } else { def }
+            })
+            .collect();
+
         Ok(Self {
             model: model.to_string(),
             messages: full_history,
             temperature: req.temperature,
-            tools: req
-                .tools
-                .clone()
-                .into_iter()
-                .map(crate::providers::openai::completion::ToolDefinition::from)
-                .collect::<Vec<_>>(),
+            tools,
             tool_choice,
             additional_params: req.additional_params,
+        })
+    }
+}
+
+impl TryFrom<(&str, CompletionRequest)> for OpenrouterCompletionRequest {
+    type Error = CompletionError;
+
+    fn try_from((model, req): (&str, CompletionRequest)) -> Result<Self, Self::Error> {
+        OpenrouterCompletionRequest::try_from(OpenRouterRequestParams {
+            model,
+            request: req,
+            strict_tools: false,
         })
     }
 }
@@ -377,6 +485,9 @@ impl TryFrom<(&str, CompletionRequest)> for OpenrouterCompletionRequest {
 pub struct CompletionModel<T = reqwest::Client> {
     pub(crate) client: Client<T>,
     pub model: String,
+    /// Enable strict mode for tool schemas.
+    /// When enabled, tool schemas are sanitized to meet OpenAI's strict mode requirements.
+    pub strict_tools: bool,
 }
 
 impl<T> CompletionModel<T> {
@@ -384,7 +495,21 @@ impl<T> CompletionModel<T> {
         Self {
             client,
             model: model.into(),
+            strict_tools: false,
         }
+    }
+
+    /// Enable strict mode for tool schemas.
+    ///
+    /// When enabled, tool schemas are automatically sanitized to meet OpenAI's strict mode requirements:
+    /// - `additionalProperties: false` is added to all objects
+    /// - All properties are marked as required
+    /// - `strict: true` is set on each function definition
+    ///
+    /// Note: Not all models on OpenRouter support strict mode. This works best with OpenAI models.
+    pub fn with_strict_tools(mut self) -> Self {
+        self.strict_tools = true;
+        self
     }
 }
 
@@ -401,14 +526,25 @@ where
         Self::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
     ) -> Result<completion::CompletionResponse<CompletionResponse>, CompletionError> {
         let preamble = completion_request.preamble.clone();
-        let request =
-            OpenrouterCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+        let request = OpenrouterCompletionRequest::try_from(OpenRouterRequestParams {
+            model: self.model.as_ref(),
+            request: completion_request,
+            strict_tools: self.strict_tools,
+        })?;
+
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                target: "rig::completions",
+                "OpenRouter completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
+
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
                 target: "rig::completions",
@@ -421,8 +557,6 @@ where
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
@@ -446,7 +580,6 @@ where
                     ApiResponse::Ok(response) => {
                         let span = tracing::Span::current();
                         span.record_token_usage(&response.usage);
-                        span.record_model_output(&response.choices);
                         span.record("gen_ai.response.id", &response.id);
                         span.record("gen_ai.response.model_name", &response.model);
 
@@ -466,7 +599,6 @@ where
         .await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         completion_request: CompletionRequest,
@@ -475,5 +607,70 @@ where
         CompletionError,
     > {
         CompletionModel::stream(self, completion_request).await
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_completion_response_deserialization_gemini_flash() {
+        // Real response from OpenRouter with google/gemini-2.5-flash
+        let json = json!({
+            "id": "gen-AAAAAAAAAA-AAAAAAAAAAAAAAAAAAAA",
+            "provider": "Google",
+            "model": "google/gemini-2.5-flash",
+            "object": "chat.completion",
+            "created": 1765971703u64,
+            "choices": [{
+                "logprobs": null,
+                "finish_reason": "stop",
+                "native_finish_reason": "STOP",
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "CONTENT",
+                    "refusal": null,
+                    "reasoning": null
+                }
+            }],
+            "usage": {
+                "prompt_tokens": 669,
+                "completion_tokens": 5,
+                "total_tokens": 674
+            }
+        });
+
+        let response: CompletionResponse = serde_json::from_value(json).unwrap();
+        assert_eq!(response.id, "gen-AAAAAAAAAA-AAAAAAAAAAAAAAAAAAAA");
+        assert_eq!(response.model, "google/gemini-2.5-flash");
+        assert_eq!(response.choices.len(), 1);
+        assert_eq!(response.choices[0].finish_reason, Some("stop".to_string()));
+    }
+
+    #[test]
+    fn test_message_assistant_without_reasoning_details() {
+        // Verify that missing reasoning_details field doesn't cause deserialization failure
+        let json = json!({
+            "role": "assistant",
+            "content": "Hello world",
+            "refusal": null,
+            "reasoning": null
+        });
+
+        let message: Message = serde_json::from_value(json).unwrap();
+        match message {
+            Message::Assistant {
+                content,
+                reasoning_details,
+                ..
+            } => {
+                assert_eq!(content.len(), 1);
+                assert!(reasoning_details.is_empty());
+            }
+            _ => panic!("Expected Assistant message"),
+        }
     }
 }

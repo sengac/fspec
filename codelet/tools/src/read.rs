@@ -108,7 +108,7 @@ pub struct ReadArgs {
 }
 
 impl rig::tool::Tool for ReadTool {
-    const NAME: &'static str = "read";
+    const NAME: &'static str = "Read";
 
     type Error = ToolError;
     type Args = ReadArgs;
@@ -116,7 +116,7 @@ impl rig::tool::Tool for ReadTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "read".to_string(),
+            name: "Read".to_string(),
             description: "Reads a file from the local filesystem. You can access any file directly by using this tool.\n\n\
                 Usage:\n\
                 - The file_path parameter must be an absolute path, not a relative path\n\

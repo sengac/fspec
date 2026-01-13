@@ -12,7 +12,7 @@ use super::client::Client;
 use crate::completion::CompletionRequest;
 use crate::providers::cohere::streaming::StreamingCompletionResponse;
 use serde::{Deserialize, Serialize};
-use tracing::{Instrument, info_span};
+use tracing::{Instrument, Level, enabled, info_span};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CompletionResponse {
@@ -615,7 +615,6 @@ where
         Self::new(client.clone(), model.into())
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: completion::CompletionRequest,
@@ -633,17 +632,17 @@ where
             gen_ai.response.model = self.model,
             gen_ai.usage.output_tokens = tracing::field::Empty,
             gen_ai.usage.input_tokens = tracing::field::Empty,
-            gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-            gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
 
-        tracing::trace!(
-            "Cohere request: {}",
-            serde_json::to_string_pretty(&request)?
-        );
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                "Cohere completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let req_body = serde_json::to_vec(&request)?;
 
@@ -652,7 +651,6 @@ where
         async {
             let response = self
                 .client
-                .http_client()
                 .send::<_, bytes::Bytes>(req)
                 .await
                 .map_err(|e| http_client::Error::Instance(e.into()))?;
@@ -664,13 +662,16 @@ where
                 let json_response: CompletionResponse = serde_json::from_slice(&body)?;
                 let span = tracing::Span::current();
                 span.record_token_usage(&json_response.usage);
-                span.record_model_output(&json_response.message);
                 span.record_response_metadata(&json_response);
-                tracing::trace!(
-                    target: "rig::completions",
-                    "Cohere completion response: {}",
-                    serde_json::to_string_pretty(&json_response)?
-                );
+
+                if enabled!(Level::TRACE) {
+                    tracing::trace!(
+                        target: "rig::completions",
+                        "Cohere completion response: {}",
+                        serde_json::to_string_pretty(&json_response)?
+                    );
+                }
+
                 let completion: completion::CompletionResponse<CompletionResponse> =
                     json_response.try_into()?;
                 Ok(completion)
@@ -684,7 +685,6 @@ where
         .await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         request: CompletionRequest,

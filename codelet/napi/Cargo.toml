@@ -32,7 +32,7 @@ ast-grep-language.workspace = true
 ignore.workspace = true
 
 # Rig - LLM framework (workspace version with patch)
-rig-core = { version = "0.25.0", default-features = false }
+rig-core = { version = "0.28.0", default-features = false }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }

@@ -15,7 +15,7 @@ pub use completion::CompletionClient;
 pub use embeddings::EmbeddingsClient;
 use http::{HeaderMap, HeaderName, HeaderValue};
 use serde::{Deserialize, Serialize};
-use std::{fmt::Debug, marker::PhantomData};
+use std::{fmt::Debug, marker::PhantomData, sync::Arc};
 use thiserror::Error;
 pub use verify::{VerifyClient, VerifyError};
 
@@ -32,7 +32,9 @@ use audio_generation::*;
 use crate::{
     completion::CompletionModel,
     embeddings::EmbeddingModel,
-    http_client::{self, Builder, HttpClientExt, LazyBody, Request, Response, make_auth_header},
+    http_client::{
+        self, Builder, HttpClientExt, LazyBody, MultipartForm, Request, Response, make_auth_header,
+    },
     prelude::TranscriptionClient,
     transcription::TranscriptionModel,
     wasm_compat::{WasmCompatSend, WasmCompatSync},
@@ -104,7 +106,7 @@ where
 }
 
 /// A type containing nothing at all. For `Option`-like behavior on the type level, i.e. to describe
-/// the lack of an API key in a `ClientBuilder`
+/// the lack of a capability or field (an API key, for instance)
 #[derive(Debug, Default, Clone, Copy)]
 pub struct Nothing;
 
@@ -120,11 +122,10 @@ impl TryFrom<String> for Nothing {
     }
 }
 
-// So that Ollama can ignore auth
 #[derive(Clone)]
 pub struct Client<Ext = Nothing, H = reqwest::Client> {
-    base_url: String,
-    headers: HeaderMap,
+    base_url: Arc<str>,
+    headers: Arc<HeaderMap>,
     http_client: H,
     ext: Ext,
 }
@@ -147,10 +148,17 @@ where
             .field("base_url", &self.base_url)
             .field(
                 "headers",
-                &self.headers.iter().filter_map(|(k, v)| {
-                    (!(k == http::header::AUTHORIZATION || k.as_str().contains("api-key")))
-                        .then_some((k, v))
-                }),
+                &self
+                    .headers
+                    .iter()
+                    .filter_map(|(k, v)| {
+                        if k == http::header::AUTHORIZATION || k.as_str().contains("api-key") {
+                            None
+                        } else {
+                            Some((k, v))
+                        }
+                    })
+                    .collect::<Vec<(&HeaderName, &HeaderValue)>>(),
             )
             .field("http_client", &self.http_client);
 
@@ -255,23 +263,66 @@ impl<Ext, H> Client<Ext, H> {
         &self.headers
     }
 
-    pub fn http_client(&self) -> &H {
-        &self.http_client
-    }
-
     pub fn ext(&self) -> &Ext {
         &self.ext
     }
 
-    /// Create a new client from individual parts.
-    /// This is useful for converting between different provider extensions.
-    pub fn from_parts(base_url: String, headers: HeaderMap, http_client: H, ext: Ext) -> Self {
-        Self {
-            base_url,
-            headers,
-            http_client,
-            ext,
+    pub fn with_ext<NewExt>(self, new_ext: NewExt) -> Client<NewExt, H> {
+        Client {
+            base_url: self.base_url,
+            headers: self.headers,
+            http_client: self.http_client,
+            ext: new_ext,
         }
+    }
+}
+
+impl<Ext, H> HttpClientExt for Client<Ext, H>
+where
+    H: HttpClientExt + 'static,
+    Ext: WasmCompatSend + WasmCompatSync + 'static,
+{
+    fn send<T, U>(
+        &self,
+        mut req: Request<T>,
+    ) -> impl Future<Output = http_client::Result<Response<LazyBody<U>>>> + WasmCompatSend + 'static
+    where
+        T: Into<Bytes> + WasmCompatSend,
+        U: From<Bytes>,
+        U: WasmCompatSend + 'static,
+    {
+        req.headers_mut().insert(
+            http::header::CONTENT_TYPE,
+            http::HeaderValue::from_static("application/json"),
+        );
+
+        self.http_client.send(req)
+    }
+
+    fn send_multipart<U>(
+        &self,
+        req: Request<MultipartForm>,
+    ) -> impl Future<Output = http_client::Result<Response<LazyBody<U>>>> + WasmCompatSend + 'static
+    where
+        U: From<Bytes>,
+        U: WasmCompatSend + 'static,
+    {
+        self.http_client.send_multipart(req)
+    }
+
+    fn send_streaming<T>(
+        &self,
+        mut req: Request<T>,
+    ) -> impl Future<Output = http_client::Result<http_client::StreamingResponse>> + WasmCompatSend
+    where
+        T: Into<Bytes>,
+    {
+        req.headers_mut().insert(
+            http::header::CONTENT_TYPE,
+            http::HeaderValue::from_static("application/json"),
+        );
+
+        self.http_client.send_streaming(req)
     }
 }
 
@@ -301,7 +352,7 @@ where
         let mut req = Request::post(uri);
 
         if let Some(hs) = req.headers_mut() {
-            hs.extend(self.headers.clone());
+            hs.extend(self.headers.iter().map(|(k, v)| (k.clone(), v.clone())));
         }
 
         self.ext.with_custom(req)
@@ -318,7 +369,7 @@ where
         let mut req = Request::post(uri);
 
         if let Some(hs) = req.headers_mut() {
-            hs.extend(self.headers.clone());
+            hs.extend(self.headers.iter().map(|(k, v)| (k.clone(), v.clone())));
         }
 
         self.ext.with_custom(req)
@@ -332,40 +383,13 @@ where
             .ext
             .build_uri(&self.base_url, path.as_ref(), Transport::Http);
 
-        self.ext.with_custom(Request::get(uri))
-    }
-}
+        let mut req = Request::get(uri);
 
-impl<Ext, H> Client<Ext, H>
-where
-    H: HttpClientExt,
-{
-    pub async fn send<T, U>(
-        &self,
-        mut req: Request<T>,
-    ) -> http_client::Result<Response<LazyBody<U>>>
-    where
-        T: std::fmt::Debug + Into<Bytes> + WasmCompatSend,
-        U: std::fmt::Debug + From<Bytes> + WasmCompatSend + 'static,
-    {
-        req.headers_mut().insert(
-            http::header::CONTENT_TYPE,
-            http::HeaderValue::from_static("application/json"),
-        );
+        if let Some(hs) = req.headers_mut() {
+            hs.extend(self.headers.iter().map(|(k, v)| (k.clone(), v.clone())));
+        }
 
-        dbg!(&req);
-
-        self.http_client.send(req).await
-    }
-
-    pub async fn send_streaming<U, R>(
-        &self,
-        req: Request<U>,
-    ) -> Result<http_client::StreamingResponse, http_client::Error>
-    where
-        U: std::fmt::Debug + Into<Bytes>,
-    {
-        self.http_client.send_streaming(req).await
+        self.ext.with_custom(req)
     }
 }
 
@@ -506,6 +530,11 @@ where
         }
     }
 
+    /// Set the HTTP headers used in this client
+    pub fn http_headers(self, headers: HeaderMap) -> Self {
+        Self { headers, ..self }
+    }
+
     pub(crate) fn headers_mut(&mut self) -> &mut HeaderMap {
         &mut self.headers
     }
@@ -556,8 +585,8 @@ where
 
         Ok(Client {
             http_client,
-            base_url,
-            headers,
+            base_url: Arc::from(base_url.as_str()),
+            headers: Arc::new(headers),
             ext,
         })
     }

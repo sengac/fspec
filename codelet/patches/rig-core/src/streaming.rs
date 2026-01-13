@@ -61,6 +61,13 @@ impl Default for PauseControl {
     }
 }
 
+/// The content of a tool call delta - either the tool name or argument data
+#[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
+pub enum ToolCallDeltaContent {
+    Name(String),
+    Delta(String),
+}
+
 /// Enum representing a streaming chunk from the model
 #[derive(Debug, Clone)]
 pub enum RawStreamingChoice<R>
@@ -71,19 +78,22 @@ where
     Message(String),
 
     /// A tool call response (in its entirety)
-    ToolCall {
-        id: String,
-        call_id: Option<String>,
-        name: String,
-        arguments: serde_json::Value,
-    },
+    ToolCall(RawStreamingToolCall),
     /// A tool call partial/delta
-    ToolCallDelta { id: String, delta: String },
-    /// A reasoning chunk
+    ToolCallDelta {
+        id: String,
+        content: ToolCallDeltaContent,
+    },
+    /// A reasoning (in its entirety)
     Reasoning {
         id: Option<String>,
         reasoning: String,
         signature: Option<String>,
+    },
+    /// A reasoning partial/delta
+    ReasoningDelta {
+        id: Option<String>,
+        reasoning: String,
     },
 
     /// Early usage information (emitted at stream start with input tokens)
@@ -94,11 +104,76 @@ where
     FinalResponse(R),
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+/// Describes a streaming tool call response (in its entirety)
+#[derive(Debug, Clone)]
+pub struct RawStreamingToolCall {
+    pub id: String,
+    pub call_id: Option<String>,
+    pub name: String,
+    pub arguments: serde_json::Value,
+    pub signature: Option<String>,
+    pub additional_params: Option<serde_json::Value>,
+}
+
+impl RawStreamingToolCall {
+    pub fn empty() -> Self {
+        Self {
+            id: String::new(),
+            call_id: None,
+            name: String::new(),
+            arguments: serde_json::Value::Null,
+            signature: None,
+            additional_params: None,
+        }
+    }
+
+    pub fn new(id: String, name: String, arguments: serde_json::Value) -> Self {
+        Self {
+            id,
+            call_id: None,
+            name,
+            arguments,
+            signature: None,
+            additional_params: None,
+        }
+    }
+
+    pub fn with_call_id(mut self, call_id: String) -> Self {
+        self.call_id = Some(call_id);
+        self
+    }
+
+    pub fn with_signature(mut self, signature: Option<String>) -> Self {
+        self.signature = signature;
+        self
+    }
+
+    pub fn with_additional_params(mut self, additional_params: Option<serde_json::Value>) -> Self {
+        self.additional_params = additional_params;
+        self
+    }
+}
+
+impl From<RawStreamingToolCall> for ToolCall {
+    fn from(tool_call: RawStreamingToolCall) -> Self {
+        ToolCall {
+            id: tool_call.id,
+            call_id: tool_call.call_id,
+            function: ToolFunction {
+                name: tool_call.name,
+                arguments: tool_call.arguments,
+            },
+            signature: tool_call.signature,
+            additional_params: tool_call.additional_params,
+        }
+    }
+}
+
+#[cfg(not(all(feature = "wasm", target_arch = "wasm32")))]
 pub type StreamingResult<R> =
     Pin<Box<dyn Stream<Item = Result<RawStreamingChoice<R>, CompletionError>> + Send>>;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(feature = "wasm", target_arch = "wasm32"))]
 pub type StreamingResult<R> =
     Pin<Box<dyn Stream<Item = Result<RawStreamingChoice<R>, CompletionError>>>>;
 
@@ -224,51 +299,36 @@ where
                     stream.text = format!("{}{}", stream.text, text);
                     Poll::Ready(Some(Ok(StreamedAssistantContent::text(&text))))
                 }
-                RawStreamingChoice::ToolCallDelta { id, delta } => {
+                RawStreamingChoice::ToolCallDelta { id, content } => {
                     Poll::Ready(Some(Ok(StreamedAssistantContent::ToolCallDelta {
                         id,
-                        delta,
+                        content,
                     })))
                 }
                 RawStreamingChoice::Reasoning {
                     id,
                     reasoning,
                     signature,
-                } => {
+                } => Poll::Ready(Some(Ok(StreamedAssistantContent::Reasoning(Reasoning {
+                    id,
+                    reasoning: vec![reasoning],
+                    signature,
+                })))),
+                RawStreamingChoice::ReasoningDelta { id, reasoning } => {
                     // Forward the streaming tokens to the outer stream
                     // and concat the text together
                     stream.reasoning = format!("{}{}", stream.reasoning, reasoning);
-                    Poll::Ready(Some(Ok(StreamedAssistantContent::Reasoning(Reasoning {
+                    Poll::Ready(Some(Ok(StreamedAssistantContent::ReasoningDelta {
                         id,
-                        reasoning: vec![reasoning],
-                        signature,
-                    }))))
+                        reasoning,
+                    })))
                 }
-                RawStreamingChoice::ToolCall {
-                    id,
-                    name,
-                    arguments,
-                    call_id,
-                } => {
+                RawStreamingChoice::ToolCall(tool_call) => {
                     // Keep track of each tool call to aggregate the final message later
                     // and pass it to the outer stream
-                    stream.tool_calls.push(ToolCall {
-                        id: id.clone(),
-                        call_id: call_id.clone(),
-                        function: ToolFunction {
-                            name: name.clone(),
-                            arguments: arguments.clone(),
-                        },
-                    });
-                    if let Some(call_id) = call_id {
-                        Poll::Ready(Some(Ok(StreamedAssistantContent::tool_call_with_call_id(
-                            id, call_id, name, arguments,
-                        ))))
-                    } else {
-                        Poll::Ready(Some(Ok(StreamedAssistantContent::tool_call(
-                            id, name, arguments,
-                        ))))
-                    }
+                    let tool_call: ToolCall = tool_call.into();
+                    stream.tool_calls.push(tool_call.clone());
+                    Poll::Ready(Some(Ok(StreamedAssistantContent::ToolCall(tool_call))))
                 }
                 RawStreamingChoice::Usage(usage) => {
                     Poll::Ready(Some(Ok(StreamedAssistantContent::Usage(usage))))
@@ -356,8 +416,8 @@ impl<R: Clone + Unpin + GetTokenUsage> Stream for StreamingResultDyn<R> {
                 RawStreamingChoice::Message(m) => {
                     Poll::Ready(Some(Ok(RawStreamingChoice::Message(m))))
                 }
-                RawStreamingChoice::ToolCallDelta { id, delta } => {
-                    Poll::Ready(Some(Ok(RawStreamingChoice::ToolCallDelta { id, delta })))
+                RawStreamingChoice::ToolCallDelta { id, content } => {
+                    Poll::Ready(Some(Ok(RawStreamingChoice::ToolCallDelta { id, content })))
                 }
                 RawStreamingChoice::Reasoning {
                     id,
@@ -368,17 +428,15 @@ impl<R: Clone + Unpin + GetTokenUsage> Stream for StreamingResultDyn<R> {
                     reasoning,
                     signature,
                 }))),
-                RawStreamingChoice::ToolCall {
-                    id,
-                    name,
-                    arguments,
-                    call_id,
-                } => Poll::Ready(Some(Ok(RawStreamingChoice::ToolCall {
-                    id,
-                    name,
-                    arguments,
-                    call_id,
-                }))),
+                RawStreamingChoice::ReasoningDelta { id, reasoning } => {
+                    Poll::Ready(Some(Ok(RawStreamingChoice::ReasoningDelta {
+                        id,
+                        reasoning,
+                    })))
+                }
+                RawStreamingChoice::ToolCall(tool_call) => {
+                    Poll::Ready(Some(Ok(RawStreamingChoice::ToolCall(tool_call))))
+                }
                 RawStreamingChoice::Usage(usage) => {
                     Poll::Ready(Some(Ok(RawStreamingChoice::Usage(usage))))
                 }
@@ -486,9 +544,9 @@ mod tests {
             yield Ok(RawStreamingChoice::FinalResponse(MockResponse { token_count: 15 }));
         };
 
-        #[cfg(not(target_arch = "wasm32"))]
+        #[cfg(not(all(feature = "wasm", target_arch = "wasm32")))]
         let pinned_stream: StreamingResult<MockResponse> = Box::pin(stream);
-        #[cfg(target_arch = "wasm32")]
+        #[cfg(all(feature = "wasm", target_arch = "wasm32"))]
         let pinned_stream: StreamingResult<MockResponse> = Box::pin(stream);
 
         StreamingCompletionResponse::stream(pinned_stream)
@@ -511,8 +569,8 @@ mod tests {
                     println!("\nTool Call: {tc:?}");
                     chunk_count += 1;
                 }
-                Ok(StreamedAssistantContent::ToolCallDelta { delta, .. }) => {
-                    println!("\nTool Call delta: {delta:?}");
+                Ok(StreamedAssistantContent::ToolCallDelta { id, content }) => {
+                    println!("\nTool Call delta: id={id:?}, content={content:?}");
                     chunk_count += 1;
                 }
                 Ok(StreamedAssistantContent::Final(res)) => {
@@ -522,6 +580,10 @@ mod tests {
                     let reasoning = reasoning.into_iter().collect::<Vec<String>>().join("");
                     print!("{reasoning}");
                     std::io::Write::flush(&mut std::io::stdout()).unwrap();
+                }
+                Ok(StreamedAssistantContent::ReasoningDelta { reasoning, .. }) => {
+                    println!("Reasoning delta: {reasoning}");
+                    chunk_count += 1;
                 }
                 Err(e) => {
                     eprintln!("Error: {e:?}");
@@ -564,8 +626,16 @@ mod tests {
 pub enum StreamedAssistantContent<R> {
     Text(Text),
     ToolCall(ToolCall),
-    ToolCallDelta { id: String, delta: String },
+    ToolCallDelta {
+        id: String,
+        content: ToolCallDeltaContent,
+    },
     Reasoning(Reasoning),
+    ReasoningDelta {
+        id: Option<String>,
+        reasoning: String,
+    },
+    /// Early usage information (emitted at stream start with input tokens)
     Usage(crate::completion::Usage),
     Final(R),
 }
@@ -577,38 +647,6 @@ where
     pub fn text(text: &str) -> Self {
         Self::Text(Text {
             text: text.to_string(),
-        })
-    }
-
-    /// Helper constructor to make creating assistant tool call content easier.
-    pub fn tool_call(
-        id: impl Into<String>,
-        name: impl Into<String>,
-        arguments: serde_json::Value,
-    ) -> Self {
-        Self::ToolCall(ToolCall {
-            id: id.into(),
-            call_id: None,
-            function: ToolFunction {
-                name: name.into(),
-                arguments,
-            },
-        })
-    }
-
-    pub fn tool_call_with_call_id(
-        id: impl Into<String>,
-        call_id: String,
-        name: impl Into<String>,
-        arguments: serde_json::Value,
-    ) -> Self {
-        Self::ToolCall(ToolCall {
-            id: id.into(),
-            call_id: Some(call_id),
-            function: ToolFunction {
-                name: name.into(),
-                arguments,
-            },
         })
     }
 

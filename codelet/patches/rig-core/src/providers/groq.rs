@@ -10,32 +10,34 @@
 //! ```
 use bytes::Bytes;
 use http::Request;
+use serde_json::Map;
 use std::collections::HashMap;
 use tracing::info_span;
 use tracing_futures::Instrument;
 
-use super::openai::{CompletionResponse, StreamingToolCall, TranscriptionResponse, Usage};
+use super::openai::{
+    CompletionResponse, Message as OpenAIMessage, StreamingToolCall, TranscriptionResponse, Usage,
+};
 use crate::client::{
     self, BearerAuth, Capabilities, Capable, DebugExt, Nothing, Provider, ProviderBuilder,
     ProviderClient,
 };
 use crate::completion::GetTokenUsage;
+use crate::http_client::multipart::Part;
 use crate::http_client::sse::{Event, GenericEventSource};
-use crate::http_client::{self, HttpClientExt};
+use crate::http_client::{self, HttpClientExt, MultipartForm};
 use crate::json_utils::empty_or_none;
 use crate::providers::openai::{AssistantContent, Function, ToolType};
 use async_stream::stream;
 use futures::StreamExt;
 
 use crate::{
-    OneOrMany,
     completion::{self, CompletionError, CompletionRequest},
     json_utils,
-    message::{self, MessageError},
+    message::{self},
     providers::openai::ToolDefinition,
     transcription::{self, TranscriptionError},
 };
-use reqwest::multipart::Part;
 use serde::{Deserialize, Serialize};
 
 // ================================================================
@@ -116,120 +118,6 @@ enum ApiResponse<T> {
     Err(ApiErrorResponse),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Message {
-    pub role: String,
-    pub content: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub reasoning: Option<String>,
-}
-
-impl Message {
-    fn system(preamble: &str) -> Self {
-        Self {
-            role: "system".to_string(),
-            content: Some(preamble.to_string()),
-            reasoning: None,
-        }
-    }
-}
-
-impl TryFrom<Message> for message::Message {
-    type Error = message::MessageError;
-
-    fn try_from(message: Message) -> Result<Self, Self::Error> {
-        match message.role.as_str() {
-            "user" => Ok(Self::User {
-                content: OneOrMany::one(
-                    message
-                        .content
-                        .map(|content| message::UserContent::text(&content))
-                        .ok_or_else(|| {
-                            message::MessageError::ConversionError("Empty user message".to_string())
-                        })?,
-                ),
-            }),
-            "assistant" => Ok(Self::Assistant {
-                id: None,
-                content: OneOrMany::one(
-                    message
-                        .content
-                        .map(|content| message::AssistantContent::text(&content))
-                        .ok_or_else(|| {
-                            message::MessageError::ConversionError(
-                                "Empty assistant message".to_string(),
-                            )
-                        })?,
-                ),
-            }),
-            _ => Err(message::MessageError::ConversionError(format!(
-                "Unknown role: {}",
-                message.role
-            ))),
-        }
-    }
-}
-
-impl TryFrom<message::Message> for Message {
-    type Error = message::MessageError;
-
-    fn try_from(message: message::Message) -> Result<Self, Self::Error> {
-        match message {
-            message::Message::User { content } => Ok(Self {
-                role: "user".to_string(),
-                content: content.iter().find_map(|c| match c {
-                    message::UserContent::Text(text) => Some(text.text.clone()),
-                    _ => None,
-                }),
-                reasoning: None,
-            }),
-            message::Message::Assistant { content, .. } => {
-                let mut text_content: Option<String> = None;
-                let mut groq_reasoning: Option<String> = None;
-
-                for c in content.iter() {
-                    match c {
-                        message::AssistantContent::Text(text) => {
-                            text_content = Some(
-                                text_content
-                                    .map(|mut existing| {
-                                        existing.push('\n');
-                                        existing.push_str(&text.text);
-                                        existing
-                                    })
-                                    .unwrap_or_else(|| text.text.clone()),
-                            );
-                        }
-                        message::AssistantContent::ToolCall(_tool_call) => {
-                            return Err(MessageError::ConversionError(
-                                "Tool calls do not exist on this message".into(),
-                            ));
-                        }
-                        message::AssistantContent::Reasoning(message::Reasoning {
-                            reasoning,
-                            ..
-                        }) => {
-                            groq_reasoning =
-                                Some(reasoning.first().cloned().unwrap_or(String::new()));
-                        }
-                        message::AssistantContent::Image(_) => {
-                            return Err(MessageError::ConversionError(
-                                "Ollama currently doesn't support images.".into(),
-                            ));
-                        }
-                    }
-                }
-
-                Ok(Self {
-                    role: "assistant".to_string(),
-                    content: text_content,
-                    reasoning: groq_reasoning,
-                })
-            }
-        }
-    }
-}
-
 // ================================================================
 // Groq Completion API
 // ================================================================
@@ -261,16 +149,18 @@ pub const LLAMA_3_8B_8192: &str = "llama3-8b-8192";
 /// The `mixtral-8x7b-32768` model. Used for chat completion.
 pub const MIXTRAL_8X7B_32768: &str = "mixtral-8x7b-32768";
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum ReasoningFormat {
     Parsed,
+    Raw,
+    Hidden,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(super) struct GroqCompletionRequest {
     model: String,
-    pub messages: Vec<Message>,
+    pub messages: Vec<OpenAIMessage>,
     #[serde(skip_serializing_if = "Option::is_none")]
     temperature: Option<f64>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -278,8 +168,15 @@ pub(super) struct GroqCompletionRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     tool_choice: Option<crate::providers::openai::completion::ToolChoice>,
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
-    pub additional_params: Option<serde_json::Value>,
-    reasoning_format: ReasoningFormat,
+    pub additional_params: Option<GroqAdditionalParameters>,
+    pub(super) stream: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) stream_options: Option<StreamOptions>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub(super) struct StreamOptions {
+    pub(super) include_usage: bool,
 }
 
 impl TryFrom<(&str, CompletionRequest)> for GroqCompletionRequest {
@@ -294,8 +191,8 @@ impl TryFrom<(&str, CompletionRequest)> for GroqCompletionRequest {
         partial_history.extend(req.chat_history);
 
         // Add preamble to chat history (if available)
-        let mut full_history: Vec<Message> = match &req.preamble {
-            Some(preamble) => vec![Message::system(preamble)],
+        let mut full_history: Vec<OpenAIMessage> = match &req.preamble {
+            Some(preamble) => vec![OpenAIMessage::system(preamble)],
             None => vec![],
         };
 
@@ -304,7 +201,10 @@ impl TryFrom<(&str, CompletionRequest)> for GroqCompletionRequest {
             partial_history
                 .into_iter()
                 .map(message::Message::try_into)
-                .collect::<Result<Vec<Message>, _>>()?,
+                .collect::<Result<Vec<Vec<OpenAIMessage>>, _>>()?
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>(),
         );
 
         let tool_choice = req
@@ -312,6 +212,13 @@ impl TryFrom<(&str, CompletionRequest)> for GroqCompletionRequest {
             .clone()
             .map(crate::providers::openai::ToolChoice::try_from)
             .transpose()?;
+
+        let additional_params: Option<GroqAdditionalParameters> =
+            if let Some(params) = req.additional_params {
+                Some(serde_json::from_value(params)?)
+            } else {
+                None
+            };
 
         Ok(Self {
             model: model.to_string(),
@@ -324,10 +231,25 @@ impl TryFrom<(&str, CompletionRequest)> for GroqCompletionRequest {
                 .map(ToolDefinition::from)
                 .collect::<Vec<_>>(),
             tool_choice,
-            additional_params: req.additional_params,
-            reasoning_format: ReasoningFormat::Parsed,
+            additional_params,
+            stream: false,
+            stream_options: None,
         })
     }
+}
+
+/// Additional parameters to send to the Groq API
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct GroqAdditionalParameters {
+    /// The reasoning format. See Groq's API docs for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reasoning_format: Option<ReasoningFormat>,
+    /// Whether or not to include reasoning. See Groq's API docs for more details.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub include_reasoning: Option<bool>,
+    /// Any other properties not included by default on this struct (that you want to send)
+    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    pub extra: Option<Map<String, serde_json::Value>>,
 }
 
 #[derive(Clone, Debug)]
@@ -359,14 +281,10 @@ where
         Self::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
     ) -> Result<completion::CompletionResponse<CompletionResponse>, CompletionError> {
-        let preamble = completion_request.preamble.clone();
-
-        let request = GroqCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
                 target: "rig::completions",
@@ -374,17 +292,26 @@ where
                 gen_ai.operation.name = "chat",
                 gen_ai.provider.name = "groq",
                 gen_ai.request.model = self.model,
-                gen_ai.system_instructions = preamble,
+                gen_ai.system_instructions = tracing::field::Empty,
                 gen_ai.response.id = tracing::field::Empty,
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
+
+        span.record("gen_ai.system_instructions", &completion_request.preamble);
+
+        let request = GroqCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+
+        if tracing::enabled!(tracing::Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "Groq completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
         let req = self
@@ -404,10 +331,6 @@ where
                         let span = tracing::Span::current();
                         span.record("gen_ai.response.id", response.id.clone());
                         span.record("gen_ai.response.model_name", response.model.clone());
-                        span.record(
-                            "gen_ai.output.messages",
-                            serde_json::to_string(&response.choices)?,
-                        );
                         if let Some(ref usage) = response.usage {
                             span.record("gen_ai.usage.input_tokens", usage.prompt_tokens);
                             span.record(
@@ -415,6 +338,14 @@ where
                                 usage.total_tokens - usage.prompt_tokens,
                             );
                         }
+
+                        if tracing::enabled!(tracing::Level::TRACE) {
+                            tracing::trace!(target: "rig::completions",
+                                "Groq completion response: {}",
+                                serde_json::to_string_pretty(&response)?
+                            );
+                        }
+
                         response.try_into()
                     }
                     ApiResponse::Err(err) => Err(CompletionError::ProviderError(err.message)),
@@ -429,7 +360,6 @@ where
         tracing::Instrument::instrument(async_block, span).await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         request: CompletionRequest,
@@ -437,15 +367,38 @@ where
         crate::streaming::StreamingCompletionResponse<Self::StreamingResponse>,
         CompletionError,
     > {
-        let preamble = request.preamble.clone();
+        let span = if tracing::Span::current().is_disabled() {
+            info_span!(
+                target: "rig::completions",
+                "chat_streaming",
+                gen_ai.operation.name = "chat_streaming",
+                gen_ai.provider.name = "groq",
+                gen_ai.request.model = self.model,
+                gen_ai.system_instructions = tracing::field::Empty,
+                gen_ai.response.id = tracing::field::Empty,
+                gen_ai.response.model = tracing::field::Empty,
+                gen_ai.usage.output_tokens = tracing::field::Empty,
+                gen_ai.usage.input_tokens = tracing::field::Empty,
+            )
+        } else {
+            tracing::Span::current()
+        };
+
+        span.record("gen_ai.system_instructions", &request.preamble);
+
         let mut request = GroqCompletionRequest::try_from((self.model.as_ref(), request))?;
 
-        let params = json_utils::merge(
-            request.additional_params.unwrap_or(serde_json::json!({})),
-            serde_json::json!({"stream": true, "stream_options": {"include_usage": true} }),
-        );
+        request.stream = true;
+        request.stream_options = Some(StreamOptions {
+            include_usage: true,
+        });
 
-        request.additional_params = Some(params);
+        if tracing::enabled!(tracing::Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "Groq streaming completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
         let req = self
@@ -454,27 +407,8 @@ where
             .body(body)
             .map_err(|e| http_client::Error::Instance(e.into()))?;
 
-        let span = if tracing::Span::current().is_disabled() {
-            info_span!(
-                target: "rig::completions",
-                "chat_streaming",
-                gen_ai.operation.name = "chat_streaming",
-                gen_ai.provider.name = "groq",
-                gen_ai.request.model = self.model,
-                gen_ai.system_instructions = preamble,
-                gen_ai.response.id = tracing::field::Empty,
-                gen_ai.response.model = tracing::field::Empty,
-                gen_ai.usage.output_tokens = tracing::field::Empty,
-                gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
-            )
-        } else {
-            tracing::Span::current()
-        };
-
         tracing::Instrument::instrument(
-            send_compatible_streaming_request(self.client.http_client().clone(), req),
+            send_compatible_streaming_request(self.client.clone(), req),
             span,
         )
         .await
@@ -516,7 +450,6 @@ where
         Self::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn transcription(
         &self,
         request: transcription::TranscriptionRequest,
@@ -526,12 +459,9 @@ where
     > {
         let data = request.data;
 
-        let mut body = reqwest::multipart::Form::new()
+        let mut body = MultipartForm::new()
             .text("model", self.model.clone())
-            .part(
-                "file",
-                Part::bytes(data).file_name(request.filename.clone()),
-            );
+            .part(Part::bytes("file", data).filename(request.filename.clone()));
 
         if let Some(language) = request.language {
             body = body.text("language", language);
@@ -560,12 +490,7 @@ where
             .body(body)
             .unwrap();
 
-        let response = self
-            .client
-            .http_client()
-            .send_multipart::<Bytes>(req)
-            .await
-            .unwrap();
+        let response = self.client.send_multipart::<Bytes>(req).await.unwrap();
 
         let status = response.status();
         let response_body = response.into_body().into_future().await?.to_vec();
@@ -672,10 +597,9 @@ where
                     if let Some(choice) = data.choices.first() {
                         match &choice.delta {
                             StreamingDelta::Reasoning { reasoning } => {
-                                yield Ok(crate::streaming::RawStreamingChoice::Reasoning {
+                                yield Ok(crate::streaming::RawStreamingChoice::ReasoningDelta {
                                     id: None,
                                     reasoning: reasoning.to_string(),
-                                    signature: None,
                                 });
                             }
 
@@ -715,12 +639,9 @@ where
                                             continue;
                                         };
 
-                                        yield Ok(crate::streaming::RawStreamingChoice::ToolCall {
-                                            id,
-                                            name,
-                                            arguments: arguments_json,
-                                            call_id: None
-                                        });
+                                        yield Ok(crate::streaming::RawStreamingChoice::ToolCall(
+                                            crate::streaming::RawStreamingToolCall::new(id, name, arguments_json)
+                                        ));
                                     }
                                 }
 
@@ -764,12 +685,9 @@ where
                     arguments: arguments_json.clone()
                 }
             });
-            yield Ok(crate::streaming::RawStreamingChoice::ToolCall {
-                id,
-                name,
-                arguments: arguments_json,
-                call_id: None,
-            });
+            yield Ok(crate::streaming::RawStreamingChoice::ToolCall(
+                crate::streaming::RawStreamingToolCall::new(id, name, arguments_json)
+            ));
         }
 
         let response_message = crate::providers::openai::completion::Message::Assistant {
@@ -793,4 +711,61 @@ where
     Ok(crate::streaming::StreamingCompletionResponse::stream(
         Box::pin(stream),
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{
+        OneOrMany,
+        providers::{
+            groq::{GroqAdditionalParameters, GroqCompletionRequest},
+            openai::{Message, UserContent},
+        },
+    };
+
+    #[test]
+    fn serialize_groq_request() {
+        let additional_params = GroqAdditionalParameters {
+            include_reasoning: Some(true),
+            reasoning_format: Some(super::ReasoningFormat::Parsed),
+            ..Default::default()
+        };
+
+        let groq = GroqCompletionRequest {
+            model: "openai/gpt-120b-oss".to_string(),
+            temperature: None,
+            tool_choice: None,
+            stream_options: None,
+            tools: Vec::new(),
+            messages: vec![Message::User {
+                content: OneOrMany::one(UserContent::Text {
+                    text: "Hello world!".to_string(),
+                }),
+                name: None,
+            }],
+            stream: false,
+            additional_params: Some(additional_params),
+        };
+
+        let json = serde_json::to_value(&groq).unwrap();
+
+        assert_eq!(
+            json,
+            serde_json::json!({
+                "model": "openai/gpt-120b-oss",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [{
+                            "type": "text",
+                            "text": "Hello world!"
+                        }]
+                    }
+                ],
+                "stream": false,
+                "include_reasoning": true,
+                "reasoning_format": "parsed"
+            })
+        )
+    }
 }

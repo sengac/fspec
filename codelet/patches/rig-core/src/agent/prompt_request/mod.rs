@@ -60,6 +60,8 @@ where
     state: PhantomData<S>,
     /// Optional per-request hook for events
     hook: Option<P>,
+    /// How many tools should be executed at the same time (1 by default).
+    concurrency: usize,
 }
 
 impl<'a, M> PromptRequest<'a, Standard, M, ()>
@@ -75,6 +77,7 @@ where
             agent,
             state: PhantomData,
             hook: None,
+            concurrency: 1,
         }
     }
 }
@@ -98,6 +101,7 @@ where
             agent: self.agent,
             state: PhantomData,
             hook: self.hook,
+            concurrency: self.concurrency,
         }
     }
     /// Set the maximum depth for multi-turn conversations (ie, the maximum number of turns an LLM can have calling tools before writing a text response).
@@ -110,7 +114,15 @@ where
             agent: self.agent,
             state: PhantomData,
             hook: self.hook,
+            concurrency: self.concurrency,
         }
+    }
+
+    /// Add concurrency to the prompt request.
+    /// This will cause the agent to execute tools concurrently.
+    pub fn with_tool_concurrency(mut self, concurrency: usize) -> Self {
+        self.concurrency = concurrency;
+        self
     }
 
     /// Add chat history to the prompt request
@@ -122,6 +134,7 @@ where
             agent: self.agent,
             state: PhantomData,
             hook: self.hook,
+            concurrency: self.concurrency,
         }
     }
 
@@ -137,6 +150,7 @@ where
             agent: self.agent,
             state: PhantomData,
             hook: Some(hook),
+            concurrency: self.concurrency,
         }
     }
 }
@@ -199,6 +213,7 @@ where
     fn on_tool_call(
         &self,
         tool_name: &str,
+        tool_call_id: Option<String>,
         args: &str,
         cancel_sig: CancelSignal,
     ) -> impl Future<Output = ()> + WasmCompatSend {
@@ -210,6 +225,7 @@ where
     fn on_tool_result(
         &self,
         tool_name: &str,
+        tool_call_id: Option<String>,
         args: &str,
         result: &str,
         cancel_sig: CancelSignal,
@@ -429,8 +445,10 @@ where
             }
 
             let hook = self.hook.clone();
+
+            let tool_calls: Vec<AssistantContent> = tool_calls.into_iter().cloned().collect();
             let tool_content = stream::iter(tool_calls)
-                .then(|choice| {
+                .map(|choice| {
                     let hook1 = hook.clone();
                     let hook2 = hook.clone();
 
@@ -468,8 +486,13 @@ where
                             tool_span.record("gen_ai.tool.call.id", &tool_call.id);
                             tool_span.record("gen_ai.tool.call.arguments", &args);
                             if let Some(hook) = hook1 {
-                                hook.on_tool_call(tool_name, &args, cancel_sig1.clone())
-                                    .await;
+                                hook.on_tool_call(
+                                    tool_name,
+                                    tool_call.call_id.clone(),
+                                    &args,
+                                    cancel_sig1.clone(),
+                                )
+                                .await;
                                 if cancel_sig1.is_cancelled() {
                                     return Err(ToolSetError::Interrupted);
                                 }
@@ -485,6 +508,7 @@ where
                             if let Some(hook) = hook2 {
                                 hook.on_tool_result(
                                     tool_name,
+                                    tool_call.call_id.clone(),
                                     &args,
                                     &output.to_string(),
                                     cancel_sig2.clone(),
@@ -519,6 +543,7 @@ where
                     }
                     .instrument(tool_span)
                 })
+                .buffer_unordered(self.concurrency)
                 .collect::<Vec<Result<UserContent, ToolSetError>>>()
                 .await
                 .into_iter()
@@ -540,7 +565,7 @@ where
         Err(PromptError::MaxDepthError {
             max_depth: self.max_depth,
             chat_history: Box::new(chat_history.clone()),
-            prompt: last_prompt,
+            prompt: Box::new(last_prompt),
         })
     }
 }

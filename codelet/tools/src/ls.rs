@@ -117,7 +117,7 @@ pub struct LsArgs {
 }
 
 impl rig::tool::Tool for LsTool {
-    const NAME: &'static str = "ls";
+    const NAME: &'static str = "Ls";
 
     type Error = ToolError;
     type Args = LsArgs;
@@ -125,7 +125,7 @@ impl rig::tool::Tool for LsTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "ls".to_string(),
+            name: "Ls".to_string(),
             description: "List directory contents with file metadata. \
                 Returns formatted output showing permissions, size, modification time, and name for each entry.\n\n\
                 Usage:\n\

@@ -332,7 +332,7 @@ pub struct AstGrepArgs {
 }
 
 impl rig::tool::Tool for AstGrepTool {
-    const NAME: &'static str = "astgrep";
+    const NAME: &'static str = "AstGrep";
 
     type Error = ToolError;
     type Args = AstGrepArgs;
@@ -340,7 +340,7 @@ impl rig::tool::Tool for AstGrepTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "astgrep".to_string(),
+            name: "AstGrep".to_string(),
             description: "AST-based code search that finds code by syntax structure, not text. \
                 Far fewer false positives than grep for structural searches.\n\n\
                 PATTERN SYNTAX:\n\
