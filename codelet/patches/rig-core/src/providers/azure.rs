@@ -18,7 +18,8 @@ use crate::client::{
     self, ApiKey, Capabilities, Capable, DebugExt, Provider, ProviderBuilder, ProviderClient,
 };
 use crate::completion::GetTokenUsage;
-use crate::http_client::{self, HttpClientExt, bearer_auth_header};
+use crate::http_client::multipart::Part;
+use crate::http_client::{self, HttpClientExt, MultipartForm, bearer_auth_header};
 use crate::streaming::StreamingCompletionResponse;
 use crate::transcription::TranscriptionError;
 use crate::{
@@ -30,7 +31,6 @@ use crate::{
     transcription::{self},
 };
 use bytes::Bytes;
-use reqwest::multipart::Part;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 // ================================================================
@@ -417,7 +417,7 @@ pub struct EmbeddingModel<T = reqwest::Client> {
 
 impl<T> embeddings::EmbeddingModel for EmbeddingModel<T>
 where
-    T: HttpClientExt + Default + Clone,
+    T: HttpClientExt + Default + Clone + 'static,
 {
     const MAX_DOCUMENTS: usize = 1024;
 
@@ -431,7 +431,6 @@ where
         self.ndims
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn embed_texts(
         &self,
         documents: impl IntoIterator<Item = String>,
@@ -546,11 +545,11 @@ pub const GPT_35_TURBO_16K: &str = "gpt-3.5-turbo-16k";
 pub(super) struct AzureOpenAICompletionRequest {
     model: String,
     pub messages: Vec<openai::Message>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     temperature: Option<f64>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     tools: Vec<openai::ToolDefinition>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     tool_choice: Option<crate::providers::openrouter::ToolChoice>,
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub additional_params: Option<serde_json::Value>,
@@ -639,7 +638,6 @@ where
         Self::new(client.clone(), model.into())
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
@@ -656,8 +654,6 @@ where
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = tracing::field::Empty,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
@@ -666,7 +662,13 @@ where
         let request =
             AzureOpenAICompletionRequest::try_from((self.model.as_ref(), completion_request))?;
 
-        span.record_model_input(&request.messages);
+        if enabled!(Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "Azure OpenAI completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
+
         let body = serde_json::to_vec(&request)?;
 
         let req = self
@@ -687,14 +689,14 @@ where
                 )? {
                     ApiResponse::Ok(response) => {
                         let span = tracing::Span::current();
-                        span.record_model_output(&response.choices);
                         span.record_response_metadata(&response);
                         span.record_token_usage(&response.usage);
-                        tracing::trace!(
-                            target: "rig::completions",
-                            "Azure completion response: {}",
-                            serde_json::to_string_pretty(&response)?
-                        );
+                        if enabled!(Level::TRACE) {
+                            tracing::trace!(target: "rig::completions",
+                                "Azure OpenAI completion response: {}",
+                                serde_json::to_string_pretty(&response)?
+                            );
+                        }
                         response.try_into()
                     }
                     ApiResponse::Err(err) => Err(CompletionError::ProviderError(err.message)),
@@ -709,7 +711,6 @@ where
         .await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         completion_request: CompletionRequest,
@@ -724,6 +725,13 @@ where
         );
 
         request.additional_params = Some(params);
+
+        if enabled!(Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "Azure OpenAI completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
 
@@ -745,15 +753,13 @@ where
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
 
         tracing_futures::Instrument::instrument(
-            send_compatible_streaming_request(self.client.http_client().clone(), req),
+            send_compatible_streaming_request(self.client.clone(), req),
             span,
         )
         .await
@@ -791,7 +797,6 @@ where
         Self::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn transcription(
         &self,
         request: transcription::TranscriptionRequest,
@@ -801,10 +806,8 @@ where
     > {
         let data = request.data;
 
-        let mut body = reqwest::multipart::Form::new().part(
-            "file",
-            Part::bytes(data).file_name(request.filename.clone()),
-        );
+        let mut body =
+            MultipartForm::new().part(Part::bytes("file", data).filename(request.filename.clone()));
 
         if let Some(prompt) = request.prompt {
             body = body.text("prompt", prompt.clone());
@@ -829,11 +832,7 @@ where
             .body(body)
             .map_err(|e| TranscriptionError::HttpError(e.into()))?;
 
-        let response = self
-            .client
-            .http_client()
-            .send_multipart::<Bytes>(req)
-            .await?;
+        let response = self.client.send_multipart::<Bytes>(req).await?;
         let status = response.status();
         let response_body = response.into_body().into_future().await?.to_vec();
 
@@ -857,7 +856,7 @@ where
 // ================================================================
 #[cfg(feature = "image")]
 pub use image_generation::*;
-use tracing::{Instrument, info_span};
+use tracing::{Instrument, Level, enabled, info_span};
 #[cfg(feature = "image")]
 #[cfg_attr(docsrs, doc(cfg(feature = "image")))]
 mod image_generation {
@@ -890,7 +889,6 @@ mod image_generation {
             }
         }
 
-        #[cfg_attr(feature = "worker", worker::send)]
         async fn image_generation(
             &self,
             generation_request: ImageGenerationRequest,

@@ -14,7 +14,7 @@ use crate::completion::CompletionRequest;
 use crate::streaming::StreamingCompletionResponse;
 use bytes::Bytes;
 use serde::{Deserialize, Serialize};
-use tracing::{Instrument, info_span};
+use tracing::{Instrument, Level, enabled, info_span};
 
 // ================================================================
 // Together Completion Models
@@ -133,11 +133,11 @@ pub const WIZARDLM_13B_V1_2: &str = "WizardLM/WizardLM-13B-V1.2";
 pub(super) struct TogetherAICompletionRequest {
     model: String,
     pub messages: Vec<openai::Message>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     temperature: Option<f64>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     tools: Vec<crate::providers::openai::completion::ToolDefinition>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     tool_choice: Option<ToolChoice>,
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub additional_params: Option<serde_json::Value>,
@@ -217,18 +217,10 @@ where
         Self::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: completion::CompletionRequest,
     ) -> Result<completion::CompletionResponse<openai::CompletionResponse>, CompletionError> {
-        let preamble = completion_request.preamble.clone();
-        let request = TogetherAICompletionRequest::try_from((
-            self.model.to_string().as_ref(),
-            completion_request,
-        ))?;
-        let messages_as_json_string = serde_json::to_string(&request.messages)?;
-
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
                 target: "rig::completions",
@@ -236,19 +228,29 @@ where
                 gen_ai.operation.name = "chat",
                 gen_ai.provider.name = "together",
                 gen_ai.request.model = self.model.to_string(),
-                gen_ai.system_instructions = preamble,
+                gen_ai.system_instructions = tracing::field::Empty,
                 gen_ai.response.id = tracing::field::Empty,
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = &messages_as_json_string,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
 
-        tracing::debug!(target: "rig::completions", "TogetherAI completion request: {messages_as_json_string}");
+        span.record("gen_ai.system_instructions", &completion_request.preamble);
+
+        let request = TogetherAICompletionRequest::try_from((
+            self.model.to_string().as_ref(),
+            completion_request,
+        ))?;
+
+        if enabled!(Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "TogetherAI completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
 
@@ -269,10 +271,6 @@ where
                 )? {
                     ApiResponse::Ok(response) => {
                         let span = tracing::Span::current();
-                        span.record(
-                            "gen_ai.output.messages",
-                            serde_json::to_string(&response.choices).unwrap(),
-                        );
                         span.record("gen_ai.response.id", &response.id);
                         span.record("gen_ai.response.model_name", &response.model);
                         if let Some(ref usage) = response.usage {
@@ -282,11 +280,13 @@ where
                                 usage.total_tokens - usage.prompt_tokens,
                             );
                         }
-                        tracing::trace!(
-                            target: "rig::completions",
-                            "TogetherAI completion response: {}",
-                            serde_json::to_string_pretty(&response)?
-                        );
+                        if enabled!(Level::TRACE) {
+                            tracing::trace!(
+                                target: "rig::completions",
+                                "TogetherAI completion response: {}",
+                                serde_json::to_string_pretty(&response)?
+                            );
+                        }
                         response.try_into()
                     }
                     ApiResponse::Error(err) => Err(CompletionError::ProviderError(err.error)),
@@ -301,7 +301,6 @@ where
         .await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         request: CompletionRequest,

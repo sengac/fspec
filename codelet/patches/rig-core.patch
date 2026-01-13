@@ -1,0 +1,843 @@
+diff -ruN /tmp/rig-upstream/rig/rig-core/Cargo.toml rig-core/Cargo.toml
+--- /tmp/rig-upstream/rig/rig-core/Cargo.toml	2026-01-09 07:16:05
++++ rig-core/Cargo.toml	2026-01-08 19:11:41
+@@ -1,7 +1,7 @@
+ [package]
+ name = "rig-core"
+ version = "0.28.0"
+-edition = { workspace = true }
++edition = "2024"
+ license = "MIT"
+ readme = "README.md"
+ description = "An opinionated library for building LLM powered applications."
+@@ -11,37 +11,33 @@
+ all-features = true
+ rustdoc-args = ["--cfg", "docsrs"]
+ 
+-[lints]
+-workspace = true
+-
+ [lib]
+ name = "rig"
+ path = "src/lib.rs"
+ doctest = false
+ 
+ [dependencies]
+-as-any = { workspace = true }
+-async-stream = { workspace = true }
+-base64 = { workspace = true }
+-bytes = { workspace = true }
+-epub = { workspace = true, optional = true }
+-futures = { workspace = true }
+-glob = { workspace = true }
+-lopdf = { workspace = true, optional = true }
+-mime_guess.workspace = true
+-ordered-float = { workspace = true }
+-quick-xml = { workspace = true, optional = true }
+-rayon = { workspace = true, optional = true }
+-reqwest = { workspace = true, features = ["json", "stream", "multipart"] }
+-rig-derive = { version = "0.1.10", path = "../rig-derive", optional = true }
+-schemars = { workspace = true }
+-serde = { workspace = true, features = ["derive"] }
+-serde_json = { workspace = true }
+-thiserror = { workspace = true }
+-tracing = { workspace = true }
+-url = { workspace = true }
++as-any = "0.3.2"
++async-stream = "0.3.6"
++base64 = "0.22.1"
++bytes = "1.10.1"
++epub = { version = "2.1.4", optional = true }
++futures = "0.3.31"
++glob = "0.3.2"
++lopdf = { version = "0.36.0", optional = true }
++mime_guess = "2.0.5"
++ordered-float = "5.0.0"
++quick-xml = { version = "0.38.0", optional = true }
++rayon = { version = "1.10.0", optional = true }
++reqwest = { version = "0.12.20", default-features = false, features = ["json", "stream", "multipart"] }
++schemars = "1.0.4"
++serde = { version = "1.0.219", features = ["derive"] }
++serde_json = "1.0.140"
++thiserror = "2.0.12"
++tracing = "0.1.41"
++url = "2.5"
+ rmcp = { version = "0.12", optional = true, features = ["client"] }
+-tokio = { workspace = true, features = ["rt", "sync"] }
++tokio = { version = "1.45.1", features = ["rt", "sync"] }
+ http = "1.3.1"
+ tracing-futures = { version = "0.2.5", features = ["futures-03"] }
+ serenity = { version = "0.12.4", optional = true }
+@@ -54,20 +50,20 @@
+ reqwest-middleware = { version = "0.4.2", optional = true, features = ["json", "multipart", "charset", "http2"] }
+ 
+ [dev-dependencies]
+-anyhow = { workspace = true }
+-assert_fs = { workspace = true }
+-tokio = { workspace = true, features = ["full"] }
+-tracing-subscriber = { workspace = true, features = ["env-filter"] }
+-tokio-test = { workspace = true }
+-serde_path_to_error = { workspace = true }
+-base64 = { workspace = true }
++anyhow = "1.0.98"
++assert_fs = "1.1.3"
++tokio = { version = "1.45.1", features = ["full"] }
++tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
++tokio-test = "0.4.4"
++serde_path_to_error = "0.1.17"
++base64 = "0.22.1"
+ 
+ # Required for `rmcp` example
+ hyper-util = { version = "0.1.14", features = ["service", "server"] }
+ rmcp = { version = "0.12", features = [
+   "client",
+   "macros",
+-  "reqwest",                                  # required for some strange reason
++  "reqwest",
+   "transport-streamable-http-client",
+   "transport-streamable-http-client-reqwest",
+   "transport-streamable-http-server-session",
+@@ -88,7 +84,7 @@
+ all = ["derive", "pdf", "rayon"]
+ audio = []
+ image = []
+-derive = ["dep:rig-derive"]
++derive = []
+ experimental = []
+ discord-bot = ["dep:serenity"]
+ pdf = ["dep:lopdf"]
+@@ -101,7 +97,6 @@
+ rmcp = ["dep:rmcp"]
+ socks = ["reqwest/socks"]
+ reqwest-tls = ["reqwest/default"]
+-# Replace "default-tls" with "rustls-tls" in "reqwest/default"
+ reqwest-rustls = [
+   "reqwest/rustls-tls",
+   "reqwest/charset",
+@@ -111,68 +106,5 @@
+ reqwest-middleware = ["dep:reqwest-middleware"]
+ reqwest-middleware-rustls = ["reqwest-middleware", "reqwest-middleware/rustls-tls"]
+ 
+-[[test]]
+-name = "embed_macro"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "rag"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "rag_ollama"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "vector_search"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "vector_search_cohere"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "gemini_embeddings"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "agent_with_moonshot"
+-
+-[[example]]
+-name = "pdf_agent"
+-required-features = ["derive", "pdf"]
+-
+-[[example]]
+-name = "agent_with_together"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "together_embeddings"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "openai_audio_generation"
+-required-features = ["audio"]
+-
+-[[example]]
+-name = "hyperbolic_audio_generation"
+-required-features = ["audio"]
+-
+-[[example]]
+-name = "mistral_embeddings"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "voyageai_embeddings"
+-required-features = ["derive"]
+-
+-[[example]]
+-name = "rmcp"
+-required-features = ["rmcp"]
+-
+-[[example]]
+-name = "request_hook"
+-
+-[[example]]
+-name = "discord_bot"
+-required-features = ["discord-bot"]
++# Empty workspace table to exclude from parent workspace
++[workspace]
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/agent/prompt_request/mod.rs rig-core/src/agent/prompt_request/mod.rs
+--- /tmp/rig-upstream/rig/rig-core/src/agent/prompt_request/mod.rs	2026-01-09 07:16:05
++++ rig-core/src/agent/prompt_request/mod.rs	2026-01-08 19:23:17
+@@ -158,15 +158,18 @@
+ pub struct CancelSignal(Arc<AtomicBool>);
+ 
+ impl CancelSignal {
+-    fn new() -> Self {
++    /// Create a new CancelSignal (public for testing)
++    pub fn new() -> Self {
+         Self(Arc::new(AtomicBool::new(false)))
+     }
+ 
++    /// Cancel the signal
+     pub fn cancel(&self) {
+         self.0.store(true, Ordering::SeqCst);
+     }
+ 
+-    fn is_cancelled(&self) -> bool {
++    /// Check if cancelled (public for testing)
++    pub fn is_cancelled(&self) -> bool {
+         self.0.load(Ordering::SeqCst)
+     }
+ }
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/agent/prompt_request/streaming.rs rig-core/src/agent/prompt_request/streaming.rs
+--- /tmp/rig-upstream/rig/rig-core/src/agent/prompt_request/streaming.rs	2026-01-09 07:16:05
++++ rig-core/src/agent/prompt_request/streaming.rs	2026-01-08 20:00:53
+@@ -3,7 +3,7 @@
+     agent::CancelSignal,
+     completion::GetTokenUsage,
+     json_utils,
+-    message::{AssistantContent, Reasoning, ToolResult, ToolResultContent, UserContent},
++    message::{AssistantContent, ImageMediaType, MimeType, Reasoning, ToolResult, ToolResultContent, UserContent},
+     streaming::{StreamedAssistantContent, StreamedUserContent, StreamingCompletion},
+     wasm_compat::{WasmBoxedFuture, WasmCompatSend},
+ };
+@@ -21,6 +21,118 @@
+     tool::ToolSetError,
+ };
+ 
++/// Parse tool result string and convert to appropriate ToolResultContent(s).
++/// Detects image responses from Read tool and converts to ToolResultContent::Image.
++/// Returns a Vec to support multiple images (e.g., PDF visual mode pages).
++fn parse_tool_result_content(result: &str) -> Vec<ToolResultContent> {
++    // Try to parse as JSON to detect structured tool output
++    if let Ok(json) = serde_json::from_str::<serde_json::Value>(result) {
++        // Handle FileOperationResult wrapper: {"success":true,"content":"..."}
++        // The content field may contain a JSON string with image data
++        let json = if json.get("success").is_some() {
++            if let Some(content_str) = json.get("content").and_then(|c| c.as_str()) {
++                // Parse the content field as JSON
++                match serde_json::from_str::<serde_json::Value>(content_str) {
++                    Ok(inner_json) => inner_json,
++                    Err(_) => return vec![ToolResultContent::text(content_str)],
++                }
++            } else {
++                json
++            }
++        } else if let Some(inner_str) = json.as_str() {
++            // Handle double-serialization: if the parsed JSON is a string, parse it again
++            // This happens when tool results are JSON-encoded strings containing JSON
++            match serde_json::from_str::<serde_json::Value>(inner_str) {
++                Ok(inner_json) => inner_json,
++                Err(_) => return vec![ToolResultContent::text(inner_str)],
++            }
++        } else {
++            json
++        };
++
++        // Check for PDF visual mode: {"path":"...", "total_pages":N, "pages":[{"page_number":N, "data":"...", "media_type":"..."}]}
++        if json.get("pages").is_some() && json.get("total_pages").is_some() {
++            if let Some(pages) = json.get("pages").and_then(|p| p.as_array()) {
++                let mut contents = Vec::with_capacity(pages.len());
++                for page in pages {
++                    let data = page.get("data").and_then(|d| d.as_str());
++                    let media_type_str = page.get("media_type").and_then(|m| m.as_str());
++
++                    if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
++                        if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
++                            let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
++                            tracing::info!("parse_tool_result_content: PDF page {} as Image, media_type={:?}", page_num, media_type);
++                            contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
++                        }
++                    }
++                }
++                if !contents.is_empty() {
++                    return contents;
++                }
++            }
++        }
++
++        // Check for image type from Read tool: {"type":"image","data":"...","media_type":"..."}
++        let type_field = json.get("type").and_then(|t| t.as_str());
++
++        if type_field == Some("image") {
++            let data = json.get("data").and_then(|d| d.as_str());
++            let media_type_str = json.get("media_type").and_then(|m| m.as_str());
++
++            if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
++                // Parse the media type string to ImageMediaType
++                if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
++                    tracing::info!("parse_tool_result_content: returning Image, media_type={:?}", media_type);
++                    return vec![ToolResultContent::image_base64(data, Some(media_type), None)];
++                }
++            }
++        }
++        // Check for text type from Read tool: {"type":"text","content":"..."}
++        // The content might contain nested JSON (e.g., PDF visual mode output)
++        if type_field == Some("text") {
++            if let Some(content) = json.get("content").and_then(|c| c.as_str()) {
++                // Try to parse content as JSON to check for nested PDF pages
++                if let Ok(inner_json) = serde_json::from_str::<serde_json::Value>(content) {
++                    // Check if the nested JSON is PDF visual mode output
++                    if inner_json.get("pages").is_some() && inner_json.get("total_pages").is_some() {
++                        if let Some(pages) = inner_json.get("pages").and_then(|p| p.as_array()) {
++                            let mut contents = Vec::with_capacity(pages.len());
++                            for page in pages {
++                                let data = page.get("data").and_then(|d| d.as_str());
++                                let media_type_str = page.get("media_type").and_then(|m| m.as_str());
++
++                                if let (Some(data), Some(media_type_str)) = (data, media_type_str) {
++                                    if let Some(media_type) = ImageMediaType::from_mime_type(media_type_str) {
++                                        let page_num = page.get("page_number").and_then(|n| n.as_u64()).unwrap_or(0);
++                                        tracing::info!("parse_tool_result_content: nested PDF page {} as Image, media_type={:?}", page_num, media_type);
++                                        contents.push(ToolResultContent::image_base64(data, Some(media_type), None));
++                                    }
++                                }
++                            }
++                            if !contents.is_empty() {
++                                return contents;
++                            }
++                        }
++                    }
++                }
++                // Not nested PDF, return as plain text
++                return vec![ToolResultContent::text(content)];
++            }
++        }
++    }
++    // Default: treat as plain text
++    vec![ToolResultContent::text(result)]
++}
++
++/// Convert Vec<ToolResultContent> to OneOrMany<ToolResultContent>
++fn vec_to_one_or_many(contents: Vec<ToolResultContent>) -> OneOrMany<ToolResultContent> {
++    match contents.len() {
++        0 => OneOrMany::one(ToolResultContent::text("")), // Fallback for empty
++        1 => OneOrMany::one(contents.into_iter().next().expect("length checked")),
++        _ => OneOrMany::many(contents).expect("Vec with >1 items should succeed"),
++    }
++}
++
+ #[cfg(not(all(feature = "wasm", target_arch = "wasm32")))]
+ pub type StreamingResult<R> =
+     Pin<Box<dyn Stream<Item = Result<MultiTurnStreamItem<R>, StreamingError>> + Send>>;
+@@ -37,6 +149,8 @@
+     StreamAssistantItem(StreamedAssistantContent<R>),
+     /// A streamed user content item (mostly for tool results).
+     StreamUserItem(StreamedUserContent),
++    /// Early usage information (emitted at stream start with input tokens).
++    Usage(crate::completion::Usage),
+     /// The final result from the stream.
+     FinalResponse(FinalResponse),
+ }
+@@ -264,6 +378,7 @@
+ 
+                 let mut tool_calls = vec![];
+                 let mut tool_results = vec![];
++                let mut reasoning_blocks: Vec<AssistantContent> = vec![];
+ 
+                 while let Some(content) = stream.next().await {
+                     match content {
+@@ -340,7 +455,7 @@
+ 
+                             match tc_result {
+                                 Ok(text) => {
+-                                    let tr = ToolResult { id: tool_call.id, call_id: tool_call.call_id, content: OneOrMany::one(ToolResultContent::Text(Text { text })) };
++                                    let tr = ToolResult { id: tool_call.id, call_id: tool_call.call_id, content: vec_to_one_or_many(parse_tool_result_content(&text)) };
+                                     yield Ok(MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(tr)));
+                                 }
+                                 Err(e) => {
+@@ -363,6 +478,16 @@
+                             }
+                         }
+                         Ok(StreamedAssistantContent::Reasoning(rig::message::Reasoning { reasoning, id, signature })) => {
++                            // Only capture FINAL reasoning blocks (those with signature) for chat history
++                            // Claude requires signature when sending thinking blocks back in multi-turn
++                            // Delta chunks have signature: None, final blocks have signature: Some(...)
++                            if signature.is_some() {
++                                reasoning_blocks.push(AssistantContent::Reasoning(Reasoning {
++                                    reasoning: reasoning.clone(),
++                                    id: id.clone(),
++                                    signature: signature.clone(),
++                                }));
++                            }
+                             yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::Reasoning(rig::message::Reasoning { reasoning, id, signature })));
+                             did_call_tool = false;
+                         },
+@@ -370,6 +495,10 @@
+                             yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::ReasoningDelta { reasoning, id }));
+                             did_call_tool = false;
+                         },
++                        Ok(StreamedAssistantContent::Usage(usage)) => {
++                            // Forward usage events for real-time token streaming
++                            yield Ok(MultiTurnStreamItem::Usage(usage));
++                        },
+                         Ok(StreamedAssistantContent::Final(final_resp)) => {
+                             if let Some(usage) = final_resp.token_usage() { aggregated_usage += usage; };
+                             if is_text_response {
+@@ -394,11 +523,15 @@
+                 }
+ 
+                 // Add (parallel) tool calls to chat history
++                // When thinking is enabled, reasoning blocks MUST come before tool_use blocks
+                 if !tool_calls.is_empty() {
++                    let mut assistant_content = reasoning_blocks.clone();
++                    assistant_content.extend(tool_calls.clone());
+                     chat_history.write().await.push(Message::Assistant {
+                         id: None,
+-                        content: OneOrMany::many(tool_calls.clone()).expect("Impossible EmptyListError"),
++                        content: OneOrMany::many(assistant_content).expect("Impossible EmptyListError"),
+                     });
++                    reasoning_blocks.clear();
+                 }
+ 
+                 // Add tool results to chat history
+@@ -408,14 +541,14 @@
+                             content: OneOrMany::one(UserContent::tool_result_with_call_id(
+                                 &id,
+                                 call_id.clone(),
+-                                OneOrMany::one(ToolResultContent::text(&tool_result)),
++                                vec_to_one_or_many(parse_tool_result_content(&tool_result)),
+                             )),
+                         });
+                     } else {
+                         chat_history.write().await.push(Message::User {
+                             content: OneOrMany::one(UserContent::tool_result(
+                                 &id,
+-                                OneOrMany::one(ToolResultContent::text(&tool_result)),
++                                vec_to_one_or_many(parse_tool_result_content(&tool_result)),
+                             )),
+                         });
+                     }
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/completion/request.rs rig-core/src/completion/request.rs
+--- /tmp/rig-upstream/rig/rig-core/src/completion/request.rs	2026-01-09 07:16:05
++++ rig-core/src/completion/request.rs	2026-01-08 19:12:15
+@@ -299,6 +299,12 @@
+     pub output_tokens: u64,
+     /// We store this separately as some providers may only report one number
+     pub total_tokens: u64,
++    /// Cache read tokens (Anthropic-specific, for prompt caching)
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub cache_read_input_tokens: Option<u64>,
++    /// Cache creation tokens (Anthropic-specific, for prompt caching)
++    #[serde(default, skip_serializing_if = "Option::is_none")]
++    pub cache_creation_input_tokens: Option<u64>,
+ }
+ 
+ impl Usage {
+@@ -308,6 +314,8 @@
+             input_tokens: 0,
+             output_tokens: 0,
+             total_tokens: 0,
++            cache_read_input_tokens: None,
++            cache_creation_input_tokens: None,
+         }
+     }
+ }
+@@ -322,10 +330,28 @@
+     type Output = Self;
+ 
+     fn add(self, other: Self) -> Self::Output {
++        // Helper to add Option<u64> values
++        fn add_opt(a: Option<u64>, b: Option<u64>) -> Option<u64> {
++            match (a, b) {
++                (Some(x), Some(y)) => Some(x + y),
++                (Some(x), None) => Some(x),
++                (None, Some(y)) => Some(y),
++                (None, None) => None,
++            }
++        }
++
+         Self {
+             input_tokens: self.input_tokens + other.input_tokens,
+             output_tokens: self.output_tokens + other.output_tokens,
+             total_tokens: self.total_tokens + other.total_tokens,
++            cache_read_input_tokens: add_opt(
++                self.cache_read_input_tokens,
++                other.cache_read_input_tokens,
++            ),
++            cache_creation_input_tokens: add_opt(
++                self.cache_creation_input_tokens,
++                other.cache_creation_input_tokens,
++            ),
+         }
+     }
+ }
+@@ -335,6 +361,20 @@
+         self.input_tokens += other.input_tokens;
+         self.output_tokens += other.output_tokens;
+         self.total_tokens += other.total_tokens;
++
++        // Add cache tokens
++        self.cache_read_input_tokens = match (self.cache_read_input_tokens, other.cache_read_input_tokens) {
++            (Some(x), Some(y)) => Some(x + y),
++            (Some(x), None) => Some(x),
++            (None, Some(y)) => Some(y),
++            (None, None) => None,
++        };
++        self.cache_creation_input_tokens = match (self.cache_creation_input_tokens, other.cache_creation_input_tokens) {
++            (Some(x), Some(y)) => Some(x + y),
++            (Some(x), None) => Some(x),
++            (None, Some(y)) => Some(y),
++            (None, None) => None,
++        };
+     }
+ }
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/anthropic/client.rs rig-core/src/providers/anthropic/client.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/anthropic/client.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/anthropic/client.rs	2026-01-09 07:01:09
+@@ -59,6 +59,13 @@
+ 
+ impl ApiKey for AnthropicKey {
+     fn into_header(self) -> Option<http_client::Result<(http::HeaderName, HeaderValue)>> {
++        // OAuth tokens (from Claude Code) start with "sk-ant-oat" prefix
++        // These use Authorization: Bearer header set via http_headers(), not x-api-key
++        // Return None to skip setting x-api-key for OAuth tokens
++        if self.0.starts_with("sk-ant-oat") {
++            return None;
++        }
++
+         Some(
+             HeaderValue::from_str(&self.0)
+                 .map(|val| (HeaderName::from_static("x-api-key"), val))
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/anthropic/completion.rs rig-core/src/providers/anthropic/completion.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/anthropic/completion.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/anthropic/completion.rs	2026-01-09 07:14:07
+@@ -172,6 +172,8 @@
+             input_tokens: response.usage.input_tokens,
+             output_tokens: response.usage.output_tokens,
+             total_tokens: response.usage.input_tokens + response.usage.output_tokens,
++            cache_read_input_tokens: response.usage.cache_read_input_tokens,
++            cache_creation_input_tokens: response.usage.cache_creation_input_tokens,
+         };
+ 
+         Ok(completion::CompletionResponse {
+@@ -250,7 +252,7 @@
+ #[serde(tag = "type", rename_all = "snake_case")]
+ pub enum ToolResultContent {
+     Text { text: String },
+-    Image(ImageSource),
++    Image { source: ImageSource },
+ }
+ 
+ impl FromStr for ToolResultContent {
+@@ -482,11 +484,13 @@
+                                     image.media_type.ok_or(MessageError::ConversionError(
+                                         "Image media type is required".to_owned(),
+                                     ))?;
+-                                Ok(ToolResultContent::Image(ImageSource {
+-                                    data: ImageSourceData::Base64(data),
+-                                    media_type: media_type.try_into()?,
+-                                    r#type: SourceType::BASE64,
+-                                }))
++                                Ok(ToolResultContent::Image {
++                                    source: ImageSource {
++                                        data: ImageSourceData::Base64(data),
++                                        media_type: media_type.try_into()?,
++                                        r#type: SourceType::BASE64,
++                                    },
++                                })
+                             }
+                         })?,
+                         is_error: None,
+@@ -600,11 +604,13 @@
+     fn from(content: ToolResultContent) -> Self {
+         match content {
+             ToolResultContent::Text { text } => message::ToolResultContent::text(text),
+-            ToolResultContent::Image(ImageSource {
+-                data,
+-                media_type: format,
+-                ..
+-            }) => message::ToolResultContent::image_base64(data, Some(format.into()), None),
++            ToolResultContent::Image {
++                source: ImageSource {
++                    data,
++                    media_type: format,
++                    ..
++                },
++            } => message::ToolResultContent::image_base64(data, Some(format.into()), None),
+         }
+     }
+ }
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/anthropic/streaming.rs rig-core/src/providers/anthropic/streaming.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/anthropic/streaming.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/anthropic/streaming.rs	2026-01-08 19:18:29
+@@ -76,6 +76,10 @@
+     pub output_tokens: usize,
+     #[serde(default)]
+     pub input_tokens: Option<usize>,
++    #[serde(default)]
++    pub cache_read_input_tokens: Option<usize>,
++    #[serde(default)]
++    pub cache_creation_input_tokens: Option<usize>,
+ }
+ 
+ impl GetTokenUsage for PartialUsage {
+@@ -85,6 +89,8 @@
+         usage.input_tokens = self.input_tokens.unwrap_or_default() as u64;
+         usage.output_tokens = self.output_tokens as u64;
+         usage.total_tokens = usage.input_tokens + usage.output_tokens;
++        usage.cache_read_input_tokens = self.cache_read_input_tokens.map(|t| t as u64);
++        usage.cache_creation_input_tokens = self.cache_creation_input_tokens.map(|t| t as u64);
+         Some(usage)
+     }
+ }
+@@ -114,6 +120,9 @@
+         usage.output_tokens = self.usage.output_tokens as u64;
+         usage.total_tokens =
+             self.usage.input_tokens.unwrap_or(0) as u64 + self.usage.output_tokens as u64;
++        // Copy cache tokens from PartialUsage to generic Usage
++        usage.cache_read_input_tokens = self.usage.cache_read_input_tokens.map(|t| t as u64);
++        usage.cache_creation_input_tokens = self.usage.cache_creation_input_tokens.map(|t| t as u64);
+ 
+         Some(usage)
+     }
+@@ -273,6 +282,8 @@
+                                             let usage = PartialUsage {
+                                                  output_tokens: usage.output_tokens,
+                                                  input_tokens: Some(input_tokens.try_into().expect("Failed to convert input_tokens to usize")),
++                                                 cache_read_input_tokens: None,
++                                                 cache_creation_input_tokens: None,
+                                             };
+ 
+                                             let span = tracing::Span::current();
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/cohere/completion.rs rig-core/src/providers/cohere/completion.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/cohere/completion.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/cohere/completion.rs	2026-01-08 19:15:45
+@@ -182,6 +182,7 @@
+                     input_tokens: input_tokens as u64,
+                     output_tokens: output_tokens as u64,
+                     total_tokens: (input_tokens + output_tokens) as u64,
++                    ..Default::default()
+                 }
+             })
+             .unwrap_or_default();
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/deepseek.rs rig-core/src/providers/deepseek.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/deepseek.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/deepseek.rs	2026-01-08 19:16:00
+@@ -425,6 +425,7 @@
+             input_tokens: response.usage.prompt_tokens as u64,
+             output_tokens: response.usage.completion_tokens as u64,
+             total_tokens: response.usage.total_tokens as u64,
++            ..Default::default()
+         };
+ 
+         Ok(completion::CompletionResponse {
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/galadriel.rs rig-core/src/providers/galadriel.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/galadriel.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/galadriel.rs	2026-01-08 19:16:16
+@@ -262,6 +262,7 @@
+                 input_tokens: usage.prompt_tokens as u64,
+                 output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                 total_tokens: usage.total_tokens as u64,
++                ..Default::default()
+             })
+             .unwrap_or_default();
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/gemini/completion.rs rig-core/src/providers/gemini/completion.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/gemini/completion.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/gemini/completion.rs	2026-01-08 20:01:24
+@@ -405,6 +405,7 @@
+                 input_tokens: usage.prompt_token_count as u64,
+                 output_tokens: usage.candidates_token_count.unwrap_or(0) as u64,
+                 total_tokens: usage.total_token_count as u64,
++                ..Default::default()
+             })
+             .unwrap_or_default();
+ 
+@@ -1309,10 +1310,22 @@
+         }
+     }
+ 
++    /// Configuration for thinking/reasoning in Gemini models.
++    ///
++    /// Gemini 2.5 uses `thinking_budget` (token count: 2048, 4096, 8192).
++    /// Gemini 3 uses `thinking_level` (enum string: "low", "medium", "high").
++    /// Only one should be set based on the model version.
+     #[derive(Debug, Deserialize, Serialize)]
+     #[serde(rename_all = "camelCase")]
+     pub struct ThinkingConfig {
+-        pub thinking_budget: u32,
++        /// Token budget for thinking (Gemini 2.5 style)
++        #[serde(skip_serializing_if = "Option::is_none")]
++        pub thinking_budget: Option<u32>,
++        /// Thinking level enum (Gemini 3 style): "low", "medium", "high"
++        #[serde(skip_serializing_if = "Option::is_none")]
++        pub thinking_level: Option<String>,
++        /// Whether to include thoughts in the response
++        #[serde(skip_serializing_if = "Option::is_none")]
+         pub include_thoughts: Option<bool>,
+     }
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/huggingface/completion.rs rig-core/src/providers/huggingface/completion.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/huggingface/completion.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/huggingface/completion.rs	2026-01-08 19:17:16
+@@ -602,6 +602,7 @@
+             input_tokens: response.usage.prompt_tokens as u64,
+             output_tokens: response.usage.completion_tokens as u64,
+             total_tokens: response.usage.total_tokens as u64,
++            ..Default::default()
+         };
+ 
+         Ok(completion::CompletionResponse {
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/hyperbolic.rs rig-core/src/providers/hyperbolic.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/hyperbolic.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/hyperbolic.rs	2026-01-08 19:16:26
+@@ -228,6 +228,7 @@
+                 input_tokens: usage.prompt_tokens as u64,
+                 output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                 total_tokens: usage.total_tokens as u64,
++                ..Default::default()
+             })
+             .unwrap_or_default();
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/mira.rs rig-core/src/providers/mira.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/mira.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/mira.rs	2026-01-08 19:16:39
+@@ -508,6 +508,7 @@
+                         input_tokens: usage.prompt_tokens as u64,
+                         output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                         total_tokens: usage.total_tokens as u64,
++                        ..Default::default()
+                     })
+                     .unwrap_or_default();
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/mistral/completion.rs rig-core/src/providers/mistral/completion.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/mistral/completion.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/mistral/completion.rs	2026-01-08 19:17:28
+@@ -515,6 +515,7 @@
+                 input_tokens: usage.prompt_tokens as u64,
+                 output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                 total_tokens: usage.total_tokens as u64,
++                ..Default::default()
+             })
+             .unwrap_or_default();
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/ollama.rs rig-core/src/providers/ollama.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/ollama.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/ollama.rs	2026-01-08 19:17:38
+@@ -342,6 +342,7 @@
+                         input_tokens: prompt_tokens,
+                         output_tokens: completion_tokens,
+                         total_tokens: prompt_tokens + completion_tokens,
++                        ..Default::default()
+                     },
+                     raw_response,
+                 })
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/openai/completion/mod.rs rig-core/src/providers/openai/completion/mod.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/openai/completion/mod.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/openai/completion/mod.rs	2026-01-08 19:17:51
+@@ -807,6 +807,7 @@
+                 input_tokens: usage.prompt_tokens as u64,
+                 output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                 total_tokens: usage.total_tokens as u64,
++                ..Default::default()
+             })
+             .unwrap_or_default();
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/openai/responses_api/mod.rs rig-core/src/providers/openai/responses_api/mod.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/openai/responses_api/mod.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/openai/responses_api/mod.rs	2026-01-08 19:18:00
+@@ -1138,6 +1138,7 @@
+                 input_tokens: usage.input_tokens,
+                 output_tokens: usage.output_tokens,
+                 total_tokens: usage.total_tokens,
++                ..Default::default()
+             })
+             .unwrap_or_default();
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/openrouter/completion.rs rig-core/src/providers/openrouter/completion.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/openrouter/completion.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/openrouter/completion.rs	2026-01-08 19:18:11
+@@ -113,6 +113,7 @@
+                 input_tokens: usage.prompt_tokens as u64,
+                 output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                 total_tokens: usage.total_tokens as u64,
++                ..Default::default()
+             })
+             .unwrap_or_default();
+ 
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/perplexity.rs rig-core/src/providers/perplexity.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/perplexity.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/perplexity.rs	2026-01-08 19:16:50
+@@ -187,6 +187,7 @@
+                     input_tokens: response.usage.prompt_tokens as u64,
+                     output_tokens: response.usage.completion_tokens as u64,
+                     total_tokens: response.usage.total_tokens as u64,
++                    ..Default::default()
+                 },
+                 raw_response: response,
+             }),
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/providers/xai/completion.rs rig-core/src/providers/xai/completion.rs
+--- /tmp/rig-upstream/rig/rig-core/src/providers/xai/completion.rs	2026-01-09 07:16:05
++++ rig-core/src/providers/xai/completion.rs	2026-01-08 19:19:41
+@@ -257,6 +257,7 @@
+                 input_tokens: response.usage.prompt_tokens as u64,
+                 output_tokens: response.usage.completion_tokens as u64,
+                 total_tokens: response.usage.total_tokens as u64,
++                ..Default::default()
+             };
+ 
+             Ok(completion::CompletionResponse {
+diff -ruN /tmp/rig-upstream/rig/rig-core/src/streaming.rs rig-core/src/streaming.rs
+--- /tmp/rig-upstream/rig/rig-core/src/streaming.rs	2026-01-09 07:16:05
++++ rig-core/src/streaming.rs	2026-01-08 19:14:26
+@@ -96,6 +96,9 @@
+         reasoning: String,
+     },
+ 
++    /// Early usage information (emitted at stream start with input tokens)
++    Usage(crate::completion::Usage),
++
+     /// The final response object, must be yielded if you want the
+     /// `response` field to be populated on the `StreamingCompletionResponse`
+     FinalResponse(R),
+@@ -327,6 +330,9 @@
+                     stream.tool_calls.push(tool_call.clone());
+                     Poll::Ready(Some(Ok(StreamedAssistantContent::ToolCall(tool_call))))
+                 }
++                RawStreamingChoice::Usage(usage) => {
++                    Poll::Ready(Some(Ok(StreamedAssistantContent::Usage(usage))))
++                }
+                 RawStreamingChoice::FinalResponse(response) => {
+                     if stream
+                         .final_response_yielded
+@@ -431,6 +437,9 @@
+                 RawStreamingChoice::ToolCall(tool_call) => {
+                     Poll::Ready(Some(Ok(RawStreamingChoice::ToolCall(tool_call))))
+                 }
++                RawStreamingChoice::Usage(usage) => {
++                    Poll::Ready(Some(Ok(RawStreamingChoice::Usage(usage))))
++                }
+             },
+         }
+     }
+@@ -626,6 +635,8 @@
+         id: Option<String>,
+         reasoning: String,
+     },
++    /// Early usage information (emitted at stream start with input tokens)
++    Usage(crate::completion::Usage),
+     Final(R),
+ }
+ 

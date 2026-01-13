@@ -38,7 +38,8 @@ use gemini_api_types::{
 };
 use serde_json::{Map, Value};
 use std::convert::TryFrom;
-use tracing::info_span;
+use tracing::{Level, enabled, info_span};
+use tracing_futures::Instrument;
 
 use super::Client;
 
@@ -80,7 +81,6 @@ where
         Self::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
@@ -97,23 +97,20 @@ where
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = tracing::field::Empty,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
 
         let request = create_request_body(completion_request)?;
-        span.record_model_input(&request.contents);
 
-        span.record_model_input(&request.contents);
-
-        tracing::trace!(
-            target: "rig::completions",
-            "Sending completion request to Gemini API {}",
-            serde_json::to_string_pretty(&request)?
-        );
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                target: "rig::completions",
+                "Gemini completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
 
@@ -125,62 +122,56 @@ where
             .body(body)
             .map_err(|e| CompletionError::HttpError(e.into()))?;
 
-        let response = self.client.send::<_, Vec<u8>>(request).await?;
+        async move {
+            let response = self.client.send::<_, Vec<u8>>(request).await?;
 
-        if response.status().is_success() {
-            let response_body = response
-                .into_body()
-                .await
-                .map_err(CompletionError::HttpError)?;
-
-            let response_text = String::from_utf8_lossy(&response_body).to_string();
-            tracing::debug!("Received raw response from Gemini API: {}", response_text);
-
-            let response: GenerateContentResponse = serde_json::from_slice(&response_body)
-                .map_err(|err| {
-                    tracing::error!(
-                        error = %err,
-                        body = %response_text,
-                        "Failed to deserialize Gemini completion response"
-                    );
-                    CompletionError::JsonError(err)
-                })?;
-
-            match response.usage_metadata {
-                Some(ref usage) => tracing::info!(target: "rig",
-                "Gemini completion token usage: {}",
-                usage
-                ),
-                None => tracing::info!(target: "rig",
-                    "Gemini completion token usage: n/a",
-                ),
-            }
-
-            let span = tracing::Span::current();
-            span.record_model_output(&response.candidates);
-            span.record_response_metadata(&response);
-            span.record_token_usage(&response.usage_metadata);
-
-            tracing::trace!(
-                "Received response from Gemini API: {}",
-                serde_json::to_string_pretty(&response)?
-            );
-
-            response.try_into()
-        } else {
-            let text = String::from_utf8_lossy(
-                &response
+            if response.status().is_success() {
+                let response_body = response
                     .into_body()
                     .await
-                    .map_err(CompletionError::HttpError)?,
-            )
-            .into();
+                    .map_err(CompletionError::HttpError)?;
 
-            Err(CompletionError::ProviderError(text))
+                let response_text = String::from_utf8_lossy(&response_body).to_string();
+
+                let response: GenerateContentResponse = serde_json::from_slice(&response_body)
+                    .map_err(|err| {
+                        tracing::error!(
+                            error = %err,
+                            body = %response_text,
+                            "Failed to deserialize Gemini completion response"
+                        );
+                        CompletionError::JsonError(err)
+                    })?;
+
+                let span = tracing::Span::current();
+                span.record_response_metadata(&response);
+                span.record_token_usage(&response.usage_metadata);
+
+                if enabled!(Level::TRACE) {
+                    tracing::trace!(
+                        target: "rig::completions",
+                        "Gemini completion response: {}",
+                        serde_json::to_string_pretty(&response)?
+                    );
+                }
+
+                response.try_into()
+            } else {
+                let text = String::from_utf8_lossy(
+                    &response
+                        .into_body()
+                        .await
+                        .map_err(CompletionError::HttpError)?,
+                )
+                .into();
+
+                Err(CompletionError::ProviderError(text))
+            }
         }
+        .instrument(span)
+        .await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         request: CompletionRequest,
@@ -343,49 +334,62 @@ impl TryFrom<GenerateContentResponse> for completion::CompletionResponse<Generat
             })?
             .parts
             .iter()
-            .map(|Part { thought, part, .. }| {
-                Ok(match part {
-                    PartKind::Text(text) => {
-                        if let Some(thought) = thought
-                            && *thought
-                        {
-                            completion::AssistantContent::Reasoning(Reasoning::new(text))
-                        } else {
-                            completion::AssistantContent::text(text)
+            .map(
+                |Part {
+                     thought,
+                     thought_signature,
+                     part,
+                     ..
+                 }| {
+                    Ok(match part {
+                        PartKind::Text(text) => {
+                            if let Some(thought) = thought
+                                && *thought
+                            {
+                                completion::AssistantContent::Reasoning(Reasoning::new(text))
+                            } else {
+                                completion::AssistantContent::text(text)
+                            }
                         }
-                    }
-                    PartKind::InlineData(inline_data) => {
-                        let mime_type = message::MediaType::from_mime_type(&inline_data.mime_type);
+                        PartKind::InlineData(inline_data) => {
+                            let mime_type =
+                                message::MediaType::from_mime_type(&inline_data.mime_type);
 
-                        match mime_type {
-                            Some(message::MediaType::Image(media_type)) => {
-                                message::AssistantContent::image_base64(
-                                    &inline_data.data,
-                                    Some(media_type),
-                                    Some(message::ImageDetail::default()),
-                                )
-                            }
-                            _ => {
-                                return Err(CompletionError::ResponseError(format!(
-                                    "Unsupported media type {mime_type:?}"
-                                )));
+                            match mime_type {
+                                Some(message::MediaType::Image(media_type)) => {
+                                    message::AssistantContent::image_base64(
+                                        &inline_data.data,
+                                        Some(media_type),
+                                        Some(message::ImageDetail::default()),
+                                    )
+                                }
+                                _ => {
+                                    return Err(CompletionError::ResponseError(format!(
+                                        "Unsupported media type {mime_type:?}"
+                                    )));
+                                }
                             }
                         }
-                    }
-                    PartKind::FunctionCall(function_call) => {
-                        completion::AssistantContent::tool_call(
-                            &function_call.name,
-                            &function_call.name,
-                            function_call.args.clone(),
-                        )
-                    }
-                    _ => {
-                        return Err(CompletionError::ResponseError(
-                            "Response did not contain a message or tool call".into(),
-                        ));
-                    }
-                })
-            })
+                        PartKind::FunctionCall(function_call) => {
+                            completion::AssistantContent::ToolCall(
+                                message::ToolCall::new(
+                                    function_call.name.clone(),
+                                    message::ToolFunction::new(
+                                        function_call.name.clone(),
+                                        function_call.args.clone(),
+                                    ),
+                                )
+                                .with_signature(thought_signature.clone()),
+                            )
+                        }
+                        _ => {
+                            return Err(CompletionError::ResponseError(
+                                "Response did not contain a message or tool call".into(),
+                            ));
+                        }
+                    })
+                },
+            )
             .collect::<Result<Vec<_>, _>>()?;
 
         let choice = OneOrMany::many(content).map_err(|_| {
@@ -426,9 +430,8 @@ pub mod gemini_api_types {
     use crate::completion::GetTokenUsage;
     use crate::message::{DocumentSourceKind, ImageMediaType, MessageError, MimeType};
     use crate::{
-        OneOrMany,
         completion::CompletionError,
-        message::{self, Reasoning, Text},
+        message::{self},
         providers::gemini::gemini_api_types::{CodeExecutionResult, ExecutableCode},
     };
 
@@ -565,87 +568,6 @@ pub mod gemini_api_types {
         pub role: Option<Role>,
     }
 
-    /// Convert UserContent to one or more Parts.
-    /// Tool results with images return multiple parts: FunctionResponse + InlineData.
-    fn user_content_to_parts(
-        content: message::UserContent,
-    ) -> Result<Vec<Part>, message::MessageError> {
-        match content {
-            message::UserContent::ToolResult(message::ToolResult { id, content, .. }) => {
-                let mut parts = Vec::new();
-
-                // Separate text and image content
-                let mut text_content = String::new();
-                let mut image_parts = Vec::new();
-
-                for item in content.into_iter() {
-                    match item {
-                        message::ToolResultContent::Text(text) => {
-                            if !text_content.is_empty() {
-                                text_content.push('\n');
-                            }
-                            text_content.push_str(&text.text);
-                        }
-                        message::ToolResultContent::Image(image) => {
-                            let media_type = image.media_type.ok_or_else(|| {
-                                message::MessageError::ConversionError(
-                                    "Image media type is required for Gemini".to_string(),
-                                )
-                            })?;
-
-                            let mime_type = media_type.to_mime_type().to_string();
-                            let data = match image.data {
-                                message::DocumentSourceKind::Base64(data) => data,
-                                _ => {
-                                    return Err(message::MessageError::ConversionError(
-                                        "Only base64 images supported in tool results".to_string(),
-                                    ));
-                                }
-                            };
-
-                            image_parts.push(Part {
-                                thought: Some(false),
-                                thought_signature: None,
-                                part: PartKind::InlineData(Blob { mime_type, data }),
-                                additional_params: None,
-                            });
-                        }
-                    }
-                }
-
-                // Always add FunctionResponse part (even if empty text when there's an image)
-                let result: serde_json::Value = if text_content.is_empty() {
-                    json!({ "status": "success" })
-                } else {
-                    serde_json::from_str(&text_content).unwrap_or_else(|error| {
-                        tracing::trace!(
-                            ?error,
-                            "Tool result is not a valid JSON, treat it as normal string"
-                        );
-                        json!(text_content)
-                    })
-                };
-
-                parts.push(Part {
-                    thought: Some(false),
-                    thought_signature: None,
-                    part: PartKind::FunctionResponse(FunctionResponse {
-                        name: id,
-                        response: Some(json!({ "result": result })),
-                    }),
-                    additional_params: None,
-                });
-
-                // Add image parts after the function response
-                parts.extend(image_parts);
-
-                Ok(parts)
-            }
-            // For non-tool-result content, delegate to existing TryFrom
-            other => Ok(vec![other.try_into()?]),
-        }
-    }
-
     impl TryFrom<message::Message> for Content {
         type Error = message::MessageError;
 
@@ -654,11 +576,8 @@ pub mod gemini_api_types {
                 message::Message::User { content } => Content {
                     parts: content
                         .into_iter()
-                        .map(user_content_to_parts)
-                        .collect::<Result<Vec<_>, _>>()?
-                        .into_iter()
-                        .flatten()
-                        .collect(),
+                        .map(|c| c.try_into())
+                        .collect::<Result<Vec<_>, _>>()?,
                     role: Some(Role::User),
                 },
                 message::Message::Assistant { content, .. } => Content {
@@ -669,102 +588,6 @@ pub mod gemini_api_types {
                         .collect::<Result<Vec<_>, _>>()?,
                 },
             })
-        }
-    }
-
-    impl TryFrom<Content> for message::Message {
-        type Error = message::MessageError;
-
-        fn try_from(content: Content) -> Result<Self, Self::Error> {
-            match content.role {
-                Some(Role::User) | None => {
-                    Ok(message::Message::User {
-                        content: {
-                            let user_content: Result<Vec<_>, _> = content.parts.into_iter()
-                            .map(|Part { part, .. }| {
-                                Ok(match part {
-                                    PartKind::Text(text) => message::UserContent::text(text),
-                                    PartKind::InlineData(inline_data) => {
-                                        let mime_type =
-                                            message::MediaType::from_mime_type(&inline_data.mime_type);
-
-                                        match mime_type {
-                                            Some(message::MediaType::Image(media_type)) => {
-                                                message::UserContent::image_base64(
-                                                    inline_data.data,
-                                                    Some(media_type),
-                                                    Some(message::ImageDetail::default()),
-                                                )
-                                            }
-                                            Some(message::MediaType::Document(media_type)) => {
-                                                message::UserContent::document(
-                                                    inline_data.data,
-                                                    Some(media_type),
-                                                )
-                                            }
-                                            Some(message::MediaType::Audio(media_type)) => {
-                                                message::UserContent::audio(
-                                                    inline_data.data,
-                                                    Some(media_type),
-                                                )
-                                            }
-                                            _ => {
-                                                return Err(message::MessageError::ConversionError(
-                                                    format!("Unsupported media type {mime_type:?}"),
-                                                ));
-                                            }
-                                        }
-                                    }
-                                    _ => {
-                                        return Err(message::MessageError::ConversionError(format!(
-                                            "Unsupported gemini content part type: {part:?}"
-                                        )));
-                                    }
-                                })
-                            })
-                            .collect();
-                            OneOrMany::many(user_content?).map_err(|_| {
-                                message::MessageError::ConversionError(
-                                    "Failed to create OneOrMany from user content".to_string(),
-                                )
-                            })?
-                        },
-                    })
-                }
-                Some(Role::Model) => Ok(message::Message::Assistant {
-                    id: None,
-                    content: {
-                        let assistant_content: Result<Vec<_>, _> = content
-                            .parts
-                            .into_iter()
-                            .map(|Part { thought, part, .. }| {
-                                Ok(match part {
-                                    PartKind::Text(text) => match thought {
-                                        Some(true) => message::AssistantContent::Reasoning(
-                                            Reasoning::new(&text),
-                                        ),
-                                        _ => message::AssistantContent::Text(Text { text }),
-                                    },
-
-                                    PartKind::FunctionCall(function_call) => {
-                                        message::AssistantContent::ToolCall(function_call.into())
-                                    }
-                                    _ => {
-                                        return Err(message::MessageError::ConversionError(
-                                            format!("Unsupported part type: {part:?}"),
-                                        ));
-                                    }
-                                })
-                            })
-                            .collect();
-                        OneOrMany::many(assistant_content?).map_err(|_| {
-                            message::MessageError::ConversionError(
-                                "Failed to create OneOrMany from assistant content".to_string(),
-                            )
-                        })?
-                    },
-                }),
-            }
         }
     }
 
@@ -879,11 +702,33 @@ pub mod gemini_api_types {
                     part: PartKind::Text(text),
                     additional_params: None,
                 }),
-                message::UserContent::ToolResult(_) => {
-                    // ToolResult should be handled by user_content_to_parts to support images
-                    Err(message::MessageError::ConversionError(
-                        "ToolResult should be converted via user_content_to_parts".to_string(),
-                    ))
+                message::UserContent::ToolResult(message::ToolResult { id, content, .. }) => {
+                    let content = match content.first() {
+                        message::ToolResultContent::Text(text) => text.text,
+                        message::ToolResultContent::Image(_) => {
+                            return Err(message::MessageError::ConversionError(
+                                "Tool result content must be text".to_string(),
+                            ));
+                        }
+                    };
+                    // Convert to JSON since this value may be a valid JSON value
+                    let result: serde_json::Value =
+                        serde_json::from_str(&content).unwrap_or_else(|error| {
+                            tracing::trace!(
+                                ?error,
+                                "Tool result is not a valid JSON, treat it as normal string"
+                            );
+                            json!(content)
+                        });
+                    Ok(Part {
+                        thought: Some(false),
+                        thought_signature: None,
+                        part: PartKind::FunctionResponse(FunctionResponse {
+                            name: id,
+                            response: Some(json!({ "result": result })),
+                        }),
+                        additional_params: None,
+                    })
                 }
                 message::UserContent::Image(message::Image {
                     data, media_type, ..
@@ -1113,7 +958,7 @@ pub mod gemini_api_types {
         fn from(tool_call: message::ToolCall) -> Self {
             Self {
                 thought: Some(false),
-                thought_signature: None,
+                thought_signature: tool_call.signature,
                 part: PartKind::FunctionCall(FunctionCall {
                     name: tool_call.function.name,
                     args: tool_call.function.arguments,
@@ -1144,19 +989,6 @@ pub mod gemini_api_types {
         pub name: String,
         /// Optional. The function parameters and values in JSON object format.
         pub args: serde_json::Value,
-    }
-
-    impl From<FunctionCall> for message::ToolCall {
-        fn from(function_call: FunctionCall) -> Self {
-            Self {
-                id: function_call.name.clone(),
-                call_id: None,
-                function: message::ToolFunction {
-                    name: function_call.name,
-                    arguments: function_call.args,
-                },
-            }
-        }
     }
 
     impl From<message::ToolCall> for FunctionCall {
@@ -2100,6 +1932,8 @@ mod tests {
                 name: "test_function".to_string(),
                 arguments: json!({"arg1": "value1"}),
             },
+            signature: None,
+            additional_params: None,
         };
 
         let msg = message::Message::Assistant {

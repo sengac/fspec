@@ -127,6 +127,74 @@ fn test_oauth_request_includes_beta_headers() {
 // HELPER TESTS
 // ==========================================
 
+/// Test that OAuth mode sets correct HTTP headers on the client
+#[test]
+fn test_oauth_client_headers() {
+    let _lock = ENV_MUTEX.lock().unwrap();
+
+    // @step Given CLAUDE_CODE_OAUTH_TOKEN is set in the environment
+    env::set_var("CLAUDE_CODE_OAUTH_TOKEN", "sk-ant-oat01-test-token");
+    env::remove_var("ANTHROPIC_API_KEY");
+
+    // @step When the provider is initialized
+    let provider = ClaudeProvider::new().expect("Provider should initialize");
+    let client = provider.client();
+    let headers = client.headers();
+
+    // @step Then the client headers should include Authorization: Bearer
+    let auth = headers.get("authorization");
+    assert!(auth.is_some(), "Should have Authorization header");
+    let auth_value = auth.unwrap().to_str().unwrap();
+    assert!(
+        auth_value.starts_with("Bearer "),
+        "Authorization should be Bearer token, got: {}",
+        auth_value
+    );
+
+    // @step And should include User-Agent matching Claude Code
+    let user_agent = headers.get("user-agent");
+    assert!(user_agent.is_some(), "Should have User-Agent header");
+    let ua_value = user_agent.unwrap().to_str().unwrap();
+    assert!(
+        ua_value.contains("claude-cli"),
+        "User-Agent should identify as claude-cli, got: {}",
+        ua_value
+    );
+
+    // @step And should include x-app: cli
+    let x_app = headers.get("x-app");
+    assert!(x_app.is_some(), "Should have x-app header");
+    assert_eq!(x_app.unwrap().to_str().unwrap(), "cli");
+
+    // @step And should include anthropic-beta with claude-code identifier
+    let beta = headers.get("anthropic-beta");
+    assert!(beta.is_some(), "Should have anthropic-beta header");
+    let beta_value = beta.unwrap().to_str().unwrap();
+    assert!(
+        beta_value.contains("claude-code-20250219"),
+        "anthropic-beta should contain claude-code-20250219, got: {}",
+        beta_value
+    );
+    assert!(
+        beta_value.contains("oauth-2025-04-20"),
+        "anthropic-beta should contain oauth-2025-04-20, got: {}",
+        beta_value
+    );
+
+    // @step And should NOT have x-api-key header
+    let api_key = headers.get("x-api-key");
+    assert!(api_key.is_none(), "Should NOT have x-api-key header for OAuth mode");
+
+    // Debug: print all headers
+    println!("OAuth client headers:");
+    for (k, v) in headers.iter() {
+        println!("  {}: {}", k, v.to_str().unwrap_or("<binary>"));
+    }
+
+    // Cleanup
+    env::remove_var("CLAUDE_CODE_OAUTH_TOKEN");
+}
+
 /// Test that provider fails when no credentials are available
 #[test]
 fn test_no_credentials_returns_error() {

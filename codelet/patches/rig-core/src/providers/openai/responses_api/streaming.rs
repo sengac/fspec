@@ -12,7 +12,7 @@ use crate::wasm_compat::WasmCompatSend;
 use async_stream::stream;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use tracing::{debug, info_span};
+use tracing::{Level, debug, enabled, info_span};
 use tracing_futures::Instrument as _;
 
 use super::{CompletionResponse, Output};
@@ -118,8 +118,8 @@ pub enum ItemChunkKind {
     ReasoningSummaryPartAdded(SummaryPartChunk),
     #[serde(rename = "response.reasoning_summary_part.done")]
     ReasoningSummaryPartDone(SummaryPartChunk),
-    #[serde(rename = "response.reasoning_summary_text.added")]
-    ReasoningSummaryTextAdded(SummaryTextChunk),
+    #[serde(rename = "response.reasoning_summary_text.delta")]
+    ReasoningSummaryTextDelta(SummaryTextChunk),
     #[serde(rename = "response.reasoning_summary_text.done")]
     ReasoningSummaryTextDone(SummaryTextChunk),
 }
@@ -212,6 +212,14 @@ where
         let mut request = self.create_completion_request(completion_request)?;
         request.stream = Some(true);
 
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                target: "rig::completions",
+                "OpenAI Responses streaming completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
+
         let body = serde_json::to_vec(&request)?;
 
         let req = self
@@ -233,20 +241,14 @@ where
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = tracing::field::Empty,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
         span.record("gen_ai.provider.name", "openai");
         span.record("gen_ai.request.model", &self.model);
-        span.record(
-            "gen_ai.input.messages",
-            serde_json::to_string(&request.input).expect("This should always work"),
-        );
         // Build the request with proper headers for SSE
-        let client = self.client.http_client().clone();
+        let client = self.client.clone();
 
         let mut event_source = GenericEventSource::new(client, req);
 
@@ -280,10 +282,25 @@ where
 
                         if let StreamingCompletionChunk::Delta(chunk) = &data {
                             match &chunk.data {
+                                ItemChunkKind::OutputItemAdded(message) => {
+                                    if let StreamingItemDoneOutput { item: Output::FunctionCall(func), .. } = message {
+                                        yield Ok(streaming::RawStreamingChoice::ToolCallDelta {
+                                            id: func.id.clone(),
+                                            content: streaming::ToolCallDeltaContent::Name(func.name.clone()),
+                                        });
+                                    }
+                                }
                                 ItemChunkKind::OutputItemDone(message) => {
                                     match message {
                                         StreamingItemDoneOutput {  item: Output::FunctionCall(func), .. } => {
-                                            tool_calls.push(streaming::RawStreamingChoice::ToolCall { id: func.id.clone(), call_id: Some(func.call_id.clone()), name: func.name.clone(), arguments: func.arguments.clone() });
+                                            tool_calls.push(streaming::RawStreamingChoice::ToolCall(
+                                                streaming::RawStreamingToolCall::new(
+                                                    func.id.clone(),
+                                                    func.name.clone(),
+                                                    func.arguments.clone(),
+                                                )
+                                                .with_call_id(func.call_id.clone())
+                                            ));
                                         }
 
                                         StreamingItemDoneOutput {  item: Output::Reasoning {  summary, id }, .. } => {
@@ -295,7 +312,11 @@ where
                                                 })
                                                 .collect::<Vec<String>>()
                                                 .join("\n");
-                                            yield Ok(streaming::RawStreamingChoice::Reasoning { reasoning, id: Some(id.to_string()), signature: None })
+                                            yield Ok(streaming::RawStreamingChoice::Reasoning {
+                                                id: Some(id.to_string()),
+                                                reasoning,
+                                                signature: None,
+                                            })
                                         }
                                         _ => continue
                                     }
@@ -304,12 +325,15 @@ where
                                     combined_text.push_str(&delta.delta);
                                     yield Ok(streaming::RawStreamingChoice::Message(delta.delta.clone()))
                                 }
+                                ItemChunkKind::ReasoningSummaryTextDelta(delta) => {
+                                    yield Ok(streaming::RawStreamingChoice::ReasoningDelta { id: None, reasoning: delta.delta.clone() })
+                                }
                                 ItemChunkKind::RefusalDelta(delta) => {
                                     combined_text.push_str(&delta.delta);
                                     yield Ok(streaming::RawStreamingChoice::Message(delta.delta.clone()))
                                 }
                                 ItemChunkKind::FunctionCallArgsDelta(delta) => {
-                                    yield Ok(streaming::RawStreamingChoice::ToolCallDelta { id: delta.item_id.clone(), delta: delta.delta.clone() })
+                                    yield Ok(streaming::RawStreamingChoice::ToolCallDelta { id: delta.item_id.clone(), content: streaming::ToolCallDeltaContent::Delta(delta.delta.clone()) })
                                 }
 
                                 _ => { continue }
@@ -318,7 +342,6 @@ where
 
                         if let StreamingCompletionChunk::Response(chunk) = data {
                             if let ResponseChunk { kind: ResponseChunkKind::ResponseCompleted, response, .. } = *chunk {
-                                span.record("gen_ai.output.messages", serde_json::to_string(&response.output).unwrap());
                                 span.record("gen_ai.response.id", response.id);
                                 span.record("gen_ai.response.model", response.model);
                                 if let Some(usage) = response.usage {

@@ -19,7 +19,7 @@ use crate::{OneOrMany, completion, json_utils, message};
 use serde::{Deserialize, Serialize};
 use std::convert::Infallible;
 use std::fmt;
-use tracing::{Instrument, info_span};
+use tracing::{Instrument, Level, enabled, info_span};
 
 use std::str::FromStr;
 
@@ -145,7 +145,7 @@ pub enum Message {
     #[serde(rename = "tool")]
     ToolResult {
         tool_call_id: String,
-        content: OneOrMany<ToolResultContent>,
+        content: ToolResultContentValue,
     },
 }
 
@@ -252,6 +252,43 @@ impl From<String> for ToolResultContent {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[serde(untagged)]
+pub enum ToolResultContentValue {
+    Array(Vec<ToolResultContent>),
+    String(String),
+}
+
+impl ToolResultContentValue {
+    pub fn from_string(s: String, use_array_format: bool) -> Self {
+        if use_array_format {
+            ToolResultContentValue::Array(vec![ToolResultContent::from(s)])
+        } else {
+            ToolResultContentValue::String(s)
+        }
+    }
+
+    pub fn as_text(&self) -> String {
+        match self {
+            ToolResultContentValue::Array(arr) => arr
+                .iter()
+                .map(|c| c.text.clone())
+                .collect::<Vec<_>>()
+                .join("\n"),
+            ToolResultContentValue::String(s) => s.clone(),
+        }
+    }
+
+    pub fn to_array(&self) -> Self {
+        match self {
+            ToolResultContentValue::Array(_) => self.clone(),
+            ToolResultContentValue::String(s) => {
+                ToolResultContentValue::Array(vec![ToolResultContent::from(s.clone())])
+            }
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct ToolCall {
     pub id: String,
@@ -267,18 +304,43 @@ pub enum ToolType {
     Function,
 }
 
+/// Function definition for a tool, with optional strict mode
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct FunctionDefinition {
+    pub name: String,
+    pub description: String,
+    pub parameters: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strict: Option<bool>,
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ToolDefinition {
     pub r#type: String,
-    pub function: completion::ToolDefinition,
+    pub function: FunctionDefinition,
 }
 
 impl From<completion::ToolDefinition> for ToolDefinition {
     fn from(tool: completion::ToolDefinition) -> Self {
         Self {
             r#type: "function".into(),
-            function: tool,
+            function: FunctionDefinition {
+                name: tool.name,
+                description: tool.description,
+                parameters: tool.parameters,
+                strict: None,
+            },
         }
+    }
+}
+
+impl ToolDefinition {
+    /// Apply strict mode to this tool definition.
+    /// This sets `strict: true` and sanitizes the schema to meet OpenAI requirements.
+    pub fn with_strict(mut self) -> Self {
+        self.function.strict = Some(true);
+        super::sanitize_schema(&mut self.function.parameters);
+        self
     }
 }
 
@@ -320,14 +382,21 @@ impl TryFrom<message::ToolResult> for Message {
     type Error = message::MessageError;
 
     fn try_from(value: message::ToolResult) -> Result<Self, Self::Error> {
-        Ok(Message::ToolResult {
-            tool_call_id: value.id,
-            content: value.content.try_map(|content| match content {
-                message::ToolResultContent::Text(message::Text { text }) => Ok(text.into()),
+        let text = value
+            .content
+            .into_iter()
+            .map(|content| match content {
+                message::ToolResultContent::Text(message::Text { text }) => Ok(text),
                 _ => Err(message::MessageError::ConversionError(
                     "Tool result content does not support non-text".into(),
                 )),
-            })?,
+            })
+            .collect::<Result<Vec<_>, _>>()?
+            .join("\n");
+
+        Ok(Message::ToolResult {
+            tool_call_id: value.id,
+            content: ToolResultContentValue::String(text),
         })
     }
 }
@@ -469,10 +538,10 @@ impl TryFrom<OneOrMany<message::AssistantContent>> for Vec<Message> {
                     message::AssistantContent::Text(text) => texts.push(text),
                     message::AssistantContent::ToolCall(tool_call) => tools.push(tool_call),
                     message::AssistantContent::Reasoning(_) => {
-                        unimplemented!("The OpenAI Completions API doesn't support reasoning!");
+                        panic!("The OpenAI Completions API doesn't support reasoning!");
                     }
                     message::AssistantContent::Image(_) => {
-                        unimplemented!(
+                        panic!(
                             "The OpenAI Completions API doesn't support image content in assistant messages!"
                         );
                     }
@@ -532,6 +601,8 @@ impl From<ToolCall> for message::ToolCall {
                 name: tool_call.function.name,
                 arguments: tool_call.function.arguments,
             },
+            signature: None,
+            additional_params: None,
         }
     }
 }
@@ -586,7 +657,7 @@ impl TryFrom<Message> for message::Message {
             } => message::Message::User {
                 content: OneOrMany::one(message::UserContent::tool_result(
                     tool_call_id,
-                    content.map(|content| message::ToolResultContent::text(content.text)),
+                    OneOrMany::one(message::ToolResultContent::text(content.as_text())),
                 )),
             },
 
@@ -837,8 +908,9 @@ impl GetTokenUsage for Usage {
 #[derive(Clone)]
 pub struct CompletionModel<T = reqwest::Client> {
     pub(crate) client: Client<T>,
-    /// Name of the model (e.g.: gpt-3.5-turbo-1106)
     pub model: String,
+    pub strict_tools: bool,
+    pub tool_result_array_content: bool,
 }
 
 impl<T> CompletionModel<T>
@@ -849,6 +921,8 @@ where
         Self {
             client,
             model: model.into(),
+            strict_tools: false,
+            tool_result_array_content: false,
         }
     }
 
@@ -856,7 +930,27 @@ where
         Self {
             client,
             model: model.into(),
+            strict_tools: false,
+            tool_result_array_content: false,
         }
+    }
+
+    /// Enable strict mode for tool schemas.
+    ///
+    /// When enabled, tool schemas are automatically sanitized to meet OpenAI's strict mode requirements:
+    /// - `additionalProperties: false` is added to all objects
+    /// - All properties are marked as required
+    /// - `strict: true` is set on each function definition
+    ///
+    /// This allows OpenAI to guarantee that the model's tool calls will match the schema exactly.
+    pub fn with_strict_tools(mut self) -> Self {
+        self.strict_tools = true;
+        self
+    }
+
+    pub fn with_tool_result_array_content(mut self) -> Self {
+        self.tool_result_array_content = true;
+        self
     }
 }
 
@@ -874,10 +968,24 @@ pub struct CompletionRequest {
     additional_params: Option<serde_json::Value>,
 }
 
-impl TryFrom<(String, CoreCompletionRequest)> for CompletionRequest {
+pub struct OpenAIRequestParams {
+    pub model: String,
+    pub request: CoreCompletionRequest,
+    pub strict_tools: bool,
+    pub tool_result_array_content: bool,
+}
+
+impl TryFrom<OpenAIRequestParams> for CompletionRequest {
     type Error = CompletionError;
 
-    fn try_from((model, req): (String, CoreCompletionRequest)) -> Result<Self, Self::Error> {
+    fn try_from(params: OpenAIRequestParams) -> Result<Self, Self::Error> {
+        let OpenAIRequestParams {
+            model,
+            request: req,
+            strict_tools,
+            tool_result_array_content,
+        } = params;
+
         let mut partial_history = vec![];
         if let Some(docs) = req.normalized_documents() {
             partial_history.push(docs);
@@ -897,7 +1005,6 @@ impl TryFrom<(String, CoreCompletionRequest)> for CompletionRequest {
         let mut full_history: Vec<Message> =
             preamble.map_or_else(Vec::new, |preamble| vec![Message::system(&preamble)]);
 
-        // Convert and extend the rest of the history
         full_history.extend(
             partial_history
                 .into_iter()
@@ -908,21 +1015,47 @@ impl TryFrom<(String, CoreCompletionRequest)> for CompletionRequest {
                 .collect::<Vec<_>>(),
         );
 
+        if tool_result_array_content {
+            for msg in &mut full_history {
+                if let Message::ToolResult { content, .. } = msg {
+                    *content = content.to_array();
+                }
+            }
+        }
+
         let tool_choice = tool_choice.map(ToolChoice::try_from).transpose()?;
+
+        let tools: Vec<ToolDefinition> = tools
+            .into_iter()
+            .map(|tool| {
+                let def = ToolDefinition::from(tool);
+                if strict_tools { def.with_strict() } else { def }
+            })
+            .collect();
 
         let res = Self {
             model,
             messages: full_history,
-            tools: tools
-                .into_iter()
-                .map(ToolDefinition::from)
-                .collect::<Vec<_>>(),
+            tools,
             tool_choice,
             temperature,
             additional_params,
         };
 
         Ok(res)
+    }
+}
+
+impl TryFrom<(String, CoreCompletionRequest)> for CompletionRequest {
+    type Error = CompletionError;
+
+    fn try_from((model, req): (String, CoreCompletionRequest)) -> Result<Self, Self::Error> {
+        CompletionRequest::try_from(OpenAIRequestParams {
+            model,
+            request: req,
+            strict_tools: false,
+            tool_result_array_content: false,
+        })
     }
 }
 
@@ -1005,16 +1138,25 @@ where
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = tracing::field::Empty,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
 
-        let request = CompletionRequest::try_from((self.model.to_owned(), completion_request))?;
+        let request = CompletionRequest::try_from(OpenAIRequestParams {
+            model: self.model.to_owned(),
+            request: completion_request,
+            strict_tools: self.strict_tools,
+            tool_result_array_content: self.tool_result_array_content,
+        })?;
 
-        span.record_model_input(&request.messages);
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                target: "rig::completions",
+                "OpenAI Chat Completions completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
 
@@ -1033,10 +1175,17 @@ where
                 match serde_json::from_str::<ApiResponse<CompletionResponse>>(&text)? {
                     ApiResponse::Ok(response) => {
                         let span = tracing::Span::current();
-                        span.record_model_output(&response.choices);
                         span.record_response_metadata(&response);
                         span.record_token_usage(&response.usage);
-                        tracing::debug!("OpenAI response: {response:?}");
+
+                        if enabled!(Level::TRACE) {
+                            tracing::trace!(
+                                target: "rig::completions",
+                                "OpenAI Chat Completions completion response: {}",
+                                serde_json::to_string_pretty(&response)?
+                            );
+                        }
+
                         response.try_into()
                     }
                     ApiResponse::Err(err) => Err(CompletionError::ProviderError(err.message)),

@@ -1880,13 +1880,26 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               thinking: chunk.thinking,
             });
             // Display thinking content in a distinct way (could be collapsible in future)
+            // TUI-046: Insert thinking BEFORE the streaming assistant message, not after
+            // This ensures thinking appears in the correct temporal order - thinking happens
+            // BEFORE the assistant generates the text that follows it, not after.
             setConversation(prev => {
               const updated = [...prev];
-              // Add thinking as a separate tool-style message with distinct formatting
-              updated.push({
-                role: 'tool',
-                content: `[Thinking]\n${chunk.thinking}`,
-              });
+              // Find the streaming assistant message
+              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+              if (streamingIdx >= 0) {
+                // Insert thinking block BEFORE the streaming message
+                updated.splice(streamingIdx, 0, {
+                  role: 'tool',
+                  content: `[Thinking]\n${chunk.thinking}`,
+                });
+              } else {
+                // No streaming message found, just append (shouldn't happen normally)
+                updated.push({
+                  role: 'tool',
+                  content: `[Thinking]\n${chunk.thinking}`,
+                });
+              }
               return updated;
             });
           } else if (chunk.type === 'ToolCall' && chunk.toolCall) {

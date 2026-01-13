@@ -1,12 +1,12 @@
 use async_stream::stream;
 use serde::{Deserialize, Serialize};
 use std::{convert::Infallible, str::FromStr};
-use tracing::{Instrument, info_span};
+use tracing::{Instrument, Level, enabled, info_span};
 
 use super::client::{Client, Usage};
 use crate::completion::GetTokenUsage;
 use crate::http_client::{self, HttpClientExt};
-use crate::streaming::{RawStreamingChoice, StreamingCompletionResponse};
+use crate::streaming::{RawStreamingChoice, RawStreamingToolCall, StreamingCompletionResponse};
 use crate::{
     OneOrMany,
     completion::{self, CompletionError, CompletionRequest},
@@ -81,6 +81,14 @@ pub enum Message {
     System {
         content: String,
     },
+    Tool {
+        /// The name of the tool that was called
+        name: String,
+        /// The content of the tool call
+        content: String,
+        /// The id of the tool call
+        tool_call_id: String,
+    },
 }
 
 impl Message {
@@ -107,21 +115,39 @@ impl TryFrom<message::Message> for Vec<Message> {
     fn try_from(message: message::Message) -> Result<Self, Self::Error> {
         match message {
             message::Message::User { content } => {
-                let (_, other_content): (Vec<_>, Vec<_>) = content
-                    .into_iter()
-                    .partition(|content| matches!(content, message::UserContent::ToolResult(_)));
+                let mut tool_result_messages = Vec::new();
+                let mut other_messages = Vec::new();
 
-                let messages = other_content
-                    .into_iter()
-                    .filter_map(|content| match content {
-                        message::UserContent::Text(message::Text { text }) => {
-                            Some(Message::User { content: text })
+                for content_item in content {
+                    match content_item {
+                        message::UserContent::ToolResult(message::ToolResult {
+                            id,
+                            call_id,
+                            content: tool_content,
+                        }) => {
+                            let call_id_key = call_id.unwrap_or_else(|| id.clone());
+                            let content_text = tool_content
+                                .into_iter()
+                                .find_map(|content_item| match content_item {
+                                    message::ToolResultContent::Text(text) => Some(text.text),
+                                    message::ToolResultContent::Image(_) => None,
+                                })
+                                .unwrap_or_default();
+                            tool_result_messages.push(Message::Tool {
+                                name: id,
+                                content: content_text,
+                                tool_call_id: call_id_key,
+                            });
                         }
-                        _ => None,
-                    })
-                    .collect::<Vec<_>>();
+                        message::UserContent::Text(message::Text { text }) => {
+                            other_messages.push(Message::User { content: text });
+                        }
+                        _ => {}
+                    }
+                }
 
-                Ok(messages)
+                tool_result_messages.append(&mut other_messages);
+                Ok(tool_result_messages)
             }
             message::Message::Assistant { content, .. } => {
                 let (text_content, tool_calls) = content.into_iter().fold(
@@ -131,10 +157,10 @@ impl TryFrom<message::Message> for Vec<Message> {
                             message::AssistantContent::Text(text) => texts.push(text),
                             message::AssistantContent::ToolCall(tool_call) => tools.push(tool_call),
                             message::AssistantContent::Reasoning(_) => {
-                                unimplemented!("Reasoning content is not currently supported on Mistral via Rig");
+                                panic!("Reasoning content is not currently supported on Mistral via Rig");
                             }
                             message::AssistantContent::Image(_) => {
-                                unimplemented!("Image content is not currently supported on Mistral via Rig");
+                                panic!("Image content is not currently supported on Mistral via Rig");
                             }
                         }
                         (texts, tools)
@@ -300,11 +326,11 @@ impl TryFrom<message::ToolChoice> for ToolChoice {
 pub(super) struct MistralCompletionRequest {
     model: String,
     pub messages: Vec<Message>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     temperature: Option<f64>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     tools: Vec<ToolDefinition>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     tool_choice: Option<crate::providers::openai::completion::ToolChoice>,
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub additional_params: Option<serde_json::Value>,
@@ -514,7 +540,6 @@ where
         Self::new(client.clone(), model.into())
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
@@ -522,6 +547,14 @@ where
         let preamble = completion_request.preamble.clone();
         let request =
             MistralCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                target: "rig::completions",
+                "Mistral completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
@@ -535,8 +568,6 @@ where
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
@@ -559,7 +590,6 @@ where
                     ApiResponse::Ok(response) => {
                         let span = tracing::Span::current();
                         span.record_token_usage(&response);
-                        span.record_model_output(&response.choices);
                         span.record_response_metadata(&response);
                         response.try_into()
                     }
@@ -574,7 +604,6 @@ where
         .await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         request: CompletionRequest,
@@ -588,18 +617,19 @@ where
                         yield Ok(RawStreamingChoice::Message(t.text.clone()))
                     }
                     message::AssistantContent::ToolCall(tc) => {
-                        yield Ok(RawStreamingChoice::ToolCall {
-                            id: tc.id.clone(),
-                            name: tc.function.name.clone(),
-                            arguments: tc.function.arguments.clone(),
-                             call_id: None
-                        })
+                        yield Ok(RawStreamingChoice::ToolCall(
+                                RawStreamingToolCall::new(
+                                    tc.id.clone(),
+                                    tc.function.name.clone(),
+                                    tc.function.arguments.clone(),
+                                )
+                        ))
                     }
                     message::AssistantContent::Reasoning(_) => {
-                        unimplemented!("Reasoning is not supported on Mistral via Rig")
+                        panic!("Reasoning is not supported on Mistral via Rig")
                     }
                     message::AssistantContent::Image(_) => {
-                        unimplemented!("Image content is not supported on Mistral via Rig")
+                        panic!("Image content is not supported on Mistral via Rig")
                     }
                 }
             }

@@ -37,7 +37,7 @@ tokio-stream = "0.1"
 async-stream = "0.3"
 
 # === LLM Integration ===
-rig-core = { version = "0.25.0", default-features = false }
+rig-core = { version = "0.28.0", default-features = false }
 
 # === HTTP & Networking ===
 reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls", "blocking"] }

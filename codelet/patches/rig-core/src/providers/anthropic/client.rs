@@ -14,7 +14,10 @@ use crate::{
 // Main Anthropic Client
 // ================================================================
 #[derive(Debug, Default, Clone)]
-pub struct AnthropicExt;
+pub struct AnthropicExt {
+    /// Whether OAuth mode is active (requires ?beta=true on messages endpoint)
+    pub oauth_mode: bool,
+}
 
 impl Provider for AnthropicExt {
     type Builder = AnthropicBuilder;
@@ -22,9 +25,25 @@ impl Provider for AnthropicExt {
     const VERIFY_PATH: &'static str = "/v1/models";
 
     fn build<H>(
-        _builder: &client::ClientBuilder<Self::Builder, AnthropicKey, H>,
+        builder: &client::ClientBuilder<Self::Builder, AnthropicKey, H>,
     ) -> http_client::Result<Self> {
-        Ok(Self)
+        // Detect OAuth mode by checking if the API key starts with "sk-ant-oat"
+        let oauth_mode = builder.get_api_key().is_oauth_token();
+        Ok(Self { oauth_mode })
+    }
+
+    fn build_uri(&self, base_url: &str, path: &str, _transport: client::Transport) -> String {
+        let base = base_url.to_string() + "/" + path.trim_start_matches('/');
+        // Add ?beta=true for OAuth mode on messages endpoint
+        if self.oauth_mode && path.contains("/v1/messages") {
+            if base.contains('?') {
+                format!("{}&beta=true", base)
+            } else {
+                format!("{}?beta=true", base)
+            }
+        } else {
+            base
+        }
     }
 }
 
@@ -48,6 +67,13 @@ pub struct AnthropicBuilder {
 #[derive(Debug, Clone)]
 pub struct AnthropicKey(String);
 
+impl AnthropicKey {
+    /// Check if this is an OAuth token (starts with "sk-ant-oat")
+    pub fn is_oauth_token(&self) -> bool {
+        self.0.starts_with("sk-ant-oat")
+    }
+}
+
 impl<S> From<S> for AnthropicKey
 where
     S: Into<String>,
@@ -59,6 +85,13 @@ where
 
 impl ApiKey for AnthropicKey {
     fn into_header(self) -> Option<http_client::Result<(http::HeaderName, HeaderValue)>> {
+        // OAuth tokens (from Claude Code) start with "sk-ant-oat" prefix
+        // These use Authorization: Bearer header set via http_headers(), not x-api-key
+        // Return None to skip setting x-api-key for OAuth tokens
+        if self.is_oauth_token() {
+            return None;
+        }
+
         Some(
             HeaderValue::from_str(&self.0)
                 .map(|val| (HeaderName::from_static("x-api-key"), val))

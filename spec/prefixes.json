@@ -289,6 +289,11 @@
       "prefix": "PROV",
       "description": "Provider and API Client Functionality",
       "createdAt": "2025-12-31T04:43:52.518Z"
+    },
+    "PATCH": {
+      "prefix": "PATCH",
+      "description": "Patch management and dependency version synchronization",
+      "createdAt": "2026-01-08T08:44:49.253Z"
     }
   }
 }

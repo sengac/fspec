@@ -15,7 +15,7 @@ use bytes::Bytes;
 use futures::StreamExt;
 use http::Request;
 use std::collections::HashMap;
-use tracing::{Instrument, info_span};
+use tracing::{Instrument, Level, enabled, info_span};
 
 use crate::client::{
     self, BearerAuth, Capabilities, Capable, DebugExt, Nothing, Provider, ProviderBuilder,
@@ -90,7 +90,13 @@ impl ProviderClient for Client {
     // If you prefer the environment variable approach:
     fn from_env() -> Self {
         let api_key = std::env::var("DEEPSEEK_API_KEY").expect("DEEPSEEK_API_KEY not set");
-        Self::new(&api_key).unwrap()
+        let mut client_builder = Self::builder();
+        client_builder.headers_mut().insert(
+            http::header::CONTENT_TYPE,
+            http::HeaderValue::from_static("application/json"),
+        );
+        let client_builder = client_builder.api_key(&api_key);
+        client_builder.build().unwrap()
     }
 
     fn from_val(input: Self::Input) -> Self {
@@ -434,11 +440,11 @@ impl TryFrom<CompletionResponse> for completion::CompletionResponse<CompletionRe
 pub(super) struct DeepseekCompletionRequest {
     model: String,
     pub messages: Vec<Message>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     temperature: Option<f64>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     tools: Vec<ToolDefinition>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     tool_choice: Option<crate::providers::openrouter::ToolChoice>,
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub additional_params: Option<serde_json::Value>,
@@ -515,7 +521,6 @@ where
         }
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
@@ -523,10 +528,6 @@ where
         completion::CompletionResponse<CompletionResponse>,
         crate::completion::CompletionError,
     > {
-        let preamble = completion_request.preamble.clone();
-        let request =
-            DeepseekCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
-
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
                 target: "rig::completions",
@@ -534,19 +535,27 @@ where
                 gen_ai.operation.name = "chat",
                 gen_ai.provider.name = "deepseek",
                 gen_ai.request.model = self.model,
-                gen_ai.system_instructions = preamble,
+                gen_ai.system_instructions = tracing::field::Empty,
                 gen_ai.response.id = tracing::field::Empty,
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
 
-        tracing::debug!("DeepSeek completion request: {request:?}");
+        span.record("gen_ai.system_instructions", &completion_request.preamble);
+
+        let request =
+            DeepseekCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+
+        if enabled!(Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "DeepSeek completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
         let req = self
@@ -564,20 +573,17 @@ where
                 match serde_json::from_slice::<ApiResponse<CompletionResponse>>(&response_body)? {
                     ApiResponse::Ok(response) => {
                         let span = tracing::Span::current();
-                        span.record(
-                            "gen_ai.output.messages",
-                            serde_json::to_string(&response.choices).unwrap(),
-                        );
                         span.record("gen_ai.usage.input_tokens", response.usage.prompt_tokens);
                         span.record(
                             "gen_ai.usage.output_tokens",
                             response.usage.completion_tokens,
                         );
-                        tracing::trace!(
-                            target: "rig::completions",
-                            "DeepSeek completion output: {}",
-                            serde_json::to_string_pretty(&response_body)?
-                        );
+                        if enabled!(Level::TRACE) {
+                            tracing::trace!(target: "rig::completions",
+                                "DeepSeek completion response: {}",
+                                serde_json::to_string_pretty(&response)?
+                            );
+                        }
                         response.try_into()
                     }
                     ApiResponse::Err(err) => Err(CompletionError::ProviderError(err.message)),
@@ -592,7 +598,6 @@ where
         .await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         completion_request: CompletionRequest,
@@ -610,6 +615,13 @@ where
         );
 
         request.additional_params = Some(params);
+
+        if enabled!(Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "DeepSeek streaming completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
 
@@ -631,15 +643,13 @@ where
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
 
         tracing::Instrument::instrument(
-            send_compatible_streaming_request(self.client.http_client().clone(), req),
+            send_compatible_streaming_request(self.client.clone(), req),
             span,
         )
         .await
@@ -756,22 +766,18 @@ where
                                         continue;
                                     };
 
-                                    yield Ok(crate::streaming::RawStreamingChoice::ToolCall {
-                                        id,
-                                        name,
-                                        arguments: arguments_json,
-                                        call_id: None,
-                                    });
+                                    yield Ok(crate::streaming::RawStreamingChoice::ToolCall(
+                                        crate::streaming::RawStreamingToolCall::new(id, name, arguments_json)
+                                    ));
                                 }
                             }
                         }
 
                         // DeepSeek-specific reasoning stream
                         if let Some(content) = &delta.reasoning_content {
-                            yield Ok(crate::streaming::RawStreamingChoice::Reasoning {
-                                reasoning: content.to_string(),
+                            yield Ok(crate::streaming::RawStreamingChoice::ReasoningDelta {
                                 id: None,
-                                signature: None,
+                                reasoning: content.to_string()
                             });
                         }
 
@@ -814,12 +820,9 @@ where
                     arguments: arguments_json.clone()
                 }
             });
-            yield Ok(crate::streaming::RawStreamingChoice::ToolCall {
-                id,
-                name,
-                arguments: arguments_json,
-                call_id: None,
-            });
+            yield Ok(crate::streaming::RawStreamingChoice::ToolCall(
+                crate::streaming::RawStreamingToolCall::new(id, name, arguments_json)
+            ));
         }
 
         let message = Message::Assistant {

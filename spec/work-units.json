@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-06T11:35:51.599Z"
+    "lastUpdated": "2026-01-08T09:26:53.647Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -61110,6 +61110,43 @@
         }
       ],
       "nextNoteId": 3
+    },
+    "PATCH-002": {
+      "id": "PATCH-002",
+      "title": "Upgrade rig-core to v0.28.0 with custom patches",
+      "type": "task",
+      "status": "done",
+      "createdAt": "2026-01-08T09:07:26.858Z",
+      "updatedAt": "2026-01-08T09:26:53.678Z",
+      "description": "Create patch file documenting current changes, upgrade to latest rig-core, apply patches, resolve conflicts, update codelet codebase for API changes, verify with tests",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-08T09:07:38.199Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-08T09:07:46.050Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-08T09:26:43.496Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-08T09:26:53.678Z"
+        }
+      ],
+      "rules": [],
+      "examples": [],
+      "questions": [],
+      "architectureNotes": [],
+      "nextRuleId": 0,
+      "nextExampleId": 0,
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2026-01-08T09:26:53.678Z"
     }
   },
   "states": {
@@ -61182,6 +61219,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "PATCH-002",
       "TUI-045",
       "TUI-038",
       "TUI-044",
@@ -61683,6 +61721,7 @@
     "MODEL": 1,
     "TOOLS": 4,
     "CONFIG": 4,
-    "PROV": 3
+    "PROV": 3,
+    "PATCH": 2
   }
 }

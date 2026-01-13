@@ -675,6 +675,8 @@ fn test_tool_calls_extracted_from_assistant_messages() {
             name: "Edit".to_string(),
             arguments: serde_json::json!({"file_path": "/src/main.rs", "content": "code"}),
         },
+        signature: None,
+        additional_params: None,
     };
 
     let messages = vec![

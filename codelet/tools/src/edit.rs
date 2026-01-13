@@ -41,7 +41,7 @@ pub struct EditArgs {
 }
 
 impl rig::tool::Tool for EditTool {
-    const NAME: &'static str = "edit";
+    const NAME: &'static str = "Edit";
 
     type Error = ToolError;
     type Args = EditArgs;
@@ -49,7 +49,7 @@ impl rig::tool::Tool for EditTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "edit".to_string(),
+            name: "Edit".to_string(),
             description:
                 "Edit a file by replacing old_string with new_string (first occurrence only). \
                 Requires absolute path."

@@ -7,6 +7,66 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.0](https://github.com/0xPlaygrounds/rig/compare/rig-core-v0.27.0...rig-core-v0.28.0) - 2026-01-06
+
+### Added
+
+- *(agent)* export StreamingError to public API ([#1200](https://github.com/0xPlaygrounds/rig/pull/1200))
+
+### Fixed
+
+- some completion providers send usage chunks with 0 completion choices causing 0 reported usage ([#1211](https://github.com/0xPlaygrounds/rig/pull/1211))
+- *(rig-1109)* export agent StreamingResult type ([#1220](https://github.com/0xPlaygrounds/rig/pull/1220))
+- docs typo ([#1219](https://github.com/0xPlaygrounds/rig/pull/1219))
+- missing json header on send_streaming ([#1196](https://github.com/0xPlaygrounds/rig/pull/1196))
+- *(rig-1113)* `calculate_max_tokens` assumes known model (anthropic) ([#1216](https://github.com/0xPlaygrounds/rig/pull/1216))
+- add headers to get call ([#1178](https://github.com/0xPlaygrounds/rig/pull/1178))
+- deepseek stream_prompt Invalid status code 415 ([#1170](https://github.com/0xPlaygrounds/rig/pull/1170))
+- *(openrouter)* add default serde attr to reasoning_details for optional field deserialization ([#1173](https://github.com/0xPlaygrounds/rig/pull/1173))
+
+### Other
+
+- add tool name to tool call delta streaming events ([#1222](https://github.com/0xPlaygrounds/rig/pull/1222))
+- *(deps)* update rmcp dependency to 0.12.0 ([#1182](https://github.com/0xPlaygrounds/rig/pull/1182))
+- *(deps)* upgrade rmcp dependency to 0.11 ([#1165](https://github.com/0xPlaygrounds/rig/pull/1165))
+- Respect custom http headers for outgoing client requests ([#1166](https://github.com/0xPlaygrounds/rig/pull/1166))
+
+## [0.27.0](https://github.com/0xPlaygrounds/rig/compare/rig-core-v0.26.0...rig-core-v0.27.0) - 2025-12-15
+
+### Added
+
+- *(rig-1096)* pass tool call ID to prompt hook ([#1162](https://github.com/0xPlaygrounds/rig/pull/1162))
+- *(rig-1059)* support `reqwest-middleware` client ([#1152](https://github.com/0xPlaygrounds/rig/pull/1152))
+
+### Fixed
+
+- *(groq)* rename StreamingOptions to StreamOptions ([#1159](https://github.com/0xPlaygrounds/rig/pull/1159))
+- *(openai)* add None variant to ReasoningEffort enum ([#1158](https://github.com/0xPlaygrounds/rig/pull/1158))
+
+### Other
+
+- ToolCall Signature and additional parameters ([#1154](https://github.com/0xPlaygrounds/rig/pull/1154))
+- fix incorrect variable name in AgentBuilder examples ([#1160](https://github.com/0xPlaygrounds/rig/pull/1160))
+- *(rig-1085)* groq reasoning format ([#1151](https://github.com/0xPlaygrounds/rig/pull/1151))
+- *(rig-1031)* remove worker crate dep ([#1149](https://github.com/0xPlaygrounds/rig/pull/1149))
+- *(rig-1090)* crate re-org ([#1145](https://github.com/0xPlaygrounds/rig/pull/1145))
+
+## [0.26.0](https://github.com/0xPlaygrounds/rig/compare/rig-core-v0.25.0...rig-core-v0.26.0) - 2025-12-04
+
+### Added
+
+- add Anthropic prompt caching support ([#1116](https://github.com/0xPlaygrounds/rig/pull/1116))
+- *(rig-1076)* Providers should route all requests through `client::Client` ([#1115](https://github.com/0xPlaygrounds/rig/pull/1115))
+
+### Fixed
+
+- *(streaming)* use .instrument() instead of span.enter() to prevent span leak ([#1108](https://github.com/0xPlaygrounds/rig/pull/1108))
+
+### Other
+
+- *(rig-1077)* ensure log level enabled before logging messages ([#1114](https://github.com/0xPlaygrounds/rig/pull/1114))
+- *(rig-1078)* remove messages from span telemetry ([#1112](https://github.com/0xPlaygrounds/rig/pull/1112))
+
 ## [0.25.0](https://github.com/0xPlaygrounds/rig/compare/rig-core-v0.24.0...rig-core-v0.25.0) - 2025-12-01
 
 ### Added

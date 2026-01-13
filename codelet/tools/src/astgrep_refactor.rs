@@ -976,7 +976,7 @@ pub struct AstGrepRefactorResult {
 }
 
 impl rig::tool::Tool for AstGrepRefactorTool {
-    const NAME: &'static str = "astgrep_refactor";
+    const NAME: &'static str = "AstGrepRefactor";
 
     type Error = ToolError;
     type Args = AstGrepRefactorArgs;
@@ -984,7 +984,7 @@ impl rig::tool::Tool for AstGrepRefactorTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "astgrep_refactor".to_string(),
+            name: "AstGrepRefactor".to_string(),
             description: "AST-based code refactoring tool. Finds code by AST pattern and either \
                 extracts it to a new file (extract mode) or replaces it in-place (replace mode).\n\n\
                 MODES:\n\

@@ -1,10 +1,10 @@
 use bytes::Bytes;
 
-use crate::http_client::HttpClientExt;
+use crate::http_client::multipart::Part;
+use crate::http_client::{HttpClientExt, MultipartForm};
 use crate::providers::openai::{Client, client::ApiResponse};
 use crate::transcription;
 use crate::transcription::TranscriptionError;
-use reqwest::multipart::Part;
 use serde::Deserialize;
 
 // ================================================================
@@ -58,7 +58,6 @@ where
         Self::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn transcription(
         &self,
         request: transcription::TranscriptionRequest,
@@ -68,12 +67,9 @@ where
     > {
         let data = request.data;
 
-        let mut body = reqwest::multipart::Form::new()
+        let mut body = MultipartForm::new()
             .text("model", self.model.clone())
-            .part(
-                "file",
-                Part::bytes(data).file_name(request.filename.clone()),
-            );
+            .part(Part::bytes("file", data).filename(request.filename.clone()));
 
         if let Some(language) = request.language {
             body = body.text("language", language);
@@ -102,12 +98,7 @@ where
             .body(body)
             .unwrap();
 
-        let response = self
-            .client
-            .http_client()
-            .send_multipart::<Bytes>(req)
-            .await
-            .unwrap();
+        let response = self.client.send_multipart::<Bytes>(req).await.unwrap();
 
         let status = response.status();
         let response_body = response.into_body().into_future().await?.to_vec();

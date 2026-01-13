@@ -2,16 +2,20 @@ use async_stream::stream;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use tracing::info_span;
+use tracing::{Level, enabled, info_span};
 use tracing_futures::Instrument;
 
-use super::completion::{CompletionModel, Content, Message, ToolChoice, ToolDefinition, Usage};
-use crate::OneOrMany;
+use super::completion::{
+    CompletionModel, Content, Message, SystemContent, ToolChoice, ToolDefinition, Usage,
+    apply_cache_control,
+};
 use crate::completion::{CompletionError, CompletionRequest, GetTokenUsage};
 use crate::http_client::sse::{Event, GenericEventSource};
 use crate::http_client::{self, HttpClientExt};
 use crate::json_utils::merge_inplace;
-use crate::streaming::{self, RawStreamingChoice, StreamingResult};
+use crate::streaming::{
+    self, RawStreamingChoice, RawStreamingToolCall, StreamingResult, ToolCallDeltaContent,
+};
 use crate::telemetry::SpanCombinator;
 
 #[derive(Debug, Deserialize)]
@@ -116,7 +120,7 @@ impl GetTokenUsage for StreamingCompletionResponse {
         usage.output_tokens = self.usage.output_tokens as u64;
         usage.total_tokens =
             self.usage.input_tokens.unwrap_or(0) as u64 + self.usage.output_tokens as u64;
-        // PROV-006: Copy cache tokens from PartialUsage to generic Usage
+        // Copy cache tokens from PartialUsage to generic Usage
         usage.cache_read_input_tokens = self.usage.cache_read_input_tokens.map(|t| t as u64);
         usage.cache_creation_input_tokens = self.usage.cache_creation_input_tokens.map(|t| t as u64);
 
@@ -166,38 +170,73 @@ where
             full_history.push(docs);
         }
         full_history.extend(completion_request.chat_history);
-        span.record_model_input(&full_history);
 
-        let full_history = full_history
+        let mut messages = full_history
             .into_iter()
             .map(Message::try_from)
             .collect::<Result<Vec<Message>, _>>()?;
 
+        // Convert system prompt to array format for cache_control support
+        let mut system: Vec<SystemContent> =
+            if let Some(preamble) = completion_request.preamble.as_ref() {
+                if preamble.is_empty() {
+                    vec![]
+                } else {
+                    vec![SystemContent::Text {
+                        text: preamble.clone(),
+                        cache_control: None,
+                    }]
+                }
+            } else {
+                vec![]
+            };
+
+        // Apply cache control breakpoints if prompt_caching is enabled
+        // OAuth mode DOES support prompt caching (via prompt-caching-2024-07-31 beta header)
+        if self.prompt_caching {
+            apply_cache_control(&mut system, &mut messages);
+        }
+
         let mut body = json!({
             "model": self.model,
-            "messages": full_history,
+            "messages": messages,
             "max_tokens": max_tokens,
-            "system": completion_request.preamble.unwrap_or("".to_string()),
             "stream": true,
         });
 
-        if let Some(temperature) = completion_request.temperature {
-            merge_inplace(&mut body, json!({ "temperature": temperature }));
+        // Add system prompt if non-empty
+        if !system.is_empty() {
+            merge_inplace(&mut body, json!({ "system": system }));
         }
 
-        if !completion_request.tools.is_empty() {
+        // For OAuth mode, don't send temperature (Claude Code doesn't send it)
+        if !self.client.ext().oauth_mode {
+            if let Some(temperature) = completion_request.temperature {
+                merge_inplace(&mut body, json!({ "temperature": temperature }));
+            }
+        }
+
+        // Always include tools array (even if empty for OAuth mode)
+        // For OAuth mode, don't send tool_choice (Claude Code doesn't send it)
+        let tools: Vec<ToolDefinition> = completion_request
+            .tools
+            .into_iter()
+            .map(|tool| ToolDefinition {
+                name: tool.name,
+                description: Some(tool.description),
+                input_schema: tool.parameters,
+            })
+            .collect();
+
+        if self.client.ext().oauth_mode {
+            // OAuth mode: always include tools array (even if empty), no tool_choice
+            merge_inplace(&mut body, json!({ "tools": tools }));
+        } else if !tools.is_empty() {
+            // API key mode: only include tools if not empty, with tool_choice
             merge_inplace(
                 &mut body,
                 json!({
-                    "tools": completion_request
-                        .tools
-                        .into_iter()
-                        .map(|tool| ToolDefinition {
-                            name: tool.name,
-                            description: Some(tool.description),
-                            input_schema: tool.parameters,
-                        })
-                        .collect::<Vec<_>>(),
+                    "tools": tools,
                     "tool_choice": ToolChoice::Auto,
                 }),
             );
@@ -207,9 +246,25 @@ where
             merge_inplace(&mut body, params.clone())
         }
 
-        // Apply cache_control to final message for incremental caching (PROV-001)
-        // Per Anthropic docs: "mark the final block of the final message with cache_control"
-        apply_message_cache_control(&mut body);
+        // Add metadata for OAuth mode
+        if self.client.ext().oauth_mode {
+            merge_inplace(
+                &mut body,
+                json!({
+                    "metadata": {
+                        "user_id": super::metadata::get_oauth_user_id()
+                    }
+                }),
+            );
+        }
+
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                target: "rig::completions",
+                "Anthropic completion request: {}",
+                serde_json::to_string_pretty(&body)?
+            );
+        }
 
         let body: Vec<u8> = serde_json::to_vec(&body)?;
 
@@ -219,7 +274,7 @@ where
             .body(body)
             .map_err(http_client::Error::Protocol)?;
 
-        let stream = GenericEventSource::new(self.client.http_client().clone(), req);
+        let stream = GenericEventSource::new(self.client.clone(), req);
 
         // Use our SSE decoder to directly handle Server-Sent Events format
         let stream: StreamingResult<StreamingCompletionResponse> = Box::pin(stream! {
@@ -227,8 +282,6 @@ where
             let mut current_thinking: Option<ThinkingState> = None;
             let mut sse_stream = Box::pin(stream);
             let mut input_tokens = 0;
-            let mut cache_read_input_tokens: Option<u64> = None;
-            let mut cache_creation_input_tokens: Option<u64> = None;
             let mut final_usage = None;
 
             let mut text_content = String::new();
@@ -243,44 +296,39 @@ where
                                 match &event {
                                     StreamingEvent::MessageStart { message } => {
                                         input_tokens = message.usage.input_tokens;
-                                        cache_read_input_tokens = message.usage.cache_read_input_tokens;
-                                        cache_creation_input_tokens = message.usage.cache_creation_input_tokens;
 
                                         let span = tracing::Span::current();
                                         span.record("gen_ai.response.id", &message.id);
                                         span.record("gen_ai.response.model_name", &message.model);
 
-                                        // Emit early usage with input tokens (output_tokens = 0 at start)
-                                        let mut early_usage = crate::completion::Usage::new();
-                                        early_usage.input_tokens = message.usage.input_tokens;
-                                        early_usage.cache_read_input_tokens = message.usage.cache_read_input_tokens;
-                                        early_usage.cache_creation_input_tokens = message.usage.cache_creation_input_tokens;
-                                        yield Ok(RawStreamingChoice::Usage(early_usage));
+                                        // Emit Usage event for MessageStart (output_tokens=0 signals new API call)
+                                        // This enables real-time token tracking during streaming
+                                        let mut usage = crate::completion::Usage::new();
+                                        usage.input_tokens = message.usage.input_tokens;
+                                        usage.output_tokens = 0;
+                                        usage.total_tokens = message.usage.input_tokens;
+                                        usage.cache_read_input_tokens = message.usage.cache_read_input_tokens;
+                                        usage.cache_creation_input_tokens = message.usage.cache_creation_input_tokens;
+                                        yield Ok(RawStreamingChoice::Usage(usage));
                                     },
                                     StreamingEvent::MessageDelta { delta, usage } => {
-                                        // Emit output tokens as they stream (Anthropic provides cumulative count)
-                                        let mut streaming_usage = crate::completion::Usage::new();
-                                        streaming_usage.input_tokens = input_tokens;
-                                        streaming_usage.output_tokens = usage.output_tokens as u64;
-                                        streaming_usage.cache_read_input_tokens = cache_read_input_tokens;
-                                        streaming_usage.cache_creation_input_tokens = cache_creation_input_tokens;
-                                        yield Ok(RawStreamingChoice::Usage(streaming_usage));
+                                        // Emit Usage event for MessageDelta (streaming token updates)
+                                        let mut crate_usage = crate::completion::Usage::new();
+                                        crate_usage.input_tokens = input_tokens;
+                                        crate_usage.output_tokens = usage.output_tokens as u64;
+                                        crate_usage.total_tokens = input_tokens + usage.output_tokens as u64;
+                                        yield Ok(RawStreamingChoice::Usage(crate_usage));
 
                                         if delta.stop_reason.is_some() {
                                             let usage = PartialUsage {
                                                  output_tokens: usage.output_tokens,
                                                  input_tokens: Some(input_tokens.try_into().expect("Failed to convert input_tokens to usize")),
-                                                 cache_read_input_tokens: cache_read_input_tokens.map(|t| t as usize),
-                                                 cache_creation_input_tokens: cache_creation_input_tokens.map(|t| t as usize),
+                                                 cache_read_input_tokens: None,
+                                                 cache_creation_input_tokens: None,
                                             };
 
                                             let span = tracing::Span::current();
                                             span.record_token_usage(&usage);
-                                            span.record_model_output(&Message {
-                                                role: super::completion::Role::Assistant,
-                                                content: OneOrMany::one(Content::Text { text: text_content.clone() })}
-                                            );
-
                                             final_usage = Some(usage);
                                             break;
                                         }
@@ -342,7 +390,7 @@ fn handle_event(
                     // Emit the delta so UI can show progress
                     return Some(Ok(RawStreamingChoice::ToolCallDelta {
                         id: tool_call.id.clone(),
-                        delta: partial_json.clone(),
+                        content: ToolCallDeltaContent::Delta(partial_json.clone()),
                     }));
                 }
                 None
@@ -356,10 +404,9 @@ fn handle_event(
                     state.thinking.push_str(thinking);
                 }
 
-                Some(Ok(RawStreamingChoice::Reasoning {
+                Some(Ok(RawStreamingChoice::ReasoningDelta {
                     id: None,
                     reasoning: thinking.clone(),
-                    signature: None,
                 }))
             }
             ContentDelta::SignatureDelta { signature } => {
@@ -382,7 +429,10 @@ fn handle_event(
                     id: id.clone(),
                     input_json: String::new(),
                 });
-                None
+                Some(Ok(RawStreamingChoice::ToolCallDelta {
+                    id: id.clone(),
+                    content: ToolCallDeltaContent::Name(name.clone()),
+                }))
             }
             Content::Thinking { .. } => {
                 *current_thinking = Some(ThinkingState::default());
@@ -415,12 +465,9 @@ fn handle_event(
                     &tool_call.input_json
                 };
                 match serde_json::from_str(json_str) {
-                    Ok(json_value) => Some(Ok(RawStreamingChoice::ToolCall {
-                        name: tool_call.name,
-                        id: tool_call.id,
-                        arguments: json_value,
-                        call_id: None,
-                    })),
+                    Ok(json_value) => Some(Ok(RawStreamingChoice::ToolCall(
+                        RawStreamingToolCall::new(tool_call.id, tool_call.name, json_value),
+                    ))),
                     Err(e) => Some(Err(CompletionError::from(e))),
                 }
             } else {
@@ -433,56 +480,6 @@ fn handle_event(
         | StreamingEvent::MessageStop
         | StreamingEvent::Ping
         | StreamingEvent::Unknown => None,
-    }
-}
-
-/// Apply cache_control to the final message for incremental caching (PROV-001)
-///
-/// Per Anthropic's documentation: "During each turn, we mark the final block of the
-/// final message with cache_control so the conversation can be incrementally cached."
-///
-/// This enables Anthropic to cache the entire conversation prefix on each turn,
-/// reducing costs and latency in multi-turn conversations.
-fn apply_message_cache_control(body: &mut serde_json::Value) {
-    if let Some(messages) = body.get_mut("messages").and_then(|m| m.as_array_mut()) {
-        if messages.is_empty() {
-            return;
-        }
-
-        // Work backwards to find the last message with content
-        for i in (0..messages.len()).rev() {
-            let msg = &messages[i];
-            let content = msg.get("content");
-
-            if content.is_none() {
-                continue;
-            }
-
-            let content = content.unwrap();
-
-            // Handle string content - convert to array with cache_control
-            if content.is_string() {
-                let text = content.as_str().unwrap_or_default();
-                messages[i]["content"] = json!([
-                    {
-                        "type": "text",
-                        "text": text,
-                        "cache_control": { "type": "ephemeral" }
-                    }
-                ]);
-                return;
-            }
-
-            // Handle array content - add cache_control to the last block
-            if let Some(content_array) = content.as_array() {
-                if !content_array.is_empty() {
-                    let last_idx = content_array.len() - 1;
-                    messages[i]["content"][last_idx]["cache_control"] =
-                        json!({ "type": "ephemeral" });
-                    return;
-                }
-            }
-        }
     }
 }
 
@@ -587,11 +584,11 @@ mod tests {
         let choice = result.unwrap().unwrap();
 
         match choice {
-            RawStreamingChoice::Reasoning { id, reasoning, .. } => {
+            RawStreamingChoice::ReasoningDelta { id, reasoning, .. } => {
                 assert_eq!(id, None);
                 assert_eq!(reasoning, "Analyzing the request...");
             }
-            _ => panic!("Expected Reasoning choice"),
+            _ => panic!("Expected ReasoningDelta choice"),
         }
 
         // Verify thinking state was updated
@@ -667,10 +664,10 @@ mod tests {
         let choice = result.unwrap().unwrap();
 
         match choice {
-            RawStreamingChoice::Reasoning { reasoning, .. } => {
+            RawStreamingChoice::ReasoningDelta { reasoning, .. } => {
                 assert_eq!(reasoning, "Thinking while tool is active...");
             }
-            _ => panic!("Expected Reasoning choice"),
+            _ => panic!("Expected ReasoningDelta choice"),
         }
 
         // Tool call state should remain unchanged
@@ -700,9 +697,12 @@ mod tests {
         let choice = result.unwrap().unwrap();
 
         match choice {
-            RawStreamingChoice::ToolCallDelta { id, delta } => {
+            RawStreamingChoice::ToolCallDelta { id, content } => {
                 assert_eq!(id, "tool_123");
-                assert_eq!(delta, "{\"arg\":\"value");
+                match content {
+                    ToolCallDeltaContent::Delta(delta) => assert_eq!(delta, "{\"arg\":\"value"),
+                    _ => panic!("Expected Delta content"),
+                }
             }
             _ => panic!("Expected ToolCallDelta choice, got {:?}", choice),
         }
@@ -766,12 +766,12 @@ mod tests {
         assert!(final_result.is_some());
 
         match final_result.unwrap().unwrap() {
-            RawStreamingChoice::ToolCall {
+            RawStreamingChoice::ToolCall(RawStreamingToolCall {
                 id,
                 name,
                 arguments,
                 ..
-            } => {
+            }) => {
                 assert_eq!(id, "tool_123");
                 assert_eq!(name, "test_tool");
                 assert_eq!(

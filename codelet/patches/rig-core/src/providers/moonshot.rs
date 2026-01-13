@@ -208,20 +208,10 @@ where
         Self::new(client.clone(), model)
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
     ) -> Result<completion::CompletionResponse<openai::CompletionResponse>, CompletionError> {
-        let preamble = completion_request.preamble.clone();
-        let request =
-            MoonshotCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
-
-        tracing::trace!(
-            "Moonshot API input: {request}",
-            request = serde_json::to_string_pretty(&request).unwrap()
-        );
-
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
                 target: "rig::completions",
@@ -229,17 +219,27 @@ where
                 gen_ai.operation.name = "chat",
                 gen_ai.provider.name = "moonshot",
                 gen_ai.request.model = self.model,
-                gen_ai.system_instructions = preamble,
+                gen_ai.system_instructions = tracing::field::Empty,
                 gen_ai.response.id = tracing::field::Empty,
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
+
+        span.record("gen_ai.system_instructions", &completion_request.preamble);
+
+        let request =
+            MoonshotCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+
+        if tracing::enabled!(tracing::Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "MoonShot completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
         let body = serde_json::to_vec(&request)?;
         let req = self
@@ -262,10 +262,6 @@ where
                         let span = tracing::Span::current();
                         span.record("gen_ai.response.id", response.id.clone());
                         span.record("gen_ai.response.model_name", response.model.clone());
-                        span.record(
-                            "gen_ai.output.messages",
-                            serde_json::to_string(&response.choices).unwrap(),
-                        );
                         if let Some(ref usage) = response.usage {
                             span.record("gen_ai.usage.input_tokens", usage.prompt_tokens);
                             span.record(
@@ -273,11 +269,12 @@ where
                                 usage.total_tokens - usage.prompt_tokens,
                             );
                         }
-                        tracing::trace!(
-                            target: "rig::completions",
-                            "MoonShot completion response: {}",
-                            serde_json::to_string_pretty(&response)?
-                        );
+                        if tracing::enabled!(tracing::Level::TRACE) {
+                            tracing::trace!(target: "rig::completions",
+                                "MoonShot completion response: {}",
+                                serde_json::to_string_pretty(&response)?
+                            );
+                        }
                         response.try_into()
                     }
                     ApiResponse::Err(err) => Err(CompletionError::ProviderError(err.error.message)),
@@ -292,14 +289,10 @@ where
         async_block.instrument(span).await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         request: CompletionRequest,
     ) -> Result<StreamingCompletionResponse<Self::StreamingResponse>, CompletionError> {
-        let preamble = request.preamble.clone();
-        let mut request = MoonshotCompletionRequest::try_from((self.model.as_ref(), request))?;
-
         let span = if tracing::Span::current().is_disabled() {
             info_span!(
                 target: "rig::completions",
@@ -307,17 +300,18 @@ where
                 gen_ai.operation.name = "chat_streaming",
                 gen_ai.provider.name = "moonshot",
                 gen_ai.request.model = self.model,
-                gen_ai.system_instructions = preamble,
+                gen_ai.system_instructions = tracing::field::Empty,
                 gen_ai.response.id = tracing::field::Empty,
                 gen_ai.response.model = tracing::field::Empty,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
+
+        span.record("gen_ai.system_instructions", &request.preamble);
+        let mut request = MoonshotCompletionRequest::try_from((self.model.as_ref(), request))?;
 
         let params = json_utils::merge(
             request.additional_params.unwrap_or(serde_json::json!({})),
@@ -326,6 +320,13 @@ where
 
         request.additional_params = Some(params);
 
+        if tracing::enabled!(tracing::Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "MoonShot streaming completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
+
         let body = serde_json::to_vec(&request)?;
         let req = self
             .client
@@ -333,7 +334,7 @@ where
             .body(body)
             .map_err(http_client::Error::from)?;
 
-        send_compatible_streaming_request(self.client.http_client().clone(), req)
+        send_compatible_streaming_request(self.client.clone(), req)
             .instrument(span)
             .await
     }

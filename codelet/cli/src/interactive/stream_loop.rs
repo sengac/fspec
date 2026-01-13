@@ -20,7 +20,7 @@ use crate::session::Session;
 use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use codelet_common::token_estimator::count_tokens;
-use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState};
+use codelet_core::{ApiTokenUsage, CompactionHook, RigAgent, TokenState, ensure_thought_signatures, GeminiTurnCompletionFacade, TurnCompletionFacade};
 use codelet_tools::set_tool_progress_callback;
 use codelet_tui::{InputQueue, StatusDisplay, TuiEvent};
 use crossterm::event::KeyCode;
@@ -288,6 +288,21 @@ where
     session.messages.push(Message::User {
         content: OneOrMany::one(UserContent::text(prompt)),
     });
+
+    // GEMINI-THINK: For Gemini preview models with thinking enabled, ensure thought signatures
+    // are present on function calls in the active loop. Without this, Gemini 2.5/3 preview
+    // models return 400 errors or stop responding after tool calls.
+    // See: https://github.com/google-gemini/gemini-cli/blob/main/packages/core/src/core/geminiChat.ts
+    if let Some(model_id) = session.current_model_id() {
+        ensure_thought_signatures(&mut session.messages, &model_id);
+    } else {
+        // Fallback to provider name check for backwards compatibility
+        let provider = session.current_provider_name();
+        if provider == "gemini" {
+            // Use a generic model that enables preparation for all Gemini models
+            ensure_thought_signatures(&mut session.messages, "gemini-2.5-preview");
+        }
+    }
 
     // TUI-033: Helper to emit context fill percentage after token updates
     // PROV-001: Uses ApiTokenUsage.total_context() for consistent calculation
@@ -572,6 +587,12 @@ where
                         output,
                     )?;
                 }
+                Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                    StreamedAssistantContent::ReasoningDelta { reasoning, .. },
+                ))) => {
+                    // TOOL-010: Emit thinking/reasoning content from extended thinking
+                    output.emit_thinking(&reasoning);
+                }
                 Some(Ok(MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(
                     tool_result,
                 )))) => {
@@ -591,17 +612,22 @@ where
                 }
                 Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
                     // Usage events come from:
-                    // 1. MessageStart (input tokens, output=0) - marks start of new API call
-                    // 2. MessageDelta (input + output tokens) - streaming updates
+                    // 1. MessageStart (input tokens, output=0) - marks start of new API call (Anthropic)
+                    // 2. MessageDelta (input + output tokens) - streaming updates (Anthropic)
+                    // 3. Gemini: Every SSE chunk with usage_metadata (may have output > 0 from start)
                     //
-                    // PROV-001: Only emit token updates on MessageDelta (output > 0), NOT on
-                    // MessageStart. During tool loops, each new API segment starts with a
-                    // MessageStart that has very different input/cache values (context grows,
-                    // more content gets cached). Emitting on MessageStart causes "bouncing".
-                    // Token updates during streaming come from text chunks (tok/s tracking).
+                    // PROV-001: For Anthropic, only emit on MessageDelta (output > 0), NOT on
+                    // MessageStart which causes "bouncing" during tool loops.
+                    // For Gemini: Always update input_tokens since they don't have separate start/delta events.
+
+                    // Always update input_tokens when provided (needed for Gemini which sends
+                    // input tokens with every usage event, not just at start)
+                    if usage.input_tokens > 0 && turn_usage.input_tokens == 0 {
+                        turn_usage.input_tokens = usage.input_tokens;
+                    }
 
                     if usage.output_tokens == 0 {
-                        // MessageStart - new API call starting
+                        // MessageStart - new API call starting (Anthropic pattern)
                         // PROV-001 FIX: Accumulate previous segment's output BEFORE resetting
                         // In multi-turn tool loops, FinalResponse only comes at the very end.
                         // Without this, turn_cumulative_output stays at 0 during tool calls.
@@ -722,6 +748,128 @@ where
                         }
                     }
 
+                    // GEMINI-TURN: Check if Gemini model returned empty response after tool call
+                    // and needs a continuation prompt to nudge it to respond with the results.
+                    // 
+                    // NOTE: We detect this condition and handle it by recursively calling
+                    // this function with the continuation prompt. The continuation message
+                    // is added to session.messages and we call the function again.
+                    let provider_name = session.current_provider_name();
+                    let model_id = session.current_model_id().unwrap_or_default();
+                    
+                    if provider_name == "gemini" {
+                        let turn_completion = GeminiTurnCompletionFacade;
+                        if turn_completion.requires_turn_completion_check(&model_id)
+                            && turn_completion.needs_continuation(&assistant_text, &session.messages)
+                        {
+                            // Log that we need a continuation prompt
+                            info!(
+                                "GEMINI-TURN: Empty response after tool call detected for model {}, sending continuation",
+                                model_id
+                            );
+                            
+                            // Capture continuation event for debugging
+                            if let Ok(manager_arc) = get_debug_capture_manager() {
+                                if let Ok(mut manager) = manager_arc.lock() {
+                                    if manager.is_enabled() {
+                                        manager.capture(
+                                            "gemini.continuation",
+                                            serde_json::json!({
+                                                "reason": "empty_response_after_tool",
+                                                "model": model_id,
+                                                "prompt": turn_completion.continuation_prompt(),
+                                            }),
+                                            None,
+                                        );
+                                    }
+                                }
+                            }
+                            
+                            // Handle final response (add empty assistant text to history)
+                            handle_final_response(&assistant_text, &mut session.messages)?;
+                            
+
+                            // Create a new stream with the continuation prompt
+                            // This is equivalent to what Gemini CLI does with "Please continue."
+                            let continuation_prompt = turn_completion.continuation_prompt();
+                            
+                            // IMPORTANT: Instead of recursing (which would be complex with all the
+                            // parameters), we prepare the session.messages and DON'T emit done.
+                            // The calling code should recognize that the session needs to continue.
+                            //
+                            // However, since this is a single-shot function, we need to handle
+                            // the continuation inline by creating a new stream.
+                            
+                            // Add the continuation as a new user message
+                            session.messages.push(rig::message::Message::User {
+                                content: rig::OneOrMany::one(rig::message::UserContent::text(continuation_prompt)),
+                            });
+                            
+                            // Prepare history again for Gemini (add thought signatures)
+                            if let Some(model_id) = session.current_model_id() {
+                                ensure_thought_signatures(&mut session.messages, &model_id);
+                            }
+                            
+                            // Create a new hook and token state for the continuation
+                            let continuation_token_state = Arc::new(Mutex::new(TokenState {
+                                input_tokens: session.token_tracker.input_tokens,
+                                cache_read_input_tokens: turn_usage.cache_read_input_tokens,
+                                cache_creation_input_tokens: turn_usage.cache_creation_input_tokens,
+                                output_tokens: turn_cumulative_output,
+                                compaction_needed: false,
+                            }));
+                            let continuation_hook = CompactionHook::new(Arc::clone(&continuation_token_state), threshold);
+                            
+                            // Start a new stream for the continuation
+                            let mut continuation_stream = agent
+                                .prompt_streaming_with_history_and_hook(
+                                    continuation_prompt,
+                                    &mut session.messages,
+                                    continuation_hook,
+                                )
+                                .await;
+                            
+                            // Process the continuation stream
+                            let mut continuation_text = String::new();
+                            while let Some(content) = continuation_stream.next().await {
+                                match content {
+                                    Ok(MultiTurnStreamItem::StreamAssistantItem(
+                                        StreamedAssistantContent::Text(text),
+                                    )) => {
+                                        handle_text_chunk(&text.text, &mut continuation_text, None, output)?;
+                                    }
+                                    Ok(MultiTurnStreamItem::StreamAssistantItem(
+                                        StreamedAssistantContent::ReasoningDelta { reasoning, .. },
+                                    )) => {
+                                        output.emit_thinking(&reasoning);
+                                    }
+                                    Ok(MultiTurnStreamItem::FinalResponse(_)) => {
+                                        // Add continuation text to history
+                                        handle_final_response(&continuation_text, &mut session.messages)?;
+                                        break;
+                                    }
+                                    Ok(MultiTurnStreamItem::Usage(usage)) => {
+                                        // Update token tracking
+                                        if usage.output_tokens > 0 {
+                                            turn_usage.output_tokens = usage.output_tokens;
+                                        }
+                                    }
+                                    Err(e) => {
+                                        output.emit_error(&e.to_string());
+                                        return Err(anyhow::anyhow!("Gemini continuation error: {e}"));
+                                    }
+                                    _ => {}
+                                }
+                                output.flush();
+                            }
+                            
+                            // Now we're done with the continuation
+                            output.emit_done();
+                            break;
+                        }
+                    }
+
+                    // Normal case: add assistant text to history and finish
                     handle_final_response(&assistant_text, &mut session.messages)?;
                     output.emit_done();
                     break;
@@ -978,6 +1126,12 @@ where
                                 output,
                             )?;
                         }
+                        Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
+                            StreamedAssistantContent::ReasoningDelta { reasoning, .. },
+                        ))) => {
+                            // TOOL-010: Emit thinking/reasoning content from extended thinking
+                            output.emit_thinking(&reasoning);
+                        }
                         Some(Ok(MultiTurnStreamItem::StreamUserItem(
                             StreamedUserContent::ToolResult(tool_result),
                         ))) => {
@@ -997,17 +1151,22 @@ where
                         }
                         Some(Ok(MultiTurnStreamItem::Usage(usage))) => {
                             // Usage events come from:
-                            // 1. MessageStart (input tokens, output=0) - marks start of new API call
-                            // 2. MessageDelta (input + output tokens) - streaming updates
+                            // 1. MessageStart (input tokens, output=0) - marks start of new API call (Anthropic)
+                            // 2. MessageDelta (input + output tokens) - streaming updates (Anthropic)
+                            // 3. Gemini: Every SSE chunk with usage_metadata (may have output > 0 from start)
                             //
-                            // PROV-001: Only emit token updates on MessageDelta (output > 0), NOT on
-                            // MessageStart. During tool loops, each new API segment starts with a
-                            // MessageStart that has very different input/cache values (context grows,
-                            // more content gets cached). Emitting on MessageStart causes "bouncing".
-                            // Token updates during streaming come from text chunks (tok/s tracking).
+                            // PROV-001: For Anthropic, only emit on MessageDelta (output > 0), NOT on
+                            // MessageStart which causes "bouncing" during tool loops.
+                            // For Gemini: Always update input_tokens since they don't have separate start/delta events.
+
+                            // Always update input_tokens when provided (needed for Gemini which sends
+                            // input tokens with every usage event, not just at start)
+                            if usage.input_tokens > 0 && retry_usage.input_tokens == 0 {
+                                retry_usage.input_tokens = usage.input_tokens;
+                            }
 
                             if usage.output_tokens == 0 {
-                                // MessageStart - new API call starting
+                                // MessageStart - new API call starting (Anthropic pattern)
                                 // PROV-001 FIX: Accumulate previous segment's output BEFORE resetting
                                 // In multi-turn tool loops, FinalResponse only comes at the very end.
                                 // Without this, retry_cumulative_output stays at 0 during tool calls.

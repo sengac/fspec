@@ -44,7 +44,7 @@ impl<T> EmbeddingModel<T> {
 
 impl<T> embeddings::EmbeddingModel for EmbeddingModel<T>
 where
-    T: Clone + HttpClientExt,
+    T: Clone + HttpClientExt + 'static,
 {
     type Client = Client<T>;
 
@@ -59,7 +59,6 @@ where
     }
 
     /// <https://ai.google.dev/api/embeddings#batch_embed_contents-SHELL>
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn embed_texts(
         &self,
         documents: impl IntoIterator<Item = String> + WasmCompatSend,

@@ -27,6 +27,14 @@ where
 
         request.additional_params = Some(params);
 
+        if tracing::enabled!(tracing::Level::TRACE) {
+            tracing::trace!(
+                target: "rig::streaming",
+                "Huggingface streaming completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
+
         // HF Inference API uses the model in the path even though its specified in the request body
         let path = self.client.subprovider().completion_endpoint(&self.model);
 
@@ -50,14 +58,12 @@ where
             gen_ai.response.model = self.model,
             gen_ai.usage.output_tokens = tracing::field::Empty,
             gen_ai.usage.input_tokens = tracing::field::Empty,
-            gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-            gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
 
-        send_compatible_streaming_request(self.client.http_client().clone(), req)
+        send_compatible_streaming_request(self.client.clone(), req)
             .instrument(span)
             .await
     }

@@ -1,7 +1,8 @@
 use async_stream::stream;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use tracing::info_span;
+use tracing::{Level, enabled, info_span};
+use tracing_futures::Instrument;
 
 use super::completion::gemini_api_types::{ContentCandidate, Part, PartKind};
 use super::completion::{CompletionModel, create_request_body};
@@ -87,21 +88,20 @@ where
                 gen_ai.response.model = self.model,
                 gen_ai.usage.output_tokens = tracing::field::Empty,
                 gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = tracing::field::Empty,
-                gen_ai.output.messages = tracing::field::Empty,
             )
         } else {
             tracing::Span::current()
         };
         let request = create_request_body(completion_request)?;
 
-        span.record_model_input(&request.contents);
+        if enabled!(Level::TRACE) {
+            tracing::trace!(
+                target: "rig::streaming",
+                "Gemini streaming completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
 
-        tracing::trace!(
-            target: "rig::streaming",
-            "Sending completion request to Gemini API {}",
-            serde_json::to_string_pretty(&request)?
-        );
         let body = serde_json::to_vec(&request)?;
 
         let req = self
@@ -114,11 +114,9 @@ where
             .body(body)
             .map_err(|e| CompletionError::HttpError(e.into()))?;
 
-        let mut event_source = GenericEventSource::new(self.client.http_client().clone(), req);
+        let mut event_source = GenericEventSource::new(self.client.clone(), req);
 
         let stream = stream! {
-            let mut text_response = String::new();
-            let mut model_outputs: Vec<Part> = Vec::new();
             let mut final_usage = None;
             while let Some(event_result) = event_source.next().await {
                 match event_result {
@@ -140,44 +138,57 @@ where
                             }
                         };
 
+                        // Emit usage event FIRST if we have usage metadata
+                        // This ensures token tracking works even for SSE messages without content
+                        // (e.g., initial messages that only have usage_metadata)
+                        if let Some(ref usage_meta) = data.usage_metadata {
+                            if let Some(usage) = usage_meta.token_usage() {
+                                yield Ok(streaming::RawStreamingChoice::Usage(usage));
+                            }
+                        }
+
                         // Process the response data
-                        let Some(choice) = data.candidates.first() else {
+                        let Some(choice) = data.candidates.into_iter().next() else {
                             tracing::debug!("There is no content candidate");
                             continue;
                         };
 
-                        let Some(content) = choice.content.as_ref() else {
+                        let Some(content) = choice.content else {
                             tracing::debug!(finish_reason = ?choice.finish_reason, "Streaming candidate missing content");
                             continue;
                         };
 
-                        for part in &content.parts {
+                        if content.parts.is_empty() {
+                            tracing::trace!(reason = ?choice.finish_reason, "There is no part in the streaming content");
+                        }
+
+                        for part in content.parts {
                             match part {
                                 Part {
                                     part: PartKind::Text(text),
                                     thought: Some(true),
                                     ..
                                 } => {
-                                    yield Ok(streaming::RawStreamingChoice::Reasoning { reasoning: text.clone(), id: None, signature: None });
+                                    yield Ok(streaming::RawStreamingChoice::ReasoningDelta {
+                                        id: None,
+                                        reasoning: text,
+                                    });
                                 },
                                 Part {
                                     part: PartKind::Text(text),
                                     ..
                                 } => {
-                                    text_response.push_str(text);
-                                    yield Ok(streaming::RawStreamingChoice::Message(text.clone()));
+                                    yield Ok(streaming::RawStreamingChoice::Message(text));
                                 },
                                 Part {
                                     part: PartKind::FunctionCall(function_call),
+                                    thought_signature,
                                     ..
                                 } => {
-                                    model_outputs.push(part.clone());
-                                    yield Ok(streaming::RawStreamingChoice::ToolCall {
-                                        name: function_call.name.clone(),
-                                        id: function_call.name.clone(),
-                                        arguments: function_call.args.clone(),
-                                        call_id: None
-                                    });
+                                    yield Ok(streaming::RawStreamingChoice::ToolCall(
+                                        streaming::RawStreamingToolCall::new(function_call.name.clone(), function_call.name.clone(), function_call.args.clone())
+                                            .with_signature(thought_signature)
+                                    ));
                                 },
                                 part => {
                                     tracing::warn!(?part, "Unsupported response type with streaming");
@@ -185,17 +196,9 @@ where
                             }
                         }
 
-                        if content.parts.is_empty() {
-                            tracing::trace!(reason = ?choice.finish_reason, "There is no part in the streaming content");
-                        }
-
                         // Check if this is the final response
                         if choice.finish_reason.is_some() {
-                            if !text_response.is_empty() {
-                                model_outputs.push(Part { thought: None, thought_signature: None, part: PartKind::Text(text_response), additional_params: None });
-                            }
                             let span = tracing::Span::current();
-                            span.record_model_output(&model_outputs);
                             span.record_token_usage(&data.usage_metadata);
                             final_usage = data.usage_metadata;
                             break;
@@ -218,7 +221,7 @@ where
             yield Ok(streaming::RawStreamingChoice::FinalResponse(StreamingCompletionResponse {
                 usage_metadata: final_usage.unwrap_or_default()
             }));
-        };
+        }.instrument(span);
 
         Ok(streaming::StreamingCompletionResponse::stream(Box::pin(
             stream,

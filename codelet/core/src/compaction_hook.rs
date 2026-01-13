@@ -90,6 +90,11 @@ impl CompactionHook {
         Self { state, threshold }
     }
 
+    /// Get the compaction threshold
+    pub fn threshold(&self) -> u64 {
+        self.threshold
+    }
+
     /// Check if compaction is needed based on current state (for testing)
     /// This is the core logic used by on_completion_call
     ///

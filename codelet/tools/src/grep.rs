@@ -366,7 +366,7 @@ pub struct GrepArgs {
 }
 
 impl rig::tool::Tool for GrepTool {
-    const NAME: &'static str = "grep";
+    const NAME: &'static str = "Grep";
 
     type Error = ToolError;
     type Args = GrepArgs;
@@ -374,7 +374,7 @@ impl rig::tool::Tool for GrepTool {
 
     async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
         rig::completion::ToolDefinition {
-            name: "grep".to_string(),
+            name: "Grep".to_string(),
             description: "Search for text patterns using ripgrep. Use for searching file contents by regex pattern. \
                 Returns file paths by default, or matching lines with line numbers in content mode. \
                 Supports glob filters, file type filters, case-insensitive search, multiline patterns, and context lines. \

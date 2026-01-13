@@ -25,7 +25,7 @@ use crate::{
     json_utils, message,
 };
 use serde::{Deserialize, Serialize};
-use tracing::{Instrument, info_span};
+use tracing::{Instrument, enabled, info_span};
 
 // ================================================================
 // Main Galadriel Client
@@ -427,11 +427,11 @@ pub struct Function {
 pub(super) struct GaladrielCompletionRequest {
     model: String,
     pub messages: Vec<Message>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     temperature: Option<f64>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     tools: Vec<ToolDefinition>,
-    #[serde(flatten, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     tool_choice: Option<crate::providers::openai::completion::ToolChoice>,
     #[serde(flatten, skip_serializing_if = "Option::is_none")]
     pub additional_params: Option<serde_json::Value>,
@@ -523,14 +523,39 @@ where
         Self::new(client.clone(), model.into())
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn completion(
         &self,
         completion_request: CompletionRequest,
     ) -> Result<completion::CompletionResponse<CompletionResponse>, CompletionError> {
-        let preamble = completion_request.preamble.clone();
+        let span = if tracing::Span::current().is_disabled() {
+            info_span!(
+                target: "rig::completions",
+                "chat",
+                gen_ai.operation.name = "chat",
+                gen_ai.provider.name = "galadriel",
+                gen_ai.request.model = self.model,
+                gen_ai.system_instructions = tracing::field::Empty,
+                gen_ai.response.id = tracing::field::Empty,
+                gen_ai.response.model = tracing::field::Empty,
+                gen_ai.usage.output_tokens = tracing::field::Empty,
+                gen_ai.usage.input_tokens = tracing::field::Empty,
+            )
+        } else {
+            tracing::Span::current()
+        };
+
+        span.record("gen_ai.system_instructions", &completion_request.preamble);
+
         let request =
             GaladrielCompletionRequest::try_from((self.model.as_ref(), completion_request))?;
+
+        if enabled!(tracing::Level::TRACE) {
+            tracing::trace!(target: "rig::completions",
+                "Galadriel completion request: {}",
+                serde_json::to_string_pretty(&request)?
+            );
+        }
+
         let body = serde_json::to_vec(&request)?;
 
         let req = self
@@ -539,41 +564,24 @@ where
             .body(body)
             .map_err(http_client::Error::from)?;
 
-        let span = if tracing::Span::current().is_disabled() {
-            info_span!(
-                target: "rig::completions",
-                "chat",
-                gen_ai.operation.name = "chat",
-                gen_ai.provider.name = "galadriel",
-                gen_ai.request.model = self.model,
-                gen_ai.system_instructions = preamble,
-                gen_ai.response.id = tracing::field::Empty,
-                gen_ai.response.model = tracing::field::Empty,
-                gen_ai.usage.output_tokens = tracing::field::Empty,
-                gen_ai.usage.input_tokens = tracing::field::Empty,
-                gen_ai.input.messages = serde_json::to_string(&request.messages)?,
-                gen_ai.output.messages = tracing::field::Empty,
-            )
-        } else {
-            tracing::Span::current()
-        };
-
         async move {
             let response = self.client.send(req).await?;
 
             if response.status().is_success() {
                 let t = http_client::text(response).await?;
-                tracing::debug!(target: "rig::completions", "Galadriel completion response: {t}");
+
+                if enabled!(tracing::Level::TRACE) {
+                    tracing::trace!(target: "rig::completions",
+                        "Galadriel completion response: {}",
+                        serde_json::to_string_pretty(&t)?
+                    );
+                }
 
                 match serde_json::from_str::<ApiResponse<CompletionResponse>>(&t)? {
                     ApiResponse::Ok(response) => {
                         let span = tracing::Span::current();
                         span.record("gen_ai.response.id", response.id.clone());
                         span.record("gen_ai.response.model_name", response.model.clone());
-                        span.record(
-                            "gen_ai.output.messages",
-                            serde_json::to_string(&response.choices).unwrap(),
-                        );
                         if let Some(ref usage) = response.usage {
                             span.record("gen_ai.usage.input_tokens", usage.prompt_tokens);
                             span.record(
@@ -595,7 +603,6 @@ where
         .await
     }
 
-    #[cfg_attr(feature = "worker", worker::send)]
     async fn stream(
         &self,
         completion_request: CompletionRequest,
@@ -638,7 +645,7 @@ where
             tracing::Span::current()
         };
 
-        send_compatible_streaming_request(self.client.http_client().clone(), req)
+        send_compatible_streaming_request(self.client.clone(), req)
             .instrument(span)
             .await
     }
