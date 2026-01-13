@@ -292,6 +292,8 @@ interface ConversationMessage {
   content: string;
   fullContent?: string; // TUI-043: Full uncollapsed content for expandable messages
   isStreaming?: boolean;
+  isThinking?: boolean; // Thinking content from extended thinking
+  isError?: boolean; // Tool result with isError=true (stderr output)
 }
 
 // Line type for VirtualList (flattened from messages)
@@ -300,6 +302,8 @@ interface ConversationLine {
   content: string;
   messageIndex: number;
   isSeparator?: boolean; // TUI-042: Empty line used as turn separator
+  isThinking?: boolean; // Thinking content from extended thinking
+  isError?: boolean; // Tool result with isError=true (stderr output)
 }
 
 /**
@@ -1892,12 +1896,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 updated.splice(streamingIdx, 0, {
                   role: 'tool',
                   content: `[Thinking]\n${chunk.thinking}`,
+                  isThinking: true,
                 });
               } else {
                 // No streaming message found, just append (shouldn't happen normally)
                 updated.push({
                   role: 'tool',
                   content: `[Thinking]\n${chunk.thinking}`,
+                  isThinking: true,
                 });
               }
               return updated;
@@ -2090,6 +2096,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             );
             let toolResultContent: string;
             let toolResultFullContent: string; // TUI-043: Full content for expansion
+            // Track if this is an error result for styling
+            const isErrorResult = result.isError;
 
             if (pendingDiff) {
               // TUI-038: Format as diff for Edit/Write tools
@@ -2159,6 +2167,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                       ...msg,
                       content: `${headerLine}\n${toolResultContent}`,
                       fullContent: `${headerLine}\n${toolResultFullContent}`,
+                      isError: isErrorResult,
                     };
                     break;
                   }
@@ -2187,6 +2196,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                       ...msg,
                       content: `${headerLine}\n${toolResultContent}`,
                       fullContent: `${headerLine}\n${toolResultFullContent}`,
+                      isError: isErrorResult,
                     };
                     break;
                   }
@@ -4068,6 +4078,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     // Normalize emoji variation selectors for consistent width calculation
     const normalizedContent = normalizeEmojiWidth(msg.content);
     const contentLines = normalizedContent.split('\n');
+    // Propagate semantic flags from message
+    const isThinking = msg.isThinking;
+    const isError = msg.isError;
 
     contentLines.forEach((lineContent, lineIndex) => {
       let displayContent =
@@ -4080,7 +4093,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
       // Wrap long lines manually to fit terminal width (using visual width for Unicode)
       if (getVisualWidth(displayContent) === 0) {
-        lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+        lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex, isThinking, isError });
       } else {
         // Split into words, keeping whitespace
         const words = displayContent.split(/(\s+)/);
@@ -4100,6 +4113,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 role: msg.role,
                 content: currentLine,
                 messageIndex: msgIndex,
+                isThinking,
+                isError,
               });
               currentLine = '';
               currentWidth = 0;
@@ -4114,6 +4129,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                   role: msg.role,
                   content: chunk,
                   messageIndex: msgIndex,
+                  isThinking,
+                  isError,
                 });
                 chunk = char;
                 chunkWidth = charWidth;
@@ -4137,6 +4154,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 role: msg.role,
                 content: currentLine.trimEnd(),
                 messageIndex: msgIndex,
+                isThinking,
+                isError,
               });
             }
             // Don't start line with whitespace
@@ -4154,17 +4173,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             role: msg.role,
             content: currentLine.trimEnd(),
             messageIndex: msgIndex,
+            isThinking,
+            isError,
           });
         } else if (lines.length === 0) {
           // Ensure at least one line per content section
-          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex });
+          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex, isThinking, isError });
         }
       }
     });
 
     // Add empty line after each message for spacing (use space to ensure line renders)
     // TUI-042: Mark separator lines for turn selection highlighting
-    lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex, isSeparator: true });
+    lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex, isSeparator: true, isThinking, isError });
 
     return lines;
   };
@@ -5004,16 +5025,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 );
               }
 
-              // Stderr output from bash tool - render in red
-              // Format: "Stderr: <content>" or lines after "Stderr:" header
-              if (content.includes('Stderr:')) {
-                const stderrIdx = content.indexOf('Stderr:');
-                const beforeStderr = content.slice(0, stderrIdx);
-                const stderrPart = content.slice(stderrIdx);
+              // Error output (isError=true from tool result) - render in red
+              if (line.isError) {
                 return (
                   <Box flexGrow={1}>
-                    <Text>{beforeStderr}</Text>
-                    <Text color="red">{stderrPart}</Text>
+                    <Text color="red">{content}</Text>
+                  </Box>
+                );
+              }
+
+              // Thinking content - render in yellow (using isThinking flag)
+              if (line.isThinking) {
+                return (
+                  <Box flexGrow={1}>
+                    <Text color="yellow">{content}</Text>
                   </Box>
                 );
               }
