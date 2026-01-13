@@ -11,6 +11,36 @@ use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use tracing::debug;
 
+/// Detect if a tool result indicates an error using structured JSON data.
+///
+/// Tool facades (FileToolFacadeWrapper, BashToolFacadeWrapper, etc.) return JSON
+/// with a structured format: `{"success": bool, "error": Option<String>}`.
+/// We check for `success: false` or presence of `error` field rather than
+/// string matching which would cause false positives when file content
+/// contains "Error:" or "error:" as part of code examples, documentation, etc.
+///
+/// For non-JSON results (e.g., direct tool outputs), we never mark as error
+/// since the tool itself would have returned an Err() if it failed.
+fn detect_tool_error(raw_result: &str) -> bool {
+    // Try to parse as JSON to check for structured error indicators
+    if let Ok(json) = serde_json::from_str::<serde_json::Value>(raw_result) {
+        // Check for {"success": false, ...} pattern used by tool facades
+        if let Some(success) = json.get("success").and_then(|v| v.as_bool()) {
+            return !success;
+        }
+        // Check for {"error": "...", ...} pattern (error field present with non-null value)
+        if let Some(error) = json.get("error") {
+            if !error.is_null() && error.as_str().map(|s| !s.is_empty()).unwrap_or(true) {
+                return true;
+            }
+        }
+    }
+    // For non-JSON results, we don't mark as error - the tool execution
+    // either succeeded (returned Ok) or failed (returned Err, which is
+    // handled separately by the tool execution layer)
+    false
+}
+
 /// Handle text chunk - accumulates text and emits via output
 pub(super) fn handle_text_chunk<O: StreamOutput>(
     text: &str,
@@ -146,8 +176,11 @@ pub(super) fn handle_tool_result<O: StreamOutput>(
         .replace("\\\"", "\"")
         .replace("\\\\", "\\");
 
-    // Determine if error
-    let is_error = result_text.contains("Error:") || result_text.contains("error:");
+    // Determine if error using structured data from tool results
+    // Tool facades return JSON with {"success": bool, "error": Option<String>}
+    // We check for success=false in the JSON structure rather than string matching
+    // which would cause false positives when file content contains "Error:" or "error:"
+    let is_error = detect_tool_error(&result_parts.join("\n"));
 
     // CLI-022: Capture tool.result event (shared)
     if let Ok(manager_arc) = get_debug_capture_manager() {
@@ -191,4 +224,85 @@ pub(super) fn handle_final_response(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Tests for detect_tool_error function
+
+    #[test]
+    fn test_detect_tool_error_success_true() {
+        // Tool facade returns success: true - should NOT be an error
+        let result = r#"{"success":true,"content":"file contents here"}"#;
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_success_false() {
+        // Tool facade returns success: false - IS an error
+        let result = r#"{"success":false,"error":"File not found"}"#;
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_with_error_field() {
+        // Error field present with non-empty value - IS an error
+        let result = r#"{"error":"Something went wrong"}"#;
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_with_null_error() {
+        // Error field present but null - NOT an error
+        let result = r#"{"success":true,"error":null}"#;
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_with_empty_error() {
+        // Error field present but empty string - NOT an error
+        let result = r#"{"success":true,"error":""}"#;
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_plain_text_with_error_word() {
+        // Plain text containing "Error:" - should NOT be marked as error
+        // This was the bug: file content containing "error:" was falsely flagged
+        let result = r#"1: # Agent Development Guidelines
+2: This document describes error handling.
+3: Use ToolError for tool failures.
+4: Example: console.error('Error: something failed');"#;
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_json_content_with_error_word() {
+        // JSON with content containing "Error:" but success: true
+        let result = r#"{"success":true,"content":"Error: this is just example text"}"#;
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_non_json() {
+        // Non-JSON result - should NOT be an error
+        let result = "This is plain text output from a tool";
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_json_without_success_or_error() {
+        // JSON without success or error fields - NOT an error
+        let result = r#"{"data":"some value","count":42}"#;
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_nested_json() {
+        // Nested JSON - only top-level success/error counts
+        let result = r#"{"success":true,"data":{"error":"nested error doesn't count"}}"#;
+        assert!(!detect_tool_error(result));
+    }
 }
