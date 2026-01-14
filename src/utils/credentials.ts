@@ -66,6 +66,7 @@ const PROVIDER_ENV_VARS: Record<string, string[]> = {
   galadriel: ['GALADRIEL_API_KEY'],
   azure: ['AZURE_OPENAI_API_KEY'],
   voyageai: ['VOYAGEAI_API_KEY'],
+  zai: ['ZAI_API_KEY', 'ZAI_PLAN_API_KEY'],
 };
 
 /**

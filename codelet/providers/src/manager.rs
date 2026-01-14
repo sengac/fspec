@@ -10,8 +10,8 @@
 use super::credentials::ProviderCredentials;
 use super::models::{ModelCache, ModelInfo, ModelRegistry};
 use super::{
-    claude, codex, gemini, openai, ClaudeProvider, CodexProvider, GeminiProvider, OpenAIProvider,
-    ProviderError,
+    claude, codex, gemini, openai, zai, ClaudeProvider, CodexProvider, GeminiProvider, OpenAIProvider,
+    ZAIProvider, ProviderError,
 };
 use std::str::FromStr;
 
@@ -22,6 +22,7 @@ pub enum ProviderType {
     OpenAI,
     Codex,
     Gemini,
+    ZAI,
 }
 
 impl FromStr for ProviderType {
@@ -33,6 +34,7 @@ impl FromStr for ProviderType {
             "openai" => Ok(ProviderType::OpenAI),
             "codex" => Ok(ProviderType::Codex),
             "gemini" => Ok(ProviderType::Gemini),
+            "zai" => Ok(ProviderType::ZAI),
             _ => Err(ProviderError::config(
                 "manager",
                 format!("Unknown provider: {name}"),
@@ -49,6 +51,20 @@ impl ProviderType {
             ProviderType::OpenAI => "openai",
             ProviderType::Codex => "codex",
             ProviderType::Gemini => "gemini",
+            ProviderType::ZAI => "zai",
+        }
+    }
+
+    /// Check if this provider type has credentials available
+    ///
+    /// DRY: Centralizes credential checking instead of repeating the match pattern
+    pub fn has_credentials(self, credentials: &ProviderCredentials) -> bool {
+        match self {
+            ProviderType::Claude => credentials.has_claude(),
+            ProviderType::OpenAI => credentials.has_openai(),
+            ProviderType::Codex => credentials.has_codex(),
+            ProviderType::Gemini => credentials.has_gemini(),
+            ProviderType::ZAI => credentials.has_zai(),
         }
     }
 }
@@ -106,14 +122,7 @@ impl ProviderManager {
         let requested_provider = ProviderType::from_str(provider_name)?;
 
         // Validate requested provider has credentials
-        let has_credentials = match requested_provider {
-            ProviderType::Claude => credentials.has_claude(),
-            ProviderType::OpenAI => credentials.has_openai(),
-            ProviderType::Codex => credentials.has_codex(),
-            ProviderType::Gemini => credentials.has_gemini(),
-        };
-
-        if !has_credentials {
+        if !requested_provider.has_credentials(&credentials) {
             let available = credentials.available_providers();
             return Err(ProviderError::auth(
                 provider_name,
@@ -187,14 +196,7 @@ impl ProviderManager {
         let provider_type = Self::map_provider_id_to_type(&provider_id)?;
 
         // Validate we have credentials for this provider
-        let has_credentials = match provider_type {
-            ProviderType::Claude => self.credentials.has_claude(),
-            ProviderType::OpenAI => self.credentials.has_openai(),
-            ProviderType::Codex => self.credentials.has_codex(),
-            ProviderType::Gemini => self.credentials.has_gemini(),
-        };
-
-        if !has_credentials {
+        if !provider_type.has_credentials(&self.credentials) {
             return Err(ProviderError::auth(
                 &provider_id,
                 format!(
@@ -264,11 +266,12 @@ impl ProviderManager {
             "anthropic" => Ok(ProviderType::Claude),
             "openai" => Ok(ProviderType::OpenAI),
             "google" => Ok(ProviderType::Gemini),
+            "zai" | "z-ai" => Ok(ProviderType::ZAI),
             // Codex uses OAuth flow, not a models.dev provider
             _ => Err(ProviderError::config(
                 "manager",
                 format!(
-                    "Provider '{provider_id}' is not supported. Supported providers: anthropic, openai, google"
+                    "Provider '{provider_id}' is not supported. Supported providers: anthropic, openai, google, zai"
                 ),
             )),
         }
@@ -278,12 +281,15 @@ impl ProviderManager {
     fn detect_default_provider(
         credentials: &ProviderCredentials,
     ) -> Result<ProviderType, ProviderError> {
-        // Priority: Claude > Gemini > Codex > OpenAI
+        // Priority: Claude > Gemini > ZAI > Codex > OpenAI
         if credentials.has_claude() {
             return Ok(ProviderType::Claude);
         }
         if credentials.has_gemini() {
             return Ok(ProviderType::Gemini);
+        }
+        if credentials.has_zai() {
+            return Ok(ProviderType::ZAI);
         }
         if credentials.has_codex() {
             return Ok(ProviderType::Codex);
@@ -391,6 +397,9 @@ impl ProviderManager {
         if self.credentials.has_gemini() {
             providers.push("Gemini (/gemini)".to_string());
         }
+        if self.credentials.has_zai() {
+            providers.push("Z.AI (/zai)".to_string());
+        }
         if self.credentials.has_codex() {
             providers.push("Codex (/codex)".to_string());
         }
@@ -402,14 +411,7 @@ impl ProviderManager {
         let requested_provider = ProviderType::from_str(provider_name)?;
 
         // Validate requested provider has credentials
-        let has_credentials = match requested_provider {
-            ProviderType::Claude => self.credentials.has_claude(),
-            ProviderType::OpenAI => self.credentials.has_openai(),
-            ProviderType::Codex => self.credentials.has_codex(),
-            ProviderType::Gemini => self.credentials.has_gemini(),
-        };
-
-        if !has_credentials {
+        if !requested_provider.has_credentials(&self.credentials) {
             return Err(ProviderError::auth(
                 provider_name,
                 format!("Provider {provider_name} not available. No credentials found."),
@@ -435,6 +437,7 @@ impl ProviderManager {
             ProviderType::OpenAI => openai::CONTEXT_WINDOW,
             ProviderType::Gemini => gemini::CONTEXT_WINDOW,
             ProviderType::Codex => codex::CONTEXT_WINDOW,
+            ProviderType::ZAI => zai::CONTEXT_WINDOW,
         }
     }
 
@@ -448,6 +451,40 @@ impl ProviderManager {
             ProviderType::OpenAI => openai::MAX_OUTPUT_TOKENS,
             ProviderType::Gemini => gemini::MAX_OUTPUT_TOKENS,
             ProviderType::Codex => codex::MAX_OUTPUT_TOKENS,
+            ProviderType::ZAI => zai::MAX_OUTPUT_TOKENS,
+        }
+    }
+
+    /// Get Z.AI provider (if selected)
+    ///
+    /// Uses selected_model_id() for dynamic model selection.
+    /// Checks ZAI_PLAN_API_KEY first (for coding plan endpoint), then ZAI_API_KEY.
+    pub fn get_zai(&self) -> Result<ZAIProvider, ProviderError> {
+        if self.current_provider == ProviderType::ZAI {
+            if let Some(model_id) = self.selected_model_id() {
+                // Check for plan API key first, then normal API key
+                let (api_key, is_plan) = if let Ok(key) = std::env::var("ZAI_PLAN_API_KEY") {
+                    if !key.is_empty() {
+                        (key, true)
+                    } else if let Ok(key) = std::env::var("ZAI_API_KEY") {
+                        (key, false)
+                    } else {
+                        return Err(ProviderError::auth("zai", "ZAI_API_KEY or ZAI_PLAN_API_KEY not set"));
+                    }
+                } else if let Ok(key) = std::env::var("ZAI_API_KEY") {
+                    (key, false)
+                } else {
+                    return Err(ProviderError::auth("zai", "ZAI_API_KEY or ZAI_PLAN_API_KEY not set"));
+                };
+                ZAIProvider::from_api_key_with_endpoint(&api_key, &model_id, is_plan)
+            } else {
+                ZAIProvider::new()
+            }
+        } else {
+            Err(ProviderError::config(
+                "manager",
+                "Current provider is not Z.AI",
+            ))
         }
     }
 }

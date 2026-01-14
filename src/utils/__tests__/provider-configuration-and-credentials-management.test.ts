@@ -354,9 +354,10 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
         'galadriel',
         'azure',
         'voyageai',
+        'zai',
       ];
 
-      expect(registry.length).toBe(19);
+      expect(registry.length).toBe(20);
       for (const provider of expectedProviders) {
         expect(registry).toContain(provider);
       }
@@ -470,8 +471,8 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
       // UI state tested in component tests
       const registry = getProviderRegistry();
 
-      // @step And I should see a list of all 19 providers
-      expect(registry).toHaveLength(19);
+      // @step And I should see a list of all 20 providers
+      expect(registry).toHaveLength(20);
 
       // @step And each provider should show its configuration status
       // This tests that we can get config for each provider
@@ -527,12 +528,13 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
 // ============================================
 
 describe('Provider Registry Constants', () => {
-  it('SUPPORTED_PROVIDERS should contain all 19 providers', () => {
-    expect(SUPPORTED_PROVIDERS).toHaveLength(19);
+  it('SUPPORTED_PROVIDERS should contain all 20 providers', () => {
+    expect(SUPPORTED_PROVIDERS).toHaveLength(20);
     expect(SUPPORTED_PROVIDERS).toContain('anthropic');
     expect(SUPPORTED_PROVIDERS).toContain('openai');
     expect(SUPPORTED_PROVIDERS).toContain('gemini');
     expect(SUPPORTED_PROVIDERS).toContain('ollama');
     expect(SUPPORTED_PROVIDERS).toContain('azure');
+    expect(SUPPORTED_PROVIDERS).toContain('zai');
   });
 });

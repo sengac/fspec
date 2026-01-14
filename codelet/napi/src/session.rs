@@ -135,26 +135,30 @@ impl CodeletSession {
     ) -> Result<Self> {
         use codelet_providers::ProviderManager;
 
-        // Map provider ID to environment variable name
-        let env_var = match provider_config.provider_id.as_str() {
-            "anthropic" => "ANTHROPIC_API_KEY",
-            "openai" => "OPENAI_API_KEY",
-            "gemini" | "google" => "GOOGLE_GENERATIVE_AI_API_KEY",
-            "cohere" => "COHERE_API_KEY",
-            "mistral" => "MISTRAL_API_KEY",
-            "xai" => "XAI_API_KEY",
-            "together" => "TOGETHER_API_KEY",
-            "huggingface" => "HUGGINGFACE_API_KEY",
-            "openrouter" => "OPENROUTER_API_KEY",
-            "groq" => "GROQ_API_KEY",
-            "deepseek" => "DEEPSEEK_API_KEY",
-            "perplexity" => "PERPLEXITY_API_KEY",
-            "moonshot" => "MOONSHOT_API_KEY",
-            "hyperbolic" => "HYPERBOLIC_API_KEY",
-            "mira" => "MIRA_API_KEY",
-            "galadriel" => "GALADRIEL_API_KEY",
-            "azure" => "AZURE_OPENAI_API_KEY",
-            "voyageai" => "VOYAGEAI_API_KEY",
+        // Map provider ID to environment variable name(s)
+        // Some providers have multiple env vars - return primary and optional secondary
+        let env_vars: (&str, Option<&str>) = match provider_config.provider_id.as_str() {
+            "anthropic" => ("ANTHROPIC_API_KEY", None),
+            "openai" => ("OPENAI_API_KEY", None),
+            "gemini" | "google" => ("GOOGLE_GENERATIVE_AI_API_KEY", None),
+            "cohere" => ("COHERE_API_KEY", None),
+            "mistral" => ("MISTRAL_API_KEY", None),
+            "xai" => ("XAI_API_KEY", None),
+            "together" => ("TOGETHER_API_KEY", None),
+            "huggingface" => ("HUGGINGFACE_API_KEY", None),
+            "openrouter" => ("OPENROUTER_API_KEY", None),
+            "groq" => ("GROQ_API_KEY", None),
+            "deepseek" => ("DEEPSEEK_API_KEY", None),
+            "perplexity" => ("PERPLEXITY_API_KEY", None),
+            "moonshot" => ("MOONSHOT_API_KEY", None),
+            "hyperbolic" => ("HYPERBOLIC_API_KEY", None),
+            "mira" => ("MIRA_API_KEY", None),
+            "galadriel" => ("GALADRIEL_API_KEY", None),
+            "azure" => ("AZURE_OPENAI_API_KEY", None),
+            "voyageai" => ("VOYAGEAI_API_KEY", None),
+            // Z.AI: ZAI_PLAN_API_KEY takes precedence over ZAI_API_KEY
+            // Set both to ensure the key is found regardless of which lookup is used
+            "zai" => ("ZAI_PLAN_API_KEY", Some("ZAI_API_KEY")),
             _ => {
                 return Err(Error::from_reason(format!(
                     "Unknown provider: {}",
@@ -163,10 +167,14 @@ impl CodeletSession {
             }
         };
 
-        // Set environment variable with explicit API key
+        // Set environment variable(s) with explicit API key
         // This makes the credential available to ProviderCredentials::detect()
         if let Some(api_key) = &provider_config.api_key {
-            std::env::set_var(env_var, api_key);
+            std::env::set_var(env_vars.0, api_key);
+            // Also set secondary env var if present (e.g., for Z.AI)
+            if let Some(secondary_env) = env_vars.1 {
+                std::env::set_var(secondary_env, api_key);
+            }
         }
 
         // Create ProviderManager with model support (async for model cache)
@@ -1042,6 +1050,24 @@ impl CodeletSession {
                     .get_codex()
                     .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
                 // TOOL-010: Pass thinking config (unused for Codex currently)
+                let rig_agent = provider.create_rig_agent(None, thinking_config_value.clone());
+                let agent = RigAgent::with_default_depth(rig_agent);
+                run_agent_stream(
+                    agent,
+                    &input,
+                    &mut session,
+                    is_interrupted,
+                    Arc::clone(&interrupt_notify),
+                    &output,
+                )
+                .await
+            }
+            "zai" => {
+                let provider = session
+                    .provider_manager_mut()
+                    .get_zai()
+                    .map_err(|e| Error::from_reason(format!("Failed to get provider: {e}")))?;
+                // PROV-004: Pass thinking config - Z.AI GLM models support reasoning
                 let rig_agent = provider.create_rig_agent(None, thinking_config_value);
                 let agent = RigAgent::with_default_depth(rig_agent);
                 run_agent_stream(
