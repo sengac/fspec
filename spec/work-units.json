@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-08T09:26:53.647Z"
+    "lastUpdated": "2026-01-14T19:34:19.097Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -61147,6 +61147,122 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2026-01-08T09:26:53.678Z"
+    },
+    "PROV-004": {
+      "id": "PROV-004",
+      "title": "Z.AI GLM Provider Integration",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2026-01-14T19:28:23.896Z",
+      "updatedAt": "2026-01-14T19:46:46.697Z",
+      "description": "Add Z.AI/GLM provider support to fspec using rig's OpenAI-compatible infrastructure, including provider configuration, model registry, and facade pattern for tool definitions. Z.AI uses OpenAI-compatible API at https://api.z.ai/api/paas/v4 with ZAI_API_KEY environment variable. Supported models include GLM-4.7, GLM-4.6, GLM-4.5 and variants.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PROV-004/zai-glm-provider-research.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec with Z.AI/GLM models",
+        "action": "configure and use Z.AI's GLM models (GLM-4.7, GLM-4.6, GLM-4.5) as my LLM provider",
+        "benefit": "I can leverage Z.AI's powerful GLM models for AI-assisted development within fspec's TUI and CLI"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:34:30.419Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:36:18.608Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:37:18.261Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:38:20.693Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:40:55.410Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:43:36.134Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:44:16.228Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:45:50.827Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-14T19:46:21.351Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Z.AI provider must use ZAI_API_KEY environment variable for authentication (Bearer token)",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:27.004Z"
+        },
+        {
+          "id": 1,
+          "text": "Z.AI API base URL is https://api.z.ai/api/paas/v4 (OpenAI-compatible)",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:34.517Z"
+        },
+        {
+          "id": 2,
+          "text": "Default model is glm-4.7 with support for glm-4.6, glm-4.5 and variants",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:35.079Z"
+        },
+        {
+          "id": 3,
+          "text": "Provider must implement facade pattern consistent with Claude and Gemini providers",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:35.638Z"
+        },
+        {
+          "id": 4,
+          "text": "Provider must support streaming responses with tool calling",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:36.219Z"
+        },
+        {
+          "id": 5,
+          "text": "Provider must support thinking mode (reasoning) for compatible models",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:36.784Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User selects glm-4.7 with thinking mode enabled, receives reasoning_content in response",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:45.565Z"
+        },
+        {
+          "id": 1,
+          "text": "User without ZAI_API_KEY tries to select Z.AI provider, sees helpful error message",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:46.130Z"
+        },
+        {
+          "id": 2,
+          "text": "ZAIProvider created using rig's OpenAI client with custom base_url following GeminiProvider pattern",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:46:46.697Z"
+        }
+      ],
+      "nextExampleId": 3
     }
   },
   "states": {
@@ -61213,7 +61329,8 @@
       "BOARD-020",
       "TOOL-001",
       "MODEL-001",
-      "PROV-003"
+      "PROV-003",
+      "PROV-004"
     ],
     "testing": [],
     "implementing": [],
@@ -61721,7 +61838,7 @@
     "MODEL": 1,
     "TOOLS": 4,
     "CONFIG": 4,
-    "PROV": 3,
+    "PROV": 4,
     "PATCH": 2
   }
 }
