@@ -713,6 +713,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   interface CachedMessageLines {
     content: string;
     isStreaming: boolean;
+    isThinking: boolean; // SOLID: Include isThinking in cache key for proper invalidation
     terminalWidth: number;
     lines: ConversationLine[];
   }
@@ -3225,8 +3226,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                   });
                 }
               } else if (content.type === 'thinking' && content.thinking) {
-                // Thinking block (could show or hide based on preference)
-                // For now, skip thinking blocks in restore (like Claude Code does)
+                // ALWAYS show thinking blocks on restore - thinking is valuable context
+                restored.push({
+                  role: 'assistant',
+                  content: `[Thinking]\n${content.thinking}`,
+                  isStreaming: false,
+                  isThinking: true,
+                });
               }
             }
 
@@ -4101,8 +4107,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   ): ConversationLine[] => {
     const lines: ConversationLine[] = [];
     // Add role prefix to first line
+    // SOLID: Thinking messages get no prefix (the [Thinking] header is already in content)
     const prefix =
-      msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? '● ' : '';
+      msg.isThinking ? '' : msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? '● ' : '';
     // Normalize emoji variation selectors for consistent width calculation
     const normalizedContent = normalizeEmojiWidth(msg.content);
     const contentLines = normalizedContent.split('\n');
@@ -4245,6 +4252,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         cached &&
         cached.content === effectiveContent &&
         cached.isStreaming === msg.isStreaming &&
+        cached.isThinking === (msg.isThinking ?? false) &&
         cached.terminalWidth === terminalWidth
       ) {
         // Cache hit - reuse cached lines
@@ -4255,6 +4263,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         cache.set(msgIndex, {
           content: effectiveContent,
           isStreaming: msg.isStreaming ?? false,
+          isThinking: msg.isThinking ?? false,
           terminalWidth,
           lines: messageLines,
         });
@@ -5061,15 +5070,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                   </Box>
                 );
               }
+            }
 
-              // Thinking content - render in yellow (using isThinking flag)
-              if (line.isThinking) {
-                return (
-                  <Box flexGrow={1}>
-                    <Text color="yellow">{content}</Text>
-                  </Box>
-                );
-              }
+            // Thinking content - render in yellow (using isThinking flag)
+            // SOLID: This check is OUTSIDE the tool role block so it applies to assistant messages too
+            if (line.isThinking) {
+              return (
+                <Box flexGrow={1}>
+                  <Text color="yellow">{content}</Text>
+                </Box>
+              );
             }
 
             // Default rendering for non-diff content

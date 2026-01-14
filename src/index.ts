@@ -4,13 +4,11 @@
 // React 19's reconciler uses performance.measure() for profiling, which accumulates
 // entries over time. After 1,000,000 entries, Node.js emits a warning about potential
 // memory leaks. This interval clears the buffer every 30 seconds to prevent the warning.
-// Note: `performance` is a global in Node.js 16+, and we require Node.js 18+.
-const perf = globalThis.performance;
-if (perf && typeof perf.clearMeasures === 'function') {
-  setInterval(() => {
-    perf.clearMeasures();
-  }, 30000);
-}
+import { performance } from 'perf_hooks';
+
+setInterval(() => {
+  performance.clearMeasures();
+}, 30000);
 
 import { Command } from 'commander';
 import chalk from 'chalk';

@@ -46,6 +46,7 @@ export default defineConfig({
         'marked',
         'dompurify',
         'execa',
+        'perf_hooks',
       ],
       output: {
         preserveModules: false,
