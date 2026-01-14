@@ -4,11 +4,13 @@
 // React 19's reconciler uses performance.measure() for profiling, which accumulates
 // entries over time. After 1,000,000 entries, Node.js emits a warning about potential
 // memory leaks. This interval clears the buffer every 30 seconds to prevent the warning.
+// NOTE: unref() ensures this interval doesn't keep the process alive - critical for
+// CLI commands that should exit after completion (e.g., when run by AI agent tools).
 import { performance } from 'perf_hooks';
 
 setInterval(() => {
   performance.clearMeasures();
-}, 30000);
+}, 30000).unref();
 
 import { Command } from 'commander';
 import chalk from 'chalk';
