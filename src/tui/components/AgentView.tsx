@@ -1830,6 +1830,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
       // Track current text segment (resets after tool calls)
       let currentSegment = '';
+      // CLAUDE-THINK: Track current thinking segment for streaming accumulation
+      let currentThinking = '';
       // Track full assistant response for persistence (includes ALL content blocks)
       let fullAssistantResponse = '';
       // Track assistant message content blocks for envelope storage
@@ -1877,38 +1879,64 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               return updated;
             });
           } else if (chunk.type === 'Thinking' && chunk.thinking) {
-            // TOOL-010: Handle thinking/reasoning content from extended thinking
+            // CLAUDE-THINK: Handle thinking/reasoning content from extended thinking
+            // Accumulate thinking content for streaming display (like text)
+            currentThinking += chunk.thinking;
+            
             // Store thinking block for envelope persistence
-            assistantContentBlocks.push({
-              type: 'thinking',
-              thinking: chunk.thinking,
-            });
-            // Display thinking content in a distinct way (could be collapsible in future)
-            // TUI-046: Insert thinking BEFORE the streaming assistant message, not after
-            // This ensures thinking appears in the correct temporal order - thinking happens
-            // BEFORE the assistant generates the text that follows it, not after.
+            // Accumulate into existing thinking block if present
+            const lastBlock =
+              assistantContentBlocks[assistantContentBlocks.length - 1];
+            if (lastBlock && lastBlock.type === 'thinking') {
+              lastBlock.thinking = (lastBlock.thinking || '') + chunk.thinking;
+            } else {
+              assistantContentBlocks.push({ type: 'thinking', thinking: chunk.thinking });
+            }
+            
+            // Display thinking content with streaming updates
+            // TUI-046: Insert/update thinking BEFORE the streaming assistant message
+            const thinkingSnapshot = currentThinking;
             setConversation(prev => {
               const updated = [...prev];
               // Find the streaming assistant message
               const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-              if (streamingIdx >= 0) {
-                // Insert thinking block BEFORE the streaming message
+              
+              // CLAUDE-THINK: Find existing thinking message, but only if it's AFTER the last
+              // tool message. This ensures that after a tool call, new thinking starts a fresh block.
+              const lastToolIdx = updated.findLastIndex(m => m.role === 'tool' && !m.isThinking);
+              const thinkingIdx = updated.findLastIndex(m => m.isThinking);
+              
+              // Only reuse the thinking message if it comes after the last tool message
+              const canReuseThinking = thinkingIdx >= 0 && (lastToolIdx < 0 || thinkingIdx > lastToolIdx);
+              
+              if (canReuseThinking) {
+                // Update existing thinking message with accumulated content
+                updated[thinkingIdx] = {
+                  ...updated[thinkingIdx],
+                  content: `[Thinking]\n${thinkingSnapshot}`,
+                };
+              } else if (streamingIdx >= 0) {
+                // Insert new thinking block BEFORE the streaming message
                 updated.splice(streamingIdx, 0, {
                   role: 'tool',
-                  content: `[Thinking]\n${chunk.thinking}`,
+                  content: `[Thinking]\n${thinkingSnapshot}`,
                   isThinking: true,
                 });
               } else {
                 // No streaming message found, just append (shouldn't happen normally)
                 updated.push({
                   role: 'tool',
-                  content: `[Thinking]\n${chunk.thinking}`,
+                  content: `[Thinking]\n${thinkingSnapshot}`,
                   isThinking: true,
                 });
               }
               return updated;
             });
           } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+            // CLAUDE-THINK: Reset thinking accumulator - new thinking after tool call
+            // should appear as a separate block, not continue the previous one
+            currentThinking = '';
+            
             // Finalize current streaming message and add tool call (match CLI format)
             const toolCall = chunk.toolCall;
 
