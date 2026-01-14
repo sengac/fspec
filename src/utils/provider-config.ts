@@ -67,6 +67,7 @@ export const SUPPORTED_PROVIDERS = [
   'galadriel',
   'azure',
   'voyageai',
+  'zai',
 ] as const;
 
 export type ProviderId = (typeof SUPPORTED_PROVIDERS)[number];
@@ -245,6 +246,16 @@ const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
     authMethod: 'bearer',
     requiresApiKey: true,
     description: 'Voyage AI embeddings',
+  },
+  {
+    id: 'zai',
+    name: 'Z.AI',
+    baseUrl: 'https://api.z.ai/api/paas/v4',
+    envVar: 'ZAI_API_KEY',
+    authMethod: 'bearer',
+    requiresApiKey: true,
+    description:
+      'Z.AI GLM models. Use ZAI_API_KEY for normal API, ZAI_PLAN_API_KEY for coding plan API (https://api.z.ai/api/coding/paas/v4)',
   },
 ];
 

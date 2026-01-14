@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-14T19:34:19.097Z"
+    "lastUpdated": "2026-01-14T20:04:23.684Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -61152,13 +61152,14 @@
       "id": "PROV-004",
       "title": "Z.AI GLM Provider Integration",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-01-14T19:28:23.896Z",
-      "updatedAt": "2026-01-14T19:46:46.697Z",
+      "updatedAt": "2026-01-14T20:04:23.715Z",
       "description": "Add Z.AI/GLM provider support to fspec using rig's OpenAI-compatible infrastructure, including provider configuration, model registry, and facade pattern for tool definitions. Z.AI uses OpenAI-compatible API at https://api.z.ai/api/paas/v4 with ZAI_API_KEY environment variable. Supported models include GLM-4.7, GLM-4.6, GLM-4.5 and variants.",
       "children": [],
       "attachments": [
-        "spec/attachments/PROV-004/zai-glm-provider-research.md"
+        "spec/attachments/PROV-004/zai-glm-provider-research.md",
+        "spec/attachments/PROV-004/ast-research-provider-structure.md"
       ],
       "userStory": {
         "role": "developer using fspec with Z.AI/GLM models",
@@ -61201,6 +61202,22 @@
         {
           "state": "specifying",
           "timestamp": "2026-01-14T19:46:21.351Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-14T19:52:05.620Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-14T19:53:21.524Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-14T20:02:07.327Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-14T20:04:23.715Z"
         }
       ],
       "rules": [
@@ -61262,7 +61279,20 @@
           "createdAt": "2026-01-14T19:46:46.697Z"
         }
       ],
-      "nextExampleId": 3
+      "nextExampleId": 3,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "ZAIProvider implementation follows GeminiProvider pattern - uses rig's OpenAI client with custom base_url (https://api.z.ai/api/paas/v4). Provider created in codelet/providers/src/zai.rs with ZAI_API_KEY env var auth. Integrates with existing ProviderManager, ModelRegistry, and TUI model selector. Reuses OpenAI-compatible tool facades, adds ZAI thinking config facade for reasoning_content.",
+          "deleted": false,
+          "createdAt": "2026-01-14T19:50:57.818Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-14T20:04:23.715Z"
     }
   },
   "states": {
@@ -61329,13 +61359,13 @@
       "BOARD-020",
       "TOOL-001",
       "MODEL-001",
-      "PROV-003",
-      "PROV-004"
+      "PROV-003"
     ],
     "testing": [],
     "implementing": [],
     "validating": [],
     "done": [
+      "PROV-004",
       "PATCH-002",
       "TUI-045",
       "TUI-038",

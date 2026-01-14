@@ -13,6 +13,7 @@ pub mod gemini;
 mod manager;
 pub mod models;
 pub mod openai;
+pub mod zai;
 
 pub use adapter::{
     convert_assistant_content, convert_tools_to_rig, detect_credential_from_env,
@@ -34,6 +35,7 @@ pub use credentials::ProviderCredentials;
 pub use gemini::GeminiProvider;
 pub use manager::{ProviderManager, ProviderType};
 pub use openai::OpenAIProvider;
+pub use zai::ZAIProvider;
 
 use codelet_common::MessageContent;
 use codelet_tools::ToolDefinition;

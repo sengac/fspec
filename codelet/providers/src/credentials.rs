@@ -1,7 +1,7 @@
 //! Provider credential detection module
 //!
 //! Detects available LLM provider credentials from:
-//! - Environment variables (ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN, OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY)
+//! - Environment variables (ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN, OPENAI_API_KEY, GOOGLE_GENERATIVE_AI_API_KEY, ZAI_API_KEY, ZAI_PLAN_API_KEY)
 //! - Auth files (~/.codex/auth.json for Codex OAuth)
 
 /// Provider credentials detected from environment variables and auth files
@@ -11,6 +11,7 @@ pub struct ProviderCredentials {
     pub openai_available: bool,
     pub codex_available: bool,
     pub gemini_available: bool,
+    pub zai_available: bool,
 }
 
 impl ProviderCredentials {
@@ -22,6 +23,9 @@ impl ProviderCredentials {
             openai_available: std::env::var("OPENAI_API_KEY").is_ok(),
             codex_available: has_codex_auth(),
             gemini_available: std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").is_ok(),
+            // Z.AI: Check both ZAI_PLAN_API_KEY (preferred) and ZAI_API_KEY
+            zai_available: std::env::var("ZAI_PLAN_API_KEY").is_ok()
+                || std::env::var("ZAI_API_KEY").is_ok(),
         }
     }
 
@@ -31,6 +35,7 @@ impl ProviderCredentials {
             || self.openai_available
             || self.codex_available
             || self.gemini_available
+            || self.zai_available
     }
 
     /// Check if Claude credentials are available
@@ -53,6 +58,11 @@ impl ProviderCredentials {
         self.gemini_available
     }
 
+    /// Check if Z.AI credentials are available
+    pub fn has_zai(&self) -> bool {
+        self.zai_available
+    }
+
     /// List all available provider names
     pub fn available_providers(&self) -> Vec<String> {
         let mut providers = Vec::new();
@@ -61,6 +71,9 @@ impl ProviderCredentials {
         }
         if self.gemini_available {
             providers.push("gemini".to_string());
+        }
+        if self.zai_available {
+            providers.push("zai".to_string());
         }
         if self.codex_available {
             providers.push("codex".to_string());
