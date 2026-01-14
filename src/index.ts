@@ -1,5 +1,17 @@
 #!/usr/bin/env node
 
+// PERF-001: Clear React 19's performance measure buffer periodically
+// React 19's reconciler uses performance.measure() for profiling, which accumulates
+// entries over time. After 1,000,000 entries, Node.js emits a warning about potential
+// memory leaks. This interval clears the buffer every 30 seconds to prevent the warning.
+import { performance } from 'perf_hooks';
+
+if (typeof performance.clearMeasures === 'function') {
+  setInterval(() => {
+    performance.clearMeasures();
+  }, 30000);
+}
+
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { fileURLToPath } from 'url';
