@@ -6,19 +6,27 @@
 //! # Architecture
 //!
 //! ```text
-//! ┌─────────────────────────────────────────────────────────────┐
-//! │                     Provider Layer                          │
-//! ├─────────────┬─────────────┬─────────────┬──────────────────┤
-//! │   Claude    │   Gemini    │   OpenAI    │     Codex        │
-//! │  Facade     │   Facade    │   Facade    │    Facade        │
-//! ├─────────────┴─────────────┴─────────────┴──────────────────┤
-//! │                  Tool Adapter Layer                         │
-//! │         (maps provider params → internal params)            │
-//! ├────────────────────────────────────────────────────────────┤
-//! │                 Base Tool Implementation                    │
-//! │              (Chrome browser, actual work)                  │
-//! └────────────────────────────────────────────────────────────┘
+//! ┌───────────────────────────────────────────────────────────────────────┐
+//! │                        Provider Layer                                  │
+//! ├──────────┬──────────┬──────────┬──────────┬──────────┬───────────────┤
+//! │  Claude  │  Gemini  │  OpenAI  │   Codex  │   Z.AI   │    Others     │
+//! │  Facade  │  Facade  │  Facade  │  Facade  │  Facade  │   Facade      │
+//! ├──────────┴──────────┴──────────┴──────────┴──────────┴───────────────┤
+//! │                     Tool Adapter Layer                                 │
+//! │            (maps provider params → internal params)                    │
+//! ├──────────────────────────────────────────────────────────────────────┤
+//! │                    Base Tool Implementation                            │
+//! │                 (Chrome browser, actual work)                          │
+//! └──────────────────────────────────────────────────────────────────────┘
 //! ```
+//!
+//! # Z.AI/GLM Facades
+//!
+//! The Z.AI facades (`ZAI*Facade`) are optimized for GLM models:
+//! - snake_case tool names (e.g., `list_dir`, `read_file`)
+//! - Flat JSON schemas with explicit `default` values
+//! - `additionalProperties: false` to prevent unexpected fields
+//! - Clear, concise descriptions
 
 mod bash;
 mod file_ops;
@@ -31,10 +39,15 @@ mod thinking_config;
 mod traits;
 mod web_search;
 mod wrapper;
+mod zai;
 
 pub use bash::GeminiRunShellCommandFacade;
 pub use file_ops::{GeminiReadFileFacade, GeminiReplaceFacade, GeminiWriteFileFacade};
 pub use ls::GeminiListDirectoryFacade;
+pub use zai::{
+    ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade, ZAIListDirFacade,
+    ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
+};
 pub use registry::ProviderToolRegistry;
 pub use search::{GeminiGlobFacade, GeminiSearchFileContentFacade};
 pub use system_prompt::{
