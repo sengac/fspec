@@ -870,6 +870,9 @@ pub struct PromptTokensDetails {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Usage {
     pub prompt_tokens: usize,
+    /// Completion (output) tokens - directly provided by API
+    #[serde(default)]
+    pub completion_tokens: Option<usize>,
     pub total_tokens: usize,
     /// Details about prompt tokens (Z.AI/OpenAI caching)
     #[serde(default)]
@@ -880,9 +883,17 @@ impl Usage {
     pub fn new() -> Self {
         Self {
             prompt_tokens: 0,
+            completion_tokens: None,
             total_tokens: 0,
             prompt_tokens_details: None,
         }
+    }
+
+    /// Calculate output tokens, using completion_tokens if available, otherwise deriving from total - prompt
+    pub fn output_tokens(&self) -> u64 {
+        self.completion_tokens
+            .map(|c| c as u64)
+            .unwrap_or_else(|| (self.total_tokens - self.prompt_tokens) as u64)
     }
 }
 
@@ -894,15 +905,11 @@ impl Default for Usage {
 
 impl fmt::Display for Usage {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Usage {
-            prompt_tokens,
-            total_tokens,
-            prompt_tokens_details,
-        } = self;
-        let cached = prompt_tokens_details.as_ref().map(|d| d.cached_tokens).unwrap_or(0);
+        let cached = self.prompt_tokens_details.as_ref().map(|d| d.cached_tokens).unwrap_or(0);
         write!(
             f,
-            "Prompt tokens: {prompt_tokens} (cached: {cached}) Total tokens: {total_tokens}"
+            "Prompt tokens: {} (cached: {}) Completion tokens: {} Total tokens: {}",
+            self.prompt_tokens, cached, self.output_tokens(), self.total_tokens
         )
     }
 }
@@ -911,7 +918,7 @@ impl GetTokenUsage for Usage {
     fn token_usage(&self) -> Option<crate::completion::Usage> {
         let mut usage = crate::completion::Usage::new();
         usage.input_tokens = self.prompt_tokens as u64;
-        usage.output_tokens = (self.total_tokens - self.prompt_tokens) as u64;
+        usage.output_tokens = self.output_tokens();
         usage.total_tokens = self.total_tokens as u64;
         // Z.AI/OpenAI cache tokens
         if let Some(details) = &self.prompt_tokens_details {

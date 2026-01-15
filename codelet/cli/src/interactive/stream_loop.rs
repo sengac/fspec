@@ -39,7 +39,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tokio::sync::Notify;
 use tokio::time::interval;
-use tracing::{error, info};
+use tracing::{debug, error, info, trace};
 
 /// Check if an error indicates the prompt/context is too long
 fn is_prompt_too_long_error(error_str: &str) -> bool {
@@ -67,16 +67,17 @@ struct TokPerSecTracker {
 }
 
 impl TokPerSecTracker {
-    /// Time window for rate calculation (3 seconds)
-    const TIME_WINDOW: Duration = Duration::from_secs(3);
-    /// EMA alpha (0.3 = 30% new value, 70% old value)
-    const EMA_ALPHA: f64 = 0.3;
-    /// Minimum time between display updates (500ms)
-    const DISPLAY_THROTTLE: Duration = Duration::from_millis(500);
-    /// Minimum time span for stable rate calculation (100ms)
-    const MIN_TIME_SPAN: Duration = Duration::from_millis(100);
+    /// Time window for rate calculation (1 second) - PROV-002: Reduced for faster response
+    /// When chunk flow changes, we want the rate to reflect it immediately.
+    /// A shorter window means "stale" tokens exit the window faster.
+    const TIME_WINDOW: Duration = Duration::from_secs(1);
+    /// Minimum time between display updates (200ms) - PROV-002: Faster UI feedback
+    const DISPLAY_THROTTLE: Duration = Duration::from_millis(200);
+    /// Minimum time span for stable rate calculation (50ms)
+    const MIN_TIME_SPAN: Duration = Duration::from_millis(50);
 
     fn new() -> Self {
+        debug!("[PROV-002] Creating new TokPerSecTracker");
         Self {
             samples: Vec::new(),
             cumulative_tokens: 0,
@@ -93,6 +94,16 @@ impl TokPerSecTracker {
         // PROV-002: Use tiktoken-rs for accurate token counting
         let chunk_tokens = count_tokens(text);
         self.cumulative_tokens += chunk_tokens as u64;
+
+        // Debug: Log incoming chunks
+        if chunk_tokens > 0 {
+            trace!(
+                "[PROV-002] Chunk received: text_len={}, estimated_tokens={}, cumulative={}",
+                text.len(),
+                chunk_tokens,
+                self.cumulative_tokens
+            );
+        }
 
         // Add sample
         self.samples.push((now, self.cumulative_tokens));
@@ -118,11 +129,42 @@ impl TokPerSecTracker {
 
         let raw_rate = token_delta as f64 / time_delta.as_secs_f64();
 
-        // Apply EMA smoothing
-        self.smoothed_rate = Some(match self.smoothed_rate {
-            Some(prev) => Self::EMA_ALPHA * raw_rate + (1.0 - Self::EMA_ALPHA) * prev,
-            None => raw_rate,
-        });
+        // PROV-002: Adaptive EMA that responds quickly to rate changes
+        // The core problem: EMA creates inertia, so tok/s stays "stuck" when chunk flow changes
+        // Solution: Use adaptive alpha based on how much the rate is changing
+        // - If rate is stable (small delta): use low alpha (0.1) for smoothing
+        // - If rate is changing rapidly (large delta): use high alpha (0.9) to respond quickly
+        let adaptive_alpha = match self.smoothed_rate {
+            Some(prev) => {
+                let rate_delta = (raw_rate - prev).abs();
+                let relative_change = rate_delta / (prev.max(1.0)); // Avoid division by zero
+
+                // Adaptive alpha: larger change = less smoothing (more responsiveness)
+                // Clamp alpha between 0.1 (max smoothing) and 0.9 (min smoothing)
+                let alpha = (relative_change * 2.0).clamp(0.1, 0.9);
+                alpha
+            }
+            None => 1.0, // First reading: 100% weight to raw_rate
+        };
+
+        let (prev_rate, new_rate) = match self.smoothed_rate {
+            Some(prev) => (Some(prev), adaptive_alpha * raw_rate + (1.0 - adaptive_alpha) * prev),
+            None => (None, raw_rate),
+        };
+        self.smoothed_rate = Some(new_rate);
+
+        // Debug: Log calculation details
+        trace!(
+            "[PROV-002] Tok/s calc: samples={}, token_delta={:?}, time_delta={:?}ms, raw_rate={:.2}, prev_rate={:?}, adaptive_alpha={:.2}, new_rate={:.2}, cumulative_tokens={}",
+            self.samples.len(),
+            token_delta,
+            time_delta.as_millis(),
+            raw_rate,
+            prev_rate.map(|r| format!("{:.2}", r)),
+            adaptive_alpha,
+            new_rate,
+            self.cumulative_tokens
+        );
 
         // Check throttling
         let should_emit = match self.last_emit_time {
@@ -141,6 +183,18 @@ impl TokPerSecTracker {
     /// Get current smoothed rate without recording (for final emit)
     fn current_rate(&self) -> Option<f64> {
         self.smoothed_rate
+    }
+
+    /// Calculate display output tokens based on provider type
+    /// PROV-002: Anthropic/Gemini use actual Usage events, OpenAI-compatible use estimates
+    fn calculate_display_output(&self, usage_output: u64, cumulative: u64) -> u64 {
+        if usage_output > 0 {
+            // Anthropic/Gemini path: use actual output tokens from Usage events
+            cumulative + usage_output
+        } else {
+            // OpenAI-compatible path: use estimated tokens from text chunks
+            cumulative + self.cumulative_tokens
+        }
     }
 }
 
@@ -556,21 +610,16 @@ where
 
                     // TUI-031: Track tok/s and emit update if not throttled
                     if let Some(rate) = tok_per_sec_tracker.record_chunk(&text.text) {
-                        let display_output = turn_cumulative_output + turn_usage.output_tokens;
+                        let display_output = tok_per_sec_tracker.calculate_display_output(
+                            turn_usage.output_tokens,
+                            turn_cumulative_output,
+                        );
                         // PROV-001: Use ApiTokenUsage for consistent total calculation
                         let display_usage = ApiTokenUsage::new(
                             turn_usage.input_tokens,
                             turn_usage.cache_read_input_tokens,
                             turn_usage.cache_creation_input_tokens,
                             display_output,
-                        );
-                        info!(
-                            "[PROV-001] Streaming emit: raw_input={}, cache_read={}, cache_create={}, total_input={}, output={}",
-                            turn_usage.input_tokens,
-                            turn_usage.cache_read_input_tokens,
-                            turn_usage.cache_creation_input_tokens,
-                            display_usage.total_input(),
-                            display_output
                         );
                         output.emit_tokens(&TokenInfo::from_usage(display_usage, Some(rate)));
                     }
@@ -592,6 +641,21 @@ where
                 ))) => {
                     // TOOL-010: Emit thinking/reasoning content from extended thinking
                     output.emit_thinking(&reasoning);
+
+                    // PROV-002: Track tok/s for thinking content too (both Anthropic and Z.AI stream thinking)
+                    if let Some(rate) = tok_per_sec_tracker.record_chunk(&reasoning) {
+                        let display_output = tok_per_sec_tracker.calculate_display_output(
+                            turn_usage.output_tokens,
+                            turn_cumulative_output,
+                        );
+                        let display_usage = ApiTokenUsage::new(
+                            turn_usage.input_tokens,
+                            turn_usage.cache_read_input_tokens,
+                            turn_usage.cache_creation_input_tokens,
+                            display_output,
+                        );
+                        output.emit_tokens(&TokenInfo::from_usage(display_usage, Some(rate)));
+                    }
                 }
                 Some(Ok(MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(
                     tool_result,
@@ -683,14 +747,15 @@ where
                         // OpenAI-compatible path: extract tokens from FinalResponse
                         turn_usage.input_tokens = usage.input_tokens;
                         turn_usage.output_tokens = usage.output_tokens;
-                        // OpenAI usage doesn't have cache breakdown, use total tokens
-                        // Note: Some OpenAI-compatible providers may include cached_tokens in
-                        // their response, but rig's generic Usage struct doesn't expose it yet
+                        // PROV-002: Extract cached tokens from FinalResponse (Z.AI/OpenAI)
+                        if let Some(cached) = usage.cache_read_input_tokens {
+                            turn_usage.cache_read_input_tokens = cached;
+                        }
                         turn_cumulative_output = usage.output_tokens;
                         
                         info!(
-                            "[PROV-002] OpenAI-compatible provider: extracted tokens from FinalResponse - input={}, output={}",
-                            usage.input_tokens, usage.output_tokens
+                            "[PROV-002] OpenAI-compatible provider: extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
+                            usage.input_tokens, usage.output_tokens, usage.cache_read_input_tokens
                         );
                     } else {
                         // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values (sum of all
@@ -707,13 +772,14 @@ where
 
                     // TUI-031: Emit CUMULATIVE output tokens for display
                     // PROV-001: Use ApiTokenUsage for consistent total calculation
+                    // PROV-002: Include tok/s rate for OpenAI-compatible providers (calculated during text streaming)
                     let display_usage = ApiTokenUsage::new(
                         turn_usage.input_tokens,
                         turn_usage.cache_read_input_tokens,
                         turn_usage.cache_creation_input_tokens,
                         turn_cumulative_output,
                     );
-                    output.emit_tokens(&TokenInfo::from_usage(display_usage, None)); // Streaming done
+                    output.emit_tokens(&TokenInfo::from_usage(display_usage, tok_per_sec_tracker.current_rate()));
                     // CTX-004: Context fill uses CURRENT API output only
                     emit_context_fill_from_usage(output, &turn_usage, threshold, context_window);
 
@@ -918,7 +984,12 @@ where
                                         Some(Ok(MultiTurnStreamItem::StreamAssistantItem(
                                             StreamedAssistantContent::ReasoningDelta { reasoning, .. },
                                         ))) => {
+                                            // PROV-002: Track tok/s for thinking content too (both Anthropic and Z.AI stream thinking)
                                             output.emit_thinking(&reasoning);
+                                            
+                                            // Note: continuation loop doesn't have its own tok_per_sec_tracker
+                                            // We still emit the thinking content for display, just without tok/s
+                                            // This is acceptable since continuation is for Gemini's empty-response workaround
                                         }
                                         Some(Ok(MultiTurnStreamItem::StreamUserItem(
                                             StreamedUserContent::ToolResult(tool_result),
@@ -1337,7 +1408,10 @@ where
 
                             // TUI-031: Track tok/s and emit update if not throttled
                             if let Some(rate) = retry_tok_tracker.record_chunk(&text.text) {
-                                let display_output = retry_cumulative_output + retry_usage.output_tokens;
+                                let display_output = retry_tok_tracker.calculate_display_output(
+                                    retry_usage.output_tokens,
+                                    retry_cumulative_output,
+                                );
                                 let display_usage = ApiTokenUsage::new(
                                     retry_usage.input_tokens,
                                     retry_usage.cache_read_input_tokens,
@@ -1364,6 +1438,21 @@ where
                         ))) => {
                             // TOOL-010: Emit thinking/reasoning content from extended thinking
                             output.emit_thinking(&reasoning);
+                            
+                            // PROV-002: Track tok/s for thinking content too (both Anthropic and Z.AI stream thinking)
+                            if let Some(rate) = retry_tok_tracker.record_chunk(&reasoning) {
+                                let display_output = retry_tok_tracker.calculate_display_output(
+                                    retry_usage.output_tokens,
+                                    retry_cumulative_output,
+                                );
+                                let display_usage = ApiTokenUsage::new(
+                                    retry_usage.input_tokens,
+                                    retry_usage.cache_read_input_tokens,
+                                    retry_usage.cache_creation_input_tokens,
+                                    display_output,
+                                );
+                                output.emit_tokens(&TokenInfo::from_usage(display_usage, Some(rate)));
+                            }
                         }
                         Some(Ok(MultiTurnStreamItem::StreamUserItem(
                             StreamedUserContent::ToolResult(tool_result),
@@ -1456,6 +1545,10 @@ where
                                 // OpenAI-compatible path: extract tokens from FinalResponse
                                 retry_usage.input_tokens = usage.input_tokens;
                                 retry_usage.output_tokens = usage.output_tokens;
+                                // PROV-002: Extract cached tokens from FinalResponse (Z.AI/OpenAI)
+                                if let Some(cached) = usage.cache_read_input_tokens {
+                                    retry_usage.cache_read_input_tokens = cached;
+                                }
                                 retry_cumulative_output = usage.output_tokens;
                             } else {
                                 // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values
@@ -1463,6 +1556,7 @@ where
                             }
 
                             // PROV-001: Use ApiTokenUsage for consistent calculation
+                            // PROV-002: Include tok/s rate for OpenAI-compatible providers
                             let display_usage = ApiTokenUsage::new(
                                 retry_usage.input_tokens,
                                 retry_usage.cache_read_input_tokens,
@@ -1470,7 +1564,7 @@ where
                                 retry_cumulative_output,
                             );
                             output
-                                .emit_tokens(&TokenInfo::from_usage(display_usage, None));
+                                .emit_tokens(&TokenInfo::from_usage(display_usage, retry_tok_tracker.current_rate()));
                             // CTX-004: Context fill uses CURRENT API output only
                             emit_context_fill_from_usage(
                                 output,

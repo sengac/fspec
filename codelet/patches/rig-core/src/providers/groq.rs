@@ -570,6 +570,7 @@ where
         let span = tracing::Span::current();
         let mut final_usage = Usage {
             prompt_tokens: 0,
+            completion_tokens: None,
             total_tokens: 0,
             prompt_tokens_details: None,
         };
