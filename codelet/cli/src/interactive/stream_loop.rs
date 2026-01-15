@@ -669,19 +669,41 @@ where
                     }
                 }
                 Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
-                    // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values (sum of all
-                    // segments in multi-turn tool loops). For DISPLAY, we want the LAST segment's
-                    // values (current context size), which are already in turn_usage from Usage events.
-                    //
-                    // DON'T overwrite turn_usage.input_tokens or cache values with aggregated values!
-                    // They would show 290k (sum of 5 segments) instead of ~60k (actual context).
-                    //
-                    // For output: add the last segment's output to cumulative total.
-                    // The aggregated output in FinalResponse is for billing, not display.
-                    turn_cumulative_output += turn_usage.output_tokens;
-
-                    // Get aggregated usage for debug logging only (not for display)
+                    // Get usage from FinalResponse
                     let usage = final_resp.usage();
+
+                    // PROV-002: OpenAI-compatible providers (including Z.AI) don't emit Usage events
+                    // during streaming - they only return usage in FinalResponse. For these providers,
+                    // turn_usage will still be at 0 when we reach here, so we need to extract tokens
+                    // from the FinalResponse usage directly.
+                    //
+                    // Detection: If turn_usage.input_tokens is 0 but FinalResponse has usage, this
+                    // is an OpenAI-compatible provider that doesn't emit streaming Usage events.
+                    if turn_usage.input_tokens == 0 && usage.input_tokens > 0 {
+                        // OpenAI-compatible path: extract tokens from FinalResponse
+                        turn_usage.input_tokens = usage.input_tokens;
+                        turn_usage.output_tokens = usage.output_tokens;
+                        // OpenAI usage doesn't have cache breakdown, use total tokens
+                        // Note: Some OpenAI-compatible providers may include cached_tokens in
+                        // their response, but rig's generic Usage struct doesn't expose it yet
+                        turn_cumulative_output = usage.output_tokens;
+                        
+                        info!(
+                            "[PROV-002] OpenAI-compatible provider: extracted tokens from FinalResponse - input={}, output={}",
+                            usage.input_tokens, usage.output_tokens
+                        );
+                    } else {
+                        // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values (sum of all
+                        // segments in multi-turn tool loops). For DISPLAY, we want the LAST segment's
+                        // values (current context size), which are already in turn_usage from Usage events.
+                        //
+                        // DON'T overwrite turn_usage.input_tokens or cache values with aggregated values!
+                        // They would show 290k (sum of 5 segments) instead of ~60k (actual context).
+                        //
+                        // For output: add the last segment's output to cumulative total.
+                        // The aggregated output in FinalResponse is for billing, not display.
+                        turn_cumulative_output += turn_usage.output_tokens;
+                    }
 
                     // TUI-031: Emit CUMULATIVE output tokens for display
                     // PROV-001: Use ApiTokenUsage for consistent total calculation
@@ -931,7 +953,16 @@ where
                                                 );
                                             }
                                         }
-                                        Some(Ok(MultiTurnStreamItem::FinalResponse(_))) => {
+                                        Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
+                                            // Get usage from FinalResponse
+                                            let usage = final_resp.usage();
+
+                                            // PROV-002: OpenAI-compatible providers only return usage in FinalResponse
+                                            if continuation_usage.input_tokens == 0 && usage.input_tokens > 0 {
+                                                continuation_usage.input_tokens = usage.input_tokens;
+                                                continuation_usage.output_tokens = usage.output_tokens;
+                                            }
+
                                             // GEMINI-TURN-002: Check if we need ANOTHER continuation
                                             // This handles the case where multiple tool calls happen in sequence
                                             let nested_strategy = turn_completion.continuation_strategy(
@@ -1416,17 +1447,20 @@ where
                             }
                         }
                         Some(Ok(MultiTurnStreamItem::FinalResponse(final_resp))) => {
-                            // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values (sum of all
-                            // segments in multi-turn tool loops). For DISPLAY, we want the LAST segment's
-                            // values (current context size), which are already in retry_usage from Usage events.
-                            //
-                            // DON'T overwrite retry_usage.input_tokens or cache values with aggregated values!
-                            // For output: add the last segment's output to cumulative total.
-                            retry_cumulative_output += retry_usage.output_tokens;
+                            // Get usage from FinalResponse
+                            let usage = final_resp.usage();
 
-                            // Aggregated usage from FinalResponse - not used for display in retry loop
-                            // but keeping the call for consistency with main loop
-                            let _usage = final_resp.usage();
+                            // PROV-002: OpenAI-compatible providers (including Z.AI) don't emit Usage events
+                            // during streaming - they only return usage in FinalResponse.
+                            if retry_usage.input_tokens == 0 && usage.input_tokens > 0 {
+                                // OpenAI-compatible path: extract tokens from FinalResponse
+                                retry_usage.input_tokens = usage.input_tokens;
+                                retry_usage.output_tokens = usage.output_tokens;
+                                retry_cumulative_output = usage.output_tokens;
+                            } else {
+                                // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values
+                                retry_cumulative_output += retry_usage.output_tokens;
+                            }
 
                             // PROV-001: Use ApiTokenUsage for consistent calculation
                             let display_usage = ApiTokenUsage::new(

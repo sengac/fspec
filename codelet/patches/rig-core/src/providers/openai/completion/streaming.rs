@@ -36,6 +36,9 @@ pub(crate) struct StreamingToolCall {
 struct StreamingDelta {
     #[serde(default)]
     content: Option<String>,
+    /// Z.AI GLM models send reasoning/thinking content in this field
+    #[serde(default)]
+    reasoning_content: Option<String>,
     #[serde(default, deserialize_with = "json_utils::null_or_vec")]
     tool_calls: Vec<StreamingToolCall>,
 }
@@ -74,6 +77,10 @@ impl GetTokenUsage for StreamingCompletionResponse {
         usage.input_tokens = self.usage.prompt_tokens as u64;
         usage.output_tokens = self.usage.total_tokens as u64 - self.usage.prompt_tokens as u64;
         usage.total_tokens = self.usage.total_tokens as u64;
+        // Z.AI/OpenAI cache tokens
+        if let Some(details) = &self.usage.prompt_tokens_details {
+            usage.cache_read_input_tokens = Some(details.cached_tokens as u64);
+        }
         Some(usage)
     }
 }
@@ -183,8 +190,24 @@ where
                     };
 
                     // Usage updates (some providers send a final "usage-only" chunk with empty choices)
+                    // PROV-002: OpenAI-compatible providers (including Z.AI) send usage in the final chunk.
+                    // Emit Usage event so stream_loop can update token counts during streaming.
                     if let Some(usage) = data.usage {
-                        final_usage = Some(usage);
+                        final_usage = Some(usage.clone());
+                        // Emit usage event for real-time token tracking
+                        // Include cached tokens from Z.AI/OpenAI prompt_tokens_details
+                        let cached_tokens = usage.prompt_tokens_details
+                            .as_ref()
+                            .map(|d| d.cached_tokens as u64)
+                            .unwrap_or(0);
+                        let crate_usage = crate::completion::Usage {
+                            input_tokens: usage.prompt_tokens as u64,
+                            output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                            total_tokens: usage.total_tokens as u64,
+                            cache_read_input_tokens: if cached_tokens > 0 { Some(cached_tokens) } else { None },
+                            ..Default::default()
+                        };
+                        yield Ok(streaming::RawStreamingChoice::Usage(crate_usage));
                     }
 
                     // Expect at least one choice
@@ -251,6 +274,14 @@ where
                                 });
                             }
                         }
+                    }
+
+                    // Streamed reasoning content (Z.AI GLM models)
+                    if let Some(reasoning) = &delta.reasoning_content && !reasoning.is_empty() {
+                        yield Ok(streaming::RawStreamingChoice::ReasoningDelta {
+                            id: None,
+                            reasoning: reasoning.clone(),
+                        });
                     }
 
                     // Streamed text content
