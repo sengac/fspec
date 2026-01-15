@@ -585,6 +585,9 @@ mod tests {
                     println!("Reasoning delta: {reasoning}");
                     chunk_count += 1;
                 }
+                Ok(StreamedAssistantContent::Usage(_)) => {
+                    // Usage events are for token tracking, ignore in this test
+                }
                 Err(e) => {
                     eprintln!("Error: {e:?}");
                     break;

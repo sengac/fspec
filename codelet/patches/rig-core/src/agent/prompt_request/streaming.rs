@@ -501,15 +501,19 @@ where
                         },
                         Ok(StreamedAssistantContent::Final(final_resp)) => {
                             if let Some(usage) = final_resp.token_usage() { aggregated_usage += usage; };
-                            if is_text_response {
-                                if let Some(ref hook) = self.hook {
-                                    hook.on_stream_completion_response_finish(&prompt, &final_resp, cancel_signal.clone()).await;
 
-                                    if cancel_signal.is_cancelled() {
-                                        yield Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
-                                    }
+                            // Always call on_stream_completion_response_finish for token tracking
+                            // This ensures compaction hooks get updated token counts even for
+                            // tool-only responses (where is_text_response is false)
+                            if let Some(ref hook) = self.hook {
+                                hook.on_stream_completion_response_finish(&prompt, &final_resp, cancel_signal.clone()).await;
+
+                                if cancel_signal.is_cancelled() {
+                                    yield Err(StreamingError::Prompt(PromptError::prompt_cancelled(chat_history.read().await.to_vec()).into()));
                                 }
+                            }
 
+                            if is_text_response {
                                 tracing::Span::current().record("gen_ai.completion", &last_text_response);
                                 yield Ok(MultiTurnStreamItem::stream_item(StreamedAssistantContent::Final(final_resp)));
                                 is_text_response = false;
