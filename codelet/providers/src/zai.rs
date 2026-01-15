@@ -191,7 +191,8 @@ impl ZAIProvider {
 
     /// Create a rig Agent with all tools configured for this provider
     ///
-    /// Uses OpenAI-compatible tool format since Z.AI is OpenAI-compatible.
+    /// Uses Z.AI/GLM-specific tool facades for optimal tool calling behavior.
+    /// GLM models work best with snake_case tool names and flat JSON schemas.
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
@@ -203,24 +204,44 @@ impl ZAIProvider {
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
-        use codelet_tools::{
-            AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
-            ReadTool, WebSearchTool, WriteTool,
+        use codelet_tools::facade::{
+            BashToolFacadeWrapper, FileToolFacadeWrapper, LsToolFacadeWrapper,
+            SearchToolFacadeWrapper, ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade,
+            ZAIListDirFacade, ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
         };
+        use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool};
+        use std::sync::Arc;
 
-        // Build agent with all tools using rig's builder pattern
-        // Z.AI uses OpenAI-compatible format, so we use standard tools
+        // Create Z.AI/GLM-specific tool facades (PROV-004)
+        // These provide GLM-native tool names and flat schemas that GLM understands
+        
+        // File operation facades
+        let read_file = FileToolFacadeWrapper::new(Arc::new(ZAIReadFileFacade));
+        let write_file = FileToolFacadeWrapper::new(Arc::new(ZAIWriteFileFacade));
+        let edit_file = FileToolFacadeWrapper::new(Arc::new(ZAIEditFileFacade));
+
+        // Shell command facade
+        let run_command = BashToolFacadeWrapper::new(Arc::new(ZAIRunCommandFacade));
+
+        // Search facades
+        let grep_files = SearchToolFacadeWrapper::new(Arc::new(ZAIGrepFilesFacade));
+        let find_files = SearchToolFacadeWrapper::new(Arc::new(ZAIFindFilesFacade));
+
+        // Directory listing facade
+        let list_dir = LsToolFacadeWrapper::new(Arc::new(ZAIListDirFacade));
+
+        // Build agent with Z.AI-optimized tools using rig's builder pattern
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
-            .tool(ReadTool::new())
-            .tool(WriteTool::new())
-            .tool(EditTool::new())
-            .tool(BashTool::new())
-            .tool(GrepTool::new())
-            .tool(GlobTool::new())
-            .tool(LsTool::new())
+            .tool(read_file) // Z.AI-native read_file
+            .tool(write_file) // Z.AI-native write_file
+            .tool(edit_file) // Z.AI-native edit_file
+            .tool(run_command) // Z.AI-native run_command
+            .tool(grep_files) // Z.AI-native grep_files
+            .tool(find_files) // Z.AI-native find_files
+            .tool(list_dir) // Z.AI-native list_dir
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
             .tool(WebSearchTool::new());
