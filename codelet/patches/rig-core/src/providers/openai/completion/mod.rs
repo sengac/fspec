@@ -860,10 +860,20 @@ pub struct Choice {
     pub finish_reason: String,
 }
 
+/// Details about prompt tokens, including cached tokens
+#[derive(Clone, Debug, Deserialize, Serialize, Default)]
+pub struct PromptTokensDetails {
+    #[serde(default)]
+    pub cached_tokens: usize,
+}
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Usage {
     pub prompt_tokens: usize,
     pub total_tokens: usize,
+    /// Details about prompt tokens (Z.AI/OpenAI caching)
+    #[serde(default)]
+    pub prompt_tokens_details: Option<PromptTokensDetails>,
 }
 
 impl Usage {
@@ -871,6 +881,7 @@ impl Usage {
         Self {
             prompt_tokens: 0,
             total_tokens: 0,
+            prompt_tokens_details: None,
         }
     }
 }
@@ -886,10 +897,12 @@ impl fmt::Display for Usage {
         let Usage {
             prompt_tokens,
             total_tokens,
+            prompt_tokens_details,
         } = self;
+        let cached = prompt_tokens_details.as_ref().map(|d| d.cached_tokens).unwrap_or(0);
         write!(
             f,
-            "Prompt tokens: {prompt_tokens} Total tokens: {total_tokens}"
+            "Prompt tokens: {prompt_tokens} (cached: {cached}) Total tokens: {total_tokens}"
         )
     }
 }
@@ -900,7 +913,10 @@ impl GetTokenUsage for Usage {
         usage.input_tokens = self.prompt_tokens as u64;
         usage.output_tokens = (self.total_tokens - self.prompt_tokens) as u64;
         usage.total_tokens = self.total_tokens as u64;
-
+        // Z.AI/OpenAI cache tokens
+        if let Some(details) = &self.prompt_tokens_details {
+            usage.cache_read_input_tokens = Some(details.cached_tokens as u64);
+        }
         Some(usage)
     }
 }

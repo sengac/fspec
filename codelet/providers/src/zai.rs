@@ -195,12 +195,13 @@ impl ZAIProvider {
     ///
     /// # Arguments
     /// * `preamble` - Optional system prompt/preamble for the agent
-    /// * `thinking_config` - Optional thinking configuration JSON.
-    ///   Z.AI format: `{"thinking": {"type": "enabled"}}` or `{"thinking": {"type": "disabled"}}`
+    /// * `thinking_config` - Optional thinking configuration JSON (currently unused for Z.AI/GLM models)
+    ///   Note: GLM models handle reasoning internally and don't use the same thinking config format
+    ///   as Claude or Gemini. The reasoning capability is model-dependent.
     pub fn create_rig_agent(
         &self,
         preamble: Option<&str>,
-        thinking_config: Option<serde_json::Value>,
+        _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
@@ -229,18 +230,19 @@ impl ZAIProvider {
             agent_builder = agent_builder.preamble(preamble_text);
         }
 
-        // Apply thinking config if provided and model supports it
-        if self.supports_reasoning() {
-            let thinking_cfg = thinking_config.unwrap_or_else(|| {
-                // Default to enabled thinking for reasoning models
-                serde_json::json!({
-                    "thinking": {
-                        "type": "enabled"
-                    }
-                })
-            });
-            agent_builder = agent_builder.additional_params(thinking_cfg);
-        }
+        // PROV-002: Apply generation config for GLM models
+        // Based on opencode research, GLM-4.6/4.7 models require specific temperature and topP values
+        // - temperature: 1.0 (required for optimal performance, matches Gemini)
+        // - topP: 0.95 (standard value for reasoning models)
+        //
+        // Note: GLM models do NOT use the same thinking config format as Claude or Gemini.
+        // Their reasoning capability is built into the model and enabled by default for
+        // reasoning-capable models (glm-4.7, glm-4.6, etc.)
+        let generation_config = serde_json::json!({
+            "temperature": 1.0,
+            "top_p": 0.95
+        });
+        agent_builder = agent_builder.additional_params(generation_config);
 
         agent_builder.build()
     }

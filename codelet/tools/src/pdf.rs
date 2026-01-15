@@ -215,7 +215,7 @@ pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, Pd
         Pdfium::bind_to_system_library()
             .or_else(|_| Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./")))
             .map_err(|e| PdfError::PdfiumNotAvailable(format!(
-                "Could not load Pdfium library: {}. Install libpdfium for your platform.", e
+                "Could not load Pdfium library: {e}. Install libpdfium for your platform."
             )))?
     );
 
@@ -266,7 +266,7 @@ pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, Pd
             .write_to(&mut png_bytes, ImageFormat::Png)
             .map_err(|e| PdfError::RenderError {
                 page: page_num,
-                message: format!("Failed to encode PNG: {}", e),
+                message: format!("Failed to encode PNG: {e}"),
             })?;
 
         pages.push(RenderedPage {
