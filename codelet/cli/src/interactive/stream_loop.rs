@@ -185,16 +185,40 @@ impl TokPerSecTracker {
         self.smoothed_rate
     }
 
-    /// Calculate display output tokens based on provider type
-    /// PROV-002: Anthropic/Gemini use actual Usage events, OpenAI-compatible use estimates
-    fn calculate_display_output(&self, usage_output: u64, cumulative: u64) -> u64 {
-        if usage_output > 0 {
+    /// Calculate display tokens for UI during streaming
+    /// 
+    /// PROV-002: Handles the provider difference in token reporting:
+    /// - Anthropic/Gemini: emit Usage events during streaming, so turn_usage has real values
+    /// - OpenAI-compatible (Z.AI, OpenAI): only report usage in FinalResponse
+    /// 
+    /// For OpenAI-compatible providers, we use:
+    /// - prev_input_tokens: the session's last known input (reasonable approximation)
+    /// - cumulative_tokens: tiktoken estimate of generated output
+    /// 
+    /// Returns (display_input, display_output) tuple for TokenInfo creation.
+    fn calculate_display_tokens(
+        &self,
+        turn_usage: &ApiTokenUsage,
+        turn_cumulative_output: u64,
+        prev_input_tokens: u64,
+    ) -> (u64, u64) {
+        // Input: use actual if available, otherwise fall back to previous session value
+        let display_input = if turn_usage.input_tokens > 0 {
+            turn_usage.input_tokens
+        } else {
+            prev_input_tokens
+        };
+
+        // Output: use actual if available, otherwise use tiktoken estimates
+        let display_output = if turn_usage.output_tokens > 0 {
             // Anthropic/Gemini path: use actual output tokens from Usage events
-            cumulative + usage_output
+            turn_cumulative_output + turn_usage.output_tokens
         } else {
             // OpenAI-compatible path: use estimated tokens from text chunks
-            cumulative + self.cumulative_tokens
-        }
+            turn_cumulative_output + self.cumulative_tokens
+        };
+
+        (display_input, display_output)
     }
 }
 
@@ -610,13 +634,11 @@ where
 
                     // TUI-031: Track tok/s and emit update if not throttled
                     if let Some(rate) = tok_per_sec_tracker.record_chunk(&text.text) {
-                        let display_output = tok_per_sec_tracker.calculate_display_output(
-                            turn_usage.output_tokens,
-                            turn_cumulative_output,
-                        );
-                        // PROV-001: Use ApiTokenUsage for consistent total calculation
+                        // PROV-002: Use unified method for display token calculation
+                        let (display_input, display_output) = tok_per_sec_tracker
+                            .calculate_display_tokens(&turn_usage, turn_cumulative_output, prev_input_tokens);
                         let display_usage = ApiTokenUsage::new(
-                            turn_usage.input_tokens,
+                            display_input,
                             turn_usage.cache_read_input_tokens,
                             turn_usage.cache_creation_input_tokens,
                             display_output,
@@ -644,12 +666,11 @@ where
 
                     // PROV-002: Track tok/s for thinking content too (both Anthropic and Z.AI stream thinking)
                     if let Some(rate) = tok_per_sec_tracker.record_chunk(&reasoning) {
-                        let display_output = tok_per_sec_tracker.calculate_display_output(
-                            turn_usage.output_tokens,
-                            turn_cumulative_output,
-                        );
+                        // PROV-002: Use unified method for display token calculation
+                        let (display_input, display_output) = tok_per_sec_tracker
+                            .calculate_display_tokens(&turn_usage, turn_cumulative_output, prev_input_tokens);
                         let display_usage = ApiTokenUsage::new(
-                            turn_usage.input_tokens,
+                            display_input,
                             turn_usage.cache_read_input_tokens,
                             turn_usage.cache_creation_input_tokens,
                             display_output,
@@ -751,7 +772,10 @@ where
                         if let Some(cached) = usage.cache_read_input_tokens {
                             turn_usage.cache_read_input_tokens = cached;
                         }
-                        turn_cumulative_output = usage.output_tokens;
+                        // PROV-002 FIX: ADD to cumulative, don't replace!
+                        // turn_cumulative_output already has prev_output_tokens from initialization.
+                        // We need to add this turn's output to it, not replace it.
+                        turn_cumulative_output += usage.output_tokens;
                         
                         info!(
                             "[PROV-002] OpenAI-compatible provider: extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
@@ -1383,6 +1407,8 @@ where
                 let mut retry_usage = ApiTokenUsage::default();
                 let mut retry_cumulative_output: u64 = 0;
                 let mut retry_tok_tracker = TokPerSecTracker::new();
+                // PROV-002: Capture prev input tokens for OpenAI-compatible fallback during streaming
+                let retry_prev_input_tokens = session.token_tracker.input_tokens;
 
                 // Process retry stream
                 loop {
@@ -1408,12 +1434,11 @@ where
 
                             // TUI-031: Track tok/s and emit update if not throttled
                             if let Some(rate) = retry_tok_tracker.record_chunk(&text.text) {
-                                let display_output = retry_tok_tracker.calculate_display_output(
-                                    retry_usage.output_tokens,
-                                    retry_cumulative_output,
-                                );
+                                // PROV-002: Use unified method for display token calculation
+                                let (display_input, display_output) = retry_tok_tracker
+                                    .calculate_display_tokens(&retry_usage, retry_cumulative_output, retry_prev_input_tokens);
                                 let display_usage = ApiTokenUsage::new(
-                                    retry_usage.input_tokens,
+                                    display_input,
                                     retry_usage.cache_read_input_tokens,
                                     retry_usage.cache_creation_input_tokens,
                                     display_output,
@@ -1441,12 +1466,11 @@ where
                             
                             // PROV-002: Track tok/s for thinking content too (both Anthropic and Z.AI stream thinking)
                             if let Some(rate) = retry_tok_tracker.record_chunk(&reasoning) {
-                                let display_output = retry_tok_tracker.calculate_display_output(
-                                    retry_usage.output_tokens,
-                                    retry_cumulative_output,
-                                );
+                                // PROV-002: Use unified method for display token calculation
+                                let (display_input, display_output) = retry_tok_tracker
+                                    .calculate_display_tokens(&retry_usage, retry_cumulative_output, retry_prev_input_tokens);
                                 let display_usage = ApiTokenUsage::new(
-                                    retry_usage.input_tokens,
+                                    display_input,
                                     retry_usage.cache_read_input_tokens,
                                     retry_usage.cache_creation_input_tokens,
                                     display_output,
@@ -1549,7 +1573,8 @@ where
                                 if let Some(cached) = usage.cache_read_input_tokens {
                                     retry_usage.cache_read_input_tokens = cached;
                                 }
-                                retry_cumulative_output = usage.output_tokens;
+                                // PROV-002 FIX: ADD to cumulative, don't replace!
+                                retry_cumulative_output += usage.output_tokens;
                             } else {
                                 // PROV-001 FIX: FinalResponse.usage() contains AGGREGATED values
                                 retry_cumulative_output += retry_usage.output_tokens;
