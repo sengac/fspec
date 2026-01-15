@@ -58,7 +58,7 @@ fn is_prompt_too_long_error(error_str: &str) -> bool {
 struct TokPerSecTracker {
     /// Samples of (timestamp, cumulative_tokens) for time-window calculation
     samples: Vec<(Instant, u64)>,
-    /// Cumulative tokens generated in this turn
+    /// Cumulative tokens generated in this turn (tiktoken estimate)
     cumulative_tokens: u64,
     /// EMA-smoothed rate for stable display
     smoothed_rate: Option<f64>,
@@ -195,6 +195,9 @@ impl TokPerSecTracker {
     /// - prev_input_tokens: the session's last known input (reasonable approximation)
     /// - cumulative_tokens: tiktoken estimate of generated output
     /// 
+    /// IMPORTANT: Always use the MAX of tiktoken estimate and actual API value to prevent
+    /// the display from "going backwards" when actual < estimate.
+    /// 
     /// Returns (display_input, display_output) tuple for TokenInfo creation.
     fn calculate_display_tokens(
         &self,
@@ -209,14 +212,13 @@ impl TokPerSecTracker {
             prev_input_tokens
         };
 
-        // Output: use actual if available, otherwise use tiktoken estimates
-        let display_output = if turn_usage.output_tokens > 0 {
-            // Anthropic/Gemini path: use actual output tokens from Usage events
-            turn_cumulative_output + turn_usage.output_tokens
-        } else {
-            // OpenAI-compatible path: use estimated tokens from text chunks
-            turn_cumulative_output + self.cumulative_tokens
-        };
+        // Output: use MAX of tiktoken estimate and actual API value
+        // This prevents the display from "going backwards" when:
+        // 1. Tiktoken estimate during streaming is higher than actual API value
+        // 2. A new API segment starts (tool call) and output resets
+        let tiktoken_output = turn_cumulative_output + self.cumulative_tokens;
+        let actual_output = turn_cumulative_output + turn_usage.output_tokens;
+        let display_output = tiktoken_output.max(actual_output);
 
         (display_input, display_output)
     }
@@ -736,11 +738,16 @@ where
                             usage.cache_creation_input_tokens,
                         );
 
-                        // Emit token update - safe because we're within a single API response
-                        // where input values are stable
-                        let display_output = turn_cumulative_output + turn_usage.output_tokens;
+                        // PROV-002 FIX: Use unified method for display token calculation
+                        // This ensures consistency between text chunk emissions and Usage event emissions.
+                        // Previously, text chunks used tok_per_sec_tracker.cumulative_tokens (tiktoken estimate)
+                        // while Usage events used turn_usage.output_tokens (actual API value).
+                        // This caused tokens to "go backwards" when a Usage event arrived with a smaller
+                        // actual value than the tiktoken estimate.
+                        let (display_input, display_output) = tok_per_sec_tracker
+                            .calculate_display_tokens(&turn_usage, turn_cumulative_output, prev_input_tokens);
                         let display_usage = ApiTokenUsage::new(
-                            turn_usage.input_tokens,
+                            display_input,
                             turn_usage.cache_read_input_tokens,
                             turn_usage.cache_creation_input_tokens,
                             display_output,
@@ -795,13 +802,14 @@ where
                     }
 
                     // TUI-031: Emit CUMULATIVE output tokens for display
-                    // PROV-001: Use ApiTokenUsage for consistent total calculation
-                    // PROV-002: Include tok/s rate for OpenAI-compatible providers (calculated during text streaming)
+                    // PROV-002: Use MAX of tiktoken estimate and actual to prevent going backwards
+                    let tiktoken_output = turn_cumulative_output + tok_per_sec_tracker.cumulative_tokens;
+                    let display_output = tiktoken_output.max(turn_cumulative_output);
                     let display_usage = ApiTokenUsage::new(
                         turn_usage.input_tokens,
                         turn_usage.cache_read_input_tokens,
                         turn_usage.cache_creation_input_tokens,
-                        turn_cumulative_output,
+                        display_output,
                     );
                     output.emit_tokens(&TokenInfo::from_usage(display_usage, tok_per_sec_tracker.current_rate()));
                     // CTX-004: Context fill uses CURRENT API output only
@@ -1536,12 +1544,11 @@ where
                                     usage.cache_creation_input_tokens,
                                 );
 
-                                // Emit token update - safe because we're within a single API response
-                                // where input values are stable
-                                let display_output =
-                                    retry_cumulative_output + retry_usage.output_tokens;
+                                // PROV-002 FIX: Use unified method for display token calculation
+                                let (display_input, display_output) = retry_tok_tracker
+                                    .calculate_display_tokens(&retry_usage, retry_cumulative_output, retry_prev_input_tokens);
                                 let display_usage = ApiTokenUsage::new(
-                                    retry_usage.input_tokens,
+                                    display_input,
                                     retry_usage.cache_read_input_tokens,
                                     retry_usage.cache_creation_input_tokens,
                                     display_output,
@@ -1580,13 +1587,14 @@ where
                                 retry_cumulative_output += retry_usage.output_tokens;
                             }
 
-                            // PROV-001: Use ApiTokenUsage for consistent calculation
-                            // PROV-002: Include tok/s rate for OpenAI-compatible providers
+                            // PROV-002: Use MAX of tiktoken estimate and actual to prevent going backwards
+                            let tiktoken_output = retry_cumulative_output + retry_tok_tracker.cumulative_tokens;
+                            let display_output = tiktoken_output.max(retry_cumulative_output);
                             let display_usage = ApiTokenUsage::new(
                                 retry_usage.input_tokens,
                                 retry_usage.cache_read_input_tokens,
                                 retry_usage.cache_creation_input_tokens,
-                                retry_cumulative_output,
+                                display_output,
                             );
                             output
                                 .emit_tokens(&TokenInfo::from_usage(display_usage, retry_tok_tracker.current_rate()));
