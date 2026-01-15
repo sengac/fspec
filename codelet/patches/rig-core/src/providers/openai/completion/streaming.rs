@@ -202,7 +202,7 @@ where
                             .unwrap_or(0);
                         let crate_usage = crate::completion::Usage {
                             input_tokens: usage.prompt_tokens as u64,
-                            output_tokens: (usage.total_tokens - usage.prompt_tokens) as u64,
+                            output_tokens: usage.output_tokens(),
                             total_tokens: usage.total_tokens as u64,
                             cache_read_input_tokens: if cached_tokens > 0 { Some(cached_tokens) } else { None },
                             ..Default::default()
