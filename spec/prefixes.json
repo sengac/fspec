@@ -294,6 +294,11 @@
       "prefix": "PATCH",
       "description": "Patch management and dependency version synchronization",
       "createdAt": "2026-01-08T08:44:49.253Z"
+    },
+    "RLM": {
+      "prefix": "RLM",
+      "description": "Recursive Language Model integration for long-context handling",
+      "createdAt": "2026-01-16T07:07:46.715Z"
     }
   }
 }

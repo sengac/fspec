@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-14T20:04:23.684Z"
+    "lastUpdated": "2026-01-16T07:08:02.391Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -61293,6 +61293,19 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2026-01-14T20:04:23.715Z"
+    },
+    "RLM-001": {
+      "id": "RLM-001",
+      "title": "Implement Recursive Language Model (RLM) Integration for Long-Context Handling",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-16T07:07:53.282Z",
+      "updatedAt": "2026-01-16T07:08:02.391Z",
+      "description": "Integrate MIT CSAIL's RLM paradigm into codelet/fspec to enable near-infinite context handling by treating prompts as environment variables that the LLM can programmatically explore through a REPL environment with recursive sub-LM calls. This replaces/augments the current anchor-based compaction strategy with a fundamentally different approach that preserves information and handles 10M+ token contexts.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/RLM-001/RLM.md"
+      ]
     }
   },
   "states": {
@@ -61349,7 +61362,8 @@
       "DOC-013",
       "DOC-014",
       "DOC-017",
-      "AGENT-022"
+      "AGENT-022",
+      "RLM-001"
     ],
     "specifying": [
       "LANG-001",
@@ -61869,6 +61883,7 @@
     "TOOLS": 4,
     "CONFIG": 4,
     "PROV": 4,
-    "PATCH": 2
+    "PATCH": 2,
+    "RLM": 1
   }
 }
