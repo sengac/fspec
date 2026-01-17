@@ -58,18 +58,15 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
   // Initialize worker thread on mount
   useEffect(() => {
     const workerPath = getWorkerPath();
-    logger.info(`[${componentId.current}] Initializing worker thread at: ${workerPath}`);
 
     try {
       workerRef.current = new Worker(workerPath);
-      logger.info(`[${componentId.current}] Worker thread initialized successfully`);
     } catch (error) {
       logger.error(`[${componentId.current}] Failed to initialize worker: ${error}`);
     }
 
     return () => {
       if (workerRef.current) {
-        logger.info(`[${componentId.current}] Terminating worker thread`);
         workerRef.current.terminate();
         workerRef.current = null;
       }
@@ -81,7 +78,6 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
     const selectedFile = files[selectedFileIndex];
 
     if (!selectedFile) {
-      logger.info(`[${componentId.current}] No selected file, clearing diff`);
       setDiffContent('');
       setIsLoadingDiff(false);
       return;
@@ -89,20 +85,17 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
 
     // Handle deleted files - show message instead of loading diff
     if (selectedFile.changeType === 'D') {
-      logger.info(`[${componentId.current}] File is deleted: ${selectedFile.path}`);
       setDiffContent('File was deleted');
       setIsLoadingDiff(false);
       return;
     }
 
     if (!workerRef.current) {
-      logger.error(`[${componentId.current}] Worker not initialized, cannot load diff`);
       setDiffContent('Worker thread not available');
       setIsLoadingDiff(false);
       return;
     }
 
-    logger.info(`[${componentId.current}] Loading diff for file: ${selectedFile.path}`);
     setIsLoadingDiff(true);
 
     const startTime = Date.now();
@@ -113,20 +106,15 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
 
     // Set up message handler for this request
     const messageHandler = (response: { id: string; diff?: string; error?: string }) => {
-      const duration = Date.now() - startTime;
-
       // Ignore responses from cancelled requests
       if (response.id !== pendingRequestId.current) {
-        logger.info(`[${componentId.current}] Received stale response (id=${response.id}), ignoring`);
         return;
       }
 
       if (response.error) {
-        logger.error(`[${componentId.current}] Worker error after ${duration}ms: ${response.error}`);
         setDiffContent('Error loading diff');
       } else {
         const diffLength = response.diff?.length || 0;
-        logger.info(`[${componentId.current}] Diff loaded successfully in ${duration}ms (${diffLength} chars)`);
 
         // Truncate large diffs to prevent UX hangs
         const MAX_DIFF_SIZE = 100000; // 100KB max
@@ -136,7 +124,6 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
           const linesShown = truncatedDiff.split('\n').length;
           const totalLines = response.diff!.split('\n').length;
           finalDiff = truncatedDiff + `\n\n... (diff truncated: showing ${linesShown}/${totalLines} lines, ${MAX_DIFF_SIZE}/${diffLength} chars)`;
-          logger.info(`[${componentId.current}] Diff truncated from ${diffLength} to ${MAX_DIFF_SIZE} chars`);
         }
 
         setDiffContent(finalDiff);
@@ -147,9 +134,6 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
     };
 
     worker.on('message', messageHandler);
-
-    // Send request to worker
-    logger.info(`[${componentId.current}] Sending request to worker (id=${requestId})`);
     worker.postMessage({
       id: requestId,
       cwd,
@@ -158,7 +142,6 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
 
     // Cleanup function to cancel pending requests
     return () => {
-      logger.info(`[${componentId.current}] CLEANUP called (cancelling request ${requestId})`);
       pendingRequestId.current = null;
       worker.off('message', messageHandler);
     };

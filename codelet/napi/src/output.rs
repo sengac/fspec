@@ -26,7 +26,6 @@ use napi::threadsafe_function::{
 };
 use napi::Status;
 use std::sync::Mutex;
-use tracing::info;
 
 /// Type alias for our ThreadsafeFunction with CalleeHandled=false
 /// Generic params: <T, Return, CallJsBackArgs, ErrorStatus, CalleeHandled>
@@ -228,15 +227,6 @@ impl StreamOutput for NapiOutput {
                 );
             }
             StreamEvent::Tokens(tokens) => {
-                // PROV-001 DEBUG: Log token emission for display debugging
-                info!(
-                    "[PROV-001] Token emit to UI: input_tokens={} (TOTAL for display), output_tokens={}, cache_read={:?}, cache_creation={:?}, tok/s={:?}",
-                    tokens.input_tokens,
-                    tokens.output_tokens,
-                    tokens.cache_read_input_tokens,
-                    tokens.cache_creation_input_tokens,
-                    tokens.tokens_per_second
-                );
                 // Store token info to send with next flush
                 // This batches token updates with text for efficiency
                 let tracker = TokenTracker {
@@ -272,14 +262,11 @@ impl StreamOutput for NapiOutput {
             StreamEvent::ToolProgress(progress) => {
                 // TOOL-011: Stream tool execution progress to JavaScript
                 // Don't flush text buffer - tool progress is separate from LLM text streaming
-                tracing::info!("[NAPI OUTPUT] Received ToolProgress event: tool_name={}, output_chunk={:?}", 
-                    progress.tool_name, progress.output_chunk);
                 let info = ToolProgressInfo {
                     tool_call_id: progress.tool_call_id,
                     tool_name: progress.tool_name,
                     output_chunk: progress.output_chunk,
                 };
-                tracing::info!("[NAPI OUTPUT] Sending ToolProgress chunk to JavaScript");
                 let _ = self.callback.call(
                     StreamChunk::tool_progress(info),
                     ThreadsafeFunctionCallMode::NonBlocking,

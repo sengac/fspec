@@ -185,19 +185,14 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     let server: Server | null = null;
 
     try {
-      logger.info('[BOARDVIEW] Setting up IPC server for checkpoint updates');
       server = createIPCServer((message) => {
-        logger.info(`[BOARDVIEW] IPC message received: ${JSON.stringify(message)}`);
         if (message.type === 'checkpoint-changed') {
-          logger.info('[BOARDVIEW] Triggering loadCheckpointCounts() from IPC event');
           void useFspecStore.getState().loadCheckpointCounts();
-          logger.info('[BOARDVIEW] loadCheckpointCounts() call completed (async)');
         }
       });
 
       const ipcPath = getIPCPath();
       server.listen(ipcPath);
-      logger.info(`[BOARDVIEW] IPC server listening on ${ipcPath}`);
     } catch (error) {
       // IPC server failed to start (non-fatal - TUI still works)
       logger.error(`[BOARDVIEW] Failed to start IPC server: ${error}`);
@@ -205,7 +200,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
     return () => {
       if (server) {
-        logger.info('[BOARDVIEW] Cleaning up IPC server');
         cleanupIPCServer(server);
       }
     };
@@ -217,7 +211,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
     const initServer = async () => {
       try {
-        logger.info('[BoardView] Starting attachment server');
         httpServer = await startAttachmentServer({
           cwd: storeCwd,
           port: 0, // Random available port
@@ -226,7 +219,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         const port = getServerPort(httpServer);
         if (port) {
           setAttachmentServerPort(port);
-          logger.info(`[BoardView] Attachment server started on port ${port}`);
         }
       } catch (error) {
         // Server startup failure is non-fatal - TUI continues working (REFAC-004 business rule 6)
@@ -238,7 +230,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
 
     return () => {
       if (httpServer) {
-        logger.info('[BoardView] Stopping attachment server');
         void stopAttachmentServer(httpServer).catch((error) => {
           logger.error(`[BoardView] Error stopping attachment server: ${error}`);
         });
@@ -291,15 +282,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       const foundationPath = 'spec/FOUNDATION.md';
 
       if (attachmentServerPort) {
-        // Open via HTTP server (same as attachments)
         const url = `http://localhost:${attachmentServerPort}/view/${foundationPath}`;
-        logger.info(`[BoardView] Opening FOUNDATION.md URL: ${url}`);
-
         openInBrowser({ url, wait: false }).catch((error: Error) => {
           logger.error(`[BoardView] Failed to open FOUNDATION.md: ${error.message}`);
         });
-      } else {
-        logger.warn(`[BoardView] Attachment server not available, cannot open FOUNDATION.md`);
       }
       return;
     }
@@ -485,16 +471,12 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
             // REFAC-004: Use HTTP URL if attachment server is running, otherwise fall back to file://
             let url: string;
             if (attachmentServerPort) {
-              // Construct HTTP URL: http://localhost:PORT/view/{relativePath}
               url = `http://localhost:${attachmentServerPort}/view/${attachment}`;
-              logger.info(`[BoardView] Opening attachment URL: ${url}`);
             } else {
-              // Fallback to file:// URL if server not available
               const absolutePath = path.isAbsolute(attachment)
                 ? attachment
                 : path.resolve(cwd || process.cwd(), attachment);
               url = `file://${absolutePath}`;
-              logger.warn(`[BoardView] Attachment server not available, using file:// URL: ${url}`);
             }
 
             openInBrowser({ url, wait: false }).catch((error: Error) => {

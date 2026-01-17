@@ -632,11 +632,6 @@ impl CodeletSession {
         session.turns.clear();
         session.token_tracker = codelet_core::compaction::TokenTracker::default();
 
-        tracing::info!(
-            "restore_messages_from_envelopes: processing {} envelopes",
-            envelopes.len()
-        );
-
         for (idx, envelope_json) in envelopes.iter().enumerate() {
             tracing::debug!(
                 "Processing envelope {}: {}",
@@ -838,29 +833,14 @@ impl CodeletSession {
                 true
             });
 
-            tracing::info!(
-                "restore_messages_from_envelopes: removed orphaned tool_use blocks, {} messages remaining",
-                session.messages.len()
-            );
         }
 
         // Rebuild turns from restored messages for compaction support
         session.turns = convert_messages_to_turns(&session.messages);
 
-        tracing::info!(
-            "restore_messages_from_envelopes: restored {} messages, {} turns",
-            session.messages.len(),
-            session.turns.len()
-        );
-
         // Re-inject context reminders to ensure CLAUDE.md and environment info
         // are present after restoration
         session.inject_context_reminders();
-
-        tracing::info!(
-            "restore_messages_from_envelopes: after context injection, {} total messages",
-            session.messages.len()
-        );
 
         Ok(())
     }

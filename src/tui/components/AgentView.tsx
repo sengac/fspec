@@ -979,14 +979,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           const { setRustLogCallback } = await import('@sengac/codelet-napi');
           setRustLogCallback((msg: string) => {
             // Route Rust logs through TypeScript logger
+            // Only forward errors - warn/debug are too noisy (tool errors, etc.)
             if (msg.includes('[RUST:ERROR]')) {
               logger.error(msg);
-            } else if (msg.includes('[RUST:WARN]')) {
-              logger.warn(msg);
-            } else if (msg.includes('[RUST:DEBUG]')) {
-              logger.debug(msg);
-            } else {
-              
             }
           });
         } catch (err) {

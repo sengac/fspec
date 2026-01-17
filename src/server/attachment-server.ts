@@ -65,21 +65,13 @@ export async function startAttachmentServer(
     try {
       // Extract file path from URL (everything after /view/)
       // In Express 5, *filepath creates req.params.filepath as an ARRAY of path segments
-      logger.info(`[AttachmentServer] Raw params:`, req.params);
-
       const filepathParam = req.params.filepath;
-      logger.info(
-        `[AttachmentServer] Filepath param type: ${Array.isArray(filepathParam) ? 'array' : typeof filepathParam}, value:`,
-        filepathParam
-      );
 
       // Join array segments back into a path
       const rawPath = Array.isArray(filepathParam)
         ? filepathParam.join('/')
         : String(filepathParam || '');
       const filePath = decodeURIComponent(rawPath);
-
-      logger.info(`[AttachmentServer] Request to view: ${filePath}`);
 
       // Validate path
       const absolutePath = validatePath(filePath);
@@ -147,12 +139,6 @@ export async function startAttachmentServer(
   // Start server
   return new Promise((resolve, reject) => {
     const server = app.listen(port, () => {
-      const address = server.address();
-      const actualPort =
-        typeof address === 'object' && address ? address.port : port;
-      logger.info(
-        `[AttachmentServer] Server started on http://localhost:${actualPort}`
-      );
       resolve(server);
     });
 
@@ -176,7 +162,6 @@ export async function stopAttachmentServer(server: Server): Promise<void> {
         logger.error(`[AttachmentServer] Error stopping server: ${error}`);
         reject(error);
       } else {
-        logger.info('[AttachmentServer] Server stopped');
         resolve();
       }
     });

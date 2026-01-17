@@ -379,14 +379,11 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
     use codelet_cli::interactive::run_agent_stream;
     use codelet_core::RigAgent;
     
-    tracing::info!("Agent loop started for session {}", session.id);
-    
     loop {
         // Wait for input
         let prompt_input = match input_rx.recv().await {
             Some(input) => input,
             None => {
-                tracing::info!("Agent loop exiting for session {} (channel closed)", session.id);
                 break;
             }
         };
@@ -496,8 +493,6 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
         // Set status back to idle
         session.set_status(SessionStatus::Idle);
     }
-    
-    tracing::info!("Agent loop terminated for session {}", session.id);
 }
 
 /// Output handler for background sessions that implements StreamOutput
