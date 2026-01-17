@@ -24,7 +24,7 @@ import React, {
   useDeferredValue,
 } from 'react';
 import fs from 'fs';
-import { Box, Text, useInput, useStdout } from 'ink';
+import { Box, Text, useInput, useStdout, useStdin } from 'ink';
 import { VirtualList } from './VirtualList';
 import { MultiLineInput } from './MultiLineInput';
 import { InputTransition } from './InputTransition';
@@ -33,13 +33,40 @@ import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
 import {
+  CodeletSession,
   persistenceStoreMessageEnvelope,
+  persistenceGetHistory,
+  persistenceForkSession,
+  persistenceAddHistory,
+  persistenceSearchHistory,
+  persistenceListSessions,
+  persistenceSetDataDirectory,
+  persistenceLoadSession,
+  persistenceRenameSession,
+  persistenceMergeMessages,
+  persistenceCherryPick,
+  persistenceCreateSessionWithProvider,
+  persistenceGetSessionMessages,
+  persistenceGetSessionMessageEnvelopes,
+  persistenceDeleteSession,
+  persistenceCleanupOrphanedMessages,
   getThinkingConfig,
   JsThinkingLevel,
   modelsListAll,
   modelsRefreshCache,
+  modelsSetCacheDirectory,
   sessionToggleDebug,
   sessionCompact,
+  sessionAttach,
+  sessionSendInput,
+  sessionGetBufferedOutput,
+  sessionDetach,
+  sessionInterrupt,
+  sessionManagerList,
+  sessionManagerCreateWithId,
+  sessionManagerDestroy,
+  sessionRestoreMessages,
+  setRustLogCallback,
   type NapiProviderModels,
   type NapiModelInfo,
 } from '@sengac/codelet-napi';
@@ -613,6 +640,20 @@ const calculateStartLine = (
 
 export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const { stdout } = useStdout();
+  const { stdin } = useStdin();
+
+  // DEBUG: Log raw stdin data to see what Shift+ESC produces
+  useEffect(() => {
+    if (!stdin) return;
+    const handleRawData = (data: Buffer) => {
+      const hex = [...data].map(b => b.toString(16).padStart(2, '0')).join(' ');
+      const str = data.toString().replace(/\x1b/g, '\\x1b');
+      logger.warn(`[RAW STDIN] hex=[${hex}] str="${str}" len=${data.length}`);
+    };
+    stdin.on('data', handleRawData);
+    return () => { stdin.off('data', handleRawData); };
+  }, [stdin]);
+
   // NAPI-009: Removed session state - we use SessionManager background sessions exclusively
   const [error, setError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
@@ -714,6 +755,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+
+  // TUI-048: Space+ESC detection for immediate detach
+  const spaceTimeRef = useRef<number>(0);
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
@@ -955,15 +999,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   useEffect(() => {
     const initSession = async () => {
       try {
-        // Dynamic import to handle ESM
-        const codeletNapi = await import('@sengac/codelet-napi');
-        const {
-          persistenceSetDataDirectory,
-          persistenceGetHistory,
-          modelsListAll: loadModels,
-          modelsSetCacheDirectory,
-        } = codeletNapi;
-
         // NAPI-006: Set up persistence data directory
         const fspecDir = getFspecUserDir();
         try {
@@ -976,7 +1011,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
         // Wire up Rust tracing to TypeScript logger
         try {
-          const { setRustLogCallback } = await import('@sengac/codelet-napi');
           setRustLogCallback((msg: string) => {
             // Route Rust logs through TypeScript logger
             // Only forward errors - warn/debug are too noisy (tool errors, etc.)
@@ -991,7 +1025,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // TUI-034: Load models and build provider sections
         let allModels: NapiProviderModels[] = [];
         try {
-          allModels = await loadModels();
+          allModels = await modelsListAll();
           logger.debug(`Loaded ${allModels.length} providers from models.dev`);
         } catch (err) {
           const errorMsg = err instanceof Error ? err.message : String(err);
@@ -1277,7 +1311,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       setInputValue('');
       const allProjects = userMessage.includes('--all-projects');
       try {
-        const { persistenceGetHistory } = await import('@sengac/codelet-napi');
+        
         const history = persistenceGetHistory(
           allProjects ? null : currentProjectRef.current,
           20
@@ -1321,8 +1355,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       setInputValue('');
       const targetName = userMessage.slice(8).trim();
       try {
-        const { persistenceListSessions, persistenceLoadSession } =
-          await import('@sengac/codelet-napi');
         const sessions = persistenceListSessions(currentProjectRef.current);
         const target = sessions.find(
           (s: SessionManifest) => s.name === targetName
@@ -1362,9 +1394,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
       try {
-        const { persistenceRenameSession } = await import(
-          '@sengac/codelet-napi'
-        );
         persistenceRenameSession(currentSessionId, newName);
         setConversation(prev => [
           ...prev,
@@ -1402,7 +1431,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
       try {
-        const { persistenceForkSession } = await import('@sengac/codelet-napi');
+        
         const forkedSession = persistenceForkSession(
           currentSessionId,
           index,
@@ -1452,8 +1481,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
       try {
-        const { persistenceListSessions, persistenceMergeMessages } =
-          await import('@sengac/codelet-napi');
         const sessions = persistenceListSessions(currentProjectRef.current);
         const source = sessions.find(
           (s: SessionManifest) => s.name === sourceName || s.id === sourceName
@@ -1522,9 +1549,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
       try {
-        const { persistenceListSessions, persistenceCherryPick } = await import(
-          '@sengac/codelet-napi'
-        );
         const sessions = persistenceListSessions(currentProjectRef.current);
         const source = sessions.find(
           (s: SessionManifest) => s.name === sourceName || s.id === sourceName
@@ -1619,9 +1643,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     let activeSessionId = currentSessionId;
     if (!activeSessionId && isFirstMessageRef.current) {
       try {
-        const { persistenceCreateSessionWithProvider, sessionManagerCreateWithId } = await import(
-          '@sengac/codelet-napi'
-        );
         const project = currentProjectRef.current;
         // Use first message as session name (truncated to 500 chars to allow wrapping in UI)
         const sessionName =
@@ -1665,7 +1686,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     // NAPI-006: Save command to history
     if (activeSessionId) {
       try {
-        const { persistenceAddHistory } = await import('@sengac/codelet-napi');
+        
         persistenceAddHistory(
           userMessage,
           currentProjectRef.current,
@@ -1761,8 +1782,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       // NAPI-009: Use background session for prompts instead of direct CodeletSession
       // This enables detach/attach to work - the background session continues running
       // even when the UI is detached
-      const { sessionAttach, sessionSendInput } = await import('@sengac/codelet-napi');
-      
+
       // Create a promise that resolves when the agent completes (Done chunk received)
       const promptComplete = new Promise<void>((resolve, reject) => {
         // Attach callback for streaming - this receives chunks from the background session
@@ -2486,12 +2506,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         setTimeout(async () => {
           await modelsRefreshCache();
           // Rebuild provider sections with new credentials
-          const codeletNapi = await import('@sengac/codelet-napi');
-          const { modelsListAll: loadModels } = codeletNapi;
 
           let allModels: NapiProviderModels[] = [];
           try {
-            allModels = await loadModels();
+            allModels = await modelsListAll();
           } catch {
             // Ignore
           }
@@ -2586,9 +2604,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       const internalName = mapProviderIdToInternal(providerId);
 
       // Try to create a session with this provider to test the connection
-      const codeletNapi = await import('@sengac/codelet-napi');
-      const { CodeletSession } = codeletNapi;
-
       // Attempt to create a session - this will fail if credentials are invalid
       const testSession = new CodeletSession(internalName);
 
@@ -2618,12 +2633,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       await modelsRefreshCache();
 
       // Fetch the updated models
-      const codeletNapi = await import('@sengac/codelet-napi');
-      const { modelsListAll: loadModels } = codeletNapi;
-
       let allModels: NapiProviderModels[] = [];
       try {
-        allModels = await loadModels();
+        allModels = await modelsListAll();
       } catch (err) {
         logger.warn('Failed to load models from models.dev', { error: err });
       }
@@ -2775,7 +2787,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     }
 
     try {
-      const { persistenceSearchHistory } = await import('@sengac/codelet-napi');
+      
       const results = persistenceSearchHistory(
         query,
         currentProjectRef.current
@@ -3052,8 +3064,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // Now queries both persistence and background sessions, merging results
   const handleResumeMode = useCallback(async () => {
     try {
-      const { persistenceListSessions, sessionManagerList } = await import('@sengac/codelet-napi');
-      
       // Get persisted sessions
       const persistedSessions = persistenceListSessions(currentProjectRef.current);
       
@@ -3137,8 +3147,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       // TUI-047: Check if this is a background session
       if (selectedSession.isBackgroundSession) {
         // Background session - use sessionAttach instead of loading from persistence
-        const { sessionAttach, sessionGetBufferedOutput } = await import('@sengac/codelet-napi');
-        
+
         // First get buffered output (produced while detached)
         const bufferedChunks = sessionGetBufferedOutput(selectedSession.id, 1000);
         
@@ -3162,10 +3171,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       }
       
       // Persisted-only session - use existing persistence load code path
-      const {
-        persistenceGetSessionMessages,
-        persistenceGetSessionMessageEnvelopes,
-      } = await import('@sengac/codelet-napi');
       const messages = persistenceGetSessionMessages(selectedSession.id);
 
       // Get FULL envelopes with all content blocks (ToolUse, ToolResult, Text, etc.)
@@ -3401,8 +3406,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
       // NAPI-009: Restore messages to background session for LLM context
       // Create the background session if it doesn't exist, then restore messages
-      const { sessionManagerCreateWithId, sessionRestoreMessages } = await import('@sengac/codelet-napi');
-      
+
       // TUI-034: Use full model path if available, fallback to provider
       const modelPath = selectedSession.provider || currentProvider;
       const project = currentProjectRef.current;
@@ -3498,9 +3502,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       }
 
       try {
-        const { persistenceDeleteSession, persistenceCleanupOrphanedMessages, sessionManagerDestroy } =
-          await import('@sengac/codelet-napi');
-
         if (option === 'Delete This Session') {
           // Delete single session
           const selectedSession = availableSessions[resumeSessionIndex];
@@ -3562,7 +3563,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // Detach - session continues running in background
         if (currentSessionId) {
           try {
-            const { sessionDetach } = await import('@sengac/codelet-napi');
             sessionDetach(currentSessionId);
           } catch (err) {
             // Log but continue - session may not be in background manager
@@ -3574,7 +3574,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // Close Session - terminate the session
         if (currentSessionId) {
           try {
-            const { sessionManagerDestroy } = await import('@sengac/codelet-napi');
             sessionManagerDestroy(currentSessionId);
           } catch (err) {
             // Log but continue - session may not be in background manager
@@ -3695,6 +3694,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // Handle keyboard input
   useInput(
     (input, key) => {
+      // DEBUG: Log all key input at start
+      logger.warn(`[AgentView] KEY: escape=${key.escape}, shift=${key.shift}, meta=${key.meta}, ctrl=${key.ctrl}, tab=${key.tab}, input="${input.replace(/\x1b/g, '\\x1b')}", inputLen=${input.length}`);
+
       if (input.startsWith('[M') || key.mouse) {
         // Parse raw mouse escape sequences for scroll wheel
         if (input.startsWith('[M')) {
@@ -3767,6 +3769,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       // NAPI-006: Search mode keyboard handling
       if (isSearchMode) {
         if (key.escape && !key.shift && !key.meta) {
+          logger.warn('[AgentView] EXIT: search mode ESC');
           handleSearchCancel();
           return;
         }
@@ -3807,9 +3810,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // TUI-040: Handle delete dialog keyboard input first
         if (showSessionDeleteDialog) {
           // Dialog handles its own input via useInput
+          logger.warn('[AgentView] EXIT: resume mode, delete dialog active');
           return;
         }
         if (key.escape && !key.shift && !key.meta) {
+          logger.warn('[AgentView] EXIT: resume mode ESC');
           handleResumeCancel();
           return;
         }
@@ -3833,11 +3838,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           return;
         }
         // No text input in resume mode - just navigation
+        logger.warn('[AgentView] EXIT: resume mode, no matching key');
         return;
       }
 
       if (showProviderSelector) {
         if (key.escape && !key.shift && !key.meta) {
+          logger.warn('[AgentView] EXIT: provider selector ESC');
           setShowProviderSelector(false);
           return;
         }
@@ -3857,6 +3864,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           void handleSwitchProvider(availableProviders[selectedProviderIndex]);
           return;
         }
+        logger.warn('[AgentView] EXIT: provider selector, no matching key');
         return;
       }
 
@@ -3865,6 +3873,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // Filter mode handling
         if (isModelSelectorFilterMode) {
           if (key.escape && !key.shift && !key.meta) {
+            logger.warn('[AgentView] EXIT: model selector filter mode ESC');
             setIsModelSelectorFilterMode(false);
             setModelSelectorFilter('');
             return;
@@ -3893,9 +3902,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
         if (key.escape && !key.shift && !key.meta) {
           if (modelSelectorFilter) {
+            logger.warn('[AgentView] EXIT: model selector ESC (clear filter)');
             setModelSelectorFilter('');
             return;
           }
+          logger.warn('[AgentView] EXIT: model selector ESC (close)');
           setShowModelSelector(false);
           return;
         }
@@ -4035,6 +4046,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // Filter mode handling
         if (isSettingsFilterMode) {
           if (key.escape && !key.shift && !key.meta) {
+            logger.warn('[AgentView] EXIT: settings filter mode ESC');
             setIsSettingsFilterMode(false);
             setSettingsFilter('');
             return;
@@ -4063,14 +4075,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
         if (key.escape && !key.shift && !key.meta) {
           if (settingsFilter) {
+            logger.warn('[AgentView] EXIT: settings ESC (clear filter)');
             setSettingsFilter('');
             return;
           }
           if (editingProviderId) {
+            logger.warn('[AgentView] EXIT: settings ESC (cancel editing)');
             // Cancel editing
             setEditingProviderId(null);
             setEditingApiKey('');
           } else {
+            logger.warn('[AgentView] EXIT: settings ESC (close)');
             setShowSettingsTab(false);
           }
           return;
@@ -4161,55 +4176,79 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           }
           return;
         }
+        logger.warn('[AgentView] EXIT: settings tab, no matching key');
         return;
       }
 
-      // TUI-048: Shift+ESC immediate detach - highest priority, overrides all other ESC handlers
-      // Note: Most terminals send \x1b\x1b for Shift+ESC, which Ink parses as escape+meta (not escape+shift)
-      if (key.escape && (key.shift || key.meta)) {
-        // Immediately detach session without confirmation modal
-        // Call onExit directly for instant feedback, skip sessionDetach for speed
-        onExit();
-        return;
+      // TUI-048: Space+ESC for immediate detach (bypasses confirmation dialog)
+      // Track space press, then if ESC comes within 500ms, trigger detach
+      if (input === ' ' && !key.meta && !key.ctrl) {
+        spaceTimeRef.current = Date.now();
+        // Don't return - let space be handled normally (inserted into input)
+      }
+
+      if (key.escape && spaceTimeRef.current > 0) {
+        const timeSinceSpace = Date.now() - spaceTimeRef.current;
+        spaceTimeRef.current = 0; // Reset
+        if (timeSinceSpace < 500) {
+          logger.warn(`[AgentView] EXIT: Space+ESC immediate detach (${timeSinceSpace}ms)`);
+          if (currentSessionId) {
+            try {
+              sessionDetach(currentSessionId);
+            } catch {
+              // Session may not be in background manager
+            }
+          }
+          onExit();
+          return;
+        }
       }
 
       // TUI-045: Esc key handling with priority order:
       // 1) Close exit confirmation modal, 2) Close turn modal, 3) Disable select mode, 4) Interrupt loading, 5) Clear input, 6) Show exit confirmation or exit
-      if (key.escape && !key.shift && !key.meta) {
+      if (key.escape) {
+        logger.warn(`[AgentView] ESC: isLoading=${isLoading}, showExitConfirmation=${showExitConfirmation}, showTurnModal=${showTurnModal}, isTurnSelectMode=${isTurnSelectMode}`);
+
         // Priority 1: Close exit confirmation modal (TUI-046)
         if (showExitConfirmation) {
+          logger.warn('[AgentView] EXIT: ESC Priority 1 - close exit confirmation');
           setShowExitConfirmation(false);
           return;
         }
         // Priority 2: Close turn modal
         if (showTurnModal) {
+          logger.warn('[AgentView] EXIT: ESC Priority 2 - close turn modal');
           setShowTurnModal(false);
           return;
         }
         // Priority 3: Disable select mode
         if (isTurnSelectMode) {
+          logger.warn('[AgentView] EXIT: ESC Priority 3 - disable select mode');
           setIsTurnSelectMode(false);
           return;
         }
         // Priority 4: Interrupt loading - use background session interrupt
         if (isLoading && currentSessionId) {
-          // NAPI-009: Use background session interrupt instead of CodeletSession
-          import('@sengac/codelet-napi').then(({ sessionInterrupt }) => {
+          logger.warn('[AgentView] EXIT: ESC Priority 4 - interrupt loading');
+          try {
             sessionInterrupt(currentSessionId);
-          }).catch((err) => {
+          } catch (err) {
             logger.warn('Failed to interrupt session:', err);
-          });
+          }
           return;
         }
         // Priority 5: Clear input
         if (inputValue.trim() !== '') {
+          logger.warn('[AgentView] EXIT: ESC Priority 5 - clear input');
           setInputValue('');
           return;
         }
         // Priority 6: Show exit confirmation if session exists, otherwise exit (TUI-046)
         if (currentSessionId) {
+          logger.warn('[AgentView] EXIT: ESC Priority 6 - show exit confirmation');
           setShowExitConfirmation(true);
         } else {
+          logger.warn('[AgentView] EXIT: ESC Priority 6 - no session, calling onExit()');
           onExit();
         }
         return;
@@ -5274,7 +5313,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
-            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Shift+ESC' detach)"
+            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Space+Esc' detach)"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
             maxVisibleLines={5}
