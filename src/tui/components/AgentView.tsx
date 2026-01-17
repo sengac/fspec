@@ -24,7 +24,7 @@ import React, {
   useDeferredValue,
 } from 'react';
 import fs from 'fs';
-import { Box, Text, useInput, useStdout, useStdin } from 'ink';
+import { Box, Text, useInput, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { MultiLineInput } from './MultiLineInput';
 import { InputTransition } from './InputTransition';
@@ -640,19 +640,6 @@ const calculateStartLine = (
 
 export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const { stdout } = useStdout();
-  const { stdin } = useStdin();
-
-  // DEBUG: Log raw stdin data to see what Shift+ESC produces
-  useEffect(() => {
-    if (!stdin) return;
-    const handleRawData = (data: Buffer) => {
-      const hex = [...data].map(b => b.toString(16).padStart(2, '0')).join(' ');
-      const str = data.toString().replace(/\x1b/g, '\\x1b');
-      logger.warn(`[RAW STDIN] hex=[${hex}] str="${str}" len=${data.length}`);
-    };
-    stdin.on('data', handleRawData);
-    return () => { stdin.off('data', handleRawData); };
-  }, [stdin]);
 
   // NAPI-009: Removed session state - we use SessionManager background sessions exclusively
   const [error, setError] = useState<string | null>(null);
@@ -3694,9 +3681,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // Handle keyboard input
   useInput(
     (input, key) => {
-      // DEBUG: Log all key input at start
-      logger.warn(`[AgentView] KEY: escape=${key.escape}, shift=${key.shift}, meta=${key.meta}, ctrl=${key.ctrl}, tab=${key.tab}, input="${input.replace(/\x1b/g, '\\x1b')}", inputLen=${input.length}`);
-
       if (input.startsWith('[M') || key.mouse) {
         // Parse raw mouse escape sequences for scroll wheel
         if (input.startsWith('[M')) {
@@ -3769,7 +3753,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       // NAPI-006: Search mode keyboard handling
       if (isSearchMode) {
         if (key.escape && !key.shift && !key.meta) {
-          logger.warn('[AgentView] EXIT: search mode ESC');
           handleSearchCancel();
           return;
         }
@@ -3810,11 +3793,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // TUI-040: Handle delete dialog keyboard input first
         if (showSessionDeleteDialog) {
           // Dialog handles its own input via useInput
-          logger.warn('[AgentView] EXIT: resume mode, delete dialog active');
           return;
         }
         if (key.escape && !key.shift && !key.meta) {
-          logger.warn('[AgentView] EXIT: resume mode ESC');
           handleResumeCancel();
           return;
         }
@@ -3838,13 +3819,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           return;
         }
         // No text input in resume mode - just navigation
-        logger.warn('[AgentView] EXIT: resume mode, no matching key');
         return;
       }
 
       if (showProviderSelector) {
         if (key.escape && !key.shift && !key.meta) {
-          logger.warn('[AgentView] EXIT: provider selector ESC');
           setShowProviderSelector(false);
           return;
         }
@@ -3864,7 +3843,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           void handleSwitchProvider(availableProviders[selectedProviderIndex]);
           return;
         }
-        logger.warn('[AgentView] EXIT: provider selector, no matching key');
         return;
       }
 
@@ -3873,7 +3851,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // Filter mode handling
         if (isModelSelectorFilterMode) {
           if (key.escape && !key.shift && !key.meta) {
-            logger.warn('[AgentView] EXIT: model selector filter mode ESC');
             setIsModelSelectorFilterMode(false);
             setModelSelectorFilter('');
             return;
@@ -3902,11 +3879,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
         if (key.escape && !key.shift && !key.meta) {
           if (modelSelectorFilter) {
-            logger.warn('[AgentView] EXIT: model selector ESC (clear filter)');
             setModelSelectorFilter('');
             return;
           }
-          logger.warn('[AgentView] EXIT: model selector ESC (close)');
           setShowModelSelector(false);
           return;
         }
@@ -4046,7 +4021,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // Filter mode handling
         if (isSettingsFilterMode) {
           if (key.escape && !key.shift && !key.meta) {
-            logger.warn('[AgentView] EXIT: settings filter mode ESC');
             setIsSettingsFilterMode(false);
             setSettingsFilter('');
             return;
@@ -4075,17 +4049,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
         if (key.escape && !key.shift && !key.meta) {
           if (settingsFilter) {
-            logger.warn('[AgentView] EXIT: settings ESC (clear filter)');
             setSettingsFilter('');
             return;
           }
           if (editingProviderId) {
-            logger.warn('[AgentView] EXIT: settings ESC (cancel editing)');
             // Cancel editing
             setEditingProviderId(null);
             setEditingApiKey('');
           } else {
-            logger.warn('[AgentView] EXIT: settings ESC (close)');
             setShowSettingsTab(false);
           }
           return;
@@ -4176,7 +4147,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           }
           return;
         }
-        logger.warn('[AgentView] EXIT: settings tab, no matching key');
         return;
       }
 
@@ -4191,7 +4161,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         const timeSinceSpace = Date.now() - spaceTimeRef.current;
         spaceTimeRef.current = 0; // Reset
         if (timeSinceSpace < 500) {
-          logger.warn(`[AgentView] EXIT: Space+ESC immediate detach (${timeSinceSpace}ms)`);
           if (currentSessionId) {
             try {
               sessionDetach(currentSessionId);
@@ -4207,48 +4176,39 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       // TUI-045: Esc key handling with priority order:
       // 1) Close exit confirmation modal, 2) Close turn modal, 3) Disable select mode, 4) Interrupt loading, 5) Clear input, 6) Show exit confirmation or exit
       if (key.escape) {
-        logger.warn(`[AgentView] ESC: isLoading=${isLoading}, showExitConfirmation=${showExitConfirmation}, showTurnModal=${showTurnModal}, isTurnSelectMode=${isTurnSelectMode}`);
-
         // Priority 1: Close exit confirmation modal (TUI-046)
         if (showExitConfirmation) {
-          logger.warn('[AgentView] EXIT: ESC Priority 1 - close exit confirmation');
           setShowExitConfirmation(false);
           return;
         }
         // Priority 2: Close turn modal
         if (showTurnModal) {
-          logger.warn('[AgentView] EXIT: ESC Priority 2 - close turn modal');
           setShowTurnModal(false);
           return;
         }
         // Priority 3: Disable select mode
         if (isTurnSelectMode) {
-          logger.warn('[AgentView] EXIT: ESC Priority 3 - disable select mode');
           setIsTurnSelectMode(false);
           return;
         }
         // Priority 4: Interrupt loading - use background session interrupt
         if (isLoading && currentSessionId) {
-          logger.warn('[AgentView] EXIT: ESC Priority 4 - interrupt loading');
           try {
             sessionInterrupt(currentSessionId);
-          } catch (err) {
-            logger.warn('Failed to interrupt session:', err);
+          } catch {
+            // Ignore interrupt errors
           }
           return;
         }
         // Priority 5: Clear input
         if (inputValue.trim() !== '') {
-          logger.warn('[AgentView] EXIT: ESC Priority 5 - clear input');
           setInputValue('');
           return;
         }
         // Priority 6: Show exit confirmation if session exists, otherwise exit (TUI-046)
         if (currentSessionId) {
-          logger.warn('[AgentView] EXIT: ESC Priority 6 - show exit confirmation');
           setShowExitConfirmation(true);
         } else {
-          logger.warn('[AgentView] EXIT: ESC Priority 6 - no session, calling onExit()');
           onExit();
         }
         return;
