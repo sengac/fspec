@@ -14,6 +14,46 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'ink-testing-library';
 import { Box } from 'ink';
 
+// Mock model data matching models.dev structure
+const mockModels = vi.hoisted(() => ({
+  anthropic: {
+    providerId: 'anthropic',
+    providerName: 'Anthropic',
+    models: [
+      {
+        id: 'claude-sonnet-4-20250514',
+        name: 'Claude Sonnet 4',
+        family: 'claude-sonnet-4',
+        reasoning: true,
+        toolCall: true,
+        attachment: true,
+        temperature: true,
+        contextWindow: 200000,
+        maxOutput: 16000,
+        hasVision: true,
+      },
+    ],
+  },
+  openai: {
+    providerId: 'openai',
+    providerName: 'OpenAI',
+    models: [
+      {
+        id: 'gpt-4o',
+        name: 'GPT-4o',
+        family: 'gpt-4o',
+        reasoning: false,
+        toolCall: true,
+        attachment: true,
+        temperature: true,
+        contextWindow: 128000,
+        maxOutput: 16384,
+        hasVision: true,
+      },
+    ],
+  },
+}));
+
 // Create mock state that persists across mock hoisting
 const mockState = vi.hoisted(() => ({
   session: {
@@ -120,7 +160,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceSetDataDirectory: vi.fn(),
   // TUI-034: Model selection mocks
   modelsSetCacheDirectory: vi.fn(),
-  modelsListAll: vi.fn(() => Promise.resolve([])),
+  modelsListAll: vi.fn(() => Promise.resolve([mockModels.anthropic, mockModels.openai])),
   setRustLogCallback: vi.fn(),
   persistenceCreateSessionWithProvider: vi.fn().mockImplementation((name: string, project: string, provider: string) => ({
     id: 'mock-session-id',
@@ -202,6 +242,56 @@ vi.mock('@sengac/codelet-napi', () => ({
   },
   getThinkingConfig: vi.fn(() => null),
   persistenceStoreMessageEnvelope: vi.fn(),
+  // TUI-047: Session management for background sessions
+  sessionManagerList: vi.fn().mockReturnValue([]),
+  sessionAttach: vi.fn(),
+  sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
+  sessionManagerDestroy: vi.fn(),
+  sessionDetach: vi.fn(),
+  sessionSendInput: vi.fn(),
+  // NAPI-009: New session manager functions
+  sessionManagerCreateWithId: vi.fn(),
+  sessionRestoreMessages: vi.fn(),
+  // NAPI-009 + AGENT-021: Debug and compaction for background sessions
+  sessionToggleDebug: vi.fn().mockResolvedValue({
+    enabled: true,
+    sessionFile: '/tmp/debug-session.json',
+    message: 'Debug capture enabled. Events will be written to /tmp/debug-session.json',
+  }),
+  sessionCompact: vi.fn().mockResolvedValue({
+    originalTokens: 10000,
+    compactedTokens: 3000,
+    compressionRatio: 70,
+    turnsSummarized: 5,
+    turnsKept: 2,
+  }),
+}));
+
+// Mock credentials utilities - required for provider filtering
+vi.mock('../../utils/credentials', () => ({
+  getProviderConfig: vi.fn((registryId: string) => {
+    const registryToAvailable: Record<string, string> = {
+      anthropic: 'claude',
+      openai: 'openai',
+      gemini: 'gemini',
+      google: 'gemini',
+    };
+    const availableName = registryToAvailable[registryId] || registryId;
+    if (mockState.session.availableProviders.includes(availableName)) {
+      return Promise.resolve({ apiKey: 'test-key', source: 'file' });
+    }
+    return Promise.resolve({ apiKey: null, source: null });
+  }),
+  saveCredential: vi.fn(),
+  deleteCredential: vi.fn(),
+  maskApiKey: vi.fn((key: string) => '***'),
+}));
+
+// Mock config utilities
+vi.mock('../../utils/config', () => ({
+  loadConfig: vi.fn(() => Promise.resolve({})),
+  writeConfig: vi.fn(() => Promise.resolve()),
+  getFspecUserDir: vi.fn(() => '/tmp/fspec-test'),
 }));
 
 // Mock Ink's Box to strip position="absolute" which doesn't work in ink-testing-library
@@ -574,31 +664,6 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       // @step When I run "/merge session-b 3,4"
       stdin.write('/merge session-b 3,4');
-      await waitForFrame();
-      stdin.write('\r');
-      await waitForFrame(100);
-
-      // @step Then the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
-    });
-  });
-
-  // ============================================================================
-  // @session-list - List all sessions for current project
-  // ============================================================================
-
-  describe('Scenario: List all sessions for current project', () => {
-    it('should list sessions with /sessions command', async () => {
-      // @step Given I have multiple sessions for the current project
-
-      const { lastFrame, stdin } = render(
-        <AgentView onExit={() => {}} />
-      );
-
-      await waitForFrame();
-
-      // @step When I run "/sessions"
-      stdin.write('/sessions');
       await waitForFrame();
       stdin.write('\r');
       await waitForFrame(100);

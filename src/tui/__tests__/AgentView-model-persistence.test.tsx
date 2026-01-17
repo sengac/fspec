@@ -197,6 +197,29 @@ vi.mock('@sengac/codelet-napi', () => ({
     mockState.persistenceGetSessionMessageEnvelopes(...args),
   persistenceAppendMessage: vi.fn(),
   persistenceRenameSession: vi.fn(),
+  // TUI-047: Session management for background sessions
+  sessionManagerList: vi.fn().mockReturnValue([]),
+  sessionAttach: vi.fn(),
+  sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
+  sessionManagerDestroy: vi.fn(),
+  sessionDetach: vi.fn(),
+  sessionSendInput: vi.fn(),
+  // NAPI-009: New session manager functions
+  sessionManagerCreateWithId: vi.fn(),
+  sessionRestoreMessages: vi.fn(),
+  // NAPI-009 + AGENT-021: Debug and compaction for background sessions
+  sessionToggleDebug: vi.fn().mockResolvedValue({
+    enabled: true,
+    sessionFile: '/tmp/debug-session.json',
+    message: 'Debug capture enabled. Events will be written to /tmp/debug-session.json',
+  }),
+  sessionCompact: vi.fn().mockResolvedValue({
+    originalTokens: 10000,
+    compactedTokens: 3000,
+    compressionRatio: 70,
+    turnsSummarized: 5,
+    turnsKept: 2,
+  }),
 }));
 
 // Mock Dialog to render children without position="absolute" which breaks ink-testing-library
@@ -208,6 +231,26 @@ vi.mock('../../components/Dialog', () => ({
     onClose: () => void;
     borderColor?: string;
   }) => <Box flexDirection="column">{children}</Box>,
+}));
+
+// Mock credentials utilities - required for provider filtering
+vi.mock('../../utils/credentials', () => ({
+  getProviderConfig: vi.fn((registryId: string) => {
+    const registryToAvailable: Record<string, string> = {
+      anthropic: 'claude',
+      openai: 'openai',
+      gemini: 'gemini',
+      google: 'gemini',
+    };
+    const availableName = registryToAvailable[registryId] || registryId;
+    if (mockState.session.availableProviders.includes(availableName)) {
+      return Promise.resolve({ apiKey: 'test-key', source: 'file' });
+    }
+    return Promise.resolve({ apiKey: null, source: null });
+  }),
+  saveCredential: vi.fn(),
+  deleteCredential: vi.fn(),
+  maskApiKey: vi.fn((key: string) => '***'),
 }));
 
 // Mock Ink's Box to strip position="absolute" which doesn't work in ink-testing-library

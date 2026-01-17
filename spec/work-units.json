@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-16T07:08:02.391Z"
+    "lastUpdated": "2026-01-17T06:36:50.572Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -61306,6 +61306,737 @@
       "attachments": [
         "spec/attachments/RLM-001/RLM.md"
       ]
+    },
+    "NAPI-009": {
+      "id": "NAPI-009",
+      "title": "Background Session Management with Attach/Detach",
+      "type": "story",
+      "status": "implementing",
+      "createdAt": "2026-01-16T23:23:20.416Z",
+      "updatedAt": "2026-01-17T03:20:06.216Z",
+      "description": "Enable AI agent sessions to run in the background, allowing users to attach and detach from running sessions without interrupting agent execution",
+      "children": [],
+      "attachments": [
+        "spec/attachments/NAPI-009/background-session-design.md",
+        "spec/attachments/NAPI-009/implementation-details.md",
+        "spec/attachments/NAPI-009/ast-research-session-architecture.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "attach and detach from AI agent sessions that run in the background",
+        "benefit": "I can start long-running agent tasks, detach to do other work, and reattach to see progress without losing context"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-16T23:36:49.462Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-16T23:40:30.910Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-16T23:43:45.642Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-16T23:51:44.448Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-16T23:57:50.786Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-17T03:20:06.216Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Sessions must continue executing agent tasks when detached",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:36:53.943Z"
+        },
+        {
+          "id": 1,
+          "text": "Output produced while detached must be buffered and available on reattach",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:36:58.641Z"
+        },
+        {
+          "id": 2,
+          "text": "Multiple sessions can run concurrently in background",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:02.882Z"
+        },
+        {
+          "id": 3,
+          "text": "Only one session can be attached at a time per AgentView",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:07.339Z"
+        },
+        {
+          "id": 4,
+          "text": "Session state must persist to disk for recovery",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:11.633Z"
+        },
+        {
+          "id": 5,
+          "text": "Each session runs in its own tokio task with isolated memory",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:15.940Z"
+        },
+        {
+          "id": 6,
+          "text": "Interrupt must work on both attached and detached sessions",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:20.836Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User creates session, sends prompt, detaches while agent is running tools, agent continues executing, user reattaches and sees completed output",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:26.253Z"
+        },
+        {
+          "id": 1,
+          "text": "User has 3 sessions running in background, lists them, sees status (idle/running) for each",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:31.605Z"
+        },
+        {
+          "id": 2,
+          "text": "User attaches to running session, immediately sees buffered output from while they were detached, then sees live streaming continue",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:36.626Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses Esc to interrupt a detached session, session stops current task",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:41.251Z"
+        },
+        {
+          "id": 4,
+          "text": "User destroys a background session, it is removed from the session list",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:45.710Z"
+        },
+        {
+          "id": 5,
+          "text": "User exits fspec, restarts, background sessions are restored from persistence",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:50.764Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "SessionManager is a Rust singleton owning HashMap<Uuid, Arc<BackgroundSession>>",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:37:55.841Z"
+        },
+        {
+          "id": 1,
+          "text": "Each BackgroundSession spawns a tokio task running agent_loop that waits on mpsc channel for input",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:38:01.152Z"
+        },
+        {
+          "id": 2,
+          "text": "Attach stores ThreadsafeFunction callback; detach clears it but session continues",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:38:11.295Z"
+        },
+        {
+          "id": 3,
+          "text": "AgentView.tsx refactored to use NAPI session bindings instead of direct CodeletSession ownership",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:38:16.564Z"
+        },
+        {
+          "id": 4,
+          "text": "Integrates with existing persistence system (persistenceStoreMessageEnvelope) for session recovery",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:38:21.170Z"
+        },
+        {
+          "id": 5,
+          "text": "Output buffering uses RwLock<Vec<StreamChunk>> unbounded buffer for full session history",
+          "deleted": false,
+          "createdAt": "2026-01-16T23:46:09.571Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "estimate": 8,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-16T23:57:50.785Z"
+    },
+    "TUI-046": {
+      "id": "TUI-046",
+      "title": "Detach Confirmation Modal on AgentView Exit",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-17T00:49:19.775Z",
+      "updatedAt": "2026-01-17T02:18:09.680Z",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec TUI agent mode",
+        "action": "be prompted with a confirmation modal when exiting AgentView that asks whether to detach (keep session running in background) or close the session",
+        "benefit": "I can start long-running agent tasks, detach to check the kanban board or do other TUI work, and reattach later without losing progress"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-17T00:49:47.274Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-17T01:02:15.146Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-17T01:43:33.025Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-17T01:47:14.251Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-17T01:49:54.776Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-17T02:15:26.694Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-17T02:18:09.681Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "When user presses ESC to exit AgentView (after all other ESC priority handlers are exhausted), a confirmation modal must appear instead of immediately exiting",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:51.802Z"
+        },
+        {
+          "id": 1,
+          "text": "The confirmation modal must use ThreeButtonDialog component for DRY/SOLID compliance (reuse existing TUI-040 pattern)",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:52.459Z"
+        },
+        {
+          "id": 2,
+          "text": "The modal must present three options: 'Detach' (keep running in background), 'Close Session' (terminate), and 'Cancel' (stay in AgentView)",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:53.337Z"
+        },
+        {
+          "id": 3,
+          "text": "The default selected option must be 'Detach' (index 0) since preserving work is the safest default",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:54.037Z"
+        },
+        {
+          "id": 4,
+          "text": "Detach option must call sessionDetach(sessionId) from codelet-napi to keep the session running in background",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:54.686Z"
+        },
+        {
+          "id": 5,
+          "text": "Close Session option must call sessionManagerDestroy(sessionId) to terminate the background session before exiting",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:55.394Z"
+        },
+        {
+          "id": 6,
+          "text": "Cancel option must dismiss the modal and return to normal AgentView state without any session changes",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:56.075Z"
+        },
+        {
+          "id": 7,
+          "text": "ESC key pressed while modal is showing must dismiss modal (handled by ThreeButtonDialog onCancel)",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:56.745Z"
+        },
+        {
+          "id": 8,
+          "text": "Modal must only appear if there is an active session (sessionRef.current is not null)",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:57.403Z"
+        },
+        {
+          "id": 9,
+          "text": "If no active session exists, ESC should exit immediately without showing modal (current behavior for new/empty state)",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:49:58.104Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User presses ESC with active session, modal appears, user presses Right Arrow twice to highlight 'Cancel', presses Enter, modal dismisses, user remains in AgentView",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:50:04.687Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses ESC while modal is showing, modal dismisses via onCancel, user remains in AgentView with session unchanged",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:50:06.612Z"
+        },
+        {
+          "id": 2,
+          "text": "User opens AgentView fresh (no session yet), presses ESC immediately, view exits without modal (no session to detach)",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:50:07.926Z"
+        },
+        {
+          "id": 3,
+          "text": "User with input text presses ESC, input clears (existing Priority 4 behavior), presses ESC again, modal appears for exit confirmation",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:50:09.295Z"
+        },
+        {
+          "id": 4,
+          "text": "User presses ESC with active session and empty input, modal appears, user navigates to Close Session option and confirms, session is destroyed and view exits",
+          "deleted": false,
+          "createdAt": "2026-01-17T01:44:45.134Z"
+        },
+        {
+          "id": 5,
+          "text": "User presses ESC with active session and empty input, confirmation modal appears with Detach highlighted, user presses Enter, session detaches and view exits",
+          "deleted": false,
+          "createdAt": "2026-01-17T01:45:55.751Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "attachments": [
+        "spec/attachments/TUI-046/detach-confirmation-design.md",
+        "spec/attachments/TUI-046/ast-research-agentview-exit.md"
+      ],
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add showExitConfirmation state to AgentView.tsx (around line 690) to control modal visibility",
+          "deleted": false,
+          "createdAt": "2026-01-17T01:00:30.636Z"
+        },
+        {
+          "id": 1,
+          "text": "Modify ESC handler Priority 5 (line 4043-4045): instead of calling onExit() directly, check if sessionRef.current exists and show modal if so",
+          "deleted": false,
+          "createdAt": "2026-01-17T01:00:35.971Z"
+        },
+        {
+          "id": 2,
+          "text": "Reuse ThreeButtonDialog from src/components/ThreeButtonDialog.tsx with options ['Detach', 'Close Session', 'Cancel'] and defaultSelectedIndex=0",
+          "deleted": false,
+          "createdAt": "2026-01-17T01:00:40.715Z"
+        },
+        {
+          "id": 3,
+          "text": "Create handleExitChoice callback that calls sessionDetach() for index 0, sessionManagerDestroy() for index 1, or dismisses modal for index 2",
+          "deleted": false,
+          "createdAt": "2026-01-17T01:00:45.528Z"
+        },
+        {
+          "id": 4,
+          "text": "Track currentSessionId state when session is created, required for calling sessionDetach() and sessionManagerDestroy() NAPI functions",
+          "deleted": false,
+          "createdAt": "2026-01-17T01:00:49.940Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-17T02:18:09.680Z"
+    },
+    "TUI-047": {
+      "id": "TUI-047",
+      "title": "Attach to Detached Sessions from Resume View",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-17T00:51:04.072Z",
+      "updatedAt": "2026-01-17T02:56:49.428Z",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "see which sessions are running in the background when viewing /resume, indicated by emoji icons, and attach to them using the existing background session API rather than loading from persistence",
+        "benefit": "I can quickly reattach to a running session and immediately see live streaming output, getting instant visibility into agent progress without waiting for data to load from disk"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-17T00:51:15.947Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-17T02:24:45.866Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-17T02:26:17.206Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-17T02:28:45.476Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-17T02:33:52.538Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-17T02:35:57.842Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-17T02:56:08.640Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-17T02:56:49.429Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Resume view must query both persistenceListSessions() AND sessionManagerList() to get full picture of sessions",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:20.753Z"
+        },
+        {
+          "id": 1,
+          "text": "Background sessions from sessionManagerList() take precedence - if session exists in both lists, use background session data and show running/idle status emoji",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:23.942Z"
+        },
+        {
+          "id": 2,
+          "text": "When user selects a RUNNING background session (🔄), use sessionAttach(sessionId, callback) instead of persistenceLoadSession()",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:25.329Z"
+        },
+        {
+          "id": 3,
+          "text": "When attaching to running session, first call sessionGetBufferedOutput(sessionId, limit) to hydrate conversation with output produced while detached",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:26.758Z"
+        },
+        {
+          "id": 4,
+          "text": "After buffer hydration, sessionAttach callback receives live streaming chunks that append to conversation in real-time",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:28.025Z"
+        },
+        {
+          "id": 5,
+          "text": "Session list must be sorted by updatedAt descending (most recent first), same as current behavior",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:30.424Z"
+        },
+        {
+          "id": 6,
+          "text": "Footer in resume mode must show: 'Enter Select | ↑↓ Navigate | D Delete | Esc Cancel' (unchanged)",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:31.862Z"
+        },
+        {
+          "id": 7,
+          "text": "D key delete functionality (TUI-040) must work for both running and persisted sessions",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:33.063Z"
+        },
+        {
+          "id": 8,
+          "text": "Each session in resume list must display status icon: 🔄 for running background sessions, ⏸️ for idle background sessions (finished but still in memory), 💾 for persisted-only sessions (no background process)",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:30:54.971Z"
+        },
+        {
+          "id": 9,
+          "text": "When user selects a persisted-only session (💾 - no background process), use existing persistenceLoadSession() code path (no change to current resume behavior)",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:31:36.402Z"
+        },
+        {
+          "id": 10,
+          "text": "When user selects an IDLE background session (⏸️ - finished but in memory), use sessionAttach() to get buffered output, then allow new prompts",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:31:41.332Z"
+        }
+      ],
+      "nextRuleId": 11,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /resume, sees list of sessions: '🔄 Long running task' (running), '💾 Yesterday session' (idle), user selects running session, immediately sees live output streaming",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:38.290Z"
+        },
+        {
+          "id": 1,
+          "text": "User detaches from session (TUI-046), goes to kanban board, presses 'A' to open agent mode, types /resume, sees their session with 🔄 icon, selects it, sees buffered output then live stream",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:40.147Z"
+        },
+        {
+          "id": 2,
+          "text": "User has 3 sessions: 2 running in background (🔄🔄) and 1 from yesterday (💾), all appear in resume list sorted by most recent first",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:41.564Z"
+        },
+        {
+          "id": 3,
+          "text": "User selects idle session (💾), session loads from persistence using existing code path, conversation history displays as before",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:43.073Z"
+        },
+        {
+          "id": 4,
+          "text": "User presses D on running session (🔄), delete dialog appears, user confirms, session is destroyed via sessionManagerDestroy(), list refreshes",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:44.011Z"
+        },
+        {
+          "id": 5,
+          "text": "User attaches to running session, agent produces tool call while watching, user sees '● Bash(command)' appear in real-time, then sees tool result stream in",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:45.953Z"
+        },
+        {
+          "id": 6,
+          "text": "User attaches to session that finished while detached, buffered output shows complete response, session status shows idle, user can type new prompt",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:47.505Z"
+        },
+        {
+          "id": 7,
+          "text": "User has no background sessions but has persisted sessions, resume view shows only 💾 icons, no 🔄 icons, all sessions load from persistence (backward compatible)",
+          "deleted": false,
+          "createdAt": "2026-01-17T00:51:48.978Z"
+        },
+        {
+          "id": 8,
+          "text": "User had session 'My Task' from yesterday (💾), then detached it today (now running in background 🔄), /resume shows only ONE entry with 🔄 icon (background takes precedence over saved version)",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:31:19.576Z"
+        }
+      ],
+      "nextExampleId": 9,
+      "attachments": [
+        "spec/attachments/TUI-047/attach-from-resume-design.md",
+        "spec/attachments/TUI-047/ast-research-resume-integration.md"
+      ],
+      "dependsOn": [
+        "TUI-046"
+      ],
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create MergedSession interface extending SessionManifest with isBackgroundSession and backgroundStatus fields",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:23:16.272Z"
+        },
+        {
+          "id": 1,
+          "text": "Modify handleResumeMode() to call both persistenceListSessions() and sessionManagerList(), then merge with mergeSessionLists() helper",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:23:21.093Z"
+        },
+        {
+          "id": 2,
+          "text": "Add getStatusIcon() helper that returns 🔄 for running background, ⏸️ for idle background, 💾 for persisted-only sessions",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:23:26.013Z"
+        },
+        {
+          "id": 3,
+          "text": "Modify handleResumeSelect() to check isBackgroundSession && status=running, then call attachToBackgroundSession() helper",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:23:31.635Z"
+        },
+        {
+          "id": 4,
+          "text": "Create attachToBackgroundSession() that calls sessionGetBufferedOutput() to hydrate, then sessionAttach() for live streaming",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:23:36.855Z"
+        },
+        {
+          "id": 5,
+          "text": "Modify handleSessionDeleteSelect() to call sessionManagerDestroy() for background sessions instead of persistenceDeleteSession()",
+          "deleted": false,
+          "createdAt": "2026-01-17T02:23:42.350Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-17T02:56:49.428Z"
+    },
+    "TUI-048": {
+      "id": "TUI-048",
+      "title": "Shift+ESC immediate session detach in AgentView",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-17T05:45:11.562Z",
+      "updatedAt": "2026-01-17T06:36:50.604Z",
+      "children": [],
+      "userStory": {
+        "role": "developer using AgentView",
+        "action": "immediately detach from a session using shift+ESC",
+        "benefit": "I can quickly detach without going through the confirmation modal, even while the agent is thinking"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-17T05:45:26.228Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-17T05:48:47.584Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-17T05:51:48.936Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-17T05:54:47.712Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-17T06:36:50.604Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Shift+ESC should immediately detach the session without showing the confirmation modal",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:45:47.960Z"
+        },
+        {
+          "id": 1,
+          "text": "Shift+ESC should override the default ESC key behavior in all states (thinking, inactive, etc.)",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:45:54.169Z"
+        },
+        {
+          "id": 2,
+          "text": "The input placeholder text should show shift+ESC as an additional detach option",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:45:57.690Z"
+        },
+        {
+          "id": 3,
+          "text": "The thinking indicator should show shift+ESC as an additional interrupt option",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:01.644Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "While agent is thinking, user presses shift+ESC and session immediately detaches without confirmation",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:05.691Z"
+        },
+        {
+          "id": 1,
+          "text": "While session is inactive, user presses shift+ESC and session immediately detaches without confirmation",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:10.632Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses regular ESC while thinking, sees confirmation modal, then presses shift+ESC and immediately detaches",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:13.887Z"
+        },
+        {
+          "id": 3,
+          "text": "User sees input placeholder text includes 'Shift+ESC to detach' alongside existing options",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:17.498Z"
+        },
+        {
+          "id": 4,
+          "text": "User sees thinking indicator text includes 'Shift+ESC to detach' alongside existing ESC interrupt option",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:20.894Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should shift+ESC work in all input states (provider selector, model selector, settings, etc.) or only in the main input/thinking states?",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:25.156Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, shift+ESC should work in all input states (provider selector, model selector, settings, etc.) as a universal immediate detach override, providing consistent behavior regardless of current state"
+        },
+        {
+          "id": 1,
+          "text": "@human: When detaching via shift+ESC, should there be any visual feedback or should it immediately exit to the previous view?",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:28.970Z",
+          "selected": true,
+          "answered": true,
+          "answer": "The detach should happen immediately without any visual feedback - just exit to the previous view (like closing the AgentView component and returning to BoardView)"
+        },
+        {
+          "id": 2,
+          "text": "@human: What is the exact text format for the input placeholder? Should it be 'Shift+ESC detach' or 'Shift+Esc' or something else?",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:46:33.036Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Use 'Shift+ESC detach' format to be consistent with the existing format like 'Shift+↑/↓' for history navigation"
+        }
+      ],
+      "nextQuestionId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation requires adding shift+escape detection in AgentView's useInput hook as the highest priority handler",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:47:45.905Z"
+        },
+        {
+          "id": 1,
+          "text": "Must update InputTransition component props to pass updated placeholder and thinking hint text",
+          "deleted": false,
+          "createdAt": "2026-01-17T05:47:49.775Z"
+        }
+      ],
+      "nextNoteId": 2,
+      "estimate": 5,
+      "attachments": [
+        "spec/attachments/TUI-048/ast-research-useInput-hook-usage.md",
+        "spec/attachments/TUI-048/ast-research-escape-key-handling.md"
+      ],
+      "updated": "2026-01-17T06:36:50.604Z"
     }
   },
   "states": {
@@ -61376,9 +62107,14 @@
       "PROV-003"
     ],
     "testing": [],
-    "implementing": [],
+    "implementing": [
+      "NAPI-009"
+    ],
     "validating": [],
     "done": [
+      "TUI-048",
+      "TUI-047",
+      "TUI-046",
       "PROV-004",
       "PATCH-002",
       "TUI-045",
@@ -61847,7 +62583,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 45,
+    "TUI": 48,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,
@@ -61876,7 +62612,7 @@
     "FOUND": 43,
     "DOCS": 3,
     "CLEAN": 5,
-    "NAPI": 8,
+    "NAPI": 9,
     "CTX": 2,
     "TOOL": 11,
     "MODEL": 1,

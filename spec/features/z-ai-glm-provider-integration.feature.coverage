@@ -317,90 +317,6 @@
       ]
     },
     {
-      "name": "Error when ZAI_API_KEY is missing",
-      "testMappings": [
-        {
-          "file": "codelet/providers/tests/zai_provider_test.rs",
-          "lines": "40-61",
-          "implMappings": [
-            {
-              "file": "codelet/providers/src/zai.rs",
-              "lines": [
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "name": "ZAI provider uses OpenAI-compatible API",
-      "testMappings": [
-        {
-          "file": "codelet/providers/tests/zai_provider_test.rs",
-          "lines": "63-90",
-          "implMappings": [
-            {
-              "file": "codelet/providers/src/zai.rs",
-              "lines": [
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81,
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
-                88,
-                89,
-                90,
-                91,
-                92,
-                93,
-                94,
-                95,
-                96,
-                97,
-                98,
-                99,
-                100
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
       "name": "Streaming response with tool calls",
       "testMappings": [
         {
@@ -466,12 +382,28 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Error when both ZAI API keys are missing",
+      "testMappings": []
+    },
+    {
+      "name": "ZAI provider uses normal API endpoint",
+      "testMappings": []
+    },
+    {
+      "name": "ZAI provider uses coding plan API endpoint",
+      "testMappings": []
+    },
+    {
+      "name": "ZAI_PLAN_API_KEY takes precedence over ZAI_API_KEY",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 4,
-    "coveredScenarios": 4,
-    "coveragePercent": 100,
+    "totalScenarios": 6,
+    "coveredScenarios": 2,
+    "coveragePercent": 33,
     "testFiles": [
       "codelet/providers/tests/zai_provider_test.rs"
     ],

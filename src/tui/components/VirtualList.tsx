@@ -477,7 +477,6 @@ export function VirtualList<T>({
 
   // Keyboard navigation
   useInput((input, key) => {
-    logger.info(`[VirtualList] useInput: input=${JSON.stringify(input)} key=${JSON.stringify(key)} isFocused=${isFocused} selectionMode=${selectionMode}`);
     if (items.length === 0) return;
     if (input.startsWith('[M') || key.mouse) return;
     if (key.shift && (key.upArrow || key.downArrow)) return;

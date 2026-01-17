@@ -12,7 +12,7 @@
  * Implements NAPI-006: Session Persistence with Fork and Merge
  * - Shift+Arrow-Up/Down for command history navigation
  * - /search command for history search
- * - Session commands: /resume, /fork, /merge, /switch, /rename, /cherry-pick, /sessions, /search
+ * - Session commands: /resume, /fork, /merge, /switch, /rename, /cherry-pick, /search
  */
 
 import React, {
@@ -38,6 +38,8 @@ import {
   JsThinkingLevel,
   modelsListAll,
   modelsRefreshCache,
+  sessionToggleDebug,
+  sessionCompact,
   type NapiProviderModels,
   type NapiModelInfo,
 } from '@sengac/codelet-napi';
@@ -263,6 +265,20 @@ interface SessionManifest {
   messageCount: number;
 }
 
+// TUI-047: Extended session type for merged list (background + persisted)
+interface MergedSession extends SessionManifest {
+  isBackgroundSession: boolean;
+  backgroundStatus: 'running' | 'idle' | null; // null = persisted-only
+}
+
+// TUI-047: Get status icon for session in resume list
+const getSessionStatusIcon = (session: MergedSession): string => {
+  if (session.isBackgroundSession) {
+    return session.backgroundStatus === 'running' ? '🔄' : '⏸️';
+  }
+  return '💾';
+};
+
 interface CodeletSessionType {
   currentProviderName: string;
   availableProviders: string[];
@@ -383,11 +399,16 @@ const createStreamingWindow = (
   content: string,
   windowSize: number = STREAMING_WINDOW_SIZE
 ): string => {
+  
   const lines = content.split('\n');
+  
   if (lines.length <= windowSize) {
+    
     return content;
   }
-  return lines.slice(-windowSize).join('\n');
+  const result = lines.slice(-windowSize).join('\n');
+  
+  return result;
 };
 
 // TUI-038: Diff view color constants matching FileDiffViewer
@@ -592,7 +613,7 @@ const calculateStartLine = (
 
 export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const { stdout } = useStdout();
-  const [session, setSession] = useState<CodeletSessionType | null>(null);
+  // NAPI-009: Removed session state - we use SessionManager background sessions exclusively
   const [error, setError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -612,7 +633,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const [showTurnModal, setShowTurnModal] = useState(false);
   const [modalMessageIndex, setModalMessageIndex] = useState<number | null>(null);
   const virtualListSelectionRef = useRef<{ selectedIndex: number }>({ selectedIndex: 0 }); // TUI-043: Ref to get selected index from VirtualList
-  const sessionRef = useRef<CodeletSessionType | null>(null);
+  // NAPI-009: sessionRef removed - we use SessionManager exclusively now
 
   // TUI-038: Store pending Edit/Write tool inputs for diff display
   interface PendingToolDiff {
@@ -681,7 +702,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // NAPI-003: Resume mode state (session selection overlay)
   const [isResumeMode, setIsResumeMode] = useState(false);
-  const [availableSessions, setAvailableSessions] = useState<SessionManifest[]>(
+  // TUI-047: Changed to MergedSession to support background session info
+  const [availableSessions, setAvailableSessions] = useState<MergedSession[]>(
     []
   );
   const [resumeSessionIndex, setResumeSessionIndex] = useState(0);
@@ -689,6 +711,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
   // TUI-040: Delete session dialog state
   const [showSessionDeleteDialog, setShowSessionDeleteDialog] = useState(false);
+
+  // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
@@ -933,7 +958,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // Dynamic import to handle ESM
         const codeletNapi = await import('@sengac/codelet-napi');
         const {
-          CodeletSession,
           persistenceSetDataDirectory,
           persistenceGetHistory,
           modelsListAll: loadModels,
@@ -962,7 +986,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             } else if (msg.includes('[RUST:DEBUG]')) {
               logger.debug(msg);
             } else {
-              logger.info(msg);
+              
             }
           });
         } catch (err) {
@@ -1058,20 +1082,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               defaultModelString = persistedModelString;
               defaultModelInfo = persistedModel;
               defaultSection = persistedSection;
-              logger.info(`Restored persisted model: ${persistedModelString}`);
+              
             } else {
-              logger.info(
-                `Persisted model ${persistedModelId} not found in ${persistedProviderId}, using default`
-              );
+              
             }
           } else if (persistedSection && !persistedSection.hasCredentials) {
-            logger.info(
-              `Persisted provider ${persistedProviderId} has no credentials, using default`
-            );
+            
           } else {
-            logger.info(
-              `Persisted provider ${persistedProviderId} not available, using default`
-            );
+            
           }
         }
 
@@ -1086,77 +1104,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           }
         }
 
-        // TUI-034: Create session with model using newWithModel factory
-        // Must use newWithModel() to enable mid-session model switching via selectModel()
-        let newSession: CodeletSessionType;
-        let sessionHasModelSupport = false;
+        // NAPI-009: Don't create CodeletSession - we use SessionManager exclusively
+        // Session creation is deferred until first message (in handleSubmit)
+        // This prevents empty sessions and enables background execution
 
-        // Try creating session with the default model
-        try {
-          newSession = await CodeletSession.newWithModel(defaultModelString);
-          sessionHasModelSupport = true;
-        } catch (err) {
-          logger.warn(
-            `Failed to create session with model ${defaultModelString}, trying fallbacks`,
-            { error: err }
-          );
-
-          // TUI-034 FIX: Try fallback models to maintain model support
-          // Without model support, Tab key model switching won't work
-          const fallbackModels = [
-            'anthropic/claude-sonnet-4',
-            'google/gemini-2.0-flash',
-            'openai/gpt-4o',
-          ];
-
-          for (const fallbackModel of fallbackModels) {
-            if (fallbackModel === defaultModelString) continue; // Skip if same as already tried
-            try {
-              newSession = await CodeletSession.newWithModel(fallbackModel);
-              sessionHasModelSupport = true;
-              logger.info(
-                `Successfully created session with fallback model: ${fallbackModel}`
-              );
-              // Update defaultModelInfo to match what we actually created
-              const [providerId, modelId] = fallbackModel.split('/');
-              const section = sections.find(s => s.providerId === providerId);
-              if (section) {
-                const model = section.models.find(
-                  m => extractModelIdForRegistry(m.id) === modelId
-                );
-                if (model) {
-                  defaultModelInfo = model;
-                  defaultSection = section;
-                }
-              }
-              break;
-            } catch (fallbackErr) {
-              logger.warn(`Fallback model ${fallbackModel} also failed`, {
-                error: fallbackErr,
-              });
-            }
-          }
-
-          // Last resort: basic session without model support
-          if (!sessionHasModelSupport) {
-            logger.error(
-              'All newWithModel attempts failed, falling back to basic session (model switching disabled)'
-            );
-            newSession = new CodeletSession('claude');
-            // Clear model info since model switching won't work
-            defaultModelInfo = null;
-            defaultSection = null;
-          }
-        }
-
-        setSession(newSession);
-        sessionRef.current = newSession;
-        setCurrentProvider(newSession.currentProviderName);
-        setTokenUsage(newSession.tokenTracker);
-
-        // TUI-034: Set current model info (only if session has model support)
-        if (sessionHasModelSupport && defaultModelInfo && defaultSection) {
+        // TUI-035: Use persisted model if found, otherwise use first available
+        if (defaultModelInfo && defaultSection) {
+          // Use the persisted model that was found earlier
           const modelId = extractModelIdForRegistry(defaultModelInfo.id);
+
+          setCurrentProvider(defaultSection.internalName);
           setCurrentModel({
             providerId: defaultSection.providerId,
             modelId,
@@ -1167,11 +1124,25 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             contextWindow: defaultModelInfo.contextWindow,
             maxOutput: defaultModelInfo.maxOutput,
           });
-          // Expand current provider's section by default
           setExpandedProviders(new Set([defaultSection.providerId]));
-        } else if (!sessionHasModelSupport) {
-          // Clear model info - model switching won't work without model support
-          setCurrentModel(null);
+        } else if (sections.length > 0 && sections[0].models.length > 0) {
+          // Fall back to first available section
+          const fallbackSection = sections[0];
+          const fallbackModelInfo = fallbackSection.models[0];
+          const modelId = extractModelIdForRegistry(fallbackModelInfo.id);
+
+          setCurrentProvider(fallbackSection.internalName);
+          setCurrentModel({
+            providerId: fallbackSection.providerId,
+            modelId,
+            apiModelId: fallbackModelInfo.id,
+            displayName: fallbackModelInfo.name,
+            reasoning: fallbackModelInfo.reasoning,
+            hasVision: fallbackModelInfo.hasVision,
+            contextWindow: fallbackModelInfo.contextWindow,
+            maxOutput: fallbackModelInfo.maxOutput,
+          });
+          setExpandedProviders(new Set([fallbackSection.providerId]));
         }
 
         // NAPI-006: Session creation is deferred until first message is sent
@@ -1213,8 +1184,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             ? err.message
             : 'Failed to initialize AI session';
         setError(errorMessage);
-        setSession(null);
-        sessionRef.current = null;
       }
     };
 
@@ -1258,24 +1227,34 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     // TUI-045: /expand command removed - now handled by Enter key opening modal
     // (intentionally removed - /expand will be sent to agent as regular message)
 
-    if (!sessionRef.current || !inputValue.trim() || isLoading) return;
+    // NAPI-009: Check if we have a provider configured and not already loading
+    if (!currentProvider || !inputValue.trim() || isLoading) return;
 
     // AGENT-021: Handle /debug command - toggle debug capture mode
+    // NAPI-009: Now uses sessionToggleDebug for background sessions
     if (userMessage === '/debug') {
       setInputValue('');
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: 'Debug mode requires an active session. Send a message first.' },
+        ]);
+        return;
+      }
       try {
-        // Pass ~/.fspec as the debug directory
-        const result = sessionRef.current.toggleDebug(getFspecUserDir());
+        const debugDir = getFspecUserDir();
+        const result = await sessionToggleDebug(currentSessionId, debugDir);
         setIsDebugEnabled(result.enabled);
-        // Add the result message to conversation
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: result.message },
         ]);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to toggle debug mode';
-        setError(errorMessage);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Debug toggle failed: ${errorMessage}` },
+        ]);
       }
       return;
     }
@@ -1287,22 +1266,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       return;
     }
 
-    // AGENT-003: Handle /clear command - clear context and reset session
+    // AGENT-003: Handle /clear command - clear context and reset conversation
     if (userMessage === '/clear') {
       setInputValue('');
-      try {
-        // Clear history in the Rust session (includes reinjecting context reminders)
-        sessionRef.current.clearHistory();
-        // Reset React state
-        setConversation([]);
-        setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-        setContextFillPercentage(0);
-        // Note: currentProvider, isDebugEnabled, and historyEntries are preserved
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to clear session';
-        setError(errorMessage);
-      }
+      // Reset React state - background session history is managed by SessionManager
+      setConversation([]);
+      setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+      setContextFillPercentage(0);
+      // Note: currentProvider, isDebugEnabled, and historyEntries are preserved
       return;
     }
 
@@ -1347,42 +1318,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     if (userMessage === '/resume') {
       setInputValue('');
       void handleResumeMode();
-      return;
-    }
-
-    // NAPI-006: Handle /sessions command - list all sessions
-    if (userMessage === '/sessions') {
-      setInputValue('');
-      try {
-        const { persistenceListSessions } = await import(
-          '@sengac/codelet-napi'
-        );
-        const sessions = persistenceListSessions(currentProjectRef.current);
-        if (sessions.length === 0) {
-          setConversation(prev => [
-            ...prev,
-            { role: 'tool', content: 'No sessions found for this project' },
-          ]);
-        } else {
-          const sessionList = sessions
-            .map(
-              (s: SessionManifest) =>
-                `- ${s.name} (${s.messageCount} messages, ${s.id.slice(0, 8)}...)`
-            )
-            .join('\n');
-          setConversation(prev => [
-            ...prev,
-            { role: 'tool', content: `Sessions:\n${sessionList}` },
-          ]);
-        }
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to list sessions';
-        setConversation(prev => [
-          ...prev,
-          { role: 'tool', content: `List sessions failed: ${errorMessage}` },
-        ]);
-      }
       return;
     }
 
@@ -1634,72 +1569,38 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     }
 
     // NAPI-005: Handle /compact command - manual context compaction
+    // NAPI-009: Now uses sessionCompact for background sessions
     if (userMessage === '/compact') {
       setInputValue('');
-
-      // Check if there's anything to compact - use session's messages, not React state
-      if (sessionRef.current.messages.length === 0) {
+      if (!currentSessionId) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'Nothing to compact - no messages yet' },
+          { role: 'tool', content: 'Compaction requires an active session. Send a message first.' },
         ]);
         return;
       }
-
-      // Show compacting message
-      setConversation(prev => [
-        ...prev,
-        { role: 'tool', content: '[Compacting context...]' },
-      ]);
-
       try {
-        const result = await sessionRef.current.compact();
-        // TUI-044: Show compaction notification indicator instead of chat message
-        const compressionPct = Math.round(result.compressionRatio);
-        setCompactionReduction(compressionPct);
-        
-        // Update token tracker and context fill to reflect reduced context
-        const finalTokens = sessionRef.current.tokenTracker;
-        setTokenUsage(finalTokens);
-        const contextFillInfo = sessionRef.current.getContextFillInfo();
-        setContextFillPercentage(contextFillInfo.fillPercentage);
-
-        // Remove the "[Compacting context...]" message since we're showing notification indicator
-        setConversation(prev => prev.filter(m => m.content !== '[Compacting context...]'));
-
-        // Persist compaction state and token usage
-        if (currentSessionId) {
-          try {
-            const {
-              persistenceSetCompactionState,
-              persistenceSetSessionTokens,
-            } = await import('@sengac/codelet-napi');
-            // Create summary for persistence (includes key metrics)
-            const summary = `Compacted ${result.turnsSummarized} turns (${result.originalTokens}→${result.compactedTokens} tokens, ${compressionPct}% compression)`;
-            // compacted_before_index = turnsSummarized (messages 0 to turnsSummarized-1 were compacted)
-            persistenceSetCompactionState(
-              currentSessionId,
-              summary,
-              result.turnsSummarized
-            );
-            persistenceSetSessionTokens(
-              currentSessionId,
-              finalTokens.inputTokens,
-              finalTokens.outputTokens,
-              finalTokens.cacheReadInputTokens ?? 0,
-              finalTokens.cacheCreationInputTokens ?? 0,
-              finalTokens.cumulativeBilledInput ?? finalTokens.inputTokens,
-              finalTokens.cumulativeBilledOutput ?? finalTokens.outputTokens
-            );
-          } catch {
-            // Compaction state persistence failed - continue
-          }
-        }
-      } catch (err) {
-        // Remove the "[Compacting context...]" message on failure too
-        setConversation(prev => prev.filter(m => m.content !== '[Compacting context...]'));
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to compact context';
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: '[Compacting context...]' },
+        ]);
+        const result = await sessionCompact(currentSessionId);
+        // Update token display from compaction result
+        setTokenUsage(prev => ({
+          ...prev,
+          inputTokens: result.compactedTokens,
+        }));
+        // Note: Context fill percentage will be updated on next streaming response
+        // via ContextFillUpdate event with the actual model threshold
+        setConversation(prev => [
+          ...prev,
+          {
+            role: 'tool',
+            content: `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${result.compressionRatio.toFixed(0)}% compression, ${result.turnsSummarized} turns summarized, ${result.turnsKept} turns kept]`,
+          },
+        ]);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
         setConversation(prev => [
           ...prev,
           { role: 'tool', content: `Compaction failed: ${errorMessage}` },
@@ -1723,7 +1624,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     let activeSessionId = currentSessionId;
     if (!activeSessionId && isFirstMessageRef.current) {
       try {
-        const { persistenceCreateSessionWithProvider } = await import(
+        const { persistenceCreateSessionWithProvider, sessionManagerCreateWithId } = await import(
           '@sengac/codelet-napi'
         );
         const project = currentProjectRef.current;
@@ -1744,10 +1645,25 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
         activeSessionId = persistedSession.id;
         setCurrentSessionId(activeSessionId);
+
+        // NAPI-009: Register session with SessionManager for background execution
+        // This enables ESC + Detach and /resume to work properly
+        // CRITICAL: This must succeed for sessionAttach to work
+        // Note: Must await - the function is async because it uses tokio::spawn internally
+        await sessionManagerCreateWithId(activeSessionId, modelPath, project, sessionName);
+
         // Mark first message as processed (session already named with message content)
         isFirstMessageRef.current = false;
-      } catch {
-        // Session creation failed - continue without persistence
+      } catch (err) {
+        // Session creation failed - show error and abort
+        const errorMsg = err instanceof Error ? err.message : String(err);
+        logger.error('Failed to create session:', errorMsg);
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: `Failed to create session: ${errorMsg}` },
+        ]);
+        setIsLoading(false);
+        return;
       }
     }
 
@@ -1846,10 +1762,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       }> = [];
       // TOOL-011: Track if we've streamed tool progress (to skip redundant tool result preview)
       let hasStreamedToolProgress = false;
-      await sessionRef.current.prompt(
-        userMessage,
-        thinkingConfig,
-        (chunk: StreamChunk) => {
+      
+      // NAPI-009: Use background session for prompts instead of direct CodeletSession
+      // This enables detach/attach to work - the background session continues running
+      // even when the UI is detached
+      const { sessionAttach, sessionSendInput } = await import('@sengac/codelet-napi');
+      
+      // Create a promise that resolves when the agent completes (Done chunk received)
+      const promptComplete = new Promise<void>((resolve, reject) => {
+        // Attach callback for streaming - this receives chunks from the background session
+        sessionAttach(activeSessionId, (_err: Error | null, chunk: StreamChunk) => {
           if (!chunk) return;
 
           if (chunk.type === 'Text' && chunk.text) {
@@ -2271,6 +2193,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               }
               return updated;
             });
+            // NAPI-009: Resolve the promise when agent completes
+            resolve();
           } else if (chunk.type === 'Status' && chunk.status) {
             const statusMessage = chunk.status;
             // TUI-044: Parse compaction notifications and show in percentage indicator
@@ -2450,9 +2374,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
               });
               return updated;
             });
+            // NAPI-009: Reject the promise on error
+            reject(new Error(chunk.error));
           }
-        }
-      );
+        });
+      });
+      
+      // NAPI-009: Send the input to the background session (non-blocking)
+      // The background session's agent_loop will process it and emit chunks via the callback
+      sessionSendInput(activeSessionId, userMessage, thinkingConfig);
+      
+      // Wait for the prompt to complete (Done chunk received)
+      await promptComplete;
 
       // Persist full envelopes to session (includes tool calls and results)
       if (activeSessionId) {
@@ -2461,9 +2394,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
           if (assistantContentBlocks.length > 0) {
             // Per-message cumulative token usage for analytics/debugging (NAPI-008)
-            // Note: This is cumulative session usage at time of message, stored for
-            // historical analysis. Not used during restore (session totals are in manifest).
-            const currentTokens = sessionRef.current?.tokenTracker;
+            // Note: Token tracking is handled by background session
             const assistantEnvelope = {
               uuid: crypto.randomUUID(),
               timestamp: new Date().toISOString(),
@@ -2473,16 +2404,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                 role: 'assistant',
                 content: assistantContentBlocks,
               },
-              usage: currentTokens
-                ? {
-                    input_tokens: currentTokens.inputTokens,
-                    output_tokens: currentTokens.outputTokens,
-                    cache_read_input_tokens:
-                      currentTokens.cacheReadInputTokens ?? 0,
-                    cache_creation_input_tokens:
-                      currentTokens.cacheCreationInputTokens ?? 0,
-                  }
-                : undefined,
             };
             const assistantJson = JSON.stringify(assistantEnvelope);
             persistenceStoreMessageEnvelope(activeSessionId, assistantJson);
@@ -2493,31 +2414,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         }
       }
 
-      // Update token usage after prompt completes (safe to access now - session unlocked)
-      if (sessionRef.current) {
-        const finalTokens = sessionRef.current.tokenTracker;
-        setTokenUsage(finalTokens);
-
-        // Persist token usage to session manifest (for restore)
-        if (activeSessionId) {
-          try {
-            const { persistenceSetSessionTokens } = await import(
-              '@sengac/codelet-napi'
-            );
-            persistenceSetSessionTokens(
-              activeSessionId,
-              finalTokens.inputTokens,
-              finalTokens.outputTokens,
-              finalTokens.cacheReadInputTokens ?? 0,
-              finalTokens.cacheCreationInputTokens ?? 0,
-              finalTokens.cumulativeBilledInput ?? finalTokens.inputTokens,
-              finalTokens.cumulativeBilledOutput ?? finalTokens.outputTokens
-            );
-          } catch {
-            // Token usage persistence failed - continue
-          }
-        }
-      }
+      // Token usage is now handled by background session via TokenUpdate chunks
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to send prompt';
@@ -2540,24 +2437,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [inputValue, isLoading]);
+  }, [inputValue, isLoading, currentSessionId, currentProvider, currentModel]);
 
-  // Handle provider switching
+  // Handle provider switching - now just updates local state
+  // Actual provider change happens on next session creation
   const handleSwitchProvider = useCallback(async (providerName: string) => {
-    if (!sessionRef.current) return;
-
-    try {
-      setIsLoading(true);
-      await sessionRef.current.switchProvider(providerName);
-      setCurrentProvider(providerName);
-      setShowProviderSelector(false);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to switch provider';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+    setCurrentProvider(providerName);
+    setShowProviderSelector(false);
   }, []);
 
   // CONFIG-004: Load provider statuses (API key presence and masked display)
@@ -2799,69 +2685,45 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     }
   }, []);
 
-  // TUI-034: Handle model selection
+  // TUI-034: Handle model selection - just update local state
+  // Actual model change happens on next session creation
   const handleSelectModel = useCallback(
     async (section: ProviderSection, model: NapiModelInfo) => {
-      if (!sessionRef.current) return;
+      // Extract model-id from the API ID for registry matching
+      const modelId = extractModelIdForRegistry(model.id);
+      const modelString = `${section.providerId}/${modelId}`;
 
+      // Update state
+      setCurrentModel({
+        providerId: section.providerId,
+        modelId,
+        apiModelId: model.id,
+        displayName: model.name,
+        reasoning: model.reasoning,
+        hasVision: model.hasVision,
+        contextWindow: model.contextWindow,
+        maxOutput: model.maxOutput,
+      });
+      setCurrentProvider(section.internalName);
+      setShowModelSelector(false);
+
+      // TUI-035: Persist model selection to user config
       try {
-        setIsLoading(true);
-        // Extract model-id from the API ID for registry matching
-        // IMPORTANT: Do NOT use model.family - it may be a generic family name (e.g., "gemini-pro")
-        // that doesn't match registry keys. Instead, extract from model.id by stripping suffixes.
-        // Examples:
-        //   "claude-sonnet-4-20250514" -> "claude-sonnet-4" (strip date suffix)
-        //   "gemini-2.5-pro-preview-06-05" -> "gemini-2.5-pro" (strip preview suffix)
-        //   "gpt-4o" -> "gpt-4o" (no change)
-        const modelId = extractModelIdForRegistry(model.id);
-        const modelString = `${section.providerId}/${modelId}`;
-
-        // Use selectModel to switch the model
-        await sessionRef.current.selectModel(modelString);
-
-        // Update state
-        setCurrentModel({
-          providerId: section.providerId,
-          modelId,
-          apiModelId: model.id,
-          displayName: model.name,
-          reasoning: model.reasoning,
-          hasVision: model.hasVision,
-          contextWindow: model.contextWindow,
-          maxOutput: model.maxOutput,
-        });
-        setCurrentProvider(section.internalName);
-        setShowModelSelector(false);
-
-        // TUI-035: Persist model selection to user config
-        try {
-          const existingConfig = await loadConfig();
-          const updatedConfig = {
-            ...existingConfig,
-            tui: {
-              ...existingConfig?.tui,
-              lastUsedModel: modelString,
-            },
-          };
-          await writeConfig('user', updatedConfig);
-          logger.debug(`Persisted model selection: ${modelString}`);
-        } catch (persistErr) {
-          // Log but don't fail - persistence is not critical
-          logger.warn('Failed to persist model selection', {
+        const existingConfig = await loadConfig();
+        const updatedConfig = {
+          ...existingConfig,
+          tui: {
+            ...existingConfig?.tui,
+            lastUsedModel: modelString,
+          },
+        };
+        await writeConfig('user', updatedConfig);
+        logger.debug(`Persisted model selection: ${modelString}`);
+      } catch (persistErr) {
+        // Log but don't fail - persistence is not critical
+        logger.warn('Failed to persist model selection', {
             error: persistErr,
           });
-        }
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : 'Failed to switch model';
-        // TUI-034: Display error in conversation instead of global error state
-        setConversation(prev => [
-          ...prev,
-          { role: 'tool', content: `Model selection failed: ${errorMessage}` },
-        ]);
-        setShowModelSelector(false);
-      } finally {
-        setIsLoading(false);
       }
     },
     []
@@ -2993,15 +2855,261 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     return `${monthDay} ${timeStr}`;
   }, []);
 
-  // NAPI-003: Enter resume mode (show session selection overlay)
+  // TUI-047: Helper function to process streaming chunks from background sessions
+  // Used by handleResumeSelect when attaching to running/idle background sessions
+  // This is a simplified version of the inline chunk handling in handleSubmit,
+  // suitable for reattaching to sessions that may have produced output while detached.
+  const handleStreamChunk = useCallback((chunk: StreamChunk) => {
+    if (!chunk) return;
+
+    if (chunk.type === 'Text' && chunk.text) {
+      // Update the last assistant message, or create one if needed
+      setConversation(prev => {
+        const updated = [...prev];
+        const lastIdx = updated.findLastIndex(m => m.role === 'assistant');
+        if (lastIdx >= 0 && updated[lastIdx].isStreaming) {
+          updated[lastIdx] = {
+            ...updated[lastIdx],
+            content: updated[lastIdx].content + chunk.text,
+          };
+        } else {
+          // Create new streaming assistant message
+          updated.push({
+            role: 'assistant',
+            content: chunk.text || '',
+            isStreaming: true,
+          });
+        }
+        return updated;
+      });
+    } else if (chunk.type === 'Thinking' && chunk.thinking) {
+      // Show thinking content in a separate message
+      setConversation(prev => {
+        const updated = [...prev];
+        const thinkingIdx = updated.findLastIndex(m => m.isThinking);
+        if (thinkingIdx >= 0) {
+          updated[thinkingIdx] = {
+            ...updated[thinkingIdx],
+            content: `[Thinking]\n${updated[thinkingIdx].content.replace('[Thinking]\n', '')}${chunk.thinking}`,
+          };
+        } else {
+          updated.push({
+            role: 'tool',
+            content: `[Thinking]\n${chunk.thinking}`,
+            isThinking: true,
+          });
+        }
+        return updated;
+      });
+    } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+      const toolCall = chunk.toolCall;
+      let argsDisplay = '';
+      try {
+        const parsedInput = JSON.parse(toolCall.input);
+        if (typeof parsedInput === 'object' && parsedInput !== null) {
+          const inputObj = parsedInput as Record<string, unknown>;
+          if (inputObj.command) {
+            argsDisplay = String(inputObj.command);
+          } else if (inputObj.file_path) {
+            argsDisplay = String(inputObj.file_path);
+          } else if (inputObj.pattern) {
+            argsDisplay = String(inputObj.pattern);
+          } else {
+            const entries = Object.entries(inputObj);
+            if (entries.length > 0) {
+              const [, value] = entries[0];
+              argsDisplay = typeof value === 'string' ? value : JSON.stringify(value).slice(0, 50);
+            }
+          }
+        }
+      } catch {
+        argsDisplay = toolCall.input;
+      }
+      const toolContent = formatToolHeader(toolCall.name, argsDisplay);
+      setConversation(prev => {
+        const updated = [...prev];
+        // Mark streaming message as complete
+        const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+        if (streamingIdx >= 0) {
+          updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
+        }
+        updated.push({ role: 'tool', content: toolContent });
+        return updated;
+      });
+    } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
+      const result = chunk.toolResult;
+      const sanitizedContent = result.content.replace(/\t/g, '  ');
+      const toolResultContent = formatCollapsedOutput(sanitizedContent);
+      setConversation(prev => {
+        const updated = [...prev];
+        // Find tool header and combine with result
+        for (let i = updated.length - 1; i >= 0; i--) {
+          const msg = updated[i];
+          if (msg.role === 'tool' && msg.content.startsWith('●')) {
+            const headerLine = msg.content.split('\n')[0];
+            updated[i] = {
+              ...msg,
+              content: `${headerLine}\n${toolResultContent}`,
+              isError: result.isError,
+            };
+            break;
+          }
+        }
+        // Add streaming placeholder for continuation
+        updated.push({ role: 'assistant', content: '', isStreaming: true });
+        return updated;
+      });
+    } else if (chunk.type === 'Done') {
+      // Mark streaming complete
+      setConversation(prev => {
+        const updated = [...prev];
+        // Remove empty streaming messages
+        while (
+          updated.length > 0 &&
+          updated[updated.length - 1].role === 'assistant' &&
+          updated[updated.length - 1].isStreaming &&
+          !updated[updated.length - 1].content
+        ) {
+          updated.pop();
+        }
+        // Mark remaining as complete
+        const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+        if (streamingIdx >= 0) {
+          const originalContent = updated[streamingIdx].content;
+          updated[streamingIdx] = {
+            ...updated[streamingIdx],
+            content: formatMarkdownTables(originalContent),
+            isStreaming: false,
+          };
+        }
+        return updated;
+      });
+      setIsLoading(false);
+    } else if (chunk.type === 'Status' && chunk.status) {
+      // Show status messages (except compaction notifications)
+      const statusMessage = chunk.status;
+      if (!statusMessage.includes('compacted') && !statusMessage.includes('summary')) {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: statusMessage },
+        ]);
+      }
+    } else if (chunk.type === 'Interrupted') {
+      setConversation(prev => {
+        const updated = [...prev];
+        // Mark streaming as interrupted
+        const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+        if (streamingIdx >= 0) {
+          updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
+        }
+        updated.push({ role: 'tool', content: '⚠ Interrupted' });
+        return updated;
+      });
+      setIsLoading(false);
+    } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
+      setTokenUsage(chunk.tokens);
+      if (chunk.tokens.tokensPerSecond !== undefined && chunk.tokens.tokensPerSecond !== null) {
+        setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
+        setLastChunkTime(Date.now());
+      }
+    } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
+      setContextFillPercentage(chunk.contextFill.fillPercentage);
+    } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
+      const outputChunk = chunk.toolProgress.outputChunk;
+      setConversation(prev => {
+        const updated = [...prev];
+        const lastIdx = updated.length - 1;
+        if (lastIdx >= 0) {
+          const lastMsg = updated[lastIdx];
+          if (lastMsg.role === 'tool' && lastMsg.content.startsWith('●')) {
+            const lines = lastMsg.content.split('\n');
+            const header = lines[0];
+            const existingOutput = lines.slice(1).map(l => l.startsWith('L ') ? l.slice(2) : l.startsWith('  ') ? l.slice(2) : l).join('\n');
+            const newOutput = existingOutput + outputChunk;
+            const windowedOutput = createStreamingWindow(newOutput);
+            const windowedLines = windowedOutput.split('\n');
+            const formattedOutput = windowedLines.map((l, i) => i === 0 ? `L ${l}` : `  ${l}`).join('\n');
+            updated[lastIdx] = { ...lastMsg, content: `${header}\n${formattedOutput}` };
+          }
+        }
+        return updated;
+      });
+    } else if (chunk.type === 'Error' && chunk.error) {
+      setConversation(prev => {
+        const updated = [...prev];
+        // Remove empty streaming messages
+        while (
+          updated.length > 0 &&
+          updated[updated.length - 1].role === 'assistant' &&
+          updated[updated.length - 1].isStreaming &&
+          !updated[updated.length - 1].content
+        ) {
+          updated.pop();
+        }
+        updated.push({ role: 'tool', content: `API Error: ${chunk.error}` });
+        return updated;
+      });
+      setIsLoading(false);
+    }
+  }, []);
+
+  // NAPI-003 + TUI-047: Enter resume mode (show session selection overlay)
+  // Now queries both persistence and background sessions, merging results
   const handleResumeMode = useCallback(async () => {
     try {
-      const { persistenceListSessions } = await import('@sengac/codelet-napi');
-      const sessions = persistenceListSessions(currentProjectRef.current);
+      const { persistenceListSessions, sessionManagerList } = await import('@sengac/codelet-napi');
+      
+      // Get persisted sessions
+      const persistedSessions = persistenceListSessions(currentProjectRef.current);
+      
+      // TUI-047: Get background sessions
+      const backgroundSessions = sessionManagerList();
+      
+      // TUI-047: Merge sessions - background takes precedence
+      const backgroundMap = new Map<string, { status: string }>();
+      for (const bg of backgroundSessions) {
+        backgroundMap.set(bg.id, { status: bg.status });
+      }
+      
+      // Convert persisted sessions to MergedSession, marking those with background processes
+      const mergedSessions: MergedSession[] = persistedSessions.map((session: SessionManifest) => {
+        const bgInfo = backgroundMap.get(session.id);
+        if (bgInfo) {
+          // Session exists in background - use background status
+          return {
+            ...session,
+            isBackgroundSession: true,
+            backgroundStatus: bgInfo.status as 'running' | 'idle',
+          };
+        }
+        // Persisted-only session
+        return {
+          ...session,
+          isBackgroundSession: false,
+          backgroundStatus: null,
+        };
+      });
+      
+      // Add any background sessions that aren't in persistence yet
+      for (const bg of backgroundSessions) {
+        if (!persistedSessions.find((p: SessionManifest) => p.id === bg.id)) {
+          mergedSessions.push({
+            id: bg.id,
+            name: bg.name || 'Background Session',
+            project: bg.project || currentProjectRef.current,
+            provider: 'unknown',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            messageCount: bg.messageCount || 0,
+            isBackgroundSession: true,
+            backgroundStatus: bg.status as 'running' | 'idle',
+          });
+        }
+      }
 
       // Sort by updatedAt descending (most recent first)
-      const sorted = [...sessions].sort(
-        (a: SessionManifest, b: SessionManifest) =>
+      const sorted = [...mergedSessions].sort(
+        (a: MergedSession, b: MergedSession) =>
           new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
       );
 
@@ -3018,7 +3126,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     }
   }, []);
 
-  // NAPI-003: Select session and restore conversation
+  // NAPI-003 + TUI-047: Select session and restore conversation
+  // Now handles both background sessions (attach) and persisted-only (load from disk)
   const handleResumeSelect = useCallback(async () => {
     if (
       availableSessions.length === 0 ||
@@ -3030,6 +3139,34 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     const selectedSession = availableSessions[resumeSessionIndex];
 
     try {
+      // TUI-047: Check if this is a background session
+      if (selectedSession.isBackgroundSession) {
+        // Background session - use sessionAttach instead of loading from persistence
+        const { sessionAttach, sessionGetBufferedOutput } = await import('@sengac/codelet-napi');
+        
+        // First get buffered output (produced while detached)
+        const bufferedChunks = sessionGetBufferedOutput(selectedSession.id, 1000);
+        
+        // Hydrate conversation from buffered output
+        for (const chunk of bufferedChunks) {
+          handleStreamChunk(chunk);
+        }
+        
+        // Attach for live streaming
+        sessionAttach(selectedSession.id, (_err: Error | null, chunk: StreamChunk) => {
+          if (chunk) {
+            handleStreamChunk(chunk);
+          }
+        });
+        
+        // Update session state
+        setCurrentSessionId(selectedSession.id);
+        setIsResumeMode(false);
+        setAvailableSessions([]);
+        return;
+      }
+      
+      // Persisted-only session - use existing persistence load code path
       const {
         persistenceGetSessionMessages,
         persistenceGetSessionMessageEnvelopes,
@@ -3267,98 +3404,50 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         }
       }
 
-      // NAPI-008: Restore messages to CodeletSession for LLM context using full envelopes
-      // This preserves structured tool_use/tool_result blocks (not just text summaries)
-      // and rebuilds turn boundaries for proper compaction after restore
-      if (sessionRef.current) {
-        sessionRef.current.restoreMessagesFromEnvelopes(envelopes);
-
-        // TUI-034: Handle full model path (provider/model-id) or legacy provider-only format
-        if (selectedSession.provider) {
-          const storedProvider = selectedSession.provider;
-
-          if (storedProvider.includes('/')) {
-            // Full model path format: "anthropic/claude-sonnet-4"
-            try {
-              await sessionRef.current.selectModel(storedProvider);
-              // Parse model info from stored path
-              const [providerId, modelId] = storedProvider.split('/');
-              const internalName = mapProviderIdToInternal(providerId);
-              setCurrentProvider(internalName);
-              // Find matching model info from provider sections
-              const section = providerSections.find(
-                s => s.providerId === providerId
-              );
-              const model = section?.models.find(
-                m => extractModelIdForRegistry(m.id) === modelId
-              );
-              if (model && section) {
-                setCurrentModel({
-                  providerId,
-                  modelId,
-                  apiModelId: model.id,
-                  displayName: model.name,
-                  reasoning: model.reasoning,
-                  hasVision: model.hasVision,
-                  contextWindow: model.contextWindow,
-                  maxOutput: model.maxOutput,
-                });
-              }
-            } catch (modelErr) {
-              logger.warn(
-                `Failed to select model ${storedProvider}: ${modelErr instanceof Error ? modelErr.message : String(modelErr)}`
-              );
-              // Fallback: try switching provider only
-              const [providerId, modelId] = storedProvider.split('/');
-              const internalName = mapProviderIdToInternal(providerId);
-              try {
-                await sessionRef.current.switchProvider(internalName);
-                setCurrentProvider(internalName);
-                // TUI-034: Show informational message about deprecated model fallback
-                restored.push({
-                  role: 'tool',
-                  content: `Note: Model "${modelId}" is no longer available. Using provider default for ${internalName}.`,
-                });
-              } catch {
-                // Provider switch also failed - continue with current
-                restored.push({
-                  role: 'tool',
-                  content: `Note: Model "${storedProvider}" is no longer available and provider switch failed. Using current provider.`,
-                });
-              }
-            }
-          } else if (
-            storedProvider !== sessionRef.current.currentProviderName
-          ) {
-            // Legacy provider-only format
-            try {
-              await sessionRef.current.switchProvider(storedProvider);
-              setCurrentProvider(storedProvider);
-            } catch (providerErr) {
-              // Provider switch failed - continue with current provider
-              logger.warn(
-                `Failed to switch to session provider ${storedProvider}: ${providerErr instanceof Error ? providerErr.message : String(providerErr)}`
-              );
-            }
+      // NAPI-009: Restore messages to background session for LLM context
+      // Create the background session if it doesn't exist, then restore messages
+      const { sessionManagerCreateWithId, sessionRestoreMessages } = await import('@sengac/codelet-napi');
+      
+      // TUI-034: Use full model path if available, fallback to provider
+      const modelPath = selectedSession.provider || currentProvider;
+      const project = currentProjectRef.current;
+      
+      // Create background session for this restored session
+      // Note: Must await - the function is async because it uses tokio::spawn internally
+      try {
+        await sessionManagerCreateWithId(selectedSession.id, modelPath, project, selectedSession.name);
+      } catch {
+        // Session may already exist - continue
+      }
+      
+      // Restore messages to the background session
+      await sessionRestoreMessages(selectedSession.id, envelopes);
+      
+      // Update provider/model state from stored provider
+      if (selectedSession.provider) {
+        const storedProvider = selectedSession.provider;
+        if (storedProvider.includes('/')) {
+          const [providerId, modelId] = storedProvider.split('/');
+          const internalName = mapProviderIdToInternal(providerId);
+          setCurrentProvider(internalName);
+          // Find matching model info from provider sections
+          const section = providerSections.find(s => s.providerId === providerId);
+          const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+          if (model && section) {
+            setCurrentModel({
+              providerId,
+              modelId,
+              apiModelId: model.id,
+              displayName: model.name,
+              reasoning: model.reasoning,
+              hasVision: model.hasVision,
+              contextWindow: model.contextWindow,
+              maxOutput: model.maxOutput,
+            });
           }
+        } else {
+          setCurrentProvider(storedProvider);
         }
-
-        // Restore token state from persisted session (including cache tokens for TUI-033)
-        // CTX-003: Restore current context, output, cache tokens, and cumulative billing fields
-        if (selectedSession.tokenUsage) {
-          sessionRef.current.restoreTokenState(
-            selectedSession.tokenUsage.currentContextTokens, // current input context
-            selectedSession.tokenUsage.cumulativeBilledOutput, // output tokens (use cumulative as we don't store current separately)
-            selectedSession.tokenUsage.cacheReadTokens ?? 0, // cache read
-            selectedSession.tokenUsage.cacheCreationTokens ?? 0, // cache creation
-            selectedSession.tokenUsage.cumulativeBilledInput ?? 0, // cumulative billed input
-            selectedSession.tokenUsage.cumulativeBilledOutput ?? 0 // cumulative billed output
-          );
-        }
-
-        // Update context fill percentage after restoring messages and tokens
-        const contextFillInfo = sessionRef.current.getContextFillInfo();
-        setContextFillPercentage(contextFillInfo.fillPercentage);
       }
 
       // Update state - replace current conversation entirely
@@ -3403,7 +3492,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     setShowSessionDeleteDialog(false);
   }, []);
 
-  // TUI-040: Handle session delete dialog selection
+  // TUI-040 + TUI-047: Handle session delete dialog selection
+  // Now handles both background sessions (destroy) and persisted-only (delete from disk)
   const handleSessionDeleteSelect = useCallback(
     async (index: number, option: string) => {
       setShowSessionDeleteDialog(false);
@@ -3413,39 +3503,32 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       }
 
       try {
-        const { persistenceDeleteSession, persistenceCleanupOrphanedMessages } =
+        const { persistenceDeleteSession, persistenceCleanupOrphanedMessages, sessionManagerDestroy } =
           await import('@sengac/codelet-napi');
 
         if (option === 'Delete This Session') {
           // Delete single session
           const selectedSession = availableSessions[resumeSessionIndex];
           if (selectedSession) {
+            // TUI-047: Check if background session - destroy it first
+            if (selectedSession.isBackgroundSession) {
+              sessionManagerDestroy(selectedSession.id);
+            }
+            // Always delete from persistence too
             await persistenceDeleteSession(selectedSession.id);
             // Cleanup orphaned messages
             persistenceCleanupOrphanedMessages();
-            // Refresh session list
-            const { persistenceListSessions } = await import(
-              '@sengac/codelet-napi'
-            );
-            const sessions = persistenceListSessions(currentProjectRef.current);
-            const sorted = [...sessions].sort(
-              (a: SessionManifest, b: SessionManifest) =>
-                new Date(b.updatedAt).getTime() -
-                new Date(a.updatedAt).getTime()
-            );
-            setAvailableSessions(sorted);
-            // Adjust index if needed
-            if (sorted.length === 0) {
-              setIsResumeMode(false);
-            } else {
-              setResumeSessionIndex(prev =>
-                Math.min(prev, sorted.length - 1)
-              );
-            }
+            // Refresh session list using the merged approach
+            await handleResumeMode();
+            return; // handleResumeMode handles state updates
           }
         } else if (option === 'Delete ALL Sessions') {
           // Delete all sessions
           for (const session of availableSessions) {
+            // TUI-047: Destroy background sessions first
+            if (session.isBackgroundSession) {
+              sessionManagerDestroy(session.id);
+            }
             await persistenceDeleteSession(session.id);
           }
           // Cleanup orphaned messages
@@ -3469,6 +3552,45 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   const handleSessionDeleteCancel = useCallback(() => {
     setShowSessionDeleteDialog(false);
   }, []);
+
+  // TUI-046: Handle exit confirmation modal selection (Detach/Close Session/Cancel)
+  const handleExitChoice = useCallback(
+    async (index: number, _option: string) => {
+      setShowExitConfirmation(false);
+
+      if (index === 2) {
+        // Cancel - stay in AgentView
+        return;
+      }
+
+      if (index === 0) {
+        // Detach - session continues running in background
+        if (currentSessionId) {
+          try {
+            const { sessionDetach } = await import('@sengac/codelet-napi');
+            sessionDetach(currentSessionId);
+          } catch (err) {
+            // Log but continue - session may not be in background manager
+            logger.warn('Failed to detach session:', err);
+          }
+        }
+        onExit();
+      } else if (index === 1) {
+        // Close Session - terminate the session
+        if (currentSessionId) {
+          try {
+            const { sessionManagerDestroy } = await import('@sengac/codelet-napi');
+            sessionManagerDestroy(currentSessionId);
+          } catch (err) {
+            // Log but continue - session may not be in background manager
+            logger.warn('Failed to destroy session:', err);
+          }
+        }
+        onExit();
+      }
+    },
+    [currentSessionId, onExit]
+  );
 
   // Mouse scroll acceleration state (like VirtualList)
   const modelSelectorLastScrollTime = useRef<number>(0);
@@ -3578,12 +3700,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // Handle keyboard input
   useInput(
     (input, key) => {
-      // Log ALL keyboard input in AgentView for debugging
-      logger.info(`[AgentView] useInput called: input=${JSON.stringify(input)} (length=${input.length}) inputCodes=${input.split('').map(c => c.charCodeAt(0)).join(',')} key=${JSON.stringify(key)}`);
-      logger.info(`[AgentView] State: isLoading=${isLoading} isSearchMode=${isSearchMode} isResumeMode=${isResumeMode} showProviderSelector=${showProviderSelector} showModelSelector=${showModelSelector} showSettingsTab=${showSettingsTab}`);
-      
-      // Handle mouse scroll for model selector, settings tab, and resume mode
-      // Mouse scroll moves the SELECTION (like VirtualList item mode), scroll offset auto-adjusts
       if (input.startsWith('[M') || key.mouse) {
         // Parse raw mouse escape sequences for scroll wheel
         if (input.startsWith('[M')) {
@@ -3655,7 +3771,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
       // NAPI-006: Search mode keyboard handling
       if (isSearchMode) {
-        if (key.escape) {
+        if (key.escape && !key.shift && !key.meta) {
           handleSearchCancel();
           return;
         }
@@ -3698,7 +3814,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           // Dialog handles its own input via useInput
           return;
         }
-        if (key.escape) {
+        if (key.escape && !key.shift && !key.meta) {
           handleResumeCancel();
           return;
         }
@@ -3726,7 +3842,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       }
 
       if (showProviderSelector) {
-        if (key.escape) {
+        if (key.escape && !key.shift && !key.meta) {
           setShowProviderSelector(false);
           return;
         }
@@ -3753,7 +3869,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       if (showModelSelector) {
         // Filter mode handling
         if (isModelSelectorFilterMode) {
-          if (key.escape) {
+          if (key.escape && !key.shift && !key.meta) {
             setIsModelSelectorFilterMode(false);
             setModelSelectorFilter('');
             return;
@@ -3780,7 +3896,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           return;
         }
 
-        if (key.escape) {
+        if (key.escape && !key.shift && !key.meta) {
           if (modelSelectorFilter) {
             setModelSelectorFilter('');
             return;
@@ -3923,7 +4039,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       if (showSettingsTab) {
         // Filter mode handling
         if (isSettingsFilterMode) {
-          if (key.escape) {
+          if (key.escape && !key.shift && !key.meta) {
             setIsSettingsFilterMode(false);
             setSettingsFilter('');
             return;
@@ -3950,7 +4066,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           return;
         }
 
-        if (key.escape) {
+        if (key.escape && !key.shift && !key.meta) {
           if (settingsFilter) {
             setSettingsFilter('');
             return;
@@ -4053,31 +4169,54 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
 
+      // TUI-048: Shift+ESC immediate detach - highest priority, overrides all other ESC handlers
+      // Note: Most terminals send \x1b\x1b for Shift+ESC, which Ink parses as escape+meta (not escape+shift)
+      if (key.escape && (key.shift || key.meta)) {
+        // Immediately detach session without confirmation modal
+        // Call onExit directly for instant feedback, skip sessionDetach for speed
+        onExit();
+        return;
+      }
+
       // TUI-045: Esc key handling with priority order:
-      // 1) Close modal, 2) Disable select mode, 3) Interrupt loading, 4) Clear input, 5) Exit view
-      if (key.escape) {
-        // Priority 1: Close modal first
+      // 1) Close exit confirmation modal, 2) Close turn modal, 3) Disable select mode, 4) Interrupt loading, 5) Clear input, 6) Show exit confirmation or exit
+      if (key.escape && !key.shift && !key.meta) {
+        // Priority 1: Close exit confirmation modal (TUI-046)
+        if (showExitConfirmation) {
+          setShowExitConfirmation(false);
+          return;
+        }
+        // Priority 2: Close turn modal
         if (showTurnModal) {
           setShowTurnModal(false);
           return;
         }
-        // Priority 2: Disable select mode
+        // Priority 3: Disable select mode
         if (isTurnSelectMode) {
           setIsTurnSelectMode(false);
           return;
         }
-        // Priority 3: Interrupt loading
-        if (isLoading && sessionRef.current) {
-          sessionRef.current.interrupt();
+        // Priority 4: Interrupt loading - use background session interrupt
+        if (isLoading && currentSessionId) {
+          // NAPI-009: Use background session interrupt instead of CodeletSession
+          import('@sengac/codelet-napi').then(({ sessionInterrupt }) => {
+            sessionInterrupt(currentSessionId);
+          }).catch((err) => {
+            logger.warn('Failed to interrupt session:', err);
+          });
           return;
         }
-        // Priority 4: Clear input
+        // Priority 5: Clear input
         if (inputValue.trim() !== '') {
           setInputValue('');
           return;
         }
-        // Priority 5: Exit view
-        onExit();
+        // Priority 6: Show exit confirmation if session exists, otherwise exit (TUI-046)
+        if (currentSessionId) {
+          setShowExitConfirmation(true);
+        } else {
+          onExit();
+        }
         return;
       }
 
@@ -4805,7 +4944,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
                             wrap="truncate"
                           >
                             {isSelected ? '> ' : '  '}
-                            {session.name}
+                            {getSessionStatusIcon(session)} {session.name}
                           </Text>
                         </Box>
                       </Box>,
@@ -4863,6 +5002,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             options={['Delete This Session', 'Delete ALL Sessions', 'Cancel']}
             onSelect={handleSessionDeleteSelect}
             onCancel={handleSessionDeleteCancel}
+          />
+        )}
+        {/* TUI-046: Exit confirmation dialog (shown in resume mode too) */}
+        {showExitConfirmation && (
+          <ThreeButtonDialog
+            message="Exit Session?"
+            description={isLoading 
+              ? "The agent is currently running. Choose how to exit."
+              : "Choose how to exit the session."}
+            options={['Detach', 'Close Session', 'Cancel']}
+            defaultSelectedIndex={0}
+            onSelect={handleExitChoice}
+            onCancel={() => setShowExitConfirmation(false)}
           />
         )}
       </Box>
@@ -5127,7 +5279,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
-            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn)"
+            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Shift+ESC' detach)"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
             maxVisibleLines={5}
@@ -5143,6 +5295,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           terminalWidth={terminalWidth}
           terminalHeight={terminalHeight}
           isFocused={showTurnModal}
+        />
+      )}
+
+      {/* TUI-046: Exit confirmation dialog */}
+      {showExitConfirmation && (
+        <ThreeButtonDialog
+          message="Exit Session?"
+          description={isLoading 
+            ? "The agent is currently running. Choose how to exit."
+            : "Choose how to exit the session."}
+          options={['Detach', 'Close Session', 'Cancel']}
+          defaultSelectedIndex={0}
+          onSelect={handleExitChoice}
+          onCancel={() => setShowExitConfirmation(false)}
         />
       )}
     </Box>

@@ -1,0 +1,159 @@
+{
+  "scenarios": [
+    {
+      "name": "Detach session using default selection and exit",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-exit-confirmation.test.tsx",
+          "lines": "141-174",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                690,
+                691,
+                692,
+                693,
+                694,
+                695
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ESC dismisses the exit modal",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-exit-confirmation.test.tsx",
+          "lines": "177-193",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4065,
+                4066,
+                4067,
+                4068,
+                4069
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No modal when exiting without active session",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-exit-confirmation.test.tsx",
+          "lines": "196-209",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4090,
+                4091,
+                4092,
+                4093,
+                4094,
+                4095
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ESC clears input before showing exit modal",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-exit-confirmation.test.tsx",
+          "lines": "212-231",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4085,
+                4086,
+                4087,
+                4088,
+                4089,
+                4090,
+                4091,
+                4092,
+                4093,
+                4094,
+                4095
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Cancel exit and remain in AgentView",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-exit-confirmation.test.tsx",
+          "lines": "234-263",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3476,
+                3477,
+                3478,
+                3479,
+                3480
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Close session and exit",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-exit-confirmation.test.tsx",
+          "lines": "266-295",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3495,
+                3496,
+                3497,
+                3498,
+                3499,
+                3500,
+                3501,
+                3502,
+                3503,
+                3504,
+                3505,
+                3506,
+                3507,
+                3508
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/AgentView-exit-confirmation.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 192
+  }
+}

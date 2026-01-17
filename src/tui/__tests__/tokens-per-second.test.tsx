@@ -12,8 +12,49 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'ink-testing-library';
 import { Box, Text } from 'ink';
 
+// Mock model data matching models.dev structure
+const mockModels = vi.hoisted(() => ({
+  anthropic: {
+    providerId: 'anthropic',
+    providerName: 'Anthropic',
+    models: [
+      {
+        id: 'claude-sonnet-4-20250514',
+        name: 'Claude Sonnet 4',
+        family: 'claude-sonnet-4',
+        reasoning: true,
+        toolCall: true,
+        attachment: true,
+        temperature: true,
+        contextWindow: 200000,
+        maxOutput: 16000,
+        hasVision: true,
+      },
+    ],
+  },
+  openai: {
+    providerId: 'openai',
+    providerName: 'OpenAI',
+    models: [
+      {
+        id: 'gpt-4o',
+        name: 'GPT-4o',
+        family: 'gpt-4o',
+        reasoning: false,
+        toolCall: true,
+        attachment: true,
+        temperature: true,
+        contextWindow: 128000,
+        maxOutput: 16384,
+        hasVision: true,
+      },
+    ],
+  },
+}));
+
 // Track callback and resolver at module level for test control
-let capturedCallback: ((chunk: unknown) => void) | null = null;
+// NAPI-009: sessionAttach uses (err, chunk) signature
+let capturedCallback: ((err: Error | null, chunk: unknown) => void) | null = null;
 let capturedResolver: (() => void) | null = null;
 
 // Create mock state that persists across mock hoisting
@@ -77,7 +118,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   getThinkingConfig: vi.fn(() => null),
   // TUI-034: Model selection mocks
   modelsSetCacheDirectory: vi.fn(),
-  modelsListAll: vi.fn(() => Promise.resolve([])),
+  modelsListAll: vi.fn(() => Promise.resolve([mockModels.anthropic, mockModels.openai])),
   setRustLogCallback: vi.fn(),
   // Persistence NAPI bindings required by AgentView
   persistenceSetDataDirectory: vi.fn(),
@@ -97,6 +138,32 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceListSessions: vi.fn(() => []),
   persistenceAppendMessage: vi.fn(),
   persistenceRenameSession: vi.fn(),
+  // TUI-047: Session management for background sessions
+  sessionManagerList: vi.fn().mockReturnValue([]),
+  // NAPI-009: sessionAttach captures callback for streaming chunks
+  sessionAttach: vi.fn().mockImplementation((_sessionId: string, callback: (err: Error | null, chunk: unknown) => void) => {
+    capturedCallback = callback;
+  }),
+  sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
+  sessionManagerDestroy: vi.fn(),
+  sessionDetach: vi.fn(),
+  sessionSendInput: vi.fn(),
+  // NAPI-009: New session manager functions
+  sessionManagerCreateWithId: vi.fn(),
+  sessionRestoreMessages: vi.fn(),
+  // NAPI-009 + AGENT-021: Debug and compaction for background sessions
+  sessionToggleDebug: vi.fn().mockResolvedValue({
+    enabled: true,
+    sessionFile: '/tmp/debug-session.json',
+    message: 'Debug capture enabled. Events will be written to /tmp/debug-session.json',
+  }),
+  sessionCompact: vi.fn().mockResolvedValue({
+    originalTokens: 10000,
+    compactedTokens: 3000,
+    compressionRatio: 70,
+    turnsSummarized: 5,
+    turnsKept: 2,
+  }),
 }));
 
 // Mock Dialog to render children without position="absolute"
@@ -108,6 +175,33 @@ vi.mock('../../components/Dialog', () => ({
     onClose: () => void;
     borderColor?: string;
   }) => <Box flexDirection="column">{children}</Box>,
+}));
+
+// Mock credentials utilities - required for provider filtering
+vi.mock('../../utils/credentials', () => ({
+  getProviderConfig: vi.fn((registryId: string) => {
+    const registryToAvailable: Record<string, string> = {
+      anthropic: 'claude',
+      openai: 'openai',
+      gemini: 'gemini',
+      google: 'gemini',
+    };
+    const availableName = registryToAvailable[registryId] || registryId;
+    if (mockState.session.availableProviders.includes(availableName)) {
+      return Promise.resolve({ apiKey: 'test-key', source: 'file' });
+    }
+    return Promise.resolve({ apiKey: null, source: null });
+  }),
+  saveCredential: vi.fn(),
+  deleteCredential: vi.fn(),
+  maskApiKey: vi.fn((key: string) => '***'),
+}));
+
+// Mock config utilities
+vi.mock('../../utils/config', () => ({
+  loadConfig: vi.fn(() => Promise.resolve({})),
+  writeConfig: vi.fn(() => Promise.resolve()),
+  getFspecUserDir: vi.fn(() => '/tmp/fspec-test'),
 }));
 
 // Mock Ink's Box to strip position="absolute" which doesn't work in ink-testing-library
@@ -150,6 +244,7 @@ const resetMockSession = () => {
 
 // Helper to simulate streaming with tok/s from Rust
 // TUI-031: Tok/s is calculated in Rust and sent via TokenUpdate.tokensPerSecond
+// NAPI-009: Callback signature is (err, chunk) for sessionAttach
 const simulateStreaming = async (
   finalTokens: { inputTokens: number; outputTokens: number },
   waitTime: number,
@@ -157,19 +252,19 @@ const simulateStreaming = async (
 ) => {
   if (capturedCallback) {
     // First text chunk
-    capturedCallback({ type: 'Text', text: 'Hello ' });
+    capturedCallback(null, { type: 'Text', text: 'Hello ' });
   }
   await waitForFrame(waitTime / 3);
   if (capturedCallback) {
     // Second text chunk
-    capturedCallback({ type: 'Text', text: 'world, this is ' });
+    capturedCallback(null, { type: 'Text', text: 'world, this is ' });
   }
   await waitForFrame(waitTime / 3);
   if (capturedCallback) {
     // Third text chunk
-    capturedCallback({ type: 'Text', text: 'a streaming response.' });
+    capturedCallback(null, { type: 'Text', text: 'a streaming response.' });
     // Send token update with tok/s from Rust
-    capturedCallback({
+    capturedCallback(null, {
       type: 'TokenUpdate',
       tokens: { ...finalTokens, tokensPerSecond },
     });
@@ -178,14 +273,15 @@ const simulateStreaming = async (
 };
 
 // Helper to end streaming
+// NAPI-009: Callback signature is (err, chunk) for sessionAttach
 const endStreaming = async (finalTokens = { inputTokens: 100, outputTokens: 50 }) => {
   if (capturedCallback) {
     // Final token update with tokensPerSecond: null to hide tok/s display
-    capturedCallback({
+    capturedCallback(null, {
       type: 'TokenUpdate',
       tokens: { ...finalTokens, tokensPerSecond: null },
     });
-    capturedCallback({ type: 'Done' });
+    capturedCallback(null, { type: 'Done' });
   }
   if (capturedResolver) {
     capturedResolver();
@@ -264,9 +360,10 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
       // @step And only one TokenUpdate event has been received (without tokensPerSecond)
       // @step When the header is rendered
       // TUI-031: Rust hasn't calculated tok/s yet, so it's not sent
+      // NAPI-009: Callback signature is (err, chunk)
       if (capturedCallback) {
-        capturedCallback({ type: 'Text', text: 'Hello' });
-        capturedCallback({
+        capturedCallback(null, { type: 'Text', text: 'Hello' });
+        capturedCallback(null, {
           type: 'TokenUpdate',
           tokens: { inputTokens: 100, outputTokens: 10 }, // No tokensPerSecond
         });
@@ -414,8 +511,9 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
 
       // @step When additional tokens continue to stream over time
       // TUI-031: Send more tokens with updated tok/s from Rust
+      // NAPI-009: Callback signature is (err, chunk)
       if (capturedCallback) {
-        capturedCallback({
+        capturedCallback(null, {
           type: 'TokenUpdate',
           tokens: { inputTokens: 100, outputTokens: 150, tokensPerSecond: 30.2 },
         });

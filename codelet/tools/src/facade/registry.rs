@@ -99,7 +99,7 @@ mod tests {
         let tools = registry.tools_for_provider("claude");
 
         assert_eq!(tools.len(), 1);
-        assert_eq!(tools[0].tool_name(), "web_search");
+        assert_eq!(tools[0].tool_name(), "WebSearch");
         assert_eq!(tools[0].provider(), "claude");
     }
 

@@ -39,7 +39,7 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 use tokio::sync::Notify;
 use tokio::time::interval;
-use tracing::{debug, error, info, trace};
+use tracing::{error, info};
 
 /// Check if an error indicates the prompt/context is too long
 fn is_prompt_too_long_error(error_str: &str) -> bool {
@@ -77,7 +77,7 @@ impl TokPerSecTracker {
     const MIN_TIME_SPAN: Duration = Duration::from_millis(50);
 
     fn new() -> Self {
-        debug!("[PROV-002] Creating new TokPerSecTracker");
+        // Create new TokPerSecTracker
         Self {
             samples: Vec::new(),
             cumulative_tokens: 0,
@@ -91,19 +91,9 @@ impl TokPerSecTracker {
     fn record_chunk(&mut self, text: &str) -> Option<f64> {
         let now = Instant::now();
 
-        // PROV-002: Use tiktoken-rs for accurate token counting
+        // Use tiktoken-rs for accurate token counting
         let chunk_tokens = count_tokens(text);
         self.cumulative_tokens += chunk_tokens as u64;
-
-        // Debug: Log incoming chunks
-        if chunk_tokens > 0 {
-            trace!(
-                "[PROV-002] Chunk received: text_len={}, estimated_tokens={}, cumulative={}",
-                text.len(),
-                chunk_tokens,
-                self.cumulative_tokens
-            );
-        }
 
         // Add sample
         self.samples.push((now, self.cumulative_tokens));
@@ -147,24 +137,11 @@ impl TokPerSecTracker {
             None => 1.0, // First reading: 100% weight to raw_rate
         };
 
-        let (prev_rate, new_rate) = match self.smoothed_rate {
+        let (_prev_rate, new_rate) = match self.smoothed_rate {
             Some(prev) => (Some(prev), adaptive_alpha * raw_rate + (1.0 - adaptive_alpha) * prev),
             None => (None, raw_rate),
         };
         self.smoothed_rate = Some(new_rate);
-
-        // Debug: Log calculation details
-        trace!(
-            "[PROV-002] Tok/s calc: samples={}, token_delta={:?}, time_delta={:?}ms, raw_rate={:.2}, prev_rate={:?}, adaptive_alpha={:.2}, new_rate={:.2}, cumulative_tokens={}",
-            self.samples.len(),
-            token_delta,
-            time_delta.as_millis(),
-            raw_rate,
-            prev_rate.map(|r| format!("{:.2}", r)),
-            adaptive_alpha,
-            new_rate,
-            self.cumulative_tokens
-        );
 
         // Check throttling
         let should_emit = match self.last_emit_time {

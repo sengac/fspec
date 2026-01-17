@@ -19,6 +19,8 @@ mod output;
 #[cfg(not(feature = "noop"))]
 mod session;
 #[cfg(not(feature = "noop"))]
+mod session_manager;
+#[cfg(not(feature = "noop"))]
 mod thinking_config;
 #[cfg(not(feature = "noop"))]
 mod types;
@@ -34,6 +36,8 @@ pub use astgrep::*;
 pub use models::*;
 #[cfg(not(feature = "noop"))]
 pub use session::CodeletSession;
+#[cfg(not(feature = "noop"))]
+pub use session_manager::*;
 #[cfg(not(feature = "noop"))]
 pub use thinking_config::{
     extract_thinking_text, get_thinking_config, is_thinking_content, JsThinkingLevel,
