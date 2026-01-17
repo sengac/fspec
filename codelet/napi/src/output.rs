@@ -272,11 +272,14 @@ impl StreamOutput for NapiOutput {
             StreamEvent::ToolProgress(progress) => {
                 // TOOL-011: Stream tool execution progress to JavaScript
                 // Don't flush text buffer - tool progress is separate from LLM text streaming
+                tracing::info!("[NAPI OUTPUT] Received ToolProgress event: tool_name={}, output_chunk={:?}", 
+                    progress.tool_name, progress.output_chunk);
                 let info = ToolProgressInfo {
                     tool_call_id: progress.tool_call_id,
                     tool_name: progress.tool_name,
                     output_chunk: progress.output_chunk,
                 };
+                tracing::info!("[NAPI OUTPUT] Sending ToolProgress chunk to JavaScript");
                 let _ = self.callback.call(
                     StreamChunk::tool_progress(info),
                     ThreadsafeFunctionCallMode::NonBlocking,

@@ -1,0 +1,189 @@
+{
+  "scenarios": [
+    {
+      "name": "Immediate detach while agent is thinking",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
+          "lines": "14-31",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4179,
+                4180,
+                4181,
+                4182,
+                4183,
+                4184,
+                4185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Immediate detach while session is inactive",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
+          "lines": "33-48",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4179,
+                4180,
+                4181,
+                4182,
+                4183,
+                4184,
+                4185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+ESC overrides regular ESC confirmation modal",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
+          "lines": "50-72",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4179,
+                4180,
+                4181,
+                4182,
+                4183,
+                4184,
+                4185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Input placeholder shows Shift+ESC detach option",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
+          "lines": "74-91",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5288
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Thinking indicator shows Shift+ESC detach option",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
+          "lines": "93-104",
+          "implMappings": [
+            {
+              "file": "src/tui/components/InputTransition.tsx",
+              "lines": [
+                57
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+ESC works in provider selector state",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
+          "lines": "106-119",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4179,
+                4180,
+                4181,
+                4182,
+                4183,
+                4184,
+                4185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+ESC works in model selector state",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
+          "lines": "121-134",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4179,
+                4180,
+                4181,
+                4182,
+                4183,
+                4184,
+                4185
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+ESC works in settings state",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
+          "lines": "136-149",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4179,
+                4180,
+                4181,
+                4182,
+                4183,
+                4184,
+                4185
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx",
+      "src/tui/components/InputTransition.tsx"
+    ],
+    "totalLinesCovered": 173
+  }
+}

@@ -1,0 +1,385 @@
+{
+  "scenarios": [
+    {
+      "name": "Resume view shows running and idle sessions with status icons",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-resume-attach.test.tsx",
+          "lines": "37-69",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attach to running session shows buffered output then live stream",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-resume-attach.test.tsx",
+          "lines": "72-108",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3053,
+                3054,
+                3055,
+                3056,
+                3057,
+                3058,
+                3059,
+                3060,
+                3061,
+                3062,
+                3063,
+                3064,
+                3065,
+                3066,
+                3067,
+                3068,
+                3069,
+                3070,
+                3071,
+                3072,
+                3073,
+                3074,
+                3075,
+                3076,
+                3077,
+                3078,
+                3079,
+                3080,
+                3081,
+                3082,
+                3083,
+                3084,
+                3085,
+                3086,
+                3087,
+                3088,
+                3089,
+                3090
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Idle session loads from persistence as before",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-resume-attach.test.tsx",
+          "lines": "111-137",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3053,
+                3054,
+                3055,
+                3056,
+                3057,
+                3058,
+                3059,
+                3060,
+                3061,
+                3062,
+                3063,
+                3064,
+                3065,
+                3066,
+                3067,
+                3068,
+                3069,
+                3070,
+                3071,
+                3072,
+                3073,
+                3074,
+                3075,
+                3076,
+                3077,
+                3078,
+                3079,
+                3080,
+                3081,
+                3082,
+                3083,
+                3084,
+                3085,
+                3086,
+                3087,
+                3088,
+                3089,
+                3090,
+                3091,
+                3092,
+                3093,
+                3094,
+                3095,
+                3096,
+                3097,
+                3098,
+                3099,
+                3100,
+                3101,
+                3102,
+                3103,
+                3104,
+                3105,
+                3106,
+                3107,
+                3108,
+                3109,
+                3110,
+                3111,
+                3112,
+                3113,
+                3114,
+                3115,
+                3116,
+                3117,
+                3118,
+                3119,
+                3120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete running session destroys background session",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-resume-attach.test.tsx",
+          "lines": "140-166",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3467,
+                3468,
+                3469,
+                3470,
+                3471,
+                3472,
+                3473,
+                3474,
+                3475,
+                3476,
+                3477,
+                3478,
+                3479,
+                3480,
+                3481,
+                3482,
+                3483,
+                3484,
+                3485,
+                3486,
+                3487,
+                3488,
+                3489,
+                3490,
+                3491,
+                3492,
+                3493,
+                3494,
+                3495,
+                3496,
+                3497,
+                3498,
+                3499,
+                3500,
+                3501,
+                3502,
+                3503,
+                3504,
+                3505,
+                3506,
+                3507,
+                3508,
+                3509,
+                3510
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sessions sorted by most recent first",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-resume-attach.test.tsx",
+          "lines": "169-189",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3030,
+                3031,
+                3032,
+                3033,
+                3034,
+                3035,
+                3036,
+                3037,
+                3038,
+                3039,
+                3040
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Backward compatible when no background sessions exist",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-resume-attach.test.tsx",
+          "lines": "192-225",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                2980,
+                2981,
+                2982,
+                2983,
+                2984,
+                2985,
+                2986,
+                2987,
+                2988,
+                2989,
+                2990,
+                2991,
+                2992,
+                2993,
+                2994,
+                2995,
+                2996,
+                2997,
+                2998,
+                2999,
+                3000,
+                3001,
+                3002,
+                3003,
+                3004,
+                3005,
+                3006,
+                3007,
+                3008,
+                3009,
+                3010,
+                3011,
+                3012,
+                3013,
+                3014,
+                3015,
+                3016,
+                3017,
+                3018,
+                3019,
+                3020,
+                3021,
+                3022,
+                3023,
+                3024,
+                3025,
+                3026,
+                3027,
+                3028,
+                3029,
+                3030,
+                3031,
+                3032,
+                3033,
+                3034,
+                3035,
+                3036,
+                3037,
+                3038,
+                3039,
+                3040,
+                3041,
+                3042,
+                3043,
+                3044,
+                3045,
+                3046,
+                3047,
+                3048,
+                3049
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Attach to idle background session shows complete output",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/AgentView-resume-attach.test.tsx",
+          "lines": "228-289",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                267,
+                268,
+                269,
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/AgentView-resume-attach.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 498
+  }
+}

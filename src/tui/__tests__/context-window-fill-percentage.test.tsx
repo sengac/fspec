@@ -12,8 +12,31 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'ink-testing-library';
 import { Box } from 'ink';
 
+// Mock model data matching models.dev structure
+const mockModels = vi.hoisted(() => ({
+  anthropic: {
+    providerId: 'anthropic',
+    providerName: 'Anthropic',
+    models: [
+      {
+        id: 'claude-sonnet-4-20250514',
+        name: 'Claude Sonnet 4',
+        family: 'claude-sonnet-4',
+        reasoning: true,
+        toolCall: true,
+        attachment: true,
+        temperature: true,
+        contextWindow: 200000,
+        maxOutput: 16000,
+        hasVision: true,
+      },
+    ],
+  },
+}));
+
 // Track callback and resolver at module level for test control
-let capturedCallback: ((chunk: unknown) => void) | null = null;
+// NAPI-009: sessionAttach uses (err, chunk) signature
+let capturedCallback: ((err: Error | null, chunk: unknown) => void) | null = null;
 let capturedResolver: (() => void) | null = null;
 
 // Create mock state that persists across mock hoisting
@@ -77,7 +100,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   getThinkingConfig: vi.fn(() => null),
   // TUI-034: Model selection mocks
   modelsSetCacheDirectory: vi.fn(),
-  modelsListAll: vi.fn(() => Promise.resolve([])),
+  modelsListAll: vi.fn(() => Promise.resolve([mockModels.anthropic])),
   setRustLogCallback: vi.fn(),
   // Persistence NAPI bindings required by AgentView
   persistenceSetDataDirectory: vi.fn(),
@@ -97,6 +120,32 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceListSessions: vi.fn(() => []),
   persistenceAppendMessage: vi.fn(),
   persistenceRenameSession: vi.fn(),
+  // TUI-047: Session management for background sessions
+  sessionManagerList: vi.fn().mockReturnValue([]),
+  // NAPI-009: sessionAttach captures callback for streaming chunks
+  sessionAttach: vi.fn().mockImplementation((_sessionId: string, callback: (err: Error | null, chunk: unknown) => void) => {
+    capturedCallback = callback;
+  }),
+  sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
+  sessionManagerDestroy: vi.fn(),
+  sessionDetach: vi.fn(),
+  sessionSendInput: vi.fn(),
+  // NAPI-009: New session manager functions
+  sessionManagerCreateWithId: vi.fn(),
+  sessionRestoreMessages: vi.fn(),
+  // NAPI-009 + AGENT-021: Debug and compaction for background sessions
+  sessionToggleDebug: vi.fn().mockResolvedValue({
+    enabled: true,
+    sessionFile: '/tmp/debug-session.json',
+    message: 'Debug capture enabled. Events will be written to /tmp/debug-session.json',
+  }),
+  sessionCompact: vi.fn().mockResolvedValue({
+    originalTokens: 10000,
+    compactedTokens: 3000,
+    compressionRatio: 70,
+    turnsSummarized: 5,
+    turnsKept: 2,
+  }),
 }));
 
 // Mock Dialog to render children without position="absolute"
@@ -108,6 +157,33 @@ vi.mock('../../components/Dialog', () => ({
     onClose: () => void;
     borderColor?: string;
   }) => <Box flexDirection="column">{children}</Box>,
+}));
+
+// Mock credentials utilities - required for provider filtering
+vi.mock('../../utils/credentials', () => ({
+  getProviderConfig: vi.fn((registryId: string) => {
+    const registryToAvailable: Record<string, string> = {
+      anthropic: 'claude',
+      openai: 'openai',
+      gemini: 'gemini',
+      google: 'gemini',
+    };
+    const availableName = registryToAvailable[registryId] || registryId;
+    if (mockState.session.availableProviders.includes(availableName)) {
+      return Promise.resolve({ apiKey: 'test-key', source: 'file' });
+    }
+    return Promise.resolve({ apiKey: null, source: null });
+  }),
+  saveCredential: vi.fn(),
+  deleteCredential: vi.fn(),
+  maskApiKey: vi.fn((key: string) => '***'),
+}));
+
+// Mock config utilities
+vi.mock('../../utils/config', () => ({
+  loadConfig: vi.fn(() => Promise.resolve({})),
+  writeConfig: vi.fn(() => Promise.resolve()),
+  getFspecUserDir: vi.fn(() => '/tmp/fspec-test'),
 }));
 
 // Mock Ink's Box to strip position="absolute" which doesn't work in ink-testing-library
@@ -149,6 +225,7 @@ const resetMockSession = () => {
 };
 
 // Helper to simulate ContextFillUpdate event
+// NAPI-009: Callback signature is (err, chunk)
 const simulateContextFillUpdate = async (
   fillPercentage: number,
   effectiveTokens: number,
@@ -156,7 +233,7 @@ const simulateContextFillUpdate = async (
   contextWindow: number
 ) => {
   if (capturedCallback) {
-    capturedCallback({
+    capturedCallback(null, {
       type: 'ContextFillUpdate',
       contextFill: {
         fillPercentage,
@@ -170,9 +247,10 @@ const simulateContextFillUpdate = async (
 };
 
 // Helper to end streaming
+// NAPI-009: Callback signature is (err, chunk)
 const endStreaming = async () => {
   if (capturedCallback) {
-    capturedCallback({ type: 'Done' });
+    capturedCallback(null, { type: 'Done' });
   }
   if (capturedResolver) {
     capturedResolver();
@@ -427,8 +505,9 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
       await simulateContextFillUpdate(50, 90000, 180000, 200000);
 
       // Also send token update so tokens display is populated
+      // NAPI-009: Callback signature is (err, chunk)
       if (capturedCallback) {
-        capturedCallback({
+        capturedCallback(null, {
           type: 'TokenUpdate',
           tokens: { inputTokens: 1000, outputTokens: 500 },
         });

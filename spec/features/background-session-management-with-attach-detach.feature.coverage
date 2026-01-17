@@ -1,14 +1,14 @@
 {
   "scenarios": [
     {
-      "name": "Select Z.AI GLM model with thinking mode",
+      "name": "Detach while agent is running and reattach to see completed output",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/zai_provider_test.rs",
-          "lines": "14-38",
+          "file": "src/__tests__/background-session.test.ts",
+          "lines": "27-60",
           "implMappings": [
             {
-              "file": "codelet/providers/src/zai.rs",
+              "file": "codelet/napi/src/session_manager.rs",
               "lines": [
                 1,
                 2,
@@ -309,7 +309,157 @@
                 297,
                 298,
                 299,
-                300
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420,
+                421,
+                422,
+                423,
+                424,
+                425,
+                426,
+                427,
+                428,
+                429,
+                430,
+                431,
+                432,
+                433,
+                434,
+                435,
+                436,
+                437,
+                438,
+                439,
+                440,
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450
               ]
             }
           ]
@@ -317,14 +467,14 @@
       ]
     },
     {
-      "name": "Streaming response with tool calls",
+      "name": "List multiple background sessions with status",
       "testMappings": [
         {
-          "file": "codelet/providers/tests/zai_provider_test.rs",
-          "lines": "92-119",
+          "file": "src/__tests__/background-session.test.ts",
+          "lines": "63-82",
           "implMappings": [
             {
-              "file": "codelet/providers/src/zai.rs",
+              "file": "codelet/napi/src/session_manager.rs",
               "lines": [
                 200,
                 201,
@@ -376,7 +526,27 @@
                 247,
                 248,
                 249,
-                250
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262,
+                263,
+                264,
+                265,
+                266,
+                267,
+                268,
+                269,
+                270
               ]
             }
           ]
@@ -384,32 +554,169 @@
       ]
     },
     {
-      "name": "Error when both ZAI API keys are missing",
-      "testMappings": []
+      "name": "Attach to running session shows buffered output then live stream",
+      "testMappings": [
+        {
+          "file": "src/__tests__/background-session.test.ts",
+          "lines": "85-112",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "ZAI provider uses normal API endpoint",
-      "testMappings": []
+      "name": "Interrupt a detached session",
+      "testMappings": [
+        {
+          "file": "src/__tests__/background-session.test.ts",
+          "lines": "115-135",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182,
+                183,
+                184,
+                185
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "ZAI provider uses coding plan API endpoint",
-      "testMappings": []
+      "name": "Destroy a background session",
+      "testMappings": [
+        {
+          "file": "src/__tests__/background-session.test.ts",
+          "lines": "138-162",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                270,
+                271,
+                272,
+                273,
+                274,
+                275,
+                276,
+                277,
+                278,
+                279,
+                280,
+                281,
+                282,
+                283,
+                284,
+                285,
+                286,
+                287,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293,
+                294,
+                295
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "ZAI_PLAN_API_KEY takes precedence over ZAI_API_KEY",
-      "testMappings": []
+      "name": "Sessions persist across process restart",
+      "testMappings": [
+        {
+          "file": "src/__tests__/background-session.test.ts",
+          "lines": "165-196",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 6,
-    "coveredScenarios": 2,
-    "coveragePercent": 33,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
     "testFiles": [
-      "codelet/providers/tests/zai_provider_test.rs"
+      "src/__tests__/background-session.test.ts"
     ],
     "implFiles": [
-      "codelet/providers/src/zai.rs"
+      "codelet/napi/src/session_manager.rs"
     ],
-    "totalLinesCovered": 506
+    "totalLinesCovered": 770
   }
 }

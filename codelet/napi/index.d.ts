@@ -992,6 +992,111 @@ export declare function persistenceUpdateSessionTokens(
   cacheCreate: number
 ): NapiSessionManifest;
 
+/** Attach to a session for live streaming */
+export declare function sessionAttach(
+  sessionId: string,
+  callback: (err: Error | null, arg: StreamChunk) => any
+): void;
+
+/**
+ * Manually trigger context compaction for a background session (NAPI-009 + NAPI-005)
+ *
+ * Mirrors CodeletSession::compact() behavior but works with background sessions.
+ * Calls execute_compaction from interactive_helpers to compress context.
+ *
+ * Returns CompactionResult with metrics about the compaction operation.
+ * Returns error if session is empty (nothing to compact).
+ */
+export declare function sessionCompact(
+  sessionId: string
+): Promise<CompactionResult>;
+
+/** Detach from a session (session continues running) */
+export declare function sessionDetach(sessionId: string): void;
+
+/** Get buffered output from a session */
+export declare function sessionGetBufferedOutput(
+  sessionId: string,
+  limit: number
+): Array<StreamChunk>;
+
+/** Get session status */
+export declare function sessionGetStatus(sessionId: string): string;
+
+/** Session info returned to TypeScript */
+export interface SessionInfo {
+  id: string;
+  name: string;
+  status: string;
+  project: string;
+  messageCount: number;
+}
+
+/** Interrupt a session */
+export declare function sessionInterrupt(sessionId: string): void;
+
+/** Create a new background session (generates new UUID) */
+export declare function sessionManagerCreate(
+  model: string,
+  project: string
+): string;
+
+/**
+ * Create a background session with a specific ID (for persistence integration).
+ *
+ * This is used when AgentView creates a session - the ID comes from persistence
+ * so that detach/attach can find the session by the same ID used for persistence.
+ *
+ * Note: This must be async because it uses tokio::spawn internally, which requires
+ * a Tokio runtime context. NAPI-RS provides this context for async functions.
+ */
+export declare function sessionManagerCreateWithId(
+  sessionId: string,
+  model: string,
+  project: string,
+  name: string
+): Promise<void>;
+
+/** Destroy a background session */
+export declare function sessionManagerDestroy(sessionId: string): void;
+
+/** List all background sessions */
+export declare function sessionManagerList(): Array<SessionInfo>;
+
+/**
+ * Restore messages to a background session from persisted envelopes.
+ *
+ * This is used when attaching to a session via /resume - it restores the
+ * conversation history so the LLM has context for future prompts.
+ */
+export declare function sessionRestoreMessages(
+  sessionId: string,
+  envelopes: Array<string>
+): Promise<void>;
+
+/** Send input to a session with optional thinking config */
+export declare function sessionSendInput(
+  sessionId: string,
+  input: string,
+  thinkingConfig?: string | undefined | null
+): void;
+
+/**
+ * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
+ *
+ * Mirrors CodeletSession::toggle_debug() behavior but works with background sessions.
+ * When enabling, sets session metadata (provider, model, context_window).
+ * When disabling, stops capture and returns path to saved session file.
+ *
+ * If debug_dir is provided, debug files will be written to `{debug_dir}/debug/`
+ * instead of the default directory. For fspec, pass `~/.fspec` to write to
+ * `~/.fspec/debug/`.
+ */
+export declare function sessionToggleDebug(
+  sessionId: string,
+  debugDir?: string | undefined | null
+): Promise<DebugCommandResult>;
+
 /** Set the logging callback from TypeScript and initialize the tracing subscriber */
 export declare function setRustLogCallback(callback: LogCallback): void;
 

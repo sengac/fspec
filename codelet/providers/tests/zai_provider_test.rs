@@ -21,6 +21,9 @@ static ENV_MUTEX: Mutex<()> = Mutex::new(());
 fn test_select_zai_glm_model_with_thinking_mode() {
     let _guard = ENV_MUTEX.lock().unwrap();
     
+    // Ensure clean state - remove plan key if set from environment
+    env::remove_var("ZAI_PLAN_API_KEY");
+    
     // @step Given the ZAI_API_KEY environment variable is set
     env::set_var("ZAI_API_KEY", "test-api-key-for-zai");
 
@@ -50,11 +53,13 @@ fn test_error_when_zai_api_key_missing() {
     let _guard = ENV_MUTEX.lock().unwrap();
     
     // @step Given the ZAI_API_KEY environment variable is not set
-    // Ensure it's definitely not set
+    // Ensure both keys are definitely not set (provider checks both)
     env::remove_var("ZAI_API_KEY");
+    env::remove_var("ZAI_PLAN_API_KEY");
     
-    // Double-check it's really gone
+    // Double-check they're really gone
     assert!(env::var("ZAI_API_KEY").is_err(), "ZAI_API_KEY should not be set");
+    assert!(env::var("ZAI_PLAN_API_KEY").is_err(), "ZAI_PLAN_API_KEY should not be set");
 
     // @step When the user attempts to select the Z.AI provider
     let result = ZAIProvider::new();
@@ -75,6 +80,9 @@ fn test_error_when_zai_api_key_missing() {
 #[test]
 fn test_zai_provider_uses_openai_compatible_api() {
     let _guard = ENV_MUTEX.lock().unwrap();
+    
+    // Ensure clean state - remove plan key if set from environment
+    env::remove_var("ZAI_PLAN_API_KEY");
     
     // @step Given the ZAI_API_KEY environment variable is set
     env::set_var("ZAI_API_KEY", "test-api-key-for-zai");
@@ -102,6 +110,9 @@ fn test_zai_provider_uses_openai_compatible_api() {
 fn test_streaming_response_with_tool_calls() {
     let _guard = ENV_MUTEX.lock().unwrap();
     
+    // Ensure clean state - remove plan key if set from environment
+    env::remove_var("ZAI_PLAN_API_KEY");
+    
     // @step Given the ZAI_API_KEY environment variable is set
     env::set_var("ZAI_API_KEY", "test-api-key-for-zai");
 
@@ -127,6 +138,9 @@ fn test_streaming_response_with_tool_calls() {
 fn test_provider_name() {
     let _guard = ENV_MUTEX.lock().unwrap();
     
+    // Ensure clean state - remove plan key if set from environment
+    env::remove_var("ZAI_PLAN_API_KEY");
+    
     env::set_var("ZAI_API_KEY", "test-key");
     let provider = ZAIProvider::new().unwrap();
     
@@ -139,6 +153,9 @@ fn test_provider_name() {
 #[test]
 fn test_reasoning_models_supported() {
     let _guard = ENV_MUTEX.lock().unwrap();
+    
+    // Ensure clean state - remove plan key if set from environment
+    env::remove_var("ZAI_PLAN_API_KEY");
     
     env::set_var("ZAI_API_KEY", "test-key-for-reasoning-test");
     

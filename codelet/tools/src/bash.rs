@@ -199,6 +199,7 @@ impl BashTool {
                 }
                 // Stream to UI immediately
                 let line_with_newline = format!("{line}\n");
+                tracing::info!("[BASH STREAMING] Emitting chunk: {:?}", line_with_newline);
                 stdout_callback(&line_with_newline);
                 // Buffer for LLM
                 stdout_buffer.lock().await.push_str(&line_with_newline);
