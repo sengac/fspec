@@ -642,25 +642,25 @@ pub fn session_get_buffered_output(session_id: String, limit: u32) -> Result<Vec
 }
 
 /// Restore messages to a background session from persisted envelopes.
-/// 
+///
 /// This is used when attaching to a session via /resume - it restores the
 /// conversation history so the LLM has context for future prompts.
 #[napi]
 pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
     let mut inner = session.inner.lock().await;
-    
+
     // Use the existing restore_messages_from_envelopes logic from codelet_cli
     for envelope_json in envelopes {
         let envelope: serde_json::Value = serde_json::from_str(&envelope_json)
             .map_err(|e| Error::from_reason(format!("Failed to parse envelope: {}", e)))?;
-        
+
         // Extract message from envelope
         if let Some(message) = envelope.get("message") {
             let role = message.get("role")
                 .and_then(|r| r.as_str())
                 .unwrap_or("user");
-            
+
             // Build rig message from envelope content
             let rig_message = if role == "assistant" {
                 // Handle assistant messages with content blocks
@@ -672,9 +672,14 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                                 text_parts.push(text.to_string());
                             }
                         }
+                        let joined_text = text_parts.join("");
+                        // Skip empty messages to avoid API error "text content blocks must be non-empty"
+                        if joined_text.is_empty() {
+                            continue;
+                        }
                         rig::message::Message::Assistant {
                             id: None,
-                            content: rig::OneOrMany::one(rig::message::AssistantContent::text(text_parts.join(""))),
+                            content: rig::OneOrMany::one(rig::message::AssistantContent::text(joined_text)),
                         }
                     } else {
                         continue;
@@ -695,6 +700,10 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                     } else {
                         continue;
                     };
+                    // Skip empty messages to avoid API error "text content blocks must be non-empty"
+                    if text.is_empty() {
+                        continue;
+                    }
                     rig::message::Message::User {
                         content: rig::OneOrMany::one(rig::message::UserContent::text(text)),
                     }
@@ -702,7 +711,7 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                     continue;
                 }
             };
-            
+
             inner.messages.push(rig_message);
         }
     }
