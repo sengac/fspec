@@ -582,22 +582,12 @@ export async function cleanupAutoCheckpoints(
   deletedCount: number;
   deletedCheckpoints: string[];
 }> {
-  logger.info(`[CHECKPOINT-CLEANUP] Starting auto-cleanup for ${workUnitId}`);
   const checkpoints = await listCheckpoints(workUnitId, cwd);
-  logger.info(
-    `[CHECKPOINT-CLEANUP] Found ${checkpoints.length} total checkpoints for ${workUnitId}`
-  );
 
   // Filter for automatic checkpoints only
   const autoCheckpoints = checkpoints.filter(cp => cp.isAutomatic);
-  logger.info(
-    `[CHECKPOINT-CLEANUP] Found ${autoCheckpoints.length} auto-checkpoints to delete`
-  );
 
   if (autoCheckpoints.length === 0) {
-    logger.info(
-      `[CHECKPOINT-CLEANUP] No auto-checkpoints to delete for ${workUnitId}`
-    );
     return {
       deletedCount: 0,
       deletedCheckpoints: [],
@@ -644,17 +634,10 @@ export async function cleanupAutoCheckpoints(
 
     // Write updated index
     await fs.promises.writeFile(indexPath, JSON.stringify(index, null, 2));
-    logger.info(`[CHECKPOINT-CLEANUP] Index file updated for ${workUnitId}`);
   } catch (error) {
     // Index file doesn't exist or is corrupted - skip
-    logger.warn(
-      `[CHECKPOINT-CLEANUP] Failed to update index file for ${workUnitId}: ${error}`
-    );
   }
 
-  logger.info(
-    `[CHECKPOINT-CLEANUP] Completed: deleted ${deletedCheckpoints.length} auto-checkpoints for ${workUnitId}`
-  );
   return {
     deletedCount: deletedCheckpoints.length,
     deletedCheckpoints,
@@ -786,35 +769,21 @@ export async function getCheckpointChangedFiles(
   const { logger } = await import('./logger.js');
 
   try {
-    logger.info(
-      `[getCheckpointChangedFiles] Starting for checkpoint OID: ${checkpointOid}`
-    );
-
     // Read the checkpoint commit to get its parents
     const commit = await git.readCommit({
       fs,
       dir: cwd,
       oid: checkpointOid,
     });
-    logger.info(
-      `[getCheckpointChangedFiles] Checkpoint has ${commit.commit.parent.length} parents: ${commit.commit.parent.join(', ')}`
-    );
 
     // Stash commits have 2 parents: [HEAD, index]
     // We want to compare the stash against HEAD (first parent)
     const parentOid = commit.commit.parent[0];
 
     if (!parentOid) {
-      logger.warn(
-        `[getCheckpointChangedFiles] No parent found - returning all files in checkpoint`
-      );
       // No parent - return all files in checkpoint (shouldn't happen for stash commits)
       return await git.listFiles({ fs, dir: cwd, ref: checkpointOid });
     }
-
-    logger.info(
-      `[getCheckpointChangedFiles] Comparing checkpoint ${checkpointOid} against parent ${parentOid}`
-    );
 
     // Use walk() to efficiently compare the two trees
     const changedFiles: string[] = [];
@@ -848,12 +817,6 @@ export async function getCheckpointChangedFiles(
       },
     });
 
-    logger.info(
-      `[getCheckpointChangedFiles] Found ${changedFiles.length} changed files`
-    );
-    logger.info(
-      `[getCheckpointChangedFiles] Changed files: ${changedFiles.slice(0, 10).join(', ')}${changedFiles.length > 10 ? '...' : ''}`
-    );
     return changedFiles;
   } catch (error) {
     logger.error(`[getCheckpointChangedFiles] Failed: ${error}`);
@@ -879,13 +842,8 @@ export async function getCheckpointFilesChangedFromHead(
   const { logger } = await import('./logger.js');
 
   try {
-    logger.info(
-      `[getCheckpointFilesChangedFromHead] Comparing checkpoint ${checkpointOid} against current HEAD`
-    );
-
     // Get current HEAD OID
     const headOid = await git.resolveRef({ fs, dir: cwd, ref: 'HEAD' });
-    logger.info(`[getCheckpointFilesChangedFromHead] Current HEAD: ${headOid}`);
 
     // Use walk() to efficiently compare checkpoint against current HEAD
     const changedFiles: string[] = [];
@@ -919,9 +877,6 @@ export async function getCheckpointFilesChangedFromHead(
       },
     });
 
-    logger.info(
-      `[getCheckpointFilesChangedFromHead] Found ${changedFiles.length} files that differ from HEAD`
-    );
     return changedFiles;
   } catch (error) {
     logger.error(`[getCheckpointFilesChangedFromHead] Failed: ${error}`);

@@ -36,7 +36,6 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
 
   // Combine staged and unstaged files with status indicators
   const allFiles: FileItem[] = useMemo(() => {
-    logger.info(`[ChangedFilesViewer] Recomputing allFiles (staged=${stagedFiles.length}, unstaged=${unstagedFiles.length})`);
     return [
       ...stagedFiles.map(f => ({ path: f.filepath, status: 'staged' as const, changeType: f.changeType })),
       ...unstagedFiles.map(f => ({ path: f.filepath, status: 'unstaged' as const, changeType: f.changeType })),
