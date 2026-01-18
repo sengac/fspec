@@ -256,8 +256,6 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   // Handle keyboard navigation
   useInput((input, key) => {
     if (key.escape) {
-      // DEBUG: Log to detect if this handler fires in agent mode
-      logger.warn(`BoardView ESC: viewMode=${viewMode}`);
       if (viewMode === 'checkpoint-viewer' || viewMode === 'changed-files-viewer') {
         setViewMode('board');
         setSelectedWorkUnit(null);

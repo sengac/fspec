@@ -15,7 +15,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { useMultiLineInput } from '../hooks/useMultiLineInput';
-import { logger } from '../../utils/logger';
 
 export interface MultiLineInputProps {
   value: string;
@@ -88,18 +87,13 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
 
   useInput(
     (input, key) => {
-      // DEBUG: Log all key input
-      logger.warn(`[MultiLineInput] key: escape=${key.escape}, return=${key.return}, input="${input.slice(0,10)}", isActive=${isActive}`);
-
       // Ignore mouse escape sequences
       if (key.mouse || input.includes('[M') || input.includes('[<')) {
-        logger.warn('[MultiLineInput] EXIT: mouse sequence');
         return;
       }
 
       // Enter submits
       if (key.return) {
-        logger.warn('[MultiLineInput] EXIT: return/submit');
         onSubmit();
         return;
       }
@@ -215,7 +209,6 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
 
       // Ignore other special keys
       if (key.escape || key.tab || key.pageUp || key.pageDown) {
-        logger.warn(`[MultiLineInput] EXIT: special key (escape=${key.escape}, tab=${key.tab})`);
         return;
       }
 
