@@ -54,8 +54,8 @@ export interface InputTransitionProps extends MultiLineInputProps {
 export const InputTransition: React.FC<InputTransitionProps> = ({
   isLoading,
   thinkingMessage = 'Thinking',
-  thinkingHint = "(Esc to stop | 'Space+Esc' detach)",
-  placeholder = "Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Space+Esc' detach)",
+  thinkingHint = "(Esc to stop | 'Ctrl+Esc' detach)",
+  placeholder = "Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Ctrl+Esc' detach)",
   value,
   onChange,
   onSubmit,
