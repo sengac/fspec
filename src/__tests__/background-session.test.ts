@@ -18,6 +18,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetStatus: vi.fn(),
   sessionGetBufferedOutput: vi.fn(),
   sessionRestoreMessages: vi.fn(),
+  sessionRestoreTokenState: vi.fn(),
 }));
 
 import {
@@ -32,6 +33,7 @@ import {
   sessionGetStatus,
   sessionGetBufferedOutput,
   sessionRestoreMessages,
+  sessionRestoreTokenState,
 } from '@sengac/codelet-napi';
 
 describe('Background Session Management with Attach/Detach', () => {
@@ -163,6 +165,40 @@ describe('Background Session Management with Attach/Detach', () => {
 
       // @step Then the messages are restored to the session
       expect(sessionRestoreMessages).toHaveBeenCalledWith(sessionId, envelopes);
+    });
+
+    it('should restore token state when attaching to a session', async () => {
+      // @step Given I have a session with persisted token usage
+      const sessionId = 'session-with-tokens';
+      const tokenUsage = {
+        currentContextTokens: 5000,
+        cumulativeBilledInput: 10000,
+        cumulativeBilledOutput: 8000,
+        cacheReadTokens: 2000,
+        cacheCreationTokens: 1000,
+      };
+
+      // @step When I attach to the session via /resume
+      await sessionRestoreTokenState(
+        sessionId,
+        tokenUsage.currentContextTokens,
+        tokenUsage.cumulativeBilledOutput,
+        tokenUsage.cacheReadTokens,
+        tokenUsage.cacheCreationTokens,
+        tokenUsage.cumulativeBilledInput,
+        tokenUsage.cumulativeBilledOutput
+      );
+
+      // @step Then the token state is restored to the background session
+      expect(sessionRestoreTokenState).toHaveBeenCalledWith(
+        sessionId,
+        tokenUsage.currentContextTokens,
+        tokenUsage.cumulativeBilledOutput,
+        tokenUsage.cacheReadTokens,
+        tokenUsage.cacheCreationTokens,
+        tokenUsage.cumulativeBilledInput,
+        tokenUsage.cumulativeBilledOutput
+      );
     });
   });
 

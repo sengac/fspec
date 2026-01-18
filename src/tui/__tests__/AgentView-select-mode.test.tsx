@@ -113,6 +113,31 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceLoadSession: vi.fn(() => null),
   persistenceDeleteSession: vi.fn(),
   persistenceRenameSession: vi.fn(),
+  persistenceAppendMessage: vi.fn(),
+  // TUI-047: Session management for background sessions
+  sessionManagerList: vi.fn().mockReturnValue([]),
+  sessionAttach: vi.fn(),
+  sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
+  sessionManagerDestroy: vi.fn(),
+  sessionDetach: vi.fn(),
+  sessionSendInput: vi.fn(),
+  // NAPI-009: New session manager functions
+  sessionManagerCreateWithId: vi.fn(),
+  sessionRestoreMessages: vi.fn(),
+  sessionRestoreTokenState: vi.fn(),
+  // NAPI-009 + AGENT-021: Debug and compaction for background sessions
+  sessionToggleDebug: vi.fn().mockResolvedValue({
+    enabled: true,
+    sessionFile: '/tmp/debug-session.json',
+    message: 'Debug capture enabled. Events will be written to /tmp/debug-session.json',
+  }),
+  sessionCompact: vi.fn().mockResolvedValue({
+    originalTokens: 10000,
+    compactedTokens: 3000,
+    compressionRatio: 70,
+    turnsSummarized: 5,
+    turnsKept: 2,
+  }),
 }));
 
 // Mock utils/config

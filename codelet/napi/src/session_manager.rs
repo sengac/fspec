@@ -719,6 +719,33 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
     Ok(())
 }
 
+/// Restore token state to a background session from persisted values.
+///
+/// This is used when attaching to a session via /resume - it restores the
+/// token tracking state so context fill percentage and token counts are accurate.
+#[napi]
+pub async fn session_restore_token_state(
+    session_id: String,
+    input_tokens: u32,
+    output_tokens: u32,
+    cache_read_tokens: u32,
+    cache_creation_tokens: u32,
+    cumulative_billed_input: u32,
+    cumulative_billed_output: u32,
+) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let mut inner = session.inner.lock().await;
+
+    inner.token_tracker.input_tokens = input_tokens as u64;
+    inner.token_tracker.output_tokens = output_tokens as u64;
+    inner.token_tracker.cache_read_input_tokens = Some(cache_read_tokens as u64);
+    inner.token_tracker.cache_creation_input_tokens = Some(cache_creation_tokens as u64);
+    inner.token_tracker.cumulative_billed_input = cumulative_billed_input as u64;
+    inner.token_tracker.cumulative_billed_output = cumulative_billed_output as u64;
+
+    Ok(())
+}
+
 /// Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
 ///
 /// Mirrors CodeletSession::toggle_debug() behavior but works with background sessions.
