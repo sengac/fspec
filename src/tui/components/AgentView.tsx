@@ -3397,7 +3397,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       // TUI-034: Use full model path if available, fallback to provider
       const modelPath = selectedSession.provider || currentProvider;
       const project = currentProjectRef.current;
-      
+
       // Create background session for this restored session
       // Note: Must await - the function is async because it uses tokio::spawn internally
       try {
@@ -3405,7 +3405,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       } catch {
         // Session may already exist - continue
       }
-      
+
       // Restore messages to the background session
       await sessionRestoreMessages(selectedSession.id, envelopes);
       
