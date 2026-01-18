@@ -192,7 +192,13 @@ impl BackgroundSession {
     }
     
     /// Send input to the agent loop
+    ///
+    /// Buffers the user input as a UserInput chunk before sending to the agent,
+    /// so it can be replayed when attaching to a detached session via /resume.
     pub fn send_input(&self, input: String, thinking_config: Option<String>) -> Result<()> {
+        // Buffer user input for resume/attach (NAPI-009)
+        self.handle_output(StreamChunk::user_input(input.clone()));
+
         self.input_tx
             .try_send(PromptInput { input, thinking_config })
             .map_err(|e| Error::from_reason(format!("Failed to send input: {}", e)))

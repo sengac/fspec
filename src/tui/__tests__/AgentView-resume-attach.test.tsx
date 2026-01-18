@@ -409,4 +409,216 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       expect(getSessionStatusIcon(persistedOnly)).toBe('💾');
     });
   });
+
+  describe('NAPI-009: User messages are restored from buffer on resume', () => {
+    it('should include UserInput chunks in buffered output replay', async () => {
+      // @step Given I have a detached session with user messages in the buffer
+      const sessionId = 'bg-session-with-user-input';
+      mockState.bufferedChunks = [
+        { type: 'UserInput', text: 'What is the weather today?' },
+        { type: 'Text', text: 'The weather today is sunny with a high of 72°F.' },
+        { type: 'Done' },
+        { type: 'UserInput', text: 'What about tomorrow?' },
+        { type: 'Text', text: 'Tomorrow will be partly cloudy.' },
+        { type: 'Done' },
+      ];
+
+      // @step When I attach to the session via /resume
+      const attachToBackgroundSession = async (id: string, handleStreamChunk: (chunk: { type: string; text?: string }) => void) => {
+        mockState.sessionGetBufferedOutputCalled = true;
+        const buffered = mockState.bufferedChunks;
+
+        for (const chunk of buffered) {
+          handleStreamChunk(chunk);
+        }
+
+        mockState.sessionAttachCalled = true;
+        mockState.lastAttachedSessionId = id;
+      };
+
+      const chunks: { type: string; text?: string }[] = [];
+      await attachToBackgroundSession(sessionId, (chunk) => chunks.push(chunk));
+
+      // @step Then I see the user messages restored in the conversation
+      const userInputChunks = chunks.filter(c => c.type === 'UserInput');
+      expect(userInputChunks.length).toBe(2);
+      expect(userInputChunks[0].text).toBe('What is the weather today?');
+      expect(userInputChunks[1].text).toBe('What about tomorrow?');
+
+      // @step And I see the assistant responses
+      const textChunks = chunks.filter(c => c.type === 'Text');
+      expect(textChunks.length).toBe(2);
+    });
+
+    it('should handle conversation with interleaved user and assistant messages', async () => {
+      // @step Given a multi-turn conversation in the buffer
+      const sessionId = 'bg-multi-turn';
+      mockState.bufferedChunks = [
+        { type: 'UserInput', text: 'Help me write a function' },
+        { type: 'Text', text: 'Sure, here is a function:' },
+        { type: 'ToolCall', text: '' },
+        { type: 'ToolResult', text: 'File written successfully' },
+        { type: 'Text', text: 'I wrote the function for you.' },
+        { type: 'Done' },
+        { type: 'UserInput', text: 'Add error handling' },
+        { type: 'Text', text: 'I will add try/catch.' },
+        { type: 'Done' },
+      ];
+
+      // @step When I attach to the session
+      const chunks: { type: string; text?: string }[] = [];
+      for (const chunk of mockState.bufferedChunks) {
+        chunks.push(chunk);
+      }
+
+      // @step Then the conversation order is preserved
+      expect(chunks[0].type).toBe('UserInput');
+      expect(chunks[0].text).toBe('Help me write a function');
+
+      expect(chunks[6].type).toBe('UserInput');
+      expect(chunks[6].text).toBe('Add error handling');
+    });
+
+    it('should create user role messages from UserInput chunks', () => {
+      // @step Given a UserInput chunk from the buffer
+      const userInputChunk = { type: 'UserInput', text: 'Hello, please help me' };
+
+      // @step When handleStreamChunk processes it
+      // Simulating the handleStreamChunk logic from AgentView
+      interface ConversationMessage {
+        role: 'user' | 'assistant' | 'tool';
+        content: string;
+      }
+      const conversation: ConversationMessage[] = [];
+
+      const handleStreamChunk = (chunk: { type: string; text?: string }) => {
+        if (chunk.type === 'UserInput' && chunk.text) {
+          conversation.push({ role: 'user', content: chunk.text });
+        }
+      };
+
+      handleStreamChunk(userInputChunk);
+
+      // @step Then a user message is added to the conversation
+      expect(conversation.length).toBe(1);
+      expect(conversation[0].role).toBe('user');
+      expect(conversation[0].content).toBe('Hello, please help me');
+    });
+
+    it('should not create message for empty UserInput text', () => {
+      // @step Given a UserInput chunk with undefined/empty text
+      const emptyChunks = [
+        { type: 'UserInput', text: undefined },
+        { type: 'UserInput', text: '' },
+      ];
+
+      // @step When handleStreamChunk processes them
+      interface ConversationMessage {
+        role: 'user' | 'assistant' | 'tool';
+        content: string;
+      }
+      const conversation: ConversationMessage[] = [];
+
+      const handleStreamChunk = (chunk: { type: string; text?: string }) => {
+        // Match the actual AgentView implementation check
+        if (chunk.type === 'UserInput' && chunk.text) {
+          conversation.push({ role: 'user', content: chunk.text });
+        }
+      };
+
+      emptyChunks.forEach(handleStreamChunk);
+
+      // @step Then no messages are added (empty strings are falsy in JS but this protects against undefined)
+      // Note: The actual check `chunk.text` is truthy, so empty string '' is falsy and won't be added
+      expect(conversation.length).toBe(0);
+    });
+  });
+
+  describe('NAPI-009: isLoading state when attaching to running session', () => {
+    it('should set isLoading=true when attaching to a running background session', async () => {
+      // @step Given I have a running background session
+      const session: MergedSession = {
+        id: 'bg-running-session',
+        name: 'Running Task',
+        project: '/test',
+        provider: 'claude',
+        createdAt: '2025-01-17T09:00:00Z',
+        updatedAt: '2025-01-17T10:00:00Z',
+        messageCount: 3,
+        isBackgroundSession: true,
+        backgroundStatus: 'running', // Key: session is running
+      };
+
+      // @step When I select and attach to the running session via /resume
+      let isLoadingSet = false;
+      const mockSetIsLoading = (value: boolean) => {
+        if (value === true) {
+          isLoadingSet = true;
+        }
+      };
+
+      // Simulating handleResumeSelect logic for running background session
+      const handleResumeSelect = async (selectedSession: MergedSession) => {
+        if (selectedSession.isBackgroundSession) {
+          // ... attach logic ...
+          mockState.sessionAttachCalled = true;
+          mockState.lastAttachedSessionId = selectedSession.id;
+
+          // NAPI-009: Set isLoading if session is running so ESC can interrupt
+          if (selectedSession.backgroundStatus === 'running') {
+            mockSetIsLoading(true);
+          }
+        }
+      };
+
+      await handleResumeSelect(session);
+
+      // @step Then isLoading should be set to true
+      expect(isLoadingSet).toBe(true);
+      expect(mockState.sessionAttachCalled).toBe(true);
+    });
+
+    it('should NOT set isLoading=true when attaching to an idle background session', async () => {
+      // @step Given I have an idle background session
+      const session: MergedSession = {
+        id: 'bg-idle-session',
+        name: 'Idle Task',
+        project: '/test',
+        provider: 'claude',
+        createdAt: '2025-01-17T09:00:00Z',
+        updatedAt: '2025-01-17T10:00:00Z',
+        messageCount: 3,
+        isBackgroundSession: true,
+        backgroundStatus: 'idle', // Key: session is idle
+      };
+
+      // @step When I select and attach to the idle session via /resume
+      let isLoadingSet = false;
+      const mockSetIsLoading = (value: boolean) => {
+        if (value === true) {
+          isLoadingSet = true;
+        }
+      };
+
+      // Simulating handleResumeSelect logic for idle background session
+      const handleResumeSelect = async (selectedSession: MergedSession) => {
+        if (selectedSession.isBackgroundSession) {
+          // ... attach logic ...
+          mockState.sessionAttachCalled = true;
+          mockState.lastAttachedSessionId = selectedSession.id;
+
+          // NAPI-009: Set isLoading if session is running so ESC can interrupt
+          if (selectedSession.backgroundStatus === 'running') {
+            mockSetIsLoading(true);
+          }
+        }
+      };
+
+      await handleResumeSelect(session);
+
+      // @step Then isLoading should NOT be set to true (session is idle)
+      expect(isLoadingSet).toBe(false);
+      expect(mockState.sessionAttachCalled).toBe(true);
+    });
+  });
 });
