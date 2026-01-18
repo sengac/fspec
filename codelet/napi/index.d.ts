@@ -420,6 +420,8 @@ export declare const enum ChunkType {
   ContextFillUpdate = 'ContextFillUpdate',
   Done = 'Done',
   Error = 'Error',
+  /** User input message (NAPI-009: for resume/attach to restore user messages) */
+  UserInput = 'UserInput',
 }
 
 /**

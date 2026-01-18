@@ -95,6 +95,8 @@ pub enum ChunkType {
     ContextFillUpdate,
     Done,
     Error,
+    /// User input message (NAPI-009: for resume/attach to restore user messages)
+    UserInput,
 }
 
 /// Context window fill information (TUI-033)
@@ -311,6 +313,23 @@ impl StreamChunk {
             error: Some(message),
         }
     }
+
+    /// User input message (NAPI-009: for resume/attach to restore user messages)
+    pub fn user_input(text: String) -> Self {
+        Self {
+            chunk_type: "UserInput".to_string(),
+            text: Some(text),
+            thinking: None,
+            tool_call: None,
+            tool_result: None,
+            tool_progress: None,
+            status: None,
+            queued_inputs: None,
+            tokens: None,
+            context_fill: None,
+            error: None,
+        }
+    }
 }
 
 /// Provider configuration for programmatic credential passing (CONFIG-004)
@@ -364,4 +383,72 @@ pub struct CompactionResult {
     pub turns_summarized: u32,
     /// Number of turns kept
     pub turns_kept: u32,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Test StreamChunk::user_input creates correct chunk type
+    #[test]
+    fn test_user_input_chunk_creation() {
+        let user_message = "Hello, can you help me with this task?";
+        let chunk = StreamChunk::user_input(user_message.to_string());
+
+        assert_eq!(chunk.chunk_type, "UserInput");
+        assert_eq!(chunk.text, Some(user_message.to_string()));
+        assert!(chunk.thinking.is_none());
+        assert!(chunk.tool_call.is_none());
+        assert!(chunk.tool_result.is_none());
+        assert!(chunk.tool_progress.is_none());
+        assert!(chunk.status.is_none());
+        assert!(chunk.queued_inputs.is_none());
+        assert!(chunk.tokens.is_none());
+        assert!(chunk.context_fill.is_none());
+        assert!(chunk.error.is_none());
+    }
+
+    /// Test empty user input is handled correctly
+    #[test]
+    fn test_empty_user_input_chunk() {
+        let chunk = StreamChunk::user_input(String::new());
+
+        assert_eq!(chunk.chunk_type, "UserInput");
+        assert_eq!(chunk.text, Some(String::new()));
+    }
+
+    /// Test user input with multiline content
+    #[test]
+    fn test_multiline_user_input_chunk() {
+        let multiline_message = "First line\nSecond line\nThird line with code:\n```rust\nfn main() {}\n```";
+        let chunk = StreamChunk::user_input(multiline_message.to_string());
+
+        assert_eq!(chunk.chunk_type, "UserInput");
+        assert_eq!(chunk.text, Some(multiline_message.to_string()));
+        assert!(chunk.text.as_ref().unwrap().contains('\n'));
+    }
+
+    /// Test user input with special characters
+    #[test]
+    fn test_special_characters_in_user_input() {
+        let special_message = "Test with émojis 🎉 and symbols: <>&\"' and unicode: 你好世界";
+        let chunk = StreamChunk::user_input(special_message.to_string());
+
+        assert_eq!(chunk.chunk_type, "UserInput");
+        assert_eq!(chunk.text, Some(special_message.to_string()));
+    }
+
+    /// Test UserInput chunk type is distinct from Text chunk
+    #[test]
+    fn test_user_input_distinct_from_text() {
+        let message = "Same content";
+        let user_chunk = StreamChunk::user_input(message.to_string());
+        let text_chunk = StreamChunk::text(message.to_string());
+
+        assert_ne!(user_chunk.chunk_type, text_chunk.chunk_type);
+        assert_eq!(user_chunk.chunk_type, "UserInput");
+        assert_eq!(text_chunk.chunk_type, "Text");
+        // Both store content in the text field
+        assert_eq!(user_chunk.text, text_chunk.text);
+    }
 }

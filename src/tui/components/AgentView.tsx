@@ -3045,6 +3045,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return updated;
       });
       setIsLoading(false);
+    } else if (chunk.type === 'UserInput' && chunk.text) {
+      // User input from buffer replay (NAPI-009: resume/attach)
+      setConversation(prev => [
+        ...prev,
+        { role: 'user', content: chunk.text! },
+      ]);
     }
   }, []);
 
@@ -3138,23 +3144,28 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
         // First get buffered output (produced while detached)
         const bufferedChunks = sessionGetBufferedOutput(selectedSession.id, 1000);
-        
+
         // Hydrate conversation from buffered output
         for (const chunk of bufferedChunks) {
           handleStreamChunk(chunk);
         }
-        
+
         // Attach for live streaming
         sessionAttach(selectedSession.id, (_err: Error | null, chunk: StreamChunk) => {
           if (chunk) {
             handleStreamChunk(chunk);
           }
         });
-        
+
         // Update session state
         setCurrentSessionId(selectedSession.id);
         setIsResumeMode(false);
         setAvailableSessions([]);
+
+        // NAPI-009: Set isLoading if session is running so ESC can interrupt
+        if (selectedSession.backgroundStatus === 'running') {
+          setIsLoading(true);
+        }
         return;
       }
       
