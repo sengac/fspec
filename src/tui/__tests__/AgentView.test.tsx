@@ -168,6 +168,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   // NAPI-009: New session manager functions
   sessionManagerCreateWithId: vi.fn(),
   sessionRestoreMessages: vi.fn(),
+  sessionRestoreTokenState: vi.fn(),
   // NAPI-009 + AGENT-021: Debug and compaction for background sessions
   sessionToggleDebug: vi.fn().mockResolvedValue({
     enabled: true,

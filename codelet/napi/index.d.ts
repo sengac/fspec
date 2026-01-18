@@ -1074,6 +1074,22 @@ export declare function sessionRestoreMessages(
   envelopes: Array<string>
 ): Promise<void>;
 
+/**
+ * Restore token state to a background session from persisted values.
+ *
+ * This is used when attaching to a session via /resume - it restores the
+ * token tracking state so context fill percentage and token counts are accurate.
+ */
+export declare function sessionRestoreTokenState(
+  sessionId: string,
+  inputTokens: number,
+  outputTokens: number,
+  cacheReadTokens: number,
+  cacheCreationTokens: number,
+  cumulativeBilledInput: number,
+  cumulativeBilledOutput: number
+): Promise<void>;
+
 /** Send input to a session with optional thinking config */
 export declare function sessionSendInput(
   sessionId: string,

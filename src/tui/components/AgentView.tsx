@@ -66,6 +66,7 @@ import {
   sessionManagerCreateWithId,
   sessionManagerDestroy,
   sessionRestoreMessages,
+  sessionRestoreTokenState,
   setRustLogCallback,
   type NapiProviderModels,
   type NapiModelInfo,
@@ -3408,7 +3409,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
       // Restore messages to the background session
       await sessionRestoreMessages(selectedSession.id, envelopes);
-      
+
+      // Restore token state to background session for accurate context fill calculations
+      if (selectedSession.tokenUsage) {
+        await sessionRestoreTokenState(
+          selectedSession.id,
+          selectedSession.tokenUsage.currentContextTokens,
+          selectedSession.tokenUsage.cumulativeBilledOutput,
+          selectedSession.tokenUsage.cacheReadTokens ?? 0,
+          selectedSession.tokenUsage.cacheCreationTokens ?? 0,
+          selectedSession.tokenUsage.cumulativeBilledInput ?? 0,
+          selectedSession.tokenUsage.cumulativeBilledOutput
+        );
+      }
+
       // Update provider/model state from stored provider
       if (selectedSession.provider) {
         const storedProvider = selectedSession.provider;
@@ -3752,7 +3766,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
 
       // NAPI-006: Search mode keyboard handling
       if (isSearchMode) {
-        if (key.escape && !key.shift && !key.meta) {
+        if (key.escape) {
           handleSearchCancel();
           return;
         }
@@ -3795,7 +3809,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           // Dialog handles its own input via useInput
           return;
         }
-        if (key.escape && !key.shift && !key.meta) {
+        if (key.escape) {
           handleResumeCancel();
           return;
         }
@@ -3823,7 +3837,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       }
 
       if (showProviderSelector) {
-        if (key.escape && !key.shift && !key.meta) {
+        if (key.escape) {
           setShowProviderSelector(false);
           return;
         }
@@ -3850,7 +3864,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       if (showModelSelector) {
         // Filter mode handling
         if (isModelSelectorFilterMode) {
-          if (key.escape && !key.shift && !key.meta) {
+          if (key.escape) {
             setIsModelSelectorFilterMode(false);
             setModelSelectorFilter('');
             return;
@@ -3877,7 +3891,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           return;
         }
 
-        if (key.escape && !key.shift && !key.meta) {
+        if (key.escape) {
           if (modelSelectorFilter) {
             setModelSelectorFilter('');
             return;
@@ -4020,7 +4034,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       if (showSettingsTab) {
         // Filter mode handling
         if (isSettingsFilterMode) {
-          if (key.escape && !key.shift && !key.meta) {
+          if (key.escape) {
             setIsSettingsFilterMode(false);
             setSettingsFilter('');
             return;
@@ -4047,7 +4061,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
           return;
         }
 
-        if (key.escape && !key.shift && !key.meta) {
+        if (key.escape) {
           if (settingsFilter) {
             setSettingsFilter('');
             return;
