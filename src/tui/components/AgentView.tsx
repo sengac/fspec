@@ -93,6 +93,7 @@ import {
 } from '../../git/diff-parser';
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
+import { useFspecStore } from '../store/fspecStore';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -328,6 +329,7 @@ interface CodeletSessionType {
 
 export interface AgentViewProps {
   onExit: () => void;
+  workUnitId?: string; // SESS-001: Work unit ID for session attachment
 }
 
 // Conversation message type for display
@@ -639,7 +641,7 @@ const calculateStartLine = (
   }
 };
 
-export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
+export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const { stdout } = useStdout();
 
   // NAPI-009: Removed session state - we use SessionManager background sessions exclusively
@@ -711,6 +713,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     message: string;
   } | null>(null);
   const [isRefreshingModels, setIsRefreshingModels] = useState(false);
+
+  // SESS-001: Session attachment state and actions from store
+  const attachSessionToWorkUnit = useFspecStore(state => state.attachSession);
+  const detachSessionFromWorkUnit = useFspecStore(state => state.detachSession);
+  const getAttachedSession = useFspecStore(state => state.getAttachedSession);
+  const setCurrentWorkUnitId = useFspecStore(state => state.setCurrentWorkUnitId);
 
   // NAPI-006: History navigation state
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
@@ -1208,6 +1216,31 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     void initSession();
   }, []);
 
+  // SESS-001: Set current work unit ID on mount/unmount
+  useEffect(() => {
+    if (workUnitId) {
+      setCurrentWorkUnitId(workUnitId);
+    }
+    return () => {
+      // Clear current work unit when unmounting (returning to board)
+      setCurrentWorkUnitId(null);
+    };
+  }, [workUnitId, setCurrentWorkUnitId]);
+
+  // SESS-001: Track if we need to auto-resume an attached session
+  const needsAutoResumeRef = useRef<string | null>(null);
+
+  // SESS-001: Check for attached session on mount and mark for auto-resume
+  useEffect(() => {
+    if (workUnitId) {
+      const attachedSessionId = getAttachedSession(workUnitId);
+      if (attachedSessionId) {
+        needsAutoResumeRef.current = attachedSessionId;
+        logger.debug(`SESS-001: Found attached session ${attachedSessionId} for work unit ${workUnitId}, will auto-resume`);
+      }
+    }
+  }, [workUnitId, getAttachedSession]);
+
   // Handle sending a prompt
   const handleSubmit = useCallback(async () => {
     const userMessage = inputValue.trim();
@@ -1336,6 +1369,28 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     if (userMessage === '/resume') {
       setInputValue('');
       void handleResumeMode();
+      return;
+    }
+
+    // SESS-001: Handle /detach command - detach session from work unit and clear conversation
+    if (userMessage === '/detach') {
+      setInputValue('');
+      if (workUnitId) {
+        detachSessionFromWorkUnit(workUnitId);
+        logger.debug(`SESS-001: Detached session from work unit ${workUnitId}`);
+        // Clear conversation for fresh start
+        setConversation([]);
+        setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+        // Reset session state
+        setCurrentSessionId(null);
+        isFirstMessageRef.current = true;
+        setConversation([{ role: 'tool', content: 'Session detached from work unit. Ready for fresh session.' }]);
+      } else {
+        setConversation(prev => [
+          ...prev,
+          { role: 'tool', content: '/detach only works when viewing a work unit from the board.' },
+        ]);
+      }
       return;
     }
 
@@ -1656,6 +1711,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         // CRITICAL: This must succeed for sessionAttach to work
         // Note: Must await - the function is async because it uses tokio::spawn internally
         await sessionManagerCreateWithId(activeSessionId, modelPath, project, sessionName);
+
+        // SESS-001: Auto-attach session to work unit on first message
+        if (workUnitId) {
+          attachSessionToWorkUnit(workUnitId, activeSessionId);
+          logger.debug(`SESS-001: Attached session ${activeSessionId} to work unit ${workUnitId}`);
+        }
 
         // Mark first message as processed (session already named with message content)
         isFirstMessageRef.current = false;
@@ -2441,7 +2502,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     } finally {
       setIsLoading(false);
     }
-  }, [inputValue, isLoading, currentSessionId, currentProvider, currentModel]);
+  }, [inputValue, isLoading, currentSessionId, currentProvider, currentModel, workUnitId, attachSessionToWorkUnit, detachSessionFromWorkUnit]);
 
   // Handle provider switching - now just updates local state
   // Actual provider change happens on next session creation
@@ -3055,6 +3116,148 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
     }
   }, []);
 
+  // SESS-001: Shared function to resume a session by ID (used by /resume and auto-resume)
+  // Handles both background sessions (attach) and persisted-only (load from disk)
+  const resumeSessionById = useCallback(async (sessionId: string): Promise<boolean> => {
+    try {
+      // Check if this is a background session
+      const backgroundSessions = sessionManagerList();
+      const bgSession = backgroundSessions.find(bg => bg.id === sessionId);
+
+      if (bgSession) {
+        // Background session - get buffered output and attach
+        logger.debug(`SESS-001: Resuming background session ${sessionId}`);
+
+        // Get buffered output (produced while detached)
+        const bufferedChunks = sessionGetBufferedOutput(sessionId, 1000);
+
+        // Hydrate conversation from buffered output
+        for (const chunk of bufferedChunks) {
+          handleStreamChunk(chunk);
+        }
+
+        // Attach for live streaming
+        sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
+          if (chunk) {
+            handleStreamChunk(chunk);
+          }
+        });
+
+        // Update session state
+        setCurrentSessionId(sessionId);
+
+        // Set isLoading if session is running so ESC can interrupt
+        if (bgSession.status === 'running') {
+          setIsLoading(true);
+        }
+
+        return true;
+      } else {
+        // Persisted-only session - load from persistence
+        logger.debug(`SESS-001: Resuming persisted session ${sessionId}`);
+
+        // Get FULL envelopes with all content blocks
+        const envelopes: string[] = persistenceGetSessionMessageEnvelopes(sessionId);
+        const restored: ConversationMessage[] = [];
+
+        // First pass: collect all tool results by their tool_use_id
+        const toolResultsByUseId = new Map<string, { content: string; isError: boolean }>();
+        for (const envelopeJson of envelopes) {
+          try {
+            const envelope = JSON.parse(envelopeJson);
+            const messageType = envelope.type || envelope.message_type || envelope.messageType;
+            const message = envelope.message;
+            if (!message) continue;
+
+            if (messageType === 'user') {
+              const contents = message.content || [];
+              for (const content of contents) {
+                if (content.type === 'tool_result' && content.tool_use_id) {
+                  toolResultsByUseId.set(content.tool_use_id, {
+                    content: content.content || '',
+                    isError: content.is_error || false,
+                  });
+                }
+              }
+            }
+          } catch {
+            // Skip malformed envelopes in first pass
+          }
+        }
+
+        // Second pass: process envelopes and interleave tool results
+        for (const envelopeJson of envelopes) {
+          try {
+            const envelope = JSON.parse(envelopeJson);
+            const messageType = envelope.type || envelope.message_type || envelope.messageType;
+            const message = envelope.message;
+            if (!message) continue;
+
+            if (messageType === 'user') {
+              const contents = message.content || [];
+              for (const content of contents) {
+                if (content.type === 'text' && content.text) {
+                  restored.push({ role: 'user', content: content.text });
+                }
+              }
+            } else if (messageType === 'assistant') {
+              const contents = message.content || [];
+              for (const content of contents) {
+                if (content.type === 'thinking' && content.thinking) {
+                  restored.push({
+                    role: 'assistant',
+                    content: content.thinking,
+                    isThinking: true,
+                  });
+                } else if (content.type === 'text' && content.text) {
+                  restored.push({ role: 'assistant', content: content.text });
+                } else if (content.type === 'tool_use' && content.id) {
+                  // Render tool call header
+                  const toolName = content.name || 'unknown';
+                  restored.push({
+                    role: 'assistant',
+                    content: `● ${toolName}`,
+                  });
+                  // Find and render tool result
+                  const result = toolResultsByUseId.get(content.id);
+                  if (result) {
+                    restored.push({
+                      role: 'tool',
+                      content: result.content,
+                      isError: result.isError,
+                    });
+                  }
+                }
+              }
+            }
+          } catch {
+            // Skip malformed envelopes
+          }
+        }
+
+        setCurrentSessionId(sessionId);
+        setConversation(restored);
+        isFirstMessageRef.current = false;
+
+        return true;
+      }
+    } catch (err) {
+      logger.error(`SESS-001: Failed to resume session: ${err instanceof Error ? err.message : String(err)}`);
+      return false;
+    }
+  }, [handleStreamChunk]);
+
+  // SESS-001: Auto-resume attached session on mount
+  useEffect(() => {
+    const sessionIdToResume = needsAutoResumeRef.current;
+    if (!sessionIdToResume) return;
+
+    // Clear ref so we don't resume again
+    needsAutoResumeRef.current = null;
+
+    void resumeSessionById(sessionIdToResume);
+  }, [resumeSessionById]);
+
   // NAPI-003 + TUI-047: Enter resume mode (show session selection overlay)
   // Now queries both persistence and background sessions, merging results
   const handleResumeMode = useCallback(async () => {
@@ -3162,6 +3365,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         setCurrentSessionId(selectedSession.id);
         setIsResumeMode(false);
         setAvailableSessions([]);
+
+        // SESS-001: Attach resumed session to work unit
+        if (workUnitId) {
+          attachSessionToWorkUnit(workUnitId, selectedSession.id);
+          logger.debug(`SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`);
+        }
 
         // NAPI-009: Set isLoading if session is running so ESC can interrupt
         if (selectedSession.backgroundStatus === 'running') {
@@ -3471,6 +3680,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
       // Don't rename resumed sessions with their first new message
       isFirstMessageRef.current = false;
 
+      // SESS-001: Attach resumed session to work unit
+      if (workUnitId) {
+        attachSessionToWorkUnit(workUnitId, selectedSession.id);
+        logger.debug(`SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`);
+      }
+
       // Restore token usage from session manifest (including cache tokens)
       // CTX-003: Use currentContextTokens for display, cumulativeBilledOutput for output
       if (selectedSession.tokenUsage) {
@@ -3593,10 +3808,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             logger.warn('Failed to destroy session:', err);
           }
         }
+        // SESS-001: Clear session attachment when session is destroyed
+        if (workUnitId) {
+          detachSessionFromWorkUnit(workUnitId);
+          logger.debug(`SESS-001: Cleared session attachment for work unit ${workUnitId} (session destroyed)`);
+        }
         onExit();
       }
     },
-    [currentSessionId, onExit]
+    [currentSessionId, onExit, workUnitId, detachSessionFromWorkUnit]
   );
 
   // Mouse scroll acceleration state (like VirtualList)

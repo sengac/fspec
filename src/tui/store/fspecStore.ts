@@ -12,6 +12,10 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { enableMapSet } from 'immer';
+
+// Enable Immer's MapSet plugin for session attachments (SESS-001)
+enableMapSet();
 import { ensureWorkUnitsFile } from '../../utils/ensure-files';
 import { ensureEpicsFile } from '../../utils/ensure-files';
 import { fileManager } from '../../utils/file-manager';
@@ -63,6 +67,12 @@ interface FspecState {
   error: string | null;
   cwd: string;
 
+  // Session attachment state (SESS-001)
+  // Maps workUnitId → sessionId for in-memory session tracking
+  sessionAttachments: Map<string, string>;
+  // Tracks which work unit the user currently entered (for session context)
+  currentWorkUnitId: string | null;
+
   // Actions
   setCwd: (cwd: string) => void;
   loadData: () => Promise<void>;
@@ -74,9 +84,20 @@ interface FspecState {
   moveWorkUnitUp: (workUnitId: string) => Promise<void>;
   moveWorkUnitDown: (workUnitId: string) => Promise<void>;
 
+  // Session attachment actions (SESS-001)
+  attachSession: (workUnitId: string, sessionId: string) => void;
+  detachSession: (workUnitId: string) => void;
+  setCurrentWorkUnitId: (workUnitId: string | null) => void;
+  clearAllSessionAttachments: () => void;
+
   // Selectors
   getWorkUnitsByStatus: (status: string) => WorkUnit[];
   getWorkUnitsByEpic: (epicId: string) => WorkUnit[];
+
+  // Session attachment selectors (SESS-001)
+  getAttachedSession: (workUnitId: string) => string | undefined;
+  hasAttachedSession: (workUnitId: string) => boolean;
+  getCurrentWorkUnitId: () => string | null;
 }
 
 export const useFspecStore = create<FspecState>()(
@@ -90,6 +111,10 @@ export const useFspecStore = create<FspecState>()(
     isLoaded: false,
     error: null,
     cwd: process.cwd(),
+
+    // Session attachment state (SESS-001)
+    sessionAttachments: new Map<string, string>(),
+    currentWorkUnitId: null,
 
     setCwd: (cwd: string) => {
       set(state => {
@@ -369,12 +394,50 @@ export const useFspecStore = create<FspecState>()(
       }
     },
 
+    // Session attachment actions (SESS-001)
+    attachSession: (workUnitId: string, sessionId: string) => {
+      set(state => {
+        state.sessionAttachments.set(workUnitId, sessionId);
+      });
+    },
+
+    detachSession: (workUnitId: string) => {
+      set(state => {
+        state.sessionAttachments.delete(workUnitId);
+      });
+    },
+
+    setCurrentWorkUnitId: (workUnitId: string | null) => {
+      set(state => {
+        state.currentWorkUnitId = workUnitId;
+      });
+    },
+
+    clearAllSessionAttachments: () => {
+      set(state => {
+        state.sessionAttachments.clear();
+      });
+    },
+
     getWorkUnitsByStatus: (status: string) => {
       return get().workUnits.filter(wu => wu.status === status);
     },
 
     getWorkUnitsByEpic: (epicId: string) => {
       return get().workUnits.filter(wu => wu.epic === epicId);
+    },
+
+    // Session attachment selectors (SESS-001)
+    getAttachedSession: (workUnitId: string) => {
+      return get().sessionAttachments.get(workUnitId);
+    },
+
+    hasAttachedSession: (workUnitId: string) => {
+      return get().sessionAttachments.has(workUnitId);
+    },
+
+    getCurrentWorkUnitId: () => {
+      return get().currentWorkUnitId;
     },
   }))
 );

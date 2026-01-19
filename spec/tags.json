@@ -1858,6 +1858,10 @@
           "description": "Acceptance criteria validation"
         },
         {
+          "name": "@auto-attach",
+          "description": "Scenarios related to automatic session attachment"
+        },
+        {
           "name": "@blocking",
           "description": "Operations that block workflow progression"
         },
@@ -1880,6 +1884,10 @@
         {
           "name": "@consistency",
           "description": "Data consistency validation"
+        },
+        {
+          "name": "@detach-command",
+          "description": "Scenarios testing the /detach command"
         },
         {
           "name": "@duplicate",
@@ -1970,6 +1978,18 @@
           "description": "Scenario for removed or deprecated functionality"
         },
         {
+          "name": "@resume-command",
+          "description": "Scenarios testing the /resume command"
+        },
+        {
+          "name": "@resume-on-enter",
+          "description": "Scenarios testing Enter key behavior for session resume"
+        },
+        {
+          "name": "@shift-esc",
+          "description": "Scenarios testing Shift+ESC key behavior"
+        },
+        {
           "name": "@simple-command",
           "description": "Simple command with minimal options"
         },
@@ -2008,6 +2028,10 @@
         {
           "name": "@unregistered-tag2",
           "description": "Example tag used in test scenarios to demonstrate error handling"
+        },
+        {
+          "name": "@visual-indicator",
+          "description": "Scenarios testing visual indicators in the TUI"
         },
         {
           "name": "@warning",
@@ -2226,7 +2250,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-06T07:59:06.898Z",
+    "lastUpdated": "2026-01-19T00:28:49.149Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
