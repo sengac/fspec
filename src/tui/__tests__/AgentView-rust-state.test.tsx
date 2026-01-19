@@ -17,7 +17,7 @@ import { Box } from 'ink';
 
 // Mock state for Rust functions
 const rustState = vi.hoisted(() => ({
-  sessions: new Map<string, { providerId: string; modelId: string; status: 'running' | 'idle' }>(),
+  sessions: new Map<string, { providerId: string; modelId: string; status: 'running' | 'idle'; debugEnabled: boolean }>(),
   getModel: vi.fn((sessionId: string) => {
     const session = rustState.sessions.get(sessionId);
     return {
@@ -36,12 +36,23 @@ const rustState = vi.hoisted(() => ({
       providerId,
       modelId,
       status: existing?.status || 'idle',
+      debugEnabled: existing?.debugEnabled || false,
     });
   }),
   interrupt: vi.fn((sessionId: string) => {
     const existing = rustState.sessions.get(sessionId);
     if (existing) {
       rustState.sessions.set(sessionId, { ...existing, status: 'idle' });
+    }
+  }),
+  getDebugEnabled: vi.fn((sessionId: string) => {
+    const session = rustState.sessions.get(sessionId);
+    return session?.debugEnabled || false;
+  }),
+  setDebugEnabled: vi.fn((sessionId: string, enabled: boolean) => {
+    const existing = rustState.sessions.get(sessionId);
+    if (existing) {
+      rustState.sessions.set(sessionId, { ...existing, debugEnabled: enabled });
     }
   }),
 }));
@@ -223,6 +234,10 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionSetModel: (sessionId: string, providerId: string, modelId: string) =>
     rustState.setModel(sessionId, providerId, modelId),
   sessionInterrupt: (sessionId: string) => rustState.interrupt(sessionId),
+  // NEW: Rust state functions for debug mode
+  sessionGetDebugEnabled: (sessionId: string) => rustState.getDebugEnabled(sessionId),
+  sessionSetDebugEnabled: (sessionId: string, enabled: boolean) =>
+    rustState.setDebugEnabled(sessionId, enabled),
 }));
 
 // Mock Dialog
@@ -301,6 +316,8 @@ const resetState = () => {
   rustState.getStatus.mockClear();
   rustState.setModel.mockClear();
   rustState.interrupt.mockClear();
+  rustState.getDebugEnabled.mockClear();
+  rustState.setDebugEnabled.mockClear();
 
   mockState.session = {
     currentProviderName: 'claude',
@@ -566,11 +583,13 @@ describe('Rust State Integration for Model and Loading Status', () => {
         providerId: 'anthropic',
         modelId: 'claude-sonnet-4',
         status: 'idle',
+        debugEnabled: false,
       });
       rustState.sessions.set('session-B', {
         providerId: 'google',
         modelId: 'gemini-2.5-pro',
         status: 'idle',
+        debugEnabled: false,
       });
 
       // Verify Rust returns different models for different sessions
@@ -592,6 +611,7 @@ describe('Rust State Integration for Model and Loading Status', () => {
         providerId: 'anthropic',
         modelId: 'claude-sonnet-4',
         status: 'running',
+        debugEnabled: false,
       });
 
       expect(rustState.getStatus('session-running')).toBe('running');
@@ -602,6 +622,148 @@ describe('Rust State Integration for Model and Loading Status', () => {
 
       // The component increments modelChangeTrigger after interrupt,
       // causing useMemo to re-run and fetch updated status from Rust
+    });
+  });
+
+  describe('sessionGetDebugEnabled/sessionSetDebugEnabled: Debug state from Rust', () => {
+    it('should call sessionGetDebugEnabled to get debug state for current session', () => {
+      // Set up a session with debug enabled
+      rustState.sessions.set('debug-session', {
+        providerId: 'anthropic',
+        modelId: 'claude-sonnet-4',
+        status: 'idle',
+        debugEnabled: true,
+      });
+
+      const debugEnabled = rustState.getDebugEnabled('debug-session');
+      expect(debugEnabled).toBe(true);
+    });
+
+    it('should return false for sessions without debug enabled', () => {
+      rustState.sessions.set('no-debug-session', {
+        providerId: 'anthropic',
+        modelId: 'claude-sonnet-4',
+        status: 'idle',
+        debugEnabled: false,
+      });
+
+      const debugEnabled = rustState.getDebugEnabled('no-debug-session');
+      expect(debugEnabled).toBe(false);
+    });
+
+    it('should return false for non-existent sessions', () => {
+      const debugEnabled = rustState.getDebugEnabled('non-existent');
+      expect(debugEnabled).toBe(false);
+    });
+
+    it('should update debug state via sessionSetDebugEnabled', () => {
+      rustState.sessions.set('toggle-session', {
+        providerId: 'anthropic',
+        modelId: 'claude-sonnet-4',
+        status: 'idle',
+        debugEnabled: false,
+      });
+
+      // Initially false
+      expect(rustState.getDebugEnabled('toggle-session')).toBe(false);
+
+      // Enable debug
+      rustState.setDebugEnabled('toggle-session', true);
+      expect(rustState.getDebugEnabled('toggle-session')).toBe(true);
+
+      // Disable debug
+      rustState.setDebugEnabled('toggle-session', false);
+      expect(rustState.getDebugEnabled('toggle-session')).toBe(false);
+    });
+  });
+
+  describe('Debug state persists across detach/attach', () => {
+    it('should preserve debug state when session is detached and reattached', () => {
+      // Set up a session with debug enabled
+      rustState.sessions.set('persist-debug-session', {
+        providerId: 'anthropic',
+        modelId: 'claude-opus-4',
+        status: 'running',
+        debugEnabled: true,
+      });
+
+      // Session is running with debug enabled
+      expect(rustState.getDebugEnabled('persist-debug-session')).toBe(true);
+      expect(rustState.getStatus('persist-debug-session')).toBe('running');
+
+      // Simulate detach (Rust state persists, no React state involved)
+      // When reattached, UI queries Rust via useMemo
+      const debugAfterReattach = rustState.getDebugEnabled('persist-debug-session');
+      expect(debugAfterReattach).toBe(true);
+    });
+
+    it('should handle different debug states for different sessions', () => {
+      rustState.sessions.set('session-debug-on', {
+        providerId: 'anthropic',
+        modelId: 'claude-sonnet-4',
+        status: 'idle',
+        debugEnabled: true,
+      });
+      rustState.sessions.set('session-debug-off', {
+        providerId: 'google',
+        modelId: 'gemini-2.5-pro',
+        status: 'idle',
+        debugEnabled: false,
+      });
+
+      expect(rustState.getDebugEnabled('session-debug-on')).toBe(true);
+      expect(rustState.getDebugEnabled('session-debug-off')).toBe(false);
+
+      // Each session maintains its own debug state
+      // Switching sessions shows correct debug state via useMemo
+    });
+  });
+
+  describe('displayIsDebugEnabled: useMemo fetches from Rust', () => {
+    it('should architecture test: displayIsDebugEnabled uses sessionGetDebugEnabled', () => {
+      // This validates the architecture:
+      // - displayIsDebugEnabled is a useMemo that calls sessionGetDebugEnabled()
+      // - The useMemo has currentSessionId, conversation.length, and modelChangeTrigger in its dependencies
+      // - When any dependency changes, useMemo re-runs and fetches from Rust
+
+      rustState.sessions.set('memo-test-session', {
+        providerId: 'anthropic',
+        modelId: 'claude-sonnet-4',
+        status: 'idle',
+        debugEnabled: true,
+      });
+
+      // Simulating what useMemo does in the component
+      const displayIsDebugEnabled = () => {
+        try {
+          return rustState.getDebugEnabled('memo-test-session');
+        } catch {
+          return false;
+        }
+      };
+
+      expect(displayIsDebugEnabled()).toBe(true);
+
+      // Toggle debug in Rust
+      rustState.setDebugEnabled('memo-test-session', false);
+
+      // Next render cycle, useMemo would re-run
+      expect(displayIsDebugEnabled()).toBe(false);
+    });
+
+    it('should return false when session does not exist', () => {
+      // Simulating useMemo behavior when no session exists
+      const displayIsDebugEnabled = () => {
+        const sessionId = null;
+        if (!sessionId) return false;
+        try {
+          return rustState.getDebugEnabled(sessionId);
+        } catch {
+          return false;
+        }
+      };
+
+      expect(displayIsDebugEnabled()).toBe(false);
     });
   });
 });

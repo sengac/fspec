@@ -57,6 +57,8 @@ import {
   modelsSetCacheDirectory,
   sessionToggleDebug,
   sessionUpdateDebugMetadata,
+  sessionGetDebugEnabled,
+  sessionSetDebugEnabled,
   toggleDebug,
   sessionCompact,
   sessionAttach,
@@ -1871,12 +1873,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Note: Must await - the function is async because it uses tokio::spawn internally
         await sessionManagerCreateWithId(activeSessionId, modelPath, project, sessionName);
 
-        // If debug was enabled before session was created, update debug metadata
+        // If debug was enabled before session was created, sync debug state to session
         if (isDebugEnabled) {
           try {
             await sessionUpdateDebugMetadata(activeSessionId);
+            // Set the debug state on the session (don't toggle - it's already enabled globally)
+            sessionSetDebugEnabled(activeSessionId, true);
           } catch (err) {
-            logger.warn('Failed to update debug metadata', { error: err });
+            logger.warn('Failed to sync debug state to session', { error: err });
           }
         }
 
@@ -4950,6 +4954,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
   }, [currentSessionId, conversation.length, modelChangeTrigger]);
 
+  // Get debug enabled state from Rust (persists across detach/attach)
+  const displayIsDebugEnabled = useMemo(() => {
+    if (!currentSessionId) return false;
+    try {
+      return sessionGetDebugEnabled(currentSessionId);
+    } catch {
+      return false;
+    }
+  }, [currentSessionId, conversation.length, modelChangeTrigger]);
+
   const displayModelId = rustModelInfo.modelId;
   const displayReasoning = rustModelInfo.reasoning;
   const displayHasVision = rustModelInfo.hasVision;
@@ -5587,7 +5601,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             </Text>
           )}
           {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
-          {isDebugEnabled && (
+          {displayIsDebugEnabled && (
             <Text color="red" bold>
               {' '}
               [DEBUG]
