@@ -934,6 +934,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
   const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
 
+  // TUI-049: Centralized helper for updating token state from streaming chunks
+  // This ensures consistent handling of TokenUpdate and ContextFillUpdate across all chunk handlers
+  const updateTokenStateFromChunk = useCallback((chunk: StreamChunk) => {
+    if (chunk.type === 'TokenUpdate' && chunk.tokens) {
+      setTokenUsage(chunk.tokens);
+      if (chunk.tokens.tokensPerSecond !== undefined && chunk.tokens.tokensPerSecond !== null) {
+        setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
+        setLastChunkTime(Date.now());
+      }
+    } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
+      setContextFillPercentage(chunk.contextFill.fillPercentage);
+    }
+  }, []);
+
   // TUI-044: Compaction notification indicator (shows in percentage indicator for 10 seconds)
   const [compactionReduction, setCompactionReduction] = useState<number | null>(null);
 
@@ -2490,19 +2504,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               }
               return updated;
             });
-          } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
-            // TUI-031: Display token counts and tok/s from Rust
-            setTokenUsage(chunk.tokens);
-            if (
-              chunk.tokens.tokensPerSecond !== undefined &&
-              chunk.tokens.tokensPerSecond !== null
-            ) {
-              setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
-              setLastChunkTime(Date.now());
-            }
-          } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
-            // TUI-033: Display context fill percentage from Rust
-            setContextFillPercentage(chunk.contextFill.fillPercentage);
+          } else if (chunk.type === 'TokenUpdate' || chunk.type === 'ContextFillUpdate') {
+            // TUI-049: Use centralized helper for token state updates (DRY)
+            updateTokenStateFromChunk(chunk);
           } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
             // TOOL-011 + TUI-037: Stream tool execution progress with rolling window
             // Display the output chunk in a fixed-height window (last N lines)
@@ -3259,14 +3263,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return updated;
       });
       setIsLoading(false);
-    } else if (chunk.type === 'TokenUpdate' && chunk.tokens) {
-      setTokenUsage(chunk.tokens);
-      if (chunk.tokens.tokensPerSecond !== undefined && chunk.tokens.tokensPerSecond !== null) {
-        setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
-        setLastChunkTime(Date.now());
-      }
-    } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
-      setContextFillPercentage(chunk.contextFill.fillPercentage);
+    } else if (chunk.type === 'TokenUpdate' || chunk.type === 'ContextFillUpdate') {
+      // TUI-049: Use centralized helper for token state updates (DRY)
+      updateTokenStateFromChunk(chunk);
     } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
       const outputChunk = chunk.toolProgress.outputChunk;
       setConversation(prev => {
@@ -3362,6 +3361,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       }
     }
 
+    // TUI-049: CRITICAL - Clear ALL transient token display state BEFORE switching
+    // This ensures stale values from the old session don't persist in the UI
+    setDisplayedTokPerSec(null);
+    setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+    setContextFillPercentage(0);
+
     // Load conversation from new session
     const chunks = sessionGetMergedOutput(targetSession.id);
     const newConversation = processChunksToConversation(
@@ -3369,6 +3374,40 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       formatToolHeader,
       formatCollapsedOutput
     );
+
+    // TUI-049: Restore token state from the new session's buffered output
+    // Find the LAST TokenUpdate and ContextFillUpdate chunks to get current state
+    let lastTokenUpdate: StreamChunk | null = null;
+    let lastContextFillUpdate: StreamChunk | null = null;
+    for (const chunk of chunks) {
+      if (chunk.type === 'TokenUpdate' && chunk.tokens) {
+        lastTokenUpdate = chunk;
+      } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
+        lastContextFillUpdate = chunk;
+      }
+    }
+
+    // Apply the restored token state
+    if (lastTokenUpdate?.tokens) {
+      setTokenUsage({
+        inputTokens: lastTokenUpdate.tokens.inputTokens,
+        outputTokens: lastTokenUpdate.tokens.outputTokens,
+        cacheReadInputTokens: lastTokenUpdate.tokens.cacheReadInputTokens,
+        cacheCreationInputTokens: lastTokenUpdate.tokens.cacheCreationInputTokens,
+      });
+      // TUI-049: Only restore tokens per second if session is CURRENTLY running
+      // Don't restore stale tokensPerSecond from finished sessions
+      const targetStatus = sessionGetStatus(targetSession.id);
+      if (targetStatus === 'running' &&
+          lastTokenUpdate.tokens.tokensPerSecond !== undefined &&
+          lastTokenUpdate.tokens.tokensPerSecond !== null) {
+        setDisplayedTokPerSec(lastTokenUpdate.tokens.tokensPerSecond);
+        setLastChunkTime(Date.now());
+      }
+    }
+    if (lastContextFillUpdate?.contextFill) {
+      setContextFillPercentage(lastContextFillUpdate.contextFill.fillPercentage);
+    }
 
     // Restore pending input for new session
     const restoredInput = sessionGetPendingInput(targetSession.id);
