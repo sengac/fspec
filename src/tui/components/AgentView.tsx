@@ -804,6 +804,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [error, setError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  // TUI-049: Skip input animation when switching sessions
+  const [skipInputAnimation, setSkipInputAnimation] = useState(false);
 
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [tokenUsage, setTokenUsage] = useState<TokenTracker>({
@@ -3361,6 +3363,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       }
     }
 
+    // TUI-049: Skip input animation when switching sessions
+    setSkipInputAnimation(true);
+
     // TUI-049: CRITICAL - Clear ALL transient token display state BEFORE switching
     // This ensures stale values from the old session don't persist in the UI
     setDisplayedTokPerSec(null);
@@ -3388,13 +3393,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
 
     // Apply the restored token state
+    // Note: We use setTokenUsage directly (not updateTokenStateFromChunk) because
+    // restoration has different logic: only restore tokensPerSecond for running sessions
     if (lastTokenUpdate?.tokens) {
-      setTokenUsage({
-        inputTokens: lastTokenUpdate.tokens.inputTokens,
-        outputTokens: lastTokenUpdate.tokens.outputTokens,
-        cacheReadInputTokens: lastTokenUpdate.tokens.cacheReadInputTokens,
-        cacheCreationInputTokens: lastTokenUpdate.tokens.cacheCreationInputTokens,
-      });
+      setTokenUsage(lastTokenUpdate.tokens);
       // TUI-049: Only restore tokens per second if session is CURRENTLY running
       // Don't restore stale tokensPerSecond from finished sessions
       const targetStatus = sessionGetStatus(targetSession.id);
@@ -3423,6 +3425,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         handleStreamChunk(chunk);
       }
     });
+
+    // TUI-049: Reset skip animation flag after the state updates have been applied
+    setTimeout(() => setSkipInputAnimation(false), 0);
   }, [currentSessionId, inputValue, handleStreamChunk]);
 
   // TUI-049: Switch to previous session (Shift+Left)
@@ -5963,6 +5968,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             onSessionPrev={handleSessionPrev}
             onSessionNext={handleSessionNext}
             maxVisibleLines={5}
+            skipAnimation={skipInputAnimation}
           />
         </Box>
       </Box>
