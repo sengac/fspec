@@ -445,12 +445,14 @@ const processChunksToConversation = (
       } catch {
         argsDisplay = toolCall.input;
       }
-      // Finalize streaming assistant message (remove if empty)
+      // Finalize streaming assistant message (remove if empty, or format and mark complete)
       const streamingIdx = messages.findLastIndex(m => m.isStreaming);
       if (streamingIdx >= 0) {
         if (messages[streamingIdx].content.trim() === '') {
           messages.splice(streamingIdx, 1);
         } else {
+          // TUI-044: Apply markdown table formatting when finalizing
+          messages[streamingIdx].content = formatMarkdownTables(messages[streamingIdx].content);
           messages[streamingIdx].isStreaming = false;
         }
       }
@@ -481,6 +483,8 @@ const processChunksToConversation = (
       }
       const streamingIdx = messages.findLastIndex(m => m.isStreaming);
       if (streamingIdx >= 0) {
+        // TUI-044: Apply markdown table formatting when finalizing on Done
+        messages[streamingIdx].content = formatMarkdownTables(messages[streamingIdx].content);
         messages[streamingIdx].isStreaming = false;
       }
     } else if (chunk.type === 'Interrupted') {
@@ -490,6 +494,8 @@ const processChunksToConversation = (
         if (messages[streamingIdx].content.trim() === '') {
           messages.splice(streamingIdx, 1);
         } else {
+          // TUI-044: Apply markdown table formatting when finalizing on Interrupted
+          messages[streamingIdx].content = formatMarkdownTables(messages[streamingIdx].content);
           messages[streamingIdx].isStreaming = false;
         }
       }
