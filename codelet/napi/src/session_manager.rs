@@ -11,6 +11,7 @@ use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
 };
+use codelet_tools::{clear_bash_abort, request_bash_abort};
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use std::collections::HashMap;
@@ -292,14 +293,23 @@ impl BackgroundSession {
     }
     
     /// Interrupt current agent execution
+    ///
+    /// Call this when the user presses Esc in the TUI.
+    /// Also requests bash tool abortion for any running commands.
     pub fn interrupt(&self) {
         self.is_interrupted.store(true, Ordering::Release);
+        // Also request bash tool abortion for any running commands
+        request_bash_abort();
         self.interrupt_notify.notify_one();
     }
-    
+
     /// Reset interrupt flag
+    ///
+    /// Called automatically at the start of each prompt.
     pub fn reset_interrupt(&self) {
         self.is_interrupted.store(false, Ordering::Release);
+        // Also clear bash abort flag
+        clear_bash_abort();
     }
     
     /// Get session info for listing
