@@ -341,6 +341,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       <FullScreenWrapper>
         <AgentView
           onExit={() => setViewMode('board')}
+          workUnitId={selectedWorkUnit?.id}
         />
       </FullScreenWrapper>
     );

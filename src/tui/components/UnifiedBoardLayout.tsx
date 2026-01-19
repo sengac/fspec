@@ -124,6 +124,9 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
   const checkpointCounts = useFspecStore(state => state.checkpointCounts);
   const loadCheckpointCounts = useFspecStore(state => state.loadCheckpointCounts);
 
+  // SESS-001: Get session attachment checker from store
+  const hasAttachedSession = useFspecStore(state => state.hasAttachedSession);
+
   // Load checkpoint counts on mount
   useEffect(() => {
     void loadCheckpointCounts();
@@ -450,9 +453,12 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
 
           // Check if this work unit is the last changed (TUI-017)
           const isLastChanged = lastChangedWorkUnit?.id === wu.id;
+          // SESS-001: Check if work unit has an attached session
+          const hasSession = hasAttachedSession(wu.id);
+          const sessionIndicator = hasSession ? '🟢 ' : '';
           const text = isLastChanged
-            ? `⏩ ${wu.id}${storyPointsText} ⏩`
-            : `${wu.id}${storyPointsText}`;
+            ? `⏩ ${sessionIndicator}${wu.id}${storyPointsText} ⏩`
+            : `${sessionIndicator}${wu.id}${storyPointsText}`;
 
           const paddedText = fitToWidth(text, currentColWidth);
 

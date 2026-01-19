@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-17T06:36:50.572Z"
+    "lastUpdated": "2026-01-19T01:09:56.868Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62037,6 +62037,230 @@
         "spec/attachments/TUI-048/ast-research-escape-key-handling.md"
       ],
       "updated": "2026-01-17T06:36:50.604Z"
+    },
+    "SESS-001": {
+      "id": "SESS-001",
+      "title": "Session attachment for work units with TUI resume integration",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-19T00:15:26.936Z",
+      "updatedAt": "2026-01-19T01:09:56.901Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-19T00:15:33.035Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-19T00:42:35.840Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-19T00:45:03.423Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-19T00:56:42.830Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-19T01:09:56.902Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using codelet TUI",
+        "action": "have my conversation session automatically attached to the work unit I'm working on",
+        "benefit": "when I return to that work unit, I can resume exactly where I left off without searching through session history"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "A work unit can have at most one session attached at a time",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:30.607Z"
+        },
+        {
+          "id": 1,
+          "text": "Session auto-attaches to the current work unit when the first message is sent (session creation)",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:32.121Z"
+        },
+        {
+          "id": 2,
+          "text": "Work units with an attached session display a 🟢 green circle indicator in the board view",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:33.651Z"
+        },
+        {
+          "id": 3,
+          "text": "Pressing Enter on a work unit with an attached session resumes that session instead of starting fresh",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:35.508Z"
+        },
+        {
+          "id": 4,
+          "text": "/detach command detaches the current session from the work unit and starts a fresh empty session",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:37.836Z"
+        },
+        {
+          "id": 5,
+          "text": "/resume attaches the selected session to the currently entered work unit",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:39.267Z"
+        },
+        {
+          "id": 6,
+          "text": "Session attachments persist until the app closes (in-memory state, not persisted to disk)",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:40.833Z"
+        },
+        {
+          "id": 7,
+          "text": "The 🟢 indicator appears on the left side of the work unit ID (e.g., 🟢 AUTH-001)",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:25:16.808Z"
+        },
+        {
+          "id": 8,
+          "text": "Shift+ESC returns to board but keeps session attached to work unit (session continues in background)",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:25:18.248Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User presses Enter on AUTH-001 (no attached session), types first message -> session is created and auto-attached to AUTH-001",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:54.260Z"
+        },
+        {
+          "id": 1,
+          "text": "User views board, AUTH-001 has attached session -> AUTH-001 displays with 🟢 indicator",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:55.934Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses Enter on AUTH-001 (has attached session) -> conversation resumes with previous messages restored",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:57.746Z"
+        },
+        {
+          "id": 3,
+          "text": "User types /detach while in AUTH-001 session -> session detached from AUTH-001, conversation cleared, fresh session ready",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:21:59.345Z"
+        },
+        {
+          "id": 4,
+          "text": "User types /resume while in AUTH-001, selects a session -> selected session attaches to AUTH-001, messages restored",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:22:00.764Z"
+        },
+        {
+          "id": 5,
+          "text": "User views board, AUTH-001 has no attached session -> AUTH-001 displays without 🟢 indicator (normal display)",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:22:02.292Z"
+        },
+        {
+          "id": 6,
+          "text": "User closes and reopens TUI -> all session attachments are cleared (in-memory only)",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:22:03.761Z"
+        },
+        {
+          "id": 7,
+          "text": "User /resume on AUTH-001 (already has session-A attached), selects session-B -> session-B replaces session-A as the attachment",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:25:19.755Z"
+        },
+        {
+          "id": 8,
+          "text": "User presses Shift+ESC while in AUTH-001 session -> returns to board, AUTH-001 still shows 🟢 indicator, session continues in background",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:25:21.154Z"
+        }
+      ],
+      "nextExampleId": 9,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: If you /resume while in a work unit that already has a different session attached, does the new session replace the old one? Or should there be a prompt/warning?",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:22:24.757Z",
+          "selected": true,
+          "answered": true,
+          "answer": "New session replaces the old attachment (no prompt/warning)"
+        },
+        {
+          "id": 1,
+          "text": "@human: What happens when you press Shift+ESC (session detach)? Does that also detach the session from the work unit, or just return to board while keeping session attached?",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:22:26.649Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Shift+ESC only returns to board, session stays attached to work unit and continues running in background"
+        },
+        {
+          "id": 2,
+          "text": "@human: Where should the 🟢 indicator appear relative to the work unit ID? Before it (🟢 AUTH-001) or after it (AUTH-001 🟢)?",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:22:27.984Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Left side: 🟢 AUTH-001"
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: Add sessionAttachments Map<workUnitId, sessionId> to fspecStore.ts",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:40:43.005Z"
+        },
+        {
+          "id": 1,
+          "text": "Implementation: Add currentWorkUnitId state to track which work unit user entered",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:40:44.610Z"
+        },
+        {
+          "id": 2,
+          "text": "Implementation: BoardView passes selectedWorkUnitId to AgentView when user presses Enter",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:40:46.015Z"
+        },
+        {
+          "id": 3,
+          "text": "Implementation: AgentView checks getAttachedSession(workUnitId) on mount to resume or start fresh",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:40:47.349Z"
+        },
+        {
+          "id": 4,
+          "text": "UI/UX: UnifiedBoardLayout prepends 🟢 to work unit ID when sessionAttachments.has(workUnitId)",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:40:48.784Z"
+        },
+        {
+          "id": 5,
+          "text": "Dependency: Uses existing NAPI functions - persistenceCreateSessionWithProvider, persistenceGetSessionMessages, persistenceListSessions",
+          "deleted": false,
+          "createdAt": "2026-01-19T00:40:50.724Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "attachments": [
+        "spec/attachments/SESS-001/ast-research-session-attachment.md"
+      ],
+      "updated": "2026-01-19T01:09:56.901Z"
     }
   },
   "states": {
@@ -62112,6 +62336,7 @@
     ],
     "validating": [],
     "done": [
+      "SESS-001",
       "TUI-048",
       "TUI-047",
       "TUI-046",
@@ -62620,6 +62845,7 @@
     "CONFIG": 4,
     "PROV": 4,
     "PATCH": 2,
-    "RLM": 1
+    "RLM": 1,
+    "SESS": 1
   }
 }

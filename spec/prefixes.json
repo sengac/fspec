@@ -299,6 +299,11 @@
       "prefix": "RLM",
       "description": "Recursive Language Model integration for long-context handling",
       "createdAt": "2026-01-16T07:07:46.715Z"
+    },
+    "SESS": {
+      "prefix": "SESS",
+      "description": "Session management and persistence",
+      "createdAt": "2026-01-19T00:15:22.709Z"
     }
   }
 }

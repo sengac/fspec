@@ -517,12 +517,14 @@ Tags for test-related scenarios and requirements.
 | Tag | Description |
 |-----|-------------|
 | `@acceptance` | Acceptance criteria validation |
+| `@auto-attach` | Scenarios related to automatic session attachment |
 | `@blocking` | Operations that block workflow progression |
 | `@circular-dependency` | Circular dependency detection tests |
 | `@compaction-fork-before-compaction-point` | Edge case: fork before compaction boundary |
 | `@complex-command` | Complex command with multiple modes and options |
 | `@confirmation` | Tests confirmation messages and user feedback |
 | `@consistency` | Data consistency validation |
+| `@detach-command` | Scenarios testing the /detach command |
 | `@duplicate` | Duplicate detection tests |
 | `@e2e` | End-to-end integration tests |
 | `@e2e-test` | End-to-End Test Required |
@@ -545,6 +547,9 @@ Tags for test-related scenarios and requirements.
 | `@prerequisites` | Prerequisite validation scenarios |
 | `@regression` | Regression tests - comprehensive validation of existing functionality |
 | `@removal` | Scenario for removed or deprecated functionality |
+| `@resume-command` | Scenarios testing the /resume command |
+| `@resume-on-enter` | Scenarios testing Enter key behavior for session resume |
+| `@shift-esc` | Scenarios testing Shift+ESC key behavior |
 | `@simple-command` | Simple command with minimal options |
 | `@single-message` | Single message edge case scenarios |
 | `@smoke` | Smoke tests - quick validation of critical functionality |
@@ -555,6 +560,7 @@ Tags for test-related scenarios and requirements.
 | `@unregistered-scenario-tag` | Example tag used in test scenarios to demonstrate error handling |
 | `@unregistered-tag1` | Example tag used in test scenarios to demonstrate error handling |
 | `@unregistered-tag2` | Example tag used in test scenarios to demonstrate error handling |
+| `@visual-indicator` | Scenarios testing visual indicators in the TUI |
 | `@warning` | Operations that produce warnings |
 
 **Rule**: Use testing tags to indicate what level of testing is required for a scenario.
@@ -798,7 +804,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-06T07:59:06.898Z_
+_Last updated: 2026-01-19T00:28:49.149Z_
 
 **Update Command**: `fspec tag-stats`
 
