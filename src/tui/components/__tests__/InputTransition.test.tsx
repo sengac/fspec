@@ -35,7 +35,7 @@ describe('InputTransition', () => {
       const output = lastFrame();
 
       expect(output).toContain('Thinking...');
-      expect(output).toContain("(Esc to stop | 'Ctrl+Esc' detach)");
+      expect(output).toContain("(Esc to stop | 'Shift+Esc' detach)");
     });
 
     it('should show custom thinking message', () => {

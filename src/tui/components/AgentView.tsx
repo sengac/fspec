@@ -744,7 +744,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
-  // TUI-048: Ctrl+ESC detection for immediate detach (no ref needed - single keypress)
+  // TUI-048: Shift+ESC detection for immediate detach
+  // Track whether Shift is currently held, then if ESC comes while held, trigger detach
+  const shiftHeldRef = useRef<boolean>(false);
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
@@ -4174,8 +4176,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
 
-      // TUI-048: Ctrl+ESC for immediate detach (bypasses confirmation dialog)
-      if (key.escape && key.ctrl) {
+      // TUI-048: Shift+ESC for immediate detach (bypasses confirmation dialog)
+      // Track whether Shift is held, then if ESC comes while held, trigger detach
+      if (key.shift && !key.escape && !key.return && !key.tab && !key.backspace && !key.delete) {
+        shiftHeldRef.current = true;
+      } else if (!key.shift && !key.escape && !key.return && !key.tab && !key.backspace && !key.delete && !key.upArrow && !key.downArrow && !key.leftArrow && !key.rightArrow) {
+        // Key release event - shift=false with no other key
+        shiftHeldRef.current = false;
+      }
+
+      if (key.escape && shiftHeldRef.current) {
+        shiftHeldRef.current = false; // Reset
         if (currentSessionId) {
           try {
             sessionDetach(currentSessionId);
@@ -5287,7 +5298,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
-            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Ctrl+Esc' detach)"
+            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Shift+Esc' detach)"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
             maxVisibleLines={5}
