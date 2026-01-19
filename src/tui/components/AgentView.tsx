@@ -752,9 +752,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
-  // TUI-048: Shift+ESC detection for immediate detach
-  // Track whether Shift is currently held, then if ESC comes while held, trigger detach
-  const shiftHeldRef = useRef<boolean>(false);
+  // TUI-048: Space+ESC detection for immediate detach
+  // Space is detected as a regular character, so we use a timeout to track if ESC comes shortly after Space
+  const spaceHeldRef = useRef<boolean>(false);
+  const spaceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const SPACE_TIMEOUT_MS = 1000; // Window to detect Space+ESC combo (1 second)
+
+  // Cleanup space timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (spaceTimeoutRef.current) {
+        clearTimeout(spaceTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
@@ -4396,22 +4407,37 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return;
       }
 
-      // TUI-048: Shift+ESC for immediate detach (bypasses confirmation dialog)
-      // Track whether Shift is held, then if ESC comes while held, trigger detach
-      if (key.shift && !key.escape && !key.return && !key.tab && !key.backspace && !key.delete) {
-        shiftHeldRef.current = true;
-      } else if (!key.shift && !key.escape && !key.return && !key.tab && !key.backspace && !key.delete && !key.upArrow && !key.downArrow && !key.leftArrow && !key.rightArrow) {
-        // Key release event - shift=false with no other key
-        shiftHeldRef.current = false;
+      // TUI-048: Space+ESC for immediate detach (bypasses confirmation dialog)
+      // When Space is pressed, start a timeout window. If ESC is pressed within the window, detach.
+
+      // When Space is pressed, start the timeout window
+      if (input === ' ' && !key.escape) {
+        spaceHeldRef.current = true;
+        // Clear any existing timeout
+        if (spaceTimeoutRef.current) {
+          clearTimeout(spaceTimeoutRef.current);
+        }
+        // Set timeout to reset spaceHeldRef after the window expires
+        spaceTimeoutRef.current = setTimeout(() => {
+          spaceHeldRef.current = false;
+          spaceTimeoutRef.current = null;
+        }, SPACE_TIMEOUT_MS);
+        // Don't return - let Space be processed normally (adds to input)
       }
 
-      if (key.escape && shiftHeldRef.current) {
-        shiftHeldRef.current = false; // Reset
+      // Check for ESC while within the Space timeout window
+      if (key.escape && spaceHeldRef.current) {
+        // Clear the timeout and reset state
+        if (spaceTimeoutRef.current) {
+          clearTimeout(spaceTimeoutRef.current);
+          spaceTimeoutRef.current = null;
+        }
+        spaceHeldRef.current = false;
         if (currentSessionId) {
           try {
             sessionDetach(currentSessionId);
           } catch {
-            // Session may not be in background manager
+            // Silently ignore detach errors
           }
         }
         onExit();
@@ -5518,7 +5544,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
-            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Shift+Esc' detach)"
+            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Space+Esc' detach)"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
             maxVisibleLines={5}
