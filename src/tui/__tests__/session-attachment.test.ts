@@ -179,8 +179,8 @@ describe('Feature: Session attachment for work units with TUI resume integration
     });
   });
 
-  describe('Scenario: Shift+ESC returns to board while keeping session attached', () => {
-    it('should keep session attached when pressing Shift+ESC', () => {
+  describe('Scenario: Space+ESC returns to board while keeping session attached', () => {
+    it('should keep session attached when pressing Space+ESC', () => {
       // @step Given I am in the agent view for work unit "AUTH-001"
       const store = useFspecStore.getState();
       store.workUnits = [
@@ -191,8 +191,8 @@ describe('Feature: Session attachment for work units with TUI resume integration
       // @step And "AUTH-001" has an attached session
       store.attachSession?.('AUTH-001', 'session-123');
 
-      // @step When I press Shift+ESC
-      // Shift+ESC returns to board but does NOT call detachSession
+      // @step When I press Space+ESC
+      // Space+ESC returns to board but does NOT call detachSession
       store.setCurrentWorkUnitId?.(null); // Clear current work unit (return to board)
 
       // @step Then I should return to the board view
