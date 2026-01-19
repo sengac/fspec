@@ -406,7 +406,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
       await vi.waitFor(
         () => {
           const frame = lastFrame();
-          expect(frame).toContain('claude-opus');
+          expect(frame).toContain('Claude Opus');
         },
         { timeout: 3000 }
       );
@@ -430,7 +430,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
       await vi.waitFor(
         () => {
           const frame = lastFrame();
-          expect(frame).toContain('gemini');
+          expect(frame).toContain('Gemini');
         },
         { timeout: 3000 }
       );
