@@ -417,7 +417,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
       // @step Then I should return to the empty prompt for new input
       // Input should be empty
-      expect(lastFrame()).toContain("Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Space+Esc' detach)");
+      expect(lastFrame()).toContain("Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn | 'Space+Esc'");
 
       // @step And history is navigated with Shift+Arrow-Up (older) and Shift+Arrow-Down (newer)
       // Verified by the navigation above

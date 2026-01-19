@@ -188,6 +188,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
+  // AGENT-021: Debug enabled state from Rust
+  sessionGetDebugEnabled: vi.fn().mockReturnValue(false),
 }));
 
 // Mock Dialog to render children without position="absolute" which breaks ink-testing-library
@@ -517,6 +519,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // @step When I type "/debug" in the input and submit
+      // Configure sessionGetDebugEnabled to return true after toggle
+      const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
+      (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
       stdin.write('/debug');
       await waitForFrame();
       stdin.write('\r'); // Enter key
@@ -575,6 +581,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // @step And debug capture mode is enabled
+      // Configure sessionGetDebugEnabled to return true after first toggle
+      const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
+      (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
       // First /debug call enables debug
       stdin.write('/debug');
       await waitForFrame();
@@ -586,6 +596,9 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).toContain('[DEBUG]');
 
       // @step When I type "/debug" in the input and submit
+      // Configure sessionGetDebugEnabled to return false after second toggle
+      (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(false);
+
       // Second /debug call disables debug
       stdin.write('/debug');
       await waitForFrame();
@@ -659,6 +672,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // @step And debug capture mode is enabled
+      // Configure sessionGetDebugEnabled to return true after toggle
+      const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
+      (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
       stdin.write('/debug');
       await waitForFrame();
       stdin.write('\r');
@@ -722,6 +739,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).toContain('175000');
 
       // @step And debug capture mode is enabled
+      // Configure sessionGetDebugEnabled to return true after toggle
+      const { sessionGetDebugEnabled } = await import('@sengac/codelet-napi');
+      (sessionGetDebugEnabled as ReturnType<typeof vi.fn>).mockReturnValue(true);
+
       stdin.write('/debug');
       await waitForFrame();
       stdin.write('\r');
