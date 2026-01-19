@@ -647,6 +647,50 @@ pub fn session_get_buffered_output(session_id: String, limit: u32) -> Result<Vec
     Ok(session.get_buffered_output(limit as usize))
 }
 
+/// Get buffered output with consecutive Text/Thinking chunks merged.
+/// This is more efficient for reattachment - JS can process fewer chunks.
+#[napi]
+pub fn session_get_merged_output(session_id: String) -> Result<Vec<StreamChunk>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let chunks = session.get_buffered_output(usize::MAX);
+
+    let mut merged: Vec<StreamChunk> = Vec::new();
+
+    for chunk in chunks {
+        match chunk.chunk_type.as_str() {
+            "Text" => {
+                // Merge consecutive Text chunks
+                if let Some(last) = merged.last_mut() {
+                    if last.chunk_type == "Text" {
+                        if let (Some(existing), Some(new)) = (&mut last.text, &chunk.text) {
+                            existing.push_str(new);
+                            continue;
+                        }
+                    }
+                }
+                merged.push(chunk);
+            }
+            "Thinking" => {
+                // Merge consecutive Thinking chunks
+                if let Some(last) = merged.last_mut() {
+                    if last.chunk_type == "Thinking" {
+                        if let (Some(existing), Some(new)) = (&mut last.thinking, &chunk.thinking) {
+                            existing.push_str(new);
+                            continue;
+                        }
+                    }
+                }
+                merged.push(chunk);
+            }
+            // Skip metadata chunks that don't affect display
+            "TokenUpdate" | "ContextFillUpdate" => continue,
+            _ => merged.push(chunk),
+        }
+    }
+
+    Ok(merged)
+}
+
 /// Restore messages to a background session from persisted envelopes.
 ///
 /// This is used when attaching to a session via /resume - it restores the
