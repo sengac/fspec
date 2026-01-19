@@ -222,7 +222,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         }
       } catch (error) {
         // Server startup failure is non-fatal - TUI continues working (REFAC-004 business rule 6)
-        logger.warn(`[BoardView] Failed to start attachment server: ${error}`);
+        logger.error(`[BoardView] Failed to start attachment server: ${error}`);
       }
     };
 
