@@ -344,15 +344,36 @@ export interface AgentViewProps {
   workUnitId?: string; // SESS-001: Work unit ID for session attachment
 }
 
+// Message types for semantic clarity (SOLID: Single Responsibility)
+// Each type represents a distinct kind of content in the conversation
+type MessageType =
+  | 'user-input'      // User's input text
+  | 'assistant-text'  // Assistant's response text (streaming or complete)
+  | 'thinking'        // Extended thinking/reasoning content
+  | 'tool-call'       // Tool invocation (header + result)
+  | 'status';         // Status messages (interrupted, errors, etc.)
+
 // Conversation message type for display
+// SOLID: type field provides semantic meaning, role is derived for display
 interface ConversationMessage {
-  role: 'user' | 'assistant' | 'tool';
+  type: MessageType;
   content: string;
   fullContent?: string; // TUI-043: Full uncollapsed content for expandable messages
   isStreaming?: boolean;
-  isThinking?: boolean; // Thinking content from extended thinking
   isError?: boolean; // Tool result with isError=true (stderr output)
+  toolCallId?: string; // For tool-call messages, links header to result
 }
+
+// Helper to get display role from message type (for coloring)
+const getDisplayRole = (msg: ConversationMessage): 'user' | 'assistant' | 'tool' => {
+  switch (msg.type) {
+    case 'user-input': return 'user';
+    case 'assistant-text': return 'assistant';
+    case 'thinking': return 'assistant'; // Thinking is assistant content, rendered differently
+    case 'tool-call': return 'tool';
+    case 'status': return 'tool';
+  }
+};
 
 // Line type for VirtualList (flattened from messages)
 interface ConversationLine {
@@ -360,42 +381,55 @@ interface ConversationLine {
   content: string;
   messageIndex: number;
   isSeparator?: boolean; // TUI-042: Empty line used as turn separator
-  isThinking?: boolean; // Thinking content from extended thinking
+  isThinking?: boolean; // Thinking content (for yellow rendering)
   isError?: boolean; // Tool result with isError=true (stderr output)
 }
 
 /**
- * Update conversation with thinking content. Only reuses existing thinking block
- * if it comes AFTER the last tool message (ensures fresh block after tool calls).
+ * Append thinking content to conversation.
+ * Creates a new thinking block after each tool call, or appends to existing thinking block.
+ *
+ * SOLID: Clean separation - thinking is a proper message type, not a flag on tool messages.
  */
-const updateThinkingBlock = (
+const appendThinkingContent = (
   messages: ConversationMessage[],
   thinkingContent: string,
   mode: 'replace' | 'append'
 ): ConversationMessage[] => {
-  const lastToolIdx = messages.findLastIndex(m => m.role === 'tool' && !m.isThinking);
-  const thinkingIdx = messages.findLastIndex(m => m.isThinking);
-  const streamingIdx = messages.findLastIndex(m => m.role === 'assistant' && m.isStreaming);
-  const canReuseThinking = thinkingIdx >= 0 && (lastToolIdx < 0 || thinkingIdx > lastToolIdx);
+  // Find the last thinking, tool-call, and user messages
+  const lastToolIdx = messages.findLastIndex(m => m.type === 'tool-call');
+  const lastThinkingIdx = messages.findLastIndex(m => m.type === 'thinking');
+  const lastUserIdx = messages.findLastIndex(m => m.type === 'user-input');
+  const streamingIdx = messages.findLastIndex(m => m.type === 'assistant-text' && m.isStreaming);
+
+  // Can reuse existing thinking if:
+  // 1. There is an existing thinking block
+  // 2. It comes after the last tool call (or no tool call exists)
+  // 3. It comes after the last user message (same turn - not from a previous turn)
+  const canReuseThinking =
+    lastThinkingIdx >= 0 &&
+    (lastToolIdx < 0 || lastThinkingIdx > lastToolIdx) &&
+    (lastUserIdx < 0 || lastThinkingIdx > lastUserIdx);
 
   if (canReuseThinking) {
-    const existingContent = messages[thinkingIdx].content.replace('[Thinking]\n', '');
+    // Append to existing thinking block
+    const existingContent = messages[lastThinkingIdx].content.replace('[Thinking]\n', '');
     const newContent = mode === 'replace' ? thinkingContent : existingContent + thinkingContent;
-    messages[thinkingIdx] = {
-      ...messages[thinkingIdx],
+    messages[lastThinkingIdx] = {
+      ...messages[lastThinkingIdx],
       content: `[Thinking]\n${newContent}`,
     };
   } else if (streamingIdx >= 0) {
+    // Insert before streaming assistant message
     messages.splice(streamingIdx, 0, {
-      role: 'tool',
+      type: 'thinking',
       content: `[Thinking]\n${thinkingContent}`,
-      isThinking: true,
     });
   } else {
+    // Append new thinking block
     messages.push({
-      role: 'tool',
+      type: 'thinking',
       content: `[Thinking]\n${thinkingContent}`,
-      isThinking: true,
     });
   }
 
@@ -405,6 +439,8 @@ const updateThinkingBlock = (
 /**
  * Process merged chunks into conversation messages for reattachment.
  * Used when attaching to a running/idle background session.
+ *
+ * SOLID: Uses explicit MessageType for semantic clarity.
  */
 const processChunksToConversation = (
   chunks: StreamChunk[],
@@ -415,17 +451,17 @@ const processChunksToConversation = (
 
   for (const chunk of chunks) {
     if (chunk.type === 'UserInput' && chunk.text) {
-      messages.push({ role: 'user', content: chunk.text });
+      messages.push({ type: 'user-input', content: chunk.text });
     } else if (chunk.type === 'Text' && chunk.text) {
-      // Find last assistant message to append to, or create new one
-      const lastIdx = messages.findLastIndex(m => m.role === 'assistant');
+      // Find last assistant-text message to append to, or create new one
+      const lastIdx = messages.findLastIndex(m => m.type === 'assistant-text');
       if (lastIdx >= 0 && messages[lastIdx].isStreaming) {
         messages[lastIdx].content += chunk.text;
       } else {
-        messages.push({ role: 'assistant', content: chunk.text, isStreaming: true });
+        messages.push({ type: 'assistant-text', content: chunk.text, isStreaming: true });
       }
     } else if (chunk.type === 'Thinking' && chunk.thinking) {
-      updateThinkingBlock(messages, chunk.thinking, 'append');
+      appendThinkingContent(messages, chunk.thinking, 'append');
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
       const toolCall = chunk.toolCall;
       let argsDisplay = '';
@@ -458,13 +494,17 @@ const processChunksToConversation = (
           messages[streamingIdx].isStreaming = false;
         }
       }
-      messages.push({ role: 'tool', content: formatToolHeaderFn(toolCall.name, argsDisplay) });
+      messages.push({
+        type: 'tool-call',
+        content: formatToolHeaderFn(toolCall.name, argsDisplay),
+        toolCallId: toolCall.id,
+      });
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
       const result = chunk.toolResult;
       const sanitizedContent = result.content.replace(/\t/g, '  ');
       // Find tool header and combine with result
       for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].role === 'tool' && messages[i].content.startsWith('●')) {
+        if (messages[i].type === 'tool-call' && messages[i].content.startsWith('●')) {
           const headerLine = messages[i].content.split('\n')[0];
           const formattedContent = formatCollapsedOutputFn(sanitizedContent);
           // Don't add newline if result is empty
@@ -475,12 +515,12 @@ const processChunksToConversation = (
         }
       }
       // Add streaming placeholder for continuation
-      messages.push({ role: 'assistant', content: '', isStreaming: true });
+      messages.push({ type: 'assistant-text', content: '', isStreaming: true });
     } else if (chunk.type === 'Done') {
       // Remove empty streaming messages and finalize
       while (
         messages.length > 0 &&
-        messages[messages.length - 1].role === 'assistant' &&
+        messages[messages.length - 1].type === 'assistant-text' &&
         messages[messages.length - 1].isStreaming &&
         !messages[messages.length - 1].content
       ) {
@@ -504,7 +544,7 @@ const processChunksToConversation = (
           messages[streamingIdx].isStreaming = false;
         }
       }
-      messages.push({ role: 'tool', content: '⚠ Interrupted' });
+      messages.push({ type: 'status', content: '⚠ Interrupted' });
     }
   }
 
@@ -1491,13 +1531,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setIsDebugEnabled(result.enabled);
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: result.message },
+          { type: 'status', content: result.message },
         ]);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Debug toggle failed: ${errorMessage}` },
+          { type: 'status', content: `Debug toggle failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -1534,7 +1574,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         if (history.length === 0) {
           setConversation(prev => [
             ...prev,
-            { role: 'tool', content: 'No history entries found' },
+            { type: 'status', content: 'No history entries found' },
           ]);
         } else {
           const historyList = history
@@ -1544,7 +1584,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             .join('\n');
           setConversation(prev => [
             ...prev,
-            { role: 'tool', content: `Command history:\n${historyList}` },
+            { type: 'status', content: `Command history:\n${historyList}` },
           ]);
         }
       } catch (err) {
@@ -1552,7 +1592,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           err instanceof Error ? err.message : 'Failed to get history';
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `History failed: ${errorMessage}` },
+          { type: 'status', content: `History failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -1577,11 +1617,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Reset session state
         setCurrentSessionId(null);
         isFirstMessageRef.current = true;
-        setConversation([{ role: 'tool', content: 'Session detached from work unit. Ready for fresh session.' }]);
+        setConversation([{ type: 'status', content: 'Session detached from work unit. Ready for fresh session.' }]);
       } else {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: '/detach only works when viewing a work unit from the board.' },
+          { type: 'status', content: '/detach only works when viewing a work unit from the board.' },
         ]);
       }
       return;
@@ -1600,12 +1640,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           setCurrentSessionId(target.id);
           setConversation(prev => [
             ...prev,
-            { role: 'tool', content: `Switched to session: "${target.name}"` },
+            { type: 'status', content: `Switched to session: "${target.name}"` },
           ]);
         } else {
           setConversation(prev => [
             ...prev,
-            { role: 'tool', content: `Session not found: "${targetName}"` },
+            { type: 'status', content: `Session not found: "${targetName}"` },
           ]);
         }
       } catch (err) {
@@ -1613,7 +1653,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           err instanceof Error ? err.message : 'Failed to switch session';
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Switch failed: ${errorMessage}` },
+          { type: 'status', content: `Switch failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -1626,7 +1666,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       if (!currentSessionId) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'No active session to rename' },
+          { type: 'status', content: 'No active session to rename' },
         ]);
         return;
       }
@@ -1634,14 +1674,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         persistenceRenameSession(currentSessionId, newName);
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Session renamed to: "${newName}"` },
+          { type: 'status', content: `Session renamed to: "${newName}"` },
         ]);
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : 'Failed to rename session';
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Rename failed: ${errorMessage}` },
+          { type: 'status', content: `Rename failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -1656,19 +1696,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       if (!currentSessionId) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'No active session to fork' },
+          { type: 'status', content: 'No active session to fork' },
         ]);
         return;
       }
       if (isNaN(index) || !name) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'Usage: /fork <index> <name>' },
+          { type: 'status', content: 'Usage: /fork <index> <name>' },
         ]);
         return;
       }
       try {
-        
+
         const forkedSession = persistenceForkSession(
           currentSessionId,
           index,
@@ -1678,7 +1718,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content: `Session forked at index ${index}: "${name}"`,
           },
         ]);
@@ -1687,7 +1727,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           err instanceof Error ? err.message : 'Failed to fork session';
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Fork failed: ${errorMessage}` },
+          { type: 'status', content: `Fork failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -1702,7 +1742,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       if (!currentSessionId) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'No active session to merge into' },
+          { type: 'status', content: 'No active session to merge into' },
         ]);
         return;
       }
@@ -1710,7 +1750,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content:
               'Usage: /merge <session-name> <indices> (e.g., /merge session-b 3,4)',
           },
@@ -1726,7 +1766,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           setConversation(prev => [
             ...prev,
             {
-              role: 'tool',
+              type: 'status',
               content: `Source session not found: "${sourceName}"`,
             },
           ]);
@@ -1743,7 +1783,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content: `Merged ${indices.length} messages from "${source.name}"`,
           },
         ]);
@@ -1752,7 +1792,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           err instanceof Error ? err.message : 'Failed to merge messages';
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Merge failed: ${errorMessage}` },
+          { type: 'status', content: `Merge failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -1771,7 +1811,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       if (!currentSessionId) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'No active session for cherry-pick' },
+          { type: 'status', content: 'No active session for cherry-pick' },
         ]);
         return;
       }
@@ -1779,7 +1819,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content: 'Usage: /cherry-pick <session> <index> [--context N]',
           },
         ]);
@@ -1794,7 +1834,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           setConversation(prev => [
             ...prev,
             {
-              role: 'tool',
+              type: 'status',
               content: `Source session not found: "${sourceName}"`,
             },
           ]);
@@ -1809,7 +1849,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content: `Cherry-picked message ${index} with ${context} context messages from "${source.name}"`,
           },
         ]);
@@ -1818,7 +1858,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           err instanceof Error ? err.message : 'Failed to cherry-pick';
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Cherry-pick failed: ${errorMessage}` },
+          { type: 'status', content: `Cherry-pick failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -1831,14 +1871,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       if (!currentSessionId) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: 'Compaction requires an active session. Send a message first.' },
+          { type: 'status', content: 'Compaction requires an active session. Send a message first.' },
         ]);
         return;
       }
       try {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: '[Compacting context...]' },
+          { type: 'status', content: '[Compacting context...]' },
         ]);
         const result = await sessionCompact(currentSessionId);
         // Update token display from compaction result
@@ -1851,7 +1891,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content: `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${result.compressionRatio.toFixed(0)}% compression, ${result.turnsSummarized} turns summarized, ${result.turnsKept} turns kept]`,
           },
         ]);
@@ -1859,7 +1899,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         const errorMessage = error instanceof Error ? error.message : String(error);
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Compaction failed: ${errorMessage}` },
+          { type: 'status', content: `Compaction failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -1930,7 +1970,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         logger.error('Failed to create session:', errorMsg);
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Failed to create session: ${errorMsg}` },
+          { type: 'status', content: `Failed to create session: ${errorMsg}` },
         ]);
         setIsLoading(false);
         return;
@@ -1967,7 +2007,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
 
     // Add user message to conversation
-    setConversation(prev => [...prev, { role: 'user', content: userMessage }]);
+    setConversation(prev => [...prev, { type: 'user-input', content: userMessage }]);
 
     // Persist user message as full envelope
     if (activeSessionId) {
@@ -1997,7 +2037,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     // Add streaming assistant message placeholder
     setConversation(prev => [
       ...prev,
-      { role: 'assistant', content: '', isStreaming: true },
+      { type: 'assistant-text', content: '', isStreaming: true },
     ]);
 
     try {
@@ -2032,6 +2072,55 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       }> = [];
       // TOOL-011: Track if we've streamed tool progress (to skip redundant tool result preview)
       let hasStreamedToolProgress = false;
+
+      // RACE-FIX: Unified state update to prevent race conditions between text and thinking updates
+      // Instead of separate setConversation calls that can race, we use a single update function
+      // that atomically applies both text and thinking changes.
+      let pendingTextUpdate: string | null = null;
+      let pendingThinkingUpdate: string | null = null;
+      let updateScheduled = false;
+
+      const flushPendingUpdates = () => {
+        if (!updateScheduled) return;
+        updateScheduled = false;
+
+        const textToApply = pendingTextUpdate;
+        const thinkingToApply = pendingThinkingUpdate;
+        pendingTextUpdate = null;
+        pendingThinkingUpdate = null;
+
+        if (textToApply === null && thinkingToApply === null) return;
+
+        setConversation(prev => {
+          const updated = [...prev];
+
+          // Apply thinking update first (it may insert before streaming)
+          if (thinkingToApply !== null) {
+            appendThinkingContent(updated, thinkingToApply, 'replace');
+          }
+
+          // Apply text update to streaming message
+          if (textToApply !== null) {
+            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+            if (streamingIdx >= 0) {
+              updated[streamingIdx] = {
+                ...updated[streamingIdx],
+                content: textToApply,
+              };
+            }
+          }
+
+          return updated;
+        });
+      };
+
+      const scheduleUpdate = () => {
+        if (!updateScheduled) {
+          updateScheduled = true;
+          // Use setImmediate-like behavior to batch updates within the same tick
+          Promise.resolve().then(flushPendingUpdates);
+        }
+      };
       
       // NAPI-009: Use background session for prompts instead of direct CodeletSession
       // This enables detach/attach to work - the background session continues running
@@ -2055,26 +2144,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             } else {
               assistantContentBlocks.push({ type: 'text', text: chunk.text });
             }
-            // Update streaming message content
-            // Note: Ink already throttles terminal output to 30fps, so direct state
-            // updates are fine here. The expensive part (line wrapping) is cached by PERF-002.
-            const segmentSnapshot = currentSegment;
-            setConversation(prev => {
-              const updated = [...prev];
-              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-              if (streamingIdx >= 0) {
-                updated[streamingIdx] = {
-                  ...updated[streamingIdx],
-                  content: segmentSnapshot,
-                };
-              }
-              return updated;
-            });
+            // RACE-FIX: Schedule unified update instead of direct setConversation
+            // This prevents race conditions with thinking updates
+            pendingTextUpdate = currentSegment;
+            scheduleUpdate();
           } else if (chunk.type === 'Thinking' && chunk.thinking) {
             // CLAUDE-THINK: Handle thinking/reasoning content from extended thinking
             // Accumulate thinking content for streaming display (like text)
             currentThinking += chunk.thinking;
-            
+
             // Store thinking block for envelope persistence
             // Accumulate into existing thinking block if present
             const lastBlock =
@@ -2084,20 +2162,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             } else {
               assistantContentBlocks.push({ type: 'thinking', thinking: chunk.thinking });
             }
-            
-            // Display thinking content with streaming updates
-            // TUI-046: Insert/update thinking BEFORE the streaming assistant message
-            const thinkingSnapshot = currentThinking;
-            setConversation(prev => {
-              const updated = [...prev];
-              updateThinkingBlock(updated, thinkingSnapshot, 'replace');
-              return updated;
-            });
+
+            // RACE-FIX: Schedule unified update instead of direct setConversation
+            // This prevents race conditions with text updates
+            pendingThinkingUpdate = currentThinking;
+            scheduleUpdate();
           } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+            // RACE-FIX: Flush pending text/thinking updates before handling tool call
+            flushPendingUpdates();
+
             // CLAUDE-THINK: Reset thinking accumulator - new thinking after tool call
             // should appear as a separate block, not continue the previous one
             currentThinking = '';
-            
+
             // Finalize current streaming message and add tool call (match CLI format)
             const toolCall = chunk.toolCall;
 
@@ -2199,7 +2276,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               // TUI-037: Remove empty streaming assistant messages before adding tool call
               while (
                 updated.length > 0 &&
-                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].type === 'assistant-text' &&
                 updated[updated.length - 1].isStreaming &&
                 !updated[updated.length - 1].content
               ) {
@@ -2215,8 +2292,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               }
               // Add tool call message
               updated.push({
-                role: 'tool',
+                type: 'tool-call',
                 content: toolContentSnapshot,
+                toolCallId: toolCall.id,
               });
               return updated;
             });
@@ -2342,7 +2420,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                   const msg = updated[i];
                   // Remove [Tool output] messages (streaming placeholder)
                   if (
-                    msg.role === 'tool' &&
+                    msg.type === 'tool-call' &&
                     msg.content.includes('[Tool output]')
                   ) {
                     updated.splice(i, 1);
@@ -2350,7 +2428,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                   }
                   // TUI-037: Combine tool header with formatted result
                   // TUI-043: Store both collapsed and full content
-                  if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                  if (msg.type === 'tool-call' && msg.content.startsWith('●')) {
                     const headerLine = msg.content.split('\n')[0];
                     // Don't add newline if result is empty
                     const hasContent = toolResultContent && toolResultContent.trim();
@@ -2367,7 +2445,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                   ...updated,
                   // Add new streaming placeholder for AI continuation
                   {
-                    role: 'assistant' as const,
+                    type: 'assistant-text' as const,
                     content: '',
                     isStreaming: true,
                   },
@@ -2381,7 +2459,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                 for (let i = updated.length - 1; i >= 0; i--) {
                   const msg = updated[i];
                   // TUI-043: Store both collapsed and full content
-                  if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                  if (msg.type === 'tool-call' && msg.content.startsWith('●')) {
                     const headerLine = msg.content.split('\n')[0];
                     // Don't add newline if result is empty
                     const hasContent = toolResultContent && toolResultContent.trim();
@@ -2398,7 +2476,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                   ...updated,
                   // Add new streaming placeholder for AI continuation
                   {
-                    role: 'assistant' as const,
+                    type: 'assistant-text' as const,
                     content: '',
                     isStreaming: true,
                   },
@@ -2413,7 +2491,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               // Remove empty streaming assistant messages at the end
               while (
                 updated.length > 0 &&
-                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].type === 'assistant-text' &&
                 updated[updated.length - 1].isStreaming &&
                 !updated[updated.length - 1].content
               ) {
@@ -2422,7 +2500,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               // Mark any remaining streaming message as complete
               // TUI-044: Apply markdown table formatting when marking complete
               const lastAssistantIdx = updated.findLastIndex(
-                m => m.role === 'assistant' && m.isStreaming
+                m => m.type === 'assistant-text' && m.isStreaming
               );
               if (lastAssistantIdx >= 0) {
                 const originalContent = updated[lastAssistantIdx].content;
@@ -2458,7 +2536,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               setConversation(prev => [
                 ...prev,
                 {
-                  role: 'tool',
+                  type: 'status',
                   content: statusMessage,
                 },
               ]);
@@ -2473,7 +2551,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               // First, remove empty streaming assistant messages
               while (
                 updated.length > 0 &&
-                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].type === 'assistant-text' &&
                 updated[updated.length - 1].isStreaming &&
                 !updated[updated.length - 1].content
               ) {
@@ -2484,7 +2562,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               let handledInterrupt = false;
               for (let i = updated.length - 1; i >= 0; i--) {
                 const msg = updated[i];
-                if (msg.role === 'tool' && msg.content.startsWith('●')) {
+                if (msg.type === 'tool-call' && msg.content.startsWith('●')) {
                   // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
                   if (!msg.content.includes('(select turn to /expand)')) {
                     updated[i] = {
@@ -2501,14 +2579,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               // If no tool was streaming, add interrupt as status (not appended to anything)
               if (!handledInterrupt) {
                 updated.push({
-                  role: 'tool' as const,
+                  type: 'status' as const,
                   content: '⚠ Interrupted',
                 });
               }
 
               // Mark any remaining streaming message as complete
               const lastAssistantIdx = updated.findLastIndex(
-                m => m.role === 'assistant' && m.isStreaming
+                m => m.type === 'assistant-text' && m.isStreaming
               );
               if (lastAssistantIdx >= 0) {
                 updated[lastAssistantIdx] = {
@@ -2533,7 +2611,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                 const lastMsg = updated[lastIdx];
                 // TUI-037: If last message is a tool header (●), append streaming output with tree connectors
                 if (
-                  lastMsg.role === 'tool' &&
+                  lastMsg.type === 'tool-call' &&
                   lastMsg.content.startsWith('●')
                 ) {
                   // Separate header from streaming content
@@ -2564,7 +2642,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                     content: `${header}\n${formattedOutput}`,
                   };
                 } else if (
-                  lastMsg.role === 'tool' &&
+                  lastMsg.type === 'tool-call' &&
                   lastMsg.content.includes('[Tool output]')
                 ) {
                   // Already showing tool output, append and apply window
@@ -2581,7 +2659,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                 } else {
                   // Create new tool output message
                   updated.push({
-                    role: 'tool',
+                    type: 'tool-call',
                     content: `[Tool output]\n${outputChunk}`,
                   });
                 }
@@ -2601,15 +2679,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               // Remove empty streaming assistant messages at the end
               while (
                 updated.length > 0 &&
-                updated[updated.length - 1].role === 'assistant' &&
+                updated[updated.length - 1].type === 'assistant-text' &&
                 updated[updated.length - 1].isStreaming &&
                 !updated[updated.length - 1].content
               ) {
                 updated.pop();
               }
-              // Add error as tool message so it's visible in conversation
+              // Add error as status message so it's visible in conversation
               updated.push({
-                role: 'tool',
+                type: 'status',
                 content: `API Error: ${chunk.error}`,
               });
               return updated;
@@ -2664,14 +2742,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Remove empty streaming assistant messages at the end
         while (
           updated.length > 0 &&
-          updated[updated.length - 1].role === 'assistant' &&
+          updated[updated.length - 1].type === 'assistant-text' &&
           updated[updated.length - 1].isStreaming &&
           !updated[updated.length - 1].content
         ) {
           updated.pop();
         }
-        // Add error as tool message so it's visible in conversation
-        updated.push({ role: 'tool', content: `Error: ${errorMessage}` });
+        // Add error as status message so it's visible in conversation
+        updated.push({ type: 'status', content: `Error: ${errorMessage}` });
         return updated;
       });
     } finally {
@@ -2722,7 +2800,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content: `✓ API key saved for ${providerId}. Refreshing models...`,
           },
         ]);
@@ -2774,7 +2852,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content: `✗ Failed to save API key: ${errorMessage}`,
           },
         ]);
@@ -2792,7 +2870,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         await loadProviderStatuses();
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `✓ API key deleted for ${providerId}` },
+          { type: 'status', content: `✓ API key deleted for ${providerId}` },
         ]);
       } catch (err) {
         const errorMessage =
@@ -2800,7 +2878,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setConversation(prev => [
           ...prev,
           {
-            role: 'tool',
+            type: 'status',
             content: `✗ Failed to delete API key: ${errorMessage}`,
           },
         ]);
@@ -2893,7 +2971,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         err instanceof Error ? err.message : 'Failed to refresh models';
       setConversation(prev => [
         ...prev,
-        { role: 'tool', content: `✗ Refresh failed: ${errorMessage}` },
+        { type: 'status', content: `✗ Refresh failed: ${errorMessage}` },
       ]);
     } finally {
       setIsRefreshingModels(false);
@@ -3139,7 +3217,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // Update the last assistant message, or create one if needed
       setConversation(prev => {
         const updated = [...prev];
-        const lastIdx = updated.findLastIndex(m => m.role === 'assistant');
+        const lastIdx = updated.findLastIndex(m => m.type === 'assistant-text');
         if (lastIdx >= 0 && updated[lastIdx].isStreaming) {
           updated[lastIdx] = {
             ...updated[lastIdx],
@@ -3148,7 +3226,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         } else {
           // Create new streaming assistant message
           updated.push({
-            role: 'assistant',
+            type: 'assistant-text',
             content: chunk.text || '',
             isStreaming: true,
           });
@@ -3159,7 +3237,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // Show thinking content in a separate message
       setConversation(prev => {
         const updated = [...prev];
-        updateThinkingBlock(updated, chunk.thinking, 'append');
+        appendThinkingContent(updated, chunk.thinking, 'append');
         return updated;
       });
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
@@ -3198,7 +3276,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
           }
         }
-        updated.push({ role: 'tool', content: toolContent });
+        updated.push({ type: 'tool-call', content: toolContent, toolCallId: toolCall.id });
         return updated;
       });
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
@@ -3210,7 +3288,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Find tool header and combine with result
         for (let i = updated.length - 1; i >= 0; i--) {
           const msg = updated[i];
-          if (msg.role === 'tool' && msg.content.startsWith('●')) {
+          if (msg.type === 'tool-call' && msg.content.startsWith('●')) {
             const headerLine = msg.content.split('\n')[0];
             // Don't add newline if result is empty
             const hasContent = toolResultContent && toolResultContent.trim();
@@ -3223,7 +3301,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           }
         }
         // Add streaming placeholder for continuation
-        updated.push({ role: 'assistant', content: '', isStreaming: true });
+        updated.push({ type: 'assistant-text', content: '', isStreaming: true });
         return updated;
       });
     } else if (chunk.type === 'Done') {
@@ -3233,7 +3311,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Remove empty streaming messages
         while (
           updated.length > 0 &&
-          updated[updated.length - 1].role === 'assistant' &&
+          updated[updated.length - 1].type === 'assistant-text' &&
           updated[updated.length - 1].isStreaming &&
           !updated[updated.length - 1].content
         ) {
@@ -3260,7 +3338,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       if (!statusMessage.includes('compacted') && !statusMessage.includes('summary')) {
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: statusMessage },
+          { type: 'status', content: statusMessage },
         ]);
       }
     } else if (chunk.type === 'Interrupted') {
@@ -3275,7 +3353,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
           }
         }
-        updated.push({ role: 'tool', content: '⚠ Interrupted' });
+        updated.push({ type: 'status', content: '⚠ Interrupted' });
         return updated;
       });
       setIsLoading(false);
@@ -3289,7 +3367,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         const lastIdx = updated.length - 1;
         if (lastIdx >= 0) {
           const lastMsg = updated[lastIdx];
-          if (lastMsg.role === 'tool' && lastMsg.content.startsWith('●')) {
+          if (lastMsg.type === 'tool-call' && lastMsg.content.startsWith('●')) {
             const lines = lastMsg.content.split('\n');
             const header = lines[0];
             const existingOutput = lines.slice(1).map(l => l.startsWith('L ') ? l.slice(2) : l.startsWith('  ') ? l.slice(2) : l).join('\n');
@@ -3314,13 +3392,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Remove empty streaming messages
         while (
           updated.length > 0 &&
-          updated[updated.length - 1].role === 'assistant' &&
+          updated[updated.length - 1].type === 'assistant-text' &&
           updated[updated.length - 1].isStreaming &&
           !updated[updated.length - 1].content
         ) {
           updated.pop();
         }
-        updated.push({ role: 'tool', content: `API Error: ${chunk.error}` });
+        updated.push({ type: 'status', content: `API Error: ${chunk.error}` });
         return updated;
       });
       setIsLoading(false);
@@ -3328,7 +3406,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // User input from buffer replay (NAPI-009: resume/attach)
       setConversation(prev => [
         ...prev,
-        { role: 'user', content: chunk.text! },
+        { type: 'user-input', content: chunk.text! },
       ]);
     }
   }, []);
@@ -3534,7 +3612,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               const contents = message.content || [];
               for (const content of contents) {
                 if (content.type === 'text' && content.text) {
-                  restored.push({ role: 'user', content: content.text });
+                  restored.push({ type: 'user-input', content: content.text });
                 }
               }
             } else if (messageType === 'assistant') {
@@ -3542,27 +3620,32 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               for (const content of contents) {
                 if (content.type === 'thinking' && content.thinking) {
                   restored.push({
-                    role: 'assistant',
+                    type: 'thinking',
                     content: content.thinking,
-                    isThinking: true,
                   });
                 } else if (content.type === 'text' && content.text) {
-                  restored.push({ role: 'assistant', content: content.text });
+                  restored.push({ type: 'assistant-text', content: content.text });
                 } else if (content.type === 'tool_use' && content.id) {
                   // Render tool call header
                   const toolName = content.name || 'unknown';
                   restored.push({
-                    role: 'assistant',
+                    type: 'tool-call',
                     content: `● ${toolName}`,
+                    toolCallId: content.id,
                   });
                   // Find and render tool result
                   const result = toolResultsByUseId.get(content.id);
                   if (result) {
-                    restored.push({
-                      role: 'tool',
-                      content: result.content,
-                      isError: result.isError,
-                    });
+                    // Combine tool header with result (find and update the previous tool-call)
+                    const lastIdx = restored.length - 1;
+                    if (lastIdx >= 0 && restored[lastIdx].type === 'tool-call') {
+                      const header = restored[lastIdx].content;
+                      restored[lastIdx] = {
+                        ...restored[lastIdx],
+                        content: `${header}\n${result.content}`,
+                        isError: result.isError,
+                      };
+                    }
                   }
                 }
               }
@@ -3665,7 +3748,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         err instanceof Error ? err.message : 'Failed to list sessions';
       setConversation(prev => [
         ...prev,
-        { role: 'tool', content: `Resume failed: ${errorMessage}` },
+        { type: 'status', content: `Resume failed: ${errorMessage}` },
       ]);
     }
   }, []);
@@ -3779,7 +3862,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             for (const content of contents) {
               if (content.type === 'text' && content.text) {
                 restored.push({
-                  role: 'user',
+                  type: 'user-input',
                   content: `${content.text}`,
                   isStreaming: false,
                 });
@@ -3800,7 +3883,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                 if (textContent) {
                   // TUI-044: Apply markdown table formatting to restored assistant text
                   restored.push({
-                    role: 'assistant',
+                    type: 'assistant-text',
                     content: formatMarkdownTables(textContent),
                     isStreaming: false,
                   });
@@ -3898,26 +3981,27 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                   }
 
                   restored.push({
-                    role: 'tool',
+                    type: 'tool-call',
                     content: `${toolHeader}\n${resultContent}`,
                     fullContent: `${toolHeader}\n${resultFullContent}`, // TUI-043
                     isStreaming: false,
+                    toolCallId: content.id,
                   });
                 } else {
                   // No result yet, just show header
                   restored.push({
-                    role: 'tool',
+                    type: 'tool-call',
                     content: toolHeader,
                     isStreaming: false,
+                    toolCallId: content.id,
                   });
                 }
               } else if (content.type === 'thinking' && content.thinking) {
                 // ALWAYS show thinking blocks on restore - thinking is valuable context
                 restored.push({
-                  role: 'assistant',
+                  type: 'thinking',
                   content: `[Thinking]\n${content.thinking}`,
                   isStreaming: false,
-                  isThinking: true,
                 });
               }
             }
@@ -3926,7 +4010,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             if (textContent) {
               // TUI-044: Apply markdown table formatting to restored assistant text
               restored.push({
-                role: 'assistant',
+                type: 'assistant-text',
                 content: formatMarkdownTables(textContent),
                 isStreaming: false,
               });
@@ -3947,7 +4031,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           // TUI-044: Apply markdown table formatting to restored assistant messages
           const formattedContent = m.role === 'assistant' ? formatMarkdownTables(m.content) : m.content;
           restored.push({
-            role: m.role === 'user' ? 'user' : 'assistant',
+            type: m.role === 'user' ? 'user-input' : 'assistant-text',
             content: formattedContent,
             isStreaming: false,
           });
@@ -4043,7 +4127,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         err instanceof Error ? err.message : 'Failed to restore session';
       setConversation(prev => [
         ...prev,
-        { role: 'tool', content: `Resume failed: ${errorMessage}` },
+        { type: 'status', content: `Resume failed: ${errorMessage}` },
       ]);
       setIsResumeMode(false);
       setAvailableSessions([]);
@@ -4106,7 +4190,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           err instanceof Error ? err.message : 'Failed to delete session';
         setConversation(prev => [
           ...prev,
-          { role: 'tool', content: `Delete failed: ${errorMessage}` },
+          { type: 'status', content: `Delete failed: ${errorMessage}` },
         ]);
       }
     },
@@ -4855,21 +4939,23 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
   // PERF-002: Helper function to wrap a single message into lines
   // Extracted to be reusable for incremental caching
+  // SOLID: Uses getDisplayRole() to derive display role from message type
   const wrapMessageToLines = (
     msg: ConversationMessage,
     msgIndex: number,
     maxWidth: number
   ): ConversationLine[] => {
     const lines: ConversationLine[] = [];
+    const role = getDisplayRole(msg);
     // Add role prefix to first line
     // SOLID: Thinking messages get no prefix (the [Thinking] header is already in content)
+    const isThinking = msg.type === 'thinking';
     const prefix =
-      msg.isThinking ? '' : msg.role === 'user' ? 'You: ' : msg.role === 'assistant' ? '● ' : '';
+      isThinking ? '' : msg.type === 'user-input' ? 'You: ' : msg.type === 'assistant-text' ? '● ' : '';
     // Normalize emoji variation selectors for consistent width calculation
     const normalizedContent = normalizeEmojiWidth(msg.content);
     const contentLines = normalizedContent.split('\n');
     // Propagate semantic flags from message
-    const isThinking = msg.isThinking;
     const isError = msg.isError;
 
     contentLines.forEach((lineContent, lineIndex) => {
@@ -4883,7 +4969,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
       // Wrap long lines manually to fit terminal width (using visual width for Unicode)
       if (getVisualWidth(displayContent) === 0) {
-        lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex, isThinking, isError });
+        lines.push({ role, content: ' ', messageIndex: msgIndex, isThinking, isError });
       } else {
         // Split into words, keeping whitespace
         const words = displayContent.split(/(\s+)/);
@@ -4900,7 +4986,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             // Flush current line first
             if (currentLine) {
               lines.push({
-                role: msg.role,
+                role,
                 content: currentLine,
                 messageIndex: msgIndex,
                 isThinking,
@@ -4916,7 +5002,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               const charWidth = getVisualWidth(char);
               if (chunkWidth + charWidth > maxWidth && chunk) {
                 lines.push({
-                  role: msg.role,
+                  role,
                   content: chunk,
                   messageIndex: msgIndex,
                   isThinking,
@@ -4941,7 +5027,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             // Flush current line and start new one
             if (currentLine.trim()) {
               lines.push({
-                role: msg.role,
+                role,
                 content: currentLine.trimEnd(),
                 messageIndex: msgIndex,
                 isThinking,
@@ -4960,7 +5046,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Flush remaining content
         if (currentLine.trim()) {
           lines.push({
-            role: msg.role,
+            role,
             content: currentLine.trimEnd(),
             messageIndex: msgIndex,
             isThinking,
@@ -4968,14 +5054,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           });
         } else if (lines.length === 0) {
           // Ensure at least one line per content section
-          lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex, isThinking, isError });
+          lines.push({ role, content: ' ', messageIndex: msgIndex, isThinking, isError });
         }
       }
     });
 
     // Add empty line after each message for spacing (use space to ensure line renders)
     // TUI-042: Mark separator lines for turn selection highlighting
-    lines.push({ role: msg.role, content: ' ', messageIndex: msgIndex, isSeparator: true, isThinking, isError });
+    lines.push({ role, content: ' ', messageIndex: msgIndex, isSeparator: true, isThinking, isError });
 
     return lines;
   };
@@ -5003,11 +5089,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
       // Check cache for this message
       const cached = cache.get(msgIndex);
+      const isThinking = msg.type === 'thinking';
       if (
         cached &&
         cached.content === effectiveContent &&
         cached.isStreaming === msg.isStreaming &&
-        cached.isThinking === (msg.isThinking ?? false) &&
+        cached.isThinking === isThinking &&
         cached.terminalWidth === terminalWidth
       ) {
         // Cache hit - reuse cached lines
@@ -5018,7 +5105,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         cache.set(msgIndex, {
           content: effectiveContent,
           isStreaming: msg.isStreaming ?? false,
-          isThinking: msg.isThinking ?? false,
+          isThinking,
           terminalWidth,
           lines: messageLines,
         });
