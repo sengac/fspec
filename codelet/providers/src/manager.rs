@@ -71,13 +71,13 @@ impl ProviderType {
 
 /// Provider Manager for dynamic provider selection
 ///
-/// MODEL-001: Now includes optional ModelRegistry for dynamic model selection
+/// Includes optional ModelRegistry for dynamic model selection
 pub struct ProviderManager {
     credentials: ProviderCredentials,
     current_provider: ProviderType,
-    /// MODEL-001: Optional model registry for dynamic model selection
+    /// Optional model registry for dynamic model selection
     model_registry: Option<ModelRegistry>,
-    /// MODEL-001: Selected model string (provider/model-id format)
+    /// Selected model string (provider/model-id format)
     selected_model: Option<String>,
 }
 
@@ -217,15 +217,14 @@ impl ProviderManager {
         Ok(model_info)
     }
 
-    /// MODEL-001: Get the selected model ID (the actual API model ID)
+    /// Get the selected model ID (the actual API model ID)
     ///
-    /// Returns the model ID to use for API calls. If a model was explicitly selected,
-    /// returns that model's ID from the registry. Otherwise returns None (use default).
+    /// Returns the model ID to use for API calls. Looks up the model in the registry
+    /// to get the actual API model ID.
     pub fn selected_model_id(&self) -> Option<String> {
         let model_string = self.selected_model.as_ref()?;
         let registry = self.model_registry.as_ref()?;
 
-        // Parse and get the model info
         if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
             if let Ok(model_info) = registry.get_model(&provider_id, &model_id) {
                 return Some(model_info.id.clone());
@@ -325,24 +324,25 @@ impl ProviderManager {
 
     /// Get OpenAI provider (if selected)
     ///
-    /// MODEL-001: Now uses selected_model_id() for dynamic model selection.
+    /// Requires a model to be selected via select_model().
     pub fn get_openai(&self) -> Result<OpenAIProvider, ProviderError> {
-        if self.current_provider == ProviderType::OpenAI {
-            // OpenAI's new() already handles env var detection
-            // For MODEL-001, we need to create with explicit model if selected
-            if let Some(model_id) = self.selected_model_id() {
-                let api_key = std::env::var("OPENAI_API_KEY")
-                    .map_err(|_| ProviderError::auth("openai", "OPENAI_API_KEY not set"))?;
-                OpenAIProvider::from_api_key(&api_key, &model_id)
-            } else {
-                OpenAIProvider::new()
-            }
-        } else {
-            Err(ProviderError::config(
+        if self.current_provider != ProviderType::OpenAI {
+            return Err(ProviderError::config(
                 "manager",
                 "Current provider is not OpenAI",
-            ))
+            ));
         }
+
+        let model_id = self.selected_model_id().ok_or_else(|| {
+            ProviderError::config(
+                "openai",
+                "No model selected. Please select a model before starting a session.",
+            )
+        })?;
+
+        let api_key = std::env::var("OPENAI_API_KEY")
+            .map_err(|_| ProviderError::auth("openai", "OPENAI_API_KEY not set"))?;
+        OpenAIProvider::from_api_key(&api_key, &model_id)
     }
 
     /// Get Codex provider (if selected)
@@ -359,25 +359,25 @@ impl ProviderManager {
 
     /// Get Gemini provider (if selected)
     ///
-    /// MODEL-001: Now uses selected_model_id() for dynamic model selection.
+    /// Requires a model to be selected via select_model().
     pub fn get_gemini(&self) -> Result<GeminiProvider, ProviderError> {
-        if self.current_provider == ProviderType::Gemini {
-            // Gemini's new() already handles env var detection
-            // For MODEL-001, we need to create with explicit model if selected
-            if let Some(model_id) = self.selected_model_id() {
-                let api_key = std::env::var("GOOGLE_GENERATIVE_AI_API_KEY").map_err(|_| {
-                    ProviderError::auth("gemini", "GOOGLE_GENERATIVE_AI_API_KEY not set")
-                })?;
-                GeminiProvider::from_api_key(&api_key, &model_id)
-            } else {
-                GeminiProvider::new()
-            }
-        } else {
-            Err(ProviderError::config(
+        if self.current_provider != ProviderType::Gemini {
+            return Err(ProviderError::config(
                 "manager",
                 "Current provider is not Gemini",
-            ))
+            ));
         }
+
+        let model_id = self.selected_model_id().ok_or_else(|| {
+            ProviderError::config(
+                "gemini",
+                "No model selected. Please select a model before starting a session.",
+            )
+        })?;
+
+        let api_key = std::env::var("GOOGLE_GENERATIVE_AI_API_KEY")
+            .map_err(|_| ProviderError::auth("gemini", "GOOGLE_GENERATIVE_AI_API_KEY not set"))?;
+        GeminiProvider::from_api_key(&api_key, &model_id)
     }
 
     /// Check if any provider is available
@@ -457,34 +457,37 @@ impl ProviderManager {
 
     /// Get Z.AI provider (if selected)
     ///
-    /// Uses selected_model_id() for dynamic model selection.
+    /// Requires a model to be selected via select_model().
     /// Checks ZAI_PLAN_API_KEY first (for coding plan endpoint), then ZAI_API_KEY.
     pub fn get_zai(&self) -> Result<ZAIProvider, ProviderError> {
-        if self.current_provider == ProviderType::ZAI {
-            if let Some(model_id) = self.selected_model_id() {
-                // Check for plan API key first, then normal API key
-                let (api_key, is_plan) = if let Ok(key) = std::env::var("ZAI_PLAN_API_KEY") {
-                    if !key.is_empty() {
-                        (key, true)
-                    } else if let Ok(key) = std::env::var("ZAI_API_KEY") {
-                        (key, false)
-                    } else {
-                        return Err(ProviderError::auth("zai", "ZAI_API_KEY or ZAI_PLAN_API_KEY not set"));
-                    }
-                } else if let Ok(key) = std::env::var("ZAI_API_KEY") {
-                    (key, false)
-                } else {
-                    return Err(ProviderError::auth("zai", "ZAI_API_KEY or ZAI_PLAN_API_KEY not set"));
-                };
-                ZAIProvider::from_api_key_with_endpoint(&api_key, &model_id, is_plan)
-            } else {
-                ZAIProvider::new()
-            }
-        } else {
-            Err(ProviderError::config(
+        if self.current_provider != ProviderType::ZAI {
+            return Err(ProviderError::config(
                 "manager",
                 "Current provider is not Z.AI",
-            ))
+            ));
         }
+
+        let model_id = self.selected_model_id().ok_or_else(|| {
+            ProviderError::config(
+                "zai",
+                "No model selected. Please select a model before starting a session.",
+            )
+        })?;
+
+        // Check for plan API key first, then normal API key
+        let (api_key, is_plan) = if let Ok(key) = std::env::var("ZAI_PLAN_API_KEY") {
+            if !key.is_empty() {
+                (key, true)
+            } else if let Ok(key) = std::env::var("ZAI_API_KEY") {
+                (key, false)
+            } else {
+                return Err(ProviderError::auth("zai", "ZAI_API_KEY or ZAI_PLAN_API_KEY not set"));
+            }
+        } else if let Ok(key) = std::env::var("ZAI_API_KEY") {
+            (key, false)
+        } else {
+            return Err(ProviderError::auth("zai", "ZAI_API_KEY or ZAI_PLAN_API_KEY not set"));
+        };
+        ZAIProvider::from_api_key_with_endpoint(&api_key, &model_id, is_plan)
     }
 }

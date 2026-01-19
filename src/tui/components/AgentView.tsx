@@ -56,6 +56,8 @@ import {
   modelsRefreshCache,
   modelsSetCacheDirectory,
   sessionToggleDebug,
+  sessionUpdateDebugMetadata,
+  toggleDebug,
   sessionCompact,
   sessionAttach,
   sessionSendInput,
@@ -66,6 +68,7 @@ import {
   sessionSetModel,
   sessionGetModel,
   sessionGetStatus,
+  sessionGetTokens,
   sessionManagerList,
   sessionManagerCreateWithId,
   sessionManagerDestroy,
@@ -96,6 +99,7 @@ import {
   type DiffLine,
 } from '../../git/diff-parser';
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
+import { ErrorDialog } from '../../components/ErrorDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import { useFspecStore } from '../store/fspecStore';
 
@@ -1437,19 +1441,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     if (!currentProvider || !inputValue.trim() || isLoading) return;
 
     // AGENT-021: Handle /debug command - toggle debug capture mode
-    // NAPI-009: Now uses sessionToggleDebug for background sessions
+    // Supports toggling debug before a session exists
     if (userMessage === '/debug') {
       setInputValue('');
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { role: 'tool', content: 'Debug mode requires an active session. Send a message first.' },
-        ]);
-        return;
-      }
       try {
         const debugDir = getFspecUserDir();
-        const result = await sessionToggleDebug(currentSessionId, debugDir);
+        let result;
+        if (currentSessionId) {
+          // Session exists - toggle with metadata
+          result = await sessionToggleDebug(currentSessionId, debugDir);
+        } else {
+          // No session yet - toggle without metadata (will be updated when session is created)
+          result = toggleDebug(debugDir);
+        }
         setIsDebugEnabled(result.enabled);
         setConversation(prev => [
           ...prev,
@@ -1866,6 +1870,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // CRITICAL: This must succeed for sessionAttach to work
         // Note: Must await - the function is async because it uses tokio::spawn internally
         await sessionManagerCreateWithId(activeSessionId, modelPath, project, sessionName);
+
+        // If debug was enabled before session was created, update debug metadata
+        if (isDebugEnabled) {
+          try {
+            await sessionUpdateDebugMetadata(activeSessionId);
+          } catch (err) {
+            logger.warn('Failed to update debug metadata', { error: err });
+          }
+        }
 
         // SESS-001: Auto-attach session to work unit on first message
         if (workUnitId) {
@@ -2546,6 +2559,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               return updated;
             });
           } else if (chunk.type === 'Error' && chunk.error) {
+            // Log the error
+            logger.error(`Stream error: ${chunk.error}`);
+
+            // Show error in modal for user visibility
+            setError(chunk.error);
+
             // API error occurred - clean up streaming placeholder and show error in conversation
             setConversation(prev => {
               const updated = [...prev];
@@ -2929,7 +2948,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // Update Rust first (source of truth)
       if (currentSessionId) {
         try {
-          sessionSetModel(currentSessionId, section.providerId, modelId);
+          // sessionSetModel is async - it updates both cached metadata and inner session model
+          await sessionSetModel(currentSessionId, section.providerId, modelId);
           // Trigger useMemo to re-fetch from Rust
           setModelChangeTrigger(prev => prev + 1);
         } catch (err) {
@@ -3273,6 +3293,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return updated;
       });
     } else if (chunk.type === 'Error' && chunk.error) {
+      // Log the error
+      logger.error(`Stream error: ${chunk.error}`);
+
+      // Show error in modal for user visibility
+      setError(chunk.error);
+
       setConversation(prev => {
         const updated = [...prev];
         // Remove empty streaming messages
@@ -4909,13 +4935,29 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
   }, [currentSessionId, conversation.length, modelChangeTrigger]);
 
+  // Get token counts DIRECTLY from Rust via useMemo
+  // This ensures tokens are restored when attaching to a session
+  const rustTokens = useMemo(() => {
+    if (!currentSessionId) return { inputTokens: 0, outputTokens: 0 };
+    try {
+      const tokens = sessionGetTokens(currentSessionId);
+      return {
+        inputTokens: tokens.inputTokens,
+        outputTokens: tokens.outputTokens,
+      };
+    } catch {
+      return { inputTokens: 0, outputTokens: 0 };
+    }
+  }, [currentSessionId, conversation.length, modelChangeTrigger]);
+
   const displayModelId = rustModelInfo.modelId;
   const displayReasoning = rustModelInfo.reasoning;
   const displayHasVision = rustModelInfo.hasVision;
   const displayContextWindow = rustModelInfo.contextWindow;
 
   // Error state - show setup instructions (full-screen overlay)
-  if (error && !session) {
+  // Only show this if error occurred before a session was created (no credentials)
+  if (error && !currentSessionId) {
     return (
       <Box
         position="absolute"
@@ -5575,8 +5617,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           {isLoading && displayedTokPerSec !== null && (
             <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s  </Text>
           )}
+          {/* Display tokens from whichever source has higher values:
+              - rustTokens: From Rust cache, correct when attaching to session
+              - tokenUsage: From TokenUpdate chunks, updated during streaming */}
           <Text dimColor>
-            tokens: {tokenUsage.inputTokens}↓ {tokenUsage.outputTokens}↑
+            tokens: {Math.max(tokenUsage.inputTokens, rustTokens.inputTokens)}↓ {Math.max(tokenUsage.outputTokens, rustTokens.outputTokens)}↑
           </Text>
           {/* TUI-033 + TUI-044: Context window fill percentage indicator with compaction notification */}
           {/* Format: [X%] normal, [X%: COMPACTED -Y%] after compaction */}
@@ -5801,6 +5846,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           defaultSelectedIndex={0}
           onSelect={handleExitChoice}
           onCancel={() => setShowExitConfirmation(false)}
+        />
+      )}
+
+      {/* Error dialog for API/model errors */}
+      {error && (
+        <ErrorDialog
+          message={error}
+          onClose={() => setError(null)}
         />
       )}
     </Box>
