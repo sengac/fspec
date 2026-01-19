@@ -744,8 +744,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
-  // TUI-048: Space+ESC detection for immediate detach
-  const spaceTimeRef = useRef<number>(0);
+  // TUI-048: Ctrl+ESC detection for immediate detach (no ref needed - single keypress)
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
@@ -4175,27 +4174,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
         return;
       }
 
-      // TUI-048: Space+ESC for immediate detach (bypasses confirmation dialog)
-      // Track space press, then if ESC comes within 500ms, trigger detach
-      if (input === ' ' && !key.meta && !key.ctrl) {
-        spaceTimeRef.current = Date.now();
-        // Don't return - let space be handled normally (inserted into input)
-      }
-
-      if (key.escape && spaceTimeRef.current > 0) {
-        const timeSinceSpace = Date.now() - spaceTimeRef.current;
-        spaceTimeRef.current = 0; // Reset
-        if (timeSinceSpace < 500) {
-          if (currentSessionId) {
-            try {
-              sessionDetach(currentSessionId);
-            } catch {
-              // Session may not be in background manager
-            }
+      // TUI-048: Ctrl+ESC for immediate detach (bypasses confirmation dialog)
+      if (key.escape && key.ctrl) {
+        if (currentSessionId) {
+          try {
+            sessionDetach(currentSessionId);
+          } catch {
+            // Session may not be in background manager
           }
-          onExit();
-          return;
         }
+        onExit();
+        return;
       }
 
       // TUI-045: Esc key handling with priority order:
@@ -5298,7 +5287,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit }) => {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
-            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Space+Esc' detach)"
+            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Ctrl+Esc' detach)"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
             maxVisibleLines={5}

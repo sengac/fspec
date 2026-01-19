@@ -85,7 +85,7 @@ describe('AgentView Shift+ESC immediate session detach', () => {
     // onExit being called confirms return to previous view
   });
 
-  test('Scenario: Input placeholder shows Space+Esc detach option', () => {
+  test('Scenario: Input placeholder shows Ctrl+Esc detach option', () => {
     // @step Given I am in AgentView with an active session
     const { lastFrame } = render(<AgentView onExit={mockOnExit} />);
 
@@ -95,26 +95,26 @@ describe('AgentView Shift+ESC immediate session detach', () => {
     // @step When I look at the input placeholder text
     const output = lastFrame();
 
-    // @step Then it should include "Space+Esc detach" alongside existing options
-    expect(output).toContain("'Space+Esc' detach"); // Updated to match actual format
+    // @step Then it should include "Ctrl+Esc detach" alongside existing options
+    expect(output).toContain("'Ctrl+Esc' detach"); // Updated to match actual format
 
     // @step And the format should be consistent with other shortcuts like "Shift+↑/↓"
     expect(output).toContain('Shift+↑/↓');
   });
 
-  test('Scenario: Space+Esc detach is shown in placeholder (thinking state requires mock)', () => {
+  test('Scenario: Ctrl+Esc detach is shown in placeholder (thinking state requires mock)', () => {
     // @step Given I am in AgentView with an active session
     const { lastFrame } = render(<AgentView onExit={mockOnExit} />);
 
     // @step And the session is ready for input
     // Note: Testing thinking state requires mocking isLoading which is complex
-    // This test verifies the Space+Esc option is shown in the default input state
+    // This test verifies the Ctrl+Esc option is shown in the default input state
 
     // @step When I look at the input text
     const output = lastFrame();
 
-    // @step Then it should include "Space+Esc detach" alongside existing options
-    expect(output).toContain("'Space+Esc' detach");
+    // @step Then it should include "Ctrl+Esc detach" alongside existing options
+    expect(output).toContain("'Ctrl+Esc' detach");
   });
 
   test('Scenario: Shift+ESC works in provider selector state', async () => {
