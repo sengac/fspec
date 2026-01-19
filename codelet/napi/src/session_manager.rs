@@ -477,11 +477,33 @@ impl SessionManager {
     
 }
 
+/// Macro to reduce duplication in provider handling.
+/// Each provider returns a different concrete type, so we must match and call
+/// run_agent_stream in each branch. This macro eliminates the boilerplate.
+macro_rules! run_with_provider {
+    ($inner:expr, $getter:ident, $input:expr, $session:expr, $output:expr, $thinking:expr) => {
+        match $inner.provider_manager_mut().$getter() {
+            Ok(provider) => {
+                let agent = codelet_core::RigAgent::with_default_depth(
+                    provider.create_rig_agent(None, $thinking.clone())
+                );
+                codelet_cli::interactive::run_agent_stream(
+                    agent,
+                    $input,
+                    $inner,
+                    $session.is_interrupted.clone(),
+                    $session.interrupt_notify.clone(),
+                    $output,
+                )
+                .await
+            }
+            Err(e) => Err(anyhow::anyhow!("Failed to get provider: {}", e)),
+        }
+    };
+}
+
 /// Agent loop that runs in background tokio task
 async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receiver<PromptInput>) {
-    use codelet_cli::interactive::run_agent_stream;
-    use codelet_core::RigAgent;
-    
     loop {
         // Wait for input
         let prompt_input = match input_rx.recv().await {
@@ -490,100 +512,41 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 break;
             }
         };
-        
+
         let input = &prompt_input.input;
         let thinking_config = prompt_input.thinking_config.as_deref();
-        
+
         tracing::debug!("Session {} received input: {}", session.id, &input[..input.len().min(50)]);
-        
+
         // Set status to running
         session.set_status(SessionStatus::Running);
         session.reset_interrupt();
-        
+
         // Parse thinking config JSON if provided
         let thinking_config_value: Option<serde_json::Value> = thinking_config.and_then(|config_str| {
             serde_json::from_str(config_str).ok()
         });
-        
+
         // Create output handler that buffers and forwards
         let session_for_output = session.clone();
         let output = BackgroundOutput::new(session_for_output);
-        
+
         // Lock the inner session and run agent stream
         let mut inner_session = session.inner.lock().await;
-        
-        // Get provider and run agent stream
-        // Note: Each provider type returns a different concrete type, so we must match
-        // and call run_agent_stream in each branch. This is a Rust limitation with
-        // heterogeneous types that share a trait but need to be used with generics.
+
+        // Get provider and run agent stream using the macro to eliminate duplication
         let current_provider = inner_session.current_provider_name().to_string();
         let result = match current_provider.as_str() {
-            "claude" => match inner_session.provider_manager_mut().get_claude() {
-                Ok(provider) => {
-                    let agent = RigAgent::with_default_depth(provider.create_rig_agent(None, thinking_config_value.clone()));
-                    run_agent_stream(
-                        agent,
-                        input,
-                        &mut inner_session,
-                        session.is_interrupted.clone(),
-                        session.interrupt_notify.clone(),
-                        &output,
-                    )
-                    .await
-                }
-                Err(e) => Err(anyhow::anyhow!("Failed to get provider: {}", e)),
-            },
-            "openai" => match inner_session.provider_manager_mut().get_openai() {
-                Ok(provider) => {
-                    let agent = RigAgent::with_default_depth(provider.create_rig_agent(None, thinking_config_value.clone()));
-                    run_agent_stream(
-                        agent,
-                        input,
-                        &mut inner_session,
-                        session.is_interrupted.clone(),
-                        session.interrupt_notify.clone(),
-                        &output,
-                    )
-                    .await
-                }
-                Err(e) => Err(anyhow::anyhow!("Failed to get provider: {}", e)),
-            },
-            "gemini" => match inner_session.provider_manager_mut().get_gemini() {
-                Ok(provider) => {
-                    let agent = RigAgent::with_default_depth(provider.create_rig_agent(None, thinking_config_value.clone()));
-                    run_agent_stream(
-                        agent,
-                        input,
-                        &mut inner_session,
-                        session.is_interrupted.clone(),
-                        session.interrupt_notify.clone(),
-                        &output,
-                    )
-                    .await
-                }
-                Err(e) => Err(anyhow::anyhow!("Failed to get provider: {}", e)),
-            },
-            "zai" => match inner_session.provider_manager_mut().get_zai() {
-                Ok(provider) => {
-                    let agent = RigAgent::with_default_depth(provider.create_rig_agent(None, thinking_config_value));
-                    run_agent_stream(
-                        agent,
-                        input,
-                        &mut inner_session,
-                        session.is_interrupted.clone(),
-                        session.interrupt_notify.clone(),
-                        &output,
-                    )
-                    .await
-                }
-                Err(e) => Err(anyhow::anyhow!("Failed to get provider: {}", e)),
-            },
+            "claude" => run_with_provider!(&mut inner_session, get_claude, input, session, &output, thinking_config_value),
+            "openai" => run_with_provider!(&mut inner_session, get_openai, input, session, &output, thinking_config_value),
+            "gemini" => run_with_provider!(&mut inner_session, get_gemini, input, session, &output, thinking_config_value),
+            "zai" => run_with_provider!(&mut inner_session, get_zai, input, session, &output, thinking_config_value),
             _ => {
                 tracing::error!("Unsupported provider: {}", current_provider);
                 Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
             }
         };
-        
+
         // Handle result
         // Note: run_agent_stream emits StreamEvent::Done on successful completion,
         // so we only emit Done here on error (to ensure the turn is properly terminated)
@@ -592,7 +555,7 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             session.handle_output(StreamChunk::error(e.to_string()));
             session.handle_output(StreamChunk::done());
         }
-        
+
         // Set status back to idle
         session.set_status(SessionStatus::Idle);
     }
@@ -859,8 +822,9 @@ pub fn session_get_merged_output(session_id: String) -> Result<Vec<StreamChunk>>
                 }
                 merged.push(chunk);
             }
-            // Skip metadata chunks that don't affect display
-            "TokenUpdate" | "ContextFillUpdate" => continue,
+            // TUI-049: Include TokenUpdate and ContextFillUpdate in merged output
+            // These are needed to restore token state when switching sessions
+            "TokenUpdate" | "ContextFillUpdate" => merged.push(chunk),
             _ => merged.push(chunk),
         }
     }
