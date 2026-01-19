@@ -182,6 +182,11 @@ vi.mock('@sengac/codelet-napi', () => ({
     turnsSummarized: 5,
     turnsKept: 2,
   }),
+  // Rust state functions for model and status
+  sessionGetModel: vi.fn().mockReturnValue({ providerId: null, modelId: null }),
+  sessionGetStatus: vi.fn().mockReturnValue('idle'),
+  sessionSetModel: vi.fn(),
+  sessionInterrupt: vi.fn(),
 }));
 
 // Mock Dialog to render children without position="absolute" which breaks ink-testing-library

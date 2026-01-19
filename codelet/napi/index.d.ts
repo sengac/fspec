@@ -1030,6 +1030,9 @@ export declare function sessionGetMergedOutput(
   sessionId: string
 ): Array<StreamChunk>;
 
+/** Get the model info for a background session */
+export declare function sessionGetModel(sessionId: string): SessionModel;
+
 /** Get session status */
 export declare function sessionGetStatus(sessionId: string): string;
 
@@ -1040,6 +1043,10 @@ export interface SessionInfo {
   status: string;
   project: string;
   messageCount: number;
+  /** Provider ID (e.g., "anthropic", "openai") */
+  providerId?: string;
+  /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
+  modelId?: string;
 }
 
 /** Interrupt a session */
@@ -1073,6 +1080,14 @@ export declare function sessionManagerDestroy(sessionId: string): void;
 /** List all background sessions */
 export declare function sessionManagerList(): Array<SessionInfo>;
 
+/** Model info returned by session_get_model */
+export interface SessionModel {
+  /** Provider ID (e.g., "anthropic", "openai") */
+  providerId?: string;
+  /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
+  modelId?: string;
+}
+
 /**
  * Restore messages to a background session from persisted envelopes.
  *
@@ -1105,6 +1120,13 @@ export declare function sessionSendInput(
   sessionId: string,
   input: string,
   thinkingConfig?: string | undefined | null
+): void;
+
+/** Update the model for a background session */
+export declare function sessionSetModel(
+  sessionId: string,
+  providerId: string,
+  modelId: string
 ): void;
 
 /**
