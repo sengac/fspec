@@ -10,9 +10,9 @@
  * 3. User can interrupt animation by typing - immediately shows input
  */
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Text, useInput } from 'ink';
-import { useThinkingText, SPINNERS } from './ThinkingIndicator';
+import { useThinkingText } from './ThinkingIndicator';
 import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
 
 // Animation timing constants
@@ -39,6 +39,12 @@ export interface InputTransitionProps extends MultiLineInputProps {
    * @default "(Esc to stop)"
    */
   thinkingHint?: string;
+
+  /**
+   * Skip the transition animation and immediately show the input
+   * Useful when switching sessions where animation would be jarring
+   */
+  skipAnimation?: boolean;
 }
 
 /**
@@ -65,7 +71,9 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   onSessionNext,
   maxVisibleLines = 5,
   isActive = true,
+  skipAnimation = false,
 }) => {
+  // All useState hooks grouped together
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>(
     isLoading ? 'loading' : 'complete'
   );
@@ -82,14 +90,34 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     isLoading
   );
 
+  // TUI-049: Skip animation when requested (e.g., session switching)
+  // Handles two cases:
+  // 1. Animation already in progress (hiding/showing) - skip to complete
+  // 2. isLoading changes while skipAnimation is true - go straight to complete
+  useEffect(() => {
+    if (!skipAnimation) return;
+
+    // If mid-animation, skip to complete immediately
+    if (animationPhase === 'hiding' || animationPhase === 'showing') {
+      setAnimationPhase('complete');
+    }
+  }, [skipAnimation, animationPhase]);
+
   // Track loading state changes to trigger animation
   useEffect(() => {
     if (wasLoadingRef.current && !isLoading) {
-      // Loading just finished - capture current text and start hide animation
-      setCapturedText(currentThinkingText);
-      setAnimationPhase('hiding');
-      setVisibleChars(currentThinkingText.length);
-      setPendingInput(''); // Reset pending input
+      // Loading just finished
+      if (skipAnimation) {
+        // TUI-049: Skip animation when switching sessions - go straight to complete
+        setAnimationPhase('complete');
+        setPendingInput('');
+      } else {
+        // Normal case: capture current text and start hide animation
+        setCapturedText(currentThinkingText);
+        setAnimationPhase('hiding');
+        setVisibleChars(currentThinkingText.length);
+        setPendingInput('');
+      }
     } else if (!wasLoadingRef.current && isLoading) {
       // Loading just started
       setAnimationPhase('loading');
@@ -98,7 +126,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
       setPendingInput('');
     }
     wasLoadingRef.current = isLoading;
-  }, [isLoading, currentThinkingText]);
+  }, [isLoading, currentThinkingText, skipAnimation]);
 
   // Handle keyboard input during animation to interrupt it
   const isAnimating = animationPhase === 'hiding' || animationPhase === 'showing';
