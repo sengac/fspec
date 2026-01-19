@@ -76,10 +76,24 @@ pub struct SessionInfo {
     pub status: String,
     pub project: String,
     pub message_count: u32,
+    /// Provider ID (e.g., "anthropic", "openai")
+    pub provider_id: Option<String>,
+    /// Model ID (e.g., "claude-sonnet-4", "gpt-4o")
+    pub model_id: Option<String>,
+}
+
+/// Model info returned by session_get_model
+#[napi(object)]
+#[derive(Clone)]
+pub struct SessionModel {
+    /// Provider ID (e.g., "anthropic", "openai")
+    pub provider_id: Option<String>,
+    /// Model ID (e.g., "claude-sonnet-4", "gpt-4o")
+    pub model_id: Option<String>,
 }
 
 /// Background session that runs agent in a tokio task.
-/// 
+///
 /// The `id` field serves as the persistence identifier - TypeScript stores this ID
 /// in its persistence system (persistenceStoreMessageEnvelope), and on restart can
 /// use a future `restore_session(id)` function to recreate sessions with their original IDs.
@@ -88,28 +102,33 @@ pub struct BackgroundSession {
     pub id: Uuid,
     pub name: RwLock<String>,
     pub project: String,
-    
+
+    /// Provider ID (e.g., "anthropic", "openai") - stored for quick access
+    pub provider_id: RwLock<Option<String>>,
+    /// Model ID (e.g., "claude-sonnet-4") - stored for quick access
+    pub model_id: RwLock<Option<String>>,
+
     /// Inner codelet session (protected by async mutex for agent operations)
     inner: Arc<Mutex<codelet_cli::session::Session>>,
-    
+
     /// Current status (lock-free)
     status: AtomicU8,
-    
+
     /// Whether a UI is currently attached
     is_attached: AtomicBool,
-    
+
     /// Channel to send input prompts to the agent loop
     input_tx: mpsc::Sender<PromptInput>,
-    
+
     /// Buffered output chunks (unbounded - keeps all output for session lifetime)
     output_buffer: RwLock<Vec<StreamChunk>>,
-    
+
     /// Callback for attached UI (None if detached)
     attached_callback: RwLock<Option<ThreadsafeFunction<StreamChunk>>>,
-    
+
     /// Interrupt flag for stopping agent execution
     is_interrupted: Arc<AtomicBool>,
-    
+
     /// Notify for immediate interrupt wake-up
     interrupt_notify: Arc<Notify>,
 }
@@ -120,6 +139,8 @@ impl BackgroundSession {
         id: Uuid,
         name: String,
         project: String,
+        provider_id: Option<String>,
+        model_id: Option<String>,
         inner: codelet_cli::session::Session,
         input_tx: mpsc::Sender<PromptInput>,
     ) -> Self {
@@ -127,6 +148,8 @@ impl BackgroundSession {
             id,
             name: RwLock::new(name),
             project,
+            provider_id: RwLock::new(provider_id),
+            model_id: RwLock::new(model_id),
             inner: Arc::new(Mutex::new(inner)),
             status: AtomicU8::new(SessionStatus::Idle as u8),
             is_attached: AtomicBool::new(false),
@@ -136,6 +159,12 @@ impl BackgroundSession {
             is_interrupted: Arc::new(AtomicBool::new(false)),
             interrupt_notify: Arc::new(Notify::new()),
         }
+    }
+
+    /// Update the model info (called when model is changed mid-session)
+    pub fn set_model(&self, provider_id: Option<String>, model_id: Option<String>) {
+        *self.provider_id.write().expect("provider_id lock poisoned") = provider_id;
+        *self.model_id.write().expect("model_id lock poisoned") = model_id;
     }
     
     /// Get current status
@@ -226,13 +255,15 @@ impl BackgroundSession {
             .iter()
             .filter(|c| c.chunk_type == "Done")
             .count() as u32;
-        
+
         SessionInfo {
             id: self.id.to_string(),
             name: self.name.read().expect("name lock poisoned").clone(),
             status: self.get_status().as_str().to_string(),
             project: self.project.clone(),
             message_count,
+            provider_id: self.provider_id.read().expect("provider_id lock poisoned").clone(),
+            model_id: self.model_id.read().expect("model_id lock poisoned").clone(),
         }
     }
 }
@@ -297,30 +328,36 @@ impl SessionManager {
         // This is required for API keys to be available when running from Node.js
         let _ = dotenvy::dotenv();
 
-        // Create the inner codelet session with model support if model is specified
-        let inner = if model.contains('/') {
-            // Model string like "anthropic/claude-sonnet-4" - extract and map provider
-            let registry_provider = model.split('/').next().unwrap_or("anthropic");
+        // Parse model string to extract provider_id and model_id for storage
+        let (provider_id, model_id, internal_provider) = if model.contains('/') {
+            // Model string like "anthropic/claude-sonnet-4"
+            let parts: Vec<&str> = model.split('/').collect();
+            let registry_provider = parts.get(0).unwrap_or(&"anthropic");
+            let model_part = parts.get(1).map(|s| s.to_string());
             // Map registry provider IDs to internal provider names
-            let provider = match registry_provider {
+            let internal = match *registry_provider {
                 "anthropic" => "claude",
                 "google" => "gemini",
                 "openai" => "openai",
                 "codex" => "codex",
                 "zai" => "zai",
-                other => other, // Fall back to using as-is
+                other => other,
             };
-            codelet_cli::session::Session::new(Some(provider))
-                .map_err(|e| Error::from_reason(format!("Failed to create session: {}", e)))?
+            (Some(registry_provider.to_string()), model_part, internal)
         } else {
-            codelet_cli::session::Session::new(Some(model))
-                .map_err(|e| Error::from_reason(format!("Failed to create session: {}", e)))?
+            (Some(model.to_string()), None, model)
         };
-        
+
+        // Create the inner codelet session
+        let inner = codelet_cli::session::Session::new(Some(internal_provider))
+            .map_err(|e| Error::from_reason(format!("Failed to create session: {}", e)))?;
+
         let session = Arc::new(BackgroundSession::new(
             uuid,
             name.to_string(),
             project.to_string(),
+            provider_id,
+            model_id,
             inner,
             input_tx,
         ));
@@ -638,6 +675,26 @@ pub fn session_interrupt(session_id: String) -> Result<()> {
 pub fn session_get_status(session_id: String) -> Result<String> {
     let session = SessionManager::instance().get_session(&session_id)?;
     Ok(session.get_status().as_str().to_string())
+}
+
+/// Update the model for a background session
+#[napi]
+pub fn session_set_model(session_id: String, provider_id: String, model_id: String) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.set_model(Some(provider_id), Some(model_id));
+    Ok(())
+}
+
+/// Get the model info for a background session
+#[napi]
+pub fn session_get_model(session_id: String) -> Result<SessionModel> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let provider_id = session.provider_id.read().unwrap().clone();
+    let model_id = session.model_id.read().unwrap().clone();
+    Ok(SessionModel {
+        provider_id,
+        model_id,
+    })
 }
 
 /// Get buffered output from a session

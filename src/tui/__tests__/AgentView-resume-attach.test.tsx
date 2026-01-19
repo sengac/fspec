@@ -59,6 +59,8 @@ interface BackgroundSessionInfo {
   status: string;
   project: string;
   messageCount?: number;
+  providerId?: string;
+  modelId?: string;
 }
 
 // TUI-047: Helper function matching AgentView implementation
@@ -99,11 +101,15 @@ const mergeSessionLists = (
   // Add background sessions not in persistence
   for (const bg of backgroundSessions) {
     if (!persistedSessions.find((p) => p.id === bg.id)) {
+      // Build provider string from background session's providerId/modelId
+      const providerString = bg.providerId && bg.modelId
+        ? `${bg.providerId}/${bg.modelId}`
+        : bg.providerId || 'unknown';
       mergedSessions.push({
         id: bg.id,
         name: bg.name || 'Background Session',
         project: bg.project || currentProject,
-        provider: 'unknown',
+        provider: providerString,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         messageCount: bg.messageCount || 0,
@@ -619,6 +625,580 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       // @step Then isLoading should NOT be set to true (session is idle)
       expect(isLoadingSet).toBe(false);
       expect(mockState.sessionAttachCalled).toBe(true);
+    });
+  });
+
+  describe('Scenario: Background sessions preserve model info when switching', () => {
+    it('should include providerId and modelId in merged session list', () => {
+      // @step Given I have two background sessions with different models
+      const backgroundSessions: BackgroundSessionInfo[] = [
+        { id: 'bg-claude', name: 'Claude Session', status: 'running', project: '/test', providerId: 'anthropic', modelId: 'claude-sonnet-4' },
+        { id: 'bg-gemini', name: 'Gemini Session', status: 'idle', project: '/test', providerId: 'google', modelId: 'gemini-2.5-pro' },
+      ];
+      const persistedSessions: SessionManifest[] = [];
+
+      // @step When I view the resume list
+      const merged = mergeSessionLists(persistedSessions, backgroundSessions, '/test');
+
+      // @step Then each session has the correct provider string
+      const claudeSession = merged.find(s => s.id === 'bg-claude');
+      const geminiSession = merged.find(s => s.id === 'bg-gemini');
+
+      expect(claudeSession).toBeDefined();
+      expect(claudeSession!.provider).toBe('anthropic/claude-sonnet-4');
+
+      expect(geminiSession).toBeDefined();
+      expect(geminiSession!.provider).toBe('google/gemini-2.5-pro');
+    });
+
+    it('should handle background sessions with only providerId (no modelId)', () => {
+      // @step Given I have a background session with only providerId
+      const backgroundSessions: BackgroundSessionInfo[] = [
+        { id: 'bg-only-provider', name: 'Provider Only', status: 'idle', project: '/test', providerId: 'openai' },
+      ];
+      const persistedSessions: SessionManifest[] = [];
+
+      // @step When I view the resume list
+      const merged = mergeSessionLists(persistedSessions, backgroundSessions, '/test');
+
+      // @step Then the provider string falls back to just the providerId
+      const session = merged.find(s => s.id === 'bg-only-provider');
+      expect(session).toBeDefined();
+      expect(session!.provider).toBe('openai');
+    });
+
+    it('should show "unknown" for background sessions without model info', () => {
+      // @step Given I have a background session without model info
+      const backgroundSessions: BackgroundSessionInfo[] = [
+        { id: 'bg-no-model', name: 'No Model Info', status: 'running', project: '/test' },
+      ];
+      const persistedSessions: SessionManifest[] = [];
+
+      // @step When I view the resume list
+      const merged = mergeSessionLists(persistedSessions, backgroundSessions, '/test');
+
+      // @step Then the provider string is "unknown"
+      const session = merged.find(s => s.id === 'bg-no-model');
+      expect(session).toBeDefined();
+      expect(session!.provider).toBe('unknown');
+    });
+
+    it('should prefer persistence provider info when session exists in both', () => {
+      // @step Given a session exists in both persistence and background
+      const backgroundSessions: BackgroundSessionInfo[] = [
+        { id: 'shared-session', name: 'Background Name', status: 'running', project: '/test', providerId: 'anthropic', modelId: 'claude-opus-4' },
+      ];
+      const persistedSessions: SessionManifest[] = [
+        { id: 'shared-session', name: 'Persisted Name', project: '/test', provider: 'anthropic/claude-sonnet-4', createdAt: '2025-01-16T09:00:00Z', updatedAt: '2025-01-16T10:00:00Z', messageCount: 10 },
+      ];
+
+      // @step When I view the resume list
+      const merged = mergeSessionLists(persistedSessions, backgroundSessions, '/test');
+
+      // @step Then the persisted session data is used (includes background status)
+      const session = merged.find(s => s.id === 'shared-session');
+      expect(session).toBeDefined();
+      expect(session!.name).toBe('Persisted Name'); // From persistence
+      expect(session!.provider).toBe('anthropic/claude-sonnet-4'); // From persistence
+      expect(session!.isBackgroundSession).toBe(true);
+      expect(session!.backgroundStatus).toBe('running');
+    });
+  });
+
+  describe('Scenario: Model is restored when attaching to background session', () => {
+    it('should restore model from provider string when attaching via handleResumeSelect', () => {
+      // @step Given I have a background session with a specific model
+      const selectedSession: MergedSession = {
+        id: 'bg-opus',
+        name: 'Opus Session',
+        project: '/test',
+        provider: 'anthropic/claude-opus-4',
+        createdAt: '2025-01-17T09:00:00Z',
+        updatedAt: '2025-01-17T10:00:00Z',
+        messageCount: 5,
+        isBackgroundSession: true,
+        backgroundStatus: 'idle',
+      };
+
+      // @step When I select this session from /resume
+      // Simulating the model restoration logic from handleResumeSelect
+      let restoredProviderId: string | null = null;
+      let restoredModelId: string | null = null;
+
+      if (selectedSession.provider && selectedSession.provider !== 'unknown') {
+        const storedProvider = selectedSession.provider;
+        if (storedProvider.includes('/')) {
+          const [providerId, modelId] = storedProvider.split('/');
+          restoredProviderId = providerId;
+          restoredModelId = modelId;
+        }
+      }
+
+      // @step Then the model should be restored from the session's provider string
+      expect(restoredProviderId).toBe('anthropic');
+      expect(restoredModelId).toBe('claude-opus-4');
+    });
+
+    it('should restore model from providerId/modelId when attaching via resumeSessionById', () => {
+      // @step Given I have a background session with providerId and modelId
+      const bgSession: BackgroundSessionInfo = {
+        id: 'bg-gemini',
+        name: 'Gemini Session',
+        status: 'running',
+        project: '/test',
+        providerId: 'google',
+        modelId: 'gemini-2.5-pro',
+      };
+
+      // @step When I attach to this session via resumeSessionById
+      // Simulating the model restoration logic from resumeSessionById
+      let restoredProviderId: string | null = null;
+      let restoredModelId: string | null = null;
+
+      if (bgSession.providerId) {
+        restoredProviderId = bgSession.providerId;
+        restoredModelId = bgSession.modelId || null;
+      }
+
+      // @step Then the model should be restored from the session's providerId/modelId
+      expect(restoredProviderId).toBe('google');
+      expect(restoredModelId).toBe('gemini-2.5-pro');
+    });
+
+    it('should not restore model when provider is "unknown"', () => {
+      // @step Given I have a background session without model info
+      const selectedSession: MergedSession = {
+        id: 'bg-unknown',
+        name: 'Unknown Model',
+        project: '/test',
+        provider: 'unknown',
+        createdAt: '2025-01-17T09:00:00Z',
+        updatedAt: '2025-01-17T10:00:00Z',
+        messageCount: 1,
+        isBackgroundSession: true,
+        backgroundStatus: 'idle',
+      };
+
+      // @step When I select this session from /resume
+      let shouldRestoreModel = false;
+
+      if (selectedSession.provider && selectedSession.provider !== 'unknown') {
+        shouldRestoreModel = true;
+      }
+
+      // @step Then the model should NOT be restored (keep current model)
+      expect(shouldRestoreModel).toBe(false);
+    });
+
+    it('should handle provider-only string without model', () => {
+      // @step Given I have a session with only provider (no model)
+      const selectedSession: MergedSession = {
+        id: 'bg-provider-only',
+        name: 'Provider Only',
+        project: '/test',
+        provider: 'openai',
+        createdAt: '2025-01-17T09:00:00Z',
+        updatedAt: '2025-01-17T10:00:00Z',
+        messageCount: 1,
+        isBackgroundSession: true,
+        backgroundStatus: 'idle',
+      };
+
+      // @step When I select this session
+      let restoredProviderId: string | null = null;
+      let restoredModelId: string | null = null;
+
+      if (selectedSession.provider && selectedSession.provider !== 'unknown') {
+        const storedProvider = selectedSession.provider;
+        if (storedProvider.includes('/')) {
+          const [providerId, modelId] = storedProvider.split('/');
+          restoredProviderId = providerId;
+          restoredModelId = modelId;
+        } else {
+          // Provider only, no model
+          restoredProviderId = storedProvider;
+        }
+      }
+
+      // @step Then only the provider should be restored
+      expect(restoredProviderId).toBe('openai');
+      expect(restoredModelId).toBeNull();
+    });
+  });
+
+  describe('Scenario: Live background session info takes precedence over stale persistence data', () => {
+    it('should query live session info when attaching to a running session with stale persistence', () => {
+      // @step Given persistence has stale model info (GLM 4.7)
+      const persistedSessions: SessionManifest[] = [
+        {
+          id: 'session-1',
+          name: 'My Session',
+          project: '/test',
+          provider: 'glm/glm-4.7', // Stale persistence data
+          createdAt: '2025-01-16T09:00:00Z',
+          updatedAt: '2025-01-16T10:00:00Z',
+          messageCount: 10,
+        },
+      ];
+
+      // @step And the live background session has been changed to Claude
+      const liveBackgroundSessions: BackgroundSessionInfo[] = [
+        {
+          id: 'session-1',
+          name: 'My Session',
+          status: 'running',
+          project: '/test',
+          providerId: 'anthropic', // Current LIVE model
+          modelId: 'claude-opus-4',
+        },
+      ];
+
+      // @step When I attach to the session via handleResumeSelect
+      // Simulating the CORRECT approach: query live session info first
+      const merged = mergeSessionLists(persistedSessions, liveBackgroundSessions, '/test');
+      const selectedSession = merged.find(s => s.id === 'session-1')!;
+
+      // The key fix: query sessionManagerList() to get LIVE info
+      const liveBgSession = liveBackgroundSessions.find(bg => bg.id === selectedSession.id);
+
+      let restoredProviderId: string | null = null;
+      let restoredModelId: string | null = null;
+
+      // Prefer live background session info over stale MergedSession provider
+      if (liveBgSession?.providerId) {
+        restoredProviderId = liveBgSession.providerId;
+        restoredModelId = liveBgSession.modelId || null;
+      } else if (selectedSession.provider && selectedSession.provider !== 'unknown') {
+        // Fallback to persistence data if no live session info
+        const storedProvider = selectedSession.provider;
+        if (storedProvider.includes('/')) {
+          const [providerId, modelId] = storedProvider.split('/');
+          restoredProviderId = providerId;
+          restoredModelId = modelId;
+        }
+      }
+
+      // @step Then the LIVE model (Claude) should be restored, not the stale one (GLM)
+      expect(restoredProviderId).toBe('anthropic');
+      expect(restoredModelId).toBe('claude-opus-4');
+    });
+
+    it('should fall back to persistence data when no live background session exists', () => {
+      // @step Given persistence has model info
+      const persistedSessions: SessionManifest[] = [
+        {
+          id: 'old-session',
+          name: 'Old Session',
+          project: '/test',
+          provider: 'anthropic/claude-sonnet-4',
+          createdAt: '2025-01-15T09:00:00Z',
+          updatedAt: '2025-01-15T10:00:00Z',
+          messageCount: 5,
+        },
+      ];
+
+      // @step And there is no live background session (session is persisted-only)
+      const liveBackgroundSessions: BackgroundSessionInfo[] = [];
+
+      // @step When I select the session via handleResumeSelect
+      const merged = mergeSessionLists(persistedSessions, liveBackgroundSessions, '/test');
+      const selectedSession = merged.find(s => s.id === 'old-session')!;
+
+      // Query for live session (won't find one)
+      const liveBgSession = liveBackgroundSessions.find(bg => bg.id === selectedSession.id);
+
+      let restoredProviderId: string | null = null;
+      let restoredModelId: string | null = null;
+
+      if (liveBgSession?.providerId) {
+        restoredProviderId = liveBgSession.providerId;
+        restoredModelId = liveBgSession.modelId || null;
+      } else if (selectedSession.provider && selectedSession.provider !== 'unknown') {
+        // Fallback to persistence data
+        const storedProvider = selectedSession.provider;
+        if (storedProvider.includes('/')) {
+          const [providerId, modelId] = storedProvider.split('/');
+          restoredProviderId = providerId;
+          restoredModelId = modelId;
+        }
+      }
+
+      // @step Then the persistence model should be restored
+      expect(restoredProviderId).toBe('anthropic');
+      expect(restoredModelId).toBe('claude-sonnet-4');
+    });
+
+    it('should handle live session without providerId by falling back to persistence', () => {
+      // @step Given persistence has model info
+      const persistedSessions: SessionManifest[] = [
+        {
+          id: 'session-2',
+          name: 'Session 2',
+          project: '/test',
+          provider: 'google/gemini-2.5-pro',
+          createdAt: '2025-01-16T09:00:00Z',
+          updatedAt: '2025-01-16T10:00:00Z',
+          messageCount: 3,
+        },
+      ];
+
+      // @step And the live background session has no model info (edge case)
+      const liveBackgroundSessions: BackgroundSessionInfo[] = [
+        {
+          id: 'session-2',
+          name: 'Session 2',
+          status: 'idle',
+          project: '/test',
+          // No providerId or modelId
+        },
+      ];
+
+      // @step When I attach to the session
+      const merged = mergeSessionLists(persistedSessions, liveBackgroundSessions, '/test');
+      const selectedSession = merged.find(s => s.id === 'session-2')!;
+      const liveBgSession = liveBackgroundSessions.find(bg => bg.id === selectedSession.id);
+
+      let restoredProviderId: string | null = null;
+      let restoredModelId: string | null = null;
+
+      if (liveBgSession?.providerId) {
+        restoredProviderId = liveBgSession.providerId;
+        restoredModelId = liveBgSession.modelId || null;
+      } else if (selectedSession.provider && selectedSession.provider !== 'unknown') {
+        // Fall back to persistence
+        const storedProvider = selectedSession.provider;
+        if (storedProvider.includes('/')) {
+          const [providerId, modelId] = storedProvider.split('/');
+          restoredProviderId = providerId;
+          restoredModelId = modelId;
+        }
+      }
+
+      // @step Then the persistence model should be used as fallback
+      expect(restoredProviderId).toBe('google');
+      expect(restoredModelId).toBe('gemini-2.5-pro');
+    });
+
+    it('should handle switching between sessions with different live models', () => {
+      // @step Given I have two background sessions with different models
+      const liveBackgroundSessions: BackgroundSessionInfo[] = [
+        { id: 'session-claude', name: 'Claude Session', status: 'running', project: '/test', providerId: 'anthropic', modelId: 'claude-opus-4' },
+        { id: 'session-gemini', name: 'Gemini Session', status: 'idle', project: '/test', providerId: 'google', modelId: 'gemini-2.5-pro' },
+      ];
+      const persistedSessions: SessionManifest[] = [];
+
+      // @step When I query the live sessions for each
+      const claudeBg = liveBackgroundSessions.find(bg => bg.id === 'session-claude');
+      const geminiBg = liveBackgroundSessions.find(bg => bg.id === 'session-gemini');
+
+      // @step Then each session returns its correct live model
+      expect(claudeBg?.providerId).toBe('anthropic');
+      expect(claudeBg?.modelId).toBe('claude-opus-4');
+
+      expect(geminiBg?.providerId).toBe('google');
+      expect(geminiBg?.modelId).toBe('gemini-2.5-pro');
+    });
+  });
+
+  describe('Scenario: Model fallback when providerSections lookup fails', () => {
+    interface ModelSelection {
+      providerId: string;
+      modelId: string;
+      apiModelId: string;
+      displayName: string;
+      reasoning: boolean;
+      hasVision: boolean;
+      contextWindow: number;
+      maxOutput: number;
+    }
+
+    interface ProviderSection {
+      providerId: string;
+      models: Array<{ id: string; name: string }>;
+    }
+
+    const extractModelIdForRegistry = (apiModelId: string): string => {
+      return apiModelId
+        .replace(/-preview-\d{2}-\d{2}$/, '')
+        .replace(/-\d{8}$/, '');
+    };
+
+    it('should set minimal ModelSelection when model not found in providerSections', () => {
+      // @step Given a live background session with model info
+      const liveBgSession: BackgroundSessionInfo = {
+        id: 'session-1',
+        name: 'Test Session',
+        status: 'running',
+        project: '/test',
+        providerId: 'anthropic',
+        modelId: 'claude-opus-4',
+      };
+
+      // @step And providerSections is empty (not loaded yet)
+      const providerSections: ProviderSection[] = [];
+
+      // @step When model restoration runs
+      let currentModel: ModelSelection | null = null;
+
+      const providerId = liveBgSession.providerId!;
+      const modelId = liveBgSession.modelId!;
+
+      const section = providerSections.find(s => s.providerId === providerId);
+      const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+
+      if (model && section) {
+        currentModel = {
+          providerId,
+          modelId,
+          apiModelId: model.id,
+          displayName: model.name,
+          reasoning: false,
+          hasVision: false,
+          contextWindow: 0,
+          maxOutput: 0,
+        };
+      } else {
+        // Fallback: set minimal model info from raw values
+        currentModel = {
+          providerId,
+          modelId,
+          apiModelId: modelId,
+          displayName: modelId,
+          reasoning: false,
+          hasVision: false,
+          contextWindow: 0,
+          maxOutput: 0,
+        };
+      }
+
+      // @step Then a minimal ModelSelection should be set with modelId as displayName
+      expect(currentModel).not.toBeNull();
+      expect(currentModel!.providerId).toBe('anthropic');
+      expect(currentModel!.modelId).toBe('claude-opus-4');
+      expect(currentModel!.displayName).toBe('claude-opus-4');
+      expect(currentModel!.apiModelId).toBe('claude-opus-4');
+    });
+
+    it('should set full ModelSelection when model found in providerSections', () => {
+      // @step Given a live background session with model info
+      const liveBgSession: BackgroundSessionInfo = {
+        id: 'session-1',
+        name: 'Test Session',
+        status: 'running',
+        project: '/test',
+        providerId: 'anthropic',
+        modelId: 'claude-opus-4',
+      };
+
+      // @step And providerSections has the matching model
+      const providerSections: ProviderSection[] = [
+        {
+          providerId: 'anthropic',
+          models: [
+            { id: 'claude-opus-4-20250514', name: 'Claude Opus 4' },
+            { id: 'claude-sonnet-4-20250514', name: 'Claude Sonnet 4' },
+          ],
+        },
+      ];
+
+      // @step When model restoration runs
+      let currentModel: ModelSelection | null = null;
+
+      const providerId = liveBgSession.providerId!;
+      const modelId = liveBgSession.modelId!;
+
+      const section = providerSections.find(s => s.providerId === providerId);
+      const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+
+      if (model && section) {
+        currentModel = {
+          providerId,
+          modelId,
+          apiModelId: model.id,
+          displayName: model.name,
+          reasoning: false,
+          hasVision: false,
+          contextWindow: 0,
+          maxOutput: 0,
+        };
+      } else {
+        currentModel = {
+          providerId,
+          modelId,
+          apiModelId: modelId,
+          displayName: modelId,
+          reasoning: false,
+          hasVision: false,
+          contextWindow: 0,
+          maxOutput: 0,
+        };
+      }
+
+      // @step Then full ModelSelection should be set with proper displayName
+      expect(currentModel).not.toBeNull();
+      expect(currentModel!.providerId).toBe('anthropic');
+      expect(currentModel!.modelId).toBe('claude-opus-4');
+      expect(currentModel!.displayName).toBe('Claude Opus 4');
+      expect(currentModel!.apiModelId).toBe('claude-opus-4-20250514');
+    });
+
+    it('should handle provider not found in providerSections', () => {
+      // @step Given a live background session with an unknown provider
+      const liveBgSession: BackgroundSessionInfo = {
+        id: 'session-1',
+        name: 'Test Session',
+        status: 'running',
+        project: '/test',
+        providerId: 'unknown-provider',
+        modelId: 'unknown-model',
+      };
+
+      // @step And providerSections has different providers
+      const providerSections: ProviderSection[] = [
+        {
+          providerId: 'anthropic',
+          models: [{ id: 'claude-opus-4-20250514', name: 'Claude Opus 4' }],
+        },
+      ];
+
+      // @step When model restoration runs
+      let currentModel: ModelSelection | null = null;
+
+      const providerId = liveBgSession.providerId!;
+      const modelId = liveBgSession.modelId!;
+
+      const section = providerSections.find(s => s.providerId === providerId);
+      const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+
+      if (model && section) {
+        currentModel = {
+          providerId,
+          modelId,
+          apiModelId: model.id,
+          displayName: model.name,
+          reasoning: false,
+          hasVision: false,
+          contextWindow: 0,
+          maxOutput: 0,
+        };
+      } else {
+        currentModel = {
+          providerId,
+          modelId,
+          apiModelId: modelId,
+          displayName: modelId,
+          reasoning: false,
+          hasVision: false,
+          contextWindow: 0,
+          maxOutput: 0,
+        };
+      }
+
+      // @step Then fallback ModelSelection should be set
+      expect(currentModel).not.toBeNull();
+      expect(currentModel!.providerId).toBe('unknown-provider');
+      expect(currentModel!.modelId).toBe('unknown-model');
+      expect(currentModel!.displayName).toBe('unknown-model');
     });
   });
 });

@@ -63,6 +63,9 @@ import {
   sessionGetMergedOutput,
   sessionDetach,
   sessionInterrupt,
+  sessionSetModel,
+  sessionGetModel,
+  sessionGetStatus,
   sessionManagerList,
   sessionManagerCreateWithId,
   sessionManagerDestroy,
@@ -822,6 +825,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [providerSections, setProviderSections] = useState<ProviderSection[]>(
     []
   );
+  // Trigger to force useMemo to re-fetch from Rust when model changes
+  const [modelChangeTrigger, setModelChangeTrigger] = useState(0);
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [selectedSectionIdx, setSelectedSectionIdx] = useState(0);
   const [selectedModelIdx, setSelectedModelIdx] = useState(-1); // -1 = on section header
@@ -2377,6 +2382,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               }
               return updated;
             });
+            // Trigger useMemo to re-fetch status from Rust (now idle)
+            setModelChangeTrigger(prev => prev + 1);
             // NAPI-009: Resolve the promise when agent completes
             resolve();
           } else if (chunk.type === 'Status' && chunk.status) {
@@ -2861,27 +2868,87 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
   }, []);
 
-  // TUI-034: Handle model selection - just update local state
-  // Actual model change happens on next session creation
+  // Helper to refresh model state from Rust (source of truth)
+  const refreshModelFromRust = useCallback((sessionId: string) => {
+    try {
+      const sessionModel = sessionGetModel(sessionId);
+      if (sessionModel.providerId) {
+        const internalName = mapProviderIdToInternal(sessionModel.providerId);
+        setCurrentProvider(internalName);
+        if (sessionModel.modelId) {
+          const section = providerSections.find(s => s.providerId === sessionModel.providerId);
+          const model = section?.models.find(m => extractModelIdForRegistry(m.id) === sessionModel.modelId);
+          if (model && section) {
+            setCurrentModel({
+              providerId: sessionModel.providerId,
+              modelId: sessionModel.modelId,
+              apiModelId: model.id,
+              displayName: model.name,
+              reasoning: model.reasoning,
+              hasVision: model.hasVision,
+              contextWindow: model.contextWindow,
+              maxOutput: model.maxOutput,
+            });
+          } else {
+            setCurrentModel({
+              providerId: sessionModel.providerId,
+              modelId: sessionModel.modelId,
+              apiModelId: sessionModel.modelId,
+              displayName: sessionModel.modelId,
+              reasoning: false,
+              hasVision: false,
+              contextWindow: 0,
+              maxOutput: 0,
+            });
+          }
+        }
+      }
+    } catch (err) {
+      logger.warn('Failed to refresh model from Rust', { error: err });
+    }
+  }, [providerSections]);
+
+  // Helper to refresh isLoading from Rust (source of truth)
+  const refreshStatusFromRust = useCallback((sessionId: string) => {
+    try {
+      const status = sessionGetStatus(sessionId);
+      setIsLoading(status === 'running');
+    } catch (err) {
+      logger.warn('Failed to refresh status from Rust', { error: err });
+    }
+  }, []);
+
+  // TUI-034: Handle model selection - Rust is source of truth
   const handleSelectModel = useCallback(
     async (section: ProviderSection, model: NapiModelInfo) => {
-      // Extract model-id from the API ID for registry matching
       const modelId = extractModelIdForRegistry(model.id);
       const modelString = `${section.providerId}/${modelId}`;
 
-      // Update state
-      setCurrentModel({
-        providerId: section.providerId,
-        modelId,
-        apiModelId: model.id,
-        displayName: model.name,
-        reasoning: model.reasoning,
-        hasVision: model.hasVision,
-        contextWindow: model.contextWindow,
-        maxOutput: model.maxOutput,
-      });
-      setCurrentProvider(section.internalName);
       setShowModelSelector(false);
+
+      // Update Rust first (source of truth)
+      if (currentSessionId) {
+        try {
+          sessionSetModel(currentSessionId, section.providerId, modelId);
+          // Trigger useMemo to re-fetch from Rust
+          setModelChangeTrigger(prev => prev + 1);
+        } catch (err) {
+          logger.warn('Failed to update background session model', { error: err });
+        }
+      } else {
+        // No session yet - set local state directly (will be synced when session is created)
+        setCurrentModel({
+          providerId: section.providerId,
+          modelId,
+          apiModelId: model.id,
+          displayName: model.name,
+          reasoning: model.reasoning,
+          hasVision: model.hasVision,
+          contextWindow: model.contextWindow,
+          maxOutput: model.maxOutput,
+        });
+        setCurrentProvider(section.internalName);
+      }
 
       // TUI-035: Persist model selection to user config
       try {
@@ -2896,13 +2963,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         await writeConfig('user', updatedConfig);
         logger.debug(`Persisted model selection: ${modelString}`);
       } catch (persistErr) {
-        // Log but don't fail - persistence is not critical
-        logger.warn('Failed to persist model selection', {
-            error: persistErr,
-          });
+        logger.warn('Failed to persist model selection', { error: persistErr });
       }
     },
-    []
+    [currentSessionId]
   );
 
   // NAPI-006: Navigate to previous history entry (Shift+Arrow-Up)
@@ -3152,6 +3216,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         }
         return updated;
       });
+      // Trigger useMemo to re-fetch status from Rust (now idle)
+      setModelChangeTrigger(prev => prev + 1);
       setIsLoading(false);
     } else if (chunk.type === 'Status' && chunk.status) {
       // Show status messages (except compaction notifications)
@@ -3262,10 +3328,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Update session state
         setCurrentSessionId(sessionId);
 
-        // Set isLoading if session is running so ESC can interrupt
-        if (bgSession.status === 'running') {
-          setIsLoading(true);
-        }
+        // Trigger useMemo to re-fetch from Rust (source of truth)
+        setModelChangeTrigger(prev => prev + 1);
 
         return true;
       } else {
@@ -3412,11 +3476,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // Add any background sessions that aren't in persistence yet
       for (const bg of backgroundSessions) {
         if (!persistedSessions.find((p: SessionManifest) => p.id === bg.id)) {
+          // Build provider string from background session's providerId/modelId
+          const providerString = bg.providerId && bg.modelId
+            ? `${bg.providerId}/${bg.modelId}`
+            : bg.providerId || 'unknown';
           mergedSessions.push({
             id: bg.id,
             name: bg.name || 'Background Session',
             project: bg.project || currentProjectRef.current,
-            provider: 'unknown',
+            provider: providerString,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             messageCount: bg.messageCount || 0,
@@ -3483,15 +3551,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setIsResumeMode(false);
         setAvailableSessions([]);
 
+        // Trigger useMemo to re-fetch from Rust (source of truth)
+        setModelChangeTrigger(prev => prev + 1);
+
         // SESS-001: Attach resumed session to work unit
         if (workUnitId) {
           attachSessionToWorkUnit(workUnitId, selectedSession.id);
           logger.debug(`SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`);
-        }
-
-        // NAPI-009: Set isLoading if session is running so ESC can interrupt
-        if (selectedSession.backgroundStatus === 'running') {
-          setIsLoading(true);
         }
         return;
       }
@@ -4569,9 +4635,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           return;
         }
         // Priority 4: Interrupt loading - use background session interrupt
-        if (isLoading && currentSessionId) {
+        if (displayIsLoading && currentSessionId) {
           try {
             sessionInterrupt(currentSessionId);
+            // Trigger useMemo to re-fetch status from Rust
+            setModelChangeTrigger(prev => prev + 1);
           } catch {
             // Ignore interrupt errors
           }
@@ -4793,6 +4861,58 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
   // TUI-043: Keep ref in sync with conversationLines for use in callbacks
   conversationLinesRef.current = conversationLines;
+
+  // Get model DIRECTLY from Rust via useMemo - re-runs when session or conversation changes
+  // IMPORTANT: Must be before early returns to avoid React hooks violation
+  const rustModelInfo = useMemo(() => {
+    // No session yet - use currentModel state (set by model picker before first message)
+    if (!currentSessionId) {
+      return {
+        modelId: currentModel?.displayName || currentModel?.modelId || currentProvider,
+        reasoning: currentModel?.reasoning || false,
+        hasVision: currentModel?.hasVision || false,
+        contextWindow: currentModel?.contextWindow || 0,
+      };
+    }
+    // Session exists - get from Rust (source of truth)
+    try {
+      const rustModel = sessionGetModel(currentSessionId);
+      if (rustModel.modelId) {
+        const section = providerSections.find(s => s.providerId === rustModel.providerId);
+        const model = section?.models.find(m => extractModelIdForRegistry(m.id) === rustModel.modelId);
+        return {
+          modelId: model?.name || rustModel.modelId,
+          reasoning: model?.reasoning || false,
+          hasVision: model?.hasVision || false,
+          contextWindow: model?.contextWindow || 0,
+        };
+      }
+    } catch {
+      // Fall through
+    }
+    // Fallback - use currentModel state
+    return {
+      modelId: currentModel?.displayName || currentModel?.modelId || currentProvider,
+      reasoning: currentModel?.reasoning || false,
+      hasVision: currentModel?.hasVision || false,
+      contextWindow: currentModel?.contextWindow || 0,
+    };
+  }, [currentSessionId, currentProvider, currentModel, providerSections, conversation.length, modelChangeTrigger]);
+
+  // Get isLoading DIRECTLY from Rust via useMemo
+  const displayIsLoading = useMemo(() => {
+    if (!currentSessionId) return false;
+    try {
+      return sessionGetStatus(currentSessionId) === 'running';
+    } catch {
+      return false;
+    }
+  }, [currentSessionId, conversation.length, modelChangeTrigger]);
+
+  const displayModelId = rustModelInfo.modelId;
+  const displayReasoning = rustModelInfo.reasoning;
+  const displayHasVision = rustModelInfo.hasVision;
+  const displayContextWindow = rustModelInfo.contextWindow;
 
   // Error state - show setup instructions (full-screen overlay)
   if (error && !session) {
@@ -5379,7 +5499,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         {showExitConfirmation && (
           <ThreeButtonDialog
             message="Exit Session?"
-            description={isLoading 
+            description={displayIsLoading
               ? "The agent is currently running. Choose how to exit."
               : "Choose how to exit the session."}
             options={['Detach', 'Close Session', 'Cancel']}
@@ -5413,15 +5533,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       >
         <Box flexGrow={1} flexShrink={1} overflow="hidden">
           <Text bold color="cyan">
-            Agent: {currentModel?.modelId || currentProvider}
+            Agent: {displayModelId}
           </Text>
           {/* TUI-034: Model capability indicators */}
-          {currentModel?.reasoning && <Text color="magenta"> [R]</Text>}
-          {currentModel?.hasVision && <Text color="blue"> [V]</Text>}
-          {currentModel?.contextWindow && (
+          {displayReasoning && <Text color="magenta"> [R]</Text>}
+          {displayHasVision && <Text color="blue"> [V]</Text>}
+          {displayContextWindow > 0 && (
             <Text dimColor>
               {' '}
-              [{formatContextWindow(currentModel.contextWindow)}]
+              [{formatContextWindow(displayContextWindow)}]
             </Text>
           )}
           {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
@@ -5439,7 +5559,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             </Text>
           )}
           {/* TOOL-010: Thinking level indicator - only show while streaming */}
-          {isLoading &&
+          {displayIsLoading &&
             detectedThinkingLevel !== null &&
             detectedThinkingLevel !== JsThinkingLevel.Off && (
               <Text color="magenta" bold>
@@ -5451,7 +5571,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         {/* Right side: token stats and percentage - these should never wrap */}
         <Box flexShrink={0} flexGrow={0}>
           {/* TUI-031: Tokens per second display during streaming */}
-          {isLoading && displayedTokPerSec !== null && (
+          {displayIsLoading && displayedTokPerSec !== null && (
             <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s  </Text>
           )}
           <Text dimColor>
@@ -5646,7 +5766,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         <Text color="green">&gt; </Text>
         <Box flexGrow={1}>
           <InputTransition
-            isLoading={isLoading}
+            isLoading={displayIsLoading}
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
@@ -5673,7 +5793,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       {showExitConfirmation && (
         <ThreeButtonDialog
           message="Exit Session?"
-          description={isLoading 
+          description={displayIsLoading
             ? "The agent is currently running. Choose how to exit."
             : "Choose how to exit the session."}
           options={['Detach', 'Close Session', 'Cancel']}
