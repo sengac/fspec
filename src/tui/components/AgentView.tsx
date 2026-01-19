@@ -466,7 +466,10 @@ const processChunksToConversation = (
       for (let i = messages.length - 1; i >= 0; i--) {
         if (messages[i].role === 'tool' && messages[i].content.startsWith('●')) {
           const headerLine = messages[i].content.split('\n')[0];
-          messages[i].content = `${headerLine}\n${formatCollapsedOutputFn(sanitizedContent)}`;
+          const formattedContent = formatCollapsedOutputFn(sanitizedContent);
+          // Don't add newline if result is empty
+          const hasContent = formattedContent && formattedContent.trim();
+          messages[i].content = hasContent ? `${headerLine}\n${formattedContent}` : headerLine;
           messages[i].isError = result.isError;
           break;
         }
@@ -544,6 +547,10 @@ const formatToolHeader = (toolName: string, args: string): string => {
  *     third line
  */
 const formatWithTreeConnectors = (content: string): string => {
+  // Don't add tree connectors for empty content
+  if (!content || !content.trim()) {
+    return '';
+  }
   const lines = content.split('\n');
   return lines
     .map((line, i) => {
@@ -2345,10 +2352,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                   // TUI-043: Store both collapsed and full content
                   if (msg.role === 'tool' && msg.content.startsWith('●')) {
                     const headerLine = msg.content.split('\n')[0];
+                    // Don't add newline if result is empty
+                    const hasContent = toolResultContent && toolResultContent.trim();
                     updated[i] = {
                       ...msg,
-                      content: `${headerLine}\n${toolResultContent}`,
-                      fullContent: `${headerLine}\n${toolResultFullContent}`,
+                      content: hasContent ? `${headerLine}\n${toolResultContent}` : headerLine,
+                      fullContent: hasContent ? `${headerLine}\n${toolResultFullContent}` : headerLine,
                       isError: isErrorResult,
                     };
                     break;
@@ -2374,10 +2383,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                   // TUI-043: Store both collapsed and full content
                   if (msg.role === 'tool' && msg.content.startsWith('●')) {
                     const headerLine = msg.content.split('\n')[0];
+                    // Don't add newline if result is empty
+                    const hasContent = toolResultContent && toolResultContent.trim();
                     updated[i] = {
                       ...msg,
-                      content: `${headerLine}\n${toolResultContent}`,
-                      fullContent: `${headerLine}\n${toolResultFullContent}`,
+                      content: hasContent ? `${headerLine}\n${toolResultContent}` : headerLine,
+                      fullContent: hasContent ? `${headerLine}\n${toolResultFullContent}` : headerLine,
                       isError: isErrorResult,
                     };
                     break;
@@ -3201,9 +3212,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           const msg = updated[i];
           if (msg.role === 'tool' && msg.content.startsWith('●')) {
             const headerLine = msg.content.split('\n')[0];
+            // Don't add newline if result is empty
+            const hasContent = toolResultContent && toolResultContent.trim();
             updated[i] = {
               ...msg,
-              content: `${headerLine}\n${toolResultContent}`,
+              content: hasContent ? `${headerLine}\n${toolResultContent}` : headerLine,
               isError: result.isError,
             };
             break;

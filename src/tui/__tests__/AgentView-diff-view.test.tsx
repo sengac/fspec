@@ -23,6 +23,10 @@ function formatToolHeader(toolName: string, args: string): string {
 
 // Helper to format with tree connectors: L on first line, indent on rest
 function formatWithTreeConnectors(content: string): string {
+  // Don't add tree connectors for empty content
+  if (!content || !content.trim()) {
+    return '';
+  }
   const lines = content.split('\n');
   return lines.map((line, i) => {
     if (i === 0) return `L ${line}`;  // First line gets L prefix

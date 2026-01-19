@@ -29,6 +29,10 @@ function formatCollapsedOutput(
 
 // Helper to format with tree connectors: L on first line, indent on rest
 function formatWithTreeConnectors(content: string): string {
+  // Don't add tree connectors for empty content
+  if (!content || !content.trim()) {
+    return '';
+  }
   const lines = content.split('\n');
   return lines.map((line, i) => {
     if (i === 0) return `L ${line}`;  // First line gets L prefix
@@ -51,6 +55,10 @@ function combineToolHeaderWithResult(header: string, resultContent: string): str
   // - First line: no prefix
   // - Subsequent lines: L prefix
   const formatted = formatWithTreeConnectors(resultContent);
+  // Don't add newline if result is empty
+  if (!formatted || !formatted.trim()) {
+    return header;
+  }
   return `${header}\n${formatted}`;
 }
 
