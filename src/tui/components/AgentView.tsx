@@ -2747,14 +2747,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           setAvailableProviders(
             sections.filter(s => s.models.length > 0).map(s => s.internalName)
           );
-
-          setConversation(prev => [
-            ...prev,
-            {
-              role: 'tool',
-              content: `✓ Models refreshed - ${sections.length} providers available`,
-            },
-          ]);
         }, 100);
       } catch (err) {
         const errorMessage =
@@ -2876,15 +2868,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setAvailableProviders(
         sections.filter(s => s.models.length > 0).map(s => s.internalName)
       );
-
-      // Show success message
-      setConversation(prev => [
-        ...prev,
-        {
-          role: 'tool',
-          content: `✓ Models refreshed (${allModels.reduce((acc, pm) => acc + pm.models.length, 0)} models from ${allModels.length} providers)`,
-        },
-      ]);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to refresh models';
