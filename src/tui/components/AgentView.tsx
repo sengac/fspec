@@ -2073,54 +2073,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // TOOL-011: Track if we've streamed tool progress (to skip redundant tool result preview)
       let hasStreamedToolProgress = false;
 
-      // RACE-FIX: Unified state update to prevent race conditions between text and thinking updates
-      // Instead of separate setConversation calls that can race, we use a single update function
-      // that atomically applies both text and thinking changes.
-      let pendingTextUpdate: string | null = null;
-      let pendingThinkingUpdate: string | null = null;
-      let updateScheduled = false;
-
-      const flushPendingUpdates = () => {
-        if (!updateScheduled) return;
-        updateScheduled = false;
-
-        const textToApply = pendingTextUpdate;
-        const thinkingToApply = pendingThinkingUpdate;
-        pendingTextUpdate = null;
-        pendingThinkingUpdate = null;
-
-        if (textToApply === null && thinkingToApply === null) return;
-
-        setConversation(prev => {
-          const updated = [...prev];
-
-          // Apply thinking update first (it may insert before streaming)
-          if (thinkingToApply !== null) {
-            appendThinkingContent(updated, thinkingToApply, 'replace');
-          }
-
-          // Apply text update to streaming message
-          if (textToApply !== null) {
-            const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-            if (streamingIdx >= 0) {
-              updated[streamingIdx] = {
-                ...updated[streamingIdx],
-                content: textToApply,
-              };
-            }
-          }
-
-          return updated;
-        });
-      };
-
-      const scheduleUpdate = () => {
-        if (!updateScheduled) {
-          updateScheduled = true;
-          // Use setImmediate-like behavior to batch updates within the same tick
-          Promise.resolve().then(flushPendingUpdates);
-        }
-      };
+      // Track current turn's thinking message index (reset after tool calls)
+      let currentThinkingIdx = -1;
       
       // NAPI-009: Use background session for prompts instead of direct CodeletSession
       // This enables detach/attach to work - the background session continues running
@@ -2144,17 +2098,24 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             } else {
               assistantContentBlocks.push({ type: 'text', text: chunk.text });
             }
-            // RACE-FIX: Schedule unified update instead of direct setConversation
-            // This prevents race conditions with thinking updates
-            pendingTextUpdate = currentSegment;
-            scheduleUpdate();
+            // Update streaming message content
+            const segmentSnapshot = currentSegment;
+            setConversation(prev => {
+              const updated = [...prev];
+              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+              if (streamingIdx >= 0) {
+                updated[streamingIdx] = {
+                  ...updated[streamingIdx],
+                  content: segmentSnapshot,
+                };
+              }
+              return updated;
+            });
           } else if (chunk.type === 'Thinking' && chunk.thinking) {
             // CLAUDE-THINK: Handle thinking/reasoning content from extended thinking
-            // Accumulate thinking content for streaming display (like text)
             currentThinking += chunk.thinking;
 
             // Store thinking block for envelope persistence
-            // Accumulate into existing thinking block if present
             const lastBlock =
               assistantContentBlocks[assistantContentBlocks.length - 1];
             if (lastBlock && lastBlock.type === 'thinking') {
@@ -2163,17 +2124,36 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               assistantContentBlocks.push({ type: 'thinking', thinking: chunk.thinking });
             }
 
-            // RACE-FIX: Schedule unified update instead of direct setConversation
-            // This prevents race conditions with text updates
-            pendingThinkingUpdate = currentThinking;
-            scheduleUpdate();
+            // Update or create thinking message using tracked index
+            const thinkingSnapshot = currentThinking;
+            setConversation(prev => {
+              const updated = [...prev];
+              if (currentThinkingIdx >= 0 && currentThinkingIdx < updated.length) {
+                updated[currentThinkingIdx] = {
+                  ...updated[currentThinkingIdx],
+                  content: `[Thinking]\n${thinkingSnapshot}`,
+                };
+              } else {
+                // Insert new thinking block before streaming message
+                const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+                const newThinking: ConversationMessage = {
+                  type: 'thinking',
+                  content: `[Thinking]\n${thinkingSnapshot}`,
+                };
+                if (streamingIdx >= 0) {
+                  updated.splice(streamingIdx, 0, newThinking);
+                  currentThinkingIdx = streamingIdx;
+                } else {
+                  updated.push(newThinking);
+                  currentThinkingIdx = updated.length - 1;
+                }
+              }
+              return updated;
+            });
           } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
-            // RACE-FIX: Flush pending text/thinking updates before handling tool call
-            flushPendingUpdates();
-
-            // CLAUDE-THINK: Reset thinking accumulator - new thinking after tool call
-            // should appear as a separate block, not continue the previous one
+            // Reset thinking state - new thinking after tool call needs new block
             currentThinking = '';
+            currentThinkingIdx = -1;
 
             // Finalize current streaming message and add tool call (match CLI format)
             const toolCall = chunk.toolCall;
