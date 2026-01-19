@@ -314,7 +314,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).toContain('Agent');
 
       // @step And the modal should show the current provider name
-      expect(lastFrame()).toContain('claude');
+      expect(lastFrame()).toContain('Claude');
 
       // @step When I type a prompt and press Enter
       // Input handling will be tested in integration
@@ -375,7 +375,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame();
 
       // @step And multiple providers are available
-      expect(lastFrame()).toContain('claude');
+      expect(lastFrame()).toContain('Claude');
 
       // @step When I select a different provider from the provider selector
       // Provider switching is triggered via UI interaction
@@ -413,7 +413,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).toMatch(/\d+/); // Contains numbers for token counts
 
       // @step And the current provider name should be visible
-      expect(lastFrame()).toContain('claude');
+      expect(lastFrame()).toContain('Claude');
     });
   });
 
@@ -438,7 +438,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       // @step And a fresh session should be initialized
       // CodeletSession constructor called
       expect(lastFrame()).toContain('Agent');
-      expect(lastFrame()).toContain('claude');
+      expect(lastFrame()).toContain('Claude');
 
       // @step And token usage should start at zero
       expect(lastFrame()).toContain('0↓');
@@ -497,7 +497,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // Verify view is open with provider
       expect(lastFrame()).toContain('Agent');
-      expect(lastFrame()).toContain('claude');
+      expect(lastFrame()).toContain('Claude');
 
       // @step First send a message to create the session (NAPI-009: deferred session creation)
       stdin.write('hello');

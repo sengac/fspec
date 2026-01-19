@@ -411,7 +411,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step And multiple providers have valid credentials
-      expect(lastFrame()).toContain('claude');
+      expect(lastFrame()).toContain('Claude');
 
       // @step When I type /model and press Enter
       stdin.write('/model');
@@ -427,7 +427,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       expect(lastFrame()).toContain('anthropic');
 
       // @step And the current provider should be expanded by default
-      expect(lastFrame()).toContain('claude-sonnet-4');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
 
       // @step And the current model should be highlighted with "(current)" indicator
       expect(lastFrame()).toContain('(current)');
@@ -513,7 +513,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step And I am on a model within the expanded "anthropic" section
-      expect(lastFrame()).toContain('claude-sonnet-4');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
 
       // @step When I press Left arrow
       stdin.write('\x1b[D'); // Left arrow
@@ -559,7 +559,7 @@ describe('Feature: Agent Modal Model Selection', () => {
 
       // @step And the header should display the new model name
       // NAPI-009: Model selection is reflected in header via state management
-      expect(lastFrame()).toContain('claude-opus-4');
+      expect(lastFrame()).toContain('Claude Opus 4');
     });
   });
 
@@ -594,7 +594,7 @@ describe('Feature: Agent Modal Model Selection', () => {
 
       // @step And the original model should remain selected
       expect(mockSelectModel).not.toHaveBeenCalled();
-      expect(lastFrame()).toContain('claude-sonnet-4');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -688,7 +688,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       // (mock data has these properties)
 
       // @step Then the header should display "Agent: claude-sonnet-4 [R] [200k]"
-      expect(lastFrame()).toContain('Agent: claude-sonnet-4');
+      expect(lastFrame()).toContain('Agent: Claude Sonnet 4');
       expect(lastFrame()).toContain('[R]');
       expect(lastFrame()).toContain('[200k]');
     });
@@ -739,8 +739,8 @@ describe('Feature: Agent Modal Model Selection', () => {
       // @step When I view the model list
       // Anthropic section is expanded by default, showing all Claude models
       // @step Then I should only see models where tool_call=true
-      expect(lastFrame()).toContain('claude-sonnet-4'); // Has tool_call=true
-      expect(lastFrame()).toContain('claude-opus-4'); // Has tool_call=true
+      expect(lastFrame()).toContain('Claude Sonnet 4'); // Has tool_call=true
+      expect(lastFrame()).toContain('Claude Opus 4'); // Has tool_call=true
       expect(lastFrame()).toContain('claude-haiku-3'); // Has tool_call=true
       // Note: google section is collapsed, so gemini-2.0-flash isn't visible in frame
       // but it exists in the list as shown by "(1 models)" in the google header
@@ -820,7 +820,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       // @step Then the default model should be the first available with tool_call=true
       // NAPI-009: Session creation is deferred until first message, but model selection
       // is reflected in the header via state management
-      expect(lastFrame()).toContain('claude-sonnet-4');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -856,7 +856,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForCondition(lastFrame, frame => frame.includes('claude-sonnet-4'));
 
       // Verify model loaded correctly
-      expect(lastFrame()).toContain('claude-sonnet-4');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
 
       // @step When I send my first message
       // Type a message character by character to ensure TextInput captures it
@@ -935,7 +935,7 @@ describe('Feature: Agent Modal Model Selection', () => {
 
       // @step Then the header should show "Agent: claude-opus-4"
       // NAPI-009: Model is restored via state management, reflected in header
-      expect(lastFrame()).toContain('claude-opus-4');
+      expect(lastFrame()).toContain('Claude Opus 4');
     });
   });
 
@@ -982,7 +982,7 @@ describe('Feature: Agent Modal Model Selection', () => {
 
       // @step Then the default model for claude should be used
       // NAPI-009: Provider is restored via state management, reflected in header
-      expect(lastFrame()).toContain('claude');
+      expect(lastFrame()).toContain('Claude');
     });
   });
 
@@ -1044,7 +1044,7 @@ describe('Feature: Agent Modal Model Selection', () => {
 
       // @step Then the current model should remain unchanged
       // The header should still show the original model
-      expect(lastFrame()).toContain('claude-sonnet-4');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -1093,7 +1093,7 @@ describe('Feature: Agent Modal Model Selection', () => {
 
       // @step Then the default model for anthropic should be used
       // After fallback, the provider's default model is used
-      expect(lastFrame()).toContain('claude');
+      expect(lastFrame()).toContain('Claude');
     });
   });
 

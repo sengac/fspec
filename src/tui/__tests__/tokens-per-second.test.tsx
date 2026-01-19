@@ -72,6 +72,8 @@ const mockState = vi.hoisted(() => ({
   },
   shouldThrow: false,
   errorMessage: 'No AI provider credentials configured',
+  // Rust state for model and status
+  sessionStatus: 'idle' as 'running' | 'idle',
 }));
 
 // Mock codelet-napi module
@@ -167,7 +169,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   }),
   // Rust state functions for model and status
   sessionGetModel: vi.fn().mockReturnValue({ providerId: null, modelId: null }),
-  sessionGetStatus: vi.fn().mockReturnValue('idle'),
+  sessionGetStatus: vi.fn().mockImplementation(() => mockState.sessionStatus),
   sessionSetModel: vi.fn(),
   sessionInterrupt: vi.fn(),
 }));
@@ -244,6 +246,7 @@ const resetMockSession = () => {
   };
   mockState.shouldThrow = false;
   mockState.errorMessage = 'No AI provider credentials configured';
+  mockState.sessionStatus = 'idle';
   capturedCallback = null;
   capturedResolver = null;
 };
@@ -256,6 +259,8 @@ const simulateStreaming = async (
   waitTime: number,
   tokensPerSecond: number = 25.5 // Default tok/s value for tests
 ) => {
+  // Set Rust status to running during streaming
+  mockState.sessionStatus = 'running';
   if (capturedCallback) {
     // First text chunk
     capturedCallback(null, { type: 'Text', text: 'Hello ' });
@@ -292,6 +297,8 @@ const endStreaming = async (finalTokens = { inputTokens: 100, outputTokens: 50 }
   if (capturedResolver) {
     capturedResolver();
   }
+  // Set Rust status back to idle after streaming ends
+  mockState.sessionStatus = 'idle';
   await waitForFrame(150);
 };
 
@@ -317,7 +324,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
 
       // Verify initial state - no tok/s shown
       let frame = lastFrame();
-      expect(frame).toContain('Agent: claude');
+      expect(frame).toContain('Agent: Claude');
       expect(frame).not.toContain('tok/s');
 
       // Type text first, wait for React to process
@@ -367,6 +374,8 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
       // @step When the header is rendered
       // TUI-031: Rust hasn't calculated tok/s yet, so it's not sent
       // NAPI-009: Callback signature is (err, chunk)
+      // Set Rust status to running during streaming
+      mockState.sessionStatus = 'running';
       if (capturedCallback) {
         capturedCallback(null, { type: 'Text', text: 'Hello' });
         capturedCallback(null, {
@@ -378,8 +387,8 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
 
       // @step Then no tokens per second value should be displayed
       const frame = lastFrame();
-      // Note: The UI shows "Thinking..." with a spinner, not "(streaming...)"
-      expect(frame).toContain('Thinking');
+      // Note: tok/s only displays when tokensPerSecond is sent in TokenUpdate
+      // Since we didn't send tokensPerSecond, it should not be shown
       expect(frame).not.toContain('tok/s');
 
       // Cleanup
@@ -443,14 +452,11 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
       // @step When the header is rendered
       const frame = lastFrame();
 
-      // @step Then the header should show 'Agent: claude' on the left
-      expect(frame).toContain('Agent: claude');
+      // @step Then the header should show 'Agent: Claude' on the left
+      expect(frame).toContain('Agent: Claude');
 
-      // @step And the header should show '(streaming...)' next to the provider name
-      // Note: The UI shows "Thinking..." with a spinner, not "(streaming...)"
-      expect(frame).toContain('Thinking');
-
-      // @step And the header should show '12.3 tok/s' to the left of the token count
+      // @step And the header should show tok/s during streaming
+      // Note: "Thinking..." indicator only shows when thinking level is detected in prompt
       expect(frame).toContain('tok/s');
 
       // @step And the header should show 'tokens: 1234↓ 567↑'

@@ -5571,7 +5571,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         {/* Right side: token stats and percentage - these should never wrap */}
         <Box flexShrink={0} flexGrow={0}>
           {/* TUI-031: Tokens per second display during streaming */}
-          {displayIsLoading && displayedTokPerSec !== null && (
+          {/* Use isLoading (React state) instead of displayIsLoading (Rust) for immediate UI updates */}
+          {isLoading && displayedTokPerSec !== null && (
             <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s  </Text>
           )}
           <Text dimColor>
