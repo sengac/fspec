@@ -209,3 +209,104 @@ async fn test_emit_progress_through_stream_output_trait() {
         "Streamed text should contain chunk3"
     );
 }
+
+// ==========================================
+// BASH TOOL ABORT TESTS
+// ==========================================
+
+/// Scenario: Abort running bash command via abort flag
+///
+/// Tests that request_bash_abort() properly terminates a running command.
+/// This is critical for ESC key handling in the TUI.
+#[tokio::test]
+async fn test_abort_running_bash_command() {
+    use codelet_tools::{clear_bash_abort, request_bash_abort};
+    use std::time::{Duration, Instant};
+
+    // @step Given a bash command that runs for a long time
+    let tool = BashTool::new();
+    let collector = MockStreamCollector::new();
+
+    // Clear any previous abort state
+    clear_bash_abort();
+
+    // Spawn task to run a long-running command
+    let callback = collector.create_callback();
+    let handle = tokio::spawn(async move {
+        tool.call_with_streaming(
+            BashArgs {
+                // Sleep for 10 seconds - we'll abort before it completes
+                command: "sleep 10; echo 'completed'".to_string(),
+            },
+            Some(callback),
+        )
+        .await
+    });
+
+    // @step When the abort flag is set after 100ms
+    tokio::time::sleep(Duration::from_millis(100)).await;
+    let start = Instant::now();
+    request_bash_abort();
+
+    // @step Then the command should terminate within 200ms (well before 10 seconds)
+    let result = handle.await.unwrap();
+    let elapsed = start.elapsed();
+
+    // Should have been interrupted, not completed
+    assert!(
+        result.is_err(),
+        "Command should have been interrupted, but got: {:?}",
+        result
+    );
+
+    // Should complete quickly after abort (within polling interval + some margin)
+    assert!(
+        elapsed < Duration::from_millis(200),
+        "Abort should terminate command quickly, but took {:?}",
+        elapsed
+    );
+
+    // The output should NOT contain "completed" since we aborted before sleep finished
+    let all_text = collector.get_all_text();
+    assert!(
+        !all_text.contains("completed"),
+        "Command should not have completed"
+    );
+
+    // Clean up
+    clear_bash_abort();
+}
+
+/// Scenario: Abort flag is cleared before new command
+///
+/// Tests that clear_bash_abort() properly resets the flag so
+/// subsequent commands can run normally.
+#[tokio::test]
+async fn test_clear_abort_allows_new_commands() {
+    use codelet_tools::{clear_bash_abort, request_bash_abort};
+
+    // @step Given the abort flag was previously set
+    request_bash_abort();
+
+    // @step When we clear the abort flag
+    clear_bash_abort();
+
+    // @step Then a new command should run successfully
+    let tool = BashTool::new();
+    let collector = MockStreamCollector::new();
+
+    let result = tool
+        .call_with_streaming(
+            BashArgs {
+                command: "echo 'success'".to_string(),
+            },
+            Some(collector.create_callback()),
+        )
+        .await;
+
+    assert!(result.is_ok(), "Command should succeed after clearing abort flag");
+    assert!(
+        result.unwrap().contains("success"),
+        "Command output should contain 'success'"
+    );
+}
