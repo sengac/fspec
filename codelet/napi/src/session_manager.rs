@@ -635,6 +635,31 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
 
         self.session.handle_output(chunk);
     }
+
+    fn progress_emitter(&self) -> Option<std::sync::Arc<dyn codelet_cli::interactive::StreamOutput>> {
+        Some(std::sync::Arc::new(BackgroundProgressEmitter {
+            session: self.session.clone(),
+        }))
+    }
+}
+
+/// Progress emitter for background sessions - can be captured in 'static closures
+struct BackgroundProgressEmitter {
+    session: Arc<BackgroundSession>,
+}
+
+impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter {
+    fn emit(&self, event: codelet_cli::interactive::StreamEvent) {
+        // Only handle ToolProgress events
+        if let codelet_cli::interactive::StreamEvent::ToolProgress(tp) = event {
+            let chunk = crate::types::StreamChunk::tool_progress(crate::types::ToolProgressInfo {
+                tool_call_id: tp.tool_call_id,
+                tool_name: tp.tool_name,
+                output_chunk: tp.output_chunk,
+            });
+            self.session.handle_output(chunk);
+        }
+    }
 }
 
 // =============================================================================
