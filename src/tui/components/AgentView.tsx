@@ -526,7 +526,7 @@ const extractModelIdForRegistry = (apiModelId: string): string => {
 
 // TUI-037: Claude Code style tool display helpers
 const STREAMING_WINDOW_SIZE = 10; // Number of lines visible during streaming
-const COLLAPSED_LINES = 4; // Number of lines visible when collapsed for normal output
+const COLLAPSED_LINES = 8; // Number of lines visible when collapsed for normal output
 const DIFF_COLLAPSED_LINES = 25; // Number of lines visible when collapsed for diff output (like Claude Code)
 
 /**
@@ -1195,9 +1195,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         try {
           setRustLogCallback((msg: string) => {
             // Route Rust logs through TypeScript logger
-            // Only forward errors - warn/debug are too noisy (tool errors, etc.)
             if (msg.includes('[RUST:ERROR]')) {
               logger.error(msg);
+            } else if (msg.includes('[RUST:WARN]')) {
+              logger.warn(msg);
             }
           });
         } catch (err) {
