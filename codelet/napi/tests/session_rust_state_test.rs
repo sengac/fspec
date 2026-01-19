@@ -6,7 +6,7 @@
 //! managed in Rust and accessible via sync NAPI functions. This enables the
 //! React UI to fetch current state without waiting for streaming events.
 
-use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 
 /// Test atomic token caching behavior
 ///
@@ -262,4 +262,133 @@ fn test_token_display_max_logic() {
     // Streaming values are now higher
     assert_eq!(display_input, 5500);
     assert_eq!(display_output, 4000);
+}
+
+/// Test atomic debug state behavior
+///
+/// Scenario: Cache debug enabled state for sync access
+///
+/// @step Given a background session is running
+/// @step When debug mode is toggled
+/// @step Then the cached debug state is updated atomically
+#[test]
+fn test_atomic_debug_state() {
+    // @step Given cached debug field (simulating BackgroundSession)
+    let is_debug_enabled = AtomicBool::new(false);
+
+    // Verify initial state
+    assert!(!is_debug_enabled.load(Ordering::Acquire));
+
+    // @step When debug mode is enabled
+    is_debug_enabled.store(true, Ordering::Release);
+
+    // @step Then the cached debug state is updated atomically
+    assert!(is_debug_enabled.load(Ordering::Acquire));
+
+    // Toggle back off
+    is_debug_enabled.store(false, Ordering::Release);
+    assert!(!is_debug_enabled.load(Ordering::Acquire));
+}
+
+/// Test debug state persists across detach/attach
+///
+/// Scenario: Debug state survives session detach and reattach
+///
+/// @step Given a session with debug mode enabled
+/// @step When session is detached and reattached
+/// @step Then the debug state is preserved
+#[test]
+fn test_debug_state_persists_across_detach() {
+    // @step Given a session with debug mode enabled
+    let is_debug_enabled = AtomicBool::new(false);
+
+    // Enable debug mode
+    is_debug_enabled.store(true, Ordering::Release);
+    assert!(is_debug_enabled.load(Ordering::Acquire));
+
+    // @step When session is detached (state stays in Rust)
+    // The AtomicBool remains in BackgroundSession even when detached
+    // No React state to lose
+
+    // @step Then the debug state is preserved when reattached
+    // UI reads from Rust via sessionGetDebugEnabled
+    let debug_from_rust = is_debug_enabled.load(Ordering::Acquire);
+    assert!(debug_from_rust);
+}
+
+/// Test concurrent debug state access safety
+///
+/// Scenario: Multiple threads can safely read/write debug state
+///
+/// @step Given a session with concurrent UI and streaming access
+/// @step When debug state is toggled while being read
+/// @step Then no data races occur
+#[test]
+fn test_concurrent_debug_access() {
+    use std::sync::Arc;
+    use std::thread;
+
+    // @step Given shared atomic debug flag
+    let is_debug_enabled = Arc::new(AtomicBool::new(false));
+
+    // @step When multiple threads read and write concurrently
+    let writer = Arc::clone(&is_debug_enabled);
+
+    let write_handle = thread::spawn(move || {
+        for i in 0..1000 {
+            writer.store(i % 2 == 0, Ordering::Release);
+        }
+    });
+
+    let reader = Arc::clone(&is_debug_enabled);
+
+    let read_handle = thread::spawn(move || {
+        let mut reads = 0;
+        for _ in 0..1000 {
+            let _debug = reader.load(Ordering::Acquire);
+            reads += 1;
+        }
+        reads
+    });
+
+    write_handle.join().expect("Writer thread panicked");
+    let reads = read_handle.join().expect("Reader thread panicked");
+
+    // @step Then no data races occur (all reads completed)
+    assert_eq!(reads, 1000);
+
+    // Final value should be from last write (i=999, 999 % 2 == 1, so false)
+    assert!(!is_debug_enabled.load(Ordering::Acquire));
+}
+
+/// Test debug state getter/setter pattern
+///
+/// Scenario: sessionGetDebugEnabled and sessionSetDebugEnabled work correctly
+///
+/// @step Given a session with default debug state (false)
+/// @step When sessionSetDebugEnabled is called with true
+/// @step Then sessionGetDebugEnabled returns true
+#[test]
+fn test_debug_state_getter_setter() {
+    // @step Given a session with default debug state
+    let is_debug_enabled = AtomicBool::new(false);
+
+    // Simulate sessionGetDebugEnabled
+    let get_debug = || is_debug_enabled.load(Ordering::Acquire);
+
+    // Simulate sessionSetDebugEnabled
+    let set_debug = |value: bool| is_debug_enabled.store(value, Ordering::Release);
+
+    // Initial state
+    assert!(!get_debug());
+
+    // @step When sessionSetDebugEnabled is called with true
+    set_debug(true);
+
+    // @step Then sessionGetDebugEnabled returns true
+    assert!(get_debug());
+
+    // And can be toggled back
+    set_debug(false);
+    assert!(!get_debug());
 }

@@ -1022,6 +1022,9 @@ export declare function sessionGetBufferedOutput(
   limit: number
 ): Array<StreamChunk>;
 
+/** Get debug enabled state for a background session */
+export declare function sessionGetDebugEnabled(sessionId: string): boolean;
+
 /**
  * Get buffered output with consecutive Text/Thinking chunks merged.
  * This is more efficient for reattachment - JS can process fewer chunks.
@@ -1123,6 +1126,12 @@ export declare function sessionSendInput(
   sessionId: string,
   input: string,
   thinkingConfig?: string | undefined | null
+): void;
+
+/** Set debug enabled state for a background session (without toggling global state) */
+export declare function sessionSetDebugEnabled(
+  sessionId: string,
+  enabled: boolean
 ): void;
 
 /** Update the model for a background session */

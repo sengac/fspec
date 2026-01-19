@@ -145,6 +145,9 @@ pub struct BackgroundSession {
 
     /// Notify for immediate interrupt wake-up
     interrupt_notify: Arc<Notify>,
+
+    /// Debug capture enabled for this session
+    is_debug_enabled: AtomicBool,
 }
 
 impl BackgroundSession {
@@ -174,7 +177,18 @@ impl BackgroundSession {
             attached_callback: RwLock::new(None),
             is_interrupted: Arc::new(AtomicBool::new(false)),
             interrupt_notify: Arc::new(Notify::new()),
+            is_debug_enabled: AtomicBool::new(false),
         }
+    }
+
+    /// Get debug enabled state
+    pub fn get_debug_enabled(&self) -> bool {
+        self.is_debug_enabled.load(Ordering::Acquire)
+    }
+
+    /// Set debug enabled state
+    pub fn set_debug_enabled(&self, enabled: bool) {
+        self.is_debug_enabled.store(enabled, Ordering::Release);
     }
 
     /// Update cached token counts (called when TokenUpdate events are emitted)
@@ -753,6 +767,21 @@ pub fn session_get_tokens(session_id: String) -> Result<SessionTokens> {
     })
 }
 
+/// Get debug enabled state for a background session
+#[napi]
+pub fn session_get_debug_enabled(session_id: String) -> Result<bool> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    Ok(session.get_debug_enabled())
+}
+
+/// Set debug enabled state for a background session (without toggling global state)
+#[napi]
+pub fn session_set_debug_enabled(session_id: String, enabled: bool) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.set_debug_enabled(enabled);
+    Ok(())
+}
+
 /// Get buffered output from a session
 #[napi]
 pub fn session_get_buffered_output(session_id: String, limit: u32) -> Result<Vec<StreamChunk>> {
@@ -971,6 +1000,9 @@ pub async fn session_toggle_debug(
 ) -> Result<DebugCommandResult> {
     let session = SessionManager::instance().get_session(&session_id)?;
     let result = handle_debug_command_with_dir(debug_dir.as_deref());
+
+    // Store debug state in BackgroundSession for persistence across detach/attach
+    session.set_debug_enabled(result.enabled);
 
     // If debug was just enabled, set session metadata
     if result.enabled {
