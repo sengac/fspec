@@ -1036,6 +1036,16 @@ export declare function sessionGetMergedOutput(
 /** Get the model info for a background session */
 export declare function sessionGetModel(sessionId: string): SessionModel;
 
+/**
+ * Get pending input text for a background session (TUI-049)
+ *
+ * Returns the input text that was being typed when the user switched away from this session.
+ * Used to restore input field state when switching back to the session.
+ */
+export declare function sessionGetPendingInput(
+  sessionId: string
+): string | null;
+
 /** Get session status */
 export declare function sessionGetStatus(sessionId: string): string;
 
@@ -1140,6 +1150,17 @@ export declare function sessionSetModel(
   providerId: string,
   modelId: string
 ): Promise<void>;
+
+/**
+ * Set pending input text for a background session (TUI-049)
+ *
+ * Saves the current input field text before switching to another session.
+ * Pass None to clear the pending input.
+ */
+export declare function sessionSetPendingInput(
+  sessionId: string,
+  input?: string | undefined | null
+): void;
 
 /**
  * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)

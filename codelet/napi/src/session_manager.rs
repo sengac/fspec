@@ -148,6 +148,9 @@ pub struct BackgroundSession {
 
     /// Debug capture enabled for this session
     is_debug_enabled: AtomicBool,
+
+    /// Pending input text (TUI-049: preserved when switching sessions)
+    pending_input: RwLock<Option<String>>,
 }
 
 impl BackgroundSession {
@@ -178,6 +181,7 @@ impl BackgroundSession {
             is_interrupted: Arc::new(AtomicBool::new(false)),
             interrupt_notify: Arc::new(Notify::new()),
             is_debug_enabled: AtomicBool::new(false),
+            pending_input: RwLock::new(None),
         }
     }
 
@@ -189,6 +193,16 @@ impl BackgroundSession {
     /// Set debug enabled state
     pub fn set_debug_enabled(&self, enabled: bool) {
         self.is_debug_enabled.store(enabled, Ordering::Release);
+    }
+
+    /// Get pending input text (TUI-049)
+    pub fn get_pending_input(&self) -> Option<String> {
+        self.pending_input.read().expect("pending_input lock poisoned").clone()
+    }
+
+    /// Set pending input text (TUI-049)
+    pub fn set_pending_input(&self, input: Option<String>) {
+        *self.pending_input.write().expect("pending_input lock poisoned") = input;
     }
 
     /// Update cached token counts (called when TokenUpdate events are emitted)
@@ -779,6 +793,27 @@ pub fn session_get_debug_enabled(session_id: String) -> Result<bool> {
 pub fn session_set_debug_enabled(session_id: String, enabled: bool) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
     session.set_debug_enabled(enabled);
+    Ok(())
+}
+
+/// Get pending input text for a background session (TUI-049)
+///
+/// Returns the input text that was being typed when the user switched away from this session.
+/// Used to restore input field state when switching back to the session.
+#[napi]
+pub fn session_get_pending_input(session_id: String) -> Result<Option<String>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    Ok(session.get_pending_input())
+}
+
+/// Set pending input text for a background session (TUI-049)
+///
+/// Saves the current input field text before switching to another session.
+/// Pass None to clear the pending input.
+#[napi]
+pub fn session_set_pending_input(session_id: String, input: Option<String>) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.set_pending_input(input);
     Ok(())
 }
 

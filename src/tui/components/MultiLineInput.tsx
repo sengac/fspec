@@ -25,6 +25,10 @@ export interface MultiLineInputProps {
   maxVisibleLines?: number;
   onHistoryPrev?: () => void;
   onHistoryNext?: () => void;
+  /** TUI-049: Switch to previous session (Shift+Left) */
+  onSessionPrev?: () => void;
+  /** TUI-049: Switch to next session (Shift+Right) */
+  onSessionNext?: () => void;
 }
 
 export const MultiLineInput: React.FC<MultiLineInputProps> = ({
@@ -36,6 +40,8 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
   maxVisibleLines = 5,
   onHistoryPrev,
   onHistoryNext,
+  onSessionPrev,
+  onSessionNext,
 }) => {
   const {
     lines,
@@ -136,9 +142,35 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
         return;
       }
       if (key.shift && key.downArrow) {
-        
+
         handleHistoryNext();
         return;
+      }
+
+      // TUI-049: Shift+Left/Right for session switching
+      if (input.includes('[1;2D') || input.includes('\x1b[1;2D')) {
+        if (onSessionPrev) {
+          onSessionPrev();
+          return;
+        }
+      }
+      if (input.includes('[1;2C') || input.includes('\x1b[1;2C')) {
+        if (onSessionNext) {
+          onSessionNext();
+          return;
+        }
+      }
+      if (key.shift && key.leftArrow) {
+        if (onSessionPrev) {
+          onSessionPrev();
+          return;
+        }
+      }
+      if (key.shift && key.rightArrow) {
+        if (onSessionNext) {
+          onSessionNext();
+          return;
+        }
       }
 
       // Alt+Arrow for word movement

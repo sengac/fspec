@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { CodeletSession, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, ChunkType, extractThinkingText, getThinkingConfig, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionCompact, sessionDetach, sessionGetBufferedOutput, sessionGetDebugEnabled, sessionGetMergedOutput, sessionGetModel, sessionGetStatus, sessionGetTokens, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionRestoreMessages, sessionRestoreTokenState, sessionSendInput, sessionSetDebugEnabled, sessionSetModel, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, toggleDebug } = nativeBinding
+const { CodeletSession, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, ChunkType, extractThinkingText, getThinkingConfig, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionCompact, sessionDetach, sessionGetBufferedOutput, sessionGetDebugEnabled, sessionGetMergedOutput, sessionGetModel, sessionGetPendingInput, sessionGetStatus, sessionGetTokens, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionRestoreMessages, sessionRestoreTokenState, sessionSendInput, sessionSetDebugEnabled, sessionSetModel, sessionSetPendingInput, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, toggleDebug } = nativeBinding
 export { CodeletSession }
 export { AstGrepCaseType }
 export { astGrepRefactor }
@@ -636,6 +636,7 @@ export { sessionGetBufferedOutput }
 export { sessionGetDebugEnabled }
 export { sessionGetMergedOutput }
 export { sessionGetModel }
+export { sessionGetPendingInput }
 export { sessionGetStatus }
 export { sessionGetTokens }
 export { sessionInterrupt }
@@ -648,6 +649,7 @@ export { sessionRestoreTokenState }
 export { sessionSendInput }
 export { sessionSetDebugEnabled }
 export { sessionSetModel }
+export { sessionSetPendingInput }
 export { sessionToggleDebug }
 export { sessionUpdateDebugMetadata }
 export { setRustLogCallback }
