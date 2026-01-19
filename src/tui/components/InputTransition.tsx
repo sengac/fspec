@@ -16,9 +16,9 @@ import { useThinkingText, SPINNERS } from './ThinkingIndicator';
 import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
 
 // Animation timing constants
-const CHAR_HIDE_INTERVAL = 12; // ms per character when hiding
-const CHAR_SHOW_INTERVAL = 10; // ms per character when revealing
-const TRANSITION_DELAY = 50; // ms delay between hide and show phases
+const CHAR_HIDE_INTERVAL = 3; // ms per character when hiding
+const CHAR_SHOW_INTERVAL = 2; // ms per character when revealing
+const TRANSITION_DELAY = 12; // ms delay between hide and show phases
 
 type AnimationPhase = 'loading' | 'hiding' | 'showing' | 'complete';
 
