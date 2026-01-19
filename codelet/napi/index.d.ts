@@ -1022,6 +1022,14 @@ export declare function sessionGetBufferedOutput(
   limit: number
 ): Array<StreamChunk>;
 
+/**
+ * Get buffered output with consecutive Text/Thinking chunks merged.
+ * This is more efficient for reattachment - JS can process fewer chunks.
+ */
+export declare function sessionGetMergedOutput(
+  sessionId: string
+): Array<StreamChunk>;
+
 /** Get session status */
 export declare function sessionGetStatus(sessionId: string): string;
 

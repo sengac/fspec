@@ -60,6 +60,7 @@ import {
   sessionAttach,
   sessionSendInput,
   sessionGetBufferedOutput,
+  sessionGetMergedOutput,
   sessionDetach,
   sessionInterrupt,
   sessionManagerList,
@@ -351,6 +352,144 @@ interface ConversationLine {
   isThinking?: boolean; // Thinking content from extended thinking
   isError?: boolean; // Tool result with isError=true (stderr output)
 }
+
+/**
+ * Update conversation with thinking content. Only reuses existing thinking block
+ * if it comes AFTER the last tool message (ensures fresh block after tool calls).
+ */
+const updateThinkingBlock = (
+  messages: ConversationMessage[],
+  thinkingContent: string,
+  mode: 'replace' | 'append'
+): ConversationMessage[] => {
+  const lastToolIdx = messages.findLastIndex(m => m.role === 'tool' && !m.isThinking);
+  const thinkingIdx = messages.findLastIndex(m => m.isThinking);
+  const streamingIdx = messages.findLastIndex(m => m.role === 'assistant' && m.isStreaming);
+  const canReuseThinking = thinkingIdx >= 0 && (lastToolIdx < 0 || thinkingIdx > lastToolIdx);
+
+  if (canReuseThinking) {
+    const existingContent = messages[thinkingIdx].content.replace('[Thinking]\n', '');
+    const newContent = mode === 'replace' ? thinkingContent : existingContent + thinkingContent;
+    messages[thinkingIdx] = {
+      ...messages[thinkingIdx],
+      content: `[Thinking]\n${newContent}`,
+    };
+  } else if (streamingIdx >= 0) {
+    messages.splice(streamingIdx, 0, {
+      role: 'tool',
+      content: `[Thinking]\n${thinkingContent}`,
+      isThinking: true,
+    });
+  } else {
+    messages.push({
+      role: 'tool',
+      content: `[Thinking]\n${thinkingContent}`,
+      isThinking: true,
+    });
+  }
+
+  return messages;
+};
+
+/**
+ * Process merged chunks into conversation messages for reattachment.
+ * Used when attaching to a running/idle background session.
+ */
+const processChunksToConversation = (
+  chunks: StreamChunk[],
+  formatToolHeaderFn: (name: string, args: string) => string,
+  formatCollapsedOutputFn: (content: string) => string
+): ConversationMessage[] => {
+  const messages: ConversationMessage[] = [];
+
+  for (const chunk of chunks) {
+    if (chunk.type === 'UserInput' && chunk.text) {
+      messages.push({ role: 'user', content: chunk.text });
+    } else if (chunk.type === 'Text' && chunk.text) {
+      // Find last assistant message to append to, or create new one
+      const lastIdx = messages.findLastIndex(m => m.role === 'assistant');
+      if (lastIdx >= 0 && messages[lastIdx].isStreaming) {
+        messages[lastIdx].content += chunk.text;
+      } else {
+        messages.push({ role: 'assistant', content: chunk.text, isStreaming: true });
+      }
+    } else if (chunk.type === 'Thinking' && chunk.thinking) {
+      updateThinkingBlock(messages, chunk.thinking, 'append');
+    } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+      const toolCall = chunk.toolCall;
+      let argsDisplay = '';
+      try {
+        const parsedInput = JSON.parse(toolCall.input);
+        if (typeof parsedInput === 'object' && parsedInput !== null) {
+          const inputObj = parsedInput as Record<string, unknown>;
+          if (inputObj.command) argsDisplay = String(inputObj.command);
+          else if (inputObj.file_path) argsDisplay = String(inputObj.file_path);
+          else if (inputObj.pattern) argsDisplay = String(inputObj.pattern);
+          else {
+            const entries = Object.entries(inputObj);
+            if (entries.length > 0) {
+              const [, value] = entries[0];
+              argsDisplay = typeof value === 'string' ? value : JSON.stringify(value).slice(0, 50);
+            }
+          }
+        }
+      } catch {
+        argsDisplay = toolCall.input;
+      }
+      // Finalize streaming assistant message (remove if empty)
+      const streamingIdx = messages.findLastIndex(m => m.isStreaming);
+      if (streamingIdx >= 0) {
+        if (messages[streamingIdx].content.trim() === '') {
+          messages.splice(streamingIdx, 1);
+        } else {
+          messages[streamingIdx].isStreaming = false;
+        }
+      }
+      messages.push({ role: 'tool', content: formatToolHeaderFn(toolCall.name, argsDisplay) });
+    } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
+      const result = chunk.toolResult;
+      const sanitizedContent = result.content.replace(/\t/g, '  ');
+      // Find tool header and combine with result
+      for (let i = messages.length - 1; i >= 0; i--) {
+        if (messages[i].role === 'tool' && messages[i].content.startsWith('●')) {
+          const headerLine = messages[i].content.split('\n')[0];
+          messages[i].content = `${headerLine}\n${formatCollapsedOutputFn(sanitizedContent)}`;
+          messages[i].isError = result.isError;
+          break;
+        }
+      }
+      // Add streaming placeholder for continuation
+      messages.push({ role: 'assistant', content: '', isStreaming: true });
+    } else if (chunk.type === 'Done') {
+      // Remove empty streaming messages and finalize
+      while (
+        messages.length > 0 &&
+        messages[messages.length - 1].role === 'assistant' &&
+        messages[messages.length - 1].isStreaming &&
+        !messages[messages.length - 1].content
+      ) {
+        messages.pop();
+      }
+      const streamingIdx = messages.findLastIndex(m => m.isStreaming);
+      if (streamingIdx >= 0) {
+        messages[streamingIdx].isStreaming = false;
+      }
+    } else if (chunk.type === 'Interrupted') {
+      // Finalize and add interrupted marker
+      const streamingIdx = messages.findLastIndex(m => m.isStreaming);
+      if (streamingIdx >= 0) {
+        if (messages[streamingIdx].content.trim() === '') {
+          messages.splice(streamingIdx, 1);
+        } else {
+          messages[streamingIdx].isStreaming = false;
+        }
+      }
+      messages.push({ role: 'tool', content: '⚠ Interrupted' });
+    }
+  }
+
+  return messages;
+};
 
 /**
  * Extract model ID from API model ID for registry matching.
@@ -1897,38 +2036,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             const thinkingSnapshot = currentThinking;
             setConversation(prev => {
               const updated = [...prev];
-              // Find the streaming assistant message
-              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-              
-              // CLAUDE-THINK: Find existing thinking message, but only if it's AFTER the last
-              // tool message. This ensures that after a tool call, new thinking starts a fresh block.
-              const lastToolIdx = updated.findLastIndex(m => m.role === 'tool' && !m.isThinking);
-              const thinkingIdx = updated.findLastIndex(m => m.isThinking);
-              
-              // Only reuse the thinking message if it comes after the last tool message
-              const canReuseThinking = thinkingIdx >= 0 && (lastToolIdx < 0 || thinkingIdx > lastToolIdx);
-              
-              if (canReuseThinking) {
-                // Update existing thinking message with accumulated content
-                updated[thinkingIdx] = {
-                  ...updated[thinkingIdx],
-                  content: `[Thinking]\n${thinkingSnapshot}`,
-                };
-              } else if (streamingIdx >= 0) {
-                // Insert new thinking block BEFORE the streaming message
-                updated.splice(streamingIdx, 0, {
-                  role: 'tool',
-                  content: `[Thinking]\n${thinkingSnapshot}`,
-                  isThinking: true,
-                });
-              } else {
-                // No streaming message found, just append (shouldn't happen normally)
-                updated.push({
-                  role: 'tool',
-                  content: `[Thinking]\n${thinkingSnapshot}`,
-                  isThinking: true,
-                });
-              }
+              updateThinkingBlock(updated, thinkingSnapshot, 'replace');
               return updated;
             });
           } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
@@ -2954,19 +3062,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // Show thinking content in a separate message
       setConversation(prev => {
         const updated = [...prev];
-        const thinkingIdx = updated.findLastIndex(m => m.isThinking);
-        if (thinkingIdx >= 0) {
-          updated[thinkingIdx] = {
-            ...updated[thinkingIdx],
-            content: `[Thinking]\n${updated[thinkingIdx].content.replace('[Thinking]\n', '')}${chunk.thinking}`,
-          };
-        } else {
-          updated.push({
-            role: 'tool',
-            content: `[Thinking]\n${chunk.thinking}`,
-            isThinking: true,
-          });
-        }
+        updateThinkingBlock(updated, chunk.thinking, 'append');
         return updated;
       });
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
@@ -2996,10 +3092,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       const toolContent = formatToolHeader(toolCall.name, argsDisplay);
       setConversation(prev => {
         const updated = [...prev];
-        // Mark streaming message as complete
+        // Mark streaming message as complete, or remove if empty
         const streamingIdx = updated.findLastIndex(m => m.isStreaming);
         if (streamingIdx >= 0) {
-          updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
+          if (updated[streamingIdx].content.trim() === '') {
+            updated.splice(streamingIdx, 1);
+          } else {
+            updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
+          }
         }
         updated.push({ role: 'tool', content: toolContent });
         return updated;
@@ -3065,10 +3165,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     } else if (chunk.type === 'Interrupted') {
       setConversation(prev => {
         const updated = [...prev];
-        // Mark streaming as interrupted
+        // Mark streaming as interrupted, or remove if empty
         const streamingIdx = updated.findLastIndex(m => m.isStreaming);
         if (streamingIdx >= 0) {
-          updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
+          if (updated[streamingIdx].content.trim() === '') {
+            updated.splice(streamingIdx, 1);
+          } else {
+            updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
+          }
         }
         updated.push({ role: 'tool', content: '⚠ Interrupted' });
         return updated;
@@ -3136,16 +3240,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       const bgSession = backgroundSessions.find(bg => bg.id === sessionId);
 
       if (bgSession) {
-        // Background session - get buffered output and attach
+        // Background session - get merged output and attach
         logger.debug(`SESS-001: Resuming background session ${sessionId}`);
 
-        // Get buffered output (produced while detached)
-        const bufferedChunks = sessionGetBufferedOutput(sessionId, 1000);
-
-        // Hydrate conversation from buffered output
-        for (const chunk of bufferedChunks) {
-          handleStreamChunk(chunk);
-        }
+        // Get merged buffered output and process into conversation in one state update
+        const mergedChunks = sessionGetMergedOutput(sessionId);
+        const restoredMessages = processChunksToConversation(
+          mergedChunks,
+          formatToolHeader,
+          formatCollapsedOutput
+        );
+        setConversation(restoredMessages);
 
         // Attach for live streaming
         sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
@@ -3357,13 +3462,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       if (selectedSession.isBackgroundSession) {
         // Background session - use sessionAttach instead of loading from persistence
 
-        // First get buffered output (produced while detached)
-        const bufferedChunks = sessionGetBufferedOutput(selectedSession.id, 1000);
-
-        // Hydrate conversation from buffered output
-        for (const chunk of bufferedChunks) {
-          handleStreamChunk(chunk);
-        }
+        // Get merged buffered output and process into conversation in one state update
+        const mergedChunks = sessionGetMergedOutput(selectedSession.id);
+        const restoredMessages = processChunksToConversation(
+          mergedChunks,
+          formatToolHeader,
+          formatCollapsedOutput
+        );
+        setConversation(restoredMessages);
 
         // Attach for live streaming
         sessionAttach(selectedSession.id, (_err: Error | null, chunk: StreamChunk) => {
