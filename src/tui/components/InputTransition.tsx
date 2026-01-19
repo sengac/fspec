@@ -55,12 +55,14 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   isLoading,
   thinkingMessage = 'Thinking',
   thinkingHint = "(Esc to stop | 'Space+Esc' detach)",
-  placeholder = "Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Space+Esc' detach)",
+  placeholder = "Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn | 'Space+Esc' detach)",
   value,
   onChange,
   onSubmit,
   onHistoryPrev,
   onHistoryNext,
+  onSessionPrev,
+  onSessionNext,
   maxVisibleLines = 5,
   isActive = true,
 }) => {
@@ -199,6 +201,8 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
       placeholder={placeholder}
       onHistoryPrev={onHistoryPrev}
       onHistoryNext={onHistoryNext}
+      onSessionPrev={onSessionPrev}
+      onSessionNext={onSessionNext}
       maxVisibleLines={maxVisibleLines}
       isActive={isActive}
     />

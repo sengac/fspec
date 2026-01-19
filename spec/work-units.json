@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-19T01:09:56.868Z"
+    "lastUpdated": "2026-01-19T07:38:20.178Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62261,6 +62261,213 @@
         "spec/attachments/SESS-001/ast-research-session-attachment.md"
       ],
       "updated": "2026-01-19T01:09:56.901Z"
+    },
+    "TUI-049": {
+      "id": "TUI-049",
+      "title": "Shift+Arrow Session Switching",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-19T07:07:40.011Z",
+      "updatedAt": "2026-01-19T07:38:20.207Z",
+      "description": "Enable Shift+Left and Shift+Right arrow keys to toggle between active background sessions when AgentView is active, providing quick session navigation without opening the resume modal",
+      "children": [],
+      "userStory": {
+        "role": "developer using fspec TUI",
+        "action": "quickly switch between active background sessions using Shift+Left/Right arrow keys",
+        "benefit": "I can navigate sessions without interrupting my workflow or opening the resume modal"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-19T07:08:00.108Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-19T07:24:27.715Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-19T07:27:10.607Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-19T07:34:30.493Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-19T07:38:20.207Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Shift+Right arrow switches to the next session in the available sessions list (sorted by updatedAt descending)",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:04.735Z"
+        },
+        {
+          "id": 1,
+          "text": "Shift+Left arrow switches to the previous session in the available sessions list",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:10.514Z"
+        },
+        {
+          "id": 2,
+          "text": "Session switching only works when AgentView is active (not in resume mode, search mode, settings, or model selector)",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:16.465Z"
+        },
+        {
+          "id": 3,
+          "text": "Navigation wraps around - Shift+Right at the last session goes to the first, Shift+Left at the first goes to the last",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:22.146Z"
+        },
+        {
+          "id": 4,
+          "text": "Switching sessions automatically attaches to the selected background session and loads its conversation",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:28.097Z"
+        },
+        {
+          "id": 5,
+          "text": "The previously active session is automatically detached (continues running in background) before attaching to the new session",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:34.249Z"
+        },
+        {
+          "id": 6,
+          "text": "Session switching requires at least 2 sessions to exist (no action if only 1 or 0 sessions)",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:40.256Z"
+        },
+        {
+          "id": 7,
+          "text": "Key detection uses escape sequences [1;2C (Shift+Right) and [1;2D (Shift+Left) plus Ink key.shift detection",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:46.236Z"
+        },
+        {
+          "id": 8,
+          "text": "Input text in the text field is preserved per-session in Rust and restored when reattaching",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:20:51.374Z"
+        },
+        {
+          "id": 9,
+          "text": "Session list sourced directly from Rust session manager (sessionManagerList), not merged with persisted-only sessions",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:21:25.049Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User has 3 sessions (A, B, C), currently on session A. Pressing Shift+Right switches to session B, detaches A, and loads B's conversation.",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:53.005Z"
+        },
+        {
+          "id": 1,
+          "text": "User is on the last session (C). Pressing Shift+Right wraps around to the first session (A).",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:08:58.776Z"
+        },
+        {
+          "id": 2,
+          "text": "User is on the first session (A). Pressing Shift+Left wraps around to the last session (C).",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:09:03.641Z"
+        },
+        {
+          "id": 3,
+          "text": "User has only 1 session. Pressing Shift+Left or Shift+Right does nothing (no session to switch to).",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:09:09.379Z"
+        },
+        {
+          "id": 4,
+          "text": "User is in resume mode (modal open). Pressing Shift+Left or Shift+Right does nothing (keys only work in main AgentView).",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:09:15.278Z"
+        },
+        {
+          "id": 5,
+          "text": "User switches from session A (running agent task) to session B. Session A continues executing in background, user sees session B's conversation immediately.",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:09:21.760Z"
+        },
+        {
+          "id": 6,
+          "text": "User has 3 sessions (A, B, C), currently on session B. Pressing Shift+Left switches to session A, detaches B, and loads A's conversation.",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:15:49.119Z"
+        },
+        {
+          "id": 7,
+          "text": "User is typing 'hello world' in session A, presses Shift+Right to switch to session B, later presses Shift+Left to return to session A, and sees 'hello world' still in the input field.",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:20:58.905Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "estimate": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should navigation include persisted-only sessions, or ONLY sessions currently running in the background session manager?",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:15:11.997Z",
+          "selected": true,
+          "answered": true,
+          "answer": "ONLY sessions currently running in the background session manager - uses Rust session manager directly, not persisted-only sessions"
+        },
+        {
+          "id": 1,
+          "text": "@human: If user is typing in the input field when they press Shift+Left/Right, should the text be preserved, cleared, or saved to the original session?",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:15:18.419Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Preserved - input text stored per-session in Rust (similar to debug mode persistence), restored when reattaching to session"
+        },
+        {
+          "id": 2,
+          "text": "@human: Sessions are sorted by updatedAt descending (newest first). Confirm: Shift+Right = move to older session (index+1), Shift+Left = move to newer session (index-1)?",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:15:25.266Z",
+          "selected": true,
+          "answered": true,
+          "answer": "List navigation model: Shift+Right = next in list (index+1, towards older), Shift+Left = previous in list (index-1, towards newer). Sessions sorted by updatedAt descending so index 0 = most recent."
+        }
+      ],
+      "nextQuestionId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Key detection in MultiLineInput.tsx using escape sequences [1;2C (Shift+Right) and [1;2D (Shift+Left), following NAPI-006 pattern at lines 122-142",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:22:57.064Z"
+        },
+        {
+          "id": 1,
+          "text": "Session source: sessionManagerList() from Rust only (not merged with persisted-only sessions). Navigation uses list model: Right=index+1, Left=index-1 with wrap-around",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:23:03.137Z"
+        },
+        {
+          "id": 2,
+          "text": "NAPI bindings: sessionDetach, sessionAttach, sessionGetMergedOutput. Input text persistence: new Rust field per BackgroundSession similar to debug_enabled",
+          "deleted": false,
+          "createdAt": "2026-01-19T07:23:09.480Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/TUI-049/ast-research-session-switching.md"
+      ],
+      "updated": "2026-01-19T07:38:20.207Z"
     }
   },
   "states": {
@@ -62336,6 +62543,7 @@
     ],
     "validating": [],
     "done": [
+      "TUI-049",
       "SESS-001",
       "TUI-048",
       "TUI-047",
@@ -62808,7 +63016,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 48,
+    "TUI": 49,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

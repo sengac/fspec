@@ -77,6 +77,8 @@ import {
   sessionRestoreMessages,
   sessionRestoreTokenState,
   setRustLogCallback,
+  sessionSetPendingInput,
+  sessionGetPendingInput,
   type NapiProviderModels,
   type NapiModelInfo,
 } from '@sengac/codelet-napi';
@@ -3316,6 +3318,84 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
   }, []);
 
+  // TUI-049: Switch to a different background session
+  // Extracted helper to eliminate duplication between handleSessionPrev and handleSessionNext
+  const switchToSession = useCallback((direction: 'prev' | 'next') => {
+    // Get background sessions from Rust session manager only
+    const backgroundSessions = sessionManagerList();
+    if (backgroundSessions.length < 2) {
+      return; // Need at least 2 sessions to switch
+    }
+
+    // Find current session index
+    const currentIndex = backgroundSessions.findIndex(s => s.id === currentSessionId);
+
+    // Calculate target index based on direction
+    let targetIndex: number;
+    if (currentIndex === -1) {
+      // Current session not in background manager - navigate to first or last
+      targetIndex = direction === 'next' ? 0 : backgroundSessions.length - 1;
+    } else {
+      // Normal wrap-around navigation
+      targetIndex = direction === 'next'
+        ? (currentIndex + 1) % backgroundSessions.length
+        : (currentIndex - 1 + backgroundSessions.length) % backgroundSessions.length;
+    }
+
+    const targetSession = backgroundSessions[targetIndex];
+
+    // Save pending input to current session before detaching
+    if (currentSessionId && inputValue) {
+      try {
+        sessionSetPendingInput(currentSessionId, inputValue);
+      } catch {
+        // Session may not exist in manager, ignore
+      }
+    }
+
+    // Detach from current session
+    if (currentSessionId) {
+      try {
+        sessionDetach(currentSessionId);
+      } catch {
+        // Silently ignore detach errors
+      }
+    }
+
+    // Load conversation from new session
+    const chunks = sessionGetMergedOutput(targetSession.id);
+    const newConversation = processChunksToConversation(
+      chunks,
+      formatToolHeader,
+      formatCollapsedOutput
+    );
+
+    // Restore pending input for new session
+    const restoredInput = sessionGetPendingInput(targetSession.id);
+
+    // Update state
+    setCurrentSessionId(targetSession.id);
+    setConversation(newConversation);
+    setInputValue(restoredInput || '');
+
+    // Attach to new session for streaming
+    sessionAttach(targetSession.id, (_err: Error | null, chunk: StreamChunk) => {
+      if (chunk) {
+        handleStreamChunk(chunk);
+      }
+    });
+  }, [currentSessionId, inputValue, handleStreamChunk]);
+
+  // TUI-049: Switch to previous session (Shift+Left)
+  const handleSessionPrev = useCallback(() => {
+    switchToSession('prev');
+  }, [switchToSession]);
+
+  // TUI-049: Switch to next session (Shift+Right)
+  const handleSessionNext = useCallback(() => {
+    switchToSession('next');
+  }, [switchToSession]);
+
   // SESS-001: Shared function to resume a session by ID (used by /resume and auto-resume)
   // Handles both background sessions (attach) and persisted-only (load from disk)
   const resumeSessionById = useCallback(async (sessionId: string): Promise<boolean> => {
@@ -4598,6 +4678,25 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return;
       }
 
+      // TUI-049: Shift+Left/Right for session switching (works in main view, even during loading)
+      // Check escape sequences first, then Ink key detection
+      if (
+        input.includes('[1;2D') ||
+        input.includes('\x1b[1;2D') ||
+        (key.shift && key.leftArrow)
+      ) {
+        handleSessionPrev();
+        return;
+      }
+      if (
+        input.includes('[1;2C') ||
+        input.includes('\x1b[1;2C') ||
+        (key.shift && key.rightArrow)
+      ) {
+        handleSessionNext();
+        return;
+      }
+
       // TUI-048: Space+ESC for immediate detach (bypasses confirmation dialog)
       // When Space is pressed, start a timeout window. If ESC is pressed within the window, detach.
 
@@ -5819,9 +5918,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             value={inputValue}
             onChange={setInputValue}
             onSubmit={handleSubmit}
-            placeholder="Type a message... ('Shift+↑/↓' history | 'Tab' select turn | 'Space+Esc' detach)"
+            placeholder="Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn | 'Space+Esc' detach)"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
+            onSessionPrev={handleSessionPrev}
+            onSessionNext={handleSessionNext}
             maxVisibleLines={5}
           />
         </Box>
