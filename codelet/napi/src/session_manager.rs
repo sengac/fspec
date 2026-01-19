@@ -14,7 +14,7 @@ use codelet_common::debug_capture::{
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, Ordering};
 use std::sync::{Arc, RwLock};
 use tokio::sync::{mpsc, Mutex, Notify};
 use uuid::Uuid;
@@ -92,6 +92,16 @@ pub struct SessionModel {
     pub model_id: Option<String>,
 }
 
+/// Token info returned by session_get_tokens
+#[napi(object)]
+#[derive(Clone)]
+pub struct SessionTokens {
+    /// Input tokens (context size)
+    pub input_tokens: u32,
+    /// Output tokens
+    pub output_tokens: u32,
+}
+
 /// Background session that runs agent in a tokio task.
 ///
 /// The `id` field serves as the persistence identifier - TypeScript stores this ID
@@ -108,8 +118,12 @@ pub struct BackgroundSession {
     /// Model ID (e.g., "claude-sonnet-4") - stored for quick access
     pub model_id: RwLock<Option<String>>,
 
+    /// Cached token counts for quick sync access (updated on each TokenUpdate event)
+    cached_input_tokens: AtomicU32,
+    cached_output_tokens: AtomicU32,
+
     /// Inner codelet session (protected by async mutex for agent operations)
-    inner: Arc<Mutex<codelet_cli::session::Session>>,
+    pub inner: Arc<Mutex<codelet_cli::session::Session>>,
 
     /// Current status (lock-free)
     status: AtomicU8,
@@ -150,6 +164,8 @@ impl BackgroundSession {
             project,
             provider_id: RwLock::new(provider_id),
             model_id: RwLock::new(model_id),
+            cached_input_tokens: AtomicU32::new(0),
+            cached_output_tokens: AtomicU32::new(0),
             inner: Arc::new(Mutex::new(inner)),
             status: AtomicU8::new(SessionStatus::Idle as u8),
             is_attached: AtomicBool::new(false),
@@ -159,6 +175,20 @@ impl BackgroundSession {
             is_interrupted: Arc::new(AtomicBool::new(false)),
             interrupt_notify: Arc::new(Notify::new()),
         }
+    }
+
+    /// Update cached token counts (called when TokenUpdate events are emitted)
+    pub fn update_tokens(&self, input_tokens: u32, output_tokens: u32) {
+        self.cached_input_tokens.store(input_tokens, Ordering::Release);
+        self.cached_output_tokens.store(output_tokens, Ordering::Release);
+    }
+
+    /// Get cached token counts
+    pub fn get_tokens(&self) -> (u32, u32) {
+        (
+            self.cached_input_tokens.load(Ordering::Acquire),
+            self.cached_output_tokens.load(Ordering::Acquire),
+        )
     }
 
     /// Update the model info (called when model is changed mid-session)
@@ -295,33 +325,35 @@ impl SessionManager {
     }
     
     /// Create a new background session (generates new UUID)
-    pub fn create_session(&self, _model: &str, project: &str) -> Result<String> {
+    pub async fn create_session(&self, _model: &str, project: &str) -> Result<String> {
         let id = Uuid::new_v4();
-        self.create_session_with_id(&id.to_string(), _model, project, &format!("Session {}", &id.to_string()[..8]))?;
+        self.create_session_with_id(&id.to_string(), _model, project, &format!("Session {}", &id.to_string()[..8])).await?;
         Ok(id.to_string())
     }
     
     /// Create a background session with a specific ID (for persistence integration).
-    /// 
+    ///
     /// This is the core session creation method. The ID should match the persistence
     /// session ID so that ESC + Detach and /resume can find the session.
-    pub fn create_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<()> {
+    pub async fn create_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<()> {
         let uuid = Uuid::parse_str(id)
             .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
-        
-        let sessions = self.sessions.read().expect("sessions lock poisoned");
-        if sessions.len() >= MAX_SESSIONS {
-            return Err(Error::from_reason(format!(
-                "Maximum sessions ({}) reached",
-                MAX_SESSIONS
-            )));
+
+        // Check session limits in a block to ensure lock is dropped before async operations
+        {
+            let sessions = self.sessions.read().expect("sessions lock poisoned");
+            if sessions.len() >= MAX_SESSIONS {
+                return Err(Error::from_reason(format!(
+                    "Maximum sessions ({}) reached",
+                    MAX_SESSIONS
+                )));
+            }
+            if sessions.contains_key(&uuid) {
+                // Already registered - this is fine, session exists
+                return Ok(());
+            }
         }
-        if sessions.contains_key(&uuid) {
-            // Already registered - this is fine, session exists
-            return Ok(());
-        }
-        drop(sessions);
-        
+
         let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
 
         // Load environment variables from .env file (if present)
@@ -329,28 +361,28 @@ impl SessionManager {
         let _ = dotenvy::dotenv();
 
         // Parse model string to extract provider_id and model_id for storage
-        let (provider_id, model_id, internal_provider) = if model.contains('/') {
-            // Model string like "anthropic/claude-sonnet-4"
+        let (provider_id, model_id) = if model.contains('/') {
             let parts: Vec<&str> = model.split('/').collect();
             let registry_provider = parts.get(0).unwrap_or(&"anthropic");
             let model_part = parts.get(1).map(|s| s.to_string());
-            // Map registry provider IDs to internal provider names
-            let internal = match *registry_provider {
-                "anthropic" => "claude",
-                "google" => "gemini",
-                "openai" => "openai",
-                "codex" => "codex",
-                "zai" => "zai",
-                other => other,
-            };
-            (Some(registry_provider.to_string()), model_part, internal)
+            (Some(registry_provider.to_string()), model_part)
         } else {
-            (Some(model.to_string()), None, model)
+            (Some(model.to_string()), None)
         };
 
-        // Create the inner codelet session
-        let inner = codelet_cli::session::Session::new(Some(internal_provider))
-            .map_err(|e| Error::from_reason(format!("Failed to create session: {}", e)))?;
+        // Create ProviderManager with model registry support and select the model
+        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
+            .await
+            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
+
+        // Select the model (validates against registry)
+        if model.contains('/') {
+            provider_manager.select_model(model)
+                .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+        }
+
+        // Create session from the configured provider manager
+        let inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
         let session = Arc::new(BackgroundSession::new(
             uuid,
@@ -576,15 +608,19 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 output_chunk: tp.output_chunk,
             }),
             StreamEvent::Status(status) => StreamChunk::status(status),
-            StreamEvent::Tokens(info) => StreamChunk::token_update(TokenTracker {
-                input_tokens: info.input_tokens as u32,
-                output_tokens: info.output_tokens as u32,
-                cache_read_input_tokens: info.cache_read_input_tokens.map(|v| v as u32),
-                cache_creation_input_tokens: info.cache_creation_input_tokens.map(|v| v as u32),
-                tokens_per_second: info.tokens_per_second,
-                cumulative_billed_input: None,
-                cumulative_billed_output: None,
-            }),
+            StreamEvent::Tokens(info) => {
+                // Update cached tokens for sync access
+                self.session.update_tokens(info.input_tokens as u32, info.output_tokens as u32);
+                StreamChunk::token_update(TokenTracker {
+                    input_tokens: info.input_tokens as u32,
+                    output_tokens: info.output_tokens as u32,
+                    cache_read_input_tokens: info.cache_read_input_tokens.map(|v| v as u32),
+                    cache_creation_input_tokens: info.cache_creation_input_tokens.map(|v| v as u32),
+                    tokens_per_second: info.tokens_per_second,
+                    cumulative_billed_input: None,
+                    cumulative_billed_output: None,
+                })
+            }
             StreamEvent::ContextFill(info) => StreamChunk::context_fill_update(ContextFillInfo {
                 fill_percentage: info.fill_percentage,
                 effective_tokens: info.effective_tokens as f64,
@@ -606,8 +642,8 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
 
 /// Create a new background session (generates new UUID)
 #[napi]
-pub fn session_manager_create(model: String, project: String) -> Result<String> {
-    SessionManager::instance().create_session(&model, &project)
+pub async fn session_manager_create(model: String, project: String) -> Result<String> {
+    SessionManager::instance().create_session(&model, &project).await
 }
 
 /// Create a background session with a specific ID (for persistence integration).
@@ -624,7 +660,7 @@ pub async fn session_manager_create_with_id(
     project: String,
     name: String,
 ) -> Result<()> {
-    SessionManager::instance().create_session_with_id(&session_id, &model, &project, &name)
+    SessionManager::instance().create_session_with_id(&session_id, &model, &project, &name).await
 }
 
 /// List all background sessions
@@ -679,9 +715,18 @@ pub fn session_get_status(session_id: String) -> Result<String> {
 
 /// Update the model for a background session
 #[napi]
-pub fn session_set_model(session_id: String, provider_id: String, model_id: String) -> Result<()> {
+pub async fn session_set_model(session_id: String, provider_id: String, model_id: String) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
-    session.set_model(Some(provider_id), Some(model_id));
+
+    // Update metadata for display
+    session.set_model(Some(provider_id.clone()), Some(model_id.clone()));
+
+    // Construct model string and update the inner ProviderManager
+    let model_string = format!("{}/{}", provider_id, model_id);
+    let mut inner = session.inner.lock().await;
+    inner.provider_manager_mut().select_model(&model_string)
+        .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+
     Ok(())
 }
 
@@ -694,6 +739,17 @@ pub fn session_get_model(session_id: String) -> Result<SessionModel> {
     Ok(SessionModel {
         provider_id,
         model_id,
+    })
+}
+
+/// Get cached token counts for a background session
+#[napi]
+pub fn session_get_tokens(session_id: String) -> Result<SessionTokens> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let (input_tokens, output_tokens) = session.get_tokens();
+    Ok(SessionTokens {
+        input_tokens,
+        output_tokens,
     })
 }
 
@@ -841,6 +897,10 @@ pub async fn session_restore_token_state(
     cumulative_billed_output: u32,
 ) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
+
+    // Update cached tokens for sync access
+    session.update_tokens(input_tokens, output_tokens);
+
     let mut inner = session.inner.lock().await;
 
     inner.token_tracker.input_tokens = input_tokens as u64;
@@ -849,6 +909,48 @@ pub async fn session_restore_token_state(
     inner.token_tracker.cache_creation_input_tokens = Some(cache_creation_tokens as u64);
     inner.token_tracker.cumulative_billed_input = cumulative_billed_input as u64;
     inner.token_tracker.cumulative_billed_output = cumulative_billed_output as u64;
+
+    Ok(())
+}
+
+/// Toggle debug capture mode without requiring a session.
+///
+/// Can be called before a session exists. Session metadata will not be set.
+/// Use session_update_debug_metadata after creating a session to add metadata.
+///
+/// If debug_dir is provided, debug files will be written to `{debug_dir}/debug/`
+/// instead of the default directory. For fspec, pass `~/.fspec` to write to
+/// `~/.fspec/debug/`.
+#[napi]
+pub fn toggle_debug(debug_dir: Option<String>) -> DebugCommandResult {
+    let result = handle_debug_command_with_dir(debug_dir.as_deref());
+    DebugCommandResult {
+        enabled: result.enabled,
+        session_file: result.session_file,
+        message: result.message,
+    }
+}
+
+/// Update debug capture metadata with session info.
+///
+/// Call this after creating a session if debug was enabled before the session existed.
+#[napi]
+pub async fn session_update_debug_metadata(session_id: String) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let inner = session.inner.lock().await;
+
+    if let Ok(manager_arc) = get_debug_capture_manager() {
+        if let Ok(mut manager) = manager_arc.lock() {
+            if manager.is_enabled() {
+                manager.set_session_metadata(SessionMetadata {
+                    provider: Some(inner.current_provider_name().to_string()),
+                    model: Some(inner.current_provider_name().to_string()),
+                    context_window: Some(inner.provider_manager().context_window()),
+                    max_output_tokens: None,
+                });
+            }
+        }
+    }
 
     Ok(())
 }

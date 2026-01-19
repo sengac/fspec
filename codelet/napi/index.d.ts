@@ -1036,6 +1036,9 @@ export declare function sessionGetModel(sessionId: string): SessionModel;
 /** Get session status */
 export declare function sessionGetStatus(sessionId: string): string;
 
+/** Get cached token counts for a background session */
+export declare function sessionGetTokens(sessionId: string): SessionTokens;
+
 /** Session info returned to TypeScript */
 export interface SessionInfo {
   id: string;
@@ -1056,7 +1059,7 @@ export declare function sessionInterrupt(sessionId: string): void;
 export declare function sessionManagerCreate(
   model: string,
   project: string
-): string;
+): Promise<string>;
 
 /**
  * Create a background session with a specific ID (for persistence integration).
@@ -1127,7 +1130,7 @@ export declare function sessionSetModel(
   sessionId: string,
   providerId: string,
   modelId: string
-): void;
+): Promise<void>;
 
 /**
  * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
@@ -1144,6 +1147,23 @@ export declare function sessionToggleDebug(
   sessionId: string,
   debugDir?: string | undefined | null
 ): Promise<DebugCommandResult>;
+
+/** Token info returned by session_get_tokens */
+export interface SessionTokens {
+  /** Input tokens (context size) */
+  inputTokens: number;
+  /** Output tokens */
+  outputTokens: number;
+}
+
+/**
+ * Update debug capture metadata with session info.
+ *
+ * Call this after creating a session if debug was enabled before the session existed.
+ */
+export declare function sessionUpdateDebugMetadata(
+  sessionId: string
+): Promise<void>;
 
 /** Set the logging callback from TypeScript and initialize the tracing subscriber */
 export declare function setRustLogCallback(callback: LogCallback): void;
@@ -1164,6 +1184,20 @@ export interface StreamChunk {
   contextFill?: ContextFillInfo;
   error?: string;
 }
+
+/**
+ * Toggle debug capture mode without requiring a session.
+ *
+ * Can be called before a session exists. Session metadata will not be set.
+ * Use session_update_debug_metadata after creating a session to add metadata.
+ *
+ * If debug_dir is provided, debug files will be written to `{debug_dir}/debug/`
+ * instead of the default directory. For fspec, pass `~/.fspec` to write to
+ * `~/.fspec/debug/`.
+ */
+export declare function toggleDebug(
+  debugDir?: string | undefined | null
+): DebugCommandResult;
 
 /** Token usage tracking information */
 export interface TokenTracker {

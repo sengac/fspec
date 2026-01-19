@@ -250,7 +250,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
   // NAPI-009: New session manager functions
-  sessionManagerCreateWithId: vi.fn(),
+  sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),
   sessionRestoreMessages: vi.fn(),
   sessionRestoreTokenState: vi.fn(),
   // NAPI-009 + AGENT-021: Debug and compaction for background sessions
@@ -266,10 +266,11 @@ vi.mock('@sengac/codelet-napi', () => ({
     turnsSummarized: 5,
     turnsKept: 2,
   }),
-  // Rust state functions for model and status
+  // Rust state functions for model, status, and tokens
   sessionGetModel: vi.fn().mockReturnValue({ providerId: null, modelId: null }),
   sessionGetStatus: vi.fn().mockReturnValue('idle'),
-  sessionSetModel: vi.fn(),
+  sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
+  sessionSetModel: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
 }));
 

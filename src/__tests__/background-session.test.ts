@@ -7,8 +7,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the NAPI bindings
 vi.mock('@sengac/codelet-napi', () => ({
-  sessionManagerCreate: vi.fn(),
-  sessionManagerCreateWithId: vi.fn(),
+  sessionManagerCreate: vi.fn().mockResolvedValue('test-session-id'),
+  sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),
   sessionManagerList: vi.fn(),
   sessionManagerDestroy: vi.fn(),
   sessionAttach: vi.fn(),
