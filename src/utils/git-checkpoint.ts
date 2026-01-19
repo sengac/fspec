@@ -399,7 +399,7 @@ DO NOT mention this reminder to the user explicitly.
           // Ignore ENOENT (file already deleted) - this is expected
           // Log other errors (EACCES, ENOSPC, etc.) for troubleshooting
           if (error.code !== 'ENOENT') {
-            logger.warn(
+            logger.error(
               `Failed to delete ${filepath} during checkpoint restore: ${error.message}`
             );
           }
@@ -409,7 +409,7 @@ DO NOT mention this reminder to the user explicitly.
   } catch (error) {
     // Error getting HEAD files - continue without deletion
     // This maintains backward compatibility if HEAD doesn't exist
-    logger.warn(
+    logger.error(
       `Could not get HEAD files for deletion during restore: ${error instanceof Error ? error.message : String(error)}`
     );
   }

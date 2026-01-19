@@ -1201,7 +1201,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             }
           });
         } catch (err) {
-          logger.warn('Failed to set up Rust log callback', { error: err });
+          logger.error('Failed to set up Rust log callback', { error: err });
         }
 
         // TUI-034: Load models and build provider sections
@@ -1263,7 +1263,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             );
           }
         } catch (err) {
-          logger.warn(
+          logger.error(
             'Failed to load config for persisted model, using default',
             { error: err }
           );
@@ -1904,7 +1904,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             // Set the debug state on the session (don't toggle - it's already enabled globally)
             sessionSetDebugEnabled(activeSessionId, true);
           } catch (err) {
-            logger.warn('Failed to sync debug state to session', { error: err });
+            logger.error('Failed to sync debug state to session', { error: err });
           }
         }
 
@@ -1955,7 +1955,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         );
       }
     } else {
-      logger.warn('No activeSessionId - history will not be saved');
+      logger.debug('No activeSessionId - history will not be saved');
     }
 
     // Add user message to conversation
@@ -2842,7 +2842,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       try {
         allModels = await modelsListAll();
       } catch (err) {
-        logger.warn('Failed to load models from models.dev', { error: err });
+        logger.error('Failed to load models from models.dev', { error: err });
       }
 
       // Rebuild provider sections
@@ -2924,7 +2924,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         }
       }
     } catch (err) {
-      logger.warn('Failed to refresh model from Rust', { error: err });
+      logger.error('Failed to refresh model from Rust', { error: err });
     }
   }, [providerSections]);
 
@@ -2934,7 +2934,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       const status = sessionGetStatus(sessionId);
       setIsLoading(status === 'running');
     } catch (err) {
-      logger.warn('Failed to refresh status from Rust', { error: err });
+      logger.error('Failed to refresh status from Rust', { error: err });
     }
   }, []);
 
@@ -2954,7 +2954,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           // Trigger useMemo to re-fetch from Rust
           setModelChangeTrigger(prev => prev + 1);
         } catch (err) {
-          logger.warn('Failed to update background session model', { error: err });
+          logger.error('Failed to update background session model', { error: err });
         }
       } else {
         // No session yet - set local state directly (will be synced when session is created)
@@ -2984,7 +2984,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         await writeConfig('user', updatedConfig);
         logger.debug(`Persisted model selection: ${modelString}`);
       } catch (persistErr) {
-        logger.warn('Failed to persist model selection', { error: persistErr });
+        logger.error('Failed to persist model selection', { error: persistErr });
       }
     },
     [currentSessionId]
@@ -3918,10 +3918,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               });
             }
           }
-        } catch {
+        } catch (err) {
           // If envelope parsing fails, fall back to simple format
-          logger.warn(
-            'Failed to parse envelope, falling back to simple format'
+          logger.error(
+            'Failed to parse envelope, falling back to simple format',
+            { error: err }
           );
         }
       }
@@ -4120,7 +4121,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             sessionDetach(currentSessionId);
           } catch (err) {
             // Log but continue - session may not be in background manager
-            logger.warn('Failed to detach session:', err);
+            logger.error('Failed to detach session:', err);
           }
         }
         onExit();
@@ -4131,7 +4132,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             sessionManagerDestroy(currentSessionId);
           } catch (err) {
             // Log but continue - session may not be in background manager
-            logger.warn('Failed to destroy session:', err);
+            logger.error('Failed to destroy session:', err);
           }
         }
         // SESS-001: Clear session attachment when session is destroyed

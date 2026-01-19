@@ -46,7 +46,7 @@ export async function startAttachmentServer(
 
       // Ensure the resolved path is within cwd (prevent directory traversal)
       if (!normalizedPath.startsWith(path.normalize(cwd))) {
-        logger.warn(
+        logger.error(
           `[AttachmentServer] Path traversal attempt blocked: ${filePath}`
         );
         return null;
