@@ -1,6 +1,39 @@
 //! Data types for context compaction
 //!
 //! Contains token tracking, conversation turns, tool calls, and results.
+//!
+//! ## Token Tracking Architecture (CMPCT-001)
+//!
+//! The system uses three related but distinct token types:
+//!
+//! ### 1. TokenTracker (Session State)
+//! Persistent session state stored in `session.token_tracker`. Contains:
+//! - `input_tokens`: TOTAL context size from latest API call (for display/thresholds)
+//! - `output_tokens`: CUMULATIVE output tokens across all API calls in session
+//! - `cumulative_billed_input/output`: Sum of all API calls (for billing analytics)
+//! - `cache_read/creation_input_tokens`: Latest cache values (display only)
+//!
+//! ### 2. ApiTokenUsage (Per-Request)
+//! Located in `codelet_core::token_usage`. Holds raw API response values:
+//! - `input_tokens`: Fresh tokens (not from cache, not being cached)
+//! - `cache_read_input_tokens`: Tokens read from existing cache
+//! - `cache_creation_input_tokens`: Tokens being written to new cache
+//! - `output_tokens`: Output tokens from this single request
+//! - Provides `total_input()` = input + cache_read + cache_creation
+//!
+//! ### 3. TokenState (Per-Request in CompactionHook)
+//! Internal to `CompactionHook` for threshold checking:
+//! - Updated by `on_stream_completion_response_finish`
+//! - Checked by `on_completion_call` to trigger compaction
+//! - NOT used for display
+//!
+//! ## Key Insight: Input vs Output Semantics
+//!
+//! - **input_tokens is ABSOLUTE**: The API reports total context size per call
+//!   (not incremental). Use `total_input()` for display and thresholds.
+//!
+//! - **output_tokens is CUMULATIVE**: The session tracks cumulative output
+//!   across all API calls so the next turn continues from the correct value.
 
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
@@ -85,6 +118,78 @@ impl TokenTracker {
         // Cache tokens are per-request values
         self.cache_read_input_tokens = cache_read;
         self.cache_creation_input_tokens = cache_creation;
+    }
+
+    /// Update token tracker from ApiTokenUsage with cumulative output (CMPCT-001)
+    ///
+    /// This method consolidates the duplicated token tracker update pattern found
+    /// throughout stream_loop.rs. It handles:
+    /// - Setting input_tokens from usage.total_input() (total context for display)
+    /// - Setting output_tokens from cumulative output (session-wide accumulator)
+    /// - Accumulating billing tokens (input_tokens and output_tokens from usage)
+    /// - Setting cache tokens (per-request, not cumulative)
+    ///
+    /// # Arguments
+    /// * `usage` - The ApiTokenUsage from the current turn/request
+    /// * `cumulative_output` - The session-wide cumulative output token count
+    ///
+    /// # Example
+    /// ```ignore
+    /// // Instead of:
+    /// session.token_tracker.input_tokens = turn_usage.total_input();
+    /// session.token_tracker.output_tokens = turn_cumulative_output;
+    /// session.token_tracker.cumulative_billed_input += turn_usage.input_tokens;
+    /// session.token_tracker.cumulative_billed_output += turn_usage.output_tokens;
+    /// session.token_tracker.cache_read_input_tokens = Some(turn_usage.cache_read_input_tokens);
+    /// session.token_tracker.cache_creation_input_tokens = Some(turn_usage.cache_creation_input_tokens);
+    ///
+    /// // Use:
+    /// session.token_tracker.update_from_usage(&turn_usage, turn_cumulative_output);
+    /// ```
+    pub fn update_from_usage(&mut self, usage: &crate::token_usage::ApiTokenUsage, cumulative_output: u64) {
+        // PROV-001: Store TOTAL context for display and threshold checks
+        self.input_tokens = usage.total_input();
+        // TUI-031: Save CUMULATIVE output tokens so next turn continues from correct value
+        self.output_tokens = cumulative_output;
+        // Accumulate for billing analytics (raw uncached input, not total context)
+        self.cumulative_billed_input += usage.input_tokens;
+        self.cumulative_billed_output += usage.output_tokens;
+        // Cache tokens are per-request, not cumulative (use latest values)
+        self.cache_read_input_tokens = Some(usage.cache_read_input_tokens);
+        self.cache_creation_input_tokens = Some(usage.cache_creation_input_tokens);
+    }
+
+    /// Update token tracker for display only, without billing accumulation (CMPCT-001)
+    ///
+    /// This is used when preparing for a continuation/retry where we want to
+    /// update the display values but NOT accumulate billing (to avoid double-counting).
+    ///
+    /// Use cases:
+    /// - Before starting a Gemini continuation loop (display current state)
+    /// - After compaction resets (display post-compaction state)
+    ///
+    /// # Arguments
+    /// * `usage` - The ApiTokenUsage from the current turn/request
+    /// * `cumulative_output` - The session-wide cumulative output token count
+    pub fn update_display_only(&mut self, usage: &crate::token_usage::ApiTokenUsage, cumulative_output: u64) {
+        // Update display values only (no billing accumulation)
+        self.input_tokens = usage.total_input();
+        self.output_tokens = cumulative_output;
+        // Cache tokens are per-request values
+        self.cache_read_input_tokens = Some(usage.cache_read_input_tokens);
+        self.cache_creation_input_tokens = Some(usage.cache_creation_input_tokens);
+    }
+
+    /// Reset token tracker after compaction (CMPCT-001)
+    ///
+    /// After successful compaction, reset output and cache values while
+    /// preserving cumulative billing (which tracks total spend across session).
+    pub fn reset_after_compaction(&mut self) {
+        self.output_tokens = 0;
+        self.cache_read_input_tokens = None;
+        self.cache_creation_input_tokens = None;
+        // Note: cumulative_billed_* is NOT reset - it tracks total session spend
+        // Note: input_tokens is set by execute_compaction, not reset here
     }
 }
 
