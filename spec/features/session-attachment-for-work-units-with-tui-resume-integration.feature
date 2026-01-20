@@ -29,7 +29,7 @@ Feature: Session attachment for work units with TUI resume integration
   Command Handlers (AgentView.tsx):
   - /detach: Call store.detachSession(currentWorkUnitId), then clear conversation state
   - /resume: After user selects session, call store.attachSession(currentWorkUnitId, selectedSessionId)
-  - Shift+ESC: Returns to board without detaching (session stays attached and running)
+  - Space+ESC: Returns to board without detaching (session stays attached and running)
 
   Integration with existing NAPI:
   - Uses persistenceCreateSessionWithProvider() for new sessions (existing)
@@ -50,7 +50,7 @@ Feature: Session attachment for work units with TUI resume integration
   #   6. /resume attaches the selected session to the currently entered work unit
   #   7. Session attachments persist until the app closes (in-memory state, not persisted to disk)
   #   8. The 🟢 indicator appears on the left side of the work unit ID (e.g., 🟢 AUTH-001)
-  #   9. Shift+ESC returns to board but keeps session attached to work unit (session continues in background)
+  #   9. Space+ESC returns to board but keeps session attached to work unit (session continues in background)
   #
   # EXAMPLES:
   #   1. User presses Enter on AUTH-001 (no attached session), types first message -> session is created and auto-attached to AUTH-001
@@ -61,14 +61,14 @@ Feature: Session attachment for work units with TUI resume integration
   #   6. User views board, AUTH-001 has no attached session -> AUTH-001 displays without 🟢 indicator (normal display)
   #   7. User closes and reopens TUI -> all session attachments are cleared (in-memory only)
   #   8. User /resume on AUTH-001 (already has session-A attached), selects session-B -> session-B replaces session-A as the attachment
-  #   9. User presses Shift+ESC while in AUTH-001 session -> returns to board, AUTH-001 still shows 🟢 indicator, session continues in background
+  #   9. User presses Space+ESC while in AUTH-001 session -> returns to board, AUTH-001 still shows 🟢 indicator, session continues in background
   #
   # QUESTIONS (ANSWERED):
   #   Q: If you /resume while in a work unit that already has a different session attached, does the new session replace the old one? Or should there be a prompt/warning?
   #   A: New session replaces the old attachment (no prompt/warning)
   #
-  #   Q: What happens when you press Shift+ESC (session detach)? Does that also detach the session from the work unit, or just return to board while keeping session attached?
-  #   A: Shift+ESC only returns to board, session stays attached to work unit and continues running in background
+  #   Q: What happens when you press Space+ESC (session detach)? Does that also detach the session from the work unit, or just return to board while keeping session attached?
+  #   A: Space+ESC only returns to board, session stays attached to work unit and continues running in background
   #
   #   Q: Where should the 🟢 indicator appear relative to the work unit ID? Before it (🟢 AUTH-001) or after it (AUTH-001 🟢)?
   #   A: Left side: 🟢 AUTH-001
@@ -139,11 +139,11 @@ Feature: Session attachment for work units with TUI resume integration
     Then "session-B" should replace "session-A" as the attachment for "AUTH-001"
     And "session-B" messages should be restored
 
-  @shift-esc
-  Scenario: Shift+ESC returns to board while keeping session attached
+  @space-esc
+  Scenario: Space+ESC returns to board while keeping session attached
     Given I am in the agent view for work unit "AUTH-001"
     And "AUTH-001" has an attached session
-    When I press Shift+ESC
+    When I press Space+ESC
     Then I should return to the board view
     And "AUTH-001" should still show the 🟢 indicator
     And the session should continue running in the background

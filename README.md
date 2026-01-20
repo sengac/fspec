@@ -101,6 +101,33 @@ Follow the [Quick Start](#quick-start) below and start talking naturally with yo
 
 ---
 
+## Integrated Coding Agent
+
+fspec includes a built-in AI coding agent directly in the TUI. Press Enter on any work unit (story, bug, or task) to open an agent conversation session that's automatically linked to that work unit.
+
+**Session-to-Story Linking:**
+- Sessions auto-attach to work units when you start a conversation
+- Work units with attached sessions display a 🟢 indicator on the board
+- Return to a work unit later and your conversation resumes exactly where you left off
+- Use `/detach` to start fresh or `/resume` to attach a different session
+
+**Multiple Concurrent Sessions:**
+- Run multiple AI agent sessions simultaneously in the background
+- **Shift+Right/Left arrows** instantly switch between active sessions
+- Detached sessions continue executing while you work on something else
+- Switch back anytime to see buffered output and continue the conversation
+- Similar to tmux/screen for terminal sessions—but for AI agents
+
+**Background Execution:**
+- Press ESC and select "Detach" to leave a session running in the background
+- Space+ESC returns to the board while keeping the session attached and running
+- View all background sessions with `/resume` and reattach to any of them
+- Agent tasks complete even when you're not watching
+
+**Why it matters:** No more context switching or waiting. Start multiple AI tasks across different stories, switch between them instantly, and never lose track of what was discussed for each feature or bug fix.
+
+---
+
 ## Checkpoints
 
 Experiment fearlessly with built-in Git checkpoints. Tell your agent to **"create a checkpoint"** to save your current state, then view and restore checkpoints from the interactive kanban by pressing the **C** key.

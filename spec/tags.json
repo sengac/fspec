@@ -1986,8 +1986,8 @@
           "description": "Scenarios testing Enter key behavior for session resume"
         },
         {
-          "name": "@shift-esc",
-          "description": "Scenarios testing Shift+ESC key behavior"
+          "name": "@space-esc",
+          "description": "Scenarios testing Space+ESC key behavior"
         },
         {
           "name": "@simple-command",

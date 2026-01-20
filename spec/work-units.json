@@ -61893,7 +61893,7 @@
     },
     "TUI-048": {
       "id": "TUI-048",
-      "title": "Shift+ESC immediate session detach in AgentView",
+      "title": "Space+ESC immediate session detach in AgentView",
       "type": "story",
       "status": "done",
       "createdAt": "2026-01-17T05:45:11.562Z",
@@ -61929,13 +61929,13 @@
       "rules": [
         {
           "id": 0,
-          "text": "Shift+ESC should immediately detach the session without showing the confirmation modal",
+          "text": "Space+ESC should immediately detach the session without showing the confirmation modal",
           "deleted": false,
           "createdAt": "2026-01-17T05:45:47.960Z"
         },
         {
           "id": 1,
-          "text": "Shift+ESC should override the default ESC key behavior in all states (thinking, inactive, etc.)",
+          "text": "Space+ESC should override the default ESC key behavior in all states (thinking, inactive, etc.)",
           "deleted": false,
           "createdAt": "2026-01-17T05:45:54.169Z"
         },
@@ -61974,13 +61974,13 @@
         },
         {
           "id": 3,
-          "text": "User sees input placeholder text includes 'Shift+ESC to detach' alongside existing options",
+          "text": "User sees input placeholder text includes 'Space+ESC to detach' alongside existing options",
           "deleted": false,
           "createdAt": "2026-01-17T05:46:17.498Z"
         },
         {
           "id": 4,
-          "text": "User sees thinking indicator text includes 'Shift+ESC to detach' alongside existing ESC interrupt option",
+          "text": "User sees thinking indicator text includes 'Space+ESC to detach' alongside existing ESC interrupt option",
           "deleted": false,
           "createdAt": "2026-01-17T05:46:20.894Z"
         }
@@ -62007,19 +62007,19 @@
         },
         {
           "id": 2,
-          "text": "@human: What is the exact text format for the input placeholder? Should it be 'Shift+ESC detach' or 'Shift+Esc' or something else?",
+          "text": "@human: What is the exact text format for the input placeholder? Should it be 'Space+ESC detach' or 'Space+Esc' or something else?",
           "deleted": false,
           "createdAt": "2026-01-17T05:46:33.036Z",
           "selected": true,
           "answered": true,
-          "answer": "Use 'Shift+ESC detach' format to be consistent with the existing format like 'Shift+↑/↓' for history navigation"
+          "answer": "Use 'Space+ESC detach' format to be consistent with the existing format like 'Shift+↑/↓' for history navigation"
         }
       ],
       "nextQuestionId": 3,
       "architectureNotes": [
         {
           "id": 0,
-          "text": "Implementation requires adding shift+escape detection in AgentView's useInput hook as the highest priority handler",
+          "text": "Implementation requires adding space+escape detection in AgentView's useInput hook as the highest priority handler",
           "deleted": false,
           "createdAt": "2026-01-17T05:47:45.905Z"
         },
@@ -62124,7 +62124,7 @@
         },
         {
           "id": 8,
-          "text": "Shift+ESC returns to board but keeps session attached to work unit (session continues in background)",
+          "text": "Space+ESC returns to board but keeps session attached to work unit (session continues in background)",
           "deleted": false,
           "createdAt": "2026-01-19T00:25:18.248Z"
         }
@@ -62181,7 +62181,7 @@
         },
         {
           "id": 8,
-          "text": "User presses Shift+ESC while in AUTH-001 session -> returns to board, AUTH-001 still shows 🟢 indicator, session continues in background",
+          "text": "User presses Space+ESC while in AUTH-001 session -> returns to board, AUTH-001 still shows 🟢 indicator, session continues in background",
           "deleted": false,
           "createdAt": "2026-01-19T00:25:21.154Z"
         }
@@ -62199,12 +62199,12 @@
         },
         {
           "id": 1,
-          "text": "@human: What happens when you press Shift+ESC (session detach)? Does that also detach the session from the work unit, or just return to board while keeping session attached?",
+          "text": "@human: What happens when you press Space+ESC (session detach)? Does that also detach the session from the work unit, or just return to board while keeping session attached?",
           "deleted": false,
           "createdAt": "2026-01-19T00:22:26.649Z",
           "selected": true,
           "answered": true,
-          "answer": "Shift+ESC only returns to board, session stays attached to work unit and continues running in background"
+          "answer": "Space+ESC only returns to board, session stays attached to work unit and continues running in background"
         },
         {
           "id": 2,
