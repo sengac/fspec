@@ -415,7 +415,11 @@ impl SessionManager {
         }
 
         // Create session from the configured provider manager
-        let inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
+        let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
+
+        // Inject context reminders (CLAUDE.md discovery, environment info)
+        // This provides the LLM with platform, architecture, shell, user, and working directory
+        inner.inject_context_reminders();
 
         let session = Arc::new(BackgroundSession::new(
             uuid,
