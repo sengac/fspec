@@ -278,12 +278,10 @@ impl GeminiTurnCompletionFacade {
 
     /// Check if the last message in history is a tool result.
     fn last_message_is_tool_result(messages: &[Message]) -> bool {
-        if let Some(last_msg) = messages.last() {
-            if let Message::User { content } = last_msg {
-                return content
-                    .iter()
-                    .any(|c| matches!(c, UserContent::ToolResult(_)));
-            }
+        if let Some(Message::User { content }) = messages.last() {
+            return content
+                .iter()
+                .any(|c| matches!(c, UserContent::ToolResult(_)));
         }
         false
     }

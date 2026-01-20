@@ -10,8 +10,7 @@
 // 5. Turn selection keeps from anchor forward
 
 use codelet_core::compaction::{
-    AnchorDetector, AnchorPoint, AnchorType, CompactionMetrics, ContextCompactor, ConversationTurn,
-    TurnSelector,
+    AnchorPoint, AnchorType, ContextCompactor, ConversationTurn, TurnSelector,
 };
 use std::time::SystemTime;
 
@@ -23,7 +22,6 @@ use std::time::SystemTime;
 fn test_token_tracker_replaces_values_each_turn() {
     // @step Given a session with token tracker initialized to 0
     let mut input_tokens: u64 = 0;
-    let mut output_tokens: u64 = 0;
     assert_eq!(input_tokens, 0);
 
     // @step And Turn 1 API response returns inputTokens=50000
@@ -146,7 +144,7 @@ fn test_weighted_summary_provider_no_llm_call() {
     let build_status = "passing";
 
     // @step When compaction is triggered
-    let mut llm_tracker = LlmCallTracker::new();
+    let llm_tracker = LlmCallTracker::new();
 
     // Generate summary using WeightedSummaryProvider (no LLM call)
     let summary = WeightedSummaryProvider::generate_weighted_summary(
@@ -225,7 +223,9 @@ async fn test_compaction_warns_on_low_compression() {
         )
     };
 
-    let result = compactor.compact(&turns, llm_prompt).await;
+    // Pass target_tokens as second argument (added in API update)
+    let target_tokens = 150_000u64;
+    let result = compactor.compact(&turns, target_tokens, llm_prompt).await;
 
     // @step Then a warning should be logged "Compression ratio 25% below 60% threshold"
     // Note: We can't easily test logging, but we test the behavior
@@ -253,11 +253,12 @@ fn test_anchor_point_marked_with_prefix() {
         tool_calls: vec![codelet_core::compaction::ToolCall {
             tool: "Edit".to_string(),
             id: "1".to_string(),
-            input: serde_json::json!({"file": "lib.rs"}),
+            parameters: serde_json::json!({"file_path": "lib.rs"}),
         }],
         tool_results: vec![codelet_core::compaction::ToolResult {
             success: true,
             output: "File modified. Tests pass.".to_string(),
+            error: None,
         }],
         assistant_response: "File changes implemented in lib.rs and tests pass".to_string(),
         tokens: 1000,

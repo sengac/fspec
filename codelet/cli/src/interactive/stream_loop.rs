@@ -131,8 +131,7 @@ impl TokPerSecTracker {
 
                 // Adaptive alpha: larger change = less smoothing (more responsiveness)
                 // Clamp alpha between 0.1 (max smoothing) and 0.9 (min smoothing)
-                let alpha = (relative_change * 2.0).clamp(0.1, 0.9);
-                alpha
+                (relative_change * 2.0).clamp(0.1, 0.9)
             }
             None => 1.0, // First reading: 100% weight to raw_rate
         };

@@ -33,8 +33,9 @@ pub(crate) struct PromptInput {
 
 /// Session status values
 #[repr(u8)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SessionStatus {
+    #[default]
     Idle = 0,
     Running = 1,
     Interrupted = 2,
@@ -48,12 +49,6 @@ impl From<u8> for SessionStatus {
             2 => SessionStatus::Interrupted,
             _ => SessionStatus::Idle,
         }
-    }
-}
-
-impl Default for SessionStatus {
-    fn default() -> Self {
-        SessionStatus::Idle
     }
 }
 
@@ -401,7 +396,7 @@ impl SessionManager {
         // Parse model string to extract provider_id and model_id for storage
         let (provider_id, model_id) = if model.contains('/') {
             let parts: Vec<&str> = model.split('/').collect();
-            let registry_provider = parts.get(0).unwrap_or(&"anthropic");
+            let registry_provider = parts.first().unwrap_or(&"anthropic");
             let model_part = parts.get(1).map(|s| s.to_string());
             (Some(registry_provider.to_string()), model_part)
         } else {

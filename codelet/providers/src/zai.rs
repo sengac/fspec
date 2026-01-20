@@ -100,7 +100,7 @@ impl ZAIProvider {
 
         // Allow model override via ZAI_MODEL env var or parameter
         let model_name = model
-            .map(|m| m.to_string())
+            .map(ToString::to_string)
             .or_else(|| std::env::var("ZAI_MODEL").ok())
             .unwrap_or_else(|| DEFAULT_MODEL.to_string());
 
@@ -176,6 +176,7 @@ impl ZAIProvider {
     ///
     /// Based on Z.AI documentation, these models support thinking:
     /// - glm-4-plus, glm-4.7, glm-4.6, glm-4.5, glm-4.5-air, glm-4.5-x, glm-4.5-airx, glm-4.5-flash
+    ///
     /// Vision models (glm-4.6v, glm-4.5v) do NOT support reasoning
     pub fn supports_reasoning(&self) -> bool {
         let model = &self.model_name;

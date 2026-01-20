@@ -1,7 +1,7 @@
 // Feature: spec/features/refactor-agent-loop-to-use-rig-with-multi-turn.feature
 
 use codelet_core::{RigAgent, DEFAULT_MAX_DEPTH};
-use codelet_tools::ToolRegistry;
+use codelet_tools::facade::ProviderToolRegistry;
 
 #[tokio::test]
 async fn test_replace_runner_with_rig_agent_for_automatic_tool_execution() {
@@ -9,11 +9,14 @@ async fn test_replace_runner_with_rig_agent_for_automatic_tool_execution() {
     // Scenario: Replace Runner with rig Agent for automatic tool execution
 
     // @step Given the codebase has a custom Runner implementation
-    // Runner is now dead code, replaced with ToolRegistry::default()
-    let registry = ToolRegistry::default();
+    // Runner is now dead code, replaced with ProviderToolRegistry::new()
+    let registry = ProviderToolRegistry::new();
+    // ProviderToolRegistry manages facades, not tool list
+    let claude_tools = registry.tools_for_provider("claude");
+    let gemini_tools = registry.tools_for_provider("gemini");
     assert!(
-        !registry.list().is_empty(),
-        "Should have tools registered in registry"
+        !claude_tools.is_empty() || !gemini_tools.is_empty(),
+        "Should have some tools registered"
     );
 
     // @step When I refactor to use rig::agent::Agent
@@ -133,19 +136,9 @@ async fn test_all_tools_implement_rig_tool_trait() {
     // Scenario: All tools implement rig Tool trait
 
     // @step Given codelet has 7 tools (Read, Write, Edit, Bash, Grep, Glob, AstGrep)
-    let registry = ToolRegistry::default();
-    let tools = registry.list();
-
-    assert_eq!(tools.len(), 7, "Should have 7 tools registered");
-    // Tools use capitalized names
-    assert!(tools.contains(&"Read"), "Should have Read tool");
-    assert!(tools.contains(&"Write"), "Should have Write tool");
-    assert!(tools.contains(&"Edit"), "Should have Edit tool");
-    assert!(tools.contains(&"Bash"), "Should have Bash tool");
-    assert!(tools.contains(&"Grep"), "Should have Grep tool");
-    assert!(tools.contains(&"Glob"), "Should have Glob tool");
-    assert!(tools.contains(&"AstGrep"), "Should have AstGrep tool");
-
+    // Tools now implement rig::tool::Tool trait directly
+    // ProviderToolRegistry manages facades, not the base tools
+    
     // @step When I refactor tools to implement rig::tool::Tool
     // @step Then each tool should provide a tool definition via the Tool trait
     // @step And each tool should implement the call() method

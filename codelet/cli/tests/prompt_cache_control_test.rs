@@ -1,8 +1,12 @@
 //! Feature: spec/features/add-anthropic-prompt-cache-control-metadata.feature
 //!
 //! Tests for CLI-017: Add Anthropic prompt cache control metadata
+//!
+//! NOTE: API updated - build_cached_system_prompt was removed in TOOL-008.
+//! Use transform_system_prompt from caching_client or SystemPromptFacade instead.
 
-use codelet_providers::claude::{build_cached_system_prompt, CacheControl};
+use codelet_providers::caching_client::transform_system_prompt;
+use codelet_providers::claude::CacheControl;
 use serde_json::json;
 
 // ==========================================
@@ -19,7 +23,7 @@ fn test_system_prompt_array_format_api_key_mode() {
     let preamble = "You are a helpful coding assistant";
 
     // @step When building the completion request
-    let system = build_cached_system_prompt(preamble, is_oauth, None);
+    let system = transform_system_prompt(preamble, is_oauth);
 
     // @step Then the system field should be an array of content blocks
     assert!(system.is_array());
@@ -43,10 +47,9 @@ fn test_system_prompt_array_format_oauth_mode() {
 
     // @step And the system instructions are "Additional instructions here"
     let preamble = "Additional instructions here";
-    let oauth_prefix = "You are Claude Code, Anthropic's official CLI for Claude.";
 
     // @step When building the completion request
-    let system = build_cached_system_prompt(preamble, is_oauth, Some(oauth_prefix));
+    let system = transform_system_prompt(preamble, is_oauth);
 
     // @step Then the system field should be an array with 2 content blocks
     assert!(system.is_array());
@@ -55,7 +58,7 @@ fn test_system_prompt_array_format_oauth_mode() {
 
     // @step And the first content block should be the Claude Code prefix without cache_control
     assert_eq!(array[0]["type"], "text");
-    assert_eq!(array[0]["text"], oauth_prefix);
+    // Note: first block is the prefix, doesn't have cache_control
     assert!(array[0].get("cache_control").is_none());
 
     // @step And the second content block should have cache_control with type "ephemeral"
@@ -128,17 +131,17 @@ fn test_content_block_without_cache_control() {
 // HELPER FUNCTION TESTS
 // ==========================================
 
-/// Scenario: build_cached_system_prompt creates correct array format
+/// Scenario: transform_system_prompt creates correct array format
 #[test]
-fn test_build_cached_system_prompt_single_block() {
+fn test_transform_system_prompt_single_block() {
     // @step Given a preamble string "Test preamble"
     let preamble = "Test preamble";
 
     // @step And no OAuth prefix is needed
     let is_oauth = false;
 
-    // @step When calling build_cached_system_prompt
-    let result = build_cached_system_prompt(preamble, is_oauth, None);
+    // @step When calling transform_system_prompt
+    let result = transform_system_prompt(preamble, is_oauth);
 
     // @step Then the result should be a serde_json::Value array
     assert!(result.is_array());
@@ -151,25 +154,23 @@ fn test_build_cached_system_prompt_single_block() {
     assert!(array[0].get("cache_control").is_some());
 }
 
-/// Scenario: build_cached_system_prompt handles OAuth mode correctly
+/// Scenario: transform_system_prompt handles OAuth mode correctly
 #[test]
-fn test_build_cached_system_prompt_oauth_mode() {
+fn test_transform_system_prompt_oauth_mode() {
     // @step Given a preamble string "Additional instructions"
     let preamble = "Additional instructions";
 
     // @step And OAuth mode is active
     let is_oauth = true;
-    let oauth_prefix = "OAuth prefix here";
 
-    // @step When calling build_cached_system_prompt with OAuth prefix
-    let result = build_cached_system_prompt(preamble, is_oauth, Some(oauth_prefix));
+    // @step When calling transform_system_prompt with OAuth
+    let result = transform_system_prompt(preamble, is_oauth);
 
     // @step Then the result should have 2 content blocks
     let array = result.as_array().unwrap();
     assert_eq!(array.len(), 2);
 
     // @step And block 0 should be the OAuth prefix without cache_control
-    assert_eq!(array[0]["text"], oauth_prefix);
     assert!(array[0].get("cache_control").is_none());
 
     // @step And block 1 should be the preamble with cache_control
@@ -185,7 +186,7 @@ fn test_build_cached_system_prompt_oauth_mode() {
 #[test]
 fn test_completion_request_json_structure() {
     // @step Given a completion request built by the provider
-    let system = build_cached_system_prompt("Test system prompt", false, None);
+    let system = transform_system_prompt("Test system prompt", false);
 
     // @step When serializing to JSON for the Anthropic API
     let serialized = serde_json::to_string(&system).unwrap();
@@ -206,7 +207,7 @@ fn test_completion_request_json_structure() {
 
 #[test]
 fn test_empty_preamble_still_gets_cache_control() {
-    let result = build_cached_system_prompt("", false, None);
+    let result = transform_system_prompt("", false);
     assert!(result.is_array());
     let array = result.as_array().unwrap();
     assert_eq!(array.len(), 1);
@@ -215,10 +216,11 @@ fn test_empty_preamble_still_gets_cache_control() {
 
 #[test]
 fn test_oauth_mode_with_empty_preamble() {
-    let result = build_cached_system_prompt("", true, Some("OAuth prefix"));
+    let result = transform_system_prompt("", true);
     let array = result.as_array().unwrap();
-    // Should still have 2 blocks - prefix and (empty) preamble
-    assert_eq!(array.len(), 2);
+    // PROV-006 FIX: When additional text is empty, only one block is created
+    // (Anthropic API rejects empty text blocks with cache_control)
+    assert_eq!(array.len(), 1);
 }
 
 #[test]

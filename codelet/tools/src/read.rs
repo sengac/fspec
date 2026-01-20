@@ -218,7 +218,7 @@ impl rig::tool::Tool for ReadTool {
                                         .unwrap_or_else(|_| "[]".to_string()),
                                 }
                             }
-                            "visual" | _ => {
+                            _ => {
                                 // VISUAL MODE (default): Render pages as images
                                 let pages = super::pdf::render_pdf_pages(&binary_content, &args.file_path)
                                     .map_err(map_pdf_error)?;
