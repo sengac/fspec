@@ -41,6 +41,18 @@ impl TokenInfo {
     }
 }
 
+impl From<codelet_core::TokenDisplayUpdate> for TokenInfo {
+    fn from(update: codelet_core::TokenDisplayUpdate) -> Self {
+        Self {
+            input_tokens: update.total_input(), // Display total, not raw (PROV-001)
+            output_tokens: update.output_tokens,
+            cache_read_input_tokens: Some(update.cache_read_tokens),
+            cache_creation_input_tokens: Some(update.cache_creation_tokens),
+            tokens_per_second: update.tokens_per_second,
+        }
+    }
+}
+
 /// Tool call information
 #[derive(Debug, Clone)]
 pub struct ToolCallEvent {
