@@ -106,6 +106,12 @@ import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import { useFspecStore } from '../store/fspecStore';
+import {
+  useRustSessionState,
+  manualAttach,
+  manualDetach,
+  getSessionChunks,
+} from '../hooks/useRustSessionState';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -863,7 +869,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [availableProviders, setAvailableProviders] = useState<string[]>([]);
   const [showProviderSelector, setShowProviderSelector] = useState(false);
   const [selectedProviderIndex, setSelectedProviderIndex] = useState(0);
-  const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021
+  const [isDebugEnabled, setIsDebugEnabled] = useState(false); // AGENT-021 - local state synced with Rust on toggle
   const [isTurnSelectMode, setIsTurnSelectMode] = useState(false); // TUI-042: Turn selection mode toggle (replaces TUI-041 line selection)
   // TUI-045: Modal state for full turn viewing (replaces expandedMessageIndices)
   const [showTurnModal, setShowTurnModal] = useState(false);
@@ -888,8 +894,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [providerSections, setProviderSections] = useState<ProviderSection[]>(
     []
   );
-  // Trigger to force useMemo to re-fetch from Rust when model changes
-  const [modelChangeTrigger, setModelChangeTrigger] = useState(0);
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [selectedSectionIdx, setSelectedSectionIdx] = useState(0);
   const [selectedModelIdx, setSelectedModelIdx] = useState(-1); // -1 = on section header
@@ -2493,8 +2497,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               }
               return updated;
             });
-            // Trigger useMemo to re-fetch status from Rust (now idle)
-            setModelChangeTrigger(prev => prev + 1);
+            refreshRustState();
             // NAPI-009: Resolve the promise when agent completes
             resolve();
           } else if (chunk.type === 'Status' && chunk.status) {
@@ -2958,57 +2961,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
   }, []);
 
-  // Helper to refresh model state from Rust (source of truth)
-  const refreshModelFromRust = useCallback((sessionId: string) => {
-    try {
-      const sessionModel = sessionGetModel(sessionId);
-      if (sessionModel.providerId) {
-        const internalName = mapProviderIdToInternal(sessionModel.providerId);
-        setCurrentProvider(internalName);
-        if (sessionModel.modelId) {
-          const section = providerSections.find(s => s.providerId === sessionModel.providerId);
-          const model = section?.models.find(m => extractModelIdForRegistry(m.id) === sessionModel.modelId);
-          if (model && section) {
-            setCurrentModel({
-              providerId: sessionModel.providerId,
-              modelId: sessionModel.modelId,
-              apiModelId: model.id,
-              displayName: model.name,
-              reasoning: model.reasoning,
-              hasVision: model.hasVision,
-              contextWindow: model.contextWindow,
-              maxOutput: model.maxOutput,
-            });
-          } else {
-            setCurrentModel({
-              providerId: sessionModel.providerId,
-              modelId: sessionModel.modelId,
-              apiModelId: sessionModel.modelId,
-              displayName: sessionModel.modelId,
-              reasoning: false,
-              hasVision: false,
-              contextWindow: 0,
-              maxOutput: 0,
-            });
-          }
-        }
-      }
-    } catch (err) {
-      logger.error('Failed to refresh model from Rust', { error: err });
-    }
-  }, [providerSections]);
-
-  // Helper to refresh isLoading from Rust (source of truth)
-  const refreshStatusFromRust = useCallback((sessionId: string) => {
-    try {
-      const status = sessionGetStatus(sessionId);
-      setIsLoading(status === 'running');
-    } catch (err) {
-      logger.error('Failed to refresh status from Rust', { error: err });
-    }
-  }, []);
-
-  // TUI-034: Handle model selection - Rust is source of truth
+  // TUI-034: Handle model selection
   const handleSelectModel = useCallback(
     async (section: ProviderSection, model: NapiModelInfo) => {
       const modelId = extractModelIdForRegistry(model.id);
@@ -3016,13 +2969,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
       setShowModelSelector(false);
 
-      // Update Rust first (source of truth)
       if (currentSessionId) {
         try {
-          // sessionSetModel is async - it updates both cached metadata and inner session model
           await sessionSetModel(currentSessionId, section.providerId, modelId);
-          // Trigger useMemo to re-fetch from Rust
-          setModelChangeTrigger(prev => prev + 1);
+          refreshRustState();
         } catch (err) {
           logger.error('Failed to update background session model', { error: err });
         }
@@ -3309,8 +3259,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         }
         return updated;
       });
-      // Trigger useMemo to re-fetch status from Rust (now idle)
-      setModelChangeTrigger(prev => prev + 1);
+      refreshRustState();
       setIsLoading(false);
     } else if (chunk.type === 'Status' && chunk.status) {
       // Show status messages (except compaction notifications)
@@ -3543,9 +3492,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Update session state
         setCurrentSessionId(sessionId);
 
-        // Trigger useMemo to re-fetch from Rust (source of truth)
-        setModelChangeTrigger(prev => prev + 1);
-
         return true;
       } else {
         // Persisted-only session - load from persistence
@@ -3770,9 +3716,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setCurrentSessionId(selectedSession.id);
         setIsResumeMode(false);
         setAvailableSessions([]);
-
-        // Trigger useMemo to re-fetch from Rust (source of truth)
-        setModelChangeTrigger(prev => prev + 1);
 
         // SESS-001: Attach resumed session to work unit
         if (workUnitId) {
@@ -4879,8 +4822,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         if (displayIsLoading && currentSessionId) {
           try {
             sessionInterrupt(currentSessionId);
-            // Trigger useMemo to re-fetch status from Rust
-            setModelChangeTrigger(prev => prev + 1);
+            refreshRustState();
           } catch {
             // Ignore interrupt errors
           }
@@ -5106,10 +5048,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // TUI-043: Keep ref in sync with conversationLines for use in callbacks
   conversationLinesRef.current = conversationLines;
 
-  // Get model DIRECTLY from Rust via useMemo - re-runs when session or conversation changes
-  // IMPORTANT: Must be before early returns to avoid React hooks violation
+  // Rust state subscription via useSyncExternalStore
+  const { snapshot: rustSnapshot, refresh: refreshRustState } = useRustSessionState(currentSessionId);
+
+  // Derive display values from Rust snapshot + local state fallbacks
   const rustModelInfo = useMemo(() => {
-    // No session yet - use currentModel state (set by model picker before first message)
     if (!currentSessionId) {
       return {
         modelId: currentModel?.displayName || currentModel?.modelId || currentProvider,
@@ -5118,21 +5061,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         contextWindow: currentModel?.contextWindow || 0,
       };
     }
-    // Session exists - get from Rust (source of truth)
-    try {
-      const rustModel = sessionGetModel(currentSessionId);
-      if (rustModel.modelId) {
-        const section = providerSections.find(s => s.providerId === rustModel.providerId);
-        const model = section?.models.find(m => extractModelIdForRegistry(m.id) === rustModel.modelId);
-        return {
-          modelId: model?.name || rustModel.modelId,
-          reasoning: model?.reasoning || false,
-          hasVision: model?.hasVision || false,
-          contextWindow: model?.contextWindow || 0,
-        };
-      }
-    } catch {
-      // Fall through
+    const rustModel = rustSnapshot.model;
+    if (rustModel?.modelId) {
+      const section = providerSections.find(s => s.providerId === rustModel.providerId);
+      const model = section?.models.find(m => extractModelIdForRegistry(m.id) === rustModel.modelId);
+      return {
+        modelId: model?.name || rustModel.modelId,
+        reasoning: model?.reasoning || false,
+        hasVision: model?.hasVision || false,
+        contextWindow: model?.contextWindow || 0,
+      };
     }
     // Fallback - use currentModel state
     return {
@@ -5141,42 +5079,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       hasVision: currentModel?.hasVision || false,
       contextWindow: currentModel?.contextWindow || 0,
     };
-  }, [currentSessionId, currentProvider, currentModel, providerSections, conversation.length, modelChangeTrigger]);
+  }, [currentSessionId, currentProvider, currentModel, providerSections, rustSnapshot.model]);
 
-  // Get isLoading DIRECTLY from Rust via useMemo
-  const displayIsLoading = useMemo(() => {
-    if (!currentSessionId) return false;
-    try {
-      return sessionGetStatus(currentSessionId) === 'running';
-    } catch {
-      return false;
-    }
-  }, [currentSessionId, conversation.length, modelChangeTrigger]);
+  // Get isLoading from Rust snapshot
+  const displayIsLoading = rustSnapshot.isLoading;
 
-  // Get token counts DIRECTLY from Rust via useMemo
-  // This ensures tokens are restored when attaching to a session
-  const rustTokens = useMemo(() => {
-    if (!currentSessionId) return { inputTokens: 0, outputTokens: 0 };
-    try {
-      const tokens = sessionGetTokens(currentSessionId);
-      return {
-        inputTokens: tokens.inputTokens,
-        outputTokens: tokens.outputTokens,
-      };
-    } catch {
-      return { inputTokens: 0, outputTokens: 0 };
-    }
-  }, [currentSessionId, conversation.length, modelChangeTrigger]);
+  // Get token counts from Rust snapshot
+  const rustTokens = rustSnapshot.tokens;
 
-  // Get debug enabled state from Rust (persists across detach/attach)
-  const displayIsDebugEnabled = useMemo(() => {
-    if (!currentSessionId) return false;
-    try {
-      return sessionGetDebugEnabled(currentSessionId);
-    } catch {
-      return false;
-    }
-  }, [currentSessionId, conversation.length, modelChangeTrigger]);
+  // Get debug enabled state - use both Rust snapshot and local state for responsive UI
+  const displayIsDebugEnabled = rustSnapshot.isDebugEnabled || isDebugEnabled;
 
   const displayModelId = rustModelInfo.modelId;
   const displayReasoning = rustModelInfo.reasoning;
