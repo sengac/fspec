@@ -31,13 +31,14 @@ fn create_test_turn(
             .map(|name| CompactionToolCall {
                 tool: name.to_string(),
                 id: format!("tool_{}", name),
-                input: serde_json::json!({}),
+                parameters: serde_json::json!({}),
             })
             .collect(),
         tool_results: if has_test_success {
             vec![CompactionToolResult {
                 success: true,
                 output: "Tests passed successfully".to_string(),
+                error: None,
             }]
         } else {
             vec![]
@@ -82,6 +83,8 @@ async fn test_compaction_trigger_at_90_percent_context_window() -> Result<()> {
         output_tokens: 5_000,
         cache_read_input_tokens: Some(cache_read_tokens),
         cache_creation_input_tokens: Some(0),
+        cumulative_billed_input: 0,
+        cumulative_billed_output: 0,
     };
 
     let should_compact = tracker.effective_tokens() > threshold;

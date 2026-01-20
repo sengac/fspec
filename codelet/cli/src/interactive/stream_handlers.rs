@@ -25,7 +25,7 @@ fn detect_tool_error(raw_result: &str) -> bool {
     // Try to parse as JSON to check for structured error indicators
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(raw_result) {
         // Check for {"success": false, ...} pattern used by tool facades
-        if let Some(success) = json.get("success").and_then(|v| v.as_bool()) {
+        if let Some(success) = json.get("success").and_then(serde_json::Value::as_bool) {
             return !success;
         }
         // Check for {"error": "...", ...} pattern (error field present with non-null value)

@@ -107,11 +107,9 @@ pub fn transform_user_message_cache_control(body: &mut Value) {
             let msg = &messages[i];
             let content = msg.get("content");
 
-            if content.is_none() {
+            let Some(content) = content else {
                 continue;
-            }
-
-            let content = content.unwrap();
+            };
 
             // Handle string content - convert to array with cache_control
             if content.is_string() {

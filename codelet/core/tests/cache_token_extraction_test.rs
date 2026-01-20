@@ -55,140 +55,123 @@ fn test_effective_tokens_applies_90_percent_cache_discount() {
         output_tokens: 0,
         cache_read_input_tokens: Some(5000),
         cache_creation_input_tokens: None,
+        cumulative_billed_input: 0,
+        cumulative_billed_output: 0,
     };
 
     // @step When effective_tokens() is called
     let effective = tracker.effective_tokens();
 
-    // @step Then the result should be 5500 (10000 - 5000 * 0.9)
-    // 10000 - (5000 * 0.9) = 10000 - 4500 = 5500
+    // @step Then effective tokens should be 5500
+    // Calculation: 10000 - (5000 * 0.9) = 10000 - 4500 = 5500
     assert_eq!(effective, 5500);
 }
 
 // =============================================================================
-// Scenario: Non-Anthropic providers default to no cache tokens
+// Scenario: Token tracker accumulates cache tokens from API response
 // =============================================================================
 
 #[test]
-fn test_non_anthropic_providers_default_to_no_cache_tokens() {
-    // @step Given an OpenAI provider streaming response without cache fields
-    // OpenAI and other providers don't have cache token fields
-    let turn_cache_read_tokens: Option<u64> = None;
-    let turn_cache_creation_tokens: Option<u64> = None;
+fn test_token_tracker_accumulates_cache_tokens() {
+    // @step Given a TokenTracker initialized with cache tokens from API response
+    let mut tracker = TokenTracker {
+        input_tokens: 8000,
+        output_tokens: 500,
+        cache_read_input_tokens: Some(3000),
+        cache_creation_input_tokens: Some(1000),
+        cumulative_billed_input: 0,
+        cumulative_billed_output: 0,
+    };
 
-    // @step When the streaming response is processed
-    // Non-Anthropic providers leave cache tokens as None
+    // @step When the token tracker is updated with new API response values
+    tracker.update(12000, 800, Some(5000), Some(2000));
 
-    // @step Then turn_cache_read_tokens should remain None
-    assert!(turn_cache_read_tokens.is_none());
+    // @step Then input_tokens should be replaced (not accumulated)
+    assert_eq!(tracker.input_tokens, 12000);
 
-    // @step And turn_cache_creation_tokens should remain None
-    assert!(turn_cache_creation_tokens.is_none());
+    // @step And output_tokens should be replaced (not accumulated)
+    assert_eq!(tracker.output_tokens, 800);
 
-    // @step And effective_tokens() should return the full input_tokens value
+    // @step And cache_read_input_tokens should be replaced
+    assert_eq!(tracker.cache_read_input_tokens, Some(5000));
+
+    // @step And cache_creation_input_tokens should be replaced
+    assert_eq!(tracker.cache_creation_input_tokens, Some(2000));
+
+    // @step And cumulative_billed_input should be accumulated
+    assert_eq!(tracker.cumulative_billed_input, 12000);
+
+    // @step And cumulative_billed_output should be accumulated
+    assert_eq!(tracker.cumulative_billed_output, 800);
+}
+
+// =============================================================================
+// Scenario: Effective tokens handles missing cache values
+// =============================================================================
+
+#[test]
+fn test_effective_tokens_handles_missing_cache_values() {
+    // @step Given a TokenTracker with no cache tokens (None values)
     let tracker = TokenTracker {
         input_tokens: 10000,
-        output_tokens: 0,
+        output_tokens: 500,
         cache_read_input_tokens: None,
         cache_creation_input_tokens: None,
+        cumulative_billed_input: 0,
+        cumulative_billed_output: 0,
     };
+
+    // @step When effective_tokens() is called
     let effective = tracker.effective_tokens();
-    // With no cache discount, effective equals input
+
+    // @step Then effective tokens should equal input tokens (no discount applied)
+    // Calculation: 10000 - (0 * 0.9) = 10000
     assert_eq!(effective, 10000);
 }
 
 // =============================================================================
-// Scenario: Accumulate cache tokens into session tracker after turn
+// Scenario: Total tokens includes both input and output
 // =============================================================================
 
 #[test]
-fn test_accumulate_cache_tokens_into_session_tracker() {
-    // @step Given a session with token_tracker.cache_read_input_tokens=1000
-    let mut tracker = TokenTracker {
-        input_tokens: 5000,
-        output_tokens: 500,
-        cache_read_input_tokens: Some(1000),
-        cache_creation_input_tokens: None,
-    };
-
-    // @step And turn_cache_read_tokens=5000 extracted from a completed turn
-    let turn_cache_read_tokens: Option<u64> = Some(5000);
-
-    // @step When the turn completes and tokens are accumulated
-    // This is the accumulation logic from interactive.rs:618-621
-    if let Some(cache_read) = turn_cache_read_tokens {
-        let current = tracker.cache_read_input_tokens.unwrap_or(0);
-        tracker.cache_read_input_tokens = Some(current + cache_read);
-    }
-
-    // @step Then session.token_tracker.cache_read_input_tokens should be 6000
-    assert_eq!(tracker.cache_read_input_tokens, Some(6000));
-}
-
-// =============================================================================
-// Additional edge case tests
-// =============================================================================
-
-#[test]
-fn test_effective_tokens_with_both_cache_fields() {
-    // When both cache_read and cache_creation are present
-    let tracker = TokenTracker {
-        input_tokens: 20000,
-        output_tokens: 1000,
-        cache_read_input_tokens: Some(10000),
-        cache_creation_input_tokens: Some(5000),
-    };
-
-    // Only cache_read affects effective_tokens (90% discount)
-    // cache_creation doesn't get a discount (it's a cost, not a savings)
-    let effective = tracker.effective_tokens();
-    // 20000 - (10000 * 0.9) = 20000 - 9000 = 11000
-    assert_eq!(effective, 11000);
-}
-
-#[test]
-fn test_accumulate_cache_tokens_from_none_to_some() {
-    // Starting with no cache tokens
-    let mut tracker = TokenTracker {
-        input_tokens: 5000,
-        output_tokens: 500,
-        cache_read_input_tokens: None,
-        cache_creation_input_tokens: None,
-    };
-
-    // First turn extracts cache tokens
-    let turn_cache_read = Some(3000);
-    let turn_cache_creation = Some(1000);
-
-    // Accumulate
-    if let Some(cache_read) = turn_cache_read {
-        let current = tracker.cache_read_input_tokens.unwrap_or(0);
-        tracker.cache_read_input_tokens = Some(current + cache_read);
-    }
-    if let Some(cache_create) = turn_cache_creation {
-        let current = tracker.cache_creation_input_tokens.unwrap_or(0);
-        tracker.cache_creation_input_tokens = Some(current + cache_create);
-    }
-
-    assert_eq!(tracker.cache_read_input_tokens, Some(3000));
-    assert_eq!(tracker.cache_creation_input_tokens, Some(1000));
-}
-
-#[test]
-fn test_total_tokens_excludes_cache_discount() {
-    // total_tokens() should NOT apply cache discount
+fn test_total_tokens_includes_input_and_output() {
+    // @step Given a TokenTracker with input_tokens=10000 and output_tokens=500
     let tracker = TokenTracker {
         input_tokens: 10000,
-        output_tokens: 2000,
-        cache_read_input_tokens: Some(5000),
+        output_tokens: 500,
+        cache_read_input_tokens: Some(3000),
         cache_creation_input_tokens: None,
+        cumulative_billed_input: 0,
+        cumulative_billed_output: 0,
     };
 
-    // total_tokens = input + output (no discount)
+    // @step When total_tokens() is called
     let total = tracker.total_tokens();
-    assert_eq!(total, 12000);
 
-    // effective_tokens applies discount
-    let effective = tracker.effective_tokens();
-    assert_eq!(effective, 5500); // 10000 - 4500
+    // @step Then total should be 10500 (input + output)
+    assert_eq!(total, 10500);
+}
+
+// =============================================================================
+// Scenario: Token tracker default initialization
+// =============================================================================
+
+#[test]
+fn test_token_tracker_default_initialization() {
+    // @step Given a new TokenTracker
+    let tracker = TokenTracker::new();
+
+    // @step Then all values should be initialized to zero/None
+    assert_eq!(tracker.input_tokens, 0);
+    assert_eq!(tracker.output_tokens, 0);
+    assert_eq!(tracker.cache_read_input_tokens, None);
+    assert_eq!(tracker.cache_creation_input_tokens, None);
+    assert_eq!(tracker.cumulative_billed_input, 0);
+    assert_eq!(tracker.cumulative_billed_output, 0);
+
+    // @step And effective_tokens should return 0
+    assert_eq!(tracker.effective_tokens(), 0);
+
+    // @step And total_tokens should return 0
+    assert_eq!(tracker.total_tokens(), 0);
 }

@@ -290,7 +290,7 @@ where
 /// // Now create stream
 /// let stream = agent.prompt_streaming_with_history(&prompt, &session.messages).await;
 /// ```
-pub fn ensure_thought_signatures(messages: &mut Vec<Message>, model: &str) {
+pub fn ensure_thought_signatures(messages: &mut [Message], model: &str) {
     if !GeminiHistoryHook::is_preview_model(model) {
         return;
     }

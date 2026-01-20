@@ -29,7 +29,7 @@ fn extract_required_string(input: &Value, field: &str, tool: &'static str) -> Re
         .filter(|s| !s.is_empty())
         .ok_or_else(|| ToolError::Validation {
             tool,
-            message: format!("Missing or empty required '{}' field", field),
+            message: format!("Missing or empty required '{field}' field"),
         })?;
     Ok(value.to_string())
 }
@@ -46,7 +46,7 @@ fn extract_optional_string(input: &Value, field: &str) -> Option<String> {
 
 /// Extract an optional unsigned integer field from JSON input.
 fn extract_optional_uint(input: &Value, field: &str) -> Option<usize> {
-    input.get(field).and_then(|v| v.as_u64()).map(|n| n as usize)
+    input.get(field).and_then(Value::as_u64).map(|n| n as usize)
 }
 
 // ============================================================================

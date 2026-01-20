@@ -6,7 +6,10 @@
 use anyhow::{anyhow, Result};
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
+
+#[cfg(target_os = "macos")]
+use std::path::Path;
 
 /// OAuth constants from Codex CLI
 const CODEX_ISSUER: &str = "https://auth.openai.com";

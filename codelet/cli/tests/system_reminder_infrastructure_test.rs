@@ -526,9 +526,11 @@ async fn test_system_reminders_persist_through_compaction() {
         .expect("Compaction should succeed");
 
     // @step Then the messages Vec should contain the compacted summary
+    // Note: The compactor now uses template-based summaries (not LLM-generated)
+    // so we check for "Key outcomes" which is always in the template
     let has_summary = session.messages.iter().any(|msg| match msg {
         Message::User { content } => match content.first() {
-            UserContent::Text(t) => t.text.contains("Brief"), // Our mock returns "Brief"
+            UserContent::Text(t) => t.text.contains("Key outcomes"), // Template-based summary
             _ => false,
         },
         _ => false,

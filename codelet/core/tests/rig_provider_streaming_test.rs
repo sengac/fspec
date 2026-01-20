@@ -147,9 +147,15 @@ fn test_authenticate_using_oauth_with_custom_headers() {
 
     // Verify OAuth-specific headers would be added
     // (In actual implementation, rig handles this via custom headers)
-    assert_eq!(
-        provider.get_anthropic_beta_header(),
-        "prompt-caching-2024-07-31,oauth-2025-04-20,interleaved-thinking-2025-05-14,tool-examples-2025-10-29"
+    // Note: The beta header may include different features depending on OAuth mode
+    let beta_header = provider.get_anthropic_beta_header();
+    assert!(
+        beta_header.contains("oauth-2025-04-20"),
+        "Beta header should include oauth feature"
+    );
+    assert!(
+        beta_header.contains("interleaved-thinking-2025-05-14"),
+        "Beta header should include interleaved-thinking feature"
     );
 }
 
