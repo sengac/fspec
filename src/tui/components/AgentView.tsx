@@ -1026,9 +1026,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     // Get fallback model ID from local state
     const localModelId = currentModel?.displayName || currentModel?.modelId || currentProvider;
 
-    // No session - use local state
+    // No session - use local state with full model info if available
     if (!currentSessionId) {
-      return createModelInfo(localModelId);
+      return createModelInfo(
+        localModelId,
+        currentModel?.reasoning ?? false,
+        currentModel?.hasVision ?? false,
+        currentModel?.contextWindow ?? 0
+      );
     }
 
     // Has session with Rust model data
@@ -1047,8 +1052,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       return createModelInfo(rustModel.modelId);
     }
 
-    // Fallback to local state
-    return createModelInfo(localModelId);
+    // Fallback to local state with full model info if available
+    return createModelInfo(
+      localModelId,
+      currentModel?.reasoning ?? false,
+      currentModel?.hasVision ?? false,
+      currentModel?.contextWindow ?? 0
+    );
   }, [
     currentSessionId,
     currentProvider,
