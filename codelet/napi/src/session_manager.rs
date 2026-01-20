@@ -279,6 +279,10 @@ impl BackgroundSession {
     /// Buffers the user input as a UserInput chunk before sending to the agent,
     /// so it can be replayed when attaching to a detached session via /resume.
     pub fn send_input(&self, input: String, thinking_config: Option<String>) -> Result<()> {
+        // TUI-049: Clear pending input - it's being sent now (state invariant)
+        // This prevents "ghost input" from reappearing when switching sessions after send
+        self.set_pending_input(None);
+
         // Buffer user input for resume/attach (NAPI-009)
         self.handle_output(StreamChunk::user_input(input.clone()));
 
