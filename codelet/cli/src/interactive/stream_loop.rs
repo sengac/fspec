@@ -327,10 +327,8 @@ where
                 ));
                 output.emit_status("[Continuing with compacted context...]\n");
 
-                // Reset output and cache metrics after compaction
-                session.token_tracker.output_tokens = 0;
-                session.token_tracker.cache_read_input_tokens = None;
-                session.token_tracker.cache_creation_input_tokens = None;
+                // CMPCT-001: Reset output and cache metrics after compaction
+                session.token_tracker.reset_after_compaction();
             }
             Err(e) => {
                 // Log but continue - the API might still work, or will fail with clear error
@@ -903,11 +901,8 @@ where
                                     ensure_thought_signatures(&mut session.messages, &model_id);
                                 }
                                 
-                                // Update session token tracker with current values before recursion
-                                session.token_tracker.input_tokens = turn_usage.total_input();
-                                session.token_tracker.output_tokens = turn_cumulative_output;
-                                session.token_tracker.cache_read_input_tokens = Some(turn_usage.cache_read_input_tokens);
-                                session.token_tracker.cache_creation_input_tokens = Some(turn_usage.cache_creation_input_tokens);
+                                // CMPCT-001: Update display values before recursion (no billing accumulation yet)
+                                session.token_tracker.update_display_only(&turn_usage, turn_cumulative_output);
                                 
                                 // Create a new hook and token state for the continuation
                                 let continuation_token_state = Arc::new(Mutex::new(TokenState {
@@ -955,14 +950,9 @@ where
                                             handle_final_response(&continuation_text, &mut session.messages)?;
                                         }
                                         
-                                        // Update session token tracker before returning
+                                        // CMPCT-001: Update token tracker with billing accumulation on interrupt
                                         continuation_cumulative_output += continuation_usage.output_tokens;
-                                        session.token_tracker.input_tokens = continuation_usage.total_input();
-                                        session.token_tracker.output_tokens = continuation_cumulative_output;
-                                        session.token_tracker.cumulative_billed_input += continuation_usage.input_tokens;
-                                        session.token_tracker.cumulative_billed_output += continuation_usage.output_tokens;
-                                        session.token_tracker.cache_read_input_tokens = Some(continuation_usage.cache_read_input_tokens);
-                                        session.token_tracker.cache_creation_input_tokens = Some(continuation_usage.cache_creation_input_tokens);
+                                        session.token_tracker.update_from_usage(&continuation_usage, continuation_cumulative_output);
                                         
                                         // Clear tool progress callback before returning
                                         set_tool_progress_callback(None);
@@ -1121,13 +1111,8 @@ where
                                             continuation_cumulative_output += continuation_usage.output_tokens;
                                             handle_final_response(&continuation_text, &mut session.messages)?;
                                             
-                                            // Update session token tracker (including billing)
-                                            session.token_tracker.input_tokens = continuation_usage.total_input();
-                                            session.token_tracker.output_tokens = continuation_cumulative_output;
-                                            session.token_tracker.cumulative_billed_input += continuation_usage.input_tokens;
-                                            session.token_tracker.cumulative_billed_output += continuation_usage.output_tokens;
-                                            session.token_tracker.cache_read_input_tokens = Some(continuation_usage.cache_read_input_tokens);
-                                            session.token_tracker.cache_creation_input_tokens = Some(continuation_usage.cache_creation_input_tokens);
+                                            // CMPCT-001: Update token tracker with billing accumulation on normal completion
+                                            session.token_tracker.update_from_usage(&continuation_usage, continuation_cumulative_output);
                                             
                                             break;
                                         }
@@ -1155,14 +1140,9 @@ where
                                                 handle_final_response(&continuation_text, &mut session.messages)?;
                                             }
                                             
-                                            // Update session token tracker even on unexpected end (including billing)
+                                            // CMPCT-001: Update token tracker with billing accumulation on unexpected end
                                             continuation_cumulative_output += continuation_usage.output_tokens;
-                                            session.token_tracker.input_tokens = continuation_usage.total_input();
-                                            session.token_tracker.output_tokens = continuation_cumulative_output;
-                                            session.token_tracker.cumulative_billed_input += continuation_usage.input_tokens;
-                                            session.token_tracker.cumulative_billed_output += continuation_usage.output_tokens;
-                                            session.token_tracker.cache_read_input_tokens = Some(continuation_usage.cache_read_input_tokens);
-                                            session.token_tracker.cache_creation_input_tokens = Some(continuation_usage.cache_creation_input_tokens);
+                                            session.token_tracker.update_from_usage(&continuation_usage, continuation_cumulative_output);
                                             
                                             break;
                                         }
@@ -1347,12 +1327,10 @@ where
                 ));
                 output.emit_status("[Continuing with compacted context...]\n");
 
+                // CMPCT-001: Reset output and cache metrics after compaction
                 // NOTE: execute_compaction already sets session.token_tracker.input_tokens
                 // to the correct new_total_tokens calculated from compacted messages.
-                // We only reset output_tokens and cache metrics here.
-                session.token_tracker.output_tokens = 0;
-                session.token_tracker.cache_read_input_tokens = None;
-                session.token_tracker.cache_creation_input_tokens = None;
+                session.token_tracker.reset_after_compaction();
 
                 // Re-add the user's original prompt to session.messages so the agent
                 // can continue processing it with the compacted context
@@ -1606,17 +1584,9 @@ where
                     // TOOL-011: Tool progress is emitted directly via progress_emitter callback
                 }
 
-                // TUI-031: Update session state after retry completes
-                // PROV-001: Use ApiTokenUsage.total_input() for consistent calculation
+                // CMPCT-001: Update session state after retry completes
                 if !is_interrupted.load(Acquire) {
-                    session.token_tracker.input_tokens = retry_usage.total_input();
-                    session.token_tracker.output_tokens = retry_cumulative_output;
-                    session.token_tracker.cumulative_billed_input += retry_usage.input_tokens;
-                    session.token_tracker.cumulative_billed_output += retry_usage.output_tokens;
-                    session.token_tracker.cache_read_input_tokens =
-                        Some(retry_usage.cache_read_input_tokens);
-                    session.token_tracker.cache_creation_input_tokens =
-                        Some(retry_usage.cache_creation_input_tokens);
+                    session.token_tracker.update_from_usage(&retry_usage, retry_cumulative_output);
                 }
 
                 return Ok(());
@@ -1649,37 +1619,20 @@ where
         }
     }
 
-    // CTX-003: Update session token tracker with BOTH current context AND cumulative billing
-    // PROV-001: Use ApiTokenUsage.total_input() for consistent calculation
-    //
-    // Two distinct metrics:
-    // - input_tokens: TOTAL context size for display (uses turn_usage.total_input())
-    // - output_tokens: CUMULATIVE output tokens across all API calls (TUI-031)
-    // - cumulative_billed_input/output: Sum of all API calls (for billing analytics)
+    // CMPCT-001: Update session token tracker with BOTH current context AND cumulative billing
+    // Uses the consolidated update_from_usage method to reduce code duplication
     if !is_interrupted.load(Acquire) {
-        // PROV-001: Store TOTAL context for display and threshold checks
-        session.token_tracker.input_tokens = turn_usage.total_input();
-        // TUI-031: Save CUMULATIVE output tokens so next turn continues from correct value
-        session.token_tracker.output_tokens = turn_cumulative_output;
-        // Accumulate for billing analytics (raw uncached input, not total context)
-        // PROV-001 DEBUG: Log values before accumulation
         tracing::debug!(
-            "PROV-001: Before accumulation: cumulative_billed_input={}, turn_usage.input_tokens={}",
+            "CMPCT-001: Before update: cumulative_billed_input={}, turn_usage.input_tokens={}",
             session.token_tracker.cumulative_billed_input,
             turn_usage.input_tokens
         );
-        session.token_tracker.cumulative_billed_input += turn_usage.input_tokens;
-        session.token_tracker.cumulative_billed_output += turn_usage.output_tokens;
-        // PROV-001 DEBUG: Log values after accumulation
+        session.token_tracker.update_from_usage(&turn_usage, turn_cumulative_output);
         tracing::debug!(
-            "PROV-001: After accumulation: cumulative_billed_input={}, cumulative_billed_output={}",
+            "CMPCT-001: After update: cumulative_billed_input={}, cumulative_billed_output={}",
             session.token_tracker.cumulative_billed_input,
             session.token_tracker.cumulative_billed_output
         );
-        // Cache tokens are per-request, not cumulative (use latest values)
-        session.token_tracker.cache_read_input_tokens = Some(turn_usage.cache_read_input_tokens);
-        session.token_tracker.cache_creation_input_tokens =
-            Some(turn_usage.cache_creation_input_tokens);
     }
 
     Ok(())
