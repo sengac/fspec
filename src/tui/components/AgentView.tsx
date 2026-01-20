@@ -856,7 +856,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // NAPI-009: Removed session state - we use SessionManager background sessions exclusively
   const [error, setError] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   // TUI-049: Skip input animation when switching sessions
   const [skipInputAnimation, setSkipInputAnimation] = useState(false);
 
@@ -1000,6 +999,76 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setContextFillPercentage(chunk.contextFill.fillPercentage);
     }
   }, []);
+
+  // Rust state subscription via useSyncExternalStore
+  // CRITICAL: This must be declared BEFORE any useEffect hooks that use displayIsLoading
+  const { snapshot: rustSnapshot, refresh: refreshRustState } = useRustSessionState(currentSessionId);
+
+  // Helper to find model details from provider sections (Single Responsibility Principle)
+  const findModelInProviders = useCallback((
+    providerId: string,
+    modelId: string
+  ) => {
+    const section = providerSections.find(s => s.providerId === providerId);
+    return section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+  }, [providerSections]);
+
+  // Derive display values from Rust snapshot + local state fallbacks
+  const rustModelInfo = useMemo(() => {
+    // Helper to create model info shape (DRY principle - eliminates repeated object structure)
+    const createModelInfo = (
+      modelId: string,
+      reasoning = false,
+      hasVision = false,
+      contextWindow = 0
+    ) => ({ modelId, reasoning, hasVision, contextWindow });
+
+    // Get fallback model ID from local state
+    const localModelId = currentModel?.displayName || currentModel?.modelId || currentProvider;
+
+    // No session - use local state
+    if (!currentSessionId) {
+      return createModelInfo(localModelId);
+    }
+
+    // Has session with Rust model data
+    const rustModel = rustSnapshot.model;
+    if (rustModel?.modelId) {
+      const model = findModelInProviders(rustModel.providerId, rustModel.modelId);
+      if (model) {
+        return createModelInfo(
+          model.name,
+          model.reasoning,
+          model.hasVision,
+          model.contextWindow
+        );
+      }
+      // Rust model exists but not found in providers - use rust data as fallback
+      return createModelInfo(rustModel.modelId);
+    }
+
+    // Fallback to local state
+    return createModelInfo(localModelId);
+  }, [
+    currentSessionId,
+    currentProvider,
+    currentModel,
+    rustSnapshot.model,
+    findModelInProviders,
+  ]);
+
+  // Destructure all display values at once (cleaner than individual assignments)
+  const {
+    modelId: displayModelId,
+    reasoning: displayReasoning,
+    hasVision: displayHasVision,
+    contextWindow: displayContextWindow,
+  } = rustModelInfo;
+
+  // Extract remaining display state from Rust snapshot
+  const displayIsLoading = rustSnapshot.isLoading;
+  const rustTokens = rustSnapshot.tokens;
+  const displayIsDebugEnabled = rustSnapshot.isDebugEnabled || isDebugEnabled;
 
   // TUI-044: Compaction notification indicator (shows in percentage indicator for 10 seconds)
   const [compactionReduction, setCompactionReduction] = useState<number | null>(null);
@@ -1212,12 +1281,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
   // TUI-031: Hide tok/s after 10 seconds of no chunks
   useEffect(() => {
-    if (!isLoading || lastChunkTime === null) return;
+    if (!displayIsLoading || lastChunkTime === null) return;
     const timeout = setTimeout(() => {
       setDisplayedTokPerSec(null);
     }, 10000);
     return () => clearTimeout(timeout);
-  }, [isLoading, lastChunkTime]);
+  }, [displayIsLoading, lastChunkTime]);
 
   // TUI-044: Hide compaction notification after 10 seconds
   useEffect(() => {
@@ -1516,7 +1585,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     // (intentionally removed - /expand will be sent to agent as regular message)
 
     // NAPI-009: Check if we have a provider configured and not already loading
-    if (!currentProvider || !inputValue.trim() || isLoading) return;
+    if (!currentProvider || !inputValue.trim() || displayIsLoading) {
+      // TUI-DEBUG: Log why handleSubmit is blocked
+      if (!currentProvider) {
+        logger.error(`[TUI-DEBUG] handleSubmit blocked: currentProvider is empty (currentSessionId=${currentSessionId})`);
+      }
+      if (!inputValue.trim()) {
+        logger.error(`[TUI-DEBUG] handleSubmit blocked: inputValue is empty`);
+      }
+      if (displayIsLoading) {
+        logger.error(`[TUI-DEBUG] handleSubmit blocked: displayIsLoading=true`);
+      }
+      return;
+    }
 
     // AGENT-021: Handle /debug command - toggle debug capture mode
     // Supports toggling debug before a session exists
@@ -1912,7 +1993,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     setInputValue('');
     setHistoryIndex(-1); // Reset history navigation
     setSavedInput('');
-    setIsLoading(true);
     // TUI-031: Reset tok/s display for new prompt (Rust will send new values)
     setDisplayedTokPerSec(null);
     setLastChunkTime(null);
@@ -1976,7 +2056,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           ...prev,
           { type: 'status', content: `Failed to create session: ${errorMsg}` },
         ]);
-        setIsLoading(false);
         return;
       }
     }
@@ -2735,10 +2814,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         updated.push({ type: 'status', content: `Error: ${errorMessage}` });
         return updated;
       });
-    } finally {
-      setIsLoading(false);
     }
-  }, [inputValue, isLoading, currentSessionId, currentProvider, currentModel, workUnitId, attachSessionToWorkUnit, detachSessionFromWorkUnit]);
+  }, [inputValue, displayIsLoading, currentSessionId, currentProvider, currentModel, workUnitId, attachSessionToWorkUnit, detachSessionFromWorkUnit]);
 
   // Handle provider switching - now just updates local state
   // Actual provider change happens on next session creation
@@ -3260,7 +3337,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return updated;
       });
       refreshRustState();
-      setIsLoading(false);
     } else if (chunk.type === 'Status' && chunk.status) {
       // Show status messages (except compaction notifications)
       const statusMessage = chunk.status;
@@ -3285,7 +3361,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         updated.push({ type: 'status', content: '⚠ Interrupted' });
         return updated;
       });
-      setIsLoading(false);
+      refreshRustState();
     } else if (chunk.type === 'TokenUpdate' || chunk.type === 'ContextFillUpdate') {
       // TUI-049: Use centralized helper for token state updates (DRY)
       updateTokenStateFromChunk(chunk);
@@ -3330,7 +3406,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         updated.push({ type: 'status', content: `API Error: ${chunk.error}` });
         return updated;
       });
-      setIsLoading(false);
+      refreshRustState();
     } else if (chunk.type === 'UserInput' && chunk.text) {
       // User input from buffer replay (NAPI-009: resume/attach)
       setConversation(prev => [
@@ -3345,7 +3421,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const switchToSession = useCallback((direction: 'prev' | 'next') => {
     // Get background sessions from Rust session manager only
     const backgroundSessions = sessionManagerList();
+    logger.debug(`[TUI-049] switchToSession(${direction}): found ${backgroundSessions.length} background sessions, currentSessionId=${currentSessionId}, currentProvider=${currentProvider}`);
     if (backgroundSessions.length < 2) {
+      logger.debug(`[TUI-049] switchToSession: need at least 2 sessions to switch, aborting`);
       return; // Need at least 2 sessions to switch
     }
 
@@ -3445,10 +3523,41 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setIsDebugEnabled(false);
     }
 
+    // TUI-049: Restore provider state from target session
+    // CRITICAL: Without this, handleSubmit will block because currentProvider is empty/stale
+    if (targetSession.providerId) {
+      // Map from models.dev provider ID to internal provider name
+      const internalProvider = mapProviderIdToInternal(targetSession.providerId);
+      setCurrentProvider(internalProvider);
+      logger.debug(`[TUI-049] switchToSession: restored provider from session, providerId=${targetSession.providerId}, internalProvider=${internalProvider}`);
+      
+      // Also restore currentModel if possible
+      if (targetSession.modelId) {
+        const section = providerSections.find(s => s.providerId === targetSession.providerId);
+        const model = section?.models.find(m => extractModelIdForRegistry(m.id) === targetSession.modelId);
+        if (model && section) {
+          setCurrentModel({
+            providerId: section.providerId,
+            modelId: targetSession.modelId,
+            apiModelId: model.id,
+            displayName: model.name,
+            reasoning: model.reasoning,
+            hasVision: model.hasVision,
+            contextWindow: model.contextWindow,
+            maxOutput: model.maxOutput,
+          });
+          logger.debug(`[TUI-049] switchToSession: restored model, modelId=${targetSession.modelId}`);
+        }
+      }
+    } else {
+      logger.debug(`[TUI-049] switchToSession: target session has no providerId, keeping current provider=${currentProvider}`);
+    }
+
     // Update state
     setCurrentSessionId(targetSession.id);
     setConversation(newConversation);
     setInputValue(restoredInput || '');
+    logger.debug(`[TUI-049] switchToSession: state updated, new sessionId=${targetSession.id}, inputValue="${restoredInput || ''}", currentProvider=${currentProvider}`);
 
     // Attach to new session for streaming
     sessionAttach(targetSession.id, (_err: Error | null, chunk: StreamChunk) => {
@@ -3459,7 +3568,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
     // TUI-049: Reset skip animation flag after the state updates have been applied
     setTimeout(() => setSkipInputAnimation(false), 0);
-  }, [currentSessionId, inputValue, handleStreamChunk]);
+  }, [currentSessionId, inputValue, handleStreamChunk, currentProvider, providerSections]);
 
   // TUI-049: Switch to previous session (Shift+Left)
   const handleSessionPrev = useCallback(() => {
@@ -5058,53 +5167,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // TUI-043: Keep ref in sync with conversationLines for use in callbacks
   conversationLinesRef.current = conversationLines;
 
-  // Rust state subscription via useSyncExternalStore
-  const { snapshot: rustSnapshot, refresh: refreshRustState } = useRustSessionState(currentSessionId);
-
-  // Derive display values from Rust snapshot + local state fallbacks
-  const rustModelInfo = useMemo(() => {
-    if (!currentSessionId) {
-      return {
-        modelId: currentModel?.displayName || currentModel?.modelId || currentProvider,
-        reasoning: currentModel?.reasoning || false,
-        hasVision: currentModel?.hasVision || false,
-        contextWindow: currentModel?.contextWindow || 0,
-      };
-    }
-    const rustModel = rustSnapshot.model;
-    if (rustModel?.modelId) {
-      const section = providerSections.find(s => s.providerId === rustModel.providerId);
-      const model = section?.models.find(m => extractModelIdForRegistry(m.id) === rustModel.modelId);
-      return {
-        modelId: model?.name || rustModel.modelId,
-        reasoning: model?.reasoning || false,
-        hasVision: model?.hasVision || false,
-        contextWindow: model?.contextWindow || 0,
-      };
-    }
-    // Fallback - use currentModel state
-    return {
-      modelId: currentModel?.displayName || currentModel?.modelId || currentProvider,
-      reasoning: currentModel?.reasoning || false,
-      hasVision: currentModel?.hasVision || false,
-      contextWindow: currentModel?.contextWindow || 0,
-    };
-  }, [currentSessionId, currentProvider, currentModel, providerSections, rustSnapshot.model]);
-
-  // Get isLoading from Rust snapshot
-  const displayIsLoading = rustSnapshot.isLoading;
-
-  // Get token counts from Rust snapshot
-  const rustTokens = rustSnapshot.tokens;
-
-  // Get debug enabled state - use both Rust snapshot and local state for responsive UI
-  const displayIsDebugEnabled = rustSnapshot.isDebugEnabled || isDebugEnabled;
-
-  const displayModelId = rustModelInfo.modelId;
-  const displayReasoning = rustModelInfo.reasoning;
-  const displayHasVision = rustModelInfo.hasVision;
-  const displayContextWindow = rustModelInfo.contextWindow;
-
   // Error state - show setup instructions (full-screen overlay)
   // Only show this if error occurred before a session was created (no credentials)
   if (error && !currentSessionId) {
@@ -5763,8 +5825,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         {/* Right side: token stats and percentage - these should never wrap */}
         <Box flexShrink={0} flexGrow={0}>
           {/* TUI-031: Tokens per second display during streaming */}
-          {/* Use isLoading (React state) instead of displayIsLoading (Rust) for immediate UI updates */}
-          {isLoading && displayedTokPerSec !== null && (
+          {displayIsLoading && displayedTokPerSec !== null && (
             <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s  </Text>
           )}
           {/* Display tokens from whichever source has higher values:
