@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-19T08:22:22.582Z"
+    "lastUpdated": "2026-01-20T01:42:01.192Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62472,6 +62472,39 @@
         "spec/attachments/TUI-049/ast-research-session-switching.md"
       ],
       "updated": "2026-01-19T08:22:22.620Z"
+    },
+    "CMPCT-001": {
+      "id": "CMPCT-001",
+      "title": "Compaction system cleanup and simplification",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2026-01-20T01:41:39.112Z",
+      "updatedAt": "2026-01-20T01:42:14.571Z",
+      "description": "Remove dead code, reduce duplication, and add architecture documentation to the compaction system",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CMPCT-001/compaction-system-issues.md"
+      ],
+      "userStory": {
+        "role": "codelet maintainer",
+        "action": "have clean, well-documented compaction code",
+        "benefit": "I can understand and modify the compaction system without introducing bugs"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-20T01:42:10.427Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "Dead code must be removed to prevent confusion and misuse",
+          "deleted": false,
+          "createdAt": "2026-01-20T01:42:14.571Z"
+        }
+      ],
+      "nextRuleId": 1
     }
   },
   "states": {
@@ -62539,7 +62572,8 @@
       "BOARD-020",
       "TOOL-001",
       "MODEL-001",
-      "PROV-003"
+      "PROV-003",
+      "CMPCT-001"
     ],
     "testing": [],
     "implementing": [
@@ -63058,6 +63092,7 @@
     "PROV": 4,
     "PATCH": 2,
     "RLM": 1,
-    "SESS": 1
+    "SESS": 1,
+    "CMPCT": 1
   }
 }

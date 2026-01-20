@@ -1,0 +1,283 @@
+{
+  "scenarios": [
+    {
+      "name": "Token tracker replaces values each turn instead of accumulating",
+      "testMappings": [
+        {
+          "file": "cli/tests/context_compaction_fix_test.rs",
+          "lines": "21-55",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive.rs",
+              "lines": [
+                834,
+                835,
+                836,
+                837,
+                838,
+                839,
+                840,
+                841,
+                842,
+                843,
+                844,
+                845,
+                846
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WeightedSummaryProvider generates deterministic summary without LLM call",
+      "testMappings": [
+        {
+          "file": "cli/tests/context_compaction_fix_test.rs",
+          "lines": "115-178",
+          "implMappings": [
+            {
+              "file": "cli/tests/context_compaction_fix_test.rs",
+              "lines": [
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction warns but continues on low compression ratio",
+      "testMappings": [
+        {
+          "file": "cli/tests/context_compaction_fix_test.rs",
+          "lines": "183-236",
+          "implMappings": [
+            {
+              "file": "core/src/compaction.rs",
+              "lines": [
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Anchor point turns are marked with prefix in summary",
+      "testMappings": [
+        {
+          "file": "cli/tests/context_compaction_fix_test.rs",
+          "lines": "241-280",
+          "implMappings": [
+            {
+              "file": "core/src/compaction.rs",
+              "lines": [
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493,
+                494,
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction keeps turns from anchor forward and summarizes earlier turns",
+      "testMappings": [
+        {
+          "file": "cli/tests/context_compaction_fix_test.rs",
+          "lines": "285-337",
+          "implMappings": [
+            {
+              "file": "core/src/compaction.rs",
+              "lines": [
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539,
+                540,
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "After compaction effective tokens show actual context size not accumulated",
+      "testMappings": [
+        {
+          "file": "cli/tests/context_compaction_fix_test.rs",
+          "lines": "342-379",
+          "implMappings": [
+            {
+              "file": "cli/src/interactive.rs",
+              "lines": [
+                837,
+                838,
+                839
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "cli/tests/context_compaction_fix_test.rs"
+    ],
+    "implFiles": [
+      "cli/src/interactive.rs",
+      "cli/tests/context_compaction_fix_test.rs",
+      "core/src/compaction.rs"
+    ],
+    "totalLinesCovered": 453
+  }
+}
