@@ -53,6 +53,20 @@ fn is_prompt_too_long_error(error_str: &str) -> bool {
             && (error_lower.contains("token") || error_lower.contains("maximum")))
 }
 
+/// CMPCT-002: Check if an error indicates compaction was cancelled by the hook
+/// This is used to detect when the CompactionHook cancels a request due to token threshold
+fn is_compaction_cancelled(error: &anyhow::Error) -> bool {
+    error.to_string().contains("PromptCancelled")
+}
+
+/// CMPCT-002: Signal that compaction is needed by setting the flag in token state
+/// This allows the post-loop compaction logic to detect and handle it
+fn signal_compaction_needed(token_state: &Arc<Mutex<TokenState>>) {
+    if let Ok(mut state) = token_state.lock() {
+        state.compaction_needed = true;
+    }
+}
+
 /// TUI-031: Tokens per second tracker with time-window and EMA smoothing
 /// All tok/s calculation is done in Rust for single source of truth
 struct TokPerSecTracker {
@@ -1117,19 +1131,43 @@ where
                                             break;
                                         }
                                         Some(Err(e)) => {
-                                            // Check if this is a compaction cancellation
-                                            let error_str = e.to_string();
-                                            let is_compaction_cancel = error_str.contains("PromptCancelled");
-                                            
-                                            if is_compaction_cancel {
-                                                // Compaction needed during continuation - this is complex to handle
-                                                // For now, log and return error. Future: trigger compaction and retry.
-                                                error!(
-                                                    "Compaction triggered during Gemini continuation - not yet supported"
+                                            // CMPCT-002: Check if this is a compaction cancellation using helper
+                                            if is_compaction_cancelled(&e) {
+                                                // CMPCT-002: Handle compaction gracefully during Gemini continuation
+                                                // Instead of returning an error, we:
+                                                // 1. Save partial text to session history
+                                                // 2. Update token tracker with cumulative billing
+                                                // 3. Set compaction_needed flag
+                                                // 4. Break out to let post-loop compaction logic handle it
+                                                info!(
+                                                    "Compaction triggered during Gemini continuation - handling gracefully"
                                                 );
+                                                
+                                                // Save any partial text accumulated during continuation
+                                                if !continuation_text.is_empty() {
+                                                    handle_final_response(&continuation_text, &mut session.messages)?;
+                                                    info!("Saved {} chars of partial continuation text", continuation_text.len());
+                                                }
+                                                
+                                                // Update token tracker with cumulative billing before compaction
+                                                continuation_cumulative_output += continuation_usage.output_tokens;
+                                                session.token_tracker.update_from_usage(&continuation_usage, continuation_cumulative_output);
+                                                
+                                                // Set compaction_needed flag so post-loop logic handles it
+                                                signal_compaction_needed(&token_state);
+                                                
+                                                output.emit_status("\n[Context limit reached during continuation, compacting...]");
+                                                
+                                                // Clear tool progress callback before breaking
+                                                set_tool_progress_callback(None);
+                                                
+                                                // Break out of continuation loop - outer code will handle compaction
+                                                // Note: We break from the continuation loop but NOT from the main stream loop
+                                                // The main loop's post-processing will detect compaction_needed and handle it
+                                                break;
                                             }
                                             
-                                            // Clear tool progress callback before returning
+                                            // Non-compaction error - return error as before
                                             set_tool_progress_callback(None);
                                             output.emit_error(&e.to_string());
                                             return Err(anyhow::anyhow!("Gemini continuation error: {e}"));
@@ -1151,10 +1189,21 @@ where
                                     output.flush();
                                 }
                                 
-                                // Clear tool progress callback before returning
-                                set_tool_progress_callback(None);
+                                // CMPCT-002: Check if we broke from continuation loop due to compaction
+                                // If so, don't return - break from main stream loop to run compaction
+                                let compaction_during_continuation = token_state
+                                    .lock()
+                                    .map(|state| state.compaction_needed)
+                                    .unwrap_or(false);
                                 
-                                // Done with continuation
+                                if compaction_during_continuation {
+                                    // Don't return Ok() - break from main stream loop
+                                    // The post-loop compaction logic will handle it
+                                    break;
+                                }
+                                
+                                // Normal continuation completion - clear callback and return
+                                set_tool_progress_callback(None);
                                 output.emit_done();
                                 return Ok(());
                             }
@@ -1167,10 +1216,9 @@ where
                     break;
                 }
                 Some(Err(e)) => {
-                    // Check if this error is due to compaction hook cancellation
-                    // PromptCancelled means the hook cancelled the request because tokens > threshold
-                    let error_str = e.to_string();
-                    let is_compaction_cancel = error_str.contains("PromptCancelled");
+                    // CMPCT-002: Check if this error is due to compaction hook cancellation
+                    // using the helper function for DRY compliance
+                    let is_compaction_cancel = is_compaction_cancelled(&e);
 
                     // Check if compaction was actually triggered by the hook
                     let compaction_triggered = token_state
@@ -1185,6 +1233,7 @@ where
                     }
 
                     // Check if this is a "prompt is too long" error from the API
+                    let error_str = e.to_string();
                     let is_prompt_too_long = is_prompt_too_long_error(&error_str);
 
                     if is_prompt_too_long && !session.messages.is_empty() {
@@ -1200,9 +1249,7 @@ where
                         }
 
                         // Set compaction_needed flag so the post-loop logic handles it
-                        if let Ok(mut state) = token_state.lock() {
-                            state.compaction_needed = true;
-                        }
+                        signal_compaction_needed(&token_state);
 
                         break;
                     }

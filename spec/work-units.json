@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-20T01:42:01.192Z"
+    "lastUpdated": "2026-01-20T08:25:23.670Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62505,6 +62505,120 @@
         }
       ],
       "nextRuleId": 1
+    },
+    "CMPCT-002": {
+      "id": "CMPCT-002",
+      "title": "Handle Gemini continuation + compaction gracefully",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-20T08:13:55.667Z",
+      "updatedAt": "2026-01-20T08:25:40.954Z",
+      "description": "When compaction is triggered during Gemini continuation (empty tool_use), the current code errors out. This should be handled gracefully by breaking out of the continuation loop and returning a signal to trigger compaction, then retrying the turn.\n\n## Current Behavior\n- Logs error: 'Compaction triggered during Gemini continuation - not yet supported'\n- Returns Err() which fails the session\n- User loses work in progress\n\n## Desired Behavior  \n- Break out of continuation loop gracefully\n- Save any partial progress (continuation_text)\n- Return a signal indicating compaction is needed\n- Calling code triggers compaction and retries the turn\n\n## Implementation\n1. Add StreamLoopResult::NeedsCompaction variant\n2. Change error case to return this signal\n3. Handle signal in calling code to trigger compaction\n\n## Research\nSee attached research document analyzing how OpenCode and VTCode handle this.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/CMPCT-002/research-gemini-continuation-compaction.md",
+        "spec/attachments/CMPCT-002/ast-research-stream-loop-analysis.md"
+      ],
+      "userStory": {
+        "role": "developer using Gemini models",
+        "action": "have context compaction handled gracefully during model continuation",
+        "benefit": "my session doesn't fail and lose work when context overflows mid-continuation"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-20T08:14:18.264Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-20T08:16:40.365Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-20T08:20:30.420Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-20T08:23:40.253Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-20T08:25:23.703Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "When compaction is triggered during Gemini continuation, the system MUST break out of the continuation loop gracefully instead of erroring",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:14:22.463Z"
+        },
+        {
+          "id": 1,
+          "text": "Any partial text accumulated during continuation MUST be saved to the session before signaling compaction",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:14:27.302Z"
+        },
+        {
+          "id": 2,
+          "text": "Token tracker MUST be updated with cumulative billing before signaling compaction",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:14:31.587Z"
+        },
+        {
+          "id": 3,
+          "text": "The stream loop MUST return a distinct NeedsCompaction result variant so callers can trigger compaction and retry",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:14:35.982Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Given Gemini model is in continuation (empty tool_use received), When compaction threshold is exceeded (PromptCancelled error), Then system saves partial continuation_text, updates token tracker, returns NeedsCompaction",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:14:40.919Z"
+        },
+        {
+          "id": 1,
+          "text": "Given session has accumulated 180K tokens (90% of 200K context window), When Gemini continuation triggers next request, And request is cancelled due to token limit, Then session does NOT fail, And user sees 'Compacting context...' message, And session continues after compaction",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:14:46.868Z"
+        },
+        {
+          "id": 2,
+          "text": "Given Gemini model has produced partial response text during continuation, When compaction is triggered, Then partial text is preserved in session history, And user does not lose any model output",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:14:51.844Z"
+        }
+      ],
+      "nextExampleId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Modifies stream_loop.rs to return StreamLoopResult::NeedsCompaction instead of Err() when compaction is triggered during Gemini continuation",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:15:04.478Z"
+        },
+        {
+          "id": 1,
+          "text": "Calling code must handle NeedsCompaction by triggering SessionCompaction::run() and then retrying the turn",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:15:09.087Z"
+        },
+        {
+          "id": 2,
+          "text": "Pattern follows OpenCode's approach: signal at turn boundary, compact in outer loop, retry",
+          "deleted": false,
+          "createdAt": "2026-01-20T08:15:14.102Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-20T08:25:23.703Z",
+      "estimate": 3
     }
   },
   "states": {
@@ -62581,6 +62695,7 @@
     ],
     "validating": [],
     "done": [
+      "CMPCT-002",
       "TUI-049",
       "SESS-001",
       "TUI-048",
@@ -63093,6 +63208,6 @@
     "PATCH": 2,
     "RLM": 1,
     "SESS": 1,
-    "CMPCT": 1
+    "CMPCT": 2
   }
 }

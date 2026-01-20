@@ -1,0 +1,207 @@
+{
+  "scenarios": [
+    {
+      "name": "Graceful handling when compaction triggered during continuation",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/gemini_continuation_compaction_test.rs",
+          "lines": "60-93",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1119,
+                1120,
+                1121,
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129,
+                1130,
+                1131,
+                1132,
+                1133,
+                1134,
+                1135,
+                1136,
+                1137,
+                1138,
+                1139,
+                1140,
+                1141,
+                1142,
+                1143,
+                1144,
+                1145,
+                1146,
+                1147,
+                1148,
+                1149,
+                1150,
+                1151,
+                1152,
+                1153,
+                1154,
+                1155,
+                1156,
+                1157,
+                1158,
+                1159,
+                1160,
+                1161,
+                1162,
+                1163,
+                1164
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session continues after compaction during continuation",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/gemini_continuation_compaction_test.rs",
+          "lines": "100-127",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1271,
+                1272,
+                1273,
+                1274,
+                1275,
+                1276,
+                1277,
+                1278,
+                1279,
+                1280,
+                1281,
+                1282,
+                1283,
+                1284,
+                1285,
+                1286,
+                1287,
+                1288,
+                1289,
+                1290,
+                1291,
+                1292,
+                1293,
+                1294,
+                1295,
+                1296,
+                1297,
+                1298,
+                1299,
+                1300,
+                1301,
+                1302,
+                1303,
+                1304,
+                1305,
+                1306,
+                1307,
+                1308,
+                1309,
+                1310,
+                1311,
+                1312,
+                1313,
+                1314,
+                1315,
+                1316,
+                1317,
+                1318,
+                1319,
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340,
+                1341,
+                1342,
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348,
+                1349,
+                1350,
+                1351,
+                1352,
+                1353,
+                1354,
+                1355,
+                1356,
+                1357,
+                1358,
+                1359,
+                1360,
+                1361
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Partial model output is preserved during compaction",
+      "testMappings": [
+        {
+          "file": "codelet/cli/tests/gemini_continuation_compaction_test.rs",
+          "lines": "134-179",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1136,
+                1137,
+                1138,
+                1139,
+                1140,
+                1141
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/cli/tests/gemini_continuation_compaction_test.rs"
+    ],
+    "implFiles": [
+      "codelet/cli/src/interactive/stream_loop.rs"
+    ],
+    "totalLinesCovered": 251
+  }
+}
