@@ -3435,6 +3435,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     // Restore pending input for new session
     const restoredInput = sessionGetPendingInput(targetSession.id);
 
+    // TUI-049: Sync debug state from target session's Rust state
+    // This ensures the local isDebugEnabled state matches the target session
+    try {
+      const targetDebugEnabled = sessionGetDebugEnabled(targetSession.id);
+      setIsDebugEnabled(targetDebugEnabled);
+    } catch {
+      // Session may not have debug state, default to false
+      setIsDebugEnabled(false);
+    }
+
     // Update state
     setCurrentSessionId(targetSession.id);
     setConversation(newConversation);
