@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T02:44:17.554Z"
+    "lastUpdated": "2026-01-21T04:00:57.982Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -63789,26 +63789,289 @@
       "id": "WATCH-008",
       "title": "Watcher Management Overlay UI",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:30.061Z",
-      "updatedAt": "2026-01-21T00:58:43.268Z",
+      "updatedAt": "2026-01-21T04:00:58.012Z",
       "description": "Implement /watcher command that opens Watcher Management overlay in AgentView. Support CRUD: list watchers, create new (N), delete (D), edit (E), open watcher (Enter).",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-007"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T03:04:30.739Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T03:13:13.695Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T03:14:51.595Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T03:27:08.006Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T03:33:50.424Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T03:38:00.463Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T03:39:00.945Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T03:40:17.265Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T03:43:39.888Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T03:50:35.101Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T03:53:29.166Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T03:56:13.389Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T03:56:39.578Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T03:59:10.769Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T04:00:24.108Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T04:00:42.468Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T04:00:50.061Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T04:00:58.013Z"
+        }
+      ],
+      "userStory": {
+        "role": "fspec TUI user",
+        "action": "open a Watcher Management overlay via /watcher command",
+        "benefit": "I can create, view, edit, delete and open watcher sessions for the current parent session"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "/watcher command opens Watcher Management overlay displaying all watchers for the current session",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:07.940Z"
+        },
+        {
+          "id": 1,
+          "text": "Overlay lists watchers with their name, role, authority level, and status (idle/running)",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:12.856Z"
+        },
+        {
+          "id": 2,
+          "text": "N key opens Watcher Creation dialog (WATCH-009 dependency)",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:17.159Z"
+        },
+        {
+          "id": 3,
+          "text": "D key deletes the selected watcher (with confirmation dialog)",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:22.581Z"
+        },
+        {
+          "id": 4,
+          "text": "Enter key opens/switches to the selected watcher session",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:26.585Z"
+        },
+        {
+          "id": 5,
+          "text": "↑↓ arrow keys navigate the watcher list with visual selection highlight",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:30.882Z"
+        },
+        {
+          "id": 6,
+          "text": "Esc key closes the overlay and returns to the main agent view",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:35.083Z"
+        },
+        {
+          "id": 7,
+          "text": "Watcher list is populated via sessionGetWatchers(currentSessionId) NAPI call",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:39.749Z"
+        },
+        {
+          "id": 8,
+          "text": "Each watcher entry displays role info from sessionGetRole(watcherId) NAPI call",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:44.188Z"
+        },
+        {
+          "id": 9,
+          "text": "If no watchers exist, overlay shows 'No watchers. Press N to create one.' message",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:48.287Z"
+        },
+        {
+          "id": 10,
+          "text": "When navigating with arrow keys, scroll offset adjusts to keep selected watcher visible (follow scroll with selection)",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:38:11.556Z"
+        },
+        {
+          "id": 11,
+          "text": "Edit mode persists changes to backend via sessionSetRole(watcherId, newName, description, authority) NAPI call",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:38:15.766Z"
+        },
+        {
+          "id": 12,
+          "text": "E key opens edit mode for selected watcher's name",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:59:35.986Z"
+        }
+      ],
+      "nextRuleId": 13,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /watcher → overlay opens showing list of 2 watchers: 'Code Reviewer (Peer, idle)' and 'Security Auditor (Supervisor, running)'",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:53.412Z"
+        },
+        {
+          "id": 1,
+          "text": "User types /watcher with no watchers → overlay shows 'No watchers. Press N to create one.'",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:10:57.403Z"
+        },
+        {
+          "id": 2,
+          "text": "User selects 'Code Reviewer' with ↓ key and presses Enter → overlay closes, session switches to Code Reviewer watcher",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:02.115Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses D on selected watcher → confirmation dialog 'Delete watcher Code Reviewer?' with Yes/No options",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:06.521Z"
+        },
+        {
+          "id": 4,
+          "text": "User presses Esc in overlay → overlay closes, returns to main agent view with conversation visible",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:11.136Z"
+        },
+        {
+          "id": 5,
+          "text": "User has 10 watchers, overlay shows scrollable list with scroll position indicator",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:16.564Z"
+        },
+        {
+          "id": 6,
+          "text": "User presses E on selected watcher → inline edit mode activates, user can modify name and press Enter to save",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:56.283Z"
+        },
+        {
+          "id": 7,
+          "text": "User has 10 watchers (visible=5), selection at index 6 → scroll offset adjusts to show selected watcher (offset moves from 0 to 2)",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:38:20.564Z"
+        },
+        {
+          "id": 8,
+          "text": "User edits watcher name from 'Code Reviewer' to 'Senior Reviewer' and presses Enter → change persists, reopening /watcher shows 'Senior Reviewer'",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:38:24.786Z"
+        }
+      ],
+      "nextExampleId": 9,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add isWatcherMode useState and watcherList useState to AgentView.tsx state section (around line 950)",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:21.773Z"
+        },
+        {
+          "id": 1,
+          "text": "Add /watcher command handler in handleSubmit() near other slash commands (around line 1696)",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:26.282Z"
+        },
+        {
+          "id": 2,
+          "text": "Add watcher overlay render block following isResumeMode pattern (around line 5776)",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:31.200Z"
+        },
+        {
+          "id": 3,
+          "text": "Import sessionGetWatchers, sessionGetRole, sessionManagerDestroy from codelet-napi",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:35.497Z"
+        },
+        {
+          "id": 4,
+          "text": "Add watcher mode keyboard handling in useInput hook (near line 4930) for ↑↓Nav, Enter, D, N, Esc",
+          "deleted": false,
+          "createdAt": "2026-01-21T03:11:40.722Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "estimate": 5,
+      "attachments": [
+        "spec/attachments/WATCH-008/ast-research-agentview-overlay.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T04:00:58.012Z"
     },
     "WATCH-009": {
       "id": "WATCH-009",
       "title": "Watcher Creation Dialog UI",
       "type": "story",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2026-01-21T00:57:34.670Z",
-      "updatedAt": "2026-01-21T00:58:47.377Z",
+      "updatedAt": "2026-01-21T03:34:21.762Z",
       "description": "Implement watcher creation dialog: role name input, authority selector (Peer/Supervisor), model selector, brief textarea. Create watcher on confirm.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-008"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T03:34:21.762Z"
+        }
       ]
     },
     "WATCH-010": {
@@ -63959,8 +64222,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-008",
-      "WATCH-009",
       "WATCH-010",
       "WATCH-011",
       "WATCH-012",
@@ -63979,7 +64240,8 @@
       "MODEL-001",
       "PROV-003",
       "CMPCT-001",
-      "WATCH-001"
+      "WATCH-001",
+      "WATCH-009"
     ],
     "testing": [],
     "implementing": [
@@ -63987,6 +64249,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-008",
       "WATCH-007",
       "WATCH-006",
       "WATCH-005",

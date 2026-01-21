@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { CodeletSession, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, ChunkType, extractThinkingText, getThinkingConfig, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionCompact, sessionDetach, sessionGetBufferedOutput, sessionGetDebugEnabled, sessionGetMergedOutput, sessionGetModel, sessionGetPendingInput, sessionGetStatus, sessionGetTokens, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionRestoreMessages, sessionRestoreTokenState, sessionSendInput, sessionSetDebugEnabled, sessionSetModel, sessionSetPendingInput, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, toggleDebug } = nativeBinding
+const { CodeletSession, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, ChunkType, extractThinkingText, getThinkingConfig, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionDetach, sessionGetBufferedOutput, sessionGetDebugEnabled, sessionGetMergedOutput, sessionGetModel, sessionGetParent, sessionGetPendingInput, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetWatchers, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionRestoreMessages, sessionRestoreTokenState, sessionSendInput, sessionSetDebugEnabled, sessionSetModel, sessionSetPendingInput, sessionSetRole, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, toggleDebug, watcherInject } = nativeBinding
 export { CodeletSession }
 export { AstGrepCaseType }
 export { astGrepRefactor }
@@ -630,15 +630,20 @@ export { persistenceStoreBlob }
 export { persistenceStoreMessageEnvelope }
 export { persistenceUpdateSessionTokens }
 export { sessionAttach }
+export { sessionClearRole }
 export { sessionCompact }
+export { sessionCreateWatcher }
 export { sessionDetach }
 export { sessionGetBufferedOutput }
 export { sessionGetDebugEnabled }
 export { sessionGetMergedOutput }
 export { sessionGetModel }
+export { sessionGetParent }
 export { sessionGetPendingInput }
+export { sessionGetRole }
 export { sessionGetStatus }
 export { sessionGetTokens }
+export { sessionGetWatchers }
 export { sessionInterrupt }
 export { sessionManagerCreate }
 export { sessionManagerCreateWithId }
@@ -650,7 +655,9 @@ export { sessionSendInput }
 export { sessionSetDebugEnabled }
 export { sessionSetModel }
 export { sessionSetPendingInput }
+export { sessionSetRole }
 export { sessionToggleDebug }
 export { sessionUpdateDebugMetadata }
 export { setRustLogCallback }
 export { toggleDebug }
+export { watcherInject }
