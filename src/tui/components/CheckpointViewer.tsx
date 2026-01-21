@@ -862,6 +862,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 renderItem={renderCheckpointItem}
                 showScrollbar={focusedPane === 'checkpoints'}
                 isFocused={focusedPane === 'checkpoints' && !showDeleteDialog}
+                heightAdjustment={-1}
                 onFocus={(checkpoint, index) => {
                   setSelectedCheckpointIndex(index);
                   setSelectedFileIndex(0); // Reset file selection when checkpoint changes
@@ -905,6 +906,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 }}
                 showScrollbar={focusedPane === 'files'}
                 isFocused={focusedPane === 'files' && !showDeleteDialog}
+                heightAdjustment={-1}
                 onFocus={(file, index) => {
                   setSelectedFileIndex(index);
                 }}
@@ -931,14 +933,13 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 Diff{files[selectedFileIndex]?.path ? `: ${files[selectedFileIndex].path}` : ''}
               </Text>
             </Box>
-            <Box flexGrow={1}>
-              <VirtualList
-                items={diffLines}
-                renderItem={renderDiffLine}
-                showScrollbar={focusedPane === 'diff'}
-                isFocused={focusedPane === 'diff' && !showDeleteDialog}
-              />
-            </Box>
+            <VirtualList
+              items={diffLines}
+              renderItem={renderDiffLine}
+              showScrollbar={focusedPane === 'diff'}
+              isFocused={focusedPane === 'diff' && !showDeleteDialog}
+              selectionMode="scroll"
+            />
           </Box>
         </Box>
       </Box>

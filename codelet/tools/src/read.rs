@@ -53,7 +53,10 @@ impl ReadTool {
         let total_lines = lines.len();
 
         // Calculate range (offset is 1-based)
-        let start_idx = offset.saturating_sub(1);
+        // CRITICAL: Bound start_idx to prevent panic when offset > total_lines
+        // This can happen when a file is shortened between sessions and the old
+        // offset is cached or restored from history.
+        let start_idx = offset.saturating_sub(1).min(total_lines);
         let effective_limit = limit.min(OutputLimits::MAX_LINES);
         let end_idx = (start_idx + effective_limit).min(total_lines);
 

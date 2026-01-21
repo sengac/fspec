@@ -99,6 +99,12 @@ interface VirtualListProps<T> {
   selectionMode?: 'item' | 'scroll';
   fixedHeight?: number;
   
+  // Height adjustment for bordered containers. When VirtualList is inside
+  // a pane with borders (e.g., CheckpointViewer), Yoga's measured height
+  // may be slightly larger than the actual available space. Use -1 or -2
+  // to compensate. Default 0 for unbounded containers (e.g., AgentView).
+  heightAdjustment?: number;
+  
   // TUI-042/043/044: Group-based selection (for turn selection)
   // When provided, items are grouped by the returned identifier.
   // Navigation moves between groups, selection highlights entire group,
@@ -126,6 +132,7 @@ export function VirtualList<T>({
   scrollToEnd = false,
   selectionMode = 'item',
   fixedHeight,
+  heightAdjustment = 0,
   groupBy,
   groupPaddingBefore = 0,
   selectionRef,
@@ -183,6 +190,12 @@ export function VirtualList<T>({
   const [userScrolledAway, setUserScrolledAway] = useState(false);
   const measurementScheduled = useRef(false);
 
+  // Re-measure container height on every render (no dependency array).
+  // This ensures VirtualList adapts when sibling components change size
+  // (e.g., multi-line input area grows/shrinks).
+  // The setTimeout(..., 0) ensures Yoga layout is complete before measuring.
+  // The measurementScheduled guard prevents multiple simultaneous measurements.
+  // The setMeasuredHeight comparison prevents unnecessary state updates.
   useLayoutEffect(() => {
     if (fixedHeight !== undefined) {
       setMeasuredHeight(fixedHeight);
@@ -194,7 +207,7 @@ export function VirtualList<T>({
       if (containerRef.current) {
         const dimensions = measureElement(containerRef.current);
         if (dimensions.height > 0) {
-          const newHeight = Math.max(1, Math.floor(dimensions.height));
+          const newHeight = Math.max(1, Math.floor(dimensions.height) + heightAdjustment);
           setMeasuredHeight(prev => (prev !== newHeight ? newHeight : prev));
         }
       }
@@ -204,7 +217,7 @@ export function VirtualList<T>({
       clearTimeout(timeoutId);
       measurementScheduled.current = false;
     };
-  }, [terminalHeight, fixedHeight]);
+  });
 
   const visibleHeight = useMemo(() => {
     if (fixedHeight !== undefined) return fixedHeight;
