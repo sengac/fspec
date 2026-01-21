@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T04:36:50.661Z"
+    "lastUpdated": "2026-01-21T05:44:53.271Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -64285,14 +64285,201 @@
       "id": "WATCH-010",
       "title": "Watcher Split View UI",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:39.782Z",
-      "updatedAt": "2026-01-21T00:58:51.258Z",
+      "updatedAt": "2026-01-21T05:44:53.302Z",
       "description": "Implement WatcherAgentView (or mode of AgentView) with split panes: left (parent observation, read-only), right (watcher conversation). Handle pane navigation with arrow keys.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-007"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T05:26:38.927Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T05:29:55.639Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T05:31:54.269Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T05:43:58.787Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T05:44:53.303Z"
+        }
+      ],
+      "userStory": {
+        "role": "user viewing a watcher session",
+        "action": "see a split view with parent observation on the left and watcher conversation on the right",
+        "benefit": "I can observe the parent session while interacting with my watcher AI"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "When viewing a watcher session, AgentView renders in split-view mode with two vertical panes",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:26:57.671Z"
+        },
+        {
+          "id": 1,
+          "text": "Left pane displays parent session conversation (read-only, scrollable, dimmed styling)",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:26:58.388Z"
+        },
+        {
+          "id": 2,
+          "text": "Right pane displays watcher's own conversation (interactive, full styling)",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:26:59.104Z"
+        },
+        {
+          "id": 3,
+          "text": "Single input area at bottom always sends to watcher session (not parent)",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:26:59.916Z"
+        },
+        {
+          "id": 4,
+          "text": "Left/Right arrow keys switch active pane (parent ↔ watcher)",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:00.839Z"
+        },
+        {
+          "id": 5,
+          "text": "Active pane has bright styling; inactive pane has dimmed styling",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:01.566Z"
+        },
+        {
+          "id": 6,
+          "text": "Tab key toggles turn-select mode in the active pane",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:02.236Z"
+        },
+        {
+          "id": 7,
+          "text": "Up/Down arrow keys navigate within the active pane when in select mode",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:02.891Z"
+        },
+        {
+          "id": 8,
+          "text": "Enter key on selected message pre-fills input with context (Discuss Selected feature)",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:07.811Z"
+        },
+        {
+          "id": 9,
+          "text": "Parent pane content is loaded from sessionGetMergedOutput(parentSessionId) NAPI call",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:09.238Z"
+        },
+        {
+          "id": 10,
+          "text": "Split view detects watcher session via sessionGetParent(sessionId) returning non-null",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:10.322Z"
+        },
+        {
+          "id": 11,
+          "text": "Header shows watcher role and parent session name: '👁️ [Role] (watching: [Parent Name])'",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:11.714Z"
+        }
+      ],
+      "nextRuleId": 12,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User switches to watcher session via /watcher overlay → AgentView renders with left pane showing parent conversation and right pane showing watcher conversation",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:16.102Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses Right arrow when left (parent) pane is active → right (watcher) pane becomes active with bright styling",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:17.240Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses Left arrow when right (watcher) pane is active → left (parent) pane becomes active with bright styling",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:18.045Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses Tab in active pane → turn-select mode toggles on, showing selection highlight",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:18.973Z"
+        },
+        {
+          "id": 4,
+          "text": "User presses Up/Down in select mode → selection moves to previous/next turn in the active pane",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:19.885Z"
+        },
+        {
+          "id": 5,
+          "text": "User selects message in parent pane and presses Enter → input is pre-filled with 'Regarding turn N in parent session: [content]...'",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:21.331Z"
+        },
+        {
+          "id": 6,
+          "text": "User types message in input → message is sent to watcher session only (not parent)",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:22.136Z"
+        },
+        {
+          "id": 7,
+          "text": "Regular session (non-watcher) opened → normal single-pane AgentView renders (no split view)",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:27:23.272Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Split view is implemented as a conditional mode within AgentView, triggered when sessionGetParent(sessionId) returns non-null",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:28:39.011Z"
+        },
+        {
+          "id": 1,
+          "text": "Parent pane subscribes to parent session output via sessionGetMergedOutput for initial load and sessionAttach for live updates",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:28:39.960Z"
+        },
+        {
+          "id": 2,
+          "text": "New state variables: activePane ('parent'|'watcher'), parentConversation (ConversationLine[]), parentSessionName (string)",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:28:41.297Z"
+        },
+        {
+          "id": 3,
+          "text": "Uses existing VirtualList component for both panes, with dimColor prop for inactive pane styling",
+          "deleted": false,
+          "createdAt": "2026-01-21T05:28:42.623Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/WATCH-010/ast-research-split-view-dependencies.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T05:44:53.302Z"
     },
     "WATCH-011": {
       "id": "WATCH-011",
@@ -64429,7 +64616,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-010",
       "WATCH-011",
       "WATCH-012",
       "WATCH-013",
@@ -64455,6 +64641,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-010",
       "WATCH-009",
       "WATCH-008",
       "WATCH-007",
