@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T04:00:57.982Z"
+    "lastUpdated": "2026-01-21T04:36:50.661Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -64059,9 +64059,9 @@
       "id": "WATCH-009",
       "title": "Watcher Creation Dialog UI",
       "type": "story",
-      "status": "specifying",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:34.670Z",
-      "updatedAt": "2026-01-21T03:34:21.762Z",
+      "updatedAt": "2026-01-21T04:36:50.694Z",
       "description": "Implement watcher creation dialog: role name input, authority selector (Peer/Supervisor), model selector, brief textarea. Create watcher on confirm.",
       "parent": "WATCH-001",
       "dependsOn": [
@@ -64071,8 +64071,215 @@
         {
           "state": "specifying",
           "timestamp": "2026-01-21T03:34:21.762Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T04:05:49.482Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T04:08:04.221Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T04:18:00.209Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T04:18:42.595Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T04:23:14.458Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T04:36:50.694Z"
         }
-      ]
+      ],
+      "userStory": {
+        "role": "fspec TUI user",
+        "action": "create a new watcher via the WatcherCreateView form from the Watcher Management overlay",
+        "benefit": "I can spawn AI agents to observe my parent session with custom roles and watching instructions"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "N key in Watcher Management overlay opens WatcherCreateView - a full-screen form overlay",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:12:20.031Z"
+        },
+        {
+          "id": 1,
+          "text": "WatcherCreateView is a separate component: src/tui/components/WatcherCreateView.tsx",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:12:29.128Z"
+        },
+        {
+          "id": 2,
+          "text": "View has Role Name text input field (required, e.g., 'Security Reviewer')",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:12:33.976Z"
+        },
+        {
+          "id": 3,
+          "text": "View has Authority selector dropdown: Peer or Supervisor (default: Peer)",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:12:38.255Z"
+        },
+        {
+          "id": 4,
+          "text": "View has Model selector dropdown populated from available provider models (default: parent session model)",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:12:42.761Z"
+        },
+        {
+          "id": 5,
+          "text": "View has Brief multiline textarea for watching instructions (what to watch for, when to interject)",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:12:47.368Z"
+        },
+        {
+          "id": 6,
+          "text": "Tab key cycles focus between fields: Role Name → Authority → Model → Brief → Create button",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:12:51.651Z"
+        },
+        {
+          "id": 7,
+          "text": "←/→ arrow keys toggle Authority dropdown between Peer and Supervisor when focused",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:12:56.493Z"
+        },
+        {
+          "id": 8,
+          "text": "↑/↓ arrow keys navigate Model dropdown selection when focused",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:00.786Z"
+        },
+        {
+          "id": 9,
+          "text": "Enter key creates watcher: calls sessionCreateWatcher(parentId, model, project, name) then sessionSetRole(watcherId, name, brief, authority)",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:05.399Z"
+        },
+        {
+          "id": 10,
+          "text": "Esc key closes view and returns to Watcher Management overlay without creating",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:09.694Z"
+        },
+        {
+          "id": 11,
+          "text": "Role Name is required - Create action disabled/blocked if empty",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:14.680Z"
+        },
+        {
+          "id": 12,
+          "text": "After successful creation, view closes and returns to Watcher Management overlay with refreshed list showing new watcher",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:19.938Z"
+        },
+        {
+          "id": 13,
+          "text": "Component receives props: parentSessionId, currentModel, availableModels, onCreate callback, onCancel callback",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:24.550Z"
+        }
+      ],
+      "nextRuleId": 14,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User presses N in Watcher Management overlay → full-screen WatcherCreateView opens with Role Name field focused, Authority=Peer, Model=parent's current model",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:37.269Z"
+        },
+        {
+          "id": 1,
+          "text": "User enters Role Name='Security Reviewer', switches Authority to Supervisor, adds Brief='Watch for security vulnerabilities, unsafe file operations, exposed credentials' → presses Enter → watcher created, view closes, overlay shows 'Security Reviewer (Supervisor)'",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:45.746Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses Tab repeatedly → focus cycles: Role Name → Authority → Model → Brief → Create button → Role Name",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:50.574Z"
+        },
+        {
+          "id": 3,
+          "text": "User focuses Authority field, presses → → Authority changes from Peer to Supervisor; presses ← → Authority changes back to Peer",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:13:56.394Z"
+        },
+        {
+          "id": 4,
+          "text": "User focuses Model field, presses ↓ → Model dropdown shows next available model; presses ↑ → shows previous model",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:01.000Z"
+        },
+        {
+          "id": 5,
+          "text": "User presses Esc at any point → view closes, returns to Watcher Management overlay, no watcher created",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:05.756Z"
+        },
+        {
+          "id": 6,
+          "text": "User leaves Role Name empty, presses Enter → nothing happens, Role Name field highlighted as required",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:10.320Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create new component: src/tui/components/WatcherCreateView.tsx as a standalone full-screen form view",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:21.584Z"
+        },
+        {
+          "id": 1,
+          "text": "Add isWatcherCreateMode useState to AgentView.tsx state section",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:26.812Z"
+        },
+        {
+          "id": 2,
+          "text": "Replace TODO in N key handler (line ~4741) with setIsWatcherCreateMode(true)",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:31.998Z"
+        },
+        {
+          "id": 3,
+          "text": "Import sessionCreateWatcher from codelet-napi in AgentView.tsx",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:36.949Z"
+        },
+        {
+          "id": 4,
+          "text": "Add conditional render: if (isWatcherCreateMode) return <WatcherCreateView ... /> in watcher overlay section",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:41.764Z"
+        },
+        {
+          "id": 5,
+          "text": "handleWatcherCreate callback: sessionCreateWatcher → sessionSetRole → handleWatcherMode (refresh) → setIsWatcherCreateMode(false)",
+          "deleted": false,
+          "createdAt": "2026-01-21T04:14:46.779Z"
+        }
+      ],
+      "nextNoteId": 6,
+      "estimate": 5,
+      "attachments": [
+        "spec/attachments/WATCH-009/ast-research-agentview-dialog-patterns.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T04:36:50.694Z"
     },
     "WATCH-010": {
       "id": "WATCH-010",
@@ -64240,8 +64447,7 @@
       "MODEL-001",
       "PROV-003",
       "CMPCT-001",
-      "WATCH-001",
-      "WATCH-009"
+      "WATCH-001"
     ],
     "testing": [],
     "implementing": [
@@ -64249,6 +64455,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-009",
       "WATCH-008",
       "WATCH-007",
       "WATCH-006",

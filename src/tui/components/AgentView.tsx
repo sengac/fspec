@@ -29,6 +29,7 @@ import { VirtualList } from './VirtualList';
 import { MultiLineInput } from './MultiLineInput';
 import { InputTransition } from './InputTransition';
 import { TurnContentModal } from './TurnContentModal';
+import { WatcherCreateView } from './WatcherCreateView';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
@@ -83,6 +84,8 @@ import {
   sessionGetWatchers,
   sessionGetRole,
   sessionSetRole,
+  // WATCH-009: Watcher creation NAPI function
+  sessionCreateWatcher,
   type SessionRoleInfo,
   type NapiProviderModels,
   type NapiModelInfo,
@@ -980,7 +983,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [showWatcherDeleteDialog, setShowWatcherDeleteDialog] = useState(false);
   const [isWatcherEditMode, setIsWatcherEditMode] = useState(false);
   const [watcherEditValue, setWatcherEditValue] = useState('');
-
+  // WATCH-009: Watcher creation view state
+  const [isWatcherCreateMode, setIsWatcherCreateMode] = useState(false);
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
@@ -3968,6 +3972,50 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
   }, [watcherList, watcherIndex]);
 
+  // WATCH-009: Create a new watcher session
+  const handleWatcherCreate = useCallback(async (
+    name: string,
+    authority: 'peer' | 'supervisor',
+    model: string,
+    brief: string
+  ) => {
+    if (!currentSessionId || !name.trim()) {
+      return;
+    }
+
+    try {
+      // Create the watcher session using NAPI
+      const watcherId = await sessionCreateWatcher(
+        currentSessionId,
+        model,
+        currentProjectRef.current,
+        name.trim()
+      );
+
+      // Set the role information (name, brief, authority)
+      sessionSetRole(
+        watcherId,
+        name.trim(),
+        brief.trim() || null,
+        authority
+      );
+
+      // Refresh the watcher list by re-calling handleWatcherMode
+      await handleWatcherMode();
+
+      // Close the creation view
+      setIsWatcherCreateMode(false);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to create watcher';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Watcher creation failed: ${errorMessage}` },
+      ]);
+      setIsWatcherCreateMode(false);
+    }
+  }, [currentSessionId, handleWatcherMode]);
+
   // NAPI-003 + TUI-047: Select session and restore conversation
   // Now handles both background sessions (attach) and persisted-only (load from disk)
   const handleResumeSelect = useCallback(async () => {
@@ -4736,14 +4784,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           setShowWatcherDeleteDialog(true);
           return;
         }
-        // N key would open watcher creation (WATCH-009)
+        // N key opens watcher creation view (WATCH-009)
         if (input.toLowerCase() === 'n') {
-          // TODO: WATCH-009 - Open watcher creation dialog
-          setConversation(prev => [
-            ...prev,
-            { type: 'status', content: 'Watcher creation not yet implemented (WATCH-009)' },
-          ]);
-          setIsWatcherMode(false);
+          setIsWatcherCreateMode(true);
           return;
         }
         // E key opens edit mode for watcher name
@@ -6045,6 +6088,27 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           />
         )}
       </Box>
+    );
+  }
+
+  // WATCH-009: Watcher creation view (full-screen form)
+  if (isWatcherCreateMode) {
+    // Build list of available model IDs from providerSections
+    const availableModelIds: string[] = providerSections.flatMap(section =>
+      section.models.map(model => model.id)
+    );
+    // Get current model ID for default selection
+    const currentModelId = rustModelInfo.modelId || currentModel?.modelId || '';
+
+    return (
+      <WatcherCreateView
+        currentModel={currentModelId}
+        availableModels={availableModelIds.length > 0 ? availableModelIds : [currentModelId]}
+        terminalWidth={terminalWidth}
+        terminalHeight={terminalHeight}
+        onCreate={handleWatcherCreate}
+        onCancel={() => setIsWatcherCreateMode(false)}
+      />
     );
   }
 
