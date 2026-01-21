@@ -126,7 +126,8 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   });
 
   // Calculate layout dimensions
-  const outerReservedLines = 5; // header(2) + input(2) + hints(1)
+  // header(2) + input area(2)
+  const outerReservedLines = 4;
   const paneHeaderLines = 2;
   const splitPanesHeight = Math.max(1, terminalHeight - 1 - outerReservedLines);
   const virtualListHeight = Math.max(1, splitPanesHeight - paneHeaderLines);
@@ -277,24 +278,17 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         </Box>
       </Box>
 
-      {/* Input area - always sends to watcher session */}
+      {/* Input area - matches AgentView pattern with hints in placeholder */}
       <ConversationInputArea
         value={inputValue}
         onChange={onInputChange}
         onSubmit={onSubmit}
         isLoading={isLoading}
-        placeholder="Type a message to your watcher..."
+        placeholder={activeSelectMode
+          ? "↑↓ Navigate | Enter Discuss | Tab/Esc Exit Select"
+          : "Type a message... ('←/→' switch pane | 'Tab' select turn | '↑↓' scroll | 'Esc' cancel)"}
         isActive={!isLoading}
       />
-
-      {/* Context-sensitive keyboard hints */}
-      <Box paddingX={1}>
-        <Text dimColor>
-          {activeSelectMode
-            ? '↑↓ Navigate | Enter Discuss | Tab/Esc Exit Select'
-            : '←/→ Switch Pane | Tab Select Turn | ↑↓ Scroll | Esc Cancel'}
-        </Text>
-      </Box>
     </Box>
   );
 };
