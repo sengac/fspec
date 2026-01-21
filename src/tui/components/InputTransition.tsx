@@ -8,17 +8,18 @@
  * 1. When isLoading becomes false, animate out the thinking text (right to left)
  * 2. Then animate in the placeholder text (left to right reveal)
  * 3. User can interrupt animation by typing - immediately shows input
+ *
+ * Architecture:
+ * - Animation constants centralized in animationConstants.ts
+ * - Animation timing synchronized with Ink's render throttle (60fps)
+ * - Multiple characters per frame for faster animation while staying smooth
  */
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Text, useInput } from 'ink';
 import { useThinkingText } from './ThinkingIndicator';
 import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
-
-// Animation timing constants
-const CHAR_HIDE_INTERVAL = 3; // ms per character when hiding
-const CHAR_SHOW_INTERVAL = 2; // ms per character when revealing
-const TRANSITION_DELAY = 12; // ms delay between hide and show phases
+import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants';
 
 type AnimationPhase = 'loading' | 'hiding' | 'showing' | 'complete';
 
@@ -56,6 +57,9 @@ export interface InputTransitionProps extends MultiLineInputProps {
  * User can interrupt the animation by pressing any key - the animation
  * will immediately complete and the input will be focused with the
  * typed character captured.
+ *
+ * Animation is synchronized with Ink's 60fps render throttle.
+ * Uses CHARS_PER_FRAME to control animation speed (default: 3 chars/frame).
  */
 export const InputTransition: React.FC<InputTransitionProps> = ({
   isLoading,
@@ -161,7 +165,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     }
   }, [animationPhase, pendingInput, onChange, value]);
 
-  // Handle hiding animation (right to left)
+  // Handle hiding animation (right to left) - multiple chars per frame
   useEffect(() => {
     if (animationPhase !== 'hiding') {
       return;
@@ -172,18 +176,19 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
       const delayTimer = setTimeout(() => {
         setAnimationPhase('showing');
         setVisibleChars(0);
-      }, TRANSITION_DELAY);
+      }, ANIMATION_PHASE_DELAY_MS);
       return () => clearTimeout(delayTimer);
     }
 
     const timer = setTimeout(() => {
-      setVisibleChars((prev) => prev - 1);
-    }, CHAR_HIDE_INTERVAL);
+      // Decrement by CHARS_PER_FRAME, but don't go below 0
+      setVisibleChars((prev) => Math.max(0, prev - CHARS_PER_FRAME));
+    }, CHAR_ANIMATION_INTERVAL_MS);
 
     return () => clearTimeout(timer);
   }, [animationPhase, visibleChars]);
 
-  // Handle showing animation (left to right reveal of placeholder)
+  // Handle showing animation (left to right reveal of placeholder) - multiple chars per frame
   useEffect(() => {
     if (animationPhase !== 'showing') {
       return;
@@ -196,8 +201,9 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     }
 
     const timer = setTimeout(() => {
-      setVisibleChars((prev) => prev + 1);
-    }, CHAR_SHOW_INTERVAL);
+      // Increment by CHARS_PER_FRAME, but don't exceed length
+      setVisibleChars((prev) => Math.min(placeholder.length, prev + CHARS_PER_FRAME));
+    }, CHAR_ANIMATION_INTERVAL_MS);
 
     return () => clearTimeout(timer);
   }, [animationPhase, visibleChars, placeholder.length]);

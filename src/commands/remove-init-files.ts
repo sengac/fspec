@@ -5,6 +5,7 @@ import type { Command } from 'commander';
 import chalk from 'chalk';
 import React from 'react';
 import { render } from 'ink';
+import { INK_RENDER_OPTIONS } from '../tui/config/inkConfig';
 import { getAgentById } from '../utils/agentRegistry';
 import { detectAgents } from '../utils/agentDetection';
 import { ConfirmPrompt } from '../components/ConfirmPrompt';
@@ -99,13 +100,9 @@ async function showKeepConfigPrompt(): Promise<boolean> {
         },
       }),
       {
-        // Enable mouse events (trackpad, scroll wheel, clicks)
         stdin: process.stdin,
         stdout: process.stdout,
-        // Enable incremental rendering to reduce flickering by only updating changed lines
-        incrementalRendering: true,
-        // Increase FPS from default 30 to 60 for smoother rendering
-        maxFps: 60,
+        ...INK_RENDER_OPTIONS,
       }
     );
     void waitUntilExit();
