@@ -18,7 +18,7 @@ import { normalizeEmojiWidth } from '../utils/stringWidth';
  */
 export const getDisplayRole = (
   msg: ConversationMessage
-): 'user' | 'assistant' | 'tool' => {
+): 'user' | 'assistant' | 'tool' | 'watcher' => {
   switch (msg.type) {
     case 'user-input':
       return 'user';
@@ -30,6 +30,8 @@ export const getDisplayRole = (
       return 'tool';
     case 'status':
       return 'tool';
+    case 'watcher-input':
+      return 'watcher'; // WATCH-012: Watcher input displayed in magenta
   }
 };
 
@@ -56,14 +58,17 @@ export const wrapMessageToLines = (
 
   // Add role prefix to first line
   // SOLID: Thinking messages get no prefix (the [Thinking] header is already in content)
+  // WATCH-012: Watcher messages already have '👁️ RoleName>' prefix from processChunksToConversation
   const isThinking = msg.type === 'thinking';
-  const prefix = isThinking
-    ? ''
-    : msg.type === 'user-input'
-      ? 'You: '
-      : msg.type === 'assistant-text'
-        ? '● '
-        : '';
+  const isWatcher = msg.type === 'watcher-input';
+  const prefix =
+    isThinking || isWatcher
+      ? ''
+      : msg.type === 'user-input'
+        ? 'You: '
+        : msg.type === 'assistant-text'
+          ? '● '
+          : '';
 
   // Normalize emoji variation selectors for consistent width calculation
   const normalizedContent = normalizeEmojiWidth(msg.content);

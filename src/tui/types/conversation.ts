@@ -10,7 +10,8 @@ export type MessageType =
   | 'assistant-text' // Assistant's response text (streaming or complete)
   | 'thinking' // Extended thinking/reasoning content
   | 'tool-call' // Tool invocation (header + result)
-  | 'status'; // Status messages (interrupted, errors, etc.)
+  | 'status' // Status messages (interrupted, errors, etc.)
+  | 'watcher-input'; // WATCH-012: Watcher injection message displayed in purple
 
 // Conversation message type for display
 // SOLID: type field provides semantic meaning, role is derived for display
@@ -30,7 +31,7 @@ export interface ConversationMessage {
 // Line type for VirtualList (flattened from messages)
 // Each line represents ONE visual line in the terminal
 export interface ConversationLine {
-  role: 'user' | 'assistant' | 'tool';
+  role: 'user' | 'assistant' | 'tool' | 'watcher'; // WATCH-012: Added 'watcher' for purple display
   content: string;
   messageIndex: number;
   isSeparator?: boolean; // TUI-042: Empty line used as turn separator

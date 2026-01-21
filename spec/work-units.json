@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T12:10:23.252Z"
+    "lastUpdated": "2026-01-21T23:25:06.780Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -64660,14 +64660,159 @@
       "id": "WATCH-012",
       "title": "Purple Watcher Input Display",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:50.518Z",
-      "updatedAt": "2026-01-21T00:58:59.035Z",
+      "updatedAt": "2026-01-21T23:25:06.810Z",
       "description": "Parse watcher message prefix in UI rendering. Display watcher input in purple/magenta with role name prefix (e.g., '👁️ Security Reviewer>'). Update processChunksToConversation.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-006"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T22:40:57.094Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T22:44:09.563Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T22:45:34.741Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T23:22:35.270Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T23:25:06.811Z"
+        }
+      ],
+      "userStory": {
+        "role": "user observing a parent session with active watchers",
+        "action": "see watcher injections displayed distinctly in purple with the watcher's role name as a prefix",
+        "benefit": "I can immediately identify which watcher is providing feedback and distinguish watcher input from regular user input"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "WatcherInput stream chunks have chunk_type='WatcherInput' with a formatted message in the text field",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:12.406Z"
+        },
+        {
+          "id": 1,
+          "text": "Watcher message format is: [WATCHER: role | Authority: level | Session: id] followed by newline and content",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:13.329Z"
+        },
+        {
+          "id": 2,
+          "text": "parseWatcherPrefix function extracts role, authority, sessionId, and content from the formatted message",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:14.470Z"
+        },
+        {
+          "id": 3,
+          "text": "Watcher input is displayed in magenta (purple) color, distinct from green (user) and white (assistant)",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:15.593Z"
+        },
+        {
+          "id": 4,
+          "text": "Watcher input prefix shows eye emoji and role name: '👁️ RoleName>' followed by the message content",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:16.717Z"
+        },
+        {
+          "id": 5,
+          "text": "ConversationMessage type 'watcher-input' is added to MessageType union for semantic identification",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:17.840Z"
+        },
+        {
+          "id": 6,
+          "text": "ConversationLine role 'watcher' is added for display color determination",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:18.524Z"
+        },
+        {
+          "id": 7,
+          "text": "processChunksToConversation handles WatcherInput chunk type and creates watcher-input messages",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:19.217Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "WatcherInput chunk with text='[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]\\nSQL injection vulnerability detected' → displays as '👁️ Security Reviewer> SQL injection vulnerability detected' in magenta",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:24.808Z"
+        },
+        {
+          "id": 1,
+          "text": "parseWatcherPrefix('[WATCHER: Code Reviewer | Authority: Peer | Session: xyz-789]\\nConsider adding error handling') → { role: 'Code Reviewer', authority: 'Peer', sessionId: 'xyz-789', content: 'Consider adding error handling' }",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:26.331Z"
+        },
+        {
+          "id": 2,
+          "text": "parseWatcherPrefix('Regular user message without prefix') → null (no watcher prefix detected)",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:27.467Z"
+        },
+        {
+          "id": 3,
+          "text": "Multiline watcher message: '[WATCHER: Arch Advisor | Authority: Peer | Session: def-456]\\nFirst line\\nSecond line\\nThird line' → content preserves all three lines after prefix",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:28.893Z"
+        },
+        {
+          "id": 4,
+          "text": "Conversation display: line.role === 'watcher' → baseColor = 'magenta', line.role === 'user' → baseColor = 'green', line.role === 'assistant' → baseColor = 'white'",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:30.126Z"
+        },
+        {
+          "id": 5,
+          "text": "processChunksToConversation receives WatcherInput chunk → creates ConversationMessage with type='watcher-input' containing parsed role and content",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:41:31.145Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: parseWatcherPrefix utility function in AgentView.tsx parses the structured [WATCHER: ...] prefix and extracts role, authority, sessionId, content",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:43:17.230Z"
+        },
+        {
+          "id": 1,
+          "text": "Implementation: MessageType in src/tui/types/conversation.ts extended with 'watcher-input' type",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:43:18.156Z"
+        },
+        {
+          "id": 2,
+          "text": "Implementation: ConversationLine role union in src/tui/types/conversation.ts extended with 'watcher' role",
+          "deleted": false,
+          "createdAt": "2026-01-21T22:43:18.845Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/WATCH-012/ast-research-watcher-display.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T23:25:06.810Z"
     },
     "WATCH-013": {
       "id": "WATCH-013",
@@ -64925,7 +65070,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-012",
       "WATCH-013",
       "WATCH-014",
       "WATCH-015",
@@ -64954,6 +65098,7 @@
       "WATCH-011"
     ],
     "done": [
+      "WATCH-012",
       "WATCH-010",
       "WATCH-009",
       "WATCH-008",

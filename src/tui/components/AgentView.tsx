@@ -432,6 +432,38 @@ const appendThinkingContent = (
 };
 
 /**
+ * Interface for parsed watcher information (WATCH-012)
+ */
+interface WatcherInfo {
+  role: string;
+  authority: 'Supervisor' | 'Peer';
+  sessionId: string;
+  content: string;
+}
+
+/**
+ * Parse watcher message prefix to extract role, authority, session ID, and content.
+ * Format: [WATCHER: role | Authority: level | Session: id]\ncontent
+ *
+ * WATCH-012: Parses structured prefix injected by watcher sessions.
+ *
+ * @param text - The raw message text
+ * @returns WatcherInfo object if prefix found, null otherwise
+ */
+const parseWatcherPrefix = (text: string): WatcherInfo | null => {
+  const match = text.match(/^\[WATCHER: ([^|]+) \| Authority: (Supervisor|Peer) \| Session: ([^\]]+)\]\n/);
+  if (match) {
+    return {
+      role: match[1].trim(),
+      authority: match[2] as 'Supervisor' | 'Peer',
+      sessionId: match[3].trim(),
+      content: text.slice(match[0].length),
+    };
+  }
+  return null;
+};
+
+/**
  * Process merged chunks into conversation messages for reattachment.
  * Used when attaching to a running/idle background session.
  *
@@ -456,6 +488,27 @@ const processChunksToConversation = (
         correlationId,
         observedCorrelationIds,
       });
+    } else if (chunk.type === 'WatcherInput' && chunk.text) {
+      // WATCH-012: Handle watcher input messages - parse prefix and format for display
+      const watcherInfo = parseWatcherPrefix(chunk.text);
+      if (watcherInfo) {
+        // Format content with eye emoji and role prefix
+        const formattedContent = `👁️ ${watcherInfo.role}> ${watcherInfo.content}`;
+        messages.push({
+          type: 'watcher-input',
+          content: formattedContent,
+          correlationId,
+          observedCorrelationIds,
+        });
+      } else {
+        // Fallback: if parsing fails, display raw message
+        messages.push({
+          type: 'watcher-input',
+          content: chunk.text,
+          correlationId,
+          observedCorrelationIds,
+        });
+      }
     } else if (chunk.type === 'Text' && chunk.text) {
       // Find last assistant-text message to append to, or create new one
       const lastIdx = messages.findLastIndex(m => m.type === 'assistant-text');
@@ -6524,8 +6577,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             }
 
             // Default rendering for non-diff content
-            // Tool output is white (not yellow), user input is green
-            const baseColor = line.role === 'user' ? 'green' : 'white';
+            // Tool output is white (not yellow), user input is green, watcher input is magenta (WATCH-012)
+            const baseColor = line.role === 'user' ? 'green' : line.role === 'watcher' ? 'magenta' : 'white';
             return (
               <Box flexGrow={1}>
                 <Text color={baseColor}>{content}</Text>

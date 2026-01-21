@@ -226,15 +226,18 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 
     // Content line with role-based coloring
     // WATCH-011: Cross-pane highlighted lines get cyan color
+    // WATCH-012: Watcher role gets magenta color
     const baseColor = isCrossPaneHighlighted
       ? 'cyan'
       : line.role === 'user'
         ? 'green'
-        : line.isThinking
-          ? 'yellow'
-          : line.isError
-            ? 'red'
-            : undefined;
+        : line.role === 'watcher'
+          ? 'magenta'
+          : line.isThinking
+            ? 'yellow'
+            : line.isError
+              ? 'red'
+              : undefined;
 
     return (
       <Box key={`line-${index}`}>
