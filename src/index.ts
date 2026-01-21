@@ -20,6 +20,7 @@ import { readFileSync } from 'fs';
 import { dirname, join } from 'path';
 import { render } from 'ink';
 import React from 'react';
+import { INK_RENDER_OPTIONS } from './tui/config/inkConfig';
 
 // Read version from package.json
 const __filename = fileURLToPath(import.meta.url);
@@ -412,14 +413,8 @@ async function main(): Promise<void> {
         // Enable mouse events (trackpad, scroll wheel, clicks)
         stdin: process.stdin,
         stdout: process.stdout,
-        // Debug mode can be enabled via DEBUG env var
-        debug: false,
-        // PatchConsole is useful for development
-        patchConsole: false,
-        // Enable incremental rendering to reduce flickering by only updating changed lines
-        incrementalRendering: true,
-        // Increase FPS from default 30 to 60 for smoother rendering
-        maxFps: 60,
+        // Use shared Ink config to ensure animation timing stays in sync
+        ...INK_RENDER_OPTIONS,
       }
     );
     await waitUntilExit();

@@ -6,6 +6,7 @@ import os from 'os';
 import chalk from 'chalk';
 import React from 'react';
 import { render } from 'ink';
+import { INK_RENDER_OPTIONS } from '../tui/config/inkConfig';
 import {
   getAgentById,
   type AgentConfig,
@@ -182,13 +183,9 @@ async function showAgentSwitchPrompt(
         },
       }),
       {
-        // Enable mouse events (trackpad, scroll wheel, clicks)
         stdin: process.stdin,
         stdout: process.stdout,
-        // Enable incremental rendering to reduce flickering by only updating changed lines
-        incrementalRendering: true,
-        // Increase FPS from default 30 to 60 for smoother rendering
-        maxFps: 60,
+        ...INK_RENDER_OPTIONS,
       }
     );
     void waitUntilExit();
@@ -332,13 +329,9 @@ export function registerInitCommand(program: Command): void {
                 },
               }),
               {
-                // Enable mouse events (trackpad, scroll wheel, clicks)
                 stdin: process.stdin,
                 stdout: process.stdout,
-                // Enable incremental rendering to reduce flickering by only updating changed lines
-                incrementalRendering: true,
-                // Increase FPS from default 30 to 60 for smoother rendering
-                maxFps: 60,
+                ...INK_RENDER_OPTIONS,
               }
             );
             void waitUntilExit();
