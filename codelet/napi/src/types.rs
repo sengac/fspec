@@ -132,6 +132,12 @@ pub struct StreamChunk {
     pub tokens: Option<TokenTracker>,
     pub context_fill: Option<ContextFillInfo>,
     pub error: Option<String>,
+    /// Correlation ID for cross-pane selection highlighting (WATCH-011)
+    /// Assigned by handle_output() using per-session atomic counter
+    pub correlation_id: Option<String>,
+    /// IDs of observed parent chunks that triggered this watcher response (WATCH-011)
+    /// Only populated on watcher session output chunks
+    pub observed_correlation_ids: Option<Vec<String>>,
 }
 
 impl StreamChunk {
@@ -148,6 +154,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -165,6 +173,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -181,6 +191,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -197,6 +209,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -214,6 +228,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -230,6 +246,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -246,6 +264,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -262,6 +282,8 @@ impl StreamChunk {
             tokens: Some(tokens),
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -279,6 +301,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: Some(info),
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -295,6 +319,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -311,6 +337,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: Some(message),
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -328,6 +356,8 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
     }
 
@@ -345,7 +375,15 @@ impl StreamChunk {
             tokens: None,
             context_fill: None,
             error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
         }
+    }
+
+    /// Set observed correlation IDs for watcher response chunks (WATCH-011)
+    pub fn with_observed_correlation_ids(mut self, ids: Vec<String>) -> Self {
+        self.observed_correlation_ids = Some(ids);
+        self
     }
 }
 
@@ -423,6 +461,8 @@ mod tests {
         assert!(chunk.tokens.is_none());
         assert!(chunk.context_fill.is_none());
         assert!(chunk.error.is_none());
+        assert!(chunk.correlation_id.is_none());
+        assert!(chunk.observed_correlation_ids.is_none());
     }
 
     /// Test empty user input is handled correctly

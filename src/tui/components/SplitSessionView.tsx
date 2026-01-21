@@ -2,6 +2,7 @@
  * SplitSessionView - Split view for watcher sessions
  *
  * WATCH-010: Watcher Split View UI
+ * WATCH-011: Cross-Pane Selection with Correlation IDs
  * WATCH-018: Extract Split View to Separate Component
  *
  * Features:
@@ -11,9 +12,10 @@
  * - Up/Down navigate turns when in select mode (via VirtualList)
  * - Enter on selected parent turn pre-fills input with "Discuss Selected" context
  * - Input area always sends to watcher session
+ * - WATCH-011: Cross-pane highlighting shows correlation between parent/watcher turns
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Box, Text, useInput } from 'ink';
 import { VirtualList } from './VirtualList';
 import { ConversationInputArea } from './ConversationInputArea';
@@ -26,6 +28,7 @@ import {
   generateDiscussSelectedPrefill,
   getContentLineCount,
 } from '../utils/turnSelection';
+import { buildCorrelationMaps } from '../utils/correlationMapping';
 import type { ConversationLine } from '../types/conversation';
 
 interface SplitSessionViewProps {
@@ -68,6 +71,53 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   const activeSelectMode = activePane === 'parent'
     ? parentSelection.isSelectMode
     : watcherSelection.isSelectMode;
+
+  // WATCH-011: Build correlation maps between parent and watcher turns
+  const { parentToWatcherTurns, watcherToParentTurns } = useMemo(
+    () => buildCorrelationMaps(parentConversation, watcherConversation),
+    [parentConversation, watcherConversation]
+  );
+
+  // WATCH-011: Compute cross-pane highlighted turns based on selection
+  const crossPaneHighlightedTurns = useMemo(() => {
+    const highlighted = new Set<number>();
+
+    if (activePane === 'parent' && parentSelection.isSelectMode) {
+      // Parent pane is active with selection - highlight correlated watcher turns
+      const selectedIndex = parentSelection.selectionRef.current.selectedIndex;
+      const selectedLine = parentConversation[selectedIndex];
+      if (selectedLine) {
+        const parentTurn = selectedLine.messageIndex;
+        const watcherTurns = parentToWatcherTurns.get(parentTurn);
+        if (watcherTurns) {
+          watcherTurns.forEach(t => highlighted.add(t));
+        }
+      }
+    } else if (activePane === 'watcher' && watcherSelection.isSelectMode) {
+      // Watcher pane is active with selection - highlight correlated parent turns
+      const selectedIndex = watcherSelection.selectionRef.current.selectedIndex;
+      const selectedLine = watcherConversation[selectedIndex];
+      if (selectedLine) {
+        const watcherTurn = selectedLine.messageIndex;
+        const parentTurns = watcherToParentTurns.get(watcherTurn);
+        if (parentTurns) {
+          parentTurns.forEach(t => highlighted.add(t));
+        }
+      }
+    }
+
+    return highlighted;
+  }, [
+    activePane,
+    parentSelection.isSelectMode,
+    watcherSelection.isSelectMode,
+    parentSelection.selectionRef,
+    watcherSelection.selectionRef,
+    parentConversation,
+    watcherConversation,
+    parentToWatcherTurns,
+    watcherToParentTurns,
+  ]);
 
   // Handle keyboard input
   useInput((input, key) => {
@@ -133,11 +183,12 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   const virtualListHeight = Math.max(1, splitPanesHeight - paneHeaderLines);
   const paneContentWidth = Math.floor(terminalWidth / 2) - 6;
 
-  // Render function for conversation lines with selection highlighting
+  // Render function for conversation lines with selection and cross-pane highlighting
   const renderConversationItem = useCallback((
     isParentPane: boolean,
     selectMode: boolean,
-    paneLines: ConversationLine[]
+    paneLines: ConversationLine[],
+    crossPaneHighlighted: Set<number>
   ) => (
     line: ConversationLine,
     index: number,
@@ -145,6 +196,10 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     selectedIndex: number
   ) => {
     const paneActive = isParentPane ? activePane === 'parent' : activePane === 'watcher';
+
+    // WATCH-011: Check if this line's turn should be cross-pane highlighted
+    // Cross-pane highlight applies to the INACTIVE pane
+    const isCrossPaneHighlighted = !paneActive && crossPaneHighlighted.has(line.messageIndex);
 
     // Selection separator bars
     const separatorType = getSelectionSeparatorType(
@@ -170,22 +225,26 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     }
 
     // Content line with role-based coloring
-    const baseColor = line.role === 'user'
-      ? 'green'
-      : line.isThinking
-        ? 'yellow'
-        : line.isError
-          ? 'red'
-          : undefined;
+    // WATCH-011: Cross-pane highlighted lines get cyan color
+    const baseColor = isCrossPaneHighlighted
+      ? 'cyan'
+      : line.role === 'user'
+        ? 'green'
+        : line.isThinking
+          ? 'yellow'
+          : line.isError
+            ? 'red'
+            : undefined;
 
     return (
       <Box key={`line-${index}`}>
         <Text
-          dimColor={!paneActive}
+          dimColor={!paneActive && !isCrossPaneHighlighted}
           color={baseColor}
+          bold={isCrossPaneHighlighted}
           wrap="truncate"
         >
-          {line.content}
+          {isCrossPaneHighlighted ? '│ ' : ''}{line.content}
         </Text>
       </Box>
     );
@@ -233,7 +292,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
           <Box flexGrow={1} flexBasis={0}>
             <VirtualList
               items={parentConversation}
-              renderItem={renderConversationItem(true, parentSelection.isSelectMode, parentConversation)}
+              renderItem={renderConversationItem(true, parentSelection.isSelectMode, parentConversation, crossPaneHighlightedTurns)}
               keyExtractor={(_line, index) => `parent-${index}`}
               emptyMessage="No parent conversation"
               showScrollbar={true}
@@ -262,7 +321,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
           <Box flexGrow={1} flexBasis={0}>
             <VirtualList
               items={watcherConversation}
-              renderItem={renderConversationItem(false, watcherSelection.isSelectMode, watcherConversation)}
+              renderItem={renderConversationItem(false, watcherSelection.isSelectMode, watcherConversation, crossPaneHighlightedTurns)}
               keyExtractor={(_line, index) => `watcher-${index}`}
               emptyMessage="Start chatting with your watcher..."
               showScrollbar={true}

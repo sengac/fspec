@@ -1001,6 +1001,16 @@ export declare function sessionAttach(
 ): void;
 
 /**
+ * Clear pending observed correlation IDs for a session (WATCH-011)
+ *
+ * Call this after the watcher finishes processing an observation response.
+ * Subsequent output chunks will no longer have observed_correlation_ids set.
+ */
+export declare function sessionClearObservedCorrelationIds(
+  sessionId: string
+): void;
+
+/**
  * Clear the role for a session (WATCH-004)
  *
  * Returns the session to a regular (non-watcher) state.
@@ -1207,6 +1217,21 @@ export declare function sessionSetModel(
 ): Promise<void>;
 
 /**
+ * Set pending observed correlation IDs for a watcher session (WATCH-011)
+ *
+ * When processing observations, call this before sending the evaluation prompt.
+ * All subsequent output chunks from this session will be tagged with these IDs
+ * (in observed_correlation_ids field) until session_clear_observed_correlation_ids is called.
+ *
+ * This enables cross-pane highlighting: when viewing a watcher session in split view,
+ * selecting a watcher turn shows which parent turns it was responding to.
+ */
+export declare function sessionSetObservedCorrelationIds(
+  sessionId: string,
+  correlationIds: Array<string>
+): void;
+
+/**
  * Set pending input text for a background session (TUI-049)
  *
  * Saves the current input field text before switching to another session.
@@ -1281,6 +1306,16 @@ export interface StreamChunk {
   tokens?: TokenTracker;
   contextFill?: ContextFillInfo;
   error?: string;
+  /**
+   * Correlation ID for cross-pane selection highlighting (WATCH-011)
+   * Assigned by handle_output() using per-session atomic counter
+   */
+  correlationId?: string;
+  /**
+   * IDs of observed parent chunks that triggered this watcher response (WATCH-011)
+   * Only populated on watcher session output chunks
+   */
+  observedCorrelationIds?: Array<string>;
 }
 
 /**

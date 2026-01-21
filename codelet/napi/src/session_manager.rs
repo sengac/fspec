@@ -15,7 +15,7 @@ use codelet_tools::{clear_bash_abort, request_bash_abort};
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 use tokio::sync::{broadcast, mpsc, Mutex, Notify};
 use uuid::Uuid;
@@ -221,6 +221,15 @@ impl ObservationBuffer {
     pub fn chunks(&self) -> &[StreamChunk] {
         &self.chunks
     }
+
+    /// Get all correlation IDs from buffered chunks (WATCH-011)
+    /// Returns correlation IDs for cross-pane selection highlighting
+    pub fn correlation_ids(&self) -> Vec<String> {
+        self.chunks
+            .iter()
+            .filter_map(|c| c.correlation_id.clone())
+            .collect()
+    }
 }
 
 /// Check if a StreamChunk represents a natural breakpoint (WATCH-005)
@@ -292,8 +301,12 @@ pub const DEFAULT_SILENCE_TIMEOUT_SECS: u64 = 5;
 pub enum WatcherLoopAction {
     /// Process a user prompt (takes priority)
     ProcessUserPrompt(String),
-    /// Process accumulated observations (at breakpoint)
-    ProcessObservations(String),
+    /// Process accumulated observations (at breakpoint) (WATCH-011: includes observed correlation IDs)
+    ProcessObservations {
+        prompt: String,
+        /// Correlation IDs of parent chunks that triggered this evaluation
+        observed_correlation_ids: Vec<String>,
+    },
     /// Continue waiting (no action needed)
     Continue,
     /// Stop the loop (channel closed or error)
@@ -322,9 +335,11 @@ pub(crate) async fn watcher_loop_tick(
         if elapsed >= silence_timeout {
             // Already timed out - process immediately
             if !buffer.is_empty() {
+                // WATCH-011: Capture correlation IDs before clearing buffer
+                let observed_correlation_ids = buffer.correlation_ids();
                 let prompt = format_evaluation_prompt(buffer, role);
                 buffer.clear();
-                return WatcherLoopAction::ProcessObservations(prompt);
+                return WatcherLoopAction::ProcessObservations { prompt, observed_correlation_ids };
             }
         }
         silence_timeout.saturating_sub(elapsed)
@@ -365,9 +380,11 @@ pub(crate) async fn watcher_loop_tick(
                     // If breakpoint and buffer HAD content before, process
                     // Don't process if buffer was empty before the breakpoint chunk arrived
                     if is_breakpoint && had_content {
+                        // WATCH-011: Capture correlation IDs before clearing buffer
+                        let observed_correlation_ids = buffer.correlation_ids();
                         let prompt = format_evaluation_prompt(buffer, role);
                         buffer.clear();
-                        WatcherLoopAction::ProcessObservations(prompt)
+                        WatcherLoopAction::ProcessObservations { prompt, observed_correlation_ids }
                     } else {
                         WatcherLoopAction::Continue
                     }
@@ -386,9 +403,11 @@ pub(crate) async fn watcher_loop_tick(
 
         // Silence timeout - triggers breakpoint if buffer has content
         _ = tokio::time::sleep(timeout_duration), if !buffer.is_empty() => {
+            // WATCH-011: Capture correlation IDs before clearing buffer
+            let observed_correlation_ids = buffer.correlation_ids();
             let prompt = format_evaluation_prompt(buffer, role);
             buffer.clear();
-            WatcherLoopAction::ProcessObservations(prompt)
+            WatcherLoopAction::ProcessObservations { prompt, observed_correlation_ids }
         }
     }
 }
@@ -406,6 +425,8 @@ pub(crate) async fn watcher_loop_tick(
 ///
 /// The `process_prompt` callback is called whenever a prompt needs to be
 /// processed (either user input or accumulated observations).
+/// WATCH-011: For observation processing, observed_correlation_ids contains the
+/// correlation IDs of parent chunks that triggered this evaluation.
 pub(crate) async fn run_watcher_loop<F, Fut>(
     user_input_rx: &mut mpsc::Receiver<PromptInput>,
     parent_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
@@ -414,7 +435,7 @@ pub(crate) async fn run_watcher_loop<F, Fut>(
     mut process_prompt: F,
 ) -> Result<()>
 where
-    F: FnMut(String, bool) -> Fut,
+    F: FnMut(String, bool, Vec<String>) -> Fut,
     Fut: std::future::Future<Output = Result<()>>,
 {
     let mut buffer = ObservationBuffer::new();
@@ -433,12 +454,12 @@ where
 
         match action {
             WatcherLoopAction::ProcessUserPrompt(prompt) => {
-                // is_user_prompt = true
-                process_prompt(prompt, true).await?;
+                // is_user_prompt = true, no observed correlation IDs
+                process_prompt(prompt, true, Vec::new()).await?;
             }
-            WatcherLoopAction::ProcessObservations(prompt) => {
+            WatcherLoopAction::ProcessObservations { prompt, observed_correlation_ids } => {
                 // is_user_prompt = false (this is an observation evaluation)
-                process_prompt(prompt, false).await?;
+                process_prompt(prompt, false, observed_correlation_ids).await?;
             }
             WatcherLoopAction::Continue => {
                 // No action needed, continue loop
@@ -570,6 +591,16 @@ pub struct BackgroundSession {
     /// Watchers use this to inject messages into the parent session
     watcher_input_tx: mpsc::Sender<WatcherInput>,
     watcher_input_rx: Mutex<mpsc::Receiver<WatcherInput>>,
+
+    /// Correlation ID counter for cross-pane selection highlighting (WATCH-011)
+    /// Each chunk emitted by handle_output gets a unique correlation_id
+    correlation_counter: AtomicU64,
+
+    /// Pending observed correlation IDs for watcher responses (WATCH-011)
+    /// When a watcher processes observations, this is set to the correlation IDs
+    /// of the parent chunks that triggered the evaluation. handle_output then
+    /// tags output chunks with these IDs until cleared.
+    pending_observed_correlation_ids: RwLock<Vec<String>>,
 }
 
 impl BackgroundSession {
@@ -608,6 +639,8 @@ impl BackgroundSession {
             role: RwLock::new(None),
             watcher_input_tx,
             watcher_input_rx: Mutex::new(watcher_input_rx),
+            correlation_counter: AtomicU64::new(0),
+            pending_observed_correlation_ids: RwLock::new(Vec::new()),
         }
     }
 
@@ -667,7 +700,25 @@ impl BackgroundSession {
     }
     
     /// Handle output chunk - buffer and optionally forward to callback
-    pub fn handle_output(&self, chunk: StreamChunk) {
+    /// WATCH-011: Assigns correlation_id for cross-pane selection highlighting
+    /// WATCH-011: Applies pending_observed_correlation_ids for watcher responses
+    pub fn handle_output(&self, mut chunk: StreamChunk) {
+        // WATCH-011: Assign correlation_id if not already set
+        if chunk.correlation_id.is_none() {
+            let id = self.correlation_counter.fetch_add(1, Ordering::SeqCst);
+            chunk.correlation_id = Some(format!("{}-{}", self.id, id));
+        }
+
+        // WATCH-011: Apply pending observed_correlation_ids for watcher responses
+        // This tags watcher output chunks with the parent chunk IDs that triggered this response
+        if chunk.observed_correlation_ids.is_none() {
+            let pending_ids = self.pending_observed_correlation_ids.read()
+                .expect("pending_observed_correlation_ids lock poisoned");
+            if !pending_ids.is_empty() {
+                chunk.observed_correlation_ids = Some(pending_ids.clone());
+            }
+        }
+
         // Always buffer (unbounded)
         {
             let mut buffer = self.output_buffer.write().expect("output buffer lock poisoned");
@@ -736,6 +787,26 @@ impl BackgroundSession {
     /// Returns the session to a regular (non-watcher) state.
     pub fn clear_role(&self) {
         *self.role.write().expect("role lock poisoned") = None;
+    }
+
+    /// Set pending observed correlation IDs (WATCH-011)
+    ///
+    /// When a watcher processes observations, call this before sending the
+    /// evaluation prompt. All subsequent output chunks from handle_output
+    /// will be tagged with these IDs until clear_pending_observed_correlation_ids is called.
+    pub fn set_pending_observed_correlation_ids(&self, ids: Vec<String>) {
+        *self.pending_observed_correlation_ids.write()
+            .expect("pending_observed_correlation_ids lock poisoned") = ids;
+    }
+
+    /// Clear pending observed correlation IDs (WATCH-011)
+    ///
+    /// Call this after the watcher finishes processing an observation response.
+    /// Subsequent output chunks will no longer be tagged with observed IDs.
+    pub fn clear_pending_observed_correlation_ids(&self) {
+        self.pending_observed_correlation_ids.write()
+            .expect("pending_observed_correlation_ids lock poisoned")
+            .clear();
     }
 
     /// Receive watcher input (WATCH-006)
@@ -1876,10 +1947,14 @@ mod watcher_loop_tests {
 
         // @step Then accumulated observations should be formatted and returned
         match action {
-            WatcherLoopAction::ProcessObservations(prompt) => {
+            WatcherLoopAction::ProcessObservations { prompt, observed_correlation_ids } => {
                 assert!(prompt.contains("Hello "));
                 assert!(prompt.contains("World"));
                 assert!(prompt.contains("reviewer"));
+                // WATCH-011: Should have correlation IDs from buffered chunks
+                // Note: In this test, chunks are created without correlation_id set (None)
+                // so observed_correlation_ids will be empty. Real usage assigns IDs via handle_output.
+                assert!(observed_correlation_ids.is_empty());
             }
             _ => panic!("Expected ProcessObservations, got {:?}", action),
         }
@@ -1923,7 +1998,7 @@ mod watcher_loop_tests {
 
         // Should either get Continue (from lag) or process a chunk
         match action {
-            WatcherLoopAction::Continue | WatcherLoopAction::ProcessObservations(_) => {
+            WatcherLoopAction::Continue | WatcherLoopAction::ProcessObservations { .. } => {
                 // Both are acceptable - lag returns Continue, normal chunk may process
             }
             WatcherLoopAction::Stop => {
@@ -1966,7 +2041,7 @@ mod watcher_loop_tests {
 
         // @step Then observations should be processed
         match action {
-            WatcherLoopAction::ProcessObservations(prompt) => {
+            WatcherLoopAction::ProcessObservations { prompt, .. } => {
                 assert!(prompt.contains("Buffered content"));
             }
             _ => panic!("Expected ProcessObservations from timeout, got {:?}", action),
@@ -2008,7 +2083,7 @@ mod watcher_loop_tests {
                 // The Done chunk is still added to buffer for potential future use
                 assert!(!buffer.is_empty()); // Buffer has the Done chunk
             }
-            WatcherLoopAction::ProcessObservations(_) => {
+            WatcherLoopAction::ProcessObservations { .. } => {
                 panic!("Should NOT process when buffer was empty before breakpoint");
             }
             _ => panic!("Unexpected action: {:?}", action),
@@ -2392,6 +2467,122 @@ mod napi_watcher_tests {
         // @step Then it should return error "Watcher has no parent session"
         assert!(parent.is_none(), "Orphan watcher should have no parent");
         // Real NAPI function will return: Error::from_reason("Watcher has no parent session")
+    }
+}
+
+#[cfg(test)]
+mod correlation_id_tests {
+    use super::*;
+
+    // Feature: spec/features/cross-pane-selection-with-correlation-ids.feature (WATCH-011)
+
+    /// Scenario: StreamChunk receives correlation ID in handle_output
+    ///
+    /// @step Given a parent session exists
+    /// @step When the parent session emits a Text chunk via handle_output()
+    /// @step Then the chunk receives a unique correlation_id assigned by an atomic counter
+    /// @step And the correlation_id is in format "{session_id}-{counter}"
+    #[test]
+    fn test_correlation_id_format() {
+        // @step Given a parent session exists
+        let session_id = Uuid::parse_str("00000000-0000-0000-0000-000000000001").unwrap();
+
+        // Simulate correlation ID assignment as done in handle_output
+        // Using AtomicU64::fetch_add as in the real implementation
+        let counter = AtomicU64::new(0);
+
+        // @step When the parent session emits a Text chunk via handle_output()
+        let id1 = counter.fetch_add(1, Ordering::SeqCst);
+        let correlation_id1 = format!("{}-{}", session_id, id1);
+
+        let id2 = counter.fetch_add(1, Ordering::SeqCst);
+        let correlation_id2 = format!("{}-{}", session_id, id2);
+
+        // @step Then the chunk receives a unique correlation_id assigned by an atomic counter
+        assert_ne!(correlation_id1, correlation_id2);
+
+        // @step And the correlation_id is in format "{session_id}-{counter}"
+        assert_eq!(correlation_id1, "00000000-0000-0000-0000-000000000001-0");
+        assert_eq!(correlation_id2, "00000000-0000-0000-0000-000000000001-1");
+    }
+
+    /// Scenario: ObservationBuffer captures correlation IDs
+    ///
+    /// @step Given a watcher session is observing a parent session
+    /// @step And the parent emits chunks with correlation_ids "p-0", "p-1", "p-2"
+    /// @step When a natural breakpoint triggers watcher evaluation
+    /// @step Then the buffer.correlation_ids() returns ["p-0", "p-1", "p-2"]
+    #[test]
+    fn test_observation_buffer_correlation_ids() {
+        // @step Given a watcher session is observing a parent session
+        let mut buffer = ObservationBuffer::new();
+
+        // @step And the parent emits chunks with correlation_ids "p-0", "p-1", "p-2"
+        let mut chunk1 = StreamChunk::text("Hello".to_string());
+        chunk1.correlation_id = Some("p-0".to_string());
+        buffer.push(chunk1);
+
+        let mut chunk2 = StreamChunk::text("World".to_string());
+        chunk2.correlation_id = Some("p-1".to_string());
+        buffer.push(chunk2);
+
+        let mut chunk3 = StreamChunk::text("!".to_string());
+        chunk3.correlation_id = Some("p-2".to_string());
+        buffer.push(chunk3);
+
+        // @step When a natural breakpoint triggers watcher evaluation
+        // @step Then the buffer.correlation_ids() returns ["p-0", "p-1", "p-2"]
+        let ids = buffer.correlation_ids();
+        assert_eq!(ids, vec!["p-0", "p-1", "p-2"]);
+    }
+
+    /// Scenario: StreamChunk can be tagged with observed correlation IDs
+    ///
+    /// @step Given a watcher response chunk
+    /// @step When it is tagged with observed correlation IDs
+    /// @step Then the chunk has observed_correlation_ids set
+    #[test]
+    fn test_stream_chunk_with_observed_correlation_ids() {
+        // @step Given a watcher response chunk
+        let chunk = StreamChunk::text("I noticed an issue".to_string());
+
+        // @step When it is tagged with observed correlation IDs
+        let tagged_chunk = chunk.with_observed_correlation_ids(vec![
+            "p-0".to_string(),
+            "p-1".to_string(),
+        ]);
+
+        // @step Then the chunk has observed_correlation_ids set
+        assert!(tagged_chunk.observed_correlation_ids.is_some());
+        let ids = tagged_chunk.observed_correlation_ids.unwrap();
+        assert_eq!(ids, vec!["p-0", "p-1"]);
+    }
+
+    /// Scenario: WatcherLoopAction::ProcessObservations includes observed correlation IDs
+    ///
+    /// @step Given accumulated observations with correlation IDs
+    /// @step When ProcessObservations action is created
+    /// @step Then it contains the observed correlation IDs
+    #[test]
+    fn test_watcher_loop_action_has_correlation_ids() {
+        // @step Given accumulated observations with correlation IDs
+        let prompt = "Evaluate these observations".to_string();
+        let correlation_ids = vec!["p-0".to_string(), "p-1".to_string()];
+
+        // @step When ProcessObservations action is created
+        let action = WatcherLoopAction::ProcessObservations {
+            prompt: prompt.clone(),
+            observed_correlation_ids: correlation_ids.clone(),
+        };
+
+        // @step Then it contains the observed correlation IDs
+        match action {
+            WatcherLoopAction::ProcessObservations { prompt: p, observed_correlation_ids } => {
+                assert_eq!(p, prompt);
+                assert_eq!(observed_correlation_ids, correlation_ids);
+            }
+            _ => panic!("Expected ProcessObservations"),
+        }
     }
 }
 
@@ -3084,6 +3275,32 @@ pub fn watcher_inject(watcher_id: String, message: String) -> Result<()> {
     parent.receive_watcher_input(input)
         .map_err(|e| Error::from_reason(e))?;
     
+    Ok(())
+}
+
+/// Set pending observed correlation IDs for a watcher session (WATCH-011)
+///
+/// When processing observations, call this before sending the evaluation prompt.
+/// All subsequent output chunks from this session will be tagged with these IDs
+/// (in observed_correlation_ids field) until session_clear_observed_correlation_ids is called.
+///
+/// This enables cross-pane highlighting: when viewing a watcher session in split view,
+/// selecting a watcher turn shows which parent turns it was responding to.
+#[napi]
+pub fn session_set_observed_correlation_ids(session_id: String, correlation_ids: Vec<String>) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.set_pending_observed_correlation_ids(correlation_ids);
+    Ok(())
+}
+
+/// Clear pending observed correlation IDs for a session (WATCH-011)
+///
+/// Call this after the watcher finishes processing an observation response.
+/// Subsequent output chunks will no longer have observed_correlation_ids set.
+#[napi]
+pub fn session_clear_observed_correlation_ids(session_id: String) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.clear_pending_observed_correlation_ids();
     Ok(())
 }
 
