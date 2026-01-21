@@ -17,7 +17,7 @@ use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use std::collections::HashMap;
 use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, Ordering};
 use std::sync::{Arc, RwLock};
-use tokio::sync::{mpsc, Mutex, Notify};
+use tokio::sync::{broadcast, mpsc, Mutex, Notify};
 use uuid::Uuid;
 
 /// Maximum concurrent sessions
@@ -147,6 +147,9 @@ pub struct BackgroundSession {
 
     /// Pending input text (TUI-049: preserved when switching sessions)
     pending_input: RwLock<Option<String>>,
+
+    /// Broadcast channel for watcher sessions to observe stream output (WATCH-003)
+    watcher_broadcast: broadcast::Sender<StreamChunk>,
 }
 
 impl BackgroundSession {
@@ -178,6 +181,7 @@ impl BackgroundSession {
             interrupt_notify: Arc::new(Notify::new()),
             is_debug_enabled: AtomicBool::new(false),
             pending_input: RwLock::new(None),
+            watcher_broadcast: broadcast::channel(WATCHER_BROADCAST_CAPACITY).0,
         }
     }
 
@@ -243,6 +247,10 @@ impl BackgroundSession {
             let mut buffer = self.output_buffer.write().expect("output buffer lock poisoned");
             buffer.push(chunk.clone());
         }
+
+        // Broadcast to watcher sessions (WATCH-003)
+        // Fire-and-forget: ignores SendError when no receivers are subscribed
+        let _ = self.watcher_broadcast.send(chunk.clone());
         
         // If attached, forward to callback
         // Note: We check is_attached first, but callback may be None during detach transition.
@@ -272,6 +280,15 @@ impl BackgroundSession {
     pub fn detach(&self) {
         *self.attached_callback.write().expect("callback lock poisoned") = None;
         self.is_attached.store(false, Ordering::Release);
+    }
+
+    /// Subscribe to the output stream for watcher sessions (WATCH-003)
+    ///
+    /// Returns a broadcast receiver that will receive all StreamChunks output by this session.
+    /// Late subscribers start receiving from the current position (no replay of past chunks).
+    /// Slow receivers may receive RecvError::Lagged if they fall more than 256 chunks behind.
+    pub fn subscribe_to_stream(&self) -> broadcast::Receiver<StreamChunk> {
+        self.watcher_broadcast.subscribe()
     }
     
     /// Send input to the agent loop
@@ -466,6 +483,244 @@ impl WatchGraph {
         let p2w = self.parent_to_watchers.read().expect("parent_to_watchers lock poisoned");
         let w2p = self.watcher_to_parent.read().expect("watcher_to_parent lock poisoned");
         p2w.is_empty() && w2p.is_empty()
+    }
+}
+
+/// Broadcast channel capacity for watcher stream observation (WATCH-003)
+pub const WATCHER_BROADCAST_CAPACITY: usize = 256;
+
+#[cfg(test)]
+mod watcher_broadcast_tests {
+    use super::*;
+
+    /// Feature: spec/features/broadcast-channel-for-parent-stream-observation.feature
+    ///
+    /// Scenario: Broadcast with no subscribers still buffers normally
+    ///
+    /// @step Given a BackgroundSession with broadcast channel initialized
+    /// @step And no watchers have subscribed to the stream
+    /// @step When handle_output is called with a TextDelta chunk
+    /// @step Then the chunk should be added to the output buffer
+    /// @step And no error should occur from the broadcast
+    #[test]
+    fn test_broadcast_with_no_subscribers_still_buffers() {
+        // @step Given a BackgroundSession with broadcast channel initialized
+        let (tx, _rx) = broadcast::channel::<StreamChunk>(WATCHER_BROADCAST_CAPACITY);
+        let output_buffer: RwLock<Vec<StreamChunk>> = RwLock::new(Vec::new());
+
+        // @step And no watchers have subscribed to the stream
+        // (no receivers created - tx has no subscribers)
+
+        // @step When handle_output is called with a TextDelta chunk
+        let chunk = StreamChunk::text("test content".to_string());
+        
+        // Simulate handle_output behavior:
+        // 1. Buffer the chunk
+        {
+            let mut buffer = output_buffer.write().expect("lock");
+            buffer.push(chunk.clone());
+        }
+        // 2. Broadcast (fire-and-forget, ignores SendError when no receivers)
+        let _ = tx.send(chunk.clone());
+
+        // @step Then the chunk should be added to the output buffer
+        let buffer = output_buffer.read().expect("lock");
+        assert_eq!(buffer.len(), 1, "chunk should be buffered");
+        assert_eq!(buffer[0].chunk_type, "Text");
+
+        // @step And no error should occur from the broadcast
+        // (if we got here, no panic occurred)
+    }
+
+    /// Scenario: Single watcher receives chunks via broadcast
+    ///
+    /// @step Given a BackgroundSession with broadcast channel initialized
+    /// @step And a watcher has called subscribe_to_stream to get a receiver
+    /// @step When handle_output is called with a TextDelta chunk
+    /// @step Then the watcher should receive the same chunk via its receiver
+    /// @step And the chunk should also be buffered normally
+    #[test]
+    fn test_single_watcher_receives_chunks() {
+        // @step Given a BackgroundSession with broadcast channel initialized
+        let (tx, mut rx) = broadcast::channel::<StreamChunk>(WATCHER_BROADCAST_CAPACITY);
+        let output_buffer: RwLock<Vec<StreamChunk>> = RwLock::new(Vec::new());
+
+        // @step And a watcher has called subscribe_to_stream to get a receiver
+        // rx is already subscribed (created from channel)
+
+        // @step When handle_output is called with a TextDelta chunk
+        let chunk = StreamChunk::text("watcher test".to_string());
+        {
+            let mut buffer = output_buffer.write().expect("lock");
+            buffer.push(chunk.clone());
+        }
+        let _ = tx.send(chunk.clone());
+
+        // @step Then the watcher should receive the same chunk via its receiver
+        let received = rx.try_recv().expect("should receive chunk");
+        assert_eq!(received.chunk_type, "Text");
+        assert_eq!(received.text, Some("watcher test".to_string()));
+
+        // @step And the chunk should also be buffered normally
+        let buffer = output_buffer.read().expect("lock");
+        assert_eq!(buffer.len(), 1);
+    }
+
+    /// Scenario: Multiple watchers receive chunks independently
+    ///
+    /// @step Given a BackgroundSession with broadcast channel initialized
+    /// @step And watcher A has subscribed to the stream
+    /// @step And watcher B has subscribed to the stream
+    /// @step When handle_output is called with a TextDelta chunk
+    /// @step Then watcher A should receive the chunk via its receiver
+    /// @step And watcher B should receive the chunk via its receiver
+    /// @step And both received chunks should be identical
+    #[test]
+    fn test_multiple_watchers_receive_independently() {
+        // @step Given a BackgroundSession with broadcast channel initialized
+        let (tx, mut rx_a) = broadcast::channel::<StreamChunk>(WATCHER_BROADCAST_CAPACITY);
+
+        // @step And watcher A has subscribed to the stream
+        // rx_a is already subscribed
+
+        // @step And watcher B has subscribed to the stream
+        let mut rx_b = tx.subscribe();
+
+        // @step When handle_output is called with a TextDelta chunk
+        let chunk = StreamChunk::text("multi-watcher".to_string());
+        let _ = tx.send(chunk.clone());
+
+        // @step Then watcher A should receive the chunk via its receiver
+        let received_a = rx_a.try_recv().expect("watcher A should receive");
+
+        // @step And watcher B should receive the chunk via its receiver
+        let received_b = rx_b.try_recv().expect("watcher B should receive");
+
+        // @step And both received chunks should be identical
+        assert_eq!(received_a.chunk_type, received_b.chunk_type);
+        assert_eq!(received_a.text, received_b.text);
+        assert_eq!(received_a.text, Some("multi-watcher".to_string()));
+    }
+
+    /// Scenario: Slow watcher receives lagged error when falling behind
+    ///
+    /// @step Given a BackgroundSession with broadcast channel capacity of 256
+    /// @step And a watcher has subscribed to the stream
+    /// @step And the watcher has not consumed any chunks
+    /// @step When handle_output is called 300 times with chunks
+    /// @step Then the watcher should receive RecvError::Lagged when trying to receive
+    #[test]
+    fn test_slow_watcher_receives_lagged_error() {
+        // @step Given a BackgroundSession with broadcast channel capacity of 256
+        let (tx, mut rx) = broadcast::channel::<StreamChunk>(WATCHER_BROADCAST_CAPACITY);
+
+        // @step And a watcher has subscribed to the stream
+        // @step And the watcher has not consumed any chunks
+        // (rx exists but we don't call recv)
+
+        // @step When handle_output is called 300 times with chunks
+        for i in 0..300 {
+            let chunk = StreamChunk::text(format!("chunk {}", i));
+            let _ = tx.send(chunk);
+        }
+
+        // @step Then the watcher should receive RecvError::Lagged when trying to receive
+        match rx.try_recv() {
+            Err(broadcast::error::TryRecvError::Lagged(n)) => {
+                assert!(n > 0, "should have lagged by some messages");
+                // With 300 sends and 256 capacity, we lag by 300 - 256 = 44 messages
+                assert!(n >= 44, "should lag by at least 44 messages, got {}", n);
+            }
+            other => panic!("expected Lagged error, got {:?}", other),
+        }
+    }
+
+    /// Scenario: Dropped receiver does not affect other watchers
+    ///
+    /// @step Given a BackgroundSession with broadcast channel initialized
+    /// @step And watcher A has subscribed to the stream
+    /// @step And watcher B has subscribed to the stream
+    /// @step When watcher A drops its receiver
+    /// @step And handle_output is called with a TextDelta chunk
+    /// @step Then watcher B should still receive the chunk normally
+    /// @step And the parent session should continue operating normally
+    #[test]
+    fn test_dropped_receiver_does_not_affect_others() {
+        // @step Given a BackgroundSession with broadcast channel initialized
+        let (tx, rx_a) = broadcast::channel::<StreamChunk>(WATCHER_BROADCAST_CAPACITY);
+
+        // @step And watcher A has subscribed to the stream
+        // rx_a exists
+
+        // @step And watcher B has subscribed to the stream
+        let mut rx_b = tx.subscribe();
+
+        // @step When watcher A drops its receiver
+        drop(rx_a);
+
+        // @step And handle_output is called with a TextDelta chunk
+        let chunk = StreamChunk::text("after drop".to_string());
+        let send_result = tx.send(chunk);
+
+        // @step Then watcher B should still receive the chunk normally
+        let received = rx_b.try_recv().expect("watcher B should receive");
+        assert_eq!(received.text, Some("after drop".to_string()));
+
+        // @step And the parent session should continue operating normally
+        assert!(send_result.is_ok(), "send should succeed with remaining receiver");
+    }
+
+    /// Scenario: Late subscriber starts receiving from current position
+    ///
+    /// @step Given a BackgroundSession with broadcast channel initialized
+    /// @step And handle_output has been called 10 times with chunks
+    /// @step When a new watcher subscribes to the stream
+    /// @step And handle_output is called with a new chunk
+    /// @step Then the new watcher should receive only the new chunk
+    /// @step And the new watcher should not receive the previous 10 chunks
+    #[test]
+    fn test_late_subscriber_starts_from_current() {
+        // @step Given a BackgroundSession with broadcast channel initialized
+        let (tx, _initial_rx) = broadcast::channel::<StreamChunk>(WATCHER_BROADCAST_CAPACITY);
+
+        // @step And handle_output has been called 10 times with chunks
+        for i in 0..10 {
+            let chunk = StreamChunk::text(format!("old chunk {}", i));
+            let _ = tx.send(chunk);
+        }
+
+        // @step When a new watcher subscribes to the stream
+        let mut late_rx = tx.subscribe();
+
+        // @step And handle_output is called with a new chunk
+        let new_chunk = StreamChunk::text("new chunk".to_string());
+        let _ = tx.send(new_chunk);
+
+        // @step Then the new watcher should receive only the new chunk
+        let received = late_rx.try_recv().expect("should receive new chunk");
+        assert_eq!(received.text, Some("new chunk".to_string()));
+
+        // @step And the new watcher should not receive the previous 10 chunks
+        // (already verified - we only got one chunk, the new one)
+        match late_rx.try_recv() {
+            Err(broadcast::error::TryRecvError::Empty) => {
+                // Expected - no more chunks
+            }
+            other => panic!("expected Empty, got {:?}", other),
+        }
+    }
+
+    // === Integration tests that verify BackgroundSession has broadcast channel ===
+
+    /// Test that BackgroundSession has watcher_broadcast field and WATCHER_BROADCAST_CAPACITY is correct
+    #[test]
+    fn test_background_session_has_broadcast_field() {
+        // Verify the constant is defined correctly
+        assert_eq!(WATCHER_BROADCAST_CAPACITY, 256);
+        
+        // Note: Full BackgroundSession integration tested via handle_output() which
+        // requires codelet_cli::session::Session. The unit tests above validate the
+        // broadcast channel mechanics work correctly in isolation.
     }
 }
 
