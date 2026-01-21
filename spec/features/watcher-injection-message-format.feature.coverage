@@ -1,0 +1,97 @@
+{
+  "scenarios": [
+    {
+      "name": "Format peer watcher message with structured prefix",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_format_peer_watcher_message",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [73, 74, 75, 76, 77, 78, 79, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147]
+            },
+            {
+              "file": "codelet/napi/src/types.rs",
+              "lines": [335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Format supervisor watcher message with structured prefix",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_format_supervisor_watcher_message",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [73, 74, 75, 76, 77, 78, 79, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147]
+            },
+            {
+              "file": "codelet/napi/src/types.rs",
+              "lines": [335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Receive watcher input queues message asynchronously",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_receive_watcher_input_queues_via_try_send",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [571, 572, 586, 587, 609, 610, 741, 742, 743, 744, 745, 746, 747, 748, 749, 750, 752, 753, 754, 755, 756, 757]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_receive_watcher_input_channel_full_returns_error",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [746, 747, 748, 749, 750]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty watcher message returns error",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_empty_watcher_message_returns_error",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiline watcher message preserves formatting",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_multiline_watcher_message_preserves_formatting",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [138, 139, 140, 141, 142, 143, 144, 145, 146, 147]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

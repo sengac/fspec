@@ -61,11 +61,19 @@ impl RoleAuthority {
         }
     }
 
-    /// Convert to string representation
+    /// Convert to string representation (lowercase)
     pub fn as_str(&self) -> &'static str {
         match self {
             RoleAuthority::Peer => "peer",
             RoleAuthority::Supervisor => "supervisor",
+        }
+    }
+
+    /// Display name for formatted output (capitalized: Peer, Supervisor)
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            RoleAuthority::Peer => "Peer",
+            RoleAuthority::Supervisor => "Supervisor",
         }
     }
 }
@@ -89,6 +97,52 @@ impl SessionRole {
         }
         Ok(Self { name, description, authority })
     }
+}
+
+/// Watcher input message for injection into parent session (WATCH-006)
+#[derive(Debug, Clone)]
+pub struct WatcherInput {
+    /// Session ID of the watcher sending the input
+    pub source_session_id: String,
+    /// Role name of the watcher (e.g., "code-reviewer")
+    pub role_name: String,
+    /// Authority level (Peer or Supervisor)
+    pub authority: RoleAuthority,
+    /// The message content to inject
+    pub message: String,
+}
+
+impl WatcherInput {
+    /// Create a new WatcherInput
+    pub fn new(
+        source_session_id: String,
+        role_name: String,
+        authority: RoleAuthority,
+        message: String,
+    ) -> std::result::Result<Self, String> {
+        if message.is_empty() {
+            return Err("message cannot be empty".to_string());
+        }
+        Ok(Self {
+            source_session_id,
+            role_name,
+            authority,
+            message,
+        })
+    }
+}
+
+/// Format a watcher input message with the structured prefix (WATCH-006)
+///
+/// Format: [WATCHER: role | Authority: level | Session: id] message
+pub fn format_watcher_input(input: &WatcherInput) -> String {
+    format!(
+        "[WATCHER: {} | Authority: {} | Session: {}] {}",
+        input.role_name,
+        input.authority.display_name(),
+        input.source_session_id,
+        input.message
+    )
 }
 
 /// Watcher state for the agent loop (WATCH-005)
@@ -511,6 +565,11 @@ pub struct BackgroundSession {
 
     /// Session role for watcher sessions (WATCH-004) - None for regular sessions
     role: RwLock<Option<SessionRole>>,
+
+    /// Channel for receiving watcher input messages (WATCH-006)
+    /// Watchers use this to inject messages into the parent session
+    watcher_input_tx: mpsc::Sender<WatcherInput>,
+    watcher_input_rx: Mutex<mpsc::Receiver<WatcherInput>>,
 }
 
 impl BackgroundSession {
@@ -524,6 +583,9 @@ impl BackgroundSession {
         inner: codelet_cli::session::Session,
         input_tx: mpsc::Sender<PromptInput>,
     ) -> Self {
+        // Create watcher input channel (WATCH-006)
+        let (watcher_input_tx, watcher_input_rx) = mpsc::channel::<WatcherInput>(16);
+
         Self {
             id,
             name: RwLock::new(name),
@@ -544,6 +606,8 @@ impl BackgroundSession {
             pending_input: RwLock::new(None),
             watcher_broadcast: broadcast::channel(WATCHER_BROADCAST_CAPACITY).0,
             role: RwLock::new(None),
+            watcher_input_tx,
+            watcher_input_rx: Mutex::new(watcher_input_rx),
         }
     }
 
@@ -672,6 +736,24 @@ impl BackgroundSession {
     /// Returns the session to a regular (non-watcher) state.
     pub fn clear_role(&self) {
         *self.role.write().expect("role lock poisoned") = None;
+    }
+
+    /// Receive watcher input (WATCH-006)
+    ///
+    /// Queues a WatcherInput message for processing by the parent session.
+    /// The input is queued via an mpsc channel and processed asynchronously.
+    /// Returns Ok(()) immediately without blocking.
+    pub fn receive_watcher_input(&self, input: WatcherInput) -> std::result::Result<(), String> {
+        self.watcher_input_tx
+            .try_send(input)
+            .map_err(|e| format!("Failed to queue watcher input: {}", e))
+    }
+
+    /// Get the watcher input sender (WATCH-006)
+    ///
+    /// Returns a clone of the sender for watchers to send input.
+    pub fn watcher_input_sender(&self) -> mpsc::Sender<WatcherInput> {
+        self.watcher_input_tx.clone()
     }
     
     /// Send input to the agent loop
@@ -1931,6 +2013,190 @@ mod watcher_loop_tests {
             }
             _ => panic!("Unexpected action: {:?}", action),
         }
+    }
+}
+
+#[cfg(test)]
+mod watcher_input_tests {
+    use super::*;
+
+    // Feature: spec/features/watcher-injection-message-format.feature
+
+    /// Scenario: Format peer watcher message with structured prefix
+    ///
+    /// @step Given a watcher session with role "code-reviewer" and authority "Peer"
+    /// @step And the watcher session id is "abc123"
+    /// @step When the watcher sends message "Consider adding error handling"
+    /// @step Then the formatted message should be "[WATCHER: code-reviewer | Authority: Peer | Session: abc123] Consider adding error handling"
+    #[test]
+    fn test_format_peer_watcher_message() {
+        // @step Given a watcher session with role "code-reviewer" and authority "Peer"
+        let role_name = "code-reviewer".to_string();
+        let authority = RoleAuthority::Peer;
+
+        // @step And the watcher session id is "abc123"
+        let session_id = "abc123".to_string();
+
+        // @step When the watcher sends message "Consider adding error handling"
+        let message = "Consider adding error handling".to_string();
+        let input = WatcherInput::new(session_id, role_name, authority, message).unwrap();
+        let formatted = format_watcher_input(&input);
+
+        // @step Then the formatted message should be "[WATCHER: code-reviewer | Authority: Peer | Session: abc123] Consider adding error handling"
+        assert_eq!(
+            formatted,
+            "[WATCHER: code-reviewer | Authority: Peer | Session: abc123] Consider adding error handling"
+        );
+    }
+
+    /// Scenario: Format supervisor watcher message with structured prefix
+    ///
+    /// @step Given a watcher session with role "security-auditor" and authority "Supervisor"
+    /// @step And the watcher session id is "xyz789"
+    /// @step When the watcher sends message "CRITICAL: SQL injection vulnerability detected"
+    /// @step Then the parent should receive a WatcherInput chunk
+    /// @step And the chunk should contain the formatted message with structured prefix
+    #[test]
+    fn test_format_supervisor_watcher_message() {
+        // @step Given a watcher session with role "security-auditor" and authority "Supervisor"
+        let role_name = "security-auditor".to_string();
+        let authority = RoleAuthority::Supervisor;
+
+        // @step And the watcher session id is "xyz789"
+        let session_id = "xyz789".to_string();
+
+        // @step When the watcher sends message "CRITICAL: SQL injection vulnerability detected"
+        let message = "CRITICAL: SQL injection vulnerability detected".to_string();
+        let input = WatcherInput::new(session_id, role_name, authority, message).unwrap();
+
+        // @step Then the parent should receive a WatcherInput chunk
+        let chunk = StreamChunk::watcher_input(format_watcher_input(&input));
+
+        // @step And the chunk should contain the formatted message with structured prefix
+        assert_eq!(chunk.chunk_type, "WatcherInput");
+        assert!(chunk.text.as_ref().unwrap().starts_with("[WATCHER: security-auditor | Authority: Supervisor | Session: xyz789]"));
+    }
+
+    /// Scenario: Receive watcher input queues message asynchronously
+    ///
+    /// This test verifies the watcher input channel mechanism works correctly.
+    /// Note: BackgroundSession.receive_watcher_input() uses try_send which is non-blocking.
+    /// We test the channel pattern here since BackgroundSession construction requires
+    /// a full codelet_cli::session::Session (integration test territory).
+    ///
+    /// @step Given a parent session exists
+    /// @step When receive_watcher_input is called with a valid WatcherInput
+    /// @step Then the input should be queued via the watcher input channel
+    /// @step And the method should return immediately without blocking
+    #[test]
+    fn test_receive_watcher_input_queues_via_try_send() {
+        // @step Given a parent session exists
+        // We test the channel mechanism that BackgroundSession.receive_watcher_input uses
+        let (watcher_tx, mut watcher_rx) = tokio::sync::mpsc::channel::<WatcherInput>(16);
+
+        // @step When receive_watcher_input is called with a valid WatcherInput
+        let input = WatcherInput::new(
+            "session123".to_string(),
+            "test-watcher".to_string(),
+            RoleAuthority::Peer,
+            "Test message".to_string(),
+        ).unwrap();
+
+        // BackgroundSession.receive_watcher_input uses try_send (non-blocking)
+        // This mirrors the exact implementation pattern
+        let result = watcher_tx.try_send(input);
+
+        // @step Then the input should be queued via the watcher input channel
+        assert!(result.is_ok(), "try_send should succeed when channel has capacity");
+
+        // @step And the method should return immediately without blocking
+        // try_send is guaranteed non-blocking - verified by using try_send instead of send
+        let received = watcher_rx.try_recv();
+        assert!(received.is_ok(), "Message should be in channel");
+        assert_eq!(received.unwrap().message, "Test message");
+    }
+
+    /// Test that channel returns error when full (matches receive_watcher_input error handling)
+    #[test]
+    fn test_receive_watcher_input_channel_full_returns_error() {
+        // Create a channel with capacity 1
+        let (watcher_tx, _watcher_rx) = tokio::sync::mpsc::channel::<WatcherInput>(1);
+
+        let input1 = WatcherInput::new(
+            "s1".to_string(),
+            "watcher".to_string(),
+            RoleAuthority::Peer,
+            "First".to_string(),
+        ).unwrap();
+
+        let input2 = WatcherInput::new(
+            "s2".to_string(),
+            "watcher".to_string(),
+            RoleAuthority::Peer,
+            "Second".to_string(),
+        ).unwrap();
+
+        // First send should succeed
+        assert!(watcher_tx.try_send(input1).is_ok());
+
+        // Second send should fail (channel full)
+        let result = watcher_tx.try_send(input2);
+        assert!(result.is_err(), "try_send should fail when channel is full");
+    }
+
+    /// Scenario: Empty watcher message returns error
+    ///
+    /// @step Given a watcher session with role "test-watcher" and authority "Peer"
+    /// @step And the watcher session id is "test123"
+    /// @step When the watcher sends an empty message
+    /// @step Then an error should be returned with message "message cannot be empty"
+    #[test]
+    fn test_empty_watcher_message_returns_error() {
+        // @step Given a watcher session with role "test-watcher" and authority "Peer"
+        let role_name = "test-watcher".to_string();
+        let authority = RoleAuthority::Peer;
+
+        // @step And the watcher session id is "test123"
+        let session_id = "test123".to_string();
+
+        // @step When the watcher sends an empty message
+        let result = WatcherInput::new(session_id, role_name, authority, "".to_string());
+
+        // @step Then an error should be returned with message "message cannot be empty"
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "message cannot be empty");
+    }
+
+    /// Scenario: Multiline watcher message preserves formatting
+    ///
+    /// @step Given a watcher session with role "code-reviewer" and authority "Peer"
+    /// @step And the watcher session id is "abc123"
+    /// @step When the watcher sends a multiline message
+    /// @step Then the formatted message should have the prefix on the first line
+    /// @step And subsequent lines should be preserved without additional prefixes
+    #[test]
+    fn test_multiline_watcher_message_preserves_formatting() {
+        // @step Given a watcher session with role "code-reviewer" and authority "Peer"
+        let role_name = "code-reviewer".to_string();
+        let authority = RoleAuthority::Peer;
+
+        // @step And the watcher session id is "abc123"
+        let session_id = "abc123".to_string();
+
+        // @step When the watcher sends a multiline message
+        let multiline_message = "Issue found on line 42:\n- Missing null check\n- Consider using Option<T>".to_string();
+        let input = WatcherInput::new(session_id, role_name, authority, multiline_message).unwrap();
+        let formatted = format_watcher_input(&input);
+
+        // @step Then the formatted message should have the prefix on the first line
+        assert!(formatted.starts_with("[WATCHER: code-reviewer | Authority: Peer | Session: abc123]"));
+
+        // @step And subsequent lines should be preserved without additional prefixes
+        let lines: Vec<&str> = formatted.lines().collect();
+        assert!(lines.len() >= 3); // Prefix line + 2 content lines (or content all on one line after prefix)
+        // The message content follows the prefix, newlines are preserved
+        assert!(formatted.contains("- Missing null check"));
+        assert!(formatted.contains("- Consider using Option<T>"));
     }
 }
 

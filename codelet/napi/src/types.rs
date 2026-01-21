@@ -330,6 +330,23 @@ impl StreamChunk {
             error: None,
         }
     }
+
+    /// Watcher input message (WATCH-006: for watcher injection into parent session)
+    pub fn watcher_input(formatted_message: String) -> Self {
+        Self {
+            chunk_type: "WatcherInput".to_string(),
+            text: Some(formatted_message),
+            thinking: None,
+            tool_call: None,
+            tool_result: None,
+            tool_progress: None,
+            status: None,
+            queued_inputs: None,
+            tokens: None,
+            context_fill: None,
+            error: None,
+        }
+    }
 }
 
 /// Provider configuration for programmatic credential passing (CONFIG-004)
