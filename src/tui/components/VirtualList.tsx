@@ -194,7 +194,7 @@ export function VirtualList<T>({
       if (containerRef.current) {
         const dimensions = measureElement(containerRef.current);
         if (dimensions.height > 0) {
-          const newHeight = Math.max(1, Math.floor(dimensions.height) - 2);
+          const newHeight = Math.max(1, Math.floor(dimensions.height));
           setMeasuredHeight(prev => (prev !== newHeight ? newHeight : prev));
         }
       }
