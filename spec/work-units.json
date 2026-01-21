@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T23:25:06.780Z"
+    "lastUpdated": "2026-01-21T23:44:43.459Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -64818,14 +64818,141 @@
       "id": "WATCH-013",
       "title": "Sibling Watcher Navigation",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:55.661Z",
-      "updatedAt": "2026-01-21T00:59:02.731Z",
+      "updatedAt": "2026-01-21T23:44:43.491Z",
       "description": "Modify switchToSession to filter by parent when current session is a watcher. Shift+Left/Right navigates only sibling watchers of the same parent.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-007"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T23:30:51.807Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T23:34:56.357Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T23:37:12.307Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T23:38:18.261Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T23:44:43.492Z"
+        }
+      ],
+      "userStory": {
+        "role": "user in a watcher session",
+        "action": "navigate between sibling watchers using Shift+Left/Right",
+        "benefit": "I can quickly switch between watchers of the same parent without cycling through unrelated sessions"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "When in a watcher session (sessionGetParent returns non-null), Shift+Left/Right navigates only between sibling watchers that share the same parent",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:04.941Z"
+        },
+        {
+          "id": 1,
+          "text": "When in a regular session (non-watcher, sessionGetParent returns null), Shift+Left/Right navigates through all top-level sessions (existing behavior unchanged)",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:09.328Z"
+        },
+        {
+          "id": 2,
+          "text": "Sibling watchers are defined as sessions where sessionGetParent(sessionId) returns the same parent ID",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:14.265Z"
+        },
+        {
+          "id": 3,
+          "text": "If only one sibling watcher exists, Shift+Left/Right does nothing (need at least 2 siblings to navigate)",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:18.764Z"
+        },
+        {
+          "id": 4,
+          "text": "Navigation wraps around: from last sibling, Shift+Right goes to first sibling; from first sibling, Shift+Left goes to last sibling",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:23.075Z"
+        },
+        {
+          "id": 5,
+          "text": "The switchToSession function filters sessionManagerList() to only include sessions where sessionGetParent returns the current session's parent ID",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:27.185Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Parent session A has three watchers: W1, W2, W3. User is in W1 and presses Shift+Right → switches to W2. Presses Shift+Right again → switches to W3. Presses Shift+Right again → wraps to W1.",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:32.502Z"
+        },
+        {
+          "id": 1,
+          "text": "User is in regular session B (not a watcher). Presses Shift+Right → navigates through all sessions (A, B, C, etc.) as before, including both parent sessions and watcher sessions.",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:37.444Z"
+        },
+        {
+          "id": 2,
+          "text": "Parent session A has only one watcher W1. User is in W1 and presses Shift+Right → nothing happens, stays in W1 (no siblings to navigate to).",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:41.958Z"
+        },
+        {
+          "id": 3,
+          "text": "Parent session A has two watchers: W1 and W2. User is in W1 and presses Shift+Left → wraps to W2. Presses Shift+Left again → wraps to W1.",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:46.411Z"
+        },
+        {
+          "id": 4,
+          "text": "Two parent sessions exist: Parent A (watchers W1, W2) and Parent B (watchers W3, W4). User in W1 presses Shift+Right → switches to W2 only (not W3 or W4 since they belong to Parent B).",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:31:51.337Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Modify switchToSession() in src/tui/components/AgentView.tsx around line 3667",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:33:56.448Z"
+        },
+        {
+          "id": 1,
+          "text": "Use sessionGetParent() NAPI binding from WATCH-007 to check if current session is a watcher",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:34:00.810Z"
+        },
+        {
+          "id": 2,
+          "text": "Filter sessionManagerList() results to only include sessions where sessionGetParent() returns the same parent ID when in a watcher session",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:34:04.769Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/WATCH-013/ast-research-switch-session.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T23:44:43.491Z"
     },
     "WATCH-014": {
       "id": "WATCH-014",
@@ -65070,7 +65197,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-013",
       "WATCH-014",
       "WATCH-015",
       "WATCH-016"
@@ -65098,6 +65224,7 @@
       "WATCH-011"
     ],
     "done": [
+      "WATCH-013",
       "WATCH-012",
       "WATCH-010",
       "WATCH-009",
