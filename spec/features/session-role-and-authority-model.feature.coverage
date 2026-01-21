@@ -1,0 +1,94 @@
+{
+  "scenarios": [
+    {
+      "name": "Set peer role with description",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_set_peer_role_with_description",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Set supervisor role without description",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_set_supervisor_role_without_description",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get role on regular session returns None",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_get_role_on_regular_session_returns_none",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [359, 360, 361, 362, 363]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get role on session with role returns role details",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_get_role_returns_role_details",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Set role with invalid authority returns error",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_set_role_with_invalid_authority_returns_error",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [55, 56, 57, 58, 59, 60, 61]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Set role with empty name returns error",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_set_role_with_empty_name_returns_error",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [85, 86, 87, 88, 89, 90, 91, 92]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
