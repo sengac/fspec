@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T02:34:27.967Z"
+    "lastUpdated": "2026-01-21T02:44:17.554Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -63623,16 +63623,167 @@
       "id": "WATCH-007",
       "title": "NAPI Bindings for Watcher Operations",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:24.689Z",
-      "updatedAt": "2026-01-21T00:58:39.188Z",
+      "updatedAt": "2026-01-21T02:44:17.587Z",
       "description": "Create NAPI bindings: session_create_watcher, session_get_parent, session_get_watchers, watcher_inject. Expose to TypeScript layer.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-002",
         "WATCH-004",
         "WATCH-006"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T02:38:25.452Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T02:41:14.998Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T02:42:41.784Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T02:44:07.776Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T02:44:17.587Z"
+        }
+      ],
+      "userStory": {
+        "role": "TypeScript application",
+        "action": "call NAPI bindings for watcher operations",
+        "benefit": "I can create watchers, get parent/watcher relationships, and inject watcher messages from the UI layer"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "session_create_watcher(parent_id, model, project, name) creates a new session as a watcher of parent_id and returns the watcher session ID",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:38:47.955Z"
+        },
+        {
+          "id": 1,
+          "text": "session_get_parent(session_id) returns the parent session ID if the session is a watcher, None otherwise",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:38:52.157Z"
+        },
+        {
+          "id": 2,
+          "text": "session_get_watchers(session_id) returns a list of watcher session IDs for the given parent session",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:38:56.125Z"
+        },
+        {
+          "id": 3,
+          "text": "watcher_inject(watcher_id, message) formats and injects a watcher message into the parent session using receive_watcher_input()",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:00.325Z"
+        },
+        {
+          "id": 4,
+          "text": "All NAPI bindings use #[napi] attribute and follow existing patterns in session_manager.rs",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:04.431Z"
+        },
+        {
+          "id": 5,
+          "text": "Error handling returns napi::Error with descriptive messages matching existing NAPI function patterns",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:08.564Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "session_create_watcher('parent-uuid', 'claude-sonnet-4', '/project', 'Code Reviewer') → creates watcher session, registers in WatchGraph, subscribes to parent broadcast → returns 'watcher-uuid'",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:13.627Z"
+        },
+        {
+          "id": 1,
+          "text": "session_get_parent('watcher-uuid') for a watcher session → returns 'parent-uuid'",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:17.623Z"
+        },
+        {
+          "id": 2,
+          "text": "session_get_parent('regular-session-uuid') for a non-watcher session → returns None",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:21.823Z"
+        },
+        {
+          "id": 3,
+          "text": "session_get_watchers('parent-uuid') with two watchers → returns ['watcher-1-uuid', 'watcher-2-uuid']",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:26.543Z"
+        },
+        {
+          "id": 4,
+          "text": "session_get_watchers('session-with-no-watchers') → returns empty array []",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:30.625Z"
+        },
+        {
+          "id": 5,
+          "text": "watcher_inject('watcher-uuid', 'Consider adding error handling') → formats message with watcher role prefix → queues on parent via receive_watcher_input()",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:35.240Z"
+        },
+        {
+          "id": 6,
+          "text": "watcher_inject on a session without a role → error: Session has no watcher role set",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:39.382Z"
+        },
+        {
+          "id": 7,
+          "text": "watcher_inject on a watcher with no parent registered → error: Watcher has no parent session",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:43.324Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add NAPI functions after existing session_* functions (around line 2780+)",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:48.142Z"
+        },
+        {
+          "id": 1,
+          "text": "session_create_watcher must: 1) create session via SessionManager, 2) register in WatchGraph, 3) subscribe to parent broadcast",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:52.645Z"
+        },
+        {
+          "id": 2,
+          "text": "watcher_inject must use the watcher's SessionRole to format the message via format_watcher_input()",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:39:56.952Z"
+        },
+        {
+          "id": 3,
+          "text": "Use WatchGraph methods: add_watcher(), get_parent(), get_watchers() already implemented in WATCH-002",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:40:01.551Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/WATCH-007/ast-research-napi-bindings.md"
+      ],
+      "estimate": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T02:44:17.587Z"
     },
     "WATCH-008": {
       "id": "WATCH-008",
@@ -63808,7 +63959,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-007",
       "WATCH-008",
       "WATCH-009",
       "WATCH-010",
@@ -63837,6 +63987,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-007",
       "WATCH-006",
       "WATCH-005",
       "WATCH-004",
