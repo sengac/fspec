@@ -549,7 +549,7 @@ Tags for test-related scenarios and requirements.
 | `@removal` | Scenario for removed or deprecated functionality |
 | `@resume-command` | Scenarios testing the /resume command |
 | `@resume-on-enter` | Scenarios testing Enter key behavior for session resume |
-| `@shift-esc` | Scenarios testing Shift+ESC key behavior |
+| `@space-esc` | Scenarios testing Space+ESC key behavior |
 | `@simple-command` | Simple command with minimal options |
 | `@single-message` | Single message edge case scenarios |
 | `@smoke` | Smoke tests - quick validation of critical functionality |

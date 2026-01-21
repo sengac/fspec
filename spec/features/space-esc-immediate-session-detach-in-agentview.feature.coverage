@@ -47,7 +47,7 @@
       ]
     },
     {
-      "name": "Shift+ESC overrides regular ESC confirmation modal",
+      "name": "Space+ESC overrides regular ESC confirmation modal",
       "testMappings": [
         {
           "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
@@ -70,7 +70,7 @@
       ]
     },
     {
-      "name": "Input placeholder shows Shift+ESC detach option",
+      "name": "Input placeholder shows Space+ESC detach option",
       "testMappings": [
         {
           "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
@@ -87,7 +87,7 @@
       ]
     },
     {
-      "name": "Thinking indicator shows Shift+ESC detach option",
+      "name": "Thinking indicator shows Space+ESC detach option",
       "testMappings": [
         {
           "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
@@ -104,7 +104,7 @@
       ]
     },
     {
-      "name": "Shift+ESC works in provider selector state",
+      "name": "Space+ESC works in provider selector state",
       "testMappings": [
         {
           "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
@@ -127,7 +127,7 @@
       ]
     },
     {
-      "name": "Shift+ESC works in model selector state",
+      "name": "Space+ESC works in model selector state",
       "testMappings": [
         {
           "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",
@@ -150,7 +150,7 @@
       ]
     },
     {
-      "name": "Shift+ESC works in settings state",
+      "name": "Space+ESC works in settings state",
       "testMappings": [
         {
           "file": "src/tui/__tests__/AgentView-shift-esc-detach.test.tsx",

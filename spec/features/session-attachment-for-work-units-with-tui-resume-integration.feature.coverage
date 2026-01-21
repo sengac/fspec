@@ -2438,7 +2438,7 @@
       ]
     },
     {
-      "name": "Shift+ESC returns to board while keeping session attached",
+      "name": "Space+ESC returns to board while keeping session attached",
       "testMappings": [
         {
           "file": "src/tui/__tests__/session-attachment.test.ts",
