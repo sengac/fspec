@@ -36,7 +36,6 @@ import { calculatePaneWidth } from '../utils/textWrap';
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
-import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
 import {
   CodeletSession,
   persistenceStoreMessageEnvelope,
@@ -1092,7 +1091,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
   // PERF-002: Incremental line computation cache
   // Cache wrapped lines per message to avoid recomputing entire conversation
-  // This is the main optimization - line wrapping is expensive (getVisualWidth for each char)
+  // Line wrapping via wrapMessageToLines is expensive (visual width calculation for each char)
   interface CachedMessageLines {
     content: string;
     isStreaming: boolean;
@@ -1247,10 +1246,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
   // WATCH-010: Detect if current session is a watcher and setup split view
   useEffect(() => {
-    logger.warn(`[WATCH-010] useEffect triggered, currentSessionId=${currentSessionId}`);
-    
     if (!currentSessionId) {
-      logger.warn('[WATCH-010] No currentSessionId, resetting split view state');
       setIsWatcherSessionView(false);
       setParentSessionId(null);
       setParentSessionName('');
@@ -1260,83 +1256,56 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
 
     try {
-      logger.warn(`[WATCH-010] Calling sessionGetParent(${currentSessionId})`);
-      logger.warn(`[WATCH-010] sessionGetParent type: ${typeof sessionGetParent}`);
       const parentId = sessionGetParent(currentSessionId);
-      logger.warn(`[WATCH-010] sessionGetParent returned: ${parentId}`);
       
       if (parentId) {
         // This is a watcher session - enable split view
-        logger.warn(`[WATCH-010] This is a watcher session, parentId=${parentId}`);
         setIsWatcherSessionView(true);
         setParentSessionId(parentId);
         
         // Get watcher role name
-        logger.warn(`[WATCH-010] Getting watcher role for session ${currentSessionId}`);
         const role = sessionGetRole(currentSessionId);
-        logger.warn(`[WATCH-010] sessionGetRole returned: ${JSON.stringify(role)}`);
         setWatcherRoleName(role?.name || 'Watcher');
         
         // Get parent session name from session list
-        logger.warn(`[WATCH-010] Getting session list to find parent name`);
         const sessions = sessionManagerList();
-        logger.warn(`[WATCH-010] sessionManagerList returned ${sessions.length} sessions`);
         const parentSession = sessions.find(s => s.id === parentId);
-        logger.warn(`[WATCH-010] Found parent session: ${parentSession?.name || 'NOT FOUND'}`);
         setParentSessionName(parentSession?.name || 'Parent Session');
         
         // Load parent session conversation
-        logger.warn(`[WATCH-010] Loading parent session conversation from sessionGetMergedOutput(${parentId})`);
         const parentChunks = sessionGetMergedOutput(parentId);
-        logger.warn(`[WATCH-010] sessionGetMergedOutput returned ${parentChunks?.length || 0} chunks`);
-        
-        logger.warn(`[WATCH-010] Calling processChunksToConversation`);
-        logger.warn(`[WATCH-010] formatToolHeader type: ${typeof formatToolHeader}`);
-        logger.warn(`[WATCH-010] formatCollapsedOutput type: ${typeof formatCollapsedOutput}`);
         const parentMessages = processChunksToConversation(
           parentChunks,
           formatToolHeader,
           formatCollapsedOutput
         );
-        logger.warn(`[WATCH-010] processChunksToConversation returned ${parentMessages?.length || 0} messages`);
         
         // Convert ConversationMessage[] to ConversationLine[] for display
-        // Use messagesToLines to properly wrap multi-line content into single-line items for VirtualList
-        logger.warn(`[WATCH-010] Converting messages to lines using messagesToLines`);
         const parentPaneWidth = calculatePaneWidth(terminalWidth, 'split');
         const parentLines = messagesToLines(parentMessages, parentPaneWidth);
-        logger.warn(`[WATCH-010] Converted to ${parentLines.length} lines (from ${parentMessages.length} messages)`);
         setParentConversation(parentLines);
         
-        // Also subscribe to parent session for live updates
-        logger.warn(`[WATCH-010] Subscribing to parent session for live updates via sessionAttach`);
+        // Subscribe to parent session for live updates
         sessionAttach(parentId, (_err: Error | null, chunk: StreamChunk) => {
           if (chunk) {
-            logger.warn(`[WATCH-010] Received chunk from parent session: ${chunk.type}`);
             const updatedChunks = sessionGetMergedOutput(parentId);
             const updatedMessages = processChunksToConversation(
               updatedChunks,
               formatToolHeader,
               formatCollapsedOutput
             );
-            // Convert ConversationMessage[] to ConversationLine[] for display
-            // Use shared calculatePaneWidth for consistent width calculation
             const updatedPaneWidth = calculatePaneWidth(terminalWidth, 'split');
             const updatedLines = messagesToLines(updatedMessages, updatedPaneWidth);
             setParentConversation(updatedLines);
           }
         });
         
-        logger.warn(`[WATCH-010] Split view setup complete`);
-        
         // Cleanup: detach from parent when effect re-runs or component unmounts
         return () => {
-          logger.warn(`[WATCH-010] Cleanup: detaching from parent session ${parentId}`);
           sessionDetach(parentId);
         };
       } else {
         // Not a watcher session - disable split view
-        logger.warn(`[WATCH-010] Not a watcher session (parentId is null)`);
         setIsWatcherSessionView(false);
         setParentSessionId(null);
         setParentSessionName('');
@@ -1345,8 +1314,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       }
     } catch (err) {
       // Error checking parent - not a watcher
-      logger.warn(`[WATCH-010] Error in useEffect: ${err instanceof Error ? err.message : String(err)}`);
-      logger.warn(`[WATCH-010] Error stack: ${err instanceof Error ? err.stack : 'no stack'}`);
       setIsWatcherSessionView(false);
     }
   }, [currentSessionId]);
@@ -6279,8 +6246,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // WATCH-010: Watcher split view - shows parent conversation on left, watcher conversation on right
   // WATCH-018: Extracted to separate SplitSessionView component for isolation and debugging
   if (isWatcherSessionView) {
-    logger.warn('[AgentView] Rendering SplitSessionView');
-    logger.warn(`[AgentView] parentConversation.length=${parentConversation.length}, conversationLines.length=${conversationLines.length}`);
     return (
       <SplitSessionView
         parentSessionName={parentSessionName}
