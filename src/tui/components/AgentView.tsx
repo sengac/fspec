@@ -33,6 +33,7 @@ import { WatcherCreateView } from './WatcherCreateView';
 import { SplitSessionView } from './SplitSessionView';
 import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/conversationUtils';
 import { calculatePaneWidth } from '../utils/textWrap';
+import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelection';
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
@@ -6354,57 +6355,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               return /^[L ]?\s*\d+\s{3}/.test(text);
             };
 
-            // TUI-042: Check if this separator line should have selection indicator background
-            // Returns 'top' if before selected turn, 'bottom' if after, or null if not a selection separator
-            const getSelectionSeparatorType = (): 'top' | 'bottom' | null => {
-              if (!line.isSeparator || !isTurnSelectMode) return null;
-              const items = conversationLines;
-              
-              // Get the selected turn's messageIndex
-              const selectedMessageIndex = items[selectedIndex]?.messageIndex;
-              if (selectedMessageIndex === undefined) return null;
-              
-              // Case 1: This separator is AFTER the selected turn (bottom bar)
-              // (separator belongs to the selected turn)
-              if (line.messageIndex === selectedMessageIndex) {
-                return 'bottom';
-              }
-              
-              // Case 2: This separator is BEFORE the selected turn (top bar)
-              // Check if the next non-separator line belongs to the selected turn
-              for (let i = index + 1; i < items.length; i++) {
-                const nextLine = items[i];
-                if (!nextLine.isSeparator) {
-                  // Found the next turn's first content line
-                  if (nextLine.messageIndex === selectedMessageIndex) {
-                    return 'top';
-                  }
-                  break;
-                }
-              }
-              
-              return null;
-            };
-
-            // TUI-042: Render separator lines with dark gray background and arrows when selected
-            const separatorType = getSelectionSeparatorType();
-            if (line.isSeparator && separatorType) {
-              // Full width dark gray background with arrows
-              const arrow = separatorType === 'top' ? '▼' : '▲';
+            // TUI-042: Render separator lines with selection indicator using shared utility
+            const separatorType = getSelectionSeparatorType(
+              line, index, conversationLines, selectedIndex, isTurnSelectMode
+            );
+            if (separatorType) {
               const lineWidth = terminalWidth - 4;
-              // Create pattern of arrows with spaces: "▼   ▼   ▼   ▼" or "▲   ▲   ▲   ▲"
-              const arrowSpacing = 4; // Arrow every 4 characters
-              let arrowLine = '';
-              for (let i = 0; i < lineWidth; i++) {
-                if (i % arrowSpacing === 0) {
-                  arrowLine += arrow;
-                } else {
-                  arrowLine += ' ';
-                }
-              }
+              const arrowBar = generateArrowBar(lineWidth, separatorType);
               return (
                 <Box flexGrow={1}>
-                  <Text backgroundColor="gray" color="white">{arrowLine}</Text>
+                  <Text backgroundColor="gray" color="white">{arrowBar}</Text>
                 </Box>
               );
             }
