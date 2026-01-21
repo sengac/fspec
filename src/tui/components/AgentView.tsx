@@ -92,6 +92,9 @@ import {
   sessionCreateWatcher,
   // WATCH-010: Watcher split view NAPI function
   sessionGetParent,
+  // WATCH-011: Cross-pane correlation ID functions
+  sessionSetObservedCorrelationIds,
+  sessionClearObservedCorrelationIds,
   type SessionRoleInfo,
   type NapiProviderModels,
   type NapiModelInfo,
@@ -283,6 +286,9 @@ interface StreamChunk {
   tokens?: TokenTracker;
   contextFill?: { fillPercentage: number };
   error?: string;
+  // WATCH-011: Correlation IDs for cross-pane selection highlighting
+  correlationId?: string;
+  observedCorrelationIds?: string[];
 }
 
 interface Message {
@@ -439,18 +445,52 @@ const processChunksToConversation = (
   const messages: ConversationMessage[] = [];
 
   for (const chunk of chunks) {
+    // WATCH-011: Extract correlation fields from chunk
+    const correlationId = chunk.correlationId;
+    const observedCorrelationIds = chunk.observedCorrelationIds;
+
     if (chunk.type === 'UserInput' && chunk.text) {
-      messages.push({ type: 'user-input', content: chunk.text });
+      messages.push({
+        type: 'user-input',
+        content: chunk.text,
+        correlationId,
+        observedCorrelationIds,
+      });
     } else if (chunk.type === 'Text' && chunk.text) {
       // Find last assistant-text message to append to, or create new one
       const lastIdx = messages.findLastIndex(m => m.type === 'assistant-text');
       if (lastIdx >= 0 && messages[lastIdx].isStreaming) {
         messages[lastIdx].content += chunk.text;
+        // WATCH-011: Don't overwrite correlation ID if already set (keep first chunk's ID)
+        // But DO merge observed correlation IDs from all chunks in this turn
+        if (observedCorrelationIds && observedCorrelationIds.length > 0) {
+          if (!messages[lastIdx].observedCorrelationIds) {
+            messages[lastIdx].observedCorrelationIds = [];
+          }
+          // Add unique IDs only
+          for (const id of observedCorrelationIds) {
+            if (!messages[lastIdx].observedCorrelationIds!.includes(id)) {
+              messages[lastIdx].observedCorrelationIds!.push(id);
+            }
+          }
+        }
       } else {
-        messages.push({ type: 'assistant-text', content: chunk.text, isStreaming: true });
+        messages.push({
+          type: 'assistant-text',
+          content: chunk.text,
+          isStreaming: true,
+          correlationId,
+          observedCorrelationIds,
+        });
       }
     } else if (chunk.type === 'Thinking' && chunk.thinking) {
       appendThinkingContent(messages, chunk.thinking, 'append');
+      // WATCH-011: Propagate correlation to thinking messages if created
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg && lastMsg.type === 'thinking' && !lastMsg.correlationId) {
+        lastMsg.correlationId = correlationId;
+        lastMsg.observedCorrelationIds = observedCorrelationIds;
+      }
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
       const toolCall = chunk.toolCall;
       let argsDisplay = '';
@@ -487,6 +527,8 @@ const processChunksToConversation = (
         type: 'tool-call',
         content: formatToolHeaderFn(toolCall.name, argsDisplay),
         toolCallId: toolCall.id,
+        correlationId,
+        observedCorrelationIds,
       });
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
       const result = chunk.toolResult;
@@ -504,7 +546,13 @@ const processChunksToConversation = (
         }
       }
       // Add streaming placeholder for continuation
-      messages.push({ type: 'assistant-text', content: '', isStreaming: true });
+      messages.push({
+        type: 'assistant-text',
+        content: '',
+        isStreaming: true,
+        correlationId,
+        observedCorrelationIds,
+      });
     } else if (chunk.type === 'Done') {
       // Remove empty streaming messages and finalize
       while (
@@ -533,7 +581,12 @@ const processChunksToConversation = (
           messages[streamingIdx].isStreaming = false;
         }
       }
-      messages.push({ type: 'status', content: '⚠ Interrupted' });
+      messages.push({
+        type: 'status',
+        content: '⚠ Interrupted',
+        correlationId,
+        observedCorrelationIds,
+      });
     }
   }
 
@@ -2867,12 +2920,45 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         });
       });
       
+      // WATCH-011: Set observed correlation IDs for watcher sessions
+      // When a watcher sends input, tag its response with the parent chunks it has observed
+      let isWatcherSession = false;
+      if (activeSessionId) {
+        try {
+          const parentId = sessionGetParent(activeSessionId);
+          if (parentId) {
+            isWatcherSession = true;
+            // Get parent's buffered output and extract correlation IDs
+            const parentChunks = sessionGetMergedOutput(parentId);
+            const correlationIds = parentChunks
+              .filter((chunk: StreamChunk) => chunk.correlationId)
+              .map((chunk: StreamChunk) => chunk.correlationId as string);
+            
+            if (correlationIds.length > 0) {
+              // Tag watcher's response chunks with the observed parent chunk IDs
+              sessionSetObservedCorrelationIds(activeSessionId, correlationIds);
+            }
+          }
+        } catch {
+          // Failed to get parent - continue without correlation IDs
+        }
+      }
+      
       // NAPI-009: Send the input to the background session (non-blocking)
       // The background session's agent_loop will process it and emit chunks via the callback
       sessionSendInput(activeSessionId, userMessage, thinkingConfig);
       
       // Wait for the prompt to complete (Done chunk received)
       await promptComplete;
+      
+      // WATCH-011: Clear observed correlation IDs after response completes
+      if (isWatcherSession && activeSessionId) {
+        try {
+          sessionClearObservedCorrelationIds(activeSessionId);
+        } catch {
+          // Failed to clear - continue
+        }
+      }
 
       // Persist full envelopes to session (includes tool calls and results)
       if (activeSessionId) {

@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { CodeletSession, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, ChunkType, extractThinkingText, getThinkingConfig, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionDetach, sessionGetBufferedOutput, sessionGetDebugEnabled, sessionGetMergedOutput, sessionGetModel, sessionGetParent, sessionGetPendingInput, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetWatchers, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionRestoreMessages, sessionRestoreTokenState, sessionSendInput, sessionSetDebugEnabled, sessionSetModel, sessionSetPendingInput, sessionSetRole, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, toggleDebug, watcherInject } = nativeBinding
+const { CodeletSession, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, ChunkType, extractThinkingText, getThinkingConfig, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionDetach, sessionGetBufferedOutput, sessionGetDebugEnabled, sessionGetMergedOutput, sessionGetModel, sessionGetParent, sessionGetPendingInput, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetWatchers, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionRestoreMessages, sessionRestoreTokenState, sessionSendInput, sessionSetDebugEnabled, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, toggleDebug, watcherInject } = nativeBinding
 export { CodeletSession }
 export { AstGrepCaseType }
 export { astGrepRefactor }
@@ -630,6 +630,7 @@ export { persistenceStoreBlob }
 export { persistenceStoreMessageEnvelope }
 export { persistenceUpdateSessionTokens }
 export { sessionAttach }
+export { sessionClearObservedCorrelationIds }
 export { sessionClearRole }
 export { sessionCompact }
 export { sessionCreateWatcher }
@@ -654,6 +655,7 @@ export { sessionRestoreTokenState }
 export { sessionSendInput }
 export { sessionSetDebugEnabled }
 export { sessionSetModel }
+export { sessionSetObservedCorrelationIds }
 export { sessionSetPendingInput }
 export { sessionSetRole }
 export { sessionToggleDebug }

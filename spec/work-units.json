@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T07:04:11.649Z"
+    "lastUpdated": "2026-01-21T12:10:23.252Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -64485,13 +64485,175 @@
       "id": "WATCH-011",
       "title": "Cross-Pane Selection with Correlation IDs",
       "type": "story",
-      "status": "backlog",
+      "status": "validating",
       "createdAt": "2026-01-21T00:57:44.794Z",
-      "updatedAt": "2026-01-21T00:58:55.087Z",
+      "updatedAt": "2026-01-21T12:14:06.024Z",
       "description": "Add correlation_id to StreamChunk. Implement cross-pane highlighting: selecting in parent pane highlights corresponding observation in watcher pane and vice versa.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-010"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T11:42:29.290Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T12:10:31.291Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T12:13:12.128Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T12:14:06.024Z"
+        }
+      ],
+      "userStory": {
+        "role": "user viewing a watcher session in split view",
+        "action": "see visual correlation between parent conversation turns and watcher observations/responses",
+        "benefit": "I understand which parent content the watcher is responding to"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "StreamChunk struct in Rust gets a new optional field: correlation_id: Option<String>",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:47:45.578Z"
+        },
+        {
+          "id": 1,
+          "text": "Parent session assigns correlation_id to each StreamChunk in handle_output() using an atomic counter",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:47:51.206Z"
+        },
+        {
+          "id": 2,
+          "text": "Correlation IDs are scoped per-session (each session has its own counter starting from 0)",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:47:57.326Z"
+        },
+        {
+          "id": 3,
+          "text": "When watcher evaluates accumulated observations and produces a response, its output chunks include observed_correlation_ids listing parent chunk IDs that triggered the evaluation",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:03.098Z"
+        },
+        {
+          "id": 4,
+          "text": "SplitSessionView builds a correlation map linking parent chunk correlation_ids to watcher chunk observed_correlation_ids",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:08.324Z"
+        },
+        {
+          "id": 5,
+          "text": "When user selects a turn in parent pane, corresponding watcher turn(s) that observed it are highlighted with a visual indicator",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:13.033Z"
+        },
+        {
+          "id": 6,
+          "text": "When user selects a turn in watcher pane, the parent turn(s) it was observing are highlighted with a visual indicator",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:17.634Z"
+        },
+        {
+          "id": 7,
+          "text": "Cross-pane highlight uses a distinct visual style (e.g., cyan background or border) different from the active selection highlight",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:22.940Z"
+        }
+      ],
+      "nextRuleId": 8,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Parent session emits Text chunk → handle_output assigns correlation_id='42' → chunk broadcast to watchers carries correlation_id='42'",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:27.989Z"
+        },
+        {
+          "id": 1,
+          "text": "User selects Turn 3 in parent pane (left) → Turn 5 in watcher pane (right) highlights with cyan indicator because the watcher's Turn 5 was an observation response to parent's Turn 3",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:33.611Z"
+        },
+        {
+          "id": 2,
+          "text": "User selects Turn 5 in watcher pane (right) → Turns 3 and 4 in parent pane (left) highlight with cyan indicator because the watcher observed those turns before responding",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:38.528Z"
+        },
+        {
+          "id": 3,
+          "text": "User selects Turn 1 in watcher pane which is a direct user message to watcher (not an observation) → no highlight appears in parent pane because this turn has no correlation to parent",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:44.199Z"
+        },
+        {
+          "id": 4,
+          "text": "User navigates with Up/Down keys in parent pane in select mode → cross-pane highlight in watcher pane updates immediately as selection moves",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:49.990Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: The architecture doc shows watcher preserving correlationId when wrapping observations, but the watcher doesn't emit Observation chunks to its UI - it emits its own Text responses. Should watcher responses have an observed_correlation_ids array listing which parent chunks triggered them? Or is there a simpler approach?",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:48:59.929Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, watcher responses have observed_correlation_ids array. The array is populated at breakpoint time (Done, ToolResult, or silence timeout) by capturing correlation IDs from all buffered parent chunks before clearing the buffer. This allows precise tracking of which parent content triggered each watcher response."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should correlation be at chunk level (every Text chunk gets its own ID) or turn level (all chunks in a turn share an ID)? Turn-level seems simpler for UI highlighting since we already group by messageIndex.",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:49:06.725Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Chunk-level correlation with turn-level UI aggregation. Each StreamChunk gets its own unique correlation_id assigned by handle_output(). The UI aggregates to turn level by building a map from parent messageIndex to watcher messageIndex using the correlation IDs. This preserves precision in the backend while keeping the UI simple."
+        },
+        {
+          "id": 2,
+          "text": "@human: What visual style for cross-pane highlight? Options: cyan background on the line, a vertical bar/marker on the left edge, or dimmed/brightened text? The active selection already uses arrow bars (▼▼▼), so this should be visually distinct.",
+          "deleted": false,
+          "createdAt": "2026-01-21T11:49:14.160Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Cyan color with bold text and a vertical bar prefix ('│ '). The cross-pane highlighted lines use: color='cyan', bold=true, and prepend '│ ' to content. This is distinct from the active selection (which uses arrow bars ▼▼▼) and clearly visible in the dimmed inactive pane."
+        }
+      ],
+      "nextQuestionId": 3,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "StreamChunk in types.rs gets correlation_id and observed_correlation_ids fields, handle_output assigns IDs via atomic counter",
+          "deleted": false,
+          "createdAt": "2026-01-21T12:09:36.356Z"
+        },
+        {
+          "id": 1,
+          "text": "WatcherLoopAction::ProcessObservations changed to struct with prompt and observed_correlation_ids Vec",
+          "deleted": false,
+          "createdAt": "2026-01-21T12:09:41.364Z"
+        },
+        {
+          "id": 2,
+          "text": "SplitSessionView builds correlation maps using useMemo, renders cross-pane highlights with cyan color, bold text, and vertical bar prefix",
+          "deleted": false,
+          "createdAt": "2026-01-21T12:09:46.215Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/WATCH-011/ast-research-correlation-ids.md"
       ]
     },
     "WATCH-012": {
@@ -64763,7 +64925,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-011",
       "WATCH-012",
       "WATCH-013",
       "WATCH-014",
@@ -64789,7 +64950,9 @@
       "NAPI-009",
       "WATCH-018"
     ],
-    "validating": [],
+    "validating": [
+      "WATCH-011"
+    ],
     "done": [
       "WATCH-010",
       "WATCH-009",

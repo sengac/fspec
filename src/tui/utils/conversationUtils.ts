@@ -71,6 +71,9 @@ export const wrapMessageToLines = (
 
   // Propagate semantic flags from message
   const isError = msg.isError;
+  // WATCH-011: Propagate correlation fields
+  const correlationId = msg.correlationId;
+  const observedCorrelationIds = msg.observedCorrelationIds;
 
   contentLines.forEach((lineContent, lineIndex) => {
     let displayContent =
@@ -93,6 +96,8 @@ export const wrapMessageToLines = (
         messageIndex: msgIndex,
         isThinking,
         isError,
+        correlationId,
+        observedCorrelationIds,
       });
     } else {
       wrappedLines.forEach(wrappedContent => {
@@ -102,6 +107,8 @@ export const wrapMessageToLines = (
           messageIndex: msgIndex,
           isThinking,
           isError,
+          correlationId,
+          observedCorrelationIds,
         });
       });
     }
@@ -116,6 +123,8 @@ export const wrapMessageToLines = (
       isSeparator: true,
       isThinking,
       isError,
+      correlationId,
+      observedCorrelationIds,
     });
   }
 
