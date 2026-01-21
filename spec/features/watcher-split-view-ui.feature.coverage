@@ -1,0 +1,388 @@
+{
+  "scenarios": [
+    {
+      "name": "Split view renders when viewing a watcher session",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-split-view.test.tsx",
+          "lines": "130-182",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                991,
+                992,
+                993,
+                994,
+                995,
+                996,
+                997,
+                998
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switch active pane to watcher with right arrow",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-split-view.test.tsx",
+          "lines": "184-215",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4950,
+                4951,
+                4952,
+                4953,
+                4954,
+                4955,
+                4956,
+                4957,
+                4958,
+                4959,
+                4960,
+                4961,
+                4962,
+                4963,
+                4964,
+                4965,
+                4966,
+                4967,
+                4968,
+                4969,
+                4970,
+                4971,
+                4972,
+                4973,
+                4974,
+                4975,
+                4976,
+                4977,
+                4978,
+                4979,
+                4980,
+                4981,
+                4982,
+                4983,
+                4984,
+                4985,
+                4986,
+                4987,
+                4988,
+                4989,
+                4990,
+                4991,
+                4992,
+                4993,
+                4994,
+                4995,
+                4996,
+                4997,
+                4998,
+                4999,
+                5000
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Switch active pane to parent with left arrow",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-split-view.test.tsx",
+          "lines": "217-248",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4950,
+                4951,
+                4952,
+                4953,
+                4954,
+                4955,
+                4956,
+                4957,
+                4958,
+                4959,
+                4960,
+                4961,
+                4962,
+                4963,
+                4964,
+                4965,
+                4966,
+                4967,
+                4968,
+                4969,
+                4970,
+                4971,
+                4972,
+                4973,
+                4974,
+                4975,
+                4976,
+                4977,
+                4978,
+                4979,
+                4980,
+                4981,
+                4982,
+                4983,
+                4984,
+                4985,
+                4986,
+                4987,
+                4988,
+                4989,
+                4990,
+                4991,
+                4992,
+                4993,
+                4994,
+                4995,
+                4996,
+                4997,
+                4998,
+                4999,
+                5000
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Toggle turn-select mode with Tab",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-split-view.test.tsx",
+          "lines": "250-280",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4952,
+                4953,
+                4954,
+                4955,
+                4956,
+                4957,
+                4958
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate turns with Up/Down in select mode",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-split-view.test.tsx",
+          "lines": "282-329",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4970,
+                4971,
+                4972,
+                4973,
+                4974,
+                4975,
+                4976,
+                4977,
+                4978,
+                4979,
+                4980,
+                4981,
+                4982,
+                4983,
+                4984,
+                4985,
+                4986,
+                4987,
+                4988,
+                4989,
+                4990,
+                4991,
+                4992,
+                4993,
+                4994,
+                4995
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Discuss selected message from parent pane",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-split-view.test.tsx",
+          "lines": "331-373",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4984,
+                4985,
+                4986,
+                4987,
+                4988,
+                4989,
+                4990,
+                4991,
+                4992,
+                4993,
+                4994,
+                4995,
+                4996
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Input always sends to watcher session",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-split-view.test.tsx",
+          "lines": "375-418",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                6538,
+                6539,
+                6540,
+                6541,
+                6542,
+                6543,
+                6544,
+                6545,
+                6546,
+                6547,
+                6548,
+                6549,
+                6550,
+                6551,
+                6552,
+                6553,
+                6554,
+                6555,
+                6556,
+                6557
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Regular session shows normal single-pane view",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-split-view.test.tsx",
+          "lines": "420-449",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1281,
+                1282,
+                1283,
+                1284,
+                1285,
+                1286,
+                1287,
+                1288,
+                1289,
+                1290,
+                1291,
+                1292,
+                1293,
+                1294,
+                1295,
+                1296,
+                1297,
+                1298,
+                1299,
+                1300,
+                1301,
+                1302,
+                1303,
+                1304,
+                1305,
+                1306,
+                1307,
+                1308,
+                1309,
+                1310,
+                1311,
+                1312,
+                1313,
+                1314,
+                1315,
+                1316,
+                1317,
+                1318,
+                1319,
+                1320,
+                1321,
+                1322,
+                1323,
+                1324,
+                1325,
+                1326,
+                1327,
+                1328,
+                1329,
+                1330,
+                1331,
+                1332,
+                1333,
+                1334,
+                1335,
+                1336,
+                1337,
+                1338,
+                1339,
+                1340,
+                1341,
+                1342,
+                1343,
+                1344,
+                1345,
+                1346,
+                1347,
+                1348
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/watcher-split-view.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 557
+  }
+}

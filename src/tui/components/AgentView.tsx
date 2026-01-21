@@ -86,6 +86,8 @@ import {
   sessionSetRole,
   // WATCH-009: Watcher creation NAPI function
   sessionCreateWatcher,
+  // WATCH-010: Watcher split view NAPI function
+  sessionGetParent,
   type SessionRoleInfo,
   type NapiProviderModels,
   type NapiModelInfo,
@@ -985,6 +987,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [watcherEditValue, setWatcherEditValue] = useState('');
   // WATCH-009: Watcher creation view state
   const [isWatcherCreateMode, setIsWatcherCreateMode] = useState(false);
+  // WATCH-010: Watcher split view state
+  const [isWatcherSessionView, setIsWatcherSessionView] = useState(false);
+  const [activePane, setActivePane] = useState<'parent' | 'watcher'>('watcher');
+  const [parentSessionId, setParentSessionId] = useState<string | null>(null);
+  const [parentSessionName, setParentSessionName] = useState<string>('');
+  const [parentConversation, setParentConversation] = useState<ConversationLine[]>([]);
+  const [watcherRoleName, setWatcherRoleName] = useState<string>('');
+  const [isSplitViewSelectMode, setIsSplitViewSelectMode] = useState(false);
+  const [splitViewSelectedIndex, setSplitViewSelectedIndex] = useState(0);
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
@@ -1267,6 +1278,81 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setWatcherScrollOffset(watcherIndex - watcherVisibleHeight + 1);
     }
   }, [watcherIndex, watcherScrollOffset, watcherVisibleHeight, isWatcherMode]);
+
+  // WATCH-010: Detect if current session is a watcher and setup split view
+  useEffect(() => {
+    if (!currentSessionId) {
+      setIsWatcherSessionView(false);
+      setParentSessionId(null);
+      setParentSessionName('');
+      setParentConversation([]);
+      setWatcherRoleName('');
+      return;
+    }
+
+    try {
+      const parentId = sessionGetParent(currentSessionId);
+      if (parentId) {
+        // This is a watcher session - enable split view
+        setIsWatcherSessionView(true);
+        setParentSessionId(parentId);
+        
+        // Get watcher role name
+        const role = sessionGetRole(currentSessionId);
+        setWatcherRoleName(role?.name || 'Watcher');
+        
+        // Get parent session name from session list
+        const sessions = sessionManagerList();
+        const parentSession = sessions.find(s => s.id === parentId);
+        setParentSessionName(parentSession?.name || 'Parent Session');
+        
+        // Load parent session conversation
+        const parentChunks = sessionGetMergedOutput(parentId);
+        const parentLines = processChunksToConversation(
+          parentChunks,
+          '',
+          terminalWidth,
+          false,
+          false,
+          false,
+          false
+        );
+        setParentConversation(parentLines);
+        
+        // Also subscribe to parent session for live updates
+        sessionAttach(parentId, (_err: Error | null, chunk: StreamChunk) => {
+          if (chunk) {
+            const updatedChunks = sessionGetMergedOutput(parentId);
+            const updatedLines = processChunksToConversation(
+              updatedChunks,
+              '',
+              terminalWidth,
+              false,
+              false,
+              false,
+              false
+            );
+            setParentConversation(updatedLines);
+          }
+        });
+        
+        // Cleanup: detach from parent when effect re-runs or component unmounts
+        return () => {
+          sessionDetach(parentId);
+        };
+      } else {
+        // Not a watcher session - disable split view
+        setIsWatcherSessionView(false);
+        setParentSessionId(null);
+        setParentSessionName('');
+        setParentConversation([]);
+        setWatcherRoleName('');
+      }
+    } catch (err) {
+      // Error checking parent - not a watcher
+      setIsWatcherSessionView(false);
+    }
+  }, [currentSessionId, terminalWidth, processChunksToConversation]);
 
   // Filter settings providers by search string
   const filteredSettingsProviders = useMemo(() => {
@@ -4860,6 +4946,65 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return;
       }
 
+      // WATCH-010: Split view keyboard handling for watcher sessions
+      if (isWatcherSessionView && !displayIsLoading) {
+        // Tab toggles turn-select mode
+        if (key.tab && !key.shift) {
+          setIsSplitViewSelectMode(prev => !prev);
+          return;
+        }
+
+        // Left arrow switches to parent pane
+        if (key.leftArrow && !key.shift) {
+          setActivePane('parent');
+          setSplitViewSelectedIndex(0); // Reset selection when switching panes
+          return;
+        }
+
+        // Right arrow switches to watcher pane
+        if (key.rightArrow && !key.shift) {
+          setActivePane('watcher');
+          setSplitViewSelectedIndex(0); // Reset selection when switching panes
+          return;
+        }
+
+        // Up/Down navigation in select mode
+        if (isSplitViewSelectMode) {
+          const targetConversation = activePane === 'parent' ? parentConversation : conversation;
+          const maxIndex = Math.max(0, targetConversation.length - 1);
+
+          if (key.upArrow) {
+            setSplitViewSelectedIndex(prev => Math.max(0, prev - 1));
+            return;
+          }
+          if (key.downArrow) {
+            setSplitViewSelectedIndex(prev => Math.min(maxIndex, prev + 1));
+            return;
+          }
+
+          // Enter key for "Discuss Selected" - pre-fill input with context
+          if (key.return && activePane === 'parent') {
+            const selectedLine = parentConversation[splitViewSelectedIndex];
+            if (selectedLine) {
+              const turnNum = splitViewSelectedIndex + 1;
+              const preview = selectedLine.content.slice(0, 100) + (selectedLine.content.length > 100 ? '...' : '');
+              const prefill = `Regarding turn ${turnNum} in parent session:\n\`\`\`\n${preview}\n\`\`\`\n`;
+              setUserInput(prefill);
+              setIsSplitViewSelectMode(false);
+            }
+            return;
+          }
+        }
+
+        // Escape exits select mode if active
+        if (key.escape && isSplitViewSelectMode) {
+          setIsSplitViewSelectMode(false);
+          return;
+        }
+
+        // Don't intercept other keys - let them fall through to normal handling
+      }
+
       if (showProviderSelector) {
         if (key.escape) {
           setShowProviderSelector(false);
@@ -6239,6 +6384,179 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           />
         )}
         {/* TUI-046: Exit confirmation dialog (shown in watcher mode too) */}
+        {showExitConfirmation && (
+          <ThreeButtonDialog
+            message="Exit Session?"
+            description={displayIsLoading
+              ? "The agent is currently running. Choose how to exit."
+              : "Choose how to exit the session."}
+            options={['Detach', 'Close Session', 'Cancel']}
+            defaultSelectedIndex={0}
+            onSelect={handleExitChoice}
+            onCancel={() => setShowExitConfirmation(false)}
+          />
+        )}
+      </Box>
+    );
+  }
+
+  // WATCH-010: Watcher split view - shows parent conversation on left, watcher conversation on right
+  if (isWatcherSessionView) {
+    const paneWidth = Math.floor((terminalWidth - 3) / 2); // -3 for divider and padding
+    
+    // DRY: Shared render function for both panes
+    const renderSplitViewItem = (pane: 'parent' | 'watcher') => (
+      line: ConversationLine,
+      index: number,
+      _isSelected: boolean
+    ) => {
+      const isSelectedInPane = isSplitViewSelectMode && activePane === pane && index === splitViewSelectedIndex;
+      return (
+        <Box flexGrow={1}>
+          <Text
+            dimColor={activePane !== pane}
+            backgroundColor={isSelectedInPane ? 'blue' : undefined}
+            color={isSelectedInPane ? 'white' : (line.role === 'user' ? 'green' : 'white')}
+          >
+            {line.content}
+          </Text>
+        </Box>
+      );
+    };
+    
+    return (
+      <Box
+        flexDirection="column"
+        flexGrow={1}
+      >
+        {/* Header showing watcher role and parent session */}
+        <Box
+          borderStyle="single"
+          borderBottom={true}
+          borderTop={false}
+          borderLeft={false}
+          borderRight={false}
+          paddingX={1}
+          flexDirection="row"
+          flexWrap="nowrap"
+        >
+          <Box flexGrow={1} flexShrink={1} overflow="hidden">
+            <Text bold color="magenta">
+              👁️ {watcherRoleName} (watching: {parentSessionName})
+            </Text>
+            {displayReasoning && <Text color="magenta"> [R]</Text>}
+            {displayHasVision && <Text color="blue"> [V]</Text>}
+            {displayContextWindow > 0 && (
+              <Text dimColor>
+                {' '}
+                {formatContextWindow(displayContextWindow)}
+              </Text>
+            )}
+            {/* Loading indicator */}
+            {displayIsLoading && (
+              <Text color="yellow"> ⏳</Text>
+            )}
+          </Box>
+          {/* Right side: token stats */}
+          <Box flexShrink={0} flexGrow={0}>
+            {displayIsLoading && displayedTokPerSec !== null && (
+              <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s  </Text>
+            )}
+            <Text dimColor>
+              tokens: {Math.max(tokenUsage.inputTokens, rustTokens.inputTokens)}↓ {Math.max(tokenUsage.outputTokens, rustTokens.outputTokens)}↑
+            </Text>
+            <Text color={getContextFillColor(contextFillPercentage)}>
+              {' '}[{contextFillPercentage}%]
+            </Text>
+          </Box>
+        </Box>
+
+        {/* Split panes container */}
+        <Box flexDirection="row" flexGrow={1} flexBasis={0}>
+          {/* Left pane: Parent observation */}
+          <Box
+            flexDirection="column"
+            width={paneWidth}
+            borderStyle="single"
+            borderRight={true}
+            borderLeft={false}
+            borderTop={false}
+            borderBottom={false}
+          >
+            <Box paddingX={1} borderStyle="single" borderBottom={true} borderTop={false} borderLeft={false} borderRight={false}>
+              <Text bold dimColor={activePane !== 'parent'}>
+                PARENT SESSION {activePane === 'parent' ? '←' : ''}
+              </Text>
+            </Box>
+            <Box flexGrow={1} flexBasis={0}>
+              <VirtualList
+                items={parentConversation}
+                renderItem={renderSplitViewItem('parent')}
+                keyExtractor={(_line, index) => `parent-${index}`}
+                emptyMessage="No parent conversation"
+                showScrollbar={true}
+                isFocused={activePane === 'parent' && !showTurnModal}
+                scrollToEnd={true}
+                selectionMode={isSplitViewSelectMode && activePane === 'parent' ? 'item' : 'scroll'}
+              />
+            </Box>
+          </Box>
+
+          {/* Right pane: Watcher conversation */}
+          <Box
+            flexDirection="column"
+            width={paneWidth}
+          >
+            <Box paddingX={1} borderStyle="single" borderBottom={true} borderTop={false} borderLeft={false} borderRight={false}>
+              <Text bold dimColor={activePane !== 'watcher'}>
+                {activePane === 'watcher' ? '→ ' : ''}WATCHER CONVERSATION
+              </Text>
+            </Box>
+            <Box flexGrow={1} flexBasis={0}>
+              <VirtualList
+                items={conversationLines}
+                renderItem={renderSplitViewItem('watcher')}
+                keyExtractor={(_line, index) => `watcher-${index}`}
+                emptyMessage="Start chatting with your watcher..."
+                showScrollbar={true}
+                isFocused={activePane === 'watcher' && !showTurnModal}
+                scrollToEnd={true}
+                selectionMode={isSplitViewSelectMode && activePane === 'watcher' ? 'item' : 'scroll'}
+              />
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Input area */}
+        <Box
+          borderStyle="single"
+          borderTop={true}
+          borderBottom={false}
+          borderLeft={false}
+          borderRight={false}
+          flexDirection="row"
+          paddingX={1}
+        >
+          <Text color="green">&gt; </Text>
+          <InputTransition isLoading={displayIsLoading}>
+            <MultiLineInput
+              value={userInput}
+              onChange={setUserInput}
+              onSubmit={handleSubmit}
+              isActive={!displayIsLoading}
+              width={terminalWidth - 6}
+            />
+          </InputTransition>
+        </Box>
+
+        {/* Keyboard hints */}
+        <Box paddingX={1}>
+          <Text dimColor>
+            ←/→ Switch Pane | Tab Select | ↑↓ Navigate | Enter Discuss | Esc Cancel
+          </Text>
+        </Box>
+
+        {/* TUI-046: Exit confirmation dialog */}
         {showExitConfirmation && (
           <ThreeButtonDialog
             message="Exit Session?"
