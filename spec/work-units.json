@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T01:15:23.118Z"
+    "lastUpdated": "2026-01-21T01:43:39.032Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62969,14 +62969,153 @@
       "id": "WATCH-003",
       "title": "Broadcast Channel for Parent Stream Observation",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:03.401Z",
-      "updatedAt": "2026-01-21T00:58:15.725Z",
+      "updatedAt": "2026-01-21T01:43:39.063Z",
       "description": "Add tokio broadcast::Sender<StreamChunk> to BackgroundSession. Modify handle_output() to broadcast to watchers in addition to buffer and UI callback.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-002"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T01:30:04.915Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T01:32:36.107Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T01:36:33.895Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T01:40:31.221Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T01:43:39.064Z"
+        }
+      ],
+      "userStory": {
+        "role": "watcher session",
+        "action": "receive real-time stream chunks from my parent session via a broadcast channel",
+        "benefit": "I can observe and analyze the parent's conversation as it happens"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "BackgroundSession has a broadcast::Sender<StreamChunk> field that enables multiple receivers",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:30:30.299Z"
+        },
+        {
+          "id": 1,
+          "text": "handle_output() broadcasts chunks to all subscribed watchers in addition to buffering and UI callback",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:30:34.293Z"
+        },
+        {
+          "id": 2,
+          "text": "Broadcast channel capacity is bounded (e.g., 256 chunks) - slow watchers may miss chunks via lagging",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:30:38.283Z"
+        },
+        {
+          "id": 3,
+          "text": "subscribe_to_stream() returns a broadcast::Receiver<StreamChunk> for watchers to receive live updates",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:30:42.074Z"
+        },
+        {
+          "id": 4,
+          "text": "Receivers can be created at any time - late subscribers start receiving from current stream position",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:30:45.972Z"
+        },
+        {
+          "id": 5,
+          "text": "StreamChunk must implement Clone to be broadcast (already does)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:30:49.656Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Parent session sends TextDelta chunk → broadcast sends to 0 watchers (no receivers subscribed) → chunk still buffered normally",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:30:54.058Z"
+        },
+        {
+          "id": 1,
+          "text": "Watcher calls subscribe_to_stream(parent_id) → receives broadcast::Receiver → parent sends chunk → watcher receives same chunk via receiver",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:30:58.156Z"
+        },
+        {
+          "id": 2,
+          "text": "Two watchers subscribe to same parent → parent sends chunk → both watchers receive identical chunk independently",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:31:03.930Z"
+        },
+        {
+          "id": 3,
+          "text": "Watcher processes slowly and falls 256+ chunks behind → receives RecvError::Lagged(n) indicating n missed chunks",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:31:08.201Z"
+        },
+        {
+          "id": 4,
+          "text": "Watcher drops receiver (disconnects) → broadcast sender continues working for other watchers → no impact on parent session",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:31:13.304Z"
+        },
+        {
+          "id": 5,
+          "text": "Session with no broadcast subscribers → handle_output() still buffers and calls UI callback normally (broadcast is fire-and-forget)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:31:17.301Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add watcher_broadcast: broadcast::Sender<StreamChunk> field to BackgroundSession struct",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:31:21.111Z"
+        },
+        {
+          "id": 1,
+          "text": "Initialize broadcast channel in BackgroundSession::new() with capacity 256",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:31:24.873Z"
+        },
+        {
+          "id": 2,
+          "text": "Add subscribe_to_stream() method returning broadcast::Receiver<StreamChunk>",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:31:28.361Z"
+        },
+        {
+          "id": 3,
+          "text": "Modify handle_output() to call watcher_broadcast.send(chunk.clone()) after buffering",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:31:31.960Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/WATCH-003/ast-research-background-session.md"
+      ],
+      "estimate": 2,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T01:43:39.063Z"
     },
     "WATCH-004": {
       "id": "WATCH-004",
@@ -63204,7 +63343,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-003",
       "WATCH-004",
       "WATCH-005",
       "WATCH-006",
@@ -63237,6 +63375,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-003",
       "WATCH-002",
       "CMPCT-002",
       "TUI-049",

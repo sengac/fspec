@@ -1,0 +1,94 @@
+{
+  "scenarios": [
+    {
+      "name": "Broadcast with no subscribers still buffers normally",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_broadcast_with_no_subscribers_still_buffers",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [147, 148, 149, 150, 151, 152, 153, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single watcher receives chunks via broadcast",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_single_watcher_receives_chunks",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 287, 288, 289, 290, 291, 292, 293, 294, 295]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiple watchers receive chunks independently",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_multiple_watchers_receive_independently",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [247, 248, 249, 250, 251, 252, 253, 254, 255, 287, 288, 289, 290, 291, 292, 293, 294, 295]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slow watcher receives lagged error when falling behind",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_slow_watcher_receives_lagged_error",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [475]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Dropped receiver does not affect other watchers",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_dropped_receiver_does_not_affect_others",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [253, 254, 255]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Late subscriber starts receiving from current position",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "testFunction": "test_late_subscriber_starts_from_current",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [287, 288, 289, 290, 291, 292, 293, 294, 295]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
