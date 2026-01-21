@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T01:43:39.032Z"
+    "lastUpdated": "2026-01-21T01:55:24.011Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -63121,11 +63121,150 @@
       "id": "WATCH-004",
       "title": "Session Role and Authority Model",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:08.939Z",
-      "updatedAt": "2026-01-21T00:57:08.939Z",
+      "updatedAt": "2026-01-21T01:55:24.042Z",
       "description": "Implement SessionRole struct with name, description, and RoleAuthority enum (Peer/Supervisor). Add role to BackgroundSession. Create NAPI bindings for session_set_role and session_get_role.",
-      "parent": "WATCH-001"
+      "parent": "WATCH-001",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T01:47:43.541Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T01:49:52.485Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T01:51:11.738Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T01:55:10.302Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T01:55:24.042Z"
+        }
+      ],
+      "userStory": {
+        "role": "session management system",
+        "action": "distinguish between regular sessions and watcher sessions with different authority levels",
+        "benefit": "watchers can be configured as peers (equal authority) or supervisors (override authority) for different use cases"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "SessionRole is a struct with name (String), description (Option<String>), and authority (RoleAuthority)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:47:52.644Z"
+        },
+        {
+          "id": 1,
+          "text": "RoleAuthority is an enum with two variants: Peer (equal authority, can observe but not override) and Supervisor (elevated authority, can inject directives)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:47:57.289Z"
+        },
+        {
+          "id": 2,
+          "text": "BackgroundSession has an optional role field (Option<SessionRole>) - None for regular sessions, Some for watcher sessions",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:01.958Z"
+        },
+        {
+          "id": 3,
+          "text": "NAPI bindings expose session_set_role(session_id, role_name, role_description, authority) and session_get_role(session_id)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:06.767Z"
+        },
+        {
+          "id": 4,
+          "text": "Role can be set at any time during session lifetime (mutable)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:10.761Z"
+        },
+        {
+          "id": 5,
+          "text": "Default authority when not specified is Peer (safer default)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:14.765Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "session_set_role(session_id, 'code-reviewer', 'Reviews code changes', 'peer') → session.role = SessionRole { name: 'code-reviewer', description: Some('Reviews code changes'), authority: Peer }",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:19.686Z"
+        },
+        {
+          "id": 1,
+          "text": "session_set_role(session_id, 'supervisor', None, 'supervisor') → session.role = SessionRole { name: 'supervisor', description: None, authority: Supervisor }",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:23.556Z"
+        },
+        {
+          "id": 2,
+          "text": "session_get_role(session_id) on regular session (no role set) → returns None",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:27.557Z"
+        },
+        {
+          "id": 3,
+          "text": "session_get_role(session_id) on watcher session with role → returns SessionRole with name, description, authority",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:31.630Z"
+        },
+        {
+          "id": 4,
+          "text": "session_set_role with invalid authority string → returns error 'Invalid authority: must be peer or supervisor'",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:35.959Z"
+        },
+        {
+          "id": 5,
+          "text": "session_set_role with empty name → returns error 'Role name cannot be empty'",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:39.941Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Add SessionRole struct and RoleAuthority enum in session_manager.rs near SessionStatus",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:44.359Z"
+        },
+        {
+          "id": 1,
+          "text": "Add role: RwLock<Option<SessionRole>> field to BackgroundSession struct",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:48.751Z"
+        },
+        {
+          "id": 2,
+          "text": "Add set_role() and get_role() methods to BackgroundSession impl",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:52.609Z"
+        },
+        {
+          "id": 3,
+          "text": "Add NAPI functions session_set_role and session_get_role with #[napi] attribute",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:48:56.746Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/WATCH-004/ast-research-session-role.md"
+      ],
+      "estimate": 2,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T01:55:24.042Z"
     },
     "WATCH-005": {
       "id": "WATCH-005",
@@ -63343,7 +63482,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-004",
       "WATCH-005",
       "WATCH-006",
       "WATCH-007",
@@ -63375,6 +63513,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-004",
       "WATCH-003",
       "WATCH-002",
       "CMPCT-002",

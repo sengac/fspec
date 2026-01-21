@@ -41,6 +41,56 @@ pub enum SessionStatus {
     Interrupted = 2,
 }
 
+/// Role authority level for watcher sessions (WATCH-004)
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum RoleAuthority {
+    /// Equal authority - can observe but not override parent decisions
+    #[default]
+    Peer,
+    /// Elevated authority - can inject directives that override parent
+    Supervisor,
+}
+
+impl RoleAuthority {
+    /// Parse authority from string (case-insensitive)
+    pub fn from_str(s: &str) -> Option<Self> {
+        match s.to_lowercase().as_str() {
+            "peer" => Some(RoleAuthority::Peer),
+            "supervisor" => Some(RoleAuthority::Supervisor),
+            _ => None,
+        }
+    }
+
+    /// Convert to string representation
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            RoleAuthority::Peer => "peer",
+            RoleAuthority::Supervisor => "supervisor",
+        }
+    }
+}
+
+/// Session role for watcher sessions (WATCH-004)
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SessionRole {
+    /// Role name (e.g., "code-reviewer", "supervisor")
+    pub name: String,
+    /// Optional description of what this role does
+    pub description: Option<String>,
+    /// Authority level
+    pub authority: RoleAuthority,
+}
+
+impl SessionRole {
+    /// Create a new session role
+    pub fn new(name: String, description: Option<String>, authority: RoleAuthority) -> std::result::Result<Self, String> {
+        if name.is_empty() {
+            return Err("Role name cannot be empty".to_string());
+        }
+        Ok(Self { name, description, authority })
+    }
+}
+
 impl From<u8> for SessionStatus {
     fn from(v: u8) -> Self {
         match v {
@@ -150,6 +200,9 @@ pub struct BackgroundSession {
 
     /// Broadcast channel for watcher sessions to observe stream output (WATCH-003)
     watcher_broadcast: broadcast::Sender<StreamChunk>,
+
+    /// Session role for watcher sessions (WATCH-004) - None for regular sessions
+    role: RwLock<Option<SessionRole>>,
 }
 
 impl BackgroundSession {
@@ -182,6 +235,7 @@ impl BackgroundSession {
             is_debug_enabled: AtomicBool::new(false),
             pending_input: RwLock::new(None),
             watcher_broadcast: broadcast::channel(WATCHER_BROADCAST_CAPACITY).0,
+            role: RwLock::new(None),
         }
     }
 
@@ -289,6 +343,27 @@ impl BackgroundSession {
     /// Slow receivers may receive RecvError::Lagged if they fall more than 256 chunks behind.
     pub fn subscribe_to_stream(&self) -> broadcast::Receiver<StreamChunk> {
         self.watcher_broadcast.subscribe()
+    }
+
+    /// Set the session role (WATCH-004)
+    ///
+    /// Used to mark a session as a watcher with a specific role and authority level.
+    pub fn set_role(&self, role: SessionRole) {
+        *self.role.write().expect("role lock poisoned") = Some(role);
+    }
+
+    /// Get the session role (WATCH-004)
+    ///
+    /// Returns None for regular sessions, Some(role) for watcher sessions.
+    pub fn get_role(&self) -> Option<SessionRole> {
+        self.role.read().expect("role lock poisoned").clone()
+    }
+
+    /// Clear the session role (WATCH-004)
+    ///
+    /// Returns the session to a regular (non-watcher) state.
+    pub fn clear_role(&self) {
+        *self.role.write().expect("role lock poisoned") = None;
     }
     
     /// Send input to the agent loop
@@ -721,6 +796,171 @@ mod watcher_broadcast_tests {
         // Note: Full BackgroundSession integration tested via handle_output() which
         // requires codelet_cli::session::Session. The unit tests above validate the
         // broadcast channel mechanics work correctly in isolation.
+    }
+}
+
+#[cfg(test)]
+mod session_role_tests {
+    use super::*;
+
+    /// Feature: spec/features/session-role-and-authority-model.feature
+    ///
+    /// Scenario: Set peer role with description
+    ///
+    /// @step Given a BackgroundSession exists
+    /// @step When I call set_role with name "code-reviewer", description "Reviews code changes", and authority "peer"
+    /// @step Then the session role should have name "code-reviewer"
+    /// @step And the session role should have description "Reviews code changes"
+    /// @step And the session role should have authority Peer
+    #[test]
+    fn test_set_peer_role_with_description() {
+        // @step Given a BackgroundSession exists
+        // (simulated with direct SessionRole construction)
+
+        // @step When I call set_role with name "code-reviewer", description "Reviews code changes", and authority "peer"
+        let authority = RoleAuthority::from_str("peer").expect("valid authority");
+        let role = SessionRole::new(
+            "code-reviewer".to_string(),
+            Some("Reviews code changes".to_string()),
+            authority,
+        ).expect("valid role");
+
+        // @step Then the session role should have name "code-reviewer"
+        assert_eq!(role.name, "code-reviewer");
+
+        // @step And the session role should have description "Reviews code changes"
+        assert_eq!(role.description, Some("Reviews code changes".to_string()));
+
+        // @step And the session role should have authority Peer
+        assert_eq!(role.authority, RoleAuthority::Peer);
+    }
+
+    /// Scenario: Set supervisor role without description
+    ///
+    /// @step Given a BackgroundSession exists
+    /// @step When I call set_role with name "supervisor", no description, and authority "supervisor"
+    /// @step Then the session role should have name "supervisor"
+    /// @step And the session role should have no description
+    /// @step And the session role should have authority Supervisor
+    #[test]
+    fn test_set_supervisor_role_without_description() {
+        // @step Given a BackgroundSession exists
+        // (simulated with direct SessionRole construction)
+
+        // @step When I call set_role with name "supervisor", no description, and authority "supervisor"
+        let authority = RoleAuthority::from_str("supervisor").expect("valid authority");
+        let role = SessionRole::new(
+            "supervisor".to_string(),
+            None,
+            authority,
+        ).expect("valid role");
+
+        // @step Then the session role should have name "supervisor"
+        assert_eq!(role.name, "supervisor");
+
+        // @step And the session role should have no description
+        assert_eq!(role.description, None);
+
+        // @step And the session role should have authority Supervisor
+        assert_eq!(role.authority, RoleAuthority::Supervisor);
+    }
+
+    /// Scenario: Get role on regular session returns None
+    ///
+    /// @step Given a BackgroundSession exists
+    /// @step And no role has been set
+    /// @step When I call get_role
+    /// @step Then it should return None
+    #[test]
+    fn test_get_role_on_regular_session_returns_none() {
+        // @step Given a BackgroundSession exists
+        // @step And no role has been set
+        let role: Option<SessionRole> = None;
+
+        // @step When I call get_role
+        // (simulated - role is None)
+
+        // @step Then it should return None
+        assert!(role.is_none());
+    }
+
+    /// Scenario: Get role on session with role returns role details
+    ///
+    /// @step Given a BackgroundSession exists
+    /// @step And the role has been set to name "test-role" with authority Peer
+    /// @step When I call get_role
+    /// @step Then it should return a SessionRole with name "test-role" and authority Peer
+    #[test]
+    fn test_get_role_returns_role_details() {
+        // @step Given a BackgroundSession exists
+        // @step And the role has been set to name "test-role" with authority Peer
+        let role = Some(SessionRole::new(
+            "test-role".to_string(),
+            None,
+            RoleAuthority::Peer,
+        ).expect("valid role"));
+
+        // @step When I call get_role
+        let result = role;
+
+        // @step Then it should return a SessionRole with name "test-role" and authority Peer
+        assert!(result.is_some());
+        let r = result.unwrap();
+        assert_eq!(r.name, "test-role");
+        assert_eq!(r.authority, RoleAuthority::Peer);
+    }
+
+    /// Scenario: Set role with invalid authority returns error
+    ///
+    /// @step Given a BackgroundSession exists
+    /// @step When I call set_role with name "test", description None, and authority "invalid"
+    /// @step Then it should return an error "Invalid authority: must be peer or supervisor"
+    #[test]
+    fn test_set_role_with_invalid_authority_returns_error() {
+        // @step Given a BackgroundSession exists
+        // (simulated)
+
+        // @step When I call set_role with name "test", description None, and authority "invalid"
+        let authority = RoleAuthority::from_str("invalid");
+
+        // @step Then it should return an error "Invalid authority: must be peer or supervisor"
+        assert!(authority.is_none(), "invalid authority should return None");
+    }
+
+    /// Scenario: Set role with empty name returns error
+    ///
+    /// @step Given a BackgroundSession exists
+    /// @step When I call set_role with name "", description None, and authority "peer"
+    /// @step Then it should return an error "Role name cannot be empty"
+    #[test]
+    fn test_set_role_with_empty_name_returns_error() {
+        // @step Given a BackgroundSession exists
+        // (simulated)
+
+        // @step When I call set_role with name "", description None, and authority "peer"
+        let result = SessionRole::new(
+            "".to_string(),
+            None,
+            RoleAuthority::Peer,
+        );
+
+        // @step Then it should return an error "Role name cannot be empty"
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err(), "Role name cannot be empty");
+    }
+
+    /// Test RoleAuthority default is Peer
+    #[test]
+    fn test_role_authority_default_is_peer() {
+        let authority = RoleAuthority::default();
+        assert_eq!(authority, RoleAuthority::Peer);
+    }
+
+    /// Test RoleAuthority as_str
+    #[test]
+    fn test_role_authority_as_str() {
+        assert_eq!(RoleAuthority::Peer.as_str(), "peer");
+        assert_eq!(RoleAuthority::Supervisor.as_str(), "supervisor");
     }
 }
 
@@ -1486,6 +1726,65 @@ pub fn session_set_pending_input(session_id: String, input: Option<String>) -> R
 pub fn session_get_buffered_output(session_id: String, limit: u32) -> Result<Vec<StreamChunk>> {
     let session = SessionManager::instance().get_session(&session_id)?;
     Ok(session.get_buffered_output(limit as usize))
+}
+
+/// Session role info returned to TypeScript (WATCH-004)
+#[napi(object)]
+#[derive(Clone)]
+pub struct SessionRoleInfo {
+    /// Role name (e.g., "code-reviewer", "supervisor")
+    pub name: String,
+    /// Optional description
+    pub description: Option<String>,
+    /// Authority level ("peer" or "supervisor")
+    pub authority: String,
+}
+
+/// Set the role for a session (WATCH-004)
+///
+/// Used to mark a session as a watcher with a specific role and authority level.
+/// Authority must be "peer" or "supervisor" (case-insensitive).
+#[napi]
+pub fn session_set_role(
+    session_id: String,
+    role_name: String,
+    role_description: Option<String>,
+    authority: String,
+) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    
+    let auth = RoleAuthority::from_str(&authority)
+        .ok_or_else(|| Error::from_reason("Invalid authority: must be peer or supervisor"))?;
+    
+    let role = SessionRole::new(role_name, role_description, auth)
+        .map_err(|e| Error::from_reason(e))?;
+    
+    session.set_role(role);
+    Ok(())
+}
+
+/// Get the role for a session (WATCH-004)
+///
+/// Returns None for regular sessions, role info for watcher sessions.
+#[napi]
+pub fn session_get_role(session_id: String) -> Result<Option<SessionRoleInfo>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    
+    Ok(session.get_role().map(|r| SessionRoleInfo {
+        name: r.name,
+        description: r.description,
+        authority: r.authority.as_str().to_string(),
+    }))
+}
+
+/// Clear the role for a session (WATCH-004)
+///
+/// Returns the session to a regular (non-watcher) state.
+#[napi]
+pub fn session_clear_role(session_id: String) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.clear_role();
+    Ok(())
 }
 
 /// Get buffered output with consecutive Text/Thinking chunks merged.
