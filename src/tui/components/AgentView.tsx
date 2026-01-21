@@ -79,6 +79,11 @@ import {
   setRustLogCallback,
   sessionSetPendingInput,
   sessionGetPendingInput,
+  // WATCH-008: Watcher management NAPI functions
+  sessionGetWatchers,
+  sessionGetRole,
+  sessionSetRole,
+  type SessionRoleInfo,
   type NapiProviderModels,
   type NapiModelInfo,
 } from '@sengac/codelet-napi';
@@ -316,6 +321,14 @@ interface SessionManifest {
 interface MergedSession extends SessionManifest {
   isBackgroundSession: boolean;
   backgroundStatus: 'running' | 'idle' | null; // null = persisted-only
+}
+
+// WATCH-008: Watcher information for management overlay
+interface WatcherInfo {
+  id: string;
+  name: string;
+  role: SessionRoleInfo | null;
+  status: 'idle' | 'running';
 }
 
 // TUI-047: Get status icon for session in resume list
@@ -959,6 +972,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // TUI-040: Delete session dialog state
   const [showSessionDeleteDialog, setShowSessionDeleteDialog] = useState(false);
 
+  // WATCH-008: Watcher management overlay state
+  const [isWatcherMode, setIsWatcherMode] = useState(false);
+  const [watcherList, setWatcherList] = useState<WatcherInfo[]>([]);
+  const [watcherIndex, setWatcherIndex] = useState(0);
+  const [watcherScrollOffset, setWatcherScrollOffset] = useState(0);
+  const [showWatcherDeleteDialog, setShowWatcherDeleteDialog] = useState(false);
+  const [isWatcherEditMode, setIsWatcherEditMode] = useState(false);
+  const [watcherEditValue, setWatcherEditValue] = useState('');
+
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
@@ -1228,6 +1250,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setResumeScrollOffset(0);
     }
   }, [isResumeMode]);
+
+  // WATCH-008: Watcher management overlay - calculate visible height for scroll logic
+  const watcherVisibleHeight = Math.max(1, Math.floor((terminalHeight - 6) / 2)); // 2 lines per watcher
+
+  // WATCH-008: Keep selected watcher visible by adjusting scroll offset
+  useEffect(() => {
+    if (!isWatcherMode) return;
+    if (watcherIndex < watcherScrollOffset) {
+      setWatcherScrollOffset(watcherIndex);
+    } else if (watcherIndex >= watcherScrollOffset + watcherVisibleHeight) {
+      setWatcherScrollOffset(watcherIndex - watcherVisibleHeight + 1);
+    }
+  }, [watcherIndex, watcherScrollOffset, watcherVisibleHeight, isWatcherMode]);
 
   // Filter settings providers by search string
   const filteredSettingsProviders = useMemo(() => {
@@ -1697,6 +1732,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     if (userMessage === '/resume') {
       setInputValue('');
       void handleResumeMode();
+      return;
+    }
+
+    // WATCH-008: Handle /watcher command - show watcher management overlay
+    if (userMessage === '/watcher') {
+      setInputValue('');
+      void handleWatcherMode();
       return;
     }
 
@@ -3808,6 +3850,124 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
   }, []);
 
+  // WATCH-008: Enter watcher mode (show watcher management overlay)
+  const handleWatcherMode = useCallback(async () => {
+    if (!currentSessionId) {
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: 'No active session. Start a session first.' },
+      ]);
+      return;
+    }
+
+    try {
+      // Get watchers for current session
+      const watcherIds = sessionGetWatchers(currentSessionId);
+      
+      // Build watcher info list
+      const watchers: WatcherInfo[] = [];
+      for (const id of watcherIds) {
+        const role = sessionGetRole(id);
+        const status = sessionGetStatus(id);
+        watchers.push({
+          id,
+          name: role?.name || 'Unnamed Watcher',
+          role,
+          status: status === 'running' ? 'running' : 'idle',
+        });
+      }
+
+      setWatcherList(watchers);
+      setWatcherIndex(0);
+      setWatcherScrollOffset(0);
+      setIsWatcherMode(true);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to list watchers';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Watcher list failed: ${errorMessage}` },
+      ]);
+    }
+  }, [currentSessionId]);
+
+  // WATCH-008: Select watcher and switch to it
+  const handleWatcherSelect = useCallback(async () => {
+    if (watcherList.length === 0 || watcherIndex >= watcherList.length) {
+      return;
+    }
+
+    const selectedWatcher = watcherList[watcherIndex];
+
+    try {
+      // Switch to the watcher session
+      setCurrentSessionId(selectedWatcher.id);
+      setIsWatcherMode(false);
+      setWatcherList([]);
+
+      // Attach to watcher session for live streaming
+      sessionAttach(selectedWatcher.id, (_err: Error | null, chunk: StreamChunk) => {
+        if (chunk) {
+          handleStreamChunk(chunk);
+        }
+      });
+
+      // Get buffered output and display
+      const mergedChunks = sessionGetMergedOutput(selectedWatcher.id);
+      const restoredMessages = processChunksToConversation(
+        mergedChunks,
+        formatToolHeader,
+        formatCollapsedOutput
+      );
+      setConversation(restoredMessages);
+
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Switched to watcher: ${selectedWatcher.name}` },
+      ]);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to switch to watcher';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Switch failed: ${errorMessage}` },
+      ]);
+    }
+  }, [watcherList, watcherIndex, handleStreamChunk, formatToolHeader, formatCollapsedOutput, processChunksToConversation]);
+
+  // WATCH-008: Delete selected watcher
+  const handleWatcherDelete = useCallback(async () => {
+    if (watcherList.length === 0 || watcherIndex >= watcherList.length) {
+      return;
+    }
+
+    const selectedWatcher = watcherList[watcherIndex];
+
+    try {
+      // Destroy the watcher session
+      sessionManagerDestroy(selectedWatcher.id);
+
+      // Remove from list
+      const newList = watcherList.filter((_, i) => i !== watcherIndex);
+      setWatcherList(newList);
+      
+      // Adjust selection index if needed
+      if (watcherIndex >= newList.length && newList.length > 0) {
+        setWatcherIndex(newList.length - 1);
+      }
+
+      setShowWatcherDeleteDialog(false);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to delete watcher';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Delete failed: ${errorMessage}` },
+      ]);
+      setShowWatcherDeleteDialog(false);
+    }
+  }, [watcherList, watcherIndex]);
+
   // NAPI-003 + TUI-047: Select session and restore conversation
   // Now handles both background sessions (attach) and persisted-only (load from disk)
   const handleResumeSelect = useCallback(async () => {
@@ -4542,6 +4702,118 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           return;
         }
         // No text input in resume mode - just navigation
+        return;
+      }
+
+      // WATCH-008: Watcher mode keyboard handling
+      if (isWatcherMode) {
+        // Handle delete dialog keyboard input first
+        if (showWatcherDeleteDialog) {
+          // Dialog handles its own input via useInput
+          return;
+        }
+        if (key.escape) {
+          setIsWatcherMode(false);
+          setWatcherList([]);
+          return;
+        }
+        if (key.return) {
+          void handleWatcherSelect();
+          return;
+        }
+        if (key.upArrow) {
+          setWatcherIndex(prev => Math.max(0, prev - 1));
+          return;
+        }
+        if (key.downArrow) {
+          setWatcherIndex(prev =>
+            Math.min(watcherList.length - 1, prev + 1)
+          );
+          return;
+        }
+        // D key opens delete confirmation dialog
+        if (input.toLowerCase() === 'd' && watcherList.length > 0) {
+          setShowWatcherDeleteDialog(true);
+          return;
+        }
+        // N key would open watcher creation (WATCH-009)
+        if (input.toLowerCase() === 'n') {
+          // TODO: WATCH-009 - Open watcher creation dialog
+          setConversation(prev => [
+            ...prev,
+            { type: 'status', content: 'Watcher creation not yet implemented (WATCH-009)' },
+          ]);
+          setIsWatcherMode(false);
+          return;
+        }
+        // E key opens edit mode for watcher name
+        if (input.toLowerCase() === 'e' && watcherList.length > 0) {
+          const selectedWatcher = watcherList[watcherIndex];
+          setWatcherEditValue(selectedWatcher.name);
+          setIsWatcherEditMode(true);
+          return;
+        }
+        // No text input in watcher mode - just navigation
+        return;
+      }
+
+      // WATCH-008: Watcher edit mode keyboard handling
+      if (isWatcherEditMode) {
+        if (key.escape) {
+          setIsWatcherEditMode(false);
+          setWatcherEditValue('');
+          return;
+        }
+        if (key.return) {
+          // Save the edited name and persist to backend
+          if (watcherEditValue.trim()) {
+            const selectedWatcher = watcherList[watcherIndex];
+            if (selectedWatcher) {
+              // Persist to backend via NAPI - only update local state on success
+              try {
+                sessionSetRole(
+                  selectedWatcher.id,
+                  watcherEditValue.trim(),
+                  selectedWatcher.role?.description || null,
+                  selectedWatcher.role?.authority || 'peer'
+                );
+                // Update local state ONLY if backend save succeeded
+                const updatedList = [...watcherList];
+                updatedList[watcherIndex] = {
+                  ...updatedList[watcherIndex],
+                  name: watcherEditValue.trim(),
+                };
+                setWatcherList(updatedList);
+              } catch (err) {
+                const errorMessage =
+                  err instanceof Error ? err.message : 'Failed to save watcher name';
+                setConversation(prev => [
+                  ...prev,
+                  { type: 'status', content: `Edit failed: ${errorMessage}` },
+                ]);
+                // Do NOT update local state - keep showing old name for consistency
+              }
+            }
+          }
+          setIsWatcherEditMode(false);
+          setWatcherEditValue('');
+          return;
+        }
+        if (key.backspace || key.delete) {
+          setWatcherEditValue(prev => prev.slice(0, -1));
+          return;
+        }
+        // Accept printable characters for editing
+        const clean = input
+          .split('')
+          .filter(ch => {
+            const code = ch.charCodeAt(0);
+            return code >= 32 && code <= 126;
+          })
+          .join('');
+        if (clean) {
+          setWatcherEditValue(prev => prev + clean);
+        }
         return;
       }
 
@@ -5760,6 +6032,149 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           />
         )}
         {/* TUI-046: Exit confirmation dialog (shown in resume mode too) */}
+        {showExitConfirmation && (
+          <ThreeButtonDialog
+            message="Exit Session?"
+            description={displayIsLoading
+              ? "The agent is currently running. Choose how to exit."
+              : "Choose how to exit the session."}
+            options={['Detach', 'Close Session', 'Cancel']}
+            defaultSelectedIndex={0}
+            onSelect={handleExitChoice}
+            onCancel={() => setShowExitConfirmation(false)}
+          />
+        )}
+      </Box>
+    );
+  }
+
+  // WATCH-008: Watcher management overlay
+  if (isWatcherMode) {
+    return (
+      <Box
+        position="absolute"
+        flexDirection="column"
+        width={terminalWidth}
+        height={terminalHeight}
+      >
+        <Box
+          flexDirection="column"
+          flexGrow={1}
+          backgroundColor="black"
+        >
+          <Box flexDirection="column" padding={2} flexGrow={1}>
+            <Box marginBottom={1}>
+              <Text bold color="magenta">
+                Watcher Management ({watcherList.length} watcher{watcherList.length !== 1 ? 's' : ''})
+              </Text>
+              {watcherList.length > watcherVisibleHeight && (
+                <Text dimColor>
+                  {' '}
+                  (showing {watcherScrollOffset + 1}-
+                  {Math.min(
+                    watcherScrollOffset + watcherVisibleHeight,
+                    watcherList.length
+                  )}
+                  )
+                </Text>
+              )}
+            </Box>
+            {watcherList.length === 0 && (
+              <Box flexGrow={1}>
+                <Text dimColor>No watchers. Press N to create one.</Text>
+              </Box>
+            )}
+            {/* Scrollable watcher list */}
+            <Box flexDirection="row" flexGrow={1}>
+              <Box flexDirection="column" flexGrow={1}>
+                {watcherList
+                  .slice(
+                    watcherScrollOffset,
+                    watcherScrollOffset + watcherVisibleHeight
+                  )
+                  .flatMap((watcher, visibleIdx) => {
+                    const actualIdx = watcherScrollOffset + visibleIdx;
+                    const isSelected = actualIdx === watcherIndex;
+                    const authorityDisplay = watcher.role?.authority === 'supervisor' ? 'Supervisor' : 'Peer';
+                    const statusIcon = watcher.status === 'running' ? '🔄' : '⏸️';
+                    const isEditing = isSelected && isWatcherEditMode;
+                    // Return two rows per watcher (name line and detail line)
+                    return [
+                      <Box key={`${watcher.id}-name`}>
+                        <Box flexGrow={1}>
+                          <Text
+                            backgroundColor={isSelected ? 'magenta' : undefined}
+                            color={isSelected ? 'black' : 'white'}
+                            wrap="truncate"
+                          >
+                            {isSelected ? '> ' : '  '}
+                            {statusIcon} {isEditing ? watcherEditValue + '▌' : watcher.name}
+                          </Text>
+                        </Box>
+                      </Box>,
+                      <Box key={`${watcher.id}-detail`}>
+                        <Box flexGrow={1}>
+                          <Text
+                            backgroundColor={isSelected ? 'magenta' : undefined}
+                            color={isSelected ? 'black' : 'gray'}
+                            dimColor={!isSelected}
+                            wrap="truncate"
+                          >
+                            {'    '}
+                            {isEditing ? '(editing - Enter to save, Esc to cancel)' : `${authorityDisplay} | ${watcher.status}${watcher.role?.description ? ` | ${watcher.role.description}` : ''}`}
+                          </Text>
+                        </Box>
+                      </Box>,
+                    ];
+                  })}
+              </Box>
+              {/* Scrollbar - each watcher is 2 lines */}
+              {watcherList.length > watcherVisibleHeight && (
+                <Box flexDirection="column" marginLeft={1}>
+                  {Array.from({ length: watcherVisibleHeight * 2 }).map((_, i) => {
+                    const scrollbarHeight = watcherVisibleHeight * 2;
+                    const thumbHeight = Math.max(
+                      2,
+                      Math.floor(
+                        (watcherVisibleHeight / watcherList.length) *
+                          scrollbarHeight
+                      )
+                    );
+                    const thumbPos = Math.floor(
+                      (watcherScrollOffset / watcherList.length) *
+                        scrollbarHeight
+                    );
+                    const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
+                    return (
+                      <Text key={i} dimColor>
+                        {isThumb ? '■' : '│'}
+                      </Text>
+                    );
+                  })}
+                </Box>
+              )}
+            </Box>
+            <Box marginTop={1}>
+              <Text dimColor>Enter Open | ↑↓ Navigate | N New | D Delete | E Edit | Esc Cancel</Text>
+            </Box>
+          </Box>
+        </Box>
+        {/* WATCH-008: Delete watcher confirmation dialog */}
+        {showWatcherDeleteDialog && watcherList[watcherIndex] && (
+          <ThreeButtonDialog
+            message={`Delete watcher "${watcherList[watcherIndex].name}"?`}
+            options={['Delete', 'Cancel']}
+            onSelect={(index: number) => {
+              if (index === 0) {
+                void handleWatcherDelete();
+              } else {
+                setShowWatcherDeleteDialog(false);
+              }
+            }}
+            onCancel={() => setShowWatcherDeleteDialog(false)}
+          />
+        )}
+        {/* TUI-046: Exit confirmation dialog (shown in watcher mode too) */}
         {showExitConfirmation && (
           <ThreeButtonDialog
             message="Exit Session?"

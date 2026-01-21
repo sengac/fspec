@@ -1001,6 +1001,13 @@ export declare function sessionAttach(
 ): void;
 
 /**
+ * Clear the role for a session (WATCH-004)
+ *
+ * Returns the session to a regular (non-watcher) state.
+ */
+export declare function sessionClearRole(sessionId: string): void;
+
+/**
  * Manually trigger context compaction for a background session (NAPI-009 + NAPI-005)
  *
  * Mirrors CodeletSession::compact() behavior but works with background sessions.
@@ -1012,6 +1019,21 @@ export declare function sessionAttach(
 export declare function sessionCompact(
   sessionId: string
 ): Promise<CompactionResult>;
+
+/**
+ * Create a watcher session for a parent session (WATCH-007)
+ *
+ * Creates a new session that watches the specified parent session.
+ * The watcher is registered in WatchGraph. Broadcast subscription happens
+ * when the watcher loop starts (via parent.subscribe_to_stream()).
+ * A role must be set separately via session_set_role.
+ */
+export declare function sessionCreateWatcher(
+  parentId: string,
+  model: string,
+  project: string,
+  name: string
+): Promise<string>;
 
 /** Detach from a session (session continues running) */
 export declare function sessionDetach(sessionId: string): void;
@@ -1037,6 +1059,13 @@ export declare function sessionGetMergedOutput(
 export declare function sessionGetModel(sessionId: string): SessionModel;
 
 /**
+ * Get the parent session ID for a watcher (WATCH-007)
+ *
+ * Returns the parent session ID if the session is a watcher, None otherwise.
+ */
+export declare function sessionGetParent(sessionId: string): string | null;
+
+/**
  * Get pending input text for a background session (TUI-049)
  *
  * Returns the input text that was being typed when the user switched away from this session.
@@ -1046,11 +1075,27 @@ export declare function sessionGetPendingInput(
   sessionId: string
 ): string | null;
 
+/**
+ * Get the role for a session (WATCH-004)
+ *
+ * Returns None for regular sessions, role info for watcher sessions.
+ */
+export declare function sessionGetRole(
+  sessionId: string
+): SessionRoleInfo | null;
+
 /** Get session status */
 export declare function sessionGetStatus(sessionId: string): string;
 
 /** Get cached token counts for a background session */
 export declare function sessionGetTokens(sessionId: string): SessionTokens;
+
+/**
+ * Get all watcher session IDs for a parent session (WATCH-007)
+ *
+ * Returns a list of session IDs that are watching the specified parent.
+ */
+export declare function sessionGetWatchers(sessionId: string): Array<string>;
 
 /** Session info returned to TypeScript */
 export interface SessionInfo {
@@ -1131,6 +1176,16 @@ export declare function sessionRestoreTokenState(
   cumulativeBilledOutput: number
 ): Promise<void>;
 
+/** Session role info returned to TypeScript (WATCH-004) */
+export interface SessionRoleInfo {
+  /** Role name (e.g., "code-reviewer", "supervisor") */
+  name: string;
+  /** Optional description */
+  description?: string;
+  /** Authority level ("peer" or "supervisor") */
+  authority: string;
+}
+
 /** Send input to a session with optional thinking config */
 export declare function sessionSendInput(
   sessionId: string,
@@ -1160,6 +1215,19 @@ export declare function sessionSetModel(
 export declare function sessionSetPendingInput(
   sessionId: string,
   input?: string | undefined | null
+): void;
+
+/**
+ * Set the role for a session (WATCH-004)
+ *
+ * Used to mark a session as a watcher with a specific role and authority level.
+ * Authority must be "peer" or "supervisor" (case-insensitive).
+ */
+export declare function sessionSetRole(
+  sessionId: string,
+  roleName: string,
+  roleDescription: string | undefined | null,
+  authority: string
 ): void;
 
 /**
@@ -1269,3 +1337,11 @@ export interface ToolResultInfo {
   content: string;
   isError: boolean;
 }
+
+/**
+ * Inject a watcher message into the parent session (WATCH-007)
+ *
+ * Formats the message with the watcher's role prefix and queues it
+ * on the parent session via receive_watcher_input().
+ */
+export declare function watcherInject(watcherId: string, message: string): void;
