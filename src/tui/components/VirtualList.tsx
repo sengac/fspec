@@ -8,7 +8,6 @@ import React, {
   memo,
 } from 'react';
 import { Box, Text, useInput, measureElement, type DOMElement } from 'ink';
-import { logger } from '../../utils/logger';
 import { useTerminalSize } from '../hooks/useTerminalSize';
 
 // Unicode characters for scrollbar

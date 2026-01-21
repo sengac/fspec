@@ -8,6 +8,7 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import { VirtualList } from './VirtualList';
+import { wrapText } from '../utils/textWrap';
 
 // Diff color constants (matching AgentView)
 const DIFF_COLORS = {
@@ -48,42 +49,20 @@ const getRoleTitle = (role: 'user' | 'assistant' | 'tool'): string => {
 
 /**
  * Wrap content into lines for VirtualList display
+ * Uses shared wrapText utility for consistent line wrapping
  */
 const wrapContentToLines = (
   content: string,
   role: 'user' | 'assistant' | 'tool',
   maxWidth: number
 ): ModalLine[] => {
-  const lines: ModalLine[] = [];
-  const contentLines = content.split('\n');
-  let lineIndex = 0;
-
-  contentLines.forEach((lineContent) => {
-    if (lineContent.length === 0) {
-      lines.push({ role, content: ' ', lineIndex: lineIndex++ });
-    } else {
-      // Simple word wrapping
-      let remaining = lineContent;
-      while (remaining.length > 0) {
-        if (remaining.length <= maxWidth) {
-          lines.push({ role, content: remaining, lineIndex: lineIndex++ });
-          break;
-        }
-        // Find break point at word boundary
-        let breakPoint = maxWidth;
-        while (breakPoint > 0 && remaining[breakPoint] !== ' ') {
-          breakPoint--;
-        }
-        if (breakPoint === 0) {
-          breakPoint = maxWidth;
-        }
-        lines.push({ role, content: remaining.slice(0, breakPoint), lineIndex: lineIndex++ });
-        remaining = remaining.slice(breakPoint).trimStart();
-      }
-    }
-  });
-
-  return lines;
+  const wrappedLines = wrapText(content, { maxWidth });
+  
+  return wrappedLines.map((lineContent, lineIndex) => ({
+    role,
+    content: lineContent,
+    lineIndex,
+  }));
 };
 
 /**
