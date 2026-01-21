@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-20T08:25:23.670Z"
+    "lastUpdated": "2026-01-21T01:15:23.118Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62619,6 +62619,533 @@
       "nextQuestionId": 0,
       "updated": "2026-01-20T08:25:23.703Z",
       "estimate": 3
+    },
+    "WATCH-001": {
+      "id": "WATCH-001",
+      "title": "Watcher Sessions MVP - Background AI agents observing parent sessions",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2026-01-21T00:54:38.229Z",
+      "updatedAt": "2026-01-21T00:56:47.154Z",
+      "description": "Enable AI 'watcher' sessions that observe a parent session's streaming output in real-time, evaluate against a watching brief, and can inject messages into the parent session. This is the foundational MVP story with child stories for full implementation.",
+      "children": [
+        "WATCH-002",
+        "WATCH-003",
+        "WATCH-004",
+        "WATCH-005",
+        "WATCH-006",
+        "WATCH-007",
+        "WATCH-008",
+        "WATCH-009",
+        "WATCH-010",
+        "WATCH-011",
+        "WATCH-012",
+        "WATCH-013",
+        "WATCH-014",
+        "WATCH-015",
+        "WATCH-016"
+      ],
+      "attachments": [
+        "spec/attachments/WATCH-001/watcher-sessions-architecture.md"
+      ],
+      "userStory": {
+        "role": "developer using fspec/codelet",
+        "action": "create AI watcher sessions that observe and interact with my primary coding session",
+        "benefit": "I have specialized AI agents (security reviewer, test enforcer, etc.) monitoring my work and providing guidance without switching contexts"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T00:54:57.358Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "A watcher session is a fully interactive AI agent with its own LLM connection that observes a parent session",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:01.768Z"
+        },
+        {
+          "id": 1,
+          "text": "Watchers observe everything from the parent: user input, assistant responses, tool calls, and tool results",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:06.732Z"
+        },
+        {
+          "id": 2,
+          "text": "Watchers have autonomy over their own context management - they decide what to keep/discard from observations",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:11.011Z"
+        },
+        {
+          "id": 3,
+          "text": "A watcher has a 'watching brief' that defines what to watch for and when to interject",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:15.807Z"
+        },
+        {
+          "id": 4,
+          "text": "Each session (parent or watcher) has a defined role with authority level (Supervisor or Peer)",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:20.227Z"
+        },
+        {
+          "id": 5,
+          "text": "Multiple watchers can observe the same parent session, each with different roles",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:23.890Z"
+        },
+        {
+          "id": 6,
+          "text": "One watcher can only watch one parent (1:1 relationship from watcher side)",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:28.196Z"
+        },
+        {
+          "id": 7,
+          "text": "Watcher sessions are ephemeral - watch relationships do not persist across session restarts",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:32.608Z"
+        },
+        {
+          "id": 8,
+          "text": "Watchers connect to parent via tokio broadcast channel within the same process",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:36.794Z"
+        },
+        {
+          "id": 9,
+          "text": "Watcher evaluations occur at natural breakpoints: Done, ToolResult, Error, Interrupted chunks",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:41.307Z"
+        },
+        {
+          "id": 10,
+          "text": "Watcher injections are sent as User messages with structured prefix: [WATCHER: role | Authority: level | Session: id]",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:46.013Z"
+        },
+        {
+          "id": 11,
+          "text": "Watcher input is displayed in purple (magenta) text in the UI, with the watcher's role name as prefix",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:50.421Z"
+        },
+        {
+          "id": 12,
+          "text": "The /watcher command opens a Watcher Management overlay for CRUD operations on watchers",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:54.931Z"
+        },
+        {
+          "id": 13,
+          "text": "Shift+Left/Right in a watcher session navigates between sibling watchers (same parent only)",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:55:59.528Z"
+        },
+        {
+          "id": 14,
+          "text": "Watcher sessions display a split view: left pane (parent observation), right pane (watcher conversation)",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:03.976Z"
+        },
+        {
+          "id": 15,
+          "text": "Cross-pane selection highlighting uses correlation IDs to link parent chunks with watcher observations",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:08.566Z"
+        }
+      ],
+      "nextRuleId": 16,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /watcher, sees 'Watchers for: Main Dev Session (0 watchers)', presses N, configures 'Security Reviewer' with Supervisor authority",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:14.162Z"
+        },
+        {
+          "id": 1,
+          "text": "Security Reviewer watcher sees parent write SQL injection vulnerable code, evaluates at ToolResult, decides to interject with warning",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:18.790Z"
+        },
+        {
+          "id": 2,
+          "text": "User sees purple text in parent session: '👁️ Security Reviewer> ⚠️ SQL injection vulnerability detected...'",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:24.105Z"
+        },
+        {
+          "id": 3,
+          "text": "User opens watcher session, sees split view with parent conversation on left (dimmed) and watcher conversation on right",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:29.015Z"
+        },
+        {
+          "id": 4,
+          "text": "User presses Shift+Right in watcher session, switches to sibling watcher 'Test Enforcer' (same parent)",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:33.621Z"
+        },
+        {
+          "id": 5,
+          "text": "User talks directly to watcher: 'Also watch for XSS vulnerabilities', watcher acknowledges and updates its watching brief",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:38.854Z"
+        },
+        {
+          "id": 6,
+          "text": "User selects message in parent pane (left), corresponding observation highlights in watcher pane (right)",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:43.051Z"
+        },
+        {
+          "id": 7,
+          "text": "User types /parent in watcher session, switches back to the parent session",
+          "deleted": false,
+          "createdAt": "2026-01-21T00:56:47.154Z"
+        }
+      ],
+      "nextExampleId": 8
+    },
+    "WATCH-002": {
+      "id": "WATCH-002",
+      "title": "WatchGraph and Session Relationship Tracking",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-21T00:56:58.204Z",
+      "updatedAt": "2026-01-21T01:15:23.150Z",
+      "description": "Implement WatchGraph data structure in SessionManager to track parent-watcher relationships. Add parent_to_watchers and watcher_to_parent HashMaps for efficient lookup.",
+      "parent": "WATCH-001",
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T01:01:51.718Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T01:05:00.666Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T01:08:04.965Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T01:12:11.790Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T01:15:23.151Z"
+        }
+      ],
+      "userStory": {
+        "role": "watcher session subsystem",
+        "action": "track parent-watcher relationships between sessions",
+        "benefit": "watchers can efficiently find their parent and parents can find all their watchers"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "WatchGraph is a data structure owned by SessionManager that tracks parent-watcher relationships",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:11.319Z"
+        },
+        {
+          "id": 1,
+          "text": "WatchGraph uses two HashMaps: parent_to_watchers (Uuid → Vec<Uuid>) and watcher_to_parent (Uuid → Uuid)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:15.661Z"
+        },
+        {
+          "id": 2,
+          "text": "One watcher can only watch one parent (1:1 from watcher side), but one parent can have multiple watchers (1:N from parent side)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:19.860Z"
+        },
+        {
+          "id": 3,
+          "text": "Circular watching is prevented - a watcher cannot watch its own parent chain",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:23.955Z"
+        },
+        {
+          "id": 4,
+          "text": "Watch relationships are ephemeral - they do not persist across session restarts",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:27.643Z"
+        },
+        {
+          "id": 5,
+          "text": "When a parent session is removed, all its watchers must be cleaned up from the WatchGraph",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:31.559Z"
+        },
+        {
+          "id": 6,
+          "text": "When a watcher session is removed, its entry must be cleaned up from both HashMaps",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:35.317Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "add_watcher(parent_id: abc, watcher_id: xyz) → parent_to_watchers[abc] = [xyz], watcher_to_parent[xyz] = abc",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:39.824Z"
+        },
+        {
+          "id": 1,
+          "text": "get_watchers(parent_id: abc) returns [xyz, def] when parent abc has two watchers attached",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:43.815Z"
+        },
+        {
+          "id": 2,
+          "text": "get_parent(watcher_id: xyz) returns Some(abc) when watcher xyz is watching parent abc",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:47.706Z"
+        },
+        {
+          "id": 3,
+          "text": "remove_watcher(watcher_id: xyz) removes xyz from parent_to_watchers[abc] and deletes watcher_to_parent[xyz]",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:51.668Z"
+        },
+        {
+          "id": 4,
+          "text": "Attempting to add_watcher where watcher_id already has a parent returns an error (watcher can only watch one parent)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:55.907Z"
+        },
+        {
+          "id": 5,
+          "text": "Attempting add_watcher(A, B) when B is already watching A's parent returns error (circular watching prevented)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:02:59.816Z"
+        },
+        {
+          "id": 6,
+          "text": "get_parent(session_id: abc) returns None when abc is a regular session (not a watcher)",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:03:03.932Z"
+        }
+      ],
+      "nextExampleId": 7,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "WatchGraph is a struct with two RwLock-protected HashMaps living inside SessionManager",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:03:24.990Z"
+        },
+        {
+          "id": 1,
+          "text": "SessionManager gains a watch_graph: WatchGraph field initialized in new()",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:03:29.591Z"
+        },
+        {
+          "id": 2,
+          "text": "All WatchGraph methods are exposed via SessionManager delegation methods",
+          "deleted": false,
+          "createdAt": "2026-01-21T01:03:33.590Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/WATCH-002/ast-research-session-manager.md"
+      ],
+      "estimate": 2,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T01:15:23.150Z"
+    },
+    "WATCH-003": {
+      "id": "WATCH-003",
+      "title": "Broadcast Channel for Parent Stream Observation",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:03.401Z",
+      "updatedAt": "2026-01-21T00:58:15.725Z",
+      "description": "Add tokio broadcast::Sender<StreamChunk> to BackgroundSession. Modify handle_output() to broadcast to watchers in addition to buffer and UI callback.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-002"
+      ]
+    },
+    "WATCH-004": {
+      "id": "WATCH-004",
+      "title": "Session Role and Authority Model",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:08.939Z",
+      "updatedAt": "2026-01-21T00:57:08.939Z",
+      "description": "Implement SessionRole struct with name, description, and RoleAuthority enum (Peer/Supervisor). Add role to BackgroundSession. Create NAPI bindings for session_set_role and session_get_role.",
+      "parent": "WATCH-001"
+    },
+    "WATCH-005": {
+      "id": "WATCH-005",
+      "title": "Watcher Agent Loop with Dual Input",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:14.267Z",
+      "updatedAt": "2026-01-21T00:58:23.621Z",
+      "description": "Implement watcher_agent_loop that handles both user prompts and parent observations via tokio::select!. Add observation buffer, natural breakpoint detection, and evaluation prompt formatting.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-003",
+        "WATCH-004"
+      ]
+    },
+    "WATCH-006": {
+      "id": "WATCH-006",
+      "title": "Watcher Injection Message Format",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:19.612Z",
+      "updatedAt": "2026-01-21T00:58:27.292Z",
+      "description": "Implement WatcherInput struct and receive_watcher_input() on BackgroundSession. Format watcher messages with structured prefix [WATCHER: role | Authority: level | Session: id]. Add WatcherInput StreamChunk type.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-004"
+      ]
+    },
+    "WATCH-007": {
+      "id": "WATCH-007",
+      "title": "NAPI Bindings for Watcher Operations",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:24.689Z",
+      "updatedAt": "2026-01-21T00:58:39.188Z",
+      "description": "Create NAPI bindings: session_create_watcher, session_get_parent, session_get_watchers, watcher_inject. Expose to TypeScript layer.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-002",
+        "WATCH-004",
+        "WATCH-006"
+      ]
+    },
+    "WATCH-008": {
+      "id": "WATCH-008",
+      "title": "Watcher Management Overlay UI",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:30.061Z",
+      "updatedAt": "2026-01-21T00:58:43.268Z",
+      "description": "Implement /watcher command that opens Watcher Management overlay in AgentView. Support CRUD: list watchers, create new (N), delete (D), edit (E), open watcher (Enter).",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-007"
+      ]
+    },
+    "WATCH-009": {
+      "id": "WATCH-009",
+      "title": "Watcher Creation Dialog UI",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:34.670Z",
+      "updatedAt": "2026-01-21T00:58:47.377Z",
+      "description": "Implement watcher creation dialog: role name input, authority selector (Peer/Supervisor), model selector, brief textarea. Create watcher on confirm.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-008"
+      ]
+    },
+    "WATCH-010": {
+      "id": "WATCH-010",
+      "title": "Watcher Split View UI",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:39.782Z",
+      "updatedAt": "2026-01-21T00:58:51.258Z",
+      "description": "Implement WatcherAgentView (or mode of AgentView) with split panes: left (parent observation, read-only), right (watcher conversation). Handle pane navigation with arrow keys.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-007"
+      ]
+    },
+    "WATCH-011": {
+      "id": "WATCH-011",
+      "title": "Cross-Pane Selection with Correlation IDs",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:44.794Z",
+      "updatedAt": "2026-01-21T00:58:55.087Z",
+      "description": "Add correlation_id to StreamChunk. Implement cross-pane highlighting: selecting in parent pane highlights corresponding observation in watcher pane and vice versa.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-010"
+      ]
+    },
+    "WATCH-012": {
+      "id": "WATCH-012",
+      "title": "Purple Watcher Input Display",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:50.518Z",
+      "updatedAt": "2026-01-21T00:58:59.035Z",
+      "description": "Parse watcher message prefix in UI rendering. Display watcher input in purple/magenta with role name prefix (e.g., '👁️ Security Reviewer>'). Update processChunksToConversation.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-006"
+      ]
+    },
+    "WATCH-013": {
+      "id": "WATCH-013",
+      "title": "Sibling Watcher Navigation",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:57:55.661Z",
+      "updatedAt": "2026-01-21T00:59:02.731Z",
+      "description": "Modify switchToSession to filter by parent when current session is a watcher. Shift+Left/Right navigates only sibling watchers of the same parent.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-007"
+      ]
+    },
+    "WATCH-014": {
+      "id": "WATCH-014",
+      "title": "/parent Command for Quick Return",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:58:00.786Z",
+      "updatedAt": "2026-01-21T00:59:06.941Z",
+      "description": "Implement /parent command that switches from watcher session back to its parent session. Lookup parent via sessionGetParent NAPI binding.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-007"
+      ]
+    },
+    "WATCH-015": {
+      "id": "WATCH-015",
+      "title": "Watcher Session Header Indicator",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:58:06.095Z",
+      "updatedAt": "2026-01-21T00:59:10.502Z",
+      "description": "Update AgentView header to show watcher indicator: '👁️ Role Name (watching: Parent Name)' when viewing a watcher session.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-010"
+      ]
+    },
+    "WATCH-016": {
+      "id": "WATCH-016",
+      "title": "Discuss Selected Feature",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-21T00:58:11.127Z",
+      "updatedAt": "2026-01-21T00:59:14.503Z",
+      "description": "Implement 'Discuss Selected' action: pressing Enter on selected message in parent pane auto-populates watcher input with context for discussing that specific turn.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-011"
+      ]
     }
   },
   "states": {
@@ -62676,7 +63203,21 @@
       "DOC-014",
       "DOC-017",
       "AGENT-022",
-      "RLM-001"
+      "RLM-001",
+      "WATCH-003",
+      "WATCH-004",
+      "WATCH-005",
+      "WATCH-006",
+      "WATCH-007",
+      "WATCH-008",
+      "WATCH-009",
+      "WATCH-010",
+      "WATCH-011",
+      "WATCH-012",
+      "WATCH-013",
+      "WATCH-014",
+      "WATCH-015",
+      "WATCH-016"
     ],
     "specifying": [
       "LANG-001",
@@ -62687,7 +63228,8 @@
       "TOOL-001",
       "MODEL-001",
       "PROV-003",
-      "CMPCT-001"
+      "CMPCT-001",
+      "WATCH-001"
     ],
     "testing": [],
     "implementing": [
@@ -62695,6 +63237,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-002",
       "CMPCT-002",
       "TUI-049",
       "SESS-001",
@@ -63208,6 +63751,7 @@
     "PATCH": 2,
     "RLM": 1,
     "SESS": 1,
-    "CMPCT": 2
+    "CMPCT": 2,
+    "WATCH": 16
   }
 }

@@ -19,7 +19,7 @@ mod output;
 #[cfg(not(feature = "noop"))]
 mod session;
 #[cfg(not(feature = "noop"))]
-mod session_manager;
+pub mod session_manager;
 #[cfg(not(feature = "noop"))]
 mod thinking_config;
 #[cfg(not(feature = "noop"))]

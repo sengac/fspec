@@ -309,6 +309,11 @@
       "prefix": "CMPCT",
       "description": "Compaction system cleanup and simplification",
       "createdAt": "2026-01-20T01:41:00.593Z"
+    },
+    "WATCH": {
+      "prefix": "WATCH",
+      "description": "Watcher Sessions - Background AI agents that observe and interact with parent sessions",
+      "createdAt": "2026-01-21T00:54:32.563Z"
     }
   }
 }

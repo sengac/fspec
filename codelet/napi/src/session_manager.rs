@@ -335,9 +335,388 @@ impl BackgroundSession {
     }
 }
 
+/// Tracks parent-watcher relationships between sessions (WATCH-002)
+///
+/// WatchGraph enables watcher sessions to observe parent sessions.
+/// - One watcher can only watch one parent (1:1 from watcher side)
+/// - One parent can have multiple watchers (1:N from parent side)
+/// - Circular watching is prevented
+pub struct WatchGraph {
+    /// Parent session ID → list of watcher session IDs
+    parent_to_watchers: RwLock<HashMap<Uuid, Vec<Uuid>>>,
+    /// Watcher session ID → parent session ID
+    watcher_to_parent: RwLock<HashMap<Uuid, Uuid>>,
+}
+
+impl Default for WatchGraph {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl WatchGraph {
+    /// Create a new empty WatchGraph
+    pub fn new() -> Self {
+        Self {
+            parent_to_watchers: RwLock::new(HashMap::new()),
+            watcher_to_parent: RwLock::new(HashMap::new()),
+        }
+    }
+
+    /// Register a watcher for a parent session
+    ///
+    /// Returns an error if:
+    /// - The watcher already has a parent (watcher can only watch one parent)
+    /// - Adding would create a circular watch relationship
+    pub fn add_watcher(&self, parent_id: Uuid, watcher_id: Uuid) -> std::result::Result<(), String> {
+        // Acquire write lock for the entire operation to prevent TOCTOU race
+        let mut w2p = self.watcher_to_parent.write().expect("watcher_to_parent lock poisoned");
+        
+        // Check if watcher already has a parent
+        if w2p.contains_key(&watcher_id) {
+            return Err("watcher already has a parent".to_string());
+        }
+
+        // Check for circular watching: would the proposed watcher be in the parent's chain?
+        // If the watcher is already a parent of something in the chain, we'd have a cycle
+        // Check if parent_id is watching watcher_id (direct cycle)
+        if w2p.get(&parent_id) == Some(&watcher_id) {
+            return Err("circular watching not allowed".to_string());
+        }
+        // Check deeper cycles: walk up from parent_id
+        let mut current = parent_id;
+        while let Some(&grandparent) = w2p.get(&current) {
+            if grandparent == watcher_id {
+                return Err("circular watching not allowed".to_string());
+            }
+            current = grandparent;
+        }
+
+        // Add the relationship (still under write lock)
+        w2p.insert(watcher_id, parent_id);
+        
+        // Now acquire parent_to_watchers lock
+        let mut p2w = self.parent_to_watchers.write().expect("parent_to_watchers lock poisoned");
+        p2w.entry(parent_id).or_default().push(watcher_id);
+
+        Ok(())
+    }
+
+    /// Remove a watcher relationship
+    ///
+    /// Removes the watcher from both maps. Safe to call even if watcher doesn't exist.
+    pub fn remove_watcher(&self, watcher_id: Uuid) {
+        // Get the parent (if any) and remove from watcher_to_parent
+        let parent_id = {
+            let mut w2p = self.watcher_to_parent.write().expect("watcher_to_parent lock poisoned");
+            w2p.remove(&watcher_id)
+        };
+
+        // If there was a parent, remove watcher from parent's list
+        if let Some(parent_id) = parent_id {
+            let mut p2w = self.parent_to_watchers.write().expect("parent_to_watchers lock poisoned");
+            if let Some(watchers) = p2w.get_mut(&parent_id) {
+                watchers.retain(|&id| id != watcher_id);
+                // Remove empty entries
+                if watchers.is_empty() {
+                    p2w.remove(&parent_id);
+                }
+            }
+        }
+    }
+
+    /// Get all watchers for a parent session
+    ///
+    /// Returns an empty Vec if the parent has no watchers.
+    pub fn get_watchers(&self, parent_id: Uuid) -> Vec<Uuid> {
+        let p2w = self.parent_to_watchers.read().expect("parent_to_watchers lock poisoned");
+        p2w.get(&parent_id).cloned().unwrap_or_default()
+    }
+
+    /// Get the parent for a watcher session
+    ///
+    /// Returns None if the session is not a watcher (or doesn't exist).
+    pub fn get_parent(&self, watcher_id: Uuid) -> Option<Uuid> {
+        let w2p = self.watcher_to_parent.read().expect("watcher_to_parent lock poisoned");
+        w2p.get(&watcher_id).copied()
+    }
+
+    /// Clean up all watcher relationships when a parent session is removed
+    ///
+    /// This removes the parent from parent_to_watchers and removes all its
+    /// watchers from watcher_to_parent.
+    pub fn cleanup_parent(&self, parent_id: Uuid) {
+        // Get and remove all watchers for this parent
+        let watchers = {
+            let mut p2w = self.parent_to_watchers.write().expect("parent_to_watchers lock poisoned");
+            p2w.remove(&parent_id).unwrap_or_default()
+        };
+
+        // Remove each watcher from watcher_to_parent
+        {
+            let mut w2p = self.watcher_to_parent.write().expect("watcher_to_parent lock poisoned");
+            for watcher_id in watchers {
+                w2p.remove(&watcher_id);
+            }
+        }
+    }
+
+    /// Check if the WatchGraph has no entries
+    pub fn is_empty(&self) -> bool {
+        let p2w = self.parent_to_watchers.read().expect("parent_to_watchers lock poisoned");
+        let w2p = self.watcher_to_parent.read().expect("watcher_to_parent lock poisoned");
+        p2w.is_empty() && w2p.is_empty()
+    }
+}
+
+#[cfg(test)]
+mod watch_graph_tests {
+    use super::*;
+
+    /// Scenario: Register a watcher for a parent session
+    ///
+    /// @step Given a WatchGraph with no relationships
+    /// @step And a parent session "abc" exists
+    /// @step And a watcher session "xyz" exists
+    /// @step When I call add_watcher with parent_id "abc" and watcher_id "xyz"
+    /// @step Then get_watchers for "abc" should return ["xyz"]
+    /// @step And get_parent for "xyz" should return "abc"
+    #[test]
+    fn test_register_watcher_for_parent_session() {
+        // @step Given a WatchGraph with no relationships
+        let watch_graph = WatchGraph::new();
+
+        // @step And a parent session "abc" exists
+        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a1").unwrap();
+
+        // @step And a watcher session "xyz" exists
+        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b1").unwrap();
+
+        // @step When I call add_watcher with parent_id "abc" and watcher_id "xyz"
+        let result = watch_graph.add_watcher(parent_id, watcher_id);
+        assert!(result.is_ok(), "add_watcher should succeed");
+
+        // @step Then get_watchers for "abc" should return ["xyz"]
+        let watchers = watch_graph.get_watchers(parent_id);
+        assert_eq!(watchers, vec![watcher_id], "get_watchers should return [xyz]");
+
+        // @step And get_parent for "xyz" should return "abc"
+        let parent = watch_graph.get_parent(watcher_id);
+        assert_eq!(parent, Some(parent_id), "get_parent should return abc");
+    }
+
+    /// Scenario: Parent with multiple watchers
+    ///
+    /// @step Given a WatchGraph with no relationships
+    /// @step And a parent session "abc" exists
+    /// @step And watcher sessions "xyz" and "def" exist
+    /// @step When I call add_watcher with parent_id "abc" and watcher_id "xyz"
+    /// @step And I call add_watcher with parent_id "abc" and watcher_id "def"
+    /// @step Then get_watchers for "abc" should return ["xyz", "def"]
+    #[test]
+    fn test_parent_with_multiple_watchers() {
+        // @step Given a WatchGraph with no relationships
+        let watch_graph = WatchGraph::new();
+
+        // @step And a parent session "abc" exists
+        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a2").unwrap();
+
+        // @step And watcher sessions "xyz" and "def" exist
+        let watcher_xyz = Uuid::parse_str("00000000-0000-0000-0000-0000000000b2").unwrap();
+        let watcher_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000c2").unwrap();
+
+        // @step When I call add_watcher with parent_id "abc" and watcher_id "xyz"
+        let result1 = watch_graph.add_watcher(parent_id, watcher_xyz);
+        assert!(result1.is_ok(), "first add_watcher should succeed");
+
+        // @step And I call add_watcher with parent_id "abc" and watcher_id "def"
+        let result2 = watch_graph.add_watcher(parent_id, watcher_def);
+        assert!(result2.is_ok(), "second add_watcher should succeed");
+
+        // @step Then get_watchers for "abc" should return ["xyz", "def"]
+        let watchers = watch_graph.get_watchers(parent_id);
+        assert!(watchers.contains(&watcher_xyz), "watchers should contain xyz");
+        assert!(watchers.contains(&watcher_def), "watchers should contain def");
+        assert_eq!(watchers.len(), 2, "should have exactly 2 watchers");
+    }
+
+    /// Scenario: Query parent for a watcher
+    ///
+    /// @step Given a WatchGraph with no relationships
+    /// @step And session "xyz" is watching session "abc"
+    /// @step When I call get_parent with watcher_id "xyz"
+    /// @step Then it should return "abc"
+    #[test]
+    fn test_query_parent_for_watcher() {
+        // @step Given a WatchGraph with no relationships
+        let watch_graph = WatchGraph::new();
+
+        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a3").unwrap();
+        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b3").unwrap();
+
+        // @step And session "xyz" is watching session "abc"
+        let _ = watch_graph.add_watcher(parent_id, watcher_id);
+
+        // @step When I call get_parent with watcher_id "xyz"
+        let result = watch_graph.get_parent(watcher_id);
+
+        // @step Then it should return "abc"
+        assert_eq!(result, Some(parent_id), "get_parent should return abc");
+    }
+
+    /// Scenario: Remove a watcher relationship
+    ///
+    /// @step Given a WatchGraph with no relationships
+    /// @step And session "xyz" is watching session "abc"
+    /// @step When I call remove_watcher with watcher_id "xyz"
+    /// @step Then get_watchers for "abc" should return an empty list
+    /// @step And get_parent for "xyz" should return None
+    #[test]
+    fn test_remove_watcher_relationship() {
+        // @step Given a WatchGraph with no relationships
+        let watch_graph = WatchGraph::new();
+
+        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a4").unwrap();
+        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000b4").unwrap();
+
+        // @step And session "xyz" is watching session "abc"
+        let _ = watch_graph.add_watcher(parent_id, watcher_id);
+
+        // @step When I call remove_watcher with watcher_id "xyz"
+        watch_graph.remove_watcher(watcher_id);
+
+        // @step Then get_watchers for "abc" should return an empty list
+        let watchers = watch_graph.get_watchers(parent_id);
+        assert!(watchers.is_empty(), "get_watchers should return empty list");
+
+        // @step And get_parent for "xyz" should return None
+        let parent = watch_graph.get_parent(watcher_id);
+        assert_eq!(parent, None, "get_parent should return None");
+    }
+
+    /// Scenario: Watcher cannot watch multiple parents
+    ///
+    /// @step Given a WatchGraph with no relationships
+    /// @step And session "xyz" is watching session "abc"
+    /// @step When I call add_watcher with parent_id "def" and watcher_id "xyz"
+    /// @step Then it should return an error "watcher already has a parent"
+    #[test]
+    fn test_watcher_cannot_watch_multiple_parents() {
+        // @step Given a WatchGraph with no relationships
+        let watch_graph = WatchGraph::new();
+
+        let parent_abc = Uuid::parse_str("00000000-0000-0000-0000-0000000000a5").unwrap();
+        let parent_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000b5").unwrap();
+        let watcher_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000c5").unwrap();
+
+        // @step And session "xyz" is watching session "abc"
+        let _ = watch_graph.add_watcher(parent_abc, watcher_id);
+
+        // @step When I call add_watcher with parent_id "def" and watcher_id "xyz"
+        let result = watch_graph.add_watcher(parent_def, watcher_id);
+
+        // @step Then it should return an error "watcher already has a parent"
+        assert!(result.is_err(), "add_watcher should fail");
+        assert!(
+            result.unwrap_err().contains("already has a parent"),
+            "error should mention 'already has a parent'"
+        );
+    }
+
+    /// Scenario: Circular watching is prevented
+    ///
+    /// @step Given a WatchGraph with no relationships
+    /// @step And session "B" is watching session "A"
+    /// @step When I call add_watcher with parent_id "B" and watcher_id "A"
+    /// @step Then it should return an error "circular watching not allowed"
+    #[test]
+    fn test_circular_watching_prevented() {
+        // @step Given a WatchGraph with no relationships
+        let watch_graph = WatchGraph::new();
+
+        let session_a = Uuid::parse_str("00000000-0000-0000-0000-0000000000a6").unwrap();
+        let session_b = Uuid::parse_str("00000000-0000-0000-0000-0000000000b6").unwrap();
+
+        // @step And session "B" is watching session "A"
+        let _ = watch_graph.add_watcher(session_a, session_b);
+
+        // @step When I call add_watcher with parent_id "B" and watcher_id "A"
+        let result = watch_graph.add_watcher(session_b, session_a);
+
+        // @step Then it should return an error "circular watching not allowed"
+        assert!(result.is_err(), "add_watcher should fail for circular watching");
+        assert!(
+            result.unwrap_err().contains("circular"),
+            "error should mention 'circular'"
+        );
+    }
+
+    /// Scenario: Regular session has no parent
+    ///
+    /// @step Given a WatchGraph with no relationships
+    /// @step And a regular session "abc" exists that is not a watcher
+    /// @step When I call get_parent with session_id "abc"
+    /// @step Then it should return None
+    #[test]
+    fn test_regular_session_has_no_parent() {
+        // @step Given a WatchGraph with no relationships
+        let watch_graph = WatchGraph::new();
+
+        // @step And a regular session "abc" exists that is not a watcher
+        let session_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a7").unwrap();
+
+        // @step When I call get_parent with session_id "abc"
+        let parent = watch_graph.get_parent(session_id);
+
+        // @step Then it should return None
+        assert_eq!(parent, None, "regular session should have no parent");
+    }
+
+    /// Scenario: Cleanup watchers when parent session is removed
+    ///
+    /// @step Given a WatchGraph with no relationships
+    /// @step And session "xyz" is watching session "abc"
+    /// @step And session "def" is watching session "abc"
+    /// @step When parent session "abc" is removed
+    /// @step Then get_parent for "xyz" should return None
+    /// @step And get_parent for "def" should return None
+    /// @step And the WatchGraph should have no entries
+    #[test]
+    fn test_cleanup_watchers_when_parent_removed() {
+        // @step Given a WatchGraph with no relationships
+        let watch_graph = WatchGraph::new();
+
+        let parent_id = Uuid::parse_str("00000000-0000-0000-0000-0000000000a8").unwrap();
+        let watcher_xyz = Uuid::parse_str("00000000-0000-0000-0000-0000000000b8").unwrap();
+        let watcher_def = Uuid::parse_str("00000000-0000-0000-0000-0000000000c8").unwrap();
+
+        // @step And session "xyz" is watching session "abc"
+        let _ = watch_graph.add_watcher(parent_id, watcher_xyz);
+
+        // @step And session "def" is watching session "abc"
+        let _ = watch_graph.add_watcher(parent_id, watcher_def);
+
+        // @step When parent session "abc" is removed
+        watch_graph.cleanup_parent(parent_id);
+
+        // @step Then get_parent for "xyz" should return None
+        let parent_xyz = watch_graph.get_parent(watcher_xyz);
+        assert_eq!(parent_xyz, None, "get_parent for xyz should return None after cleanup");
+
+        // @step And get_parent for "def" should return None
+        let parent_def = watch_graph.get_parent(watcher_def);
+        assert_eq!(parent_def, None, "get_parent for def should return None after cleanup");
+
+        // @step And the WatchGraph should have no entries
+        assert!(watch_graph.is_empty(), "WatchGraph should be empty after cleanup");
+    }
+}
+
 /// Singleton session manager
 pub struct SessionManager {
     sessions: RwLock<HashMap<Uuid, Arc<BackgroundSession>>>,
+    /// Tracks parent-watcher relationships between sessions (WATCH-002)
+    watch_graph: WatchGraph,
 }
 
 impl Default for SessionManager {
@@ -351,6 +730,7 @@ impl SessionManager {
     pub fn new() -> Self {
         Self {
             sessions: RwLock::new(HashMap::new()),
+            watch_graph: WatchGraph::new(),
         }
     }
     
@@ -475,6 +855,12 @@ impl SessionManager {
         let uuid = Uuid::parse_str(id)
             .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
         
+        // Clean up watch graph relationships (WATCH-002)
+        // If this session was a parent, clean up all its watchers
+        self.watch_graph.cleanup_parent(uuid);
+        // If this session was a watcher, remove its relationship
+        self.watch_graph.remove_watcher(uuid);
+        
         let session = self.sessions.write().expect("sessions lock poisoned").remove(&uuid);
         
         if let Some(session) = session {
@@ -486,6 +872,28 @@ impl SessionManager {
         } else {
             Err(Error::from_reason(format!("Session not found: {}", id)))
         }
+    }
+    
+    // === WatchGraph delegation methods (WATCH-002) ===
+    
+    /// Register a watcher for a parent session
+    pub fn add_watcher(&self, parent_id: Uuid, watcher_id: Uuid) -> std::result::Result<(), String> {
+        self.watch_graph.add_watcher(parent_id, watcher_id)
+    }
+    
+    /// Remove a watcher relationship
+    pub fn remove_watcher(&self, watcher_id: Uuid) {
+        self.watch_graph.remove_watcher(watcher_id)
+    }
+    
+    /// Get all watchers for a parent session
+    pub fn get_watchers(&self, parent_id: Uuid) -> Vec<Uuid> {
+        self.watch_graph.get_watchers(parent_id)
+    }
+    
+    /// Get the parent for a watcher session
+    pub fn get_parent(&self, watcher_id: Uuid) -> Option<Uuid> {
+        self.watch_graph.get_parent(watcher_id)
     }
     
 }
