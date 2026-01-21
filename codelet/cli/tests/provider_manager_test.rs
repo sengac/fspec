@@ -4,6 +4,7 @@
 //! Each test maps to a Gherkin scenario with @step comments.
 
 use codelet_providers::ProviderManager;
+use serial_test::serial;
 use std::env;
 
 /// Helper to clean up test environment
@@ -20,6 +21,7 @@ fn cleanup_test_env() {
 }
 
 #[test]
+#[serial]
 fn test_automatic_claude_provider_selection_with_api_key() {
     // @step Given the ANTHROPIC_API_KEY environment variable is set
     cleanup_test_env();
@@ -46,6 +48,7 @@ fn test_automatic_claude_provider_selection_with_api_key() {
 }
 
 #[test]
+#[serial]
 fn test_priority_based_provider_selection() {
     // @step Given both ANTHROPIC_API_KEY and OPENAI_API_KEY exist
     cleanup_test_env();
@@ -74,6 +77,7 @@ fn test_priority_based_provider_selection() {
 }
 
 #[test]
+#[serial]
 fn test_claude_code_oauth_fallback() {
     // @step Given no ANTHROPIC_API_KEY is set
     cleanup_test_env();
@@ -108,6 +112,7 @@ fn test_claude_code_oauth_fallback() {
 }
 
 #[test]
+#[serial]
 fn test_openai_provider_selection() {
     // @step Given OPENAI_API_KEY environment variable is set
     cleanup_test_env();
