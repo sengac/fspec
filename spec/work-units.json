@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T01:55:24.011Z"
+    "lastUpdated": "2026-01-21T02:19:02.914Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -63270,15 +63270,190 @@
       "id": "WATCH-005",
       "title": "Watcher Agent Loop with Dual Input",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:14.267Z",
-      "updatedAt": "2026-01-21T00:58:23.621Z",
+      "updatedAt": "2026-01-21T02:19:02.945Z",
       "description": "Implement watcher_agent_loop that handles both user prompts and parent observations via tokio::select!. Add observation buffer, natural breakpoint detection, and evaluation prompt formatting.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-003",
         "WATCH-004"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T02:00:27.855Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T02:04:04.024Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T02:05:11.394Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T02:08:21.238Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T02:08:31.247Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T02:10:27.301Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T02:13:05.135Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T02:13:15.383Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T02:15:58.038Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-21T02:18:43.843Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-21T02:19:02.945Z"
+        }
+      ],
+      "userStory": {
+        "role": "watcher session",
+        "action": "receive input from both user prompts and parent session observations",
+        "benefit": "I can provide contextual assistance based on what I observe in the parent session while still responding to direct user queries"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Watcher agent loop uses tokio::select! to wait on both user input channel AND parent broadcast receiver",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:01:42.806Z"
+        },
+        {
+          "id": 1,
+          "text": "Observation buffer accumulates StreamChunks from parent until a natural breakpoint is detected",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:01:47.005Z"
+        },
+        {
+          "id": 2,
+          "text": "Natural breakpoints are: TurnComplete, ToolResult, or silence timeout (configurable, default 5 seconds)",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:01:51.404Z"
+        },
+        {
+          "id": 3,
+          "text": "When a breakpoint is detected, accumulated observations are formatted into an evaluation prompt",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:01:55.786Z"
+        },
+        {
+          "id": 4,
+          "text": "User prompts take priority over observations - direct user input is processed immediately",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:00.019Z"
+        },
+        {
+          "id": 5,
+          "text": "Evaluation prompt includes: accumulated observations, watcher role context, and instruction to evaluate/respond",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:04.516Z"
+        },
+        {
+          "id": 6,
+          "text": "Watcher can be in one of three states: Idle (waiting), Observing (accumulating), Processing (running agent)",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:09.223Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Parent sends TextDelta chunks → watcher accumulates in buffer → TurnComplete received → watcher formats evaluation prompt with accumulated text → runs agent stream",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:13.647Z"
+        },
+        {
+          "id": 1,
+          "text": "User sends prompt to watcher while observations are buffered → user prompt processed immediately → accumulated observations processed after",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:17.851Z"
+        },
+        {
+          "id": 2,
+          "text": "Parent sends ToolUse, then ToolResult → watcher waits for ToolResult breakpoint → formats prompt with tool execution context",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:22.262Z"
+        },
+        {
+          "id": 3,
+          "text": "Parent goes silent for 5 seconds (configurable) → silence timeout breakpoint triggers → watcher processes accumulated observations",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:26.225Z"
+        },
+        {
+          "id": 4,
+          "text": "Watcher receives broadcast RecvError::Lagged(n) → logs warning about missed n chunks → continues observing from current position",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:30.839Z"
+        },
+        {
+          "id": 5,
+          "text": "Empty observation buffer when breakpoint occurs → no evaluation prompt generated → continue waiting",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:34.724Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create WatcherState enum { Idle, Observing, Processing } in session_manager.rs",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:39.144Z"
+        },
+        {
+          "id": 1,
+          "text": "Create ObservationBuffer struct to accumulate StreamChunks with timestamp tracking",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:42.824Z"
+        },
+        {
+          "id": 2,
+          "text": "Add is_natural_breakpoint() function to detect TurnComplete, ToolResult, or silence timeout",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:46.501Z"
+        },
+        {
+          "id": 3,
+          "text": "Add format_evaluation_prompt() function to create prompt from accumulated observations and role context",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:50.240Z"
+        },
+        {
+          "id": 4,
+          "text": "Watcher loop is internal to session_manager.rs - not exposed via NAPI yet (WATCH-007 handles that)",
+          "deleted": false,
+          "createdAt": "2026-01-21T02:02:54.491Z"
+        }
+      ],
+      "nextNoteId": 5,
+      "attachments": [
+        "spec/attachments/WATCH-005/ast-research-stream-loop.md"
+      ],
+      "estimate": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-21T02:19:02.945Z"
     },
     "WATCH-006": {
       "id": "WATCH-006",
@@ -63482,7 +63657,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-005",
       "WATCH-006",
       "WATCH-007",
       "WATCH-008",
@@ -63513,6 +63687,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-005",
       "WATCH-004",
       "WATCH-003",
       "WATCH-002",
