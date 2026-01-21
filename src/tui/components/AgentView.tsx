@@ -31,7 +31,9 @@ import { InputTransition } from './InputTransition';
 import { TurnContentModal } from './TurnContentModal';
 import { WatcherCreateView } from './WatcherCreateView';
 import { SplitSessionView } from './SplitSessionView';
-import { messagesToLines } from '../utils/conversationUtils';
+import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/conversationUtils';
+import { calculatePaneWidth } from '../utils/textWrap';
+import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import { normalizeEmojiWidth, getVisualWidth } from '../utils/stringWidth';
@@ -370,46 +372,7 @@ export interface AgentViewProps {
   workUnitId?: string; // SESS-001: Work unit ID for session attachment
 }
 
-// Message types for semantic clarity (SOLID: Single Responsibility)
-// Each type represents a distinct kind of content in the conversation
-type MessageType =
-  | 'user-input'      // User's input text
-  | 'assistant-text'  // Assistant's response text (streaming or complete)
-  | 'thinking'        // Extended thinking/reasoning content
-  | 'tool-call'       // Tool invocation (header + result)
-  | 'status';         // Status messages (interrupted, errors, etc.)
-
-// Conversation message type for display
-// SOLID: type field provides semantic meaning, role is derived for display
-interface ConversationMessage {
-  type: MessageType;
-  content: string;
-  fullContent?: string; // TUI-043: Full uncollapsed content for expandable messages
-  isStreaming?: boolean;
-  isError?: boolean; // Tool result with isError=true (stderr output)
-  toolCallId?: string; // For tool-call messages, links header to result
-}
-
-// Helper to get display role from message type (for coloring)
-const getDisplayRole = (msg: ConversationMessage): 'user' | 'assistant' | 'tool' => {
-  switch (msg.type) {
-    case 'user-input': return 'user';
-    case 'assistant-text': return 'assistant';
-    case 'thinking': return 'assistant'; // Thinking is assistant content, rendered differently
-    case 'tool-call': return 'tool';
-    case 'status': return 'tool';
-  }
-};
-
-// Line type for VirtualList (flattened from messages)
-interface ConversationLine {
-  role: 'user' | 'assistant' | 'tool';
-  content: string;
-  messageIndex: number;
-  isSeparator?: boolean; // TUI-042: Empty line used as turn separator
-  isThinking?: boolean; // Thinking content (for yellow rendering)
-  isError?: boolean; // Tool result with isError=true (stderr output)
-}
+// ConversationMessage, ConversationLine, and MessageType are imported from '../types/conversation'
 
 /**
  * Append thinking content to conversation.
@@ -1135,6 +1098,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     isStreaming: boolean;
     isThinking: boolean; // SOLID: Include isThinking in cache key for proper invalidation
     terminalWidth: number;
+    isWatcherView: boolean; // WATCH-010: Include watcher view state since it affects line width
     lines: ConversationLine[];
   }
   const lineCacheRef = useRef<Map<number, CachedMessageLines>>(new Map());
@@ -1339,7 +1303,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Convert ConversationMessage[] to ConversationLine[] for display
         // Use messagesToLines to properly wrap multi-line content into single-line items for VirtualList
         logger.warn(`[WATCH-010] Converting messages to lines using messagesToLines`);
-        const parentPaneWidth = Math.floor((terminalWidth - 3) / 2) - 4; // Account for borders/padding
+        const parentPaneWidth = calculatePaneWidth(terminalWidth, 'split');
         const parentLines = messagesToLines(parentMessages, parentPaneWidth);
         logger.warn(`[WATCH-010] Converted to ${parentLines.length} lines (from ${parentMessages.length} messages)`);
         setParentConversation(parentLines);
@@ -1356,8 +1320,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               formatCollapsedOutput
             );
             // Convert ConversationMessage[] to ConversationLine[] for display
-            // Use messagesToLines to properly wrap multi-line content
-            const updatedPaneWidth = Math.floor((terminalWidth - 3) / 2) - 4;
+            // Use shared calculatePaneWidth for consistent width calculation
+            const updatedPaneWidth = calculatePaneWidth(terminalWidth, 'split');
             const updatedLines = messagesToLines(updatedMessages, updatedPaneWidth);
             setParentConversation(updatedLines);
           }
@@ -5481,141 +5445,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     { isActive: true }
   );
 
-  // PERF-002: Helper function to wrap a single message into lines
-  // Extracted to be reusable for incremental caching
-  // SOLID: Uses getDisplayRole() to derive display role from message type
-  const wrapMessageToLines = (
-    msg: ConversationMessage,
-    msgIndex: number,
-    maxWidth: number
-  ): ConversationLine[] => {
-    const lines: ConversationLine[] = [];
-    const role = getDisplayRole(msg);
-    // Add role prefix to first line
-    // SOLID: Thinking messages get no prefix (the [Thinking] header is already in content)
-    const isThinking = msg.type === 'thinking';
-    const prefix =
-      isThinking ? '' : msg.type === 'user-input' ? 'You: ' : msg.type === 'assistant-text' ? '● ' : '';
-    // Normalize emoji variation selectors for consistent width calculation
-    const normalizedContent = normalizeEmojiWidth(msg.content);
-    const contentLines = normalizedContent.split('\n');
-    // Propagate semantic flags from message
-    const isError = msg.isError;
-
-    contentLines.forEach((lineContent, lineIndex) => {
-      let displayContent =
-        lineIndex === 0 ? `${prefix}${lineContent}` : lineContent;
-      // Add streaming indicator to last line of streaming message
-      const isLastLine = lineIndex === contentLines.length - 1;
-      if (msg.isStreaming && isLastLine) {
-        displayContent += '...';
-      }
-
-      // Wrap long lines manually to fit terminal width (using visual width for Unicode)
-      if (getVisualWidth(displayContent) === 0) {
-        lines.push({ role, content: ' ', messageIndex: msgIndex, isThinking, isError });
-      } else {
-        // Split into words, keeping whitespace
-        const words = displayContent.split(/(\s+)/);
-        let currentLine = '';
-        let currentWidth = 0;
-
-        for (const word of words) {
-          const wordWidth = getVisualWidth(word);
-
-          if (wordWidth === 0) continue;
-
-          // If word alone exceeds max width, force break it character by character
-          if (wordWidth > maxWidth) {
-            // Flush current line first
-            if (currentLine) {
-              lines.push({
-                role,
-                content: currentLine,
-                messageIndex: msgIndex,
-                isThinking,
-                isError,
-              });
-              currentLine = '';
-              currentWidth = 0;
-            }
-            // Break long word by visual width
-            let chunk = '';
-            let chunkWidth = 0;
-            for (const char of word) {
-              const charWidth = getVisualWidth(char);
-              if (chunkWidth + charWidth > maxWidth && chunk) {
-                lines.push({
-                  role,
-                  content: chunk,
-                  messageIndex: msgIndex,
-                  isThinking,
-                  isError,
-                });
-                chunk = char;
-                chunkWidth = charWidth;
-              } else {
-                chunk += char;
-                chunkWidth += charWidth;
-              }
-            }
-            if (chunk) {
-              currentLine = chunk;
-              currentWidth = chunkWidth;
-            }
-            continue;
-          }
-
-          // Check if word fits on current line
-          if (currentWidth + wordWidth > maxWidth) {
-            // Flush current line and start new one
-            if (currentLine.trim()) {
-              lines.push({
-                role,
-                content: currentLine.trimEnd(),
-                messageIndex: msgIndex,
-                isThinking,
-                isError,
-              });
-            }
-            // Don't start line with whitespace
-            currentLine = word.trim() ? word : '';
-            currentWidth = word.trim() ? wordWidth : 0;
-          } else {
-            currentLine += word;
-            currentWidth += wordWidth;
-          }
-        }
-
-        // Flush remaining content
-        if (currentLine.trim()) {
-          lines.push({
-            role,
-            content: currentLine.trimEnd(),
-            messageIndex: msgIndex,
-            isThinking,
-            isError,
-          });
-        } else if (lines.length === 0) {
-          // Ensure at least one line per content section
-          lines.push({ role, content: ' ', messageIndex: msgIndex, isThinking, isError });
-        }
-      }
-    });
-
-    // Add empty line after each message for spacing (use space to ensure line renders)
-    // TUI-042: Mark separator lines for turn selection highlighting
-    lines.push({ role, content: ' ', messageIndex: msgIndex, isSeparator: true, isThinking, isError });
-
-    return lines;
-  };
-
   // PERF-002: Incremental line computation with caching
   // Only recompute lines for messages that changed, reuse cached lines for unchanged messages
   // PERF-003: Uses deferredConversation to prioritize user input over streaming updates
   // TUI-045: Removed expansion logic - modal now handles full content viewing
+  // WATCH-010: Use half width when in split view mode (watcher session)
   const conversationLines = useMemo((): ConversationLine[] => {
-    const maxWidth = terminalWidth - 6; // Account for borders and padding
+    // Calculate max width based on whether we're in split view or full view
+    // Uses shared calculatePaneWidth utility for consistent width calculation
+    const maxWidth = isWatcherSessionView
+      ? calculatePaneWidth(terminalWidth, 'split')
+      : calculatePaneWidth(terminalWidth, 'full');
     const lines: ConversationLine[] = [];
     const cache = lineCacheRef.current;
 
@@ -5634,12 +5474,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // Check cache for this message
       const cached = cache.get(msgIndex);
       const isThinking = msg.type === 'thinking';
+      // WATCH-010: Include isWatcherSessionView in cache check since width depends on it
       if (
         cached &&
         cached.content === effectiveContent &&
         cached.isStreaming === msg.isStreaming &&
         cached.isThinking === isThinking &&
-        cached.terminalWidth === terminalWidth
+        cached.terminalWidth === terminalWidth &&
+        cached.isWatcherView === isWatcherSessionView
       ) {
         // Cache hit - reuse cached lines
         lines.push(...cached.lines);
@@ -5651,6 +5493,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           isStreaming: msg.isStreaming ?? false,
           isThinking,
           terminalWidth,
+          isWatcherView: isWatcherSessionView,
           lines: messageLines,
         });
         lines.push(...messageLines);
@@ -5665,7 +5508,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
 
     return lines;
-  }, [deferredConversation, terminalWidth]);
+  }, [deferredConversation, terminalWidth, isWatcherSessionView]);
 
   // TUI-043: Keep ref in sync with conversationLines for use in callbacks
   conversationLinesRef.current = conversationLines;
@@ -6445,6 +6288,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         terminalWidth={terminalWidth}
         parentConversation={parentConversation}
         watcherConversation={conversationLines}
+        inputValue={inputValue}
+        onInputChange={setInputValue}
+        onSubmit={handleSubmit}
+        isLoading={displayIsLoading}
       />
     );
   }

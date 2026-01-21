@@ -9,8 +9,8 @@
 
 import React, { useState } from 'react';
 import { Box, Text, useInput } from 'ink';
-import { logger } from '../../utils/logger';
 import { VirtualList } from './VirtualList';
+import { ConversationInputArea } from './ConversationInputArea';
 import { useTerminalSize } from '../hooks/useTerminalSize';
 import type { ConversationLine } from '../types/conversation';
 
@@ -20,12 +20,24 @@ interface SplitSessionViewProps {
   terminalWidth: number;
   parentConversation: ConversationLine[];
   watcherConversation: ConversationLine[];
+  /** Current input value */
+  inputValue: string;
+  /** Callback when input value changes */
+  onInputChange: (value: string) => void;
+  /** Callback when user submits message */
+  onSubmit: (value: string) => void;
+  /** Whether the AI is currently processing */
+  isLoading: boolean;
 }
 
 /**
  * SplitSessionView component - renders the watcher split view UI
  *
- * Both panes now use real conversation data with proper line wrapping.
+ * Features:
+ * - Two vertical panes (parent left, watcher right)
+ * - Left/Right arrows switch active pane
+ * - VirtualList for scrollable conversations
+ * - Input area sends to watcher session
  */
 export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   parentSessionName,
@@ -33,32 +45,35 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   terminalWidth,
   parentConversation,
   watcherConversation,
+  inputValue,
+  onInputChange,
+  onSubmit,
+  isLoading,
 }) => {
   const { height: terminalHeight } = useTerminalSize();
 
-  logger.warn('[SplitSessionView] Rendering with real data');
-  logger.warn(`[SplitSessionView] terminalHeight=${terminalHeight}, terminalWidth=${terminalWidth}`);
-  logger.warn(`[SplitSessionView] parentConversation.length=${parentConversation.length}, watcherConversation.length=${watcherConversation.length}`);
-
   const [activePane, setActivePane] = useState<'parent' | 'watcher'>('watcher');
 
-  // Handle Left/Right arrow keys to switch panes
+  // Handle Left/Right arrow keys to switch panes (only when not loading)
   useInput((input, key) => {
+    if (isLoading) {
+      return; // Don't switch panes while loading
+    }
     if (key.leftArrow) {
-      logger.warn('[SplitSessionView] Left arrow - switching to parent pane');
       setActivePane('parent');
     } else if (key.rightArrow) {
-      logger.warn('[SplitSessionView] Right arrow - switching to watcher pane');
       setActivePane('watcher');
     }
   });
 
-  const paneWidth = Math.floor((terminalWidth - 3) / 2);
-
-  // Reserved: Header(2) + Pane headers(2) + Input(2) + Hints(1) = 7
-  const reservedLines = 7;
-  const paneHeight = Math.max(1, terminalHeight - reservedLines);
-  logger.warn(`[SplitSessionView] paneHeight=${paneHeight}, activePane=${activePane}`);
+  // Calculate explicit heights for the panes
+  // Layout: Header(2) + Split panes + Input(2) + Hints(1) = 5 lines reserved from outer container
+  // Within split panes: Pane header(2) + VirtualList content
+  // Note: FullScreenWrapper gives us terminalHeight - 1
+  const outerReservedLines = 5; // header(2) + input(2) + hints(1)
+  const paneHeaderLines = 2;    // pane header(1 text + 1 border)
+  const splitPanesHeight = Math.max(1, terminalHeight - 1 - outerReservedLines);
+  const virtualListHeight = Math.max(1, splitPanesHeight - paneHeaderLines);
 
   // Render function for conversation lines
   const renderConversationItem = (isParentPane: boolean) => (
@@ -80,6 +95,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         <Text
           dimColor={!paneActive}
           color={line.role === 'user' ? 'green' : line.isThinking ? 'yellow' : line.isError ? 'red' : undefined}
+          wrap="truncate"
         >
           {line.content}
         </Text>
@@ -101,14 +117,16 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         <Text bold color="magenta">
           👁️ {watcherRoleName} (watching: {parentSessionName})
         </Text>
+        {isLoading && <Text color="yellow"> ⏳</Text>}
       </Box>
 
-      {/* Split panes container */}
-      <Box flexDirection="row" flexGrow={1} flexBasis={0}>
+      {/* Split panes container - use explicit height instead of relying on flexbox measurement */}
+      <Box flexDirection="row" height={splitPanesHeight}>
         {/* Left pane: Parent conversation */}
         <Box
           flexDirection="column"
-          width={paneWidth}
+          flexGrow={1}
+          flexBasis={0}
           borderStyle="single"
           borderRight={true}
           borderLeft={false}
@@ -127,16 +145,16 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
               keyExtractor={(_line, index) => `parent-${index}`}
               emptyMessage="No parent conversation"
               showScrollbar={true}
-              isFocused={activePane === 'parent'}
+              isFocused={activePane === 'parent' && !isLoading}
               scrollToEnd={true}
               selectionMode="scroll"
-              fixedHeight={paneHeight}
+              fixedHeight={virtualListHeight}
             />
           </Box>
         </Box>
 
         {/* Right pane: Watcher conversation */}
-        <Box flexDirection="column" width={paneWidth}>
+        <Box flexDirection="column" flexGrow={1} flexBasis={0}>
           <Box paddingX={1} borderStyle="single" borderBottom={true} borderTop={false} borderLeft={false} borderRight={false}>
             <Text bold dimColor={activePane !== 'watcher'}>
               {activePane === 'watcher' ? '→ ' : '  '}WATCHER ({watcherConversation.length} lines)
@@ -149,32 +167,29 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
               keyExtractor={(_line, index) => `watcher-${index}`}
               emptyMessage="Start chatting with your watcher..."
               showScrollbar={true}
-              isFocused={activePane === 'watcher'}
+              isFocused={activePane === 'watcher' && !isLoading}
               scrollToEnd={true}
               selectionMode="scroll"
-              fixedHeight={paneHeight}
+              fixedHeight={virtualListHeight}
             />
           </Box>
         </Box>
       </Box>
 
-      {/* Input area placeholder */}
-      <Box
-        borderStyle="single"
-        borderTop={true}
-        borderBottom={false}
-        borderLeft={false}
-        borderRight={false}
-        paddingX={1}
-      >
-        <Text color="green">&gt; </Text>
-        <Text dimColor>[Input coming in Step 4]</Text>
-      </Box>
+      {/* Input area - sends to watcher session */}
+      <ConversationInputArea
+        value={inputValue}
+        onChange={onInputChange}
+        onSubmit={onSubmit}
+        isLoading={isLoading}
+        placeholder="Type a message to your watcher..."
+        isActive={!isLoading}
+      />
 
       {/* Keyboard hints */}
       <Box paddingX={1}>
         <Text dimColor>
-          ←/→ Switch Pane | ↑↓ Scroll | PgUp/PgDn Page | Home/End Jump
+          ←/→ Switch Pane | ↑↓ Scroll | Esc Cancel
         </Text>
       </Box>
     </Box>
