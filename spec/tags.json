@@ -830,6 +830,10 @@
           "description": "Data visualization"
         },
         {
+          "name": "@watcher-management",
+          "description": "Features related to watcher session management including /watcher overlay, watcher creation, and navigation"
+        },
+        {
           "name": "@web-tools",
           "description": "Web tools including search, page fetching, and screenshot capture"
         },
@@ -2250,7 +2254,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-19T00:28:49.149Z",
+    "lastUpdated": "2026-01-22T00:06:07.990Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

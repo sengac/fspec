@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-21T23:44:43.459Z"
+    "lastUpdated": "2026-01-22T00:11:13.227Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -64958,14 +64958,153 @@
       "id": "WATCH-014",
       "title": "/parent Command for Quick Return",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:58:00.786Z",
-      "updatedAt": "2026-01-21T00:59:06.941Z",
+      "updatedAt": "2026-01-22T00:11:13.310Z",
       "description": "Implement /parent command that switches from watcher session back to its parent session. Lookup parent via sessionGetParent NAPI binding.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-007"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-21T23:52:48.123Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-21T23:56:13.827Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-21T23:57:59.716Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T00:05:44.548Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T00:06:13.961Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-22T00:08:38.671Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T00:11:01.626Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T00:11:13.311Z"
+        }
+      ],
+      "userStory": {
+        "role": "user in a watcher session",
+        "action": "type /parent to quickly switch back to the parent session",
+        "benefit": "I can efficiently navigate between the watcher and parent without using the watcher overlay"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "/parent command is only valid when current session is a watcher (sessionGetParent returns non-null)",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:02.749Z"
+        },
+        {
+          "id": 1,
+          "text": "When valid, /parent switches to the parent session by setting currentSessionId to the parent ID",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:03.870Z"
+        },
+        {
+          "id": 2,
+          "text": "Session switching includes: detaching from current watcher, attaching to parent, restoring parent conversation display",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:04.903Z"
+        },
+        {
+          "id": 3,
+          "text": "When in a regular session (not a watcher), /parent shows an error status message explaining there is no parent",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:06.123Z"
+        },
+        {
+          "id": 4,
+          "text": "When no active session exists, /parent shows an error status message",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:06.843Z"
+        },
+        {
+          "id": 5,
+          "text": "After switching, a status message confirms the switch showing the parent session name or ID",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:07.871Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User is in watcher 'Security Reviewer' observing parent 'Main Dev Session', types /parent → switches to 'Main Dev Session', shows status 'Switched to parent session: Main Dev Session'",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:13.203Z"
+        },
+        {
+          "id": 1,
+          "text": "User is in a regular session 'Code Project' (not a watcher), types /parent → shows error status 'This session has no parent. /parent only works from watcher sessions.'",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:14.732Z"
+        },
+        {
+          "id": 2,
+          "text": "User has no active session (just opened AgentView), types /parent → shows error status 'No active session. Start a session first.'",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:15.753Z"
+        },
+        {
+          "id": 3,
+          "text": "User in watcher types /parent → watcher session is detached (sessionDetach), parent session is attached (sessionAttach), parent conversation is restored via sessionGetMergedOutput",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:17.060Z"
+        },
+        {
+          "id": 4,
+          "text": "User in watcher presses /parent and the parent session was previously streaming → user sees parent conversation at current point, can continue interacting with parent",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:53:18.729Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "estimate": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Implementation: Add /parent command handling in AgentView.tsx command handling section (near /watcher and /resume commands)",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:55:06.853Z"
+        },
+        {
+          "id": 1,
+          "text": "Dependency: sessionGetParent NAPI binding from WATCH-007 (already imported)",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:55:08.093Z"
+        },
+        {
+          "id": 2,
+          "text": "Implementation: Follow existing handleWatcherSelect() pattern for session switching: detach current, set ID, attach new, restore conversation",
+          "deleted": false,
+          "createdAt": "2026-01-21T23:55:09.224Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/WATCH-014/ast-research-parent-command.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-22T00:11:13.310Z"
     },
     "WATCH-015": {
       "id": "WATCH-015",
@@ -65197,7 +65336,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-014",
       "WATCH-015",
       "WATCH-016"
     ],
@@ -65224,6 +65362,7 @@
       "WATCH-011"
     ],
     "done": [
+      "WATCH-014",
       "WATCH-013",
       "WATCH-012",
       "WATCH-010",
