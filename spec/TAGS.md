@@ -225,6 +225,7 @@ Tags that categorize features by functional area.
 | `@video-recording` | Video recording and demo playback features |
 | `@visual-design` | Visual design and branding features |
 | `@visualization` | Data visualization |
+| `@watcher-management` | Features related to watcher session management including /watcher overlay, watcher creation, and navigation |
 | `@web-tools` | Web tools including search, page fetching, and screenshot capture |
 | `@work-management` | Work unit management and Kanban workflow operations |
 | `@work-unit-automation` | Automatic work unit creation and management |
@@ -804,7 +805,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-19T00:28:49.149Z_
+_Last updated: 2026-01-22T00:06:07.990Z_
 
 **Update Command**: `fspec tag-stats`
 

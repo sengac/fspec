@@ -1903,6 +1903,70 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       return;
     }
 
+    // WATCH-014: Handle /parent command - switch to parent session from watcher
+    if (userMessage === '/parent') {
+      setInputValue('');
+      
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'No active session. Start a session first.' },
+        ]);
+        return;
+      }
+      
+      const parentId = sessionGetParent(currentSessionId);
+      
+      if (!parentId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'This session has no parent. /parent only works from watcher sessions.' },
+        ]);
+        return;
+      }
+      
+      try {
+        // Look up parent session name for status message
+        const sessions = sessionManagerList();
+        const parentSession = sessions.find(s => s.id === parentId);
+        const parentName = parentSession?.name || parentId;
+        
+        // Detach from current watcher session
+        sessionDetach(currentSessionId);
+        
+        // Switch to parent session
+        setCurrentSessionId(parentId);
+        
+        // Attach to parent session for live streaming
+        sessionAttach(parentId, (_err: Error | null, chunk: StreamChunk) => {
+          if (chunk) {
+            handleStreamChunk(chunk);
+          }
+        });
+        
+        // Get buffered output and display
+        const mergedChunks = sessionGetMergedOutput(parentId);
+        const restoredMessages = processChunksToConversation(
+          mergedChunks,
+          formatToolHeader,
+          formatCollapsedOutput
+        );
+        setConversation(restoredMessages);
+        
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: `Switched to parent session: ${parentName}` },
+        ]);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to switch to parent';
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: `Switch failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+
     // SESS-001: Handle /detach command - detach session from work unit and clear conversation
     if (userMessage === '/detach') {
       setInputValue('');
