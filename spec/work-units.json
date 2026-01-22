@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-22T00:11:13.227Z"
+    "lastUpdated": "2026-01-22T00:43:40.897Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -65110,14 +65110,147 @@
       "id": "WATCH-015",
       "title": "Watcher Session Header Indicator",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:58:06.095Z",
-      "updatedAt": "2026-01-21T00:59:10.502Z",
+      "updatedAt": "2026-01-22T00:43:40.983Z",
       "description": "Update AgentView header to show watcher indicator: '👁️ Role Name (watching: Parent Name)' when viewing a watcher session.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-010"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-22T00:30:13.078Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-22T00:33:27.789Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-22T00:35:41.286Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T00:43:26.552Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T00:43:40.983Z"
+        }
+      ],
+      "userStory": {
+        "role": "user viewing a watcher session",
+        "action": "see the full header with watcher indicator, model info, and token stats",
+        "benefit": "I have all the same information as in a regular session plus the watcher context"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Watcher session header shows '👁️ Role Name (watching: Parent Name)' at the start",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:29.739Z"
+        },
+        {
+          "id": 1,
+          "text": "Header includes model capability indicators [R] for reasoning, [V] for vision after the watcher indicator",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:31.070Z"
+        },
+        {
+          "id": 2,
+          "text": "Header includes context window size in brackets (e.g., [200k])",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:31.889Z"
+        },
+        {
+          "id": 3,
+          "text": "Header shows token usage on the right side (e.g., 'tokens: 1234↓ 567↑')",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:33.112Z"
+        },
+        {
+          "id": 4,
+          "text": "Header shows context fill percentage with color coding (e.g., [45%])",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:33.825Z"
+        },
+        {
+          "id": 5,
+          "text": "Watcher indicator text uses magenta/purple color to match watcher message styling",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:34.964Z"
+        }
+      ],
+      "nextRuleId": 6,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User views Security Reviewer watcher watching Main Dev Session with claude-sonnet-4-20250514 model → header shows '👁️ Security Reviewer (watching: Main Dev Session) [R] [200k] tokens: 1234↓ 567↑ [45%]'",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:55.131Z"
+        },
+        {
+          "id": 1,
+          "text": "Watcher using model with reasoning support → [R] indicator appears in magenta after the watcher info",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:56.272Z"
+        },
+        {
+          "id": 2,
+          "text": "Watcher using model with vision support → [V] indicator appears in blue after capability indicators",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:57.171Z"
+        },
+        {
+          "id": 3,
+          "text": "Context fill reaches 80% → percentage displays in yellow warning color",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:57.895Z"
+        },
+        {
+          "id": 4,
+          "text": "Regular (non-watcher) session → header shows 'Agent: model-name' without watcher indicator (existing behavior unchanged)",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:58.917Z"
+        },
+        {
+          "id": 5,
+          "text": "Turn select mode enabled in watcher view → [SELECT] indicator appears in header",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:30:59.734Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Dependency: SplitSessionView receives additional props from AgentView for model/token display",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:32:37.157Z"
+        },
+        {
+          "id": 1,
+          "text": "Implementation: Extend SplitSessionViewProps interface with displayModelId, displayReasoning, displayHasVision, displayContextWindow, tokenUsage, rustTokens, contextFillPercentage",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:32:39.401Z"
+        },
+        {
+          "id": 2,
+          "text": "Refactoring: Reuse existing getContextFillColor() and formatContextWindow() utilities from AgentView",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:32:40.819Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/WATCH-015/ast-research-header-components.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-22T00:43:40.983Z"
     },
     "WATCH-016": {
       "id": "WATCH-016",
@@ -65336,7 +65469,6 @@
       "DOC-017",
       "AGENT-022",
       "RLM-001",
-      "WATCH-015",
       "WATCH-016"
     ],
     "specifying": [
@@ -65362,6 +65494,7 @@
       "WATCH-011"
     ],
     "done": [
+      "WATCH-015",
       "WATCH-014",
       "WATCH-013",
       "WATCH-012",
