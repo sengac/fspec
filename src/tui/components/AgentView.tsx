@@ -3666,8 +3666,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // Extracted helper to eliminate duplication between handleSessionPrev and handleSessionNext
   const switchToSession = useCallback((direction: 'prev' | 'next') => {
     // Get background sessions from Rust session manager only
-    const backgroundSessions = sessionManagerList();
+    let backgroundSessions = sessionManagerList();
     logger.debug(`[TUI-049] switchToSession(${direction}): found ${backgroundSessions.length} background sessions, currentSessionId=${currentSessionId}, currentProvider=${currentProvider}`);
+    
+    // WATCH-013: Filter to sibling watchers when in a watcher session
+    // If current session is a watcher (has a parent), only navigate between siblings (same parent)
+    if (currentSessionId) {
+      const currentParentId = sessionGetParent(currentSessionId);
+      if (currentParentId) {
+        // In a watcher session - filter to only sibling watchers (same parent)
+        backgroundSessions = backgroundSessions.filter(s => sessionGetParent(s.id) === currentParentId);
+        logger.debug(`[WATCH-013] switchToSession: filtered to ${backgroundSessions.length} sibling watchers (parent=${currentParentId})`);
+      }
+    }
+    
     if (backgroundSessions.length < 2) {
       logger.debug(`[TUI-049] switchToSession: need at least 2 sessions to switch, aborting`);
       return; // Need at least 2 sessions to switch

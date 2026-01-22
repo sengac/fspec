@@ -1,0 +1,236 @@
+{
+  "scenarios": [
+    {
+      "name": "Navigate forward through sibling watchers",
+      "testMappings": [
+        {
+          "file": "src/__tests__/sibling-watcher-navigation.test.ts",
+          "lines": "67-143",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3665,
+                3666,
+                3667,
+                3668,
+                3669,
+                3670,
+                3671,
+                3672,
+                3673,
+                3674,
+                3675,
+                3676,
+                3677,
+                3678,
+                3679,
+                3680,
+                3681,
+                3682,
+                3683,
+                3684,
+                3685,
+                3686,
+                3687,
+                3688,
+                3689,
+                3690,
+                3691,
+                3692
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Regular session navigates through all sessions",
+      "testMappings": [
+        {
+          "file": "src/__tests__/sibling-watcher-navigation.test.ts",
+          "lines": "145-181",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3665,
+                3666,
+                3667,
+                3668,
+                3669,
+                3670,
+                3671,
+                3672,
+                3673,
+                3674,
+                3675,
+                3676,
+                3677,
+                3678,
+                3679,
+                3680,
+                3681,
+                3682,
+                3683,
+                3684,
+                3685,
+                3686,
+                3687,
+                3688,
+                3689,
+                3690,
+                3691,
+                3692
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Single watcher has no siblings to navigate",
+      "testMappings": [
+        {
+          "file": "src/__tests__/sibling-watcher-navigation.test.ts",
+          "lines": "189-220",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3665,
+                3666,
+                3667,
+                3668,
+                3669,
+                3670,
+                3671,
+                3672,
+                3673,
+                3674,
+                3675,
+                3676,
+                3677,
+                3678,
+                3679,
+                3680,
+                3681,
+                3682,
+                3683,
+                3684,
+                3685,
+                3686,
+                3687,
+                3688,
+                3689,
+                3690,
+                3691,
+                3692
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate backward through sibling watchers",
+      "testMappings": [
+        {
+          "file": "src/__tests__/sibling-watcher-navigation.test.ts",
+          "lines": "222-268",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3665,
+                3666,
+                3667,
+                3668,
+                3669,
+                3670,
+                3671,
+                3672,
+                3673,
+                3674,
+                3675,
+                3676,
+                3677,
+                3678,
+                3679,
+                3680,
+                3681,
+                3682,
+                3683,
+                3684,
+                3685,
+                3686,
+                3687,
+                3688,
+                3689,
+                3690,
+                3691,
+                3692
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Watchers of different parents are isolated",
+      "testMappings": [
+        {
+          "file": "src/__tests__/sibling-watcher-navigation.test.ts",
+          "lines": "270-318",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3665,
+                3666,
+                3667,
+                3668,
+                3669,
+                3670,
+                3671,
+                3672,
+                3673,
+                3674,
+                3675,
+                3676,
+                3677,
+                3678,
+                3679,
+                3680,
+                3681,
+                3682,
+                3683,
+                3684,
+                3685,
+                3686,
+                3687,
+                3688,
+                3689,
+                3690,
+                3691,
+                3692
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/sibling-watcher-navigation.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 382
+  }
+}
