@@ -1067,6 +1067,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [watcherRoleName, setWatcherRoleName] = useState<string>('');
   const [isSplitViewSelectMode, setIsSplitViewSelectMode] = useState(false);
   const [splitViewSelectedIndex, setSplitViewSelectedIndex] = useState(0);
+  // WATCH-016: Modal state for watcher pane turn viewing
+  const [showWatcherTurnModal, setShowWatcherTurnModal] = useState(false);
+  const [watcherTurnModalContent, setWatcherTurnModalContent] = useState<string>('');
+  const [watcherTurnModalRole, setWatcherTurnModalRole] = useState<'user' | 'assistant' | 'watcher'>('assistant');
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
@@ -5570,24 +5574,29 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       }
 
       // TUI-045: Esc key handling with priority order:
-      // 1) Close exit confirmation modal, 2) Close turn modal, 3) Disable select mode, 4) Interrupt loading, 5) Clear input, 6) Show exit confirmation or exit
+      // 1) Close exit confirmation modal, 2) Close watcher turn modal, 3) Close turn modal, 4) Disable select mode, 5) Interrupt loading, 6) Clear input, 7) Show exit confirmation or exit
       if (key.escape) {
         // Priority 1: Close exit confirmation modal (TUI-046)
         if (showExitConfirmation) {
           setShowExitConfirmation(false);
           return;
         }
-        // Priority 2: Close turn modal
+        // Priority 2: Close watcher turn modal (WATCH-016)
+        if (showWatcherTurnModal) {
+          setShowWatcherTurnModal(false);
+          return;
+        }
+        // Priority 3: Close turn modal
         if (showTurnModal) {
           setShowTurnModal(false);
           return;
         }
-        // Priority 3: Disable select mode
+        // Priority 4: Disable select mode
         if (isTurnSelectMode) {
           setIsTurnSelectMode(false);
           return;
         }
-        // Priority 4: Interrupt loading - use background session interrupt
+        // Priority 5: Interrupt loading - use background session interrupt
         if (displayIsLoading && currentSessionId) {
           try {
             sessionInterrupt(currentSessionId);
@@ -5597,12 +5606,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           }
           return;
         }
-        // Priority 5: Clear input
+        // Priority 6: Clear input
         if (inputValue.trim() !== '') {
           setInputValue('');
           return;
         }
-        // Priority 6: Show exit confirmation if session exists, otherwise exit (TUI-046)
+        // Priority 7: Show exit confirmation if session exists, otherwise exit (TUI-046)
         if (currentSessionId) {
           setShowExitConfirmation(true);
         } else {
@@ -6462,26 +6471,50 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // WATCH-010: Watcher split view - shows parent conversation on left, watcher conversation on right
   // WATCH-018: Extracted to separate SplitSessionView component for isolation and debugging
   // WATCH-015: Pass model info and token stats to SplitSessionView for full header display
+  // WATCH-016: Added onOpenTurnContent callback for opening TurnContentModal from watcher pane
   if (isWatcherSessionView) {
+    // WATCH-016: Handler for opening turn content modal from watcher pane
+    const handleOpenWatcherTurnContent = (messageIndex: number, content: string) => {
+      // Determine role from conversation (default to assistant for watcher responses)
+      const turnLines = conversationLines.filter(line => line.messageIndex === messageIndex);
+      const role = turnLines.length > 0 ? (turnLines[0].role as 'user' | 'assistant' | 'watcher') : 'assistant';
+      setWatcherTurnModalContent(content);
+      setWatcherTurnModalRole(role);
+      setShowWatcherTurnModal(true);
+    };
+
     return (
-      <SplitSessionView
-        parentSessionName={parentSessionName}
-        watcherRoleName={watcherRoleName}
-        terminalWidth={terminalWidth}
-        parentConversation={parentConversation}
-        watcherConversation={conversationLines}
-        inputValue={inputValue}
-        onInputChange={setInputValue}
-        onSubmit={handleSubmit}
-        isLoading={displayIsLoading}
-        displayReasoning={displayReasoning}
-        displayHasVision={displayHasVision}
-        displayContextWindow={displayContextWindow}
-        tokenUsage={tokenUsage}
-        rustTokens={rustTokens}
-        contextFillPercentage={contextFillPercentage}
-        isTurnSelectMode={isTurnSelectMode}
-      />
+      <>
+        <SplitSessionView
+          parentSessionName={parentSessionName}
+          watcherRoleName={watcherRoleName}
+          terminalWidth={terminalWidth}
+          parentConversation={parentConversation}
+          watcherConversation={conversationLines}
+          inputValue={inputValue}
+          onInputChange={setInputValue}
+          onSubmit={handleSubmit}
+          isLoading={displayIsLoading}
+          displayReasoning={displayReasoning}
+          displayHasVision={displayHasVision}
+          displayContextWindow={displayContextWindow}
+          tokenUsage={tokenUsage}
+          rustTokens={rustTokens}
+          contextFillPercentage={contextFillPercentage}
+          isTurnSelectMode={isTurnSelectMode}
+          onOpenTurnContent={handleOpenWatcherTurnContent}
+        />
+        {/* WATCH-016: Turn content modal for watcher pane */}
+        {showWatcherTurnModal && (
+          <TurnContentModal
+            content={watcherTurnModalContent}
+            role={watcherTurnModalRole}
+            terminalWidth={terminalWidth}
+            terminalHeight={terminalHeight}
+            isFocused={showWatcherTurnModal}
+          />
+        )}
+      </>
     );
   }
 

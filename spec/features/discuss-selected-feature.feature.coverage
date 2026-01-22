@@ -1,0 +1,168 @@
+{
+  "scenarios": [
+    {
+      "name": "Enter on selected turn in parent pane pre-fills input with context",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/discuss-selected.test.tsx",
+          "lines": "107-138",
+          "implMappings": [
+            {
+              "file": "src/tui/components/SplitSessionView.tsx",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Enter on selected turn in watcher pane opens full content modal",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/discuss-selected.test.tsx",
+          "lines": "140-165",
+          "implMappings": [
+            {
+              "file": "src/tui/components/SplitSessionView.tsx",
+              "lines": [
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Long content in parent pane is truncated in pre-fill",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/discuss-selected.test.tsx",
+          "lines": "167-194",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/turnSelection.ts",
+              "lines": [
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Select mode exits after discussing parent turn",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/discuss-selected.test.tsx",
+          "lines": "196-224",
+          "implMappings": [
+            {
+              "file": "src/tui/components/SplitSessionView.tsx",
+              "lines": [
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Modal updates when selecting different watcher turn",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/discuss-selected.test.tsx",
+          "lines": "226-256",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                6503,
+                6504,
+                6505,
+                6506,
+                6507,
+                6508,
+                6509,
+                6510,
+                6511,
+                6512
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/discuss-selected.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/SplitSessionView.tsx",
+      "src/tui/utils/turnSelection.ts",
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 216
+  }
+}
