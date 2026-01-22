@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-22T00:43:40.897Z"
+    "lastUpdated": "2026-01-22T01:10:26.902Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -64485,9 +64485,9 @@
       "id": "WATCH-011",
       "title": "Cross-Pane Selection with Correlation IDs",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2026-01-21T00:57:44.794Z",
-      "updatedAt": "2026-01-21T12:14:06.024Z",
+      "updatedAt": "2026-01-22T00:55:54.649Z",
       "description": "Add correlation_id to StreamChunk. Implement cross-pane highlighting: selecting in parent pane highlights corresponding observation in watcher pane and vice versa.",
       "parent": "WATCH-001",
       "dependsOn": [
@@ -64509,6 +64509,10 @@
         {
           "state": "validating",
           "timestamp": "2026-01-21T12:14:06.024Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T00:55:54.650Z"
         }
       ],
       "userStory": {
@@ -64654,7 +64658,8 @@
       "nextNoteId": 3,
       "attachments": [
         "spec/attachments/WATCH-011/ast-research-correlation-ids.md"
-      ]
+      ],
+      "updated": "2026-01-22T00:55:54.649Z"
     },
     "WATCH-012": {
       "id": "WATCH-012",
@@ -65256,14 +65261,135 @@
       "id": "WATCH-016",
       "title": "Discuss Selected Feature",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-21T00:58:11.127Z",
-      "updatedAt": "2026-01-21T00:59:14.503Z",
+      "updatedAt": "2026-01-22T01:10:26.987Z",
       "description": "Implement 'Discuss Selected' action: pressing Enter on selected message in parent pane auto-populates watcher input with context for discussing that specific turn.",
       "parent": "WATCH-001",
       "dependsOn": [
         "WATCH-011"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-22T00:56:03.975Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-22T01:00:14.871Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-22T01:02:32.920Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T01:10:12.885Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T01:10:26.988Z"
+        }
+      ],
+      "userStory": {
+        "role": "user viewing a watcher session in split view",
+        "action": "press Enter on a selected message to discuss it or view its full content",
+        "benefit": "I can either discuss parent content with my watcher (parent pane) or view full watcher turn content (watcher pane)"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Enter key on a selected turn in the parent pane pre-fills the watcher input with 'Regarding turn N in parent session:' followed by a code-fenced preview of the turn content",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:57:26.991Z"
+        },
+        {
+          "id": 1,
+          "text": "Enter key on a selected turn in the watcher pane opens the TurnContentModal to show full turn content (existing behavior from TUI-045)",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:57:31.173Z"
+        },
+        {
+          "id": 2,
+          "text": "After pre-filling input from parent pane, select mode is exited and cursor is positioned after the pre-fill for user to type their question",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:57:35.168Z"
+        },
+        {
+          "id": 3,
+          "text": "The turn content preview is truncated to 50 characters with '...' suffix if longer",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:57:39.469Z"
+        },
+        {
+          "id": 4,
+          "text": "Enter key behavior only applies when turn-select mode is active (Tab to toggle)",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:57:43.488Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User selects turn 3 in parent pane showing 'Write a login function', presses Enter → input is pre-filled with 'Regarding turn 3 in parent session:\\n\\`\\`\\`\\nWrite a login function\\n\\`\\`\\`\\n' → user can then type 'Is this secure?' and send to watcher",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:57:48.734Z"
+        },
+        {
+          "id": 1,
+          "text": "User selects turn 2 in watcher pane showing a long SQL injection warning, presses Enter → TurnContentModal opens showing full watcher response with proper scrolling",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:57:52.906Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses Enter on a selected turn in parent pane with very long content (200+ chars) → preview shows first 50 chars + '...' to avoid cluttering the input area",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:57:57.295Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses Enter on a selected turn in parent pane → select mode exits → input area gains focus → user sees pre-filled context and blinking cursor ready for input",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:58:01.702Z"
+        },
+        {
+          "id": 4,
+          "text": "User presses Enter on watcher pane selection while TurnContentModal is already showing → modal updates to show the newly selected turn content",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:58:06.290Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Enter behavior is implemented in SplitSessionView.tsx useInput handler",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:58:22.379Z"
+        },
+        {
+          "id": 1,
+          "text": "Parent pane Enter uses generateDiscussSelectedPrefill from turnSelection.ts",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:58:26.575Z"
+        },
+        {
+          "id": 2,
+          "text": "Watcher pane Enter opens TurnContentModal by setting showTurnContent state and selectedTurnContent",
+          "deleted": false,
+          "createdAt": "2026-01-22T00:58:31.181Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "estimate": 2,
+      "attachments": [
+        "spec/attachments/WATCH-016/ast-research-discuss-selected.md"
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-22T01:10:26.987Z"
     },
     "WATCH-017": {
       "id": "WATCH-017",
@@ -65468,8 +65594,7 @@
       "DOC-014",
       "DOC-017",
       "AGENT-022",
-      "RLM-001",
-      "WATCH-016"
+      "RLM-001"
     ],
     "specifying": [
       "LANG-001",
@@ -65490,10 +65615,10 @@
       "NAPI-009",
       "WATCH-018"
     ],
-    "validating": [
-      "WATCH-011"
-    ],
+    "validating": [],
     "done": [
+      "WATCH-016",
+      "WATCH-011",
       "WATCH-015",
       "WATCH-014",
       "WATCH-013",

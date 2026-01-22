@@ -86,6 +86,8 @@ interface SplitSessionViewProps {
   contextFillPercentage?: number;
   /** Whether turn select mode is active (for [SELECT] indicator) */
   isTurnSelectMode?: boolean;
+  /** Callback when user wants to open full turn content modal (WATCH-016) */
+  onOpenTurnContent?: (messageIndex: number, content: string) => void;
 }
 
 export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
@@ -106,6 +108,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   rustTokens = { inputTokens: 0, outputTokens: 0 },
   contextFillPercentage = 0,
   isTurnSelectMode = false,
+  onOpenTurnContent,
 }) => {
   const { height: terminalHeight } = useTerminalSize();
 
@@ -219,6 +222,22 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
           onInputChange(prefill);
           parentSelection.exitSelectMode();
         }
+      }
+      return;
+    }
+
+    // WATCH-016: Enter in watcher pane select mode: Open TurnContentModal
+    if (key.return && activePane === 'watcher' && watcherSelection.isSelectMode) {
+      const selectedIndex = watcherSelection.selectionRef.current.selectedIndex;
+      const selectedLine = watcherConversation[selectedIndex];
+
+      if (selectedLine && onOpenTurnContent) {
+        // Collect all content lines for this turn to build full content
+        const fullContent = watcherConversation
+          .filter(line => line.messageIndex === selectedLine.messageIndex && !line.isSeparator)
+          .map(line => line.content)
+          .join('\n');
+        onOpenTurnContent(selectedLine.messageIndex, fullContent);
       }
       return;
     }
