@@ -3,6 +3,7 @@
  *
  * WATCH-010: Watcher Split View UI
  * WATCH-011: Cross-Pane Selection with Correlation IDs
+ * WATCH-015: Watcher Session Header Indicator
  * WATCH-018: Extract Split View to Separate Component
  *
  * Features:
@@ -13,6 +14,7 @@
  * - Enter on selected parent turn pre-fills input with "Discuss Selected" context
  * - Input area always sends to watcher session
  * - WATCH-011: Cross-pane highlighting shows correlation between parent/watcher turns
+ * - WATCH-015: Header shows model capabilities, token usage, and context fill
  */
 
 import React, { useCallback, useMemo } from 'react';
@@ -31,6 +33,30 @@ import {
 import { buildCorrelationMaps } from '../utils/correlationMapping';
 import type { ConversationLine } from '../types/conversation';
 
+// WATCH-015: Token usage tracker interface
+interface TokenTracker {
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadInputTokens?: number;
+  cacheCreationInputTokens?: number;
+}
+
+// WATCH-015: Format context window size for display (200000 → "200k")
+const formatContextWindow = (contextWindow: number): string => {
+  if (contextWindow >= 1000000) {
+    return `${(contextWindow / 1000000).toFixed(0)}M`;
+  }
+  return `${Math.round(contextWindow / 1000)}k`;
+};
+
+// WATCH-015: Get color based on context fill percentage
+const getContextFillColor = (percentage: number): string => {
+  if (percentage < 50) return 'green';
+  if (percentage < 70) return 'yellow';
+  if (percentage < 85) return 'magenta';
+  return 'red';
+};
+
 interface SplitSessionViewProps {
   parentSessionName: string;
   watcherRoleName: string;
@@ -45,6 +71,21 @@ interface SplitSessionViewProps {
   onSubmit: (value: string) => void;
   /** Whether the AI is currently processing */
   isLoading: boolean;
+  // WATCH-015: New props for header display
+  /** Whether the model supports reasoning/extended thinking */
+  displayReasoning?: boolean;
+  /** Whether the model supports vision */
+  displayHasVision?: boolean;
+  /** Model's context window size in tokens */
+  displayContextWindow?: number;
+  /** Token usage from streaming updates */
+  tokenUsage?: TokenTracker;
+  /** Token usage from Rust state */
+  rustTokens?: TokenTracker;
+  /** Context fill percentage (0-100) */
+  contextFillPercentage?: number;
+  /** Whether turn select mode is active (for [SELECT] indicator) */
+  isTurnSelectMode?: boolean;
 }
 
 export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
@@ -57,6 +98,14 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   onInputChange,
   onSubmit,
   isLoading,
+  // WATCH-015: New props
+  displayReasoning = false,
+  displayHasVision = false,
+  displayContextWindow = 0,
+  tokenUsage = { inputTokens: 0, outputTokens: 0 },
+  rustTokens = { inputTokens: 0, outputTokens: 0 },
+  contextFillPercentage = 0,
+  isTurnSelectMode = false,
 }) => {
   const { height: terminalHeight } = useTerminalSize();
 
@@ -255,7 +304,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 
   return (
     <Box flexDirection="column" flexGrow={1}>
-      {/* Header */}
+      {/* WATCH-015: Enhanced header with model info, capabilities, and token stats */}
       <Box
         borderStyle="single"
         borderBottom={true}
@@ -263,11 +312,43 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         borderLeft={false}
         borderRight={false}
         paddingX={1}
+        flexDirection="row"
+        flexWrap="nowrap"
       >
-        <Text bold color="magenta">
-          👁️ {watcherRoleName} (watching: {parentSessionName})
-        </Text>
-        {isLoading && <Text color="yellow"> ⏳</Text>}
+        <Box flexGrow={1} flexShrink={1} overflow="hidden">
+          {/* Watcher indicator in magenta */}
+          <Text bold color="magenta">
+            👁️ {watcherRoleName} (watching: {parentSessionName})
+          </Text>
+          {/* Model capability indicators */}
+          {displayReasoning && <Text color="magenta"> [R]</Text>}
+          {displayHasVision && <Text color="blue"> [V]</Text>}
+          {displayContextWindow > 0 && (
+            <Text dimColor>
+              {' '}
+              [{formatContextWindow(displayContextWindow)}]
+            </Text>
+          )}
+          {/* WATCH-015: Turn select mode indicator */}
+          {isTurnSelectMode && (
+            <Text color="cyan" bold>
+              {' '}
+              [SELECT]
+            </Text>
+          )}
+        </Box>
+        {/* Right side: token stats and percentage */}
+        <Box flexShrink={0} flexGrow={0}>
+          {isLoading && <Text color="yellow">⏳ </Text>}
+          {/* Token usage display */}
+          <Text dimColor>
+            tokens: {Math.max(tokenUsage.inputTokens, rustTokens.inputTokens)}↓ {Math.max(tokenUsage.outputTokens, rustTokens.outputTokens)}↑
+          </Text>
+          {/* Context fill percentage with color coding */}
+          <Text color={getContextFillColor(contextFillPercentage)}>
+            {' '}[{contextFillPercentage}%]
+          </Text>
+        </Box>
       </Box>
 
       {/* Split panes container */}

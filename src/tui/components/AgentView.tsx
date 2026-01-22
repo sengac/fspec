@@ -6461,6 +6461,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
   // WATCH-010: Watcher split view - shows parent conversation on left, watcher conversation on right
   // WATCH-018: Extracted to separate SplitSessionView component for isolation and debugging
+  // WATCH-015: Pass model info and token stats to SplitSessionView for full header display
   if (isWatcherSessionView) {
     return (
       <SplitSessionView
@@ -6473,6 +6474,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         onInputChange={setInputValue}
         onSubmit={handleSubmit}
         isLoading={displayIsLoading}
+        displayReasoning={displayReasoning}
+        displayHasVision={displayHasVision}
+        displayContextWindow={displayContextWindow}
+        tokenUsage={tokenUsage}
+        rustTokens={rustTokens}
+        contextFillPercentage={contextFillPercentage}
+        isTurnSelectMode={isTurnSelectMode}
       />
     );
   }
