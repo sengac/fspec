@@ -1,0 +1,266 @@
+{
+  "scenarios": [
+    {
+      "name": "Parse watcher prefix with supervisor authority",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-display.test.ts",
+          "lines": "42-66",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse watcher prefix with peer authority",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-display.test.ts",
+          "lines": "69-96",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse regular message without watcher prefix",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-display.test.ts",
+          "lines": "99-111",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse multiline watcher message",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-display.test.ts",
+          "lines": "114-135",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                441,
+                442,
+                443,
+                444,
+                445,
+                446,
+                447,
+                448,
+                449,
+                450,
+                451,
+                452,
+                453,
+                454,
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display watcher input in magenta color",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-display.test.ts",
+          "lines": "138-161",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/conversationUtils.ts",
+              "lines": [
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36
+              ]
+            },
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                6580,
+                6581,
+                6582
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Process WatcherInput chunk to conversation message",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-display.test.ts",
+          "lines": "164-191",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527
+              ]
+            },
+            {
+              "file": "src/tui/types/conversation.ts",
+              "lines": [
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/watcher-display.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx",
+      "src/tui/utils/conversationUtils.ts",
+      "src/tui/types/conversation.ts"
+    ],
+    "totalLinesCovered": 282
+  }
+}

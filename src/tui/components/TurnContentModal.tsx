@@ -18,14 +18,14 @@ const DIFF_COLORS = {
 
 // Line type for VirtualList
 interface ModalLine {
-  role: 'user' | 'assistant' | 'tool';
+  role: 'user' | 'assistant' | 'tool' | 'watcher'; // WATCH-012: Added watcher role
   content: string;
   lineIndex: number;
 }
 
 export interface TurnContentModalProps {
   content: string;
-  role: 'user' | 'assistant' | 'tool';
+  role: 'user' | 'assistant' | 'tool' | 'watcher'; // WATCH-012: Added watcher role
   terminalWidth: number;
   terminalHeight: number;
   isFocused: boolean;
@@ -34,7 +34,7 @@ export interface TurnContentModalProps {
 /**
  * Get modal title based on message role
  */
-const getRoleTitle = (role: 'user' | 'assistant' | 'tool'): string => {
+const getRoleTitle = (role: 'user' | 'assistant' | 'tool' | 'watcher'): string => {
   switch (role) {
     case 'user':
       return 'User Message';
@@ -42,6 +42,8 @@ const getRoleTitle = (role: 'user' | 'assistant' | 'tool'): string => {
       return 'Assistant Response';
     case 'tool':
       return 'Tool Output';
+    case 'watcher':
+      return 'Watcher Input'; // WATCH-012: Watcher message title
     default:
       return 'Content';
   }
@@ -53,7 +55,7 @@ const getRoleTitle = (role: 'user' | 'assistant' | 'tool'): string => {
  */
 const wrapContentToLines = (
   content: string,
-  role: 'user' | 'assistant' | 'tool',
+  role: 'user' | 'assistant' | 'tool' | 'watcher', // WATCH-012: Added watcher role
   maxWidth: number
 ): ModalLine[] => {
   const wrappedLines = wrapText(content, { maxWidth });
@@ -105,8 +107,8 @@ const renderModalLine = (line: ModalLine): React.ReactNode => {
     }
   }
 
-  // Default rendering - user is green, others white
-  const baseColor = line.role === 'user' ? 'green' : 'white';
+  // Default rendering - user is green, watcher is magenta (WATCH-012), others white
+  const baseColor = line.role === 'user' ? 'green' : line.role === 'watcher' ? 'magenta' : 'white';
   return (
     <Box flexGrow={1}>
       <Text color={baseColor}>{content}</Text>
