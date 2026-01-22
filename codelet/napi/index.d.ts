@@ -1034,9 +1034,9 @@ export declare function sessionCompact(
  * Create a watcher session for a parent session (WATCH-007)
  *
  * Creates a new session that watches the specified parent session.
- * The watcher is registered in WatchGraph. Broadcast subscription happens
- * when the watcher loop starts (via parent.subscribe_to_stream()).
- * A role must be set separately via session_set_role.
+ * The watcher is registered in WatchGraph and immediately starts observing
+ * the parent's output stream via broadcast subscription.
+ * WATCH-019: Now spawns watcher_agent_loop instead of regular agent_loop.
  */
 export declare function sessionCreateWatcher(
   parentId: string,

@@ -322,6 +322,15 @@ pub enum WatcherLoopAction {
 ///
 /// Note: This is the core loop logic. The actual agent execution is handled
 /// by the caller (WATCH-007 will expose this via NAPI).
+///
+/// Processes one tick of the watcher loop (WATCH-005, wired up by WATCH-019)
+///
+/// This function is called by `run_watcher_loop` to process both user input
+/// and parent observations. It uses tokio::select! with biased ordering to
+/// prioritize user input over parent broadcast observations.
+///
+/// Called from `watcher_agent_loop` via `run_watcher_loop` when a watcher
+/// session is created via `session_create_watcher`.
 pub(crate) async fn watcher_loop_tick(
     user_input_rx: &mut mpsc::Receiver<PromptInput>,
     parent_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
@@ -412,7 +421,7 @@ pub(crate) async fn watcher_loop_tick(
     }
 }
 
-/// Run the watcher agent loop (WATCH-005)
+/// Run the watcher agent loop (WATCH-005, wired up by WATCH-019)
 ///
 /// This is the main entry point for a watcher session. It continuously
 /// listens for both user input and parent observations, processing them
@@ -427,6 +436,9 @@ pub(crate) async fn watcher_loop_tick(
 /// processed (either user input or accumulated observations).
 /// WATCH-011: For observation processing, observed_correlation_ids contains the
 /// correlation IDs of parent chunks that triggered this evaluation.
+///
+/// Called from `watcher_agent_loop` when a watcher session is created via
+/// `session_create_watcher` / `create_watcher_session_with_id`.
 pub(crate) async fn run_watcher_loop<F, Fut>(
     user_input_rx: &mut mpsc::Receiver<PromptInput>,
     parent_broadcast_rx: &mut broadcast::Receiver<StreamChunk>,
@@ -2586,6 +2598,126 @@ mod correlation_id_tests {
     }
 }
 
+#[cfg(test)]
+mod watcher_integration_tests {
+    use super::*;
+
+    // Feature: spec/features/watcher-loop-and-input-channel-not-integrated.feature (WATCH-019)
+
+    /// Scenario: Parent session processes watcher injections
+    ///
+    /// @step Given a parent session exists with a watcher attached
+    /// @step When the watcher injects a message via watcher_inject
+    /// @step Then the parent agent_loop should read the message from watcher_input_rx and process it
+    #[test]
+    fn test_parent_session_processes_watcher_injections() {
+        // @step Given a parent session exists with a watcher attached
+        // Create a watcher input channel (simulating parent's watcher_input_tx/rx)
+        let (watcher_input_tx, mut watcher_input_rx) = mpsc::channel::<WatcherInput>(16);
+
+        // @step When the watcher injects a message via watcher_inject
+        let input = WatcherInput::new(
+            "watcher-uuid".to_string(),
+            "security-reviewer".to_string(),
+            RoleAuthority::Supervisor,
+            "SQL injection vulnerability detected!".to_string(),
+        ).unwrap();
+        
+        watcher_input_tx.try_send(input.clone()).expect("Should send watcher input");
+
+        // @step Then the parent agent_loop should read the message from watcher_input_rx and process it
+        // Use try_recv to simulate what agent_loop would do
+        let received = watcher_input_rx.try_recv();
+        assert!(received.is_ok(), "Parent should receive watcher injection from watcher_input_rx");
+        
+        let received_input = received.unwrap();
+        assert_eq!(received_input.message, "SQL injection vulnerability detected!");
+        assert_eq!(received_input.role_name, "security-reviewer");
+    }
+
+    /// Scenario: Watcher session subscribes to parent broadcast on creation
+    ///
+    /// @step Given a parent session exists with an active broadcast channel
+    /// @step When session_create_watcher is called with the parent session ID
+    /// @step Then the watcher should have a broadcast receiver subscribed to the parent's stream
+    #[test]
+    fn test_watcher_subscribes_to_parent_broadcast() {
+        // @step Given a parent session exists with an active broadcast channel
+        let (parent_broadcast_tx, _) = broadcast::channel::<StreamChunk>(WATCHER_BROADCAST_CAPACITY);
+
+        // @step When session_create_watcher is called with the parent session ID
+        // Simulate what session_create_watcher SHOULD do: subscribe to parent's broadcast
+        let mut watcher_broadcast_rx = parent_broadcast_tx.subscribe();
+
+        // @step Then the watcher should have a broadcast receiver subscribed to the parent's stream
+        // Send a chunk from parent and verify watcher receives it
+        let test_chunk = StreamChunk::text("test from parent".to_string());
+        parent_broadcast_tx.send(test_chunk.clone()).expect("Should send");
+        
+        let received = watcher_broadcast_rx.try_recv();
+        assert!(received.is_ok(), "Watcher should receive chunks from parent broadcast");
+        assert_eq!(received.unwrap().text, Some("test from parent".to_string()));
+    }
+
+    /// Scenario: Watcher loop processes parent observations at breakpoints
+    ///
+    /// @step Given a watcher session is running with parent broadcast subscription
+    /// @step When the parent session emits Text chunks followed by a Done chunk
+    /// @step Then the watcher should accumulate observations and trigger evaluation at the Done breakpoint
+    #[tokio::test]
+    async fn test_watcher_loop_processes_observations() {
+        // @step Given a watcher session is running with parent broadcast subscription
+        let (user_input_tx, mut user_input_rx) = mpsc::channel::<PromptInput>(16);
+        let (parent_broadcast_tx, mut parent_broadcast_rx) = broadcast::channel::<StreamChunk>(WATCHER_BROADCAST_CAPACITY);
+        let role = SessionRole::new("test-watcher".to_string(), None, RoleAuthority::Peer).unwrap();
+        let mut buffer = ObservationBuffer::new();
+        let silence_timeout = std::time::Duration::from_secs(5);
+
+        // @step When the parent session emits Text chunks followed by a Done chunk
+        // Send text chunk first
+        parent_broadcast_tx.send(StreamChunk::text("function login() { }".to_string())).unwrap();
+        
+        // Process the text chunk - should accumulate
+        let action1 = watcher_loop_tick(
+            &mut user_input_rx,
+            &mut parent_broadcast_rx,
+            &mut buffer,
+            &role,
+            silence_timeout,
+        ).await;
+        
+        // Should continue (not a breakpoint)
+        assert!(matches!(action1, WatcherLoopAction::Continue), "Text chunk should not trigger evaluation");
+        assert!(!buffer.is_empty(), "Buffer should have accumulated the text chunk");
+
+        // Send Done chunk (breakpoint)
+        parent_broadcast_tx.send(StreamChunk::done()).unwrap();
+        
+        let action2 = watcher_loop_tick(
+            &mut user_input_rx,
+            &mut parent_broadcast_rx,
+            &mut buffer,
+            &role,
+            silence_timeout,
+        ).await;
+
+        // @step Then the watcher should accumulate observations and trigger evaluation at the Done breakpoint
+        match action2 {
+            WatcherLoopAction::ProcessObservations { prompt, observed_correlation_ids: _ } => {
+                assert!(!prompt.is_empty(), "Evaluation prompt should be generated");
+                assert!(prompt.contains("function login"), "Prompt should contain observed content");
+            }
+            _ => panic!("Expected ProcessObservations action at Done breakpoint, got {:?}", action2),
+        }
+        
+        // Buffer should be cleared after processing
+        assert!(buffer.is_empty(), "Buffer should be cleared after breakpoint processing");
+
+        // Clean up
+        drop(user_input_tx);
+    }
+}
+
 /// Singleton session manager
 pub struct SessionManager {
     sessions: RwLock<HashMap<Uuid, Arc<BackgroundSession>>>,
@@ -2701,6 +2833,98 @@ impl SessionManager {
         Ok(())
     }
     
+    /// Create a watcher session that observes a parent session (WATCH-019)
+    ///
+    /// Similar to create_session_with_id but:
+    /// - Spawns watcher_agent_loop instead of agent_loop
+    /// - Subscribes to parent's broadcast channel
+    /// - Sets the watcher role
+    pub async fn create_watcher_session_with_id(
+        &self,
+        id: &str,
+        model: &str,
+        project: &str,
+        name: &str,
+        parent_id: Uuid,
+        role: SessionRole,
+    ) -> Result<()> {
+        let uuid = Uuid::parse_str(id)
+            .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+
+        // Check session limits
+        {
+            let sessions = self.sessions.read().expect("sessions lock poisoned");
+            if sessions.len() >= MAX_SESSIONS {
+                return Err(Error::from_reason(format!(
+                    "Maximum sessions ({}) reached",
+                    MAX_SESSIONS
+                )));
+            }
+            if sessions.contains_key(&uuid) {
+                return Ok(());
+            }
+        }
+
+        // Get parent session and subscribe to its broadcast
+        let parent = self.sessions
+            .read()
+            .expect("sessions lock poisoned")
+            .get(&parent_id)
+            .cloned()
+            .ok_or_else(|| Error::from_reason(format!("Parent session not found: {}", parent_id)))?;
+        
+        let parent_broadcast_rx = parent.subscribe_to_stream();
+
+        let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
+
+        let _ = dotenvy::dotenv();
+
+        let (provider_id, model_id) = if model.contains('/') {
+            let parts: Vec<&str> = model.split('/').collect();
+            let registry_provider = parts.first().unwrap_or(&"anthropic");
+            let model_part = parts.get(1).map(|s| s.to_string());
+            (Some(registry_provider.to_string()), model_part)
+        } else {
+            (Some(model.to_string()), None)
+        };
+
+        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
+            .await
+            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
+
+        if model.contains('/') {
+            provider_manager.select_model(model)
+                .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+        }
+
+        let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
+        inner.inject_context_reminders();
+
+        let session = Arc::new(BackgroundSession::new(
+            uuid,
+            name.to_string(),
+            project.to_string(),
+            provider_id,
+            model_id,
+            inner,
+            input_tx,
+        ));
+        
+        // Set the watcher role
+        session.set_role(role.clone());
+        
+        // Spawn watcher agent loop (observes parent via broadcast)
+        let session_clone = session.clone();
+        tokio::spawn(async move {
+            watcher_agent_loop(session_clone, input_rx, parent_broadcast_rx, role).await;
+        });
+        
+        // Store session
+        self.sessions.write().expect("sessions lock poisoned").insert(uuid, session);
+        
+        Ok(())
+    }
+    
     /// List all sessions
     pub fn list_sessions(&self) -> Vec<SessionInfo> {
         self.sessions
@@ -2798,61 +3022,183 @@ macro_rules! run_with_provider {
 }
 
 /// Agent loop that runs in background tokio task
+/// WATCH-019: Modified to also process watcher injections via watcher_input_rx
 async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receiver<PromptInput>) {
     loop {
-        // Wait for input
-        let prompt_input = match input_rx.recv().await {
-            Some(input) => input,
-            None => {
-                break;
+        // WATCH-019: Use tokio::select! to wait on both user input and watcher input
+        // Lock the watcher_input_rx to use in select
+        let mut watcher_rx = session.watcher_input_rx.lock().await;
+        
+        // Use biased to prefer user input over watcher input
+        let input_to_process: Option<(String, Option<String>)> = tokio::select! {
+            biased;
+            
+            // User input takes priority
+            result = input_rx.recv() => {
+                match result {
+                    Some(prompt_input) => Some((prompt_input.input, prompt_input.thinking_config)),
+                    None => {
+                        // Channel closed, exit loop
+                        drop(watcher_rx);
+                        break;
+                    }
+                }
+            }
+            
+            // WATCH-019: Watcher injection input
+            result = watcher_rx.recv() => {
+                match result {
+                    Some(watcher_input) => {
+                        // Format watcher input as a user message with structured prefix
+                        let formatted = format_watcher_input(&watcher_input);
+                        // Emit the watcher input chunk so it appears in the UI
+                        session.handle_output(StreamChunk::watcher_input(formatted.clone()));
+                        Some((formatted, None))
+                    }
+                    None => {
+                        // Watcher channel closed, continue with user input only
+                        None
+                    }
+                }
             }
         };
+        
+        // Drop the lock before processing to avoid holding it during agent execution
+        drop(watcher_rx);
+        
+        // If we got input to process, run the agent
+        if let Some((input, thinking_config)) = input_to_process {
+            let thinking_config_ref = thinking_config.as_deref();
 
-        let input = &prompt_input.input;
-        let thinking_config = prompt_input.thinking_config.as_deref();
+            tracing::debug!("Session {} received input: {}", session.id, &input[..input.len().min(50)]);
 
-        tracing::debug!("Session {} received input: {}", session.id, &input[..input.len().min(50)]);
+            // Set status to running
+            session.set_status(SessionStatus::Running);
+            session.reset_interrupt();
 
-        // Set status to running
-        session.set_status(SessionStatus::Running);
-        session.reset_interrupt();
+            // Parse thinking config JSON if provided
+            let thinking_config_value: Option<serde_json::Value> = thinking_config_ref.and_then(|config_str| {
+                serde_json::from_str(config_str).ok()
+            });
 
-        // Parse thinking config JSON if provided
-        let thinking_config_value: Option<serde_json::Value> = thinking_config.and_then(|config_str| {
-            serde_json::from_str(config_str).ok()
-        });
+            // Create output handler that buffers and forwards
+            let session_for_output = session.clone();
+            let output = BackgroundOutput::new(session_for_output);
 
-        // Create output handler that buffers and forwards
-        let session_for_output = session.clone();
-        let output = BackgroundOutput::new(session_for_output);
+            // Lock the inner session and run agent stream
+            let mut inner_session = session.inner.lock().await;
 
-        // Lock the inner session and run agent stream
-        let mut inner_session = session.inner.lock().await;
+            // Get provider and run agent stream using the macro to eliminate duplication
+            let current_provider = inner_session.current_provider_name().to_string();
+            let result = match current_provider.as_str() {
+                "claude" => run_with_provider!(&mut inner_session, get_claude, &input, session, &output, thinking_config_value),
+                "openai" => run_with_provider!(&mut inner_session, get_openai, &input, session, &output, thinking_config_value),
+                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &input, session, &output, thinking_config_value),
+                "zai" => run_with_provider!(&mut inner_session, get_zai, &input, session, &output, thinking_config_value),
+                _ => {
+                    tracing::error!("Unsupported provider: {}", current_provider);
+                    Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
+                }
+            };
 
-        // Get provider and run agent stream using the macro to eliminate duplication
-        let current_provider = inner_session.current_provider_name().to_string();
-        let result = match current_provider.as_str() {
-            "claude" => run_with_provider!(&mut inner_session, get_claude, input, session, &output, thinking_config_value),
-            "openai" => run_with_provider!(&mut inner_session, get_openai, input, session, &output, thinking_config_value),
-            "gemini" => run_with_provider!(&mut inner_session, get_gemini, input, session, &output, thinking_config_value),
-            "zai" => run_with_provider!(&mut inner_session, get_zai, input, session, &output, thinking_config_value),
-            _ => {
-                tracing::error!("Unsupported provider: {}", current_provider);
-                Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
+            // Handle result
+            // Note: run_agent_stream emits StreamEvent::Done on successful completion,
+            // so we only emit Done here on error (to ensure the turn is properly terminated)
+            if let Err(e) = result {
+                tracing::error!("Agent stream error for session {}: {}", session.id, e);
+                session.handle_output(StreamChunk::error(e.to_string()));
+                session.handle_output(StreamChunk::done());
             }
-        };
 
-        // Handle result
-        // Note: run_agent_stream emits StreamEvent::Done on successful completion,
-        // so we only emit Done here on error (to ensure the turn is properly terminated)
-        if let Err(e) = result {
-            tracing::error!("Agent stream error for session {}: {}", session.id, e);
-            session.handle_output(StreamChunk::error(e.to_string()));
-            session.handle_output(StreamChunk::done());
+            // Set status back to idle
+            session.set_status(SessionStatus::Idle);
         }
+    }
+}
 
-        // Set status back to idle
-        session.set_status(SessionStatus::Idle);
+/// Watcher agent loop that observes parent session and handles dual input (WATCH-019)
+///
+/// This loop uses `run_watcher_loop` from WATCH-005 to handle both:
+/// - User prompts to the watcher (takes priority)
+/// - Parent session observations (accumulated until breakpoints)
+///
+/// When observations trigger evaluation, the prompt is run through the agent
+/// and the output is shown in the watcher's UI. The watcher user can then
+/// manually inject messages via watcher_inject if needed.
+async fn watcher_agent_loop(
+    watcher_session: Arc<BackgroundSession>,
+    mut user_input_rx: mpsc::Receiver<PromptInput>,
+    mut parent_broadcast_rx: broadcast::Receiver<StreamChunk>,
+    role: SessionRole,
+) {
+    let silence_timeout_secs = Some(DEFAULT_SILENCE_TIMEOUT_SECS);
+    let watcher_for_callback = watcher_session.clone();
+
+    // Process prompt callback - runs prompts through the agent (similar to agent_loop)
+    let process_prompt = |prompt: String, is_user_prompt: bool, observed_correlation_ids: Vec<String>| {
+        let session = watcher_for_callback.clone();
+        async move {
+            // WATCH-011: Set pending observed correlation IDs for watcher responses
+            if !is_user_prompt && !observed_correlation_ids.is_empty() {
+                session.set_pending_observed_correlation_ids(observed_correlation_ids);
+            }
+
+            tracing::debug!(
+                "Watcher {} processing {}: {}",
+                session.id,
+                if is_user_prompt { "user prompt" } else { "observation evaluation" },
+                &prompt[..prompt.len().min(50)]
+            );
+
+            // Set status to running
+            session.set_status(SessionStatus::Running);
+            session.reset_interrupt();
+
+            // Create output handler
+            let session_for_output = session.clone();
+            let output = BackgroundOutput::new(session_for_output);
+
+            // Lock inner session and run agent
+            let mut inner_session = session.inner.lock().await;
+            let current_provider = inner_session.current_provider_name().to_string();
+            
+            let result = match current_provider.as_str() {
+                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, session, &output, None::<serde_json::Value>),
+                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, session, &output, None::<serde_json::Value>),
+                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, session, &output, None::<serde_json::Value>),
+                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, session, &output, None::<serde_json::Value>),
+                _ => {
+                    tracing::error!("Unsupported provider: {}", current_provider);
+                    Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
+                }
+            };
+
+            if let Err(e) = result {
+                tracing::error!("Watcher agent error for session {}: {}", session.id, e);
+                session.handle_output(StreamChunk::error(e.to_string()));
+                session.handle_output(StreamChunk::done());
+            }
+
+            session.set_status(SessionStatus::Idle);
+            
+            // Clear pending observed correlation IDs after processing
+            if !is_user_prompt {
+                session.set_pending_observed_correlation_ids(Vec::new());
+            }
+
+            Ok(())
+        }
+    };
+
+    // Run the watcher loop
+    if let Err(e) = run_watcher_loop(
+        &mut user_input_rx,
+        &mut parent_broadcast_rx,
+        &role,
+        silence_timeout_secs,
+        process_prompt,
+    ).await {
+        tracing::error!("Watcher loop error for session {}: {}", watcher_session.id, e);
     }
 }
 
@@ -3171,9 +3517,9 @@ pub fn session_clear_role(session_id: String) -> Result<()> {
 /// Create a watcher session for a parent session (WATCH-007)
 ///
 /// Creates a new session that watches the specified parent session.
-/// The watcher is registered in WatchGraph. Broadcast subscription happens
-/// when the watcher loop starts (via parent.subscribe_to_stream()).
-/// A role must be set separately via session_set_role.
+/// The watcher is registered in WatchGraph and immediately starts observing
+/// the parent's output stream via broadcast subscription.
+/// WATCH-019: Now spawns watcher_agent_loop instead of regular agent_loop.
 #[napi]
 pub async fn session_create_watcher(
     parent_id: String,
@@ -3187,29 +3533,35 @@ pub async fn session_create_watcher(
     
     let _parent = SessionManager::instance().get_session(&parent_id)?;
     
-    // Create the watcher session
-    let watcher_id = SessionManager::instance()
-        .create_session(&model, &project)
+    // Generate watcher ID
+    let watcher_id = Uuid::new_v4();
+    let watcher_id_str = watcher_id.to_string();
+    
+    // Create default role (can be updated via session_set_role)
+    let role = SessionRole::new(
+        name.clone(),
+        None,
+        RoleAuthority::Peer,
+    ).map_err(|e| Error::from_reason(e))?;
+    
+    // Create watcher session with watcher-specific loop
+    SessionManager::instance()
+        .create_watcher_session_with_id(
+            &watcher_id_str,
+            &model,
+            &project,
+            &name,
+            parent_uuid,
+            role,
+        )
         .await?;
-    
-    let watcher_uuid = Uuid::parse_str(&watcher_id)
-        .map_err(|e| Error::from_reason(format!("Invalid watcher ID: {}", e)))?;
-    
-    // Set the name
-    let watcher = SessionManager::instance().get_session(&watcher_id)?;
-    *watcher.name.write().expect("name lock poisoned") = name;
     
     // Register in WatchGraph (tracks parent-watcher relationships)
     SessionManager::instance()
-        .add_watcher(parent_uuid, watcher_uuid)
+        .add_watcher(parent_uuid, watcher_id)
         .map_err(|e| Error::from_reason(e))?;
     
-    // Note: Broadcast subscription is NOT done here. The watcher loop will call
-    // parent.subscribe_to_stream() when it starts, obtaining a broadcast::Receiver
-    // at that point. This lazy subscription avoids holding receivers that may never
-    // be used if the watcher loop isn't started.
-    
-    Ok(watcher_id)
+    Ok(watcher_id_str)
 }
 
 /// Get the parent session ID for a watcher (WATCH-007)

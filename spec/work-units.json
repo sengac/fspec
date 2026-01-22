@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-22T01:10:26.902Z"
+    "lastUpdated": "2026-01-22T02:25:04.876Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62643,7 +62643,8 @@
         "WATCH-013",
         "WATCH-014",
         "WATCH-015",
-        "WATCH-016"
+        "WATCH-016",
+        "WATCH-019"
       ],
       "attachments": [
         "spec/attachments/WATCH-001/watcher-sessions-architecture.md"
@@ -65391,152 +65392,115 @@
       "nextQuestionId": 0,
       "updated": "2026-01-22T01:10:26.987Z"
     },
-    "WATCH-017": {
-      "id": "WATCH-017",
-      "title": "Split Session View Component Extraction",
-      "type": "story",
-      "status": "testing",
-      "createdAt": "2026-01-21T07:00:35.261Z",
-      "updatedAt": "2026-01-21T07:03:35.518Z",
-      "description": "Extract the watcher split view code from AgentView.tsx into a separate SplitSessionView component. This will make the code testable in isolation and allow compositional debugging.",
-      "children": [],
-      "dependsOn": [
-        "WATCH-010"
-      ],
-      "userStory": {
-        "role": "developer debugging the watcher split view",
-        "action": "have the split view code in a separate component",
-        "benefit": "I can test and debug it in isolation without the complexity of AgentView.tsx"
-      },
+    "WATCH-019": {
+      "id": "WATCH-019",
+      "title": "Watcher Loop and Input Channel Not Integrated",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-01-22T01:31:56.063Z",
+      "updatedAt": "2026-01-22T02:25:04.908Z",
+      "description": "The watcher agent loop functions (watcher_loop_tick, run_watcher_loop) and watcher input channel (watcher_input_rx) are implemented but never used. WATCH-005 created the watcher loop, WATCH-006 created the watcher input channel, but WATCH-007 session_create_watcher spawns regular agent_loop instead of the watcher-specific loop. Additionally, parent sessions need to read from watcher_input_rx to receive watcher injections.",
+      "parent": "WATCH-001",
       "stateHistory": [
         {
           "state": "specifying",
-          "timestamp": "2026-01-21T07:01:04.374Z"
+          "timestamp": "2026-01-22T01:32:04.811Z"
         },
         {
           "state": "testing",
-          "timestamp": "2026-01-21T07:03:35.518Z"
+          "timestamp": "2026-01-22T01:34:20.922Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-22T01:38:41.843Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T01:42:45.534Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T01:50:40.929Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-22T02:01:15.161Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-22T02:05:27.973Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-22T02:08:18.044Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T02:12:08.713Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T02:25:04.909Z"
         }
       ],
       "rules": [
         {
           "id": 0,
-          "text": "SplitSessionView is a standalone component that receives parentSessionId and childSessionId as props",
+          "text": "Watcher sessions must spawn run_watcher_loop instead of regular agent_loop to enable dual-input handling",
           "deleted": false,
-          "createdAt": "2026-01-21T07:01:09.166Z"
+          "createdAt": "2026-01-22T01:32:08.910Z"
         },
         {
           "id": 1,
-          "text": "The component handles its own state: loading parent conversation, subscribing to parent updates, managing active pane",
+          "text": "Parent session agent_loop must read from watcher_input_rx to process watcher injections",
           "deleted": false,
-          "createdAt": "2026-01-21T07:01:14.108Z"
+          "createdAt": "2026-01-22T01:32:12.861Z"
         },
         {
           "id": 2,
-          "text": "Component is built compositionally: first render static layout, then add data loading, then add interactivity",
+          "text": "session_create_watcher must subscribe to parent's broadcast channel and pass the receiver to the watcher loop",
           "deleted": false,
-          "createdAt": "2026-01-21T07:01:18.788Z"
+          "createdAt": "2026-01-22T02:02:56.551Z"
         },
         {
           "id": 3,
-          "text": "Left pane displays parent session conversation using VirtualList with dimmed styling when inactive",
+          "text": "Watcher loop callback must run evaluation prompts through the agent and parse responses for [INTERJECT]/[CONTINUE] blocks to determine autonomous interjection",
           "deleted": false,
-          "createdAt": "2026-01-21T07:01:23.227Z"
-        },
-        {
-          "id": 4,
-          "text": "Right pane displays watcher conversation using VirtualList with full styling when active",
-          "deleted": false,
-          "createdAt": "2026-01-21T07:01:27.029Z"
-        },
-        {
-          "id": 5,
-          "text": "Component receives onSubmit callback prop for sending messages to watcher session",
-          "deleted": false,
-          "createdAt": "2026-01-21T07:01:31.312Z"
+          "createdAt": "2026-01-22T02:03:12.325Z"
         }
       ],
-      "nextRuleId": 6,
+      "nextRuleId": 4,
       "examples": [
         {
           "id": 0,
-          "text": "Step 1: Component renders with empty panes and header showing 'Loading...' - verify basic layout works",
+          "text": "Watcher observes parent writing code → parent sends TurnComplete chunk → watcher evaluates accumulated observations → watcher AI decides to interject warning",
           "deleted": false,
-          "createdAt": "2026-01-21T07:01:36.200Z"
+          "createdAt": "2026-01-22T01:32:26.698Z"
         },
         {
           "id": 1,
-          "text": "Step 2: Component loads parent conversation from NAPI and displays it in left pane",
+          "text": "Watcher injects message → watcher_inject calls receive_watcher_input → parent agent_loop reads from watcher_input_rx → parent AI receives and responds to watcher message",
           "deleted": false,
-          "createdAt": "2026-01-21T07:01:40.475Z"
+          "createdAt": "2026-01-22T01:32:31.300Z"
         },
         {
           "id": 2,
-          "text": "Step 3: Component receives watcher conversation as prop and displays it in right pane",
+          "text": "session_create_watcher('parent-id', model, project, name) → creates BackgroundSession → subscribes to parent.watcher_broadcast → spawns watcher_agent_loop (not agent_loop) → loop waits on both user_input_rx AND parent_broadcast_rx",
           "deleted": false,
-          "createdAt": "2026-01-21T07:01:44.591Z"
-        },
-        {
-          "id": 3,
-          "text": "Step 4: Left/Right arrow keys switch active pane - styling changes to indicate which pane is active",
-          "deleted": false,
-          "createdAt": "2026-01-21T07:01:48.897Z"
-        },
-        {
-          "id": 4,
-          "text": "Step 5: Input area at bottom works with MultiLineInput - onSubmit callback is called when user submits",
-          "deleted": false,
-          "createdAt": "2026-01-21T07:01:53.313Z"
+          "createdAt": "2026-01-22T02:03:27.191Z"
         }
       ],
-      "nextExampleId": 5,
-      "architectureNotes": [
-        {
-          "id": 0,
-          "text": "SplitSessionView.tsx created in src/tui/components/ alongside AgentView.tsx",
-          "deleted": false,
-          "createdAt": "2026-01-21T07:01:57.917Z"
-        },
-        {
-          "id": 1,
-          "text": "AgentView.tsx imports SplitSessionView and renders it when isWatcherSessionView is true, passing required props",
-          "deleted": false,
-          "createdAt": "2026-01-21T07:02:02.701Z"
-        }
-      ],
-      "nextNoteId": 2,
-      "attachments": [
-        "spec/attachments/WATCH-017/ast-research-split-view-extraction.md"
-      ]
-    },
-    "WATCH-018": {
-      "id": "WATCH-018",
-      "title": "Extract Split View to Separate Component",
-      "type": "task",
-      "status": "implementing",
-      "createdAt": "2026-01-21T07:03:57.012Z",
-      "updatedAt": "2026-01-21T07:04:17.604Z",
-      "description": "Extract the watcher split view code from AgentView.tsx into a separate SplitSessionView component to isolate and debug the crash.",
-      "children": [],
-      "stateHistory": [
-        {
-          "state": "specifying",
-          "timestamp": "2026-01-21T07:04:06.173Z"
-        },
-        {
-          "state": "implementing",
-          "timestamp": "2026-01-21T07:04:17.604Z"
-        }
-      ],
-      "architectureNotes": [
-        {
-          "id": 0,
-          "text": "Create SplitSessionView.tsx in src/tui/components/",
-          "deleted": false,
-          "createdAt": "2026-01-21T07:04:11.649Z"
-        }
-      ],
-      "nextNoteId": 1
+      "nextExampleId": 3,
+      "userStory": {
+        "role": "watcher session",
+        "action": "observe parent session and inject messages",
+        "benefit": "the parent AI can receive real-time feedback from watcher AI agents"
+      },
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2026-01-22T02:25:04.908Z"
     }
   },
   "states": {
@@ -65608,15 +65572,13 @@
       "CMPCT-001",
       "WATCH-001"
     ],
-    "testing": [
-      "WATCH-017"
-    ],
+    "testing": [],
     "implementing": [
-      "NAPI-009",
-      "WATCH-018"
+      "NAPI-009"
     ],
     "validating": [],
     "done": [
+      "WATCH-019",
       "WATCH-016",
       "WATCH-011",
       "WATCH-015",
@@ -66146,6 +66108,6 @@
     "RLM": 1,
     "SESS": 1,
     "CMPCT": 2,
-    "WATCH": 18
+    "WATCH": 19
   }
 }
