@@ -30,9 +30,9 @@ mod tool_error_tests {
             seconds: 30,
         };
 
-        // @step And ToolError should include the tool name for debugging
+        // @step And ToolError should include the tool name for debugging (via tool_name() method)
         assert_eq!(timeout_err.tool_name(), "bash");
-        assert!(timeout_err.to_string().contains("[bash]"));
+        // Display message should be user-friendly (no [tool] prefix)
         assert!(timeout_err.to_string().contains("30 seconds"));
     }
 
@@ -55,7 +55,7 @@ mod tool_error_tests {
     #[test]
     fn test_all_tool_error_variants() {
         // @step And the individual error enums should be removed
-        // Verify all error variants have correct tool names
+        // Verify all error variants have correct tool names accessible via tool_name()
         let errors = vec![
             ToolError::Timeout {
                 tool: "bash",
@@ -92,8 +92,10 @@ mod tool_error_tests {
         ];
 
         for err in errors {
+            // Tool name should be accessible via method (for logging/debugging)
             assert!(!err.tool_name().is_empty());
-            assert!(err.to_string().contains(&format!("[{}]", err.tool_name())));
+            // Display message should NOT have [tool] prefix - it's user-facing
+            assert!(!err.to_string().is_empty());
         }
     }
 }

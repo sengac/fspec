@@ -9,6 +9,7 @@
 //! The trait separates I/O concerns from message history management, enabling
 //! code reuse between codelet-cli and codelet-napi.
 
+use crate::error_display::{format_cli_error, format_tool_error};
 use std::io::Write;
 
 /// Token usage information for streaming updates
@@ -91,6 +92,8 @@ pub struct ToolProgressEvent {
     pub tool_name: String,
     /// Output chunk (new text since last progress event)
     pub output_chunk: String,
+    /// Whether this output is from stderr (should be styled as error/red)
+    pub is_stderr: bool,
 }
 
 /// Stream event enum - all possible events in a single type
@@ -218,11 +221,12 @@ pub trait StreamOutput: Send + Sync {
 
     /// Emit tool execution progress - streaming output from bash/shell tools (TOOL-011)
     #[inline]
-    fn emit_tool_progress(&self, tool_call_id: &str, tool_name: &str, output_chunk: &str) {
+    fn emit_tool_progress(&self, tool_call_id: &str, tool_name: &str, output_chunk: &str, is_stderr: bool) {
         self.emit(StreamEvent::ToolProgress(ToolProgressEvent {
             tool_call_id: tool_call_id.to_string(),
             tool_name: tool_name.to_string(),
             output_chunk: output_chunk.to_string(),
+            is_stderr,
         }));
     }
 
@@ -277,24 +281,36 @@ impl StreamOutput for CliOutput {
                 let preview = if tool_result.content.len() > MAX_PREVIEW_LENGTH {
                     format!("{}...", &tool_result.content[..MAX_PREVIEW_LENGTH])
                 } else {
-                    tool_result.content
+                    tool_result.content.clone()
                 };
 
-                // Indent each line and format for raw mode
-                let indented_lines: Vec<String> =
-                    preview.lines().map(|line| format!("  {line}")).collect();
-                let formatted_preview = indented_lines.join("\r\n");
+                // Format output based on error status
+                if tool_result.is_error {
+                    // Error result - use red coloring and clean formatting
+                    let formatted_error = format_tool_error(&preview);
+                    let display_error = formatted_error.replace('\n', "\r\n");
+                    print!("\r\n{display_error}\r\n");
+                } else {
+                    // Success result - normal formatting
+                    // Indent each line and format for raw mode
+                    let indented_lines: Vec<String> =
+                        preview.lines().map(|line| format!("  {line}")).collect();
+                    let formatted_preview = indented_lines.join("\r\n");
 
-                print!(
-                    "\r\n[Tool result preview]\r\n-------\r\n{formatted_preview}\r\n-------\r\n"
-                );
+                    print!(
+                        "\r\n[Tool result preview]\r\n-------\r\n{formatted_preview}\r\n-------\r\n"
+                    );
+                }
                 std::io::stdout().flush().ok();
             }
             StreamEvent::Done => {
                 // CLI doesn't need explicit done signal
             }
             StreamEvent::Error(error) => {
-                eprintln!("\r\nError: {error}");
+                // Clean up error message and display in red
+                let formatted = format_cli_error(&error);
+                let display_error = formatted.replace('\n', "\r\n");
+                eprintln!("\r\n{display_error}");
             }
             StreamEvent::Interrupted(queued_inputs) => {
                 // Use \r\n for raw mode compatibility
@@ -323,7 +339,13 @@ impl StreamOutput for CliOutput {
                 // TOOL-011: Stream bash output to terminal in real-time
                 // Replace \n with \r\n for proper terminal display in raw mode
                 let display_text = progress.output_chunk.replace('\n', "\r\n");
-                print!("{display_text}");
+                if progress.is_stderr {
+                    // Stderr output in red
+                    use crate::terminal::style::{RED, RESET};
+                    print!("{RED}{display_text}{RESET}");
+                } else {
+                    print!("{display_text}");
+                }
                 std::io::stdout().flush().ok();
             }
             StreamEvent::Thinking(thinking) => {

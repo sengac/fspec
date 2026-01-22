@@ -135,3 +135,77 @@ async fn test_bash_tool_has_correct_definition() {
     assert_eq!(def.name, "Bash");
     assert!(!def.description.is_empty());
 }
+
+// ==========================================
+// OUTPUT FORMAT TESTS - Clean output without labels
+// ==========================================
+
+/// Scenario: Output should not contain "Stderr:" or "Stdout:" labels
+#[tokio::test]
+async fn test_output_does_not_contain_labels() {
+    let tool = BashTool::new();
+
+    // Test successful command with stderr warnings
+    let result = tool
+        .call(codelet_tools::bash::BashArgs {
+            command: "echo 'stdout' && echo 'stderr warning' >&2".to_string(),
+        })
+        .await
+        .unwrap();
+
+    // Output should contain the content but NOT the labels
+    assert!(result.contains("stdout"));
+    assert!(result.contains("stderr warning"));
+    assert!(!result.contains("Stdout:"), "Output should not contain 'Stdout:' label");
+    assert!(!result.contains("Stderr:"), "Output should not contain 'Stderr:' label");
+}
+
+/// Scenario: Error output should not contain "Stderr:" or "Stdout:" labels
+#[tokio::test]
+async fn test_error_output_does_not_contain_labels() {
+    let tool = BashTool::new();
+
+    // Test failed command
+    let result = tool
+        .call(codelet_tools::bash::BashArgs {
+            command: "ls /nonexistent_directory_12345".to_string(),
+        })
+        .await;
+
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    let err_msg = err.to_string();
+    
+    // Error should contain "Command failed with exit code" format
+    assert!(
+        err_msg.contains("Command failed with exit code"),
+        "Error should indicate command failure with exit code. Got: {err_msg}"
+    );
+    
+    // Error should NOT contain old-style labels
+    assert!(!err_msg.contains("Stdout:"), "Error should not contain 'Stdout:' label. Got: {err_msg}");
+    assert!(!err_msg.contains("Stderr:"), "Error should not contain 'Stderr:' label. Got: {err_msg}");
+}
+
+/// Scenario: Exit code should be clearly indicated in error message
+#[tokio::test]
+async fn test_exit_code_clearly_indicated() {
+    let tool = BashTool::new();
+
+    // Test command that exits with code 42
+    let result = tool
+        .call(codelet_tools::bash::BashArgs {
+            command: "exit 42".to_string(),
+        })
+        .await;
+
+    assert!(result.is_err());
+    let err = result.unwrap_err();
+    let err_msg = err.to_string();
+    
+    // Should clearly indicate the exit code
+    assert!(
+        err_msg.contains("exit code 42"),
+        "Error should indicate exit code 42. Got: {err_msg}"
+    );
+}

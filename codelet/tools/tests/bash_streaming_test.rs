@@ -4,10 +4,17 @@
 //!
 //! These tests verify that bash command output streams to UI in real-time
 //! while still buffering complete output for LLM response.
+//!
+//! NOTE: Tests that use the global abort flag must be synchronized to avoid
+//! race conditions when running in parallel.
 
 use codelet_tools::bash::{BashArgs, BashTool, StreamCallback};
 use codelet_tools::limits::OutputLimits;
 use std::sync::{Arc, Mutex};
+
+// Global lock for tests that modify the abort flag.
+// This prevents race conditions when tests run in parallel.
+static ABORT_TEST_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 // ==========================================
 // MOCK STREAM OUTPUT FOR TESTING
@@ -48,6 +55,9 @@ impl MockStreamCollector {
 /// Scenario: Stream command output to UI in real-time
 #[tokio::test]
 async fn test_stream_command_output_to_ui_in_real_time() {
+    // Acquire lock to prevent abort flag race conditions
+    let _lock = ABORT_TEST_LOCK.lock().unwrap();
+    
     // @step Given a bash command that produces incremental output
     let tool = BashTool::new();
     let collector = MockStreamCollector::new();
@@ -83,6 +93,9 @@ async fn test_stream_command_output_to_ui_in_real_time() {
 /// Scenario: Buffer complete output for LLM response
 #[tokio::test]
 async fn test_buffer_complete_output_for_llm_response() {
+    // Acquire lock to prevent abort flag race conditions
+    let _lock = ABORT_TEST_LOCK.lock().unwrap();
+    
     // @step Given a bash command that produces multiple lines of output
     let tool = BashTool::new();
     let collector = MockStreamCollector::new();
@@ -122,6 +135,9 @@ async fn test_buffer_complete_output_for_llm_response() {
 /// Scenario: Truncate large output for LLM while streaming full output to UI
 #[tokio::test]
 async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
+    // Acquire lock to prevent abort flag race conditions
+    let _lock = ABORT_TEST_LOCK.lock().unwrap();
+    
     // @step Given a bash command that produces output exceeding MAX_OUTPUT_CHARS
     let tool = BashTool::new();
     let collector = MockStreamCollector::new();
@@ -167,6 +183,9 @@ async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
 /// Scenario: Emit progress through StreamOutput trait
 #[tokio::test]
 async fn test_emit_progress_through_stream_output_trait() {
+    // Acquire lock to prevent abort flag race conditions
+    let _lock = ABORT_TEST_LOCK.lock().unwrap();
+    
     // @step Given a bash command is executing
     let tool = BashTool::new();
     let collector = MockStreamCollector::new();
@@ -220,6 +239,9 @@ async fn test_emit_progress_through_stream_output_trait() {
 /// This is critical for ESC key handling in the TUI.
 #[tokio::test]
 async fn test_abort_running_bash_command() {
+    // Acquire lock to prevent race conditions with other abort tests
+    let _lock = ABORT_TEST_LOCK.lock().unwrap();
+    
     use codelet_tools::{clear_bash_abort, request_bash_abort};
     use std::time::{Duration, Instant};
 
@@ -283,6 +305,9 @@ async fn test_abort_running_bash_command() {
 /// subsequent commands can run normally.
 #[tokio::test]
 async fn test_clear_abort_allows_new_commands() {
+    // Acquire lock to prevent race conditions with other abort tests
+    let _lock = ABORT_TEST_LOCK.lock().unwrap();
+    
     use codelet_tools::{clear_bash_abort, request_bash_abort};
 
     // @step Given the abort flag was previously set

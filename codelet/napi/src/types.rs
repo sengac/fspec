@@ -76,6 +76,8 @@ pub struct ToolProgressInfo {
     pub tool_name: String,
     /// Output chunk (new text since last progress event)
     pub output_chunk: String,
+    /// Whether this output is from stderr (should be styled as error/red)
+    pub is_stderr: bool,
 }
 
 /// Stream chunk types for streaming responses (TOOL-010)

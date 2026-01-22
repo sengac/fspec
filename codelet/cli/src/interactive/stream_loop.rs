@@ -317,8 +317,8 @@ where
     // which runs on the tokio runtime and can make I/O calls (print for CLI, or
     // ThreadsafeFunction::call for NAPI which is NonBlocking).
     if let Some(emitter) = output.progress_emitter() {
-        set_tool_progress_callback(Some(Arc::new(move |chunk: &str| {
-            emitter.emit_tool_progress("", "bash", chunk);
+        set_tool_progress_callback(Some(Arc::new(move |chunk: &str, is_stderr: bool| {
+            emitter.emit_tool_progress("", "bash", chunk, is_stderr);
         })));
     }
 

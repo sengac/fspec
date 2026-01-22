@@ -8,14 +8,15 @@
 //!
 //! 1. Stream loop registers a callback before agent execution:
 //!    ```ignore
-//!    set_tool_progress_callback(Some(Arc::new(|chunk| {
-//!        output.emit_tool_progress("", "bash", chunk);
+//!    set_tool_progress_callback(Some(Arc::new(|chunk, is_stderr| {
+//!        output.emit_tool_progress("", "bash", chunk, is_stderr);
 //!    })));
 //!    ```
 //!
 //! 2. BashTool calls emit_tool_progress during execution:
 //!    ```ignore
-//!    emit_tool_progress("line 1\n");
+//!    emit_tool_progress("line 1\n", false);  // stdout
+//!    emit_tool_progress("error\n", true);    // stderr
 //!    ```
 //!
 //! 3. Stream loop clears the callback after agent execution:
@@ -26,8 +27,8 @@
 use std::sync::{Arc, RwLock};
 
 /// Callback type for tool progress events
-/// Parameter: output_chunk (new text since last progress event)
-pub type ToolProgressCallback = Arc<dyn Fn(&str) + Send + Sync>;
+/// Parameters: (output_chunk, is_stderr)
+pub type ToolProgressCallback = Arc<dyn Fn(&str, bool) + Send + Sync>;
 
 /// Global callback storage
 static TOOL_PROGRESS_CALLBACK: RwLock<Option<ToolProgressCallback>> = RwLock::new(None);
@@ -53,10 +54,11 @@ pub fn set_tool_progress_callback(callback: Option<ToolProgressCallback>) {
 ///
 /// # Arguments
 /// * `output_chunk` - New output text since last progress event
-pub fn emit_tool_progress(output_chunk: &str) {
+/// * `is_stderr` - Whether this output is from stderr (should be styled as error)
+pub fn emit_tool_progress(output_chunk: &str, is_stderr: bool) {
     if let Ok(guard) = TOOL_PROGRESS_CALLBACK.read() {
         if let Some(callback) = guard.as_ref() {
-            callback(output_chunk);
+            callback(output_chunk, is_stderr);
         }
     }
 }
@@ -77,7 +79,7 @@ mod tests {
         set_tool_progress_callback(None);
 
         // Should not panic
-        emit_tool_progress("output");
+        emit_tool_progress("output", false);
     }
 
     #[test]
@@ -90,17 +92,17 @@ mod tests {
         let captured = Arc::new(Mutex::new(Vec::new()));
         let captured_clone = captured.clone();
 
-        set_tool_progress_callback(Some(Arc::new(move |chunk| {
-            captured_clone.lock().unwrap().push(chunk.to_string());
+        set_tool_progress_callback(Some(Arc::new(move |chunk, is_stderr| {
+            captured_clone.lock().unwrap().push((chunk.to_string(), is_stderr));
         })));
 
-        emit_tool_progress("line 1\n");
-        emit_tool_progress("line 2\n");
+        emit_tool_progress("line 1\n", false);
+        emit_tool_progress("error\n", true);
 
         let events = captured.lock().unwrap();
         assert_eq!(events.len(), 2);
-        assert_eq!(events[0], "line 1\n");
-        assert_eq!(events[1], "line 2\n");
+        assert_eq!(events[0], ("line 1\n".to_string(), false));
+        assert_eq!(events[1], ("error\n".to_string(), true));
 
         // Clean up
         set_tool_progress_callback(None);
@@ -116,20 +118,48 @@ mod tests {
         let captured = Arc::new(Mutex::new(Vec::new()));
         let captured_clone = captured.clone();
 
-        set_tool_progress_callback(Some(Arc::new(move |chunk| {
-            captured_clone.lock().unwrap().push(chunk.to_string());
+        set_tool_progress_callback(Some(Arc::new(move |chunk, is_stderr| {
+            captured_clone.lock().unwrap().push((chunk.to_string(), is_stderr));
         })));
 
-        emit_tool_progress("before clear\n");
+        emit_tool_progress("before clear\n", false);
 
         // Clear callback
         set_tool_progress_callback(None);
 
         // This should be a no-op
-        emit_tool_progress("after clear\n");
+        emit_tool_progress("after clear\n", false);
 
         let events = captured.lock().unwrap();
         assert_eq!(events.len(), 1);
-        assert_eq!(events[0], "before clear\n");
+        assert_eq!(events[0], ("before clear\n".to_string(), false));
+    }
+
+    #[test]
+    fn test_stderr_flag() {
+        let _guard = TEST_LOCK.lock().unwrap();
+
+        // Clear any existing state first
+        set_tool_progress_callback(None);
+
+        let captured = Arc::new(Mutex::new(Vec::new()));
+        let captured_clone = captured.clone();
+
+        set_tool_progress_callback(Some(Arc::new(move |chunk, is_stderr| {
+            captured_clone.lock().unwrap().push((chunk.to_string(), is_stderr));
+        })));
+
+        emit_tool_progress("stdout line\n", false);
+        emit_tool_progress("stderr line\n", true);
+        emit_tool_progress("more stdout\n", false);
+
+        let events = captured.lock().unwrap();
+        assert_eq!(events.len(), 3);
+        assert!(!events[0].1); // stdout
+        assert!(events[1].1);  // stderr
+        assert!(!events[2].1); // stdout
+
+        // Clean up
+        set_tool_progress_callback(None);
     }
 }

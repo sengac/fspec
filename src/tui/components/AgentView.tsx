@@ -2946,7 +2946,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             // TOOL-011 + TUI-037: Stream tool execution progress with rolling window
             // Display the output chunk in a fixed-height window (last N lines)
             hasStreamedToolProgress = true;
-            const outputChunk = chunk.toolProgress.outputChunk;
+            // Mark stderr output with special prefix for red rendering
+            const isStderr = chunk.toolProgress.isStderr;
+            const rawChunk = chunk.toolProgress.outputChunk;
+            // Prefix each line of stderr with marker for visual distinction
+            const outputChunk = isStderr
+              ? rawChunk.split('\n').map(line => line ? `⚠stderr⚠${line}` : line).join('\n')
+              : rawChunk;
             setConversation(prev => {
               const updated = [...prev];
               const lastIdx = updated.length - 1;
@@ -3680,7 +3686,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // TUI-049: Use centralized helper for token state updates (DRY)
       updateTokenStateFromChunk(chunk);
     } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
-      const outputChunk = chunk.toolProgress.outputChunk;
+      // Mark stderr output with special prefix for red rendering
+      const isStderr = chunk.toolProgress.isStderr;
+      const rawChunk = chunk.toolProgress.outputChunk;
+      const outputChunk = isStderr
+        ? rawChunk.split('\n').map(line => line ? `⚠stderr⚠${line}` : line).join('\n')
+        : rawChunk;
       setConversation(prev => {
         const updated = [...prev];
         const lastIdx = updated.length - 1;
@@ -6678,6 +6689,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                 return (
                   <Box flexGrow={1}>
                     <Text color="red">{content}</Text>
+                  </Box>
+                );
+              }
+
+              // Stderr output (marked with ⚠stderr⚠ prefix during streaming) - render in red
+              const STDERR_MARKER = '⚠stderr⚠';
+              if (content.includes(STDERR_MARKER)) {
+                // Remove the marker and render in red
+                const cleanContent = content.replace(new RegExp(STDERR_MARKER, 'g'), '');
+                return (
+                  <Box flexGrow={1}>
+                    <Text color="red">{cleanContent}</Text>
                   </Box>
                 );
               }

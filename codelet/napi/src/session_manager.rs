@@ -3238,6 +3238,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 tool_call_id: tp.tool_call_id,
                 tool_name: tp.tool_name,
                 output_chunk: tp.output_chunk,
+                is_stderr: tp.is_stderr,
             }),
             StreamEvent::Status(status) => StreamChunk::status(status),
             StreamEvent::Tokens(info) => {
@@ -3287,6 +3288,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter {
                 tool_call_id: tp.tool_call_id,
                 tool_name: tp.tool_name,
                 output_chunk: tp.output_chunk,
+                is_stderr: tp.is_stderr,
             });
             self.session.handle_output(chunk);
         }
