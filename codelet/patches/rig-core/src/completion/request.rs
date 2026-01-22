@@ -126,11 +126,11 @@ pub enum PromptError {
     CompletionError(#[from] CompletionError),
 
     /// There was an error while using a tool
-    #[error("ToolCallError: {0}")]
+    #[error("{0}")]
     ToolError(#[from] ToolSetError),
 
     /// There was an issue while executing a tool on a tool server
-    #[error("ToolServerError: {0}")]
+    #[error("{0}")]
     ToolServerError(#[from] ToolServerError),
 
     /// The LLM tried to call too many tools during a multi-turn conversation.

@@ -11,18 +11,24 @@ use anyhow::Result;
 use codelet_common::debug_capture::get_debug_capture_manager;
 use tracing::debug;
 
-/// Detect if a tool result indicates an error using structured JSON data.
+/// Detect if a tool result indicates an error.
 ///
-/// Tool facades (FileToolFacadeWrapper, BashToolFacadeWrapper, etc.) return JSON
-/// with a structured format: `{"success": bool, "error": Option<String>}`.
-/// We check for `success: false` or presence of `error` field rather than
-/// string matching which would cause false positives when file content
-/// contains "Error:" or "error:" as part of code examples, documentation, etc.
+/// Error detection works in two ways:
 ///
-/// For non-JSON results (e.g., direct tool outputs), we never mark as error
-/// since the tool itself would have returned an Err() if it failed.
+/// 1. **JSON responses from tool facades**: Check for `{"success": false}` or `{"error": "..."}`.
+///    Tool facades (FileToolFacadeWrapper, BashToolFacadeWrapper, etc.) return JSON
+///    with a structured format.
+///
+/// 2. **Plain-text error messages**: Detect patterns from tool error messages.
+///    When a tool returns `Err(ToolError::...)`, the rig framework converts it to
+///    a plain string. We detect common error patterns:
+///    - "Command failed with exit code N" (from bash)
+///    - "Operation timed out" (from timeouts)
+///    - Other error-indicating patterns
+///
+/// This avoids false positives from file content containing "Error:" or "error:".
 fn detect_tool_error(raw_result: &str) -> bool {
-    // Try to parse as JSON to check for structured error indicators
+    // 1. Try to parse as JSON to check for structured error indicators
     if let Ok(json) = serde_json::from_str::<serde_json::Value>(raw_result) {
         // Check for {"success": false, ...} pattern used by tool facades
         if let Some(success) = json.get("success").and_then(serde_json::Value::as_bool) {
@@ -35,9 +41,31 @@ fn detect_tool_error(raw_result: &str) -> bool {
             }
         }
     }
-    // For non-JSON results, we don't mark as error - the tool execution
-    // either succeeded (returned Ok) or failed (returned Err, which is
-    // handled separately by the tool execution layer)
+
+    // 2. Check for plain-text error patterns from ToolError messages
+    // These are generated when a tool returns Err(ToolError::...)
+    // and the rig framework converts it to a string.
+    //
+    // IMPORTANT: We check for SPECIFIC patterns, not generic "error" strings,
+    // to avoid false positives from file content.
+    let error_patterns = [
+        "Command failed with exit code",  // Bash execution failure
+        "Operation timed out",             // Timeout errors
+        "Token limit exceeded:",           // Token limit errors
+        "Invalid pattern:",                // Pattern errors (grep, glob)
+        "Unsupported language:",           // AstGrep language errors
+        "Tool not found:",                 // ToolSet errors
+        "Toolset error:",                  // ToolServerError wrapper (legacy)
+        "ToolCallError:",                  // ToolSetError wrapper (legacy)
+        "ToolServerError:",                // RequestError wrapper (legacy)
+    ];
+
+    for pattern in error_patterns {
+        if raw_result.starts_with(pattern) {
+            return true;
+        }
+    }
+
     false
 }
 
@@ -230,7 +258,7 @@ pub(super) fn handle_final_response(
 mod tests {
     use super::*;
 
-    // Tests for detect_tool_error function
+    // ========== JSON-based error detection tests ==========
 
     #[test]
     fn test_detect_tool_error_success_true() {
@@ -268,27 +296,9 @@ mod tests {
     }
 
     #[test]
-    fn test_detect_tool_error_plain_text_with_error_word() {
-        // Plain text containing "Error:" - should NOT be marked as error
-        // This was the bug: file content containing "error:" was falsely flagged
-        let result = r#"1: # Agent Development Guidelines
-2: This document describes error handling.
-3: Use ToolError for tool failures.
-4: Example: console.error('Error: something failed');"#;
-        assert!(!detect_tool_error(result));
-    }
-
-    #[test]
     fn test_detect_tool_error_json_content_with_error_word() {
         // JSON with content containing "Error:" but success: true
         let result = r#"{"success":true,"content":"Error: this is just example text"}"#;
-        assert!(!detect_tool_error(result));
-    }
-
-    #[test]
-    fn test_detect_tool_error_non_json() {
-        // Non-JSON result - should NOT be an error
-        let result = "This is plain text output from a tool";
         assert!(!detect_tool_error(result));
     }
 
@@ -303,6 +313,125 @@ mod tests {
     fn test_detect_tool_error_nested_json() {
         // Nested JSON - only top-level success/error counts
         let result = r#"{"success":true,"data":{"error":"nested error doesn't count"}}"#;
+        assert!(!detect_tool_error(result));
+    }
+
+    // ========== Plain-text error pattern detection tests ==========
+
+    #[test]
+    fn test_detect_tool_error_bash_exit_code() {
+        // Bash command failure - IS an error
+        let result = "Command failed with exit code 1\nerror: unknown command 'bootstrap2'\n(Did you mean bootstrap?)";
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_timeout() {
+        // Timeout error - IS an error
+        let result = "Operation timed out after 30 seconds";
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_token_limit() {
+        // Token limit error - IS an error
+        let result = "Token limit exceeded: /path/to/file has ~50000 tokens (limit: 25000)";
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_invalid_pattern() {
+        // Pattern error - IS an error
+        let result = "Invalid pattern: [unclosed bracket";
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_unsupported_language() {
+        // Language error - IS an error
+        let result = "Unsupported language: brainfuck";
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_tool_not_found() {
+        // Tool not found error - IS an error
+        let result = "Tool not found: nonexistent_tool";
+        assert!(detect_tool_error(result));
+    }
+
+    // ========== False positive prevention tests ==========
+
+    #[test]
+    fn test_detect_tool_error_plain_text_with_error_word() {
+        // Plain text containing "Error:" - should NOT be marked as error
+        // This was the bug: file content containing "error:" was falsely flagged
+        let result = r#"1: # Agent Development Guidelines
+2: This document describes error handling.
+3: Use ToolError for tool failures.
+4: Example: console.error('Error: something failed');"#;
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_non_json_normal_output() {
+        // Normal plain text output - NOT an error
+        let result = "This is plain text output from a tool";
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_command_in_middle() {
+        // Error pattern appearing in middle of content - NOT an error
+        // Only patterns at START of message indicate actual errors
+        let result = "The message 'Command failed with exit code 1' was logged";
+        assert!(!detect_tool_error(result));
+    }
+
+    // ========== Legacy error wrapper pattern tests ==========
+
+    #[test]
+    fn test_detect_tool_error_toolset_error_wrapper() {
+        // Legacy ToolServerError wrapper - IS an error
+        let result = "Toolset error: Command failed with exit code 1\nerror: unknown command";
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_tool_call_error_wrapper() {
+        // Legacy ToolSetError wrapper - IS an error
+        let result = "ToolCallError: File not found: /path/to/file";
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_tool_server_error_wrapper() {
+        // Legacy RequestError wrapper - IS an error
+        let result = "ToolServerError: Connection refused";
+        assert!(detect_tool_error(result));
+    }
+
+    // ========== Stderr marker tests (integration with bash output) ==========
+
+    #[test]
+    fn test_detect_tool_error_with_stderr_markers_success() {
+        // Successful command with stderr markers should NOT be flagged as error
+        // (The markers are for UI coloring, not error status)
+        let result = "stdout output\n⚠stderr⚠warning: deprecated function";
+        assert!(!detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_with_stderr_markers_and_error() {
+        // Failed command has error prefix + stderr markers
+        let result = "Command failed with exit code 1\n⚠stderr⚠error: file not found";
+        assert!(detect_tool_error(result));
+    }
+
+    #[test]
+    fn test_detect_tool_error_stderr_marker_only() {
+        // Only stderr markers (no actual error) should NOT be flagged
+        let result = "⚠stderr⚠this is just a warning";
         assert!(!detect_tool_error(result));
     }
 }

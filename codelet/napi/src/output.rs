@@ -140,6 +140,7 @@ impl StreamOutput for NapiProgressEmitter {
                 tool_call_id: progress.tool_call_id,
                 tool_name: progress.tool_name,
                 output_chunk: progress.output_chunk,
+                is_stderr: progress.is_stderr,
             };
             let _ = self.callback.call(
                 StreamChunk::tool_progress(info),
@@ -266,6 +267,7 @@ impl StreamOutput for NapiOutput {
                     tool_call_id: progress.tool_call_id,
                     tool_name: progress.tool_name,
                     output_chunk: progress.output_chunk,
+                    is_stderr: progress.is_stderr,
                 };
                 let _ = self.callback.call(
                     StreamChunk::tool_progress(info),

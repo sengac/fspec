@@ -79,7 +79,7 @@ pub fn truncate_line(line: &str, max_length: usize) -> String {
         
         // Use get() for safe slicing (returns None if indices are invalid)
         match line.get(..truncate_at) {
-            Some(truncated) => format!("{}...", truncated),
+            Some(truncated) => format!("{truncated}..."),
             None => "...".to_string(), // Fallback for edge cases
         }
     }

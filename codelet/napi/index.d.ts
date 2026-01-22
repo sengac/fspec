@@ -1364,6 +1364,8 @@ export interface ToolProgressInfo {
   toolName: string;
   /** Output chunk (new text since last progress event) */
   outputChunk: string;
+  /** Whether this output is from stderr (should be styled as error/red) */
+  isStderr: boolean;
 }
 
 /** Tool result information */

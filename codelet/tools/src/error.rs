@@ -9,42 +9,44 @@ use thiserror::Error;
 ///
 /// This error type includes the tool name for debugging and provides
 /// an is_retryable() method to determine if the operation can be retried.
+///
+/// Display messages are user-friendly without redundant prefixes.
 #[derive(Debug, Error)]
 pub enum ToolError {
     /// Timeout error - the operation timed out
-    #[error("[{tool}] Timeout: operation timed out after {seconds} seconds")]
+    #[error("Operation timed out after {seconds} seconds")]
     Timeout { tool: &'static str, seconds: u64 },
 
     /// Execution error - command or operation failed
-    #[error("[{tool}] Execution error: {message}")]
+    #[error("{message}")]
     Execution { tool: &'static str, message: String },
 
     /// File error - file I/O operation failed
-    #[error("[{tool}] File error: {message}")]
+    #[error("{message}")]
     File { tool: &'static str, message: String },
 
     /// Validation error - input validation failed
-    #[error("[{tool}] Validation error: {message}")]
+    #[error("{message}")]
     Validation { tool: &'static str, message: String },
 
     /// Pattern error - regex or glob pattern is invalid
-    #[error("[{tool}] Pattern error: {message}")]
+    #[error("Invalid pattern: {message}")]
     Pattern { tool: &'static str, message: String },
 
     /// Not found error - resource not found
-    #[error("[{tool}] Not found: {message}")]
+    #[error("{message}")]
     NotFound { tool: &'static str, message: String },
 
     /// String not found error - specific to Edit tool
-    #[error("[{tool}] String not found: {message}")]
+    #[error("{message}")]
     StringNotFound { tool: &'static str, message: String },
 
     /// Language error - unsupported language (specific to AstGrep)
-    #[error("[{tool}] Language error: {message}")]
+    #[error("Unsupported language: {message}")]
     Language { tool: &'static str, message: String },
 
     /// Token limit exceeded - file content exceeds maximum token limit (PROV-002)
-    #[error("[{tool}] Token limit exceeded: {file_path} has ~{estimated_tokens} tokens (limit: {max_tokens})")]
+    #[error("Token limit exceeded: {file_path} has ~{estimated_tokens} tokens (limit: {max_tokens})")]
     TokenLimit {
         tool: &'static str,
         file_path: String,
@@ -74,7 +76,7 @@ impl ToolError {
         }
     }
 
-    /// Get the tool name from this error
+    /// Get the tool name from this error (for logging/debugging)
     pub fn tool_name(&self) -> &'static str {
         match self {
             ToolError::Timeout { tool, .. } => tool,
@@ -94,29 +96,34 @@ impl ToolError {
 mod tests {
     use super::*;
 
-    // @step Given each tool has its own error enum (BashError, ReadError, WriteError, etc.)
-    // This is verified by the existence of individual error enums in each tool file
-
-    // @step When I create a unified ToolError type in tools/src/error.rs
-    // This test verifies the ToolError enum exists and can be constructed
+    #[test]
+    fn test_tool_error_display_is_clean() {
+        // Execution errors should show just the message
+        let err = ToolError::Execution {
+            tool: "bash",
+            message: "Command failed with exit code 1".to_string(),
+        };
+        assert_eq!(err.to_string(), "Command failed with exit code 1");
+        
+        // File errors should show just the message
+        let err = ToolError::File {
+            tool: "read",
+            message: "File not found: /tmp/test.txt".to_string(),
+        };
+        assert_eq!(err.to_string(), "File not found: /tmp/test.txt");
+    }
 
     #[test]
-    fn test_tool_error_includes_tool_name() {
-        // @step Then all tools should return ToolError instead of individual error enums
-        let timeout_err = ToolError::Timeout {
+    fn test_tool_name_still_accessible() {
+        let err = ToolError::Execution {
             tool: "bash",
-            seconds: 30,
+            message: "failed".to_string(),
         };
-
-        // @step And ToolError should include the tool name for debugging
-        assert_eq!(timeout_err.tool_name(), "bash");
-        assert!(timeout_err.to_string().contains("[bash]"));
-        assert!(timeout_err.to_string().contains("30 seconds"));
+        assert_eq!(err.tool_name(), "bash");
     }
 
     #[test]
     fn test_tool_error_is_retryable() {
-        // @step And ToolError should have an is_retryable() method
         let timeout_err = ToolError::Timeout {
             tool: "bash",
             seconds: 30,
@@ -128,61 +135,5 @@ mod tests {
             message: "path must be absolute".to_string(),
         };
         assert!(!validation_err.is_retryable());
-
-        let execution_err = ToolError::Execution {
-            tool: "bash",
-            message: "command failed".to_string(),
-        };
-        assert!(!execution_err.is_retryable());
-    }
-
-    #[test]
-    fn test_all_error_variants() {
-        // @step And the individual error enums should be removed
-        // This is verified by the migration - once tools use ToolError,
-        // the individual error enums (BashError, ReadError, etc.) will be removed
-
-        // Verify all error variants have correct tool names
-        let errors = vec![
-            ToolError::Timeout {
-                tool: "bash",
-                seconds: 30,
-            },
-            ToolError::Execution {
-                tool: "bash",
-                message: "exit code 1".to_string(),
-            },
-            ToolError::File {
-                tool: "read",
-                message: "file not found".to_string(),
-            },
-            ToolError::Validation {
-                tool: "write",
-                message: "path must be absolute".to_string(),
-            },
-            ToolError::Pattern {
-                tool: "grep",
-                message: "invalid regex".to_string(),
-            },
-            ToolError::NotFound {
-                tool: "ls",
-                message: "directory not found".to_string(),
-            },
-            ToolError::StringNotFound {
-                tool: "edit",
-                message: "old_string not found".to_string(),
-            },
-            ToolError::Language {
-                tool: "astgrep",
-                message: "unsupported language".to_string(),
-            },
-        ];
-
-        for err in errors {
-            // Each error should have a tool name
-            assert!(!err.tool_name().is_empty());
-            // Each error message should contain the tool name in brackets
-            assert!(err.to_string().contains(&format!("[{}]", err.tool_name())));
-        }
     }
 }

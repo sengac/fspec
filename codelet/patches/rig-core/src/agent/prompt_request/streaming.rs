@@ -194,11 +194,11 @@ impl<R> MultiTurnStreamItem<R> {
 
 #[derive(Debug, thiserror::Error)]
 pub enum StreamingError {
-    #[error("CompletionError: {0}")]
+    #[error("{0}")]
     Completion(#[from] CompletionError),
-    #[error("PromptError: {0}")]
+    #[error("{0}")]
     Prompt(#[from] Box<PromptError>),
-    #[error("ToolSetError: {0}")]
+    #[error("{0}")]
     Tool(#[from] ToolSetError),
 }
 

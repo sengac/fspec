@@ -342,7 +342,7 @@ pub enum ToolServerResponse {
 pub enum ToolServerError {
     #[error("Sending message was cancelled")]
     Canceled(#[from] Canceled),
-    #[error("Toolset error: {0}")]
+    #[error("{0}")]
     ToolsetError(#[from] ToolSetError),
     #[error("Error while sending message: {0}")]
     SendError(#[from] SendError<ToolServerRequest>),
