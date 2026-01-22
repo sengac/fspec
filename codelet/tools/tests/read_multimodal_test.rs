@@ -158,3 +158,38 @@ async fn test_detect_image_type_by_content_when_extension_missing() {
         "Should detect PNG media type from magic bytes"
     );
 }
+
+/// Regression test: Read tool should not panic when offset exceeds file length
+/// This can happen when a file is shortened between sessions and the agent
+/// attempts to read with a cached/historical offset.
+/// Bug: https://github.com/sengac/fspec - "range start index out of range for slice"
+#[tokio::test]
+async fn test_read_offset_exceeds_file_length() {
+    // @step Given a text file with 10 lines
+    let temp_dir = TempDir::new().unwrap();
+    let text_path = temp_dir.path().join("short-file.txt");
+    let mut file = File::create(&text_path).unwrap();
+    file.write_all(b"line 1\nline 2\nline 3\nline 4\nline 5\nline 6\nline 7\nline 8\nline 9\nline 10")
+        .unwrap();
+
+    // @step When I read the file with an offset of 240 (way beyond the 10 lines)
+    let tool = ReadTool::new();
+    let args = codelet_tools::read::ReadArgs {
+        file_path: text_path.to_string_lossy().to_string(),
+        offset: Some(240), // Much larger than the 10 lines in the file
+        limit: None,
+        pdf_mode: None,
+    };
+
+    // @step Then the tool should NOT panic
+    let result = tool.call(args).await;
+
+    // @step And should return success with empty or minimal content
+    assert!(result.is_ok(), "Should not panic, should return Ok");
+
+    let output: serde_json::Value =
+        serde_json::from_str(&result.unwrap()).expect("Result should be valid JSON ReadOutput");
+
+    // The result should be a text type with content (possibly empty since offset > file length)
+    assert_eq!(output["type"], "text", "Should return text type");
+}

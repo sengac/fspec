@@ -271,6 +271,7 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
             renderItem={renderItem}
             showScrollbar={focusedPane === 'files'}
             isFocused={focusedPane === 'files'}
+            heightAdjustment={-1}
             onFocus={(file, index) => onFileSelect(file, index)}
           />
         </Box>
@@ -297,14 +298,13 @@ export const FileDiffViewer: React.FC<FileDiffViewerProps> = ({
               Diff
             </Text>
           </Box>
-          <Box flexGrow={1}>
-            <VirtualList
-              items={diffLines}
-              renderItem={renderDiffLine}
-              showScrollbar={focusedPane === 'diff'}
-              isFocused={focusedPane === 'diff'}
-            />
-          </Box>
+          <VirtualList
+            items={diffLines}
+            renderItem={renderDiffLine}
+            showScrollbar={focusedPane === 'diff'}
+            isFocused={focusedPane === 'diff'}
+            selectionMode="scroll"
+          />
         </Box>
       </Box>
     </Box>
