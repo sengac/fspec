@@ -1,3 +1,5 @@
+@agent-interaction
+@cli
 @done
 @WATCH-016
 Feature: Discuss Selected Feature

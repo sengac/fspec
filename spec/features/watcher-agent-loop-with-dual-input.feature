@@ -1,3 +1,5 @@
+@watcher
+@codelet
 @WATCH-005
 Feature: Watcher Agent Loop with Dual Input
 

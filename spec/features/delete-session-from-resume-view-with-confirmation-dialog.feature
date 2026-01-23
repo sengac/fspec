@@ -1,3 +1,4 @@
+@session-management
 @done
 @confirmation
 @destructive-action

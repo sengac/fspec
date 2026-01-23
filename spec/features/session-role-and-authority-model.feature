@@ -1,3 +1,5 @@
+@watcher
+@codelet
 @WATCH-004
 Feature: Session Role and Authority Model
 

@@ -1,4 +1,6 @@
-@WATCH-017
+@watcher
+@tui
+@WATCH-022
 Feature: Split Session View Component Extraction
 
   """

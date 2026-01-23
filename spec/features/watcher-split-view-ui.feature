@@ -1,3 +1,5 @@
+@watcher
+@tui
 @WATCH-010
 Feature: Watcher Split View UI
 

@@ -1,0 +1,169 @@
+{
+  "scenarios": [
+    {
+      "name": "Auto-inject defaults to enabled",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-create-auto-inject.test.tsx",
+          "lines": "76-87",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherCreateView.tsx",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User disables auto-inject with arrow keys",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-create-auto-inject.test.tsx",
+          "lines": "89-118",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherCreateView.tsx",
+              "lines": [
+                136,
+                137,
+                138,
+                139,
+                140
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tab navigation includes auto-inject field",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-create-auto-inject.test.tsx",
+          "lines": "120-158",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherCreateView.tsx",
+              "lines": [
+                24,
+                25,
+                26,
+                27,
+                28
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-inject field shows focus styling and hint",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-create-auto-inject.test.tsx",
+          "lines": "160-186",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherCreateView.tsx",
+              "lines": [
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Creating watcher passes auto-inject setting",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-create-auto-inject.test.tsx",
+          "lines": "188-244",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4257,
+                4258,
+                4259,
+                4260,
+                4261,
+                4262,
+                4263,
+                4264,
+                4265,
+                4266,
+                4267,
+                4268,
+                4269,
+                4270,
+                4271,
+                4272,
+                4273,
+                4274,
+                4275,
+                4276,
+                4277,
+                4278,
+                4279,
+                4280,
+                4281,
+                4282,
+                4283,
+                4284,
+                4285,
+                4286,
+                4287,
+                4288,
+                4289,
+                4290,
+                4291,
+                4292,
+                4293,
+                4294,
+                4295,
+                4296,
+                4297,
+                4298,
+                4299
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/watcher-create-auto-inject.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/WatcherCreateView.tsx",
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 237
+  }
+}

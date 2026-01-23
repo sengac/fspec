@@ -1,3 +1,5 @@
+@watcher
+@codelet
 @WATCH-002
 Feature: WatchGraph and Session Relationship Tracking
 

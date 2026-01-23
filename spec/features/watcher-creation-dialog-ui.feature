@@ -1,3 +1,5 @@
+@watcher
+@tui
 @WATCH-009
 Feature: Watcher Creation Dialog UI
 
