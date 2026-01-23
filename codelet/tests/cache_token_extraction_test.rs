@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/extract-cache-tokens-from-anthropic-api-response.feature
 //
 // CLI-014: Extract cache tokens from Anthropic API response

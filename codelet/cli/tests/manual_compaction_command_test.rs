@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Tests for Manual Compaction Command (NAPI-001)
 //!
 //! Feature: spec/features/manual-compaction-command.feature

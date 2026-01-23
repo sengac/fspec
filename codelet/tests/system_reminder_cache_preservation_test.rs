@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/fix-system-reminder-replacement-to-preserve-prompt-cache-prefix.feature
 //
 // CLI-013: Fix system-reminder replacement to preserve prompt cache prefix

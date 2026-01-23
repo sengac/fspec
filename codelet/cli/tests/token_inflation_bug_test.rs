@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/fix-token-inflation-bug-15-7x-overcounting.feature
 //
 // CTX-003: Fix Token Inflation Bug (15.7x Overcounting)
@@ -147,7 +148,7 @@ fn test_verify_inflation_calculation_with_bugs() {
     let buggy_value: f64 = 270000.0;
     let correct_value: f64 = 60000.0;
     let ratio = buggy_value / correct_value;
-    assert!((ratio - 4.5).abs() < 0.01, "Ratio {} should be 4.5x", ratio);
+    assert!((ratio - 4.5).abs() < 0.01, "Ratio {ratio} should be 4.5x");
 }
 
 // =============================================================================
@@ -242,8 +243,7 @@ fn test_context_fill_percentage_uses_current_context() {
     // @step Then the fill percentage should be approximately 58 percent
     assert!(
         (fill_pct - 58.3).abs() < 1.0,
-        "Fill percentage {} should be ~58%",
-        fill_pct
+        "Fill percentage {fill_pct} should be ~58%"
     );
 
     // @step And the fill percentage should NOT be 920 percent from cumulative tracking

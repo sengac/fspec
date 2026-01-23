@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/environment-configuration-loading.feature
 //!
 //! Tests for Environment Configuration Loading - CORE-006

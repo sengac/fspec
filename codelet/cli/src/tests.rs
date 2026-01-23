@@ -3,6 +3,8 @@
 // Tests for Interactive TUI Agent Mode (CLI-002)
 // These tests MUST FAIL initially (red phase) to prove they test real behavior
 
+#![allow(clippy::unwrap_used, clippy::expect_used)]
+
 #[cfg(test)]
 mod interactive_tui_tests {
     use anyhow::Result;

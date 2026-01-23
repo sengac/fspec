@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/add-large-write-intent-detection-and-chunking-guidance.feature
 //!
 //! Tests for CLI-019: Large Write Intent Detection and Chunking Guidance

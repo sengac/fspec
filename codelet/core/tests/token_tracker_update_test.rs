@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: Token Tracker Update Methods (CMPCT-001)
 //!
 //! Tests for the consolidated token tracker update methods that reduce

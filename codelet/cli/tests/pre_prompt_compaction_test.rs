@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: CTX-005 - Pre-prompt compaction check
 //
 // Tests for the pre-prompt compaction check that prevents "prompt is too long"
@@ -37,9 +38,7 @@ fn test_pre_prompt_check_triggers_when_over_threshold() {
     // 192,000 + ~1 = ~192,001 > 191,808 threshold
     assert!(
         should_compact,
-        "Pre-prompt compaction should trigger when estimated_total ({}) > threshold ({})",
-        estimated_total,
-        threshold
+        "Pre-prompt compaction should trigger when estimated_total ({estimated_total}) > threshold ({threshold})"
     );
 }
 
@@ -72,9 +71,7 @@ fn test_pre_prompt_check_does_not_trigger_when_under_threshold() {
     // 150,000 + ~1,000 = ~151,000 < 191,808 threshold
     assert!(
         !should_compact,
-        "Pre-prompt compaction should NOT trigger when estimated_total ({}) <= threshold ({})",
-        estimated_total,
-        threshold
+        "Pre-prompt compaction should NOT trigger when estimated_total ({estimated_total}) <= threshold ({threshold})"
     );
 }
 
@@ -107,10 +104,7 @@ fn test_pre_prompt_check_includes_output_tokens() {
     // 185,000 + 8,000 + ~1 = 193,001 > 191,808
     assert!(
         should_compact,
-        "Should trigger when current_tokens ({}) + prompt ({}) > threshold ({})",
-        current_tokens,
-        prompt_tokens,
-        threshold
+        "Should trigger when current_tokens ({current_tokens}) + prompt ({prompt_tokens}) > threshold ({threshold})"
     );
 }
 
@@ -142,9 +136,7 @@ fn test_pre_prompt_check_at_exact_boundary_does_not_trigger() {
     assert_eq!(estimated_total, threshold);
     assert!(
         !should_compact,
-        "At exact boundary ({} == {}), should NOT trigger (uses > not >=)",
-        estimated_total,
-        threshold
+        "At exact boundary ({estimated_total} == {threshold}), should NOT trigger (uses > not >=)"
     );
 }
 
@@ -175,9 +167,7 @@ fn test_pre_prompt_check_one_over_threshold_triggers() {
     assert_eq!(estimated_total, threshold + 1);
     assert!(
         should_compact,
-        "One over threshold ({} > {}) should trigger",
-        estimated_total,
-        threshold
+        "One over threshold ({estimated_total} > {threshold}) should trigger"
     );
 }
 
@@ -213,9 +203,7 @@ fn test_session_at_98_percent_triggers_pre_prompt_compaction() {
     // 192,000 + ~1 > 191,808 threshold
     assert!(
         should_compact,
-        "At 192k tokens + prompt, should trigger: {} > {}",
-        estimated_total,
-        threshold
+        "At 192k tokens + prompt, should trigger: {estimated_total} > {threshold}"
     );
 }
 

@@ -3,6 +3,8 @@
 // Tests for CLEAN-005: Remove output mutators (highlighting and diff)
 // These tests verify that output mutator modules are completely removed.
 
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
 use std::fs;
 
 /// Helper to find the workspace root (where the workspace Cargo.toml is)
@@ -87,7 +89,7 @@ fn test_interactive_mode_without_colored_formatting() {
     {
         let entry = entry.expect("Should be able to read directory entry");
         let path = entry.path();
-        if path.extension().map_or(false, |ext| ext == "rs") {
+        if path.extension().is_some_and(|ext| ext == "rs") {
             interactive_content.push_str(
                 &fs::read_to_string(&path)
                     .unwrap_or_else(|_| panic!("Should be able to read {}", path.display())),

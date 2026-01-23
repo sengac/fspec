@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/display-tool-execution-information.feature
 //
 // Tests for displaying tool execution information during agent streaming.

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 /**
  * Feature: spec/features/implement-system-reminder-infrastructure.feature
  *

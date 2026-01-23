@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/context-gathering.feature
 //!
 //! Tests for CLI-016: Context Gathering with CLAUDE.md Discovery

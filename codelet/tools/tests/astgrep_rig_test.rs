@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Test for AstGrep rig::tool::Tool implementation
 
 use codelet_tools::AstGrepTool;
@@ -28,12 +30,10 @@ async fn test_astgrep_rig_tool_language_parameter() {
     let content = result.unwrap();
     assert!(
         !content.contains("language parameter is required"),
-        "Bug: language parameter was not passed correctly. Got: {}",
-        content
+        "Bug: language parameter was not passed correctly. Got: {content}"
     );
     assert!(
         content.contains("test.rs") || content.contains("hello"),
-        "Expected to find the function. Got: {}",
-        content
+        "Expected to find the function. Got: {content}"
     );
 }

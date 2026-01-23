@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for LsTool implementation
 //! Feature: spec/features/add-ls-tool-for-directory-listing.feature
 
@@ -104,7 +106,7 @@ async fn test_large_directory_listings_are_truncated() {
 
     // Each entry is ~50-80 chars, so we need ~500+ files
     for i in 0..600 {
-        let file_name = format!("file-{:05}-with-long-name.ts", i);
+        let file_name = format!("file-{i:05}-with-long-name.ts");
         File::create(temp_path.join(&file_name)).unwrap();
     }
 
@@ -261,8 +263,7 @@ async fn test_show_file_sizes_in_bytes() {
     // Should contain the file size (1234 bytes)
     assert!(
         result.contains("1234"),
-        "Expected file size 1234 in output: {}",
-        result
+        "Expected file size 1234 in output: {result}"
     );
     assert!(result.contains("sized-file.ts"));
 }

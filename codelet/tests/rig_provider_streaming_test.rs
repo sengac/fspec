@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/refactor-providers-to-use-rig-with-streaming.feature
 //!
 //! Tests for Refactoring Providers to use Rig with Streaming - REFAC-003

@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Z.AI Provider Integration Tests
 //!
 //! Feature: spec/features/z-ai-glm-provider-integration.feature
@@ -69,9 +71,9 @@ fn test_error_when_zai_api_key_missing() {
 
     // @step And the error should suggest setting ZAI_API_KEY
     let error = result.unwrap_err();
-    let error_msg = format!("{:?}", error);
+    let error_msg = format!("{error:?}");
     assert!(error_msg.contains("ZAI_API_KEY") || error_msg.contains("zai"), 
-        "Error should mention ZAI_API_KEY, got: {}", error_msg);
+        "Error should mention ZAI_API_KEY, got: {error_msg}");
 }
 
 /// Test: ZAI provider uses OpenAI-compatible API

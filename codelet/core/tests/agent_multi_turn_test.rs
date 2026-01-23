@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/refactor-agent-loop-to-use-rig-with-multi-turn.feature
 
 use codelet_core::{RigAgent, DEFAULT_MAX_DEPTH};

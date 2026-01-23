@@ -8,6 +8,8 @@
 //! - Synthetic anchor creation when no natural anchors found
 //! - Dynamic summary generation (NOT hardcoded)
 
+#![allow(clippy::unwrap_used, clippy::expect_used)]
+
 use super::anchor::{AnchorDetector, AnchorType};
 use super::model::{BuildStatus, ConversationTurn, PreservationContext, ToolCall, ToolResult};
 use std::time::SystemTime;
@@ -81,7 +83,7 @@ fn make_simple_turn(user_msg: &str, tokens: u64) -> ConversationTurn {
         user_message: user_msg.to_string(),
         tool_calls: vec![],
         tool_results: vec![],
-        assistant_response: format!("Response to: {}", user_msg),
+        assistant_response: format!("Response to: {user_msg}"),
         tokens,
         timestamp: SystemTime::now(),
         previous_error: None,
@@ -502,7 +504,7 @@ async fn test_generate_dynamic_summary_not_hardcoded() {
 
     // @step Given a conversation with 8 turns that gets compacted
     let mut turns: Vec<ConversationTurn> = (0..5)
-        .map(|i| make_simple_turn(&format!("Task {}", i), 100))
+        .map(|i| make_simple_turn(&format!("Task {i}"), 100))
         .collect();
 
     // Add turns with file edits to create context
@@ -600,22 +602,19 @@ fn test_preservation_context_format_for_summary() {
     // @step Then the output should contain "Active files: auth.rs, login.ts"
     assert!(
         output.contains("Active files: auth.rs, login.ts"),
-        "Output should contain 'Active files: auth.rs, login.ts', got: {}",
-        output
+        "Output should contain 'Active files: auth.rs, login.ts', got: {output}"
     );
 
     // @step And the output should contain "Goals: Fix auth bug; Add OAuth"
     assert!(
         output.contains("Goals: Fix auth bug; Add OAuth"),
-        "Output should contain 'Goals: Fix auth bug; Add OAuth', got: {}",
-        output
+        "Output should contain 'Goals: Fix auth bug; Add OAuth', got: {output}"
     );
 
     // @step And the output should contain "Build: passing"
     assert!(
         output.contains("Build: passing"),
-        "Output should contain 'Build: passing', got: {}",
-        output
+        "Output should contain 'Build: passing', got: {output}"
     );
 }
 
@@ -631,7 +630,7 @@ fn test_preserve_last_3_turns() {
 
     // @step Given a conversation with 10 turns
     let turns: Vec<ConversationTurn> = (0..10)
-        .map(|i| make_simple_turn(&format!("Turn {}", i), 100))
+        .map(|i| make_simple_turn(&format!("Turn {i}"), 100))
         .collect();
 
     // @step And an anchor exists at turn 5
@@ -663,8 +662,7 @@ fn test_preserve_last_3_turns() {
     for i in 0..5 {
         assert!(
             summarized_indices.contains(&i),
-            "Turn {} should be summarized",
-            i
+            "Turn {i} should be summarized"
         );
     }
 }
@@ -715,7 +713,7 @@ async fn test_compactor_creates_synthetic_anchor_when_no_natural_anchors() {
     // @step Given a conversation with 10 turns
     // @step And all turns use only Read and WebSearch tools with no Edit or Write calls
     let turns: Vec<ConversationTurn> = (0..10)
-        .map(|i| make_simple_turn(&format!("Question about topic {}", i), 100))
+        .map(|i| make_simple_turn(&format!("Question about topic {i}"), 100))
         .collect();
 
     // @step And no natural anchors are detected in any turn
@@ -724,8 +722,7 @@ async fn test_compactor_creates_synthetic_anchor_when_no_natural_anchors() {
         let result = detector.detect(turn, idx).unwrap();
         assert!(
             result.is_none(),
-            "Turn {} should not have natural anchor",
-            idx
+            "Turn {idx} should not have natural anchor"
         );
     }
 

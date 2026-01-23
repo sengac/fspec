@@ -164,7 +164,7 @@ where
 
         // Perform compaction check (same as CompactionHook)
         let Ok(mut state) = self.inner.state.lock() else {
-            tracing::warn!("GeminiHistoryHook state mutex poisoned, skipping compaction check");
+            tracing::error!("GeminiHistoryHook state mutex poisoned, skipping compaction check");
             return;
         };
 
@@ -305,6 +305,7 @@ pub fn ensure_thought_signatures(messages: &mut [Message], model: &str) {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
     use rig::message::{Text, ToolCall, ToolFunction};

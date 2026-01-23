@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/refactor-agent-loop-to-use-rig-with-multi-turn.feature
 //!
 //! Tests for Refactoring Agent Loop to use Rig with Multi-Turn - REFAC-004

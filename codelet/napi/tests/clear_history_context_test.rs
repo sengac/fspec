@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/clear-context-command-for-session-reset.feature
 //!
 //! Tests for AGENT-003: Clear context command for session reset

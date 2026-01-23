@@ -399,8 +399,7 @@ mod tests {
                     || model.contains("glm-4.7")
                     || model.contains("glm-4.6")
                     || model.contains("glm-4.5"),
-                "{} should support reasoning",
-                model
+                "{model} should support reasoning"
             );
         }
     }

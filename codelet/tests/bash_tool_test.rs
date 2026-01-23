@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/bash-tool-implementation.feature
 //!
 //! Tests for Bash Tool Implementation - CORE-003

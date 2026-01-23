@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for multimodal Read tool implementation
 //! Feature: spec/features/add-multimodal-content-support-to-read-tool.feature
 
@@ -110,8 +112,7 @@ async fn test_handle_corrupted_image_gracefully() {
         error_msg.contains("not found")
             || error_msg.contains("does not exist")
             || error_msg.contains("No such file"),
-        "Error should explain the file could not be found: {}",
-        error_msg
+        "Error should explain the file could not be found: {error_msg}"
     );
 }
 

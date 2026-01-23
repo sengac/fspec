@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 /**
  * Feature: spec/features/implement-system-reminder-infrastructure.feature
  *
@@ -397,7 +398,7 @@ fn test_reconstruction_after_compaction_preserves_reminders() {
     // @step And system-reminder content should be unchanged
     let env_content = reconstructed.iter().find_map(|msg| match msg {
         Message::User { content } => match content.first() {
-            UserContent::Text(t) if is_system_reminder(msg) => Some(t.text.clone()),
+            UserContent::Text(t) if is_system_reminder(msg) => Some(t.text),
             _ => None,
         },
         _ => None,
@@ -481,10 +482,10 @@ async fn test_system_reminders_persist_through_compaction() {
     // Add multiple turns to ensure compaction happens
     for i in 2..=5 {
         session.turns.push(ConversationTurn {
-            user_message: format!("user message {}", i),
+            user_message: format!("user message {i}"),
             tool_calls: vec![],
             tool_results: vec![],
-            assistant_response: format!("assistant response {}", i),
+            assistant_response: format!("assistant response {i}"),
             tokens: 300, // More tokens per turn
             timestamp: SystemTime::now(),
             previous_error: None,
@@ -568,7 +569,7 @@ async fn test_system_reminders_persist_through_compaction() {
     let env_content = session.messages.iter().find_map(|msg| match msg {
         Message::User { content } => match content.first() {
             UserContent::Text(t) if t.text.contains("<!-- type:environment -->") => {
-                Some(t.text.clone())
+                Some(t.text)
             }
             _ => None,
         },

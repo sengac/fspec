@@ -155,6 +155,7 @@ impl Default for TokPerSecCalculator {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
     use std::thread::sleep;
@@ -256,7 +257,7 @@ mod tests {
         // Small change: 100 -> 105 (5% change)
         let alpha = calc.calculate_adaptive_alpha(105.0);
         // relative_change = 0.05, alpha = 0.1 (clamped)
-        assert!(alpha >= 0.1 && alpha <= 0.2);
+        assert!((0.1..=0.2).contains(&alpha));
     }
 
     #[test]

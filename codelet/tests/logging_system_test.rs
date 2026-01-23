@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 /**
  * Feature: spec/features/unified-tracing-based-logging-system.feature
  *

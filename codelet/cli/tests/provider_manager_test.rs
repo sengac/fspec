@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/provider-manager-for-dynamic-provider-selection.feature
 //!
 //! Tests for ProviderManager implementation following ACDD workflow.

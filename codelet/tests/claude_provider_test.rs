@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/anthropic-claude-provider.feature
 //!
 //! Tests for Anthropic Claude Provider Implementation - PROV-001

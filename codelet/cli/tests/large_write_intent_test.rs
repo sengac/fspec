@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/add-large-write-intent-detection-and-chunking-guidance.feature
 //!
 //! Tests for CLI-019: Large Write Intent Detection and Chunking Guidance
@@ -328,8 +329,7 @@ fn test_common_small_prompts() {
         let detection = detect_large_write_intent(prompt);
         assert!(
             !detection.detected,
-            "Should not detect for small prompt: {}",
-            prompt
+            "Should not detect for small prompt: {prompt}"
         );
     }
 }

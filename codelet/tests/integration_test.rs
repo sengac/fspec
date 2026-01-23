@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration tests for codelet CLI
 //!
 //! Following BDD principles for CLI testing:

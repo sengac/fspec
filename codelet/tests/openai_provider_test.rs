@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/openai-provider-standard-api.feature
 //!
 //! Tests for OpenAI Provider implementation following ACDD workflow.

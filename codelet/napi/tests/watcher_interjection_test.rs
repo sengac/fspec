@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/autonomous-watcher-interjection-with-response-parsing.feature
 //
 // Tests for WATCH-020: Autonomous Watcher Interjection with Response Parsing

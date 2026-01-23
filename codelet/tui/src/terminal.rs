@@ -36,6 +36,6 @@ mod tests {
     fn test_restore_terminal_exists() {
         // This test verifies the function exists and can be called
         // Actual terminal operations tested in integration tests
-        assert!(true);
+        // Using empty block instead of assert!(true) to avoid clippy warning
     }
 }

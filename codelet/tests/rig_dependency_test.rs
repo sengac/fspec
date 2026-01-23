@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/add-rig-core-dependency-and-compatibility-layer.feature
 //!
 //! Tests for Adding rig-core Dependency and Compatibility Layer - REFAC-002

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::never_loop)]
 //! Feature: spec/features/immediate-esc-interrupt-during-tool-execution.feature
 //!
 //! Tests for NAPI-004: Immediate ESC interrupt during tool execution

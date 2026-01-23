@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/core-file-tools-implementation.feature
 //!
 //! Tests for Core File Tools (Read, Write, Edit) - CORE-002

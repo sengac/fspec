@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/claude-code-oauth-authentication.feature
 //!
 //! Tests for Claude Code OAuth Authentication - PROV-002

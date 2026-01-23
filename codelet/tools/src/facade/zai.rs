@@ -383,6 +383,7 @@ impl SearchToolFacade for ZAIFindFilesFacade {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 
@@ -760,8 +761,7 @@ mod tests {
         for (name, params) in facades {
             assert_eq!(
                 params["additionalProperties"], false,
-                "{} should have additionalProperties: false",
-                name
+                "{name} should have additionalProperties: false"
             );
         }
     }

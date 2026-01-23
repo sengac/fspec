@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/web-search-and-fetch-tool-integration.feature
 
 use anyhow::Result;

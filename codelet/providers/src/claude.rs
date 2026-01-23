@@ -524,6 +524,7 @@ impl LlmProvider for ClaudeProvider {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod oauth_header_tests {
     use super::*;
     use rig::client::Provider;
@@ -582,11 +583,10 @@ mod oauth_header_tests {
             rig::client::Transport::Http,
         );
 
-        println!("OAuth URL: {}", url);
+        println!("OAuth URL: {url}");
         assert!(
             url.contains("?beta=true"),
-            "OAuth URL should contain ?beta=true, got: {}",
-            url
+            "OAuth URL should contain ?beta=true, got: {url}"
         );
     }
 
@@ -606,11 +606,10 @@ mod oauth_header_tests {
             rig::client::Transport::Http,
         );
 
-        println!("API Key URL: {}", url);
+        println!("API Key URL: {url}");
         assert!(
             !url.contains("?beta=true"),
-            "API Key URL should NOT contain ?beta=true, got: {}",
-            url
+            "API Key URL should NOT contain ?beta=true, got: {url}"
         );
     }
 }

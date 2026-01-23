@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Token Estimator Tests
 //!
 //! Feature: spec/features/limit-file-reads-to-25000-tokens.feature
@@ -27,9 +28,8 @@ async fn test_token_estimation_uses_tiktoken_cl100k_base() {
     // @step Then the estimation should use tiktoken-rs cl100k_base encoding
     // "Hello world, this is a test of the token estimation system." = ~14 tokens with cl100k
     assert!(
-        token_count >= 10 && token_count <= 20,
-        "Token count {} should be approximately 14 for cl100k_base",
-        token_count
+        (10..=20).contains(&token_count),
+        "Token count {token_count} should be approximately 14 for cl100k_base"
     );
 
     // @step And the result should be more accurate than byte-based approximation
@@ -37,9 +37,7 @@ async fn test_token_estimation_uses_tiktoken_cl100k_base() {
     // Tiktoken should give a more precise count (15 from bytes vs ~14 from tiktoken)
     assert!(
         (token_count as i32 - 14i32).abs() <= (byte_estimate as i32 - 14i32).abs() + 2,
-        "Tiktoken estimate {} should be at least as accurate as byte estimate {}",
-        token_count,
-        byte_estimate
+        "Tiktoken estimate {token_count} should be at least as accurate as byte estimate {byte_estimate}"
     );
 }
 
@@ -132,8 +130,7 @@ async fn test_read_file_exceeding_token_limit() {
     // @step And the error should be a TokenLimit error
     assert!(
         matches!(err, ToolError::TokenLimit { .. }),
-        "Error should be TokenLimit, got: {:?}",
-        err
+        "Error should be TokenLimit, got: {err:?}"
     );
 
     // @step And the error message should include relevant information
@@ -341,8 +338,7 @@ async fn test_custom_token_limit_via_env() {
     let default_limit = max_file_tokens();
     assert_eq!(
         default_limit, DEFAULT_MAX_FILE_TOKENS,
-        "Default limit should be {}",
-        DEFAULT_MAX_FILE_TOKENS
+        "Default limit should be {DEFAULT_MAX_FILE_TOKENS}"
     );
 }
 
@@ -387,16 +383,13 @@ async fn test_persistence_storage_uses_token_estimator() {
     // Tiktoken should provide reasonable estimates
     assert!(
         accurate_count > 0 && accurate_count < message.len(),
-        "Token count {} should be reasonable",
-        accurate_count
+        "Token count {accurate_count} should be reasonable"
     );
 
     // Both estimates should be in the same ballpark for short text
     assert!(
         (accurate_count as i32 - byte_estimate as i32).abs() < 5,
-        "Tiktoken {} and byte estimate {} should be similar for short text",
-        accurate_count,
-        byte_estimate
+        "Tiktoken {accurate_count} and byte estimate {byte_estimate} should be similar for short text"
     );
 }
 
@@ -417,8 +410,7 @@ async fn test_compactor_uses_token_estimator() {
     // Should provide reasonable token count for markdown content
     assert!(
         accurate_count > 5 && accurate_count < 30,
-        "Summary token count {} should be reasonable",
-        accurate_count
+        "Summary token count {accurate_count} should be reasonable"
     );
 }
 
@@ -435,7 +427,7 @@ async fn test_debug_line_and_token_limits() {
     let file_path = temp_dir.path().join("big.js");
     let mut content = String::new();
     for i in 1..=5000 {
-        content.push_str(&format!("const variable_{} = someValue;\n", i));
+        content.push_str(&format!("const variable_{i} = someValue;\n"));
     }
     std::fs::write(&file_path, &content).expect("Failed to write test file");
     
@@ -459,20 +451,20 @@ async fn test_debug_line_and_token_limits() {
             
             println!("=== DEBUG OUTPUT ===");
             println!("Input file lines: 5000");
-            println!("Output lines: {}", line_count);
-            println!("Output tokens: {}", token_count);
+            println!("Output lines: {line_count}");
+            println!("Output tokens: {token_count}");
             println!("First line: {}", content.lines().next().unwrap_or("N/A"));
             println!("Last 3 lines:");
             for line in content.lines().rev().take(3).collect::<Vec<_>>().into_iter().rev() {
-                println!("  {}", line);
+                println!("  {line}");
             }
             println!("===================");
             
             // Verify 2000 line limit
-            assert!(line_count <= 2005, "Should be ~2000 lines, got {}", line_count);
+            assert!(line_count <= 2005, "Should be ~2000 lines, got {line_count}");
         }
         Err(e) => {
-            println!("ERROR (might be token limit): {}", e);
+            println!("ERROR (might be token limit): {e}");
         }
     }
 }

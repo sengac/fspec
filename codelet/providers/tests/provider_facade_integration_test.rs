@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/provider-integration-and-e2e-tests.feature
 //!
 //! Tests for provider facade integration following ACDD workflow (TOOL-007).

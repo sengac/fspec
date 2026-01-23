@@ -642,7 +642,7 @@ impl CodeletSession {
             let envelope: MessageEnvelope = match serde_json::from_str(envelope_json) {
                 Ok(e) => e,
                 Err(e) => {
-                    tracing::warn!(
+                    tracing::error!(
                         "Failed to parse envelope {} during restore: {} - json: {}",
                         idx,
                         e,

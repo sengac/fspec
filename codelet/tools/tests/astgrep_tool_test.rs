@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/astgrep-tool-for-ast-based-code-search.feature
 //!
 //! Tests for AstGrep Tool Implementation - CORE-005
@@ -52,8 +53,7 @@ function helperFunction() {
     // @step And the result should be in "file:line:column:text" format
     // Format: file:line:column:matched_text
     let has_format = result.lines().any(|line| {
-        let parts: Vec<&str> = line.splitn(4, ':').collect();
-        parts.len() >= 3
+        line.splitn(4, ':').count() >= 3
     });
     assert!(has_format);
 }
@@ -175,7 +175,7 @@ def create_user(data: dict) -> dict:
                     || content.contains("def")
                     || content.contains("No matches")
                     || content.is_empty(),
-                "Got unexpected result: {}", content
+                "Got unexpected result: {content}"
             );
         }
         Err(_) => {

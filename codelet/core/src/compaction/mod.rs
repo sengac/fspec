@@ -49,10 +49,7 @@ mod tests {
 
         // This test will be implemented during the implementation phase
         // For now, we're just creating the test structure to satisfy coverage requirements
-        assert!(
-            true,
-            "Test placeholder - will be implemented with lazy turn creation"
-        );
+        // TODO: Implement lazy turn creation test
     }
 
     /// Scenario: Turn creation uses lazy approach during compaction
@@ -66,9 +63,6 @@ mod tests {
 
         // This test will be implemented during the implementation phase
         // For now, we're just creating the test structure to satisfy coverage requirements
-        assert!(
-            true,
-            "Test placeholder - will be implemented with lazy turn creation"
-        );
+        // TODO: Implement lazy turn creation test
     }
 }

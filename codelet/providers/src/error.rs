@@ -224,7 +224,7 @@ mod tests {
 
         for err in &errors {
             // Verify all errors have proper Debug impl
-            let debug_str = format!("{:?}", err);
+            let debug_str = format!("{err:?}");
             assert!(!debug_str.is_empty());
 
             // Verify all errors have proper Display impl

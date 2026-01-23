@@ -483,7 +483,7 @@ mod tests {
         ));
         let regular = create_test_message("Hello");
 
-        let messages = vec![reminder1, regular.clone(), reminder2];
+        let messages = vec![reminder1, regular, reminder2];
 
         assert_eq!(
             count_system_reminders_by_type(&messages, SystemReminderType::TokenStatus),

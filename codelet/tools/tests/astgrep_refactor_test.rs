@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for AstGrepRefactorTool
 //!
 //! Feature: spec/features/ast-code-refactor-tool-for-codelet.feature
@@ -116,8 +118,7 @@ fn baz(z: i32) {
     let err_msg = err.to_string();
     assert!(
         err_msg.contains("multiple") || err_msg.contains("Multiple"),
-        "Error should mention multiple matches: {}",
-        err_msg
+        "Error should mention multiple matches: {err_msg}"
     );
 
     // @step And no files should be modified
@@ -166,8 +167,7 @@ fn hello() {
     let err_msg = err.to_string();
     assert!(
         err_msg.to_lowercase().contains("no match") || err_msg.to_lowercase().contains("not found"),
-        "Error should mention no matches: {}",
-        err_msg
+        "Error should mention no matches: {err_msg}"
     );
 
     // @step And no files should be modified
@@ -210,8 +210,7 @@ async fn test_error_when_invalid_language_specified() {
     let err_msg = err.to_string();
     assert!(
         err_msg.contains("language") || err_msg.contains("Language"),
-        "Error should mention language issue: {}",
-        err_msg
+        "Error should mention language issue: {err_msg}"
     );
 }
 
@@ -366,13 +365,11 @@ fn old_function() {
     let updated_source = fs::read_to_string(&source_file).unwrap();
     assert!(
         updated_source.contains("new_function"),
-        "Source should contain replacement: {}",
-        updated_source
+        "Source should contain replacement: {updated_source}"
     );
     assert!(
         !updated_source.contains("old_function"),
-        "Source should not contain original: {}",
-        updated_source
+        "Source should not contain original: {updated_source}"
     );
 }
 
@@ -427,15 +424,13 @@ fn function_b() {
     // @step And function A should still be present in the target file
     assert!(
         target_content.contains("function_a"),
-        "Function A should still be present: {}",
-        target_content
+        "Function A should still be present: {target_content}"
     );
 
     // @step And both functions should appear in order
     assert!(
         target_content.contains("function_b"),
-        "Function B should be appended: {}",
-        target_content
+        "Function B should be appended: {target_content}"
     );
 
     // Verify order: A comes before B
@@ -443,8 +438,6 @@ fn function_b() {
     let b_pos = target_content.find("function_b").unwrap();
     assert!(
         a_pos < b_pos,
-        "Function A should appear before function B (A at {}, B at {})",
-        a_pos,
-        b_pos
+        "Function A should appear before function B (A at {a_pos}, B at {b_pos})"
     );
 }

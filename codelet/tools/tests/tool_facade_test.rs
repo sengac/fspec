@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/provider-specific-tool-facades.feature
 // Feature: spec/features/file-operation-facades.feature
 // Feature: spec/features/bash-facade.feature
