@@ -3087,6 +3087,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       // The background session's agent_loop will process it and emit chunks via the callback
       sessionSendInput(activeSessionId, userMessage, thinkingConfig);
       
+      // Refresh Rust state to pick up status change (running) after sending input
+      // This is needed because useRustSessionState caches snapshots and only re-fetches on refresh
+      refreshRustState();
+      
       // Wait for the prompt to complete (Done chunk received)
       await promptComplete;
       

@@ -227,6 +227,8 @@ vi.mock('ink', async () => {
 
 // Import the component after mocks are set up
 import { AgentView } from '../components/AgentView';
+// Import refreshSessionState to notify hook when mock status changes
+import { refreshSessionState, clearAllSubscriptions } from '../hooks/useRustSessionState';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -262,6 +264,8 @@ const simulateStreaming = async (
 ) => {
   // Set Rust status to running during streaming
   mockState.sessionStatus = 'running';
+  // Notify useRustSessionState hook that state has changed so it re-fetches
+  refreshSessionState('mock-session-id');
   if (capturedCallback) {
     // First text chunk
     capturedCallback(null, { type: 'Text', text: 'Hello ' });
@@ -300,6 +304,8 @@ const endStreaming = async (finalTokens = { inputTokens: 100, outputTokens: 50 }
   }
   // Set Rust status back to idle after streaming ends
   mockState.sessionStatus = 'idle';
+  // Notify useRustSessionState hook that state has changed
+  refreshSessionState('mock-session-id');
   await waitForFrame(150);
 };
 
@@ -307,10 +313,14 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
   beforeEach(() => {
     vi.clearAllMocks();
     resetMockSession();
+    // Clear useRustSessionState subscriptions between tests
+    clearAllSubscriptions();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    // Ensure subscriptions are cleaned up
+    clearAllSubscriptions();
   });
 
   describe('Scenario: Display tokens per second after multiple token updates', () => {
