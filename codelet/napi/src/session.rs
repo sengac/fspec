@@ -404,9 +404,8 @@ impl CodeletSession {
     pub fn token_tracker(&self) -> Result<TokenTracker> {
         let session = self.inner.blocking_lock();
 
-        // PROV-001 DEBUG: Log token tracker values when getter is called
-        tracing::debug!(
-            "PROV-001: token_tracker getter called - input_tokens={}, cumulative_billed_input={}",
+        tracing::trace!(
+            "token_tracker getter: input_tokens={}, cumulative_billed_input={}",
             session.token_tracker.input_tokens,
             session.token_tracker.cumulative_billed_input
         );

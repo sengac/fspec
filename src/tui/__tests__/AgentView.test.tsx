@@ -265,10 +265,12 @@ vi.mock('../hooks/useRustSessionState', () => {
           isDebugEnabled,
           version: 0,
         },
-        refresh: () => {},
+        // Accept optional targetSessionId to match the real signature
+        // (handles race condition when new session is created)
+        refresh: (_targetSessionId?: string | null) => {},
       };
     },
-    refreshSessionState: () => {},
+    refreshSessionState: (_sessionId: string) => {},
     manualAttach: () => {},
     manualDetach: () => {},
     getSessionChunks: () => [],

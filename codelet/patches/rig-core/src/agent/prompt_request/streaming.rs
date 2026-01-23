@@ -332,8 +332,8 @@ where
                 current_max_depth += 1;
 
                 if self.max_depth > 1 {
-                    tracing::info!(
-                        "Current conversation depth: {}/{}",
+                    tracing::trace!(
+                        "Conversation depth: {}/{}",
                         current_max_depth,
                         self.max_depth
                     );

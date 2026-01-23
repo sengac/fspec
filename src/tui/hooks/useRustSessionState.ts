@@ -248,9 +248,21 @@ function getEmptySnapshot(): RustSessionSnapshot {
 // Main hook implementation
 // =============================================================================
 
+/**
+ * Hook for subscribing to Rust session state.
+ *
+ * @param sessionId - The session ID to subscribe to (null if no session)
+ * @returns Object with snapshot and refresh function
+ *
+ * The refresh function accepts an optional targetSessionId parameter to handle
+ * race conditions when a new session is created. React state updates are batched,
+ * so calling setCurrentSessionId() doesn't immediately update the sessionId captured
+ * in this hook's closure. By passing the session ID explicitly, callers can ensure
+ * the correct session is refreshed even before React re-renders.
+ */
 export function useRustSessionState(sessionId: string | null): {
   snapshot: RustSessionSnapshot;
-  refresh: () => void;
+  refresh: (targetSessionId?: string | null) => void;
 } {
   const subscribe = useCallback(
     (callback: () => void): (() => void) => {
@@ -277,11 +289,19 @@ export function useRustSessionState(sessionId: string | null): {
 
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
-  const refresh = useCallback(() => {
-    if (sessionId) {
-      refreshSessionState(sessionId);
-    }
-  }, [sessionId]);
+  // Accept optional targetSessionId to handle race conditions with React state updates.
+  // When creating a new session, the local activeSessionId variable has the correct value
+  // before React's batched state update takes effect. Passing it explicitly ensures
+  // we refresh the correct session immediately.
+  const refresh = useCallback(
+    (targetSessionId?: string | null) => {
+      const sessionToRefresh = targetSessionId ?? sessionId;
+      if (sessionToRefresh) {
+        refreshSessionState(sessionToRefresh);
+      }
+    },
+    [sessionId]
+  );
 
   return { snapshot, refresh };
 }

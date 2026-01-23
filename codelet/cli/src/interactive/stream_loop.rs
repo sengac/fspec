@@ -39,7 +39,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::Notify;
 use tokio::time::interval;
-use tracing::{error, info};
+use tracing::{error, info, trace};
 
 /// Check if an error indicates the prompt/context is too long
 fn is_prompt_too_long_error(error_str: &str) -> bool {
@@ -178,8 +178,8 @@ where
     let estimated_total = current_tokens + prompt_tokens;
 
     if estimated_total > threshold && !session.messages.is_empty() {
-        info!(
-            "[CTX-005] Pre-prompt compaction triggered: estimated {} > threshold {}",
+        trace!(
+            "Pre-prompt compaction triggered: estimated {} > threshold {}",
             estimated_total, threshold
         );
         output.emit_status("\n[Context near limit, generating summary...]");
@@ -199,7 +199,7 @@ where
             }
             Err(e) => {
                 // Log but continue - the API might still work, or will fail with clear error
-                error!("[CTX-005] Pre-prompt compaction failed: {}", e);
+                error!("Pre-prompt compaction failed: {}", e);
                 output.emit_status(&format!("[Compaction failed: {e}, continuing anyway...]"));
             }
         }
@@ -385,8 +385,8 @@ where
     // Emit initial token state at start of prompt so display shows current session state
     // (prevents flash to 0 when starting new prompt)
     // PROV-001: prev_input_tokens ALREADY contains total context (stored that way)
-    info!(
-        "[PROV-001] Initial emit: prev_input_tokens={}, prev_output_tokens={}, cache_read={}, cache_creation={}",
+    trace!(
+        "Initial token emit: prev_input_tokens={}, prev_output_tokens={}, cache_read={}, cache_creation={}",
         prev_input_tokens, prev_output_tokens, prev_cache_read, prev_cache_creation
     );
     output.emit_tokens(&streaming_display.current().into());
@@ -551,8 +551,8 @@ where
                     // STREAMING-DISPLAY: update_from_final_response handles this case
                     let final_update = if !streaming_display.has_authoritative_output() && usage.input_tokens > 0 {
                         // OpenAI-compatible path: no Usage events during streaming
-                        info!(
-                            "[PROV-002] OpenAI-compatible provider: extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
+                        trace!(
+                            "OpenAI-compatible provider: extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
                             usage.input_tokens, usage.output_tokens, usage.cache_read_input_tokens
                         );
                         streaming_display.update_from_final_response(&usage)
@@ -1297,8 +1297,8 @@ where
 
                             // STREAMING-DISPLAY: Update from final response if needed
                             let retry_final = if !retry_display.has_authoritative_output() && usage.input_tokens > 0 {
-                                info!(
-                                    "[PROV-002] OpenAI-compatible provider (retry): extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
+                                trace!(
+                                    "OpenAI-compatible provider (retry): extracted tokens from FinalResponse - input={}, output={}, cache_read={:?}",
                                     usage.input_tokens, usage.output_tokens, usage.cache_read_input_tokens
                                 );
                                 retry_display.update_from_final_response(&usage)

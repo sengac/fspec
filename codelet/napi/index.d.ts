@@ -1166,6 +1166,10 @@ export interface SessionModel {
  *
  * This is used when attaching to a session via /resume - it restores the
  * conversation history so the LLM has context for future prompts.
+ *
+ * Also populates the output_buffer with synthetic StreamChunks so that
+ * sessionGetMergedOutput() returns the restored conversation. This enables
+ * proper UI replay when detaching and re-attaching via kanban.
  */
 export declare function sessionRestoreMessages(
   sessionId: string,

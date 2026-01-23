@@ -6,7 +6,7 @@
 //! each running in its own tokio task. Sessions can be attached/detached without
 //! interrupting agent execution.
 
-use crate::types::{CompactionResult, DebugCommandResult, StreamChunk};
+use crate::types::{CompactionResult, DebugCommandResult, StreamChunk, ToolCallInfo, ToolResultInfo};
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
@@ -3995,12 +3995,18 @@ pub fn session_get_merged_output(session_id: String) -> Result<Vec<StreamChunk>>
 ///
 /// This is used when attaching to a session via /resume - it restores the
 /// conversation history so the LLM has context for future prompts.
+///
+/// Also populates the output_buffer with synthetic StreamChunks so that
+/// sessionGetMergedOutput() returns the restored conversation. This enables
+/// proper UI replay when detaching and re-attaching via kanban.
 #[napi]
 pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
-    let mut inner = session.inner.lock().await;
-
-    // Use the existing restore_messages_from_envelopes logic from codelet_cli
+    
+    // Collect rig messages and StreamChunks to push
+    let mut rig_messages: Vec<rig::message::Message> = Vec::new();
+    let mut stream_chunks: Vec<StreamChunk> = Vec::new();
+    
     for envelope_json in envelopes {
         let envelope: serde_json::Value = serde_json::from_str(&envelope_json)
             .map_err(|e| Error::from_reason(format!("Failed to parse envelope: {}", e)))?;
@@ -4011,59 +4017,141 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                 .and_then(|r| r.as_str())
                 .unwrap_or("user");
 
-            // Build rig message from envelope content
-            let rig_message = if role == "assistant" {
+            if role == "assistant" {
                 // Handle assistant messages with content blocks
                 if let Some(content) = message.get("content") {
                     if let Some(arr) = content.as_array() {
                         let mut text_parts = Vec::new();
+                        
+                        // Process each content block for StreamChunks
                         for block in arr {
-                            if let Some(text) = block.get("text").and_then(|t| t.as_str()) {
-                                text_parts.push(text.to_string());
+                            let block_type = block.get("type").and_then(|t| t.as_str()).unwrap_or("");
+                            
+                            match block_type {
+                                "thinking" => {
+                                    if let Some(thinking) = block.get("thinking").and_then(|t| t.as_str()) {
+                                        if !thinking.is_empty() {
+                                            stream_chunks.push(StreamChunk::thinking(thinking.to_string()));
+                                        }
+                                    }
+                                }
+                                "text" => {
+                                    if let Some(text) = block.get("text").and_then(|t| t.as_str()) {
+                                        text_parts.push(text.to_string());
+                                        if !text.is_empty() {
+                                            stream_chunks.push(StreamChunk::text(text.to_string()));
+                                        }
+                                    }
+                                }
+                                "tool_use" => {
+                                    let id = block.get("id").and_then(|i| i.as_str()).unwrap_or("").to_string();
+                                    let name = block.get("name").and_then(|n| n.as_str()).unwrap_or("").to_string();
+                                    let input = block.get("input")
+                                        .map(|i| serde_json::to_string(i).unwrap_or_default())
+                                        .unwrap_or_default();
+                                    
+                                    if !id.is_empty() && !name.is_empty() {
+                                        stream_chunks.push(StreamChunk::tool_call(ToolCallInfo {
+                                            id,
+                                            name,
+                                            input,
+                                        }));
+                                    }
+                                }
+                                _ => {}
                             }
                         }
+                        
+                        // Build rig message for LLM context
                         let joined_text = text_parts.join("");
-                        // Skip empty messages to avoid API error "text content blocks must be non-empty"
-                        if joined_text.is_empty() {
-                            continue;
+                        if !joined_text.is_empty() {
+                            rig_messages.push(rig::message::Message::Assistant {
+                                id: None,
+                                content: rig::OneOrMany::one(rig::message::AssistantContent::text(joined_text)),
+                            });
                         }
-                        rig::message::Message::Assistant {
-                            id: None,
-                            content: rig::OneOrMany::one(rig::message::AssistantContent::text(joined_text)),
-                        }
-                    } else {
-                        continue;
+                        
+                        // Push Done chunk to finalize assistant turn
+                        stream_chunks.push(StreamChunk::done());
                     }
-                } else {
-                    continue;
                 }
             } else {
                 // Handle user messages
                 if let Some(content) = message.get("content") {
-                    let text = if let Some(arr) = content.as_array() {
-                        arr.iter()
-                            .filter_map(|block| block.get("text").and_then(|t| t.as_str()))
-                            .collect::<Vec<_>>()
-                            .join("")
+                    if let Some(arr) = content.as_array() {
+                        let mut text_parts = Vec::new();
+                        
+                        // Process each content block
+                        for block in arr {
+                            let block_type = block.get("type").and_then(|t| t.as_str()).unwrap_or("");
+                            
+                            match block_type {
+                                "text" => {
+                                    if let Some(text) = block.get("text").and_then(|t| t.as_str()) {
+                                        text_parts.push(text.to_string());
+                                        if !text.is_empty() {
+                                            stream_chunks.push(StreamChunk::user_input(text.to_string()));
+                                        }
+                                    }
+                                }
+                                "tool_result" => {
+                                    let tool_use_id = block.get("tool_use_id")
+                                        .and_then(|i| i.as_str())
+                                        .unwrap_or("")
+                                        .to_string();
+                                    let result_content = block.get("content")
+                                        .and_then(|c| c.as_str())
+                                        .unwrap_or("")
+                                        .to_string();
+                                    let is_error = block.get("is_error")
+                                        .and_then(|e| e.as_bool())
+                                        .unwrap_or(false);
+                                    
+                                    if !tool_use_id.is_empty() {
+                                        stream_chunks.push(StreamChunk::tool_result(ToolResultInfo {
+                                            tool_call_id: tool_use_id,
+                                            content: result_content,
+                                            is_error,
+                                        }));
+                                    }
+                                }
+                                _ => {}
+                            }
+                        }
+                        
+                        // Build rig message for LLM context (text only)
+                        let joined_text = text_parts.join("");
+                        if !joined_text.is_empty() {
+                            rig_messages.push(rig::message::Message::User {
+                                content: rig::OneOrMany::one(rig::message::UserContent::text(joined_text)),
+                            });
+                        }
                     } else if let Some(s) = content.as_str() {
-                        s.to_string()
-                    } else {
-                        continue;
-                    };
-                    // Skip empty messages to avoid API error "text content blocks must be non-empty"
-                    if text.is_empty() {
-                        continue;
+                        // Simple string content
+                        if !s.is_empty() {
+                            stream_chunks.push(StreamChunk::user_input(s.to_string()));
+                            rig_messages.push(rig::message::Message::User {
+                                content: rig::OneOrMany::one(rig::message::UserContent::text(s.to_string())),
+                            });
+                        }
                     }
-                    rig::message::Message::User {
-                        content: rig::OneOrMany::one(rig::message::UserContent::text(text)),
-                    }
-                } else {
-                    continue;
                 }
-            };
-
-            inner.messages.push(rig_message);
+            }
         }
+    }
+    
+    // Push rig messages to inner (for LLM context)
+    {
+        let mut inner = session.inner.lock().await;
+        for msg in rig_messages {
+            inner.messages.push(msg);
+        }
+    }
+    
+    // Push StreamChunks to output_buffer via handle_output (for UI replay)
+    // This enables sessionGetMergedOutput() to return the restored conversation
+    for chunk in stream_chunks {
+        session.handle_output(chunk);
     }
 
     Ok(())
