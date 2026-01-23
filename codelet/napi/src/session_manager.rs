@@ -3651,7 +3651,8 @@ pub fn session_interrupt(session_id: String) -> Result<()> {
 #[napi]
 pub fn session_get_status(session_id: String) -> Result<String> {
     let session = SessionManager::instance().get_session(&session_id)?;
-    Ok(session.get_status().as_str().to_string())
+    let status = session.get_status();
+    Ok(status.as_str().to_string())
 }
 
 /// Update the model for a background session
