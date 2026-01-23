@@ -1300,7 +1300,7 @@ export declare function sessionUpdateDebugMetadata(
  *
  * LOG-002: The subscriber is initialized with an EnvFilter that respects
  * FSPEC_RUST_LOG_LEVEL or RUST_LOG environment variables. Default level
- * is INFO, which prevents expensive TRACE-level API request logging.
+ * is WARN, which keeps logs quiet unless there are actual problems.
  */
 export declare function setRustLogCallback(callback: LogCallback): void;
 

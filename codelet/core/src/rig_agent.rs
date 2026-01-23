@@ -8,7 +8,7 @@ use rig::agent::{Agent, StreamingPromptHook};
 use rig::completion::{CompletionModel, GetTokenUsage, Prompt};
 use rig::streaming::StreamingPrompt;
 use rig::wasm_compat::WasmCompatSend;
-use tracing::info;
+use tracing::debug;
 
 /// Default maximum depth for multi-turn tool execution
 /// Set to usize::MAX - 1 to effectively disable the limit
@@ -58,7 +58,7 @@ where
     /// Returns the final response as a string after all tool calls complete.
     /// Tools are executed automatically up to max_depth.
     pub async fn prompt(&self, prompt: &str) -> Result<String> {
-        info!(prompt = %prompt, "Starting agent execution");
+        debug!(prompt = %prompt, "Starting agent execution");
 
         let response = self
             .agent
@@ -67,7 +67,7 @@ where
             .await
             .map_err(|e| anyhow!("Prompt failed: {e}"))?;
 
-        info!(
+        debug!(
             response_length = response.len(),
             "Agent execution completed"
         );
@@ -94,7 +94,7 @@ where
     > + '_ {
         use futures::StreamExt;
 
-        info!(prompt = %prompt, "Starting streaming agent execution");
+        debug!(prompt = %prompt, "Starting streaming agent execution");
 
         self.agent
             .stream_prompt(prompt)
@@ -120,7 +120,7 @@ where
     > + '_ {
         use futures::StreamExt;
 
-        info!(
+        debug!(
             prompt = %prompt,
             history_len = history.len(),
             "Starting streaming agent execution with history"
@@ -159,7 +159,7 @@ where
     {
         use futures::StreamExt;
 
-        info!(
+        debug!(
             prompt = %prompt,
             history_len = history.len(),
             "Starting streaming agent execution with history and hook"

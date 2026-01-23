@@ -127,15 +127,15 @@ mod logging {
     ///
     /// LOG-002: Respects FSPEC_RUST_LOG_LEVEL environment variable for controlling
     /// which Rust tracing events are forwarded to TypeScript. This prevents
-    /// expensive JSON serialization of full API requests at TRACE level when
-    /// not needed.
+    /// noisy operational logging from cluttering the user's log file.
     ///
     /// Priority order:
-    /// 1. FSPEC_RUST_LOG_LEVEL (fspec-specific, e.g., "debug", "trace")
+    /// 1. FSPEC_RUST_LOG_LEVEL (fspec-specific, e.g., "info", "debug", "trace")
     /// 2. RUST_LOG (standard tracing env var, e.g., "info,rig::completions=off")
-    /// 3. Default: "info" (only INFO, WARN, ERROR forwarded)
+    /// 3. Default: "warn" (only WARN and ERROR forwarded - quiet by default)
     ///
     /// Examples:
+    /// - FSPEC_RUST_LOG_LEVEL=info   -> enables INFO and above (more verbose)
     /// - FSPEC_RUST_LOG_LEVEL=debug  -> enables DEBUG and above
     /// - FSPEC_RUST_LOG_LEVEL=trace  -> enables all levels (verbose API logging)
     /// - RUST_LOG=debug,rig::completions=off -> debug except API request bodies
@@ -149,15 +149,15 @@ mod logging {
 
         // Fall back to standard RUST_LOG
         EnvFilter::try_from_default_env()
-            // Default to INFO level - prevents TRACE/DEBUG log bloat
-            .unwrap_or_else(|_| EnvFilter::new("info"))
+            // Default to WARN level - quiet by default, only log warnings and errors
+            .unwrap_or_else(|_| EnvFilter::new("warn"))
     }
 
     /// Set the logging callback from TypeScript and initialize the tracing subscriber.
     ///
     /// LOG-002: The subscriber is initialized with an EnvFilter that respects
     /// FSPEC_RUST_LOG_LEVEL or RUST_LOG environment variables. Default level
-    /// is INFO, which prevents expensive TRACE-level API request logging.
+    /// is WARN, which keeps logs quiet unless there are actual problems.
     #[napi]
     pub fn set_rust_log_callback(callback: LogCallback) {
         // Store the callback
