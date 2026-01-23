@@ -1,0 +1,1275 @@
+{
+  "scenarios": [
+    {
+      "name": "View templates with active instance count",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "257-276",
+          "implMappings": [
+            {
+              "file": "src/tui/types/watcherTemplate.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            },
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Expand template to show instances",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "278-292",
+          "implMappings": [
+            {
+              "file": "src/tui/types/watcherTemplate.ts",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            },
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Collapse template to hide instances",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "294-307",
+          "implMappings": [
+            {
+              "file": "src/tui/types/watcherTemplate.ts",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            },
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate list with arrow keys",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "309-324",
+          "implMappings": [
+            {
+              "file": "src/tui/types/watcherTemplate.ts",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter templates by typing",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "326-338",
+          "implMappings": [
+            {
+              "file": "src/tui/types/watcherTemplate.ts",
+              "lines": [
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33
+              ]
+            },
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                158,
+                159,
+                160,
+                161,
+                162,
+                163
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty state with no templates",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "340-353",
+          "implMappings": [
+            {
+              "file": "src/tui/types/watcherTemplate.ts",
+              "lines": [
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                182,
+                183,
+                184,
+                185,
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Spawn new instance from template",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "357-375",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                2005,
+                2006,
+                2007,
+                2008,
+                2009,
+                2010,
+                2011,
+                2012,
+                2013,
+                2014,
+                2015,
+                2016,
+                2017,
+                2018,
+                2019,
+                2020,
+                2021,
+                2022,
+                2023,
+                2024,
+                2025,
+                2026,
+                2027,
+                2028,
+                2029,
+                2030,
+                2031,
+                2032,
+                2033,
+                2034,
+                2035,
+                2036,
+                2037,
+                2038,
+                2039,
+                2040,
+                2041,
+                2042,
+                2043,
+                2044,
+                2045,
+                2046,
+                2047,
+                2048,
+                2049,
+                2050,
+                2051,
+                2052,
+                2053,
+                2054,
+                2055,
+                2056,
+                2057,
+                2058,
+                2059,
+                2060,
+                2061,
+                2062
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Open existing watcher instance",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "377-391",
+          "implMappings": [
+            {
+              "file": "src/tui/types/watcherTemplate.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Quick spawn via slash command",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "227-239",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                2005,
+                2006,
+                2007,
+                2008,
+                2009,
+                2010,
+                2011,
+                2012,
+                2013,
+                2014,
+                2015,
+                2016,
+                2017,
+                2018,
+                2019,
+                2020,
+                2021,
+                2022,
+                2023,
+                2024,
+                2025,
+                2026,
+                2027,
+                2028,
+                2029,
+                2030,
+                2031,
+                2032,
+                2033,
+                2034,
+                2035,
+                2036,
+                2037,
+                2038,
+                2039,
+                2040,
+                2041,
+                2042,
+                2043,
+                2044,
+                2045,
+                2046,
+                2047,
+                2048,
+                2049,
+                2050,
+                2051,
+                2052,
+                2053,
+                2054,
+                2055,
+                2056,
+                2057,
+                2058,
+                2059,
+                2060,
+                2061,
+                2062
+              ]
+            },
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Quick spawn with unknown slug shows error",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "241-253",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                2005,
+                2006,
+                2007,
+                2008,
+                2009,
+                2010,
+                2011,
+                2012,
+                2013,
+                2014,
+                2015,
+                2016,
+                2017,
+                2018,
+                2019,
+                2020,
+                2021,
+                2022,
+                2023,
+                2024,
+                2025,
+                2026,
+                2027,
+                2028,
+                2029,
+                2030,
+                2031,
+                2032,
+                2033,
+                2034,
+                2035,
+                2036,
+                2037,
+                2038,
+                2039,
+                2040,
+                2041,
+                2042,
+                2043,
+                2044,
+                2045,
+                2046,
+                2047,
+                2048,
+                2049,
+                2050,
+                2051,
+                2052,
+                2053,
+                2054,
+                2055,
+                2056,
+                2057,
+                2058,
+                2059,
+                2060,
+                2061,
+                2062
+              ]
+            },
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create new template",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "395-406",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80
+              ]
+            },
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Edit existing template",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "408-422",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            },
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete template without active instances",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "424-435",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Delete template with active instances shows warning",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "437-451",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Kill watcher instance",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "453-466",
+          "implMappings": [
+            {
+              "file": "src/tui/types/watcherTemplate.ts",
+              "lines": [
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            },
+            {
+              "file": "src/tui/components/WatcherTemplateList.tsx",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate form fields with arrow keys",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "470-483",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate form fields with Tab",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "485-499",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Model defaults to parent session model",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "503-511",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter models by typing",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "513-527",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Only configured models are shown",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "529-547",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authority shows inline explanation when focused",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "551-562",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Toggle authority with arrow keys",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "564-578",
+          "implMappings": [
+            {
+              "file": "src/tui/components/WatcherTemplateForm.tsx",
+              "lines": [
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slug is auto-generated from template name",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "171-178",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slug handles special characters",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/watcher-templates.test.tsx",
+          "lines": "180-189",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/watcherTemplateStorage.ts",
+              "lines": [
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 24,
+    "coveredScenarios": 24,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/watcher-templates.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/types/watcherTemplate.ts",
+      "src/tui/utils/watcherTemplateStorage.ts",
+      "src/tui/components/WatcherTemplateList.tsx",
+      "src/tui/components/AgentView.tsx",
+      "src/tui/components/WatcherTemplateForm.tsx"
+    ],
+    "totalLinesCovered": 1118
+  }
+}

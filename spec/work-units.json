@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-23T02:08:00.121Z"
+    "lastUpdated": "2026-01-23T20:54:44.683Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62646,7 +62646,8 @@
         "WATCH-016",
         "WATCH-019",
         "WATCH-020",
-        "WATCH-021"
+        "WATCH-021",
+        "WATCH-023"
       ],
       "attachments": [
         "spec/attachments/WATCH-001/watcher-sessions-architecture.md"
@@ -66140,6 +66141,388 @@
       "questions": [],
       "nextQuestionId": 0,
       "updated": "2026-01-23T02:08:00.151Z"
+    },
+    "WATCH-023": {
+      "id": "WATCH-023",
+      "title": "Watcher Templates and Improved Creation UX",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-23T10:47:27.427Z",
+      "updatedAt": "2026-01-23T20:54:44.714Z",
+      "description": "Redesign watcher creation flow to use templates for reusable watcher configurations. Templates are the primary UI with instances nested underneath. Includes type-to-filter model selection, collapse/expand navigation, and clear authority explanations.",
+      "parent": "WATCH-001",
+      "attachments": [
+        "spec/attachments/WATCH-023/watcher-templates-ux-design.md",
+        "spec/attachments/WATCH-023/ast-research-implementation-patterns.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-23T10:48:28.260Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-23T20:11:54.818Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-23T20:25:45.609Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-23T20:34:17.685Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-23T20:34:34.549Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-23T20:41:06.618Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-23T20:54:38.060Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-23T20:54:44.714Z"
+        }
+      ],
+      "userStory": {
+        "role": "TUI user managing watcher sessions",
+        "action": "create, manage, and spawn watchers from reusable templates",
+        "benefit": "I can quickly spawn watchers without filling out forms from scratch each time"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The /watcher overlay shows watcher templates as the primary list, not active instances",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:48:40.841Z"
+        },
+        {
+          "id": 1,
+          "text": "Active watcher instances are nested under their parent template using collapse/expand (▼/▶)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:48:45.344Z"
+        },
+        {
+          "id": 2,
+          "text": "Enter on a template spawns a new watcher instance from that template",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:48:53.539Z"
+        },
+        {
+          "id": 3,
+          "text": "Enter on an instance opens that watcher session",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:48:57.441Z"
+        },
+        {
+          "id": 4,
+          "text": "↑/↓ arrow keys navigate the flat list (templates and visible instances)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:01.453Z"
+        },
+        {
+          "id": 5,
+          "text": "← collapses the current template, → expands it (if it has instances)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:05.529Z"
+        },
+        {
+          "id": 6,
+          "text": "Model field only shows models that are actually configured (have API keys)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:10.040Z"
+        },
+        {
+          "id": 7,
+          "text": "Model field defaults to the parent session's current model",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:13.819Z"
+        },
+        {
+          "id": 8,
+          "text": "Model selection uses type-to-filter instead of scrolling with arrow keys",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:17.927Z"
+        },
+        {
+          "id": 9,
+          "text": "↑/↓ arrow keys move between form fields (in addition to Tab/Shift+Tab)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:22.432Z"
+        },
+        {
+          "id": 10,
+          "text": "Authority (Peer/Supervisor) is displayed in template list and instance list",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:26.729Z"
+        },
+        {
+          "id": 11,
+          "text": "Authority field shows inline explanation when focused: Peer = suggestions AI can ignore, Supervisor = directives AI should follow",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:30.917Z"
+        },
+        {
+          "id": 12,
+          "text": "E key edits the selected template (opens template form pre-populated)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:35.329Z"
+        },
+        {
+          "id": 13,
+          "text": "D key on template deletes the template (with confirmation)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:39.120Z"
+        },
+        {
+          "id": 14,
+          "text": "D key on instance kills that watcher instance",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:43.426Z"
+        },
+        {
+          "id": 15,
+          "text": "N key or Enter on '+ Create new template...' opens the template creation form",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:48.335Z"
+        },
+        {
+          "id": 16,
+          "text": "A template contains: name, modelId, authority (peer/supervisor), brief, autoInject boolean",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:52.930Z"
+        },
+        {
+          "id": 17,
+          "text": "Empty state (no templates) shows helpful explanation of what watchers are and prompts to create first template",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:49:57.362Z"
+        },
+        {
+          "id": 18,
+          "text": "Deleting a template with active instances shows a warning in the confirmation dialog and auto-kills those instances on confirm",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:52:24.224Z"
+        },
+        {
+          "id": 19,
+          "text": "Templates are listed in alphabetical order",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:53:47.575Z"
+        },
+        {
+          "id": 20,
+          "text": "Template list supports type-to-filter search (same pattern as model selector)",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:53:52.090Z"
+        },
+        {
+          "id": 21,
+          "text": "Templates have an auto-generated slug in kebab-case derived from the name (e.g., 'Security Reviewer' → 'security-reviewer')",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:55:22.968Z"
+        },
+        {
+          "id": 22,
+          "text": "'/watcher spawn <slug>' command spawns a watcher instance directly from a template by slug without opening the overlay",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:55:27.737Z"
+        },
+        {
+          "id": 23,
+          "text": "Templates are stored at user level (~/.fspec/watcher-templates.json) using getFspecUserDir() from src/utils/config.ts",
+          "deleted": false,
+          "createdAt": "2026-01-23T20:03:46.719Z"
+        }
+      ],
+      "nextRuleId": 24,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User opens /watcher with 2 templates (Security Reviewer with 2 instances, Test Enforcer with 0 instances) → sees Security Reviewer with [2 active] badge, Test Enforcer without badge",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:02.659Z"
+        },
+        {
+          "id": 1,
+          "text": "User presses → on Security Reviewer template → template expands showing '#1 running' and '#2 idle' nested underneath with tree connectors (├─, └─)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:07.270Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses Enter on Security Reviewer template → new watcher instance spawns with template's settings → instance appears in list as '#3 running'",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:11.776Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses Enter on '#1 running' instance → overlay closes, user is now in that watcher's session",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:16.236Z"
+        },
+        {
+          "id": 4,
+          "text": "User creates new template → Model field shows parent's current model (claude-sonnet-4) as default",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:20.382Z"
+        },
+        {
+          "id": 5,
+          "text": "User focuses Model field, types 'gem' → dropdown shows filtered list with only 'google/gemini-2.0-flash' and 'google/gemini-1.5-pro'",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:25.401Z"
+        },
+        {
+          "id": 6,
+          "text": "User focuses Authority field → sees inline help text explaining 'Peer: Suggestions the AI can consider or ignore' and 'Supervisor: Directives the AI should follow'",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:30.006Z"
+        },
+        {
+          "id": 7,
+          "text": "User is in Name field, presses ↓ → focus moves to Model field (arrow keys navigate between form fields)",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:34.304Z"
+        },
+        {
+          "id": 8,
+          "text": "User opens /watcher with no templates → sees 'No watcher templates yet' with explanation of what watchers are and 'Press N to create your first template'",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:39.030Z"
+        },
+        {
+          "id": 9,
+          "text": "User presses D on 'Architecture Advisor' template → confirmation dialog appears → user confirms → template is deleted from list",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:43.320Z"
+        },
+        {
+          "id": 10,
+          "text": "User presses D on '#2 idle' instance → instance is killed → instance disappears from list, [2 active] badge changes to [1 active]",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:47.752Z"
+        },
+        {
+          "id": 11,
+          "text": "User presses E on 'Security Reviewer' template → template form opens with all fields pre-populated from template",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:51.889Z"
+        },
+        {
+          "id": 12,
+          "text": "User has 10 templates, starts typing 'sec' → list filters to show only 'Security Reviewer' template",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:53:57.000Z"
+        },
+        {
+          "id": 13,
+          "text": "User types '/watcher spawn security-reviewer' → watcher instance spawns immediately from 'Security Reviewer' template without opening overlay",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:55:32.390Z"
+        },
+        {
+          "id": 14,
+          "text": "User types '/watcher spawn unknown-template' → error message shown: 'No template found with slug: unknown-template'",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:55:37.145Z"
+        }
+      ],
+      "nextExampleId": 15,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should deleting a template with active instances require killing those instances first, or should it automatically kill them?",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:50:56.629Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Auto-kill active instances with a warning in the confirmation dialog if any are running"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should templates have a way to be reordered/favorited, or just alphabetical order?",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:51:00.632Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Alphabetical order with a type-to-filter search feature (same pattern as model selector)"
+        },
+        {
+          "id": 2,
+          "text": "@human: Should there be a quick-spawn command like '/watcher spawn security-reviewer' for power users?",
+          "deleted": false,
+          "createdAt": "2026-01-23T10:51:04.728Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes - support '/watcher spawn <slug>' where slug is auto-generated from template name using kebab-case (e.g., 'Security Reviewer' → 'security-reviewer')"
+        }
+      ],
+      "nextQuestionId": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create new types file: src/tui/types/watcherTemplate.ts - WatcherTemplate interface (id, name, slug, modelId, authority, brief, autoInject, timestamps), WatcherInstance interface (sessionId, templateId, status)",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:58:00.860Z"
+        },
+        {
+          "id": 1,
+          "text": "Create new component: src/tui/components/WatcherTemplateList.tsx - Reusable list component with collapse/expand navigation pattern (copy from model selector in AgentView.tsx lines 173-228), type-to-filter search, handles template + instance hierarchy",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:58:12.810Z"
+        },
+        {
+          "id": 2,
+          "text": "Refactor WatcherCreateView.tsx to WatcherTemplateForm.tsx - Rename and update to work with templates (not one-off watchers), add mode prop for 'create' vs 'edit', pre-populate form when editing, use ↑/↓ for field navigation in addition to Tab",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:58:18.410Z"
+        },
+        {
+          "id": 3,
+          "text": "Update model field in WatcherTemplateForm to use type-to-filter pattern (copy from AgentView.tsx lines 5108-5133 for filter mode handling), only show configured models (filter providerSections to those with credentials)",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:58:24.255Z"
+        },
+        {
+          "id": 4,
+          "text": "Replace watcher overlay in AgentView.tsx (lines 6220-6340) with new WatcherTemplateList component, update isWatcherMode state handling to work with templates instead of direct instances",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:58:29.792Z"
+        },
+        {
+          "id": 5,
+          "text": "Add '/watcher spawn <slug>' command handler in AgentView.tsx handleSubmit() slash command section - lookup template by slug, call sessionCreateWatcher + sessionSetRole directly without opening overlay",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:58:36.551Z"
+        },
+        {
+          "id": 6,
+          "text": "Add buildFlatWatcherList() helper function in WatcherTemplateList.tsx following same pattern as buildFlatModelList() in AgentView.tsx - returns union type array of template items and instance items for flat navigation",
+          "deleted": false,
+          "createdAt": "2026-01-23T19:58:41.869Z"
+        },
+        {
+          "id": 7,
+          "text": "Reuse shared ConfirmationDialog component (src/components/ConfirmationDialog.tsx) for template deletion and instance killing - use riskLevel='medium' for template deletion with active instances warning, riskLevel='low' for normal deletions",
+          "deleted": false,
+          "createdAt": "2026-01-23T20:02:09.195Z"
+        },
+        {
+          "id": 8,
+          "text": "Create new utils file: src/tui/utils/watcherTemplateStorage.ts - import getFspecUserDir from '../../utils/config', store templates at path.join(getFspecUserDir(), 'watcher-templates.json'), export loadWatcherTemplates(), saveWatcherTemplates(), generateSlug(name) functions",
+          "deleted": false,
+          "createdAt": "2026-01-23T20:04:01.674Z"
+        }
+      ],
+      "nextNoteId": 9,
+      "estimate": 8,
+      "updated": "2026-01-23T20:54:44.714Z"
     }
   },
   "states": {
@@ -66219,6 +66602,7 @@
     ],
     "validating": [],
     "done": [
+      "WATCH-023",
       "LOG-003",
       "WATCH-021",
       "WATCH-020",
@@ -66752,7 +67136,7 @@
     "RLM": 1,
     "SESS": 1,
     "CMPCT": 2,
-    "WATCH": 22,
+    "WATCH": 23,
     "CACHE": 1,
     "LOG": 3
   }
