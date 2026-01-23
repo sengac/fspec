@@ -1812,15 +1812,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
     // NAPI-009: Check if we have a provider configured and not already loading
     if (!currentProvider || !inputValue.trim() || displayIsLoading) {
-      // TUI-DEBUG: Log why handleSubmit is blocked
+      // TUI-DEBUG: Log why handleSubmit is blocked (debug level - these are expected conditions)
       if (!currentProvider) {
-        logger.error(`[TUI-DEBUG] handleSubmit blocked: currentProvider is empty (currentSessionId=${currentSessionId})`);
+        logger.debug(`[TUI-DEBUG] handleSubmit blocked: currentProvider is empty (currentSessionId=${currentSessionId})`);
       }
       if (!inputValue.trim()) {
-        logger.error(`[TUI-DEBUG] handleSubmit blocked: inputValue is empty`);
+        logger.debug(`[TUI-DEBUG] handleSubmit blocked: inputValue is empty`);
       }
       if (displayIsLoading) {
-        logger.error(`[TUI-DEBUG] handleSubmit blocked: displayIsLoading=true`);
+        logger.debug(`[TUI-DEBUG] handleSubmit blocked: displayIsLoading=true`);
       }
       return;
     }

@@ -3,6 +3,8 @@
  *
  * This test file validates the acceptance criteria defined in the feature file.
  * Scenarios in this test map directly to scenarios in the Gherkin feature.
+ *
+ * LOG-002: Also tests FSPEC_RUST_LOG_LEVEL documentation and environment variable handling
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
@@ -190,6 +192,58 @@ describe('Feature: Add winston universal logger for fspec', () => {
 
       // Restore
       Object.defineProperty(process, 'platform', { value: originalPlatform });
+    });
+  });
+
+  describe('LOG-002: Rust log level filtering documentation', () => {
+    it('should document FSPEC_RUST_LOG_LEVEL environment variable', async () => {
+      // Given the logger module has been imported
+      // The module header documents the environment variables
+
+      // Verify the environment variable is documented in the source
+      const loggerSource = await readFile(
+        join(__dirname, '../logger.ts'),
+        'utf-8'
+      );
+
+      // Then FSPEC_RUST_LOG_LEVEL should be documented
+      expect(loggerSource).toContain('FSPEC_RUST_LOG_LEVEL');
+      expect(loggerSource).toContain('Rust tracing log level');
+
+      // And FSPEC_LOG_LEVEL should be documented
+      expect(loggerSource).toContain('FSPEC_LOG_LEVEL');
+      expect(loggerSource).toContain('TypeScript/winston log level');
+
+      // And RUST_LOG fallback should be documented
+      expect(loggerSource).toContain('RUST_LOG');
+      expect(loggerSource).toContain('Fallback');
+    });
+
+    it('should respect FSPEC_LOG_LEVEL for TypeScript logger level', async () => {
+      // Given FSPEC_LOG_LEVEL is set to 'debug'
+      process.env.FSPEC_LOG_LEVEL = 'debug';
+      vi.resetModules();
+
+      // When the logger is initialized
+      const { logger } = await import('../logger');
+
+      // Then the logger level should be 'debug'
+      expect(logger.level).toBe('debug');
+
+      // Cleanup
+      delete process.env.FSPEC_LOG_LEVEL;
+    });
+
+    it('should default to info level when FSPEC_LOG_LEVEL is not set', async () => {
+      // Given FSPEC_LOG_LEVEL is not set
+      delete process.env.FSPEC_LOG_LEVEL;
+      vi.resetModules();
+
+      // When the logger is initialized
+      const { logger } = await import('../logger');
+
+      // Then the logger level should default to 'info'
+      expect(logger.level).toBe('info');
     });
   });
 });

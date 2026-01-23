@@ -1291,7 +1291,13 @@ export declare function sessionUpdateDebugMetadata(
   sessionId: string
 ): Promise<void>;
 
-/** Set the logging callback from TypeScript and initialize the tracing subscriber */
+/**
+ * Set the logging callback from TypeScript and initialize the tracing subscriber.
+ *
+ * LOG-002: The subscriber is initialized with an EnvFilter that respects
+ * FSPEC_RUST_LOG_LEVEL or RUST_LOG environment variables. Default level
+ * is INFO, which prevents expensive TRACE-level API request logging.
+ */
 export declare function setRustLogCallback(callback: LogCallback): void;
 
 /** A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress, WATCH-020: added watcher_pending_injection) */

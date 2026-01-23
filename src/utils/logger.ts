@@ -4,7 +4,17 @@
  * Singleton logger instance that logs to ~/.fspec/fspec.log
  * Uses os.homedir() + path.join() for cross-platform compatibility
  *
- * Coverage: LOG-001
+ * Coverage: LOG-001, LOG-002
+ *
+ * Environment Variables:
+ * - FSPEC_LOG_LEVEL: Controls TypeScript/winston log level (default: 'info')
+ *   Values: 'error', 'warn', 'info', 'debug'
+ *
+ * - FSPEC_RUST_LOG_LEVEL: Controls Rust tracing log level (default: 'info')
+ *   Values: 'error', 'warn', 'info', 'debug', 'trace'
+ *   Supports complex directives like 'info,rig::completions=off'
+ *
+ * - RUST_LOG: Fallback for Rust log level if FSPEC_RUST_LOG_LEVEL not set
  */
 
 import winston from 'winston';
