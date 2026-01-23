@@ -10,7 +10,7 @@
  * - FSPEC_LOG_LEVEL: Controls TypeScript/winston log level (default: 'info')
  *   Values: 'error', 'warn', 'info', 'debug'
  *
- * - FSPEC_RUST_LOG_LEVEL: Controls Rust tracing log level (default: 'info')
+ * - FSPEC_RUST_LOG_LEVEL: Controls Rust tracing log level (default: 'warn')
  *   Values: 'error', 'warn', 'info', 'debug', 'trace'
  *   Supports complex directives like 'info,rig::completions=off'
  *
