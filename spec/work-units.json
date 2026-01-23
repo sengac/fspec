@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-22T23:25:02.903Z"
+    "lastUpdated": "2026-01-23T02:08:00.121Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -65789,9 +65789,9 @@
       "id": "WATCH-021",
       "title": "Auto-Inject Toggle in Watcher Creation Dialog",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2026-01-22T11:24:48.738Z",
-      "updatedAt": "2026-01-22T23:42:42.823Z",
+      "updatedAt": "2026-01-22T23:45:25.135Z",
       "children": [],
       "description": "Add an auto-inject toggle checkbox to the WatcherCreateView component. This toggle allows users to enable or disable autonomous injection when creating a new watcher. When enabled (default), watchers automatically inject messages into the parent session when they decide to interject. When disabled, watchers show pending injections in the UI for manual review before injecting.",
       "parent": "WATCH-001",
@@ -65819,6 +65819,10 @@
         {
           "state": "validating",
           "timestamp": "2026-01-22T23:42:42.823Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T23:45:25.135Z"
         }
       ],
       "userStory": {
@@ -65928,7 +65932,10 @@
       "nextNoteId": 4,
       "attachments": [
         "spec/attachments/WATCH-021/ast-research-auto-inject-toggle.md"
-      ]
+      ],
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-22T23:45:25.135Z"
     },
     "WATCH-022": {
       "id": "WATCH-022",
@@ -65947,6 +65954,192 @@
       "createdAt": "2026-01-22T23:44:30.342Z",
       "updatedAt": "2026-01-22T23:44:30.342Z",
       "children": []
+    },
+    "LOG-003": {
+      "id": "LOG-003",
+      "title": "Capture all console methods and redirect to winston logger",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-23T01:49:21.009Z",
+      "updatedAt": "2026-01-23T02:08:00.151Z",
+      "description": "Intercept all console.log, console.error, console.warn, console.info, console.debug, and console.trace calls at application startup and redirect them through the winston logger utility, ensuring all output is captured in the centralized log file.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/LOG-003/LOG-003-console-capture-implementation.md",
+        "spec/attachments/LOG-003/ast-research-codebase-analysis.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-23T01:51:26.846Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-23T01:57:21.424Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-23T01:58:49.971Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-23T02:01:14.631Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-23T02:08:00.151Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer debugging fspec",
+        "action": "have all console output captured to the log file",
+        "benefit": "I can review historical console output without needing to be present when issues occur"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "Console capture must be initialized at application startup before any other imports that use console methods",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:51:35.989Z"
+        },
+        {
+          "id": 1,
+          "text": "All console methods must be captured: log, error, warn, info, debug, trace",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:51:40.477Z"
+        },
+        {
+          "id": 2,
+          "text": "Original console output must be preserved (still appear in terminal)",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:51:44.097Z"
+        },
+        {
+          "id": 3,
+          "text": "ANSI escape codes (chalk formatting) must be stripped from log file output",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:51:48.311Z"
+        },
+        {
+          "id": 4,
+          "text": "Console methods must map to appropriate winston log levels: log->info, error->error, warn->warn, info->info, debug->debug, trace->debug",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:51:52.161Z"
+        },
+        {
+          "id": 5,
+          "text": "Multiple console arguments must be joined with spaces",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:51:55.832Z"
+        },
+        {
+          "id": 6,
+          "text": "Objects must be serialized to JSON for logging",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:51:59.320Z"
+        },
+        {
+          "id": 7,
+          "text": "Error objects must include stack trace when available",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:03.377Z"
+        },
+        {
+          "id": 8,
+          "text": "A restoreConsole function must be provided for test isolation",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:07.159Z"
+        }
+      ],
+      "nextRuleId": 9,
+      "examples": [
+        {
+          "id": 0,
+          "text": "console.log('hello') outputs 'hello' to terminal AND logs '[info]: hello' to ~/.fspec/fspec.log",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:11.648Z"
+        },
+        {
+          "id": 1,
+          "text": "console.error('failed') outputs 'failed' to terminal AND logs '[error]: failed' to ~/.fspec/fspec.log",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:15.622Z"
+        },
+        {
+          "id": 2,
+          "text": "console.warn('deprecated') outputs 'deprecated' to terminal AND logs '[warn]: deprecated' to ~/.fspec/fspec.log",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:19.284Z"
+        },
+        {
+          "id": 3,
+          "text": "console.log with chalk formatting like '\\x1b[31mred\\x1b[0m' shows 'red' colored in terminal but logs plain 'red' without escape codes in log file",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:24.057Z"
+        },
+        {
+          "id": 4,
+          "text": "console.log('hello', 'world', 123) joins arguments and logs '[info]: hello world 123'",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:28.200Z"
+        },
+        {
+          "id": 5,
+          "text": "console.log({foo: 'bar'}) serializes the object and logs '[info]: {\"foo\": \"bar\"}'",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:32.392Z"
+        },
+        {
+          "id": 6,
+          "text": "console.error(new Error('test')) includes the stack trace in the log file",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:36.074Z"
+        },
+        {
+          "id": 7,
+          "text": "console.trace('marker') includes both the message and stack trace in the log file at debug level",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:39.661Z"
+        },
+        {
+          "id": 8,
+          "text": "Running 'fspec list-features' shows output in terminal and the same output (without colors) appears in ~/.fspec/fspec.log",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:43.762Z"
+        },
+        {
+          "id": 9,
+          "text": "After calling restoreConsole() in a test, console methods no longer log to winston",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:52:48.128Z"
+        }
+      ],
+      "nextExampleId": 10,
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Creates src/utils/console-capture.ts module with initializeConsoleCapture() and restoreConsole() functions",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:56:25.769Z"
+        },
+        {
+          "id": 1,
+          "text": "Initializes at top of src/index.ts after PERF-001 block and before all other imports",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:56:30.108Z"
+        },
+        {
+          "id": 2,
+          "text": "Uses existing winston logger from src/utils/logger.ts (LOG-001)",
+          "deleted": false,
+          "createdAt": "2026-01-23T01:56:33.951Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "questions": [],
+      "nextQuestionId": 0,
+      "updated": "2026-01-23T02:08:00.151Z"
     }
   },
   "states": {
@@ -66024,10 +66217,10 @@
     "implementing": [
       "NAPI-009"
     ],
-    "validating": [
-      "WATCH-021"
-    ],
+    "validating": [],
     "done": [
+      "LOG-003",
+      "WATCH-021",
       "WATCH-020",
       "WATCH-019",
       "WATCH-016",
@@ -66560,6 +66753,7 @@
     "SESS": 1,
     "CMPCT": 2,
     "WATCH": 22,
-    "CACHE": 1
+    "CACHE": 1,
+    "LOG": 3
   }
 }

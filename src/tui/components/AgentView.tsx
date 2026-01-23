@@ -32,6 +32,11 @@ import { TurnContentModal } from './TurnContentModal';
 import { WatcherCreateView } from './WatcherCreateView';
 import { SplitSessionView } from './SplitSessionView';
 import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/conversationUtils';
+import {
+  extractTokenStateFromChunks,
+  calculateContextFillPercentage,
+  persistTokenState,
+} from '../utils/tokenStateUtils';
 import { calculatePaneWidth } from '../utils/textWrap';
 import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelection';
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
@@ -1032,6 +1037,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
   // NAPI-006: Session persistence state
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  // Ref to track current session ID for use in callbacks without stale closures
+  const currentSessionIdRef = useRef<string | null>(null);
   // Track if first message has been sent (for auto-renaming session)
   const isFirstMessageRef = useRef(true);
   const currentProjectRef = useRef<string>(process.cwd());
@@ -2858,6 +2865,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               return updated;
             });
             refreshRustState();
+
+            // PERSIST-001: Persist token state to disk when streaming completes
+            // This ensures /resume can restore token counts from persisted sessions
+            persistTokenState(activeSessionId);
+
             // NAPI-009: Resolve the promise when agent completes
             resolve();
           } else if (chunk.type === 'Status' && chunk.status) {
@@ -3657,6 +3669,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return updated;
       });
       refreshRustState();
+
+      // PERSIST-001: Persist token state to disk when streaming completes
+      // This ensures /resume can restore token counts from persisted sessions
+      persistTokenState(currentSessionIdRef.current);
     } else if (chunk.type === 'Status' && chunk.status) {
       // Show status messages (except compaction notifications)
       const statusMessage = chunk.status;
@@ -3817,34 +3833,24 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     );
 
     // TUI-049: Restore token state from the new session's buffered output
-    // Find the LAST TokenUpdate and ContextFillUpdate chunks to get current state
-    let lastTokenUpdate: StreamChunk | null = null;
-    let lastContextFillUpdate: StreamChunk | null = null;
-    for (const chunk of chunks) {
-      if (chunk.type === 'TokenUpdate' && chunk.tokens) {
-        lastTokenUpdate = chunk;
-      } else if (chunk.type === 'ContextFillUpdate' && chunk.contextFill) {
-        lastContextFillUpdate = chunk;
-      }
-    }
+    // DRY: Use shared utility to extract last token/context state from chunks
+    const extractedState = extractTokenStateFromChunks(chunks);
 
     // Apply the restored token state
     // Note: We use setTokenUsage directly (not updateTokenStateFromChunk) because
     // restoration has different logic: only restore tokensPerSecond for running sessions
-    if (lastTokenUpdate?.tokens) {
-      setTokenUsage(lastTokenUpdate.tokens);
+    if (extractedState.tokenUsage) {
+      setTokenUsage(extractedState.tokenUsage);
       // TUI-049: Only restore tokens per second if session is CURRENTLY running
       // Don't restore stale tokensPerSecond from finished sessions
       const targetStatus = sessionGetStatus(targetSession.id);
-      if (targetStatus === 'running' &&
-          lastTokenUpdate.tokens.tokensPerSecond !== undefined &&
-          lastTokenUpdate.tokens.tokensPerSecond !== null) {
-        setDisplayedTokPerSec(lastTokenUpdate.tokens.tokensPerSecond);
+      if (targetStatus === 'running' && extractedState.tokensPerSecond !== null) {
+        setDisplayedTokPerSec(extractedState.tokensPerSecond);
         setLastChunkTime(Date.now());
       }
     }
-    if (lastContextFillUpdate?.contextFill) {
-      setContextFillPercentage(lastContextFillUpdate.contextFill.fillPercentage);
+    if (extractedState.contextFillPercentage !== null) {
+      setContextFillPercentage(extractedState.contextFillPercentage);
     }
 
     // Restore pending input for new session
@@ -4326,6 +4332,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         );
         setConversation(restoredMessages);
 
+        // DRY: Use shared utility to extract and restore token state from chunks
+        const extractedState = extractTokenStateFromChunks(mergedChunks);
+        if (extractedState.tokenUsage) {
+          setTokenUsage(extractedState.tokenUsage);
+        }
+        if (extractedState.contextFillPercentage !== null) {
+          setContextFillPercentage(extractedState.contextFillPercentage);
+        }
+
         // Attach for live streaming
         sessionAttach(selectedSession.id, (_err: Error | null, chunk: StreamChunk) => {
           if (chunk) {
@@ -4665,6 +4680,21 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           cacheCreationInputTokens:
             selectedSession.tokenUsage.cacheCreationTokens,
         });
+
+        // DRY: Use shared utility to calculate context fill percentage from model info
+        if (selectedSession.provider?.includes('/')) {
+          const [providerId, modelId] = selectedSession.provider.split('/');
+          const section = providerSections.find(s => s.providerId === providerId);
+          const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+          if (model) {
+            const fillPercentage = calculateContextFillPercentage(
+              selectedSession.tokenUsage.currentContextTokens,
+              model.contextWindow,
+              model.maxOutput
+            );
+            setContextFillPercentage(fillPercentage);
+          }
+        }
       }
     } catch (err) {
       const errorMessage =
@@ -5723,6 +5753,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
   // TUI-043: Keep ref in sync with conversationLines for use in callbacks
   conversationLinesRef.current = conversationLines;
+
+  // Keep currentSessionIdRef in sync for use in callbacks (avoids stale closure)
+  currentSessionIdRef.current = currentSessionId;
 
   // Error state - show setup instructions (full-screen overlay)
   // Only show this if error occurred before a session was created (no credentials)
