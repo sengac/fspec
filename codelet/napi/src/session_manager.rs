@@ -992,6 +992,10 @@ impl BackgroundSession {
     ///
     /// Buffers the user input as a UserInput chunk before sending to the agent,
     /// so it can be replayed when attaching to a detached session via /resume.
+    ///
+    /// CRITICAL: Sets status to Running BEFORE sending to channel to avoid race condition.
+    /// The TypeScript side calls refreshRustState() right after sessionSendInput() returns,
+    /// so status must be Running at that point for isLoading to be true.
     pub fn send_input(&self, input: String, thinking_config: Option<String>) -> Result<()> {
         // TUI-049: Clear pending input - it's being sent now (state invariant)
         // This prevents "ghost input" from reappearing when switching sessions after send
@@ -1000,9 +1004,20 @@ impl BackgroundSession {
         // Buffer user input for resume/attach (NAPI-009)
         self.handle_output(StreamChunk::user_input(input.clone()));
 
+        // NAPI-009: Set status to Running BEFORE sending to channel.
+        // This ensures sessionGetStatus() returns "running" when called immediately after
+        // sessionSendInput(), allowing the UI to show loading state without race conditions.
+        // The agent_loop will also set this (idempotent), and will set back to Idle when done.
+        self.set_status(SessionStatus::Running);
+        self.reset_interrupt();
+
         self.input_tx
             .try_send(PromptInput { input, thinking_config })
-            .map_err(|e| Error::from_reason(format!("Failed to send input: {}", e)))
+            .map_err(|e| {
+                // If send fails, revert status to Idle since no processing will occur
+                self.set_status(SessionStatus::Idle);
+                Error::from_reason(format!("Failed to send input: {}", e))
+            })
     }
     
     /// Interrupt current agent execution
