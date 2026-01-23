@@ -56,7 +56,6 @@ import {
   persistenceMergeMessages,
   persistenceCherryPick,
   persistenceCreateSessionWithProvider,
-  persistenceGetSessionMessages,
   persistenceGetSessionMessageEnvelopes,
   persistenceDeleteSession,
   persistenceCleanupOrphanedMessages,
@@ -469,10 +468,65 @@ const parseWatcherPrefix = (text: string): WatcherInfo | null => {
 };
 
 /**
+ * Pending tool call info for tracking inputs across ToolCall → ToolResult chunks.
+ * Used to regenerate diffs for Edit/Write tools on restore.
+ */
+interface PendingToolCallInfo {
+  name: string;
+  input: Record<string, unknown>;
+}
+
+/**
+ * Extract args display string from tool input object.
+ * DRY: Centralizes the logic for displaying tool arguments in headers.
+ */
+const extractToolArgsDisplay = (toolName: string, inputObj: Record<string, unknown>): string => {
+  const toolNameLower = toolName.toLowerCase();
+  
+  // Handle web_search specially - show action_type and key param
+  if (toolNameLower === 'web_search') {
+    const parts: string[] = [];
+    if (inputObj.action_type) {
+      parts.push(`${inputObj.action_type}`);
+    }
+    // Show the relevant parameter based on action
+    if (inputObj.query) {
+      parts.push(`query: "${inputObj.query}"`);
+    } else if (inputObj.url) {
+      parts.push(`url: "${inputObj.url}"`);
+    } else if (inputObj.pattern) {
+      parts.push(`pattern: "${inputObj.pattern}"`);
+    }
+    return parts.join(', ');
+  }
+  
+  // Standard tool args extraction
+  if (inputObj.command) return String(inputObj.command);
+  if (inputObj.file_path) return String(inputObj.file_path);
+  if (inputObj.pattern) return String(inputObj.pattern);
+  
+  // Fallback: first entry
+  const entries = Object.entries(inputObj);
+  if (entries.length > 0) {
+    const [key, value] = entries[0];
+    return typeof value === 'string' ? value : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
+  }
+  
+  return '';
+};
+
+/**
  * Process merged chunks into conversation messages for reattachment.
- * Used when attaching to a running/idle background session.
+ * Used when attaching to a running/idle background session OR restoring from persistence.
  *
- * SOLID: Uses explicit MessageType for semantic clarity.
+ * SOLID: Single source of truth for converting StreamChunks to ConversationMessages.
+ * DRY: Unified code path for both background and persisted session resume.
+ * 
+ * Features:
+ * - Tracks ToolCall inputs to regenerate diffs for Edit/Write tools
+ * - Populates fullContent field for TUI-043 expansion
+ * - Handles web_search special arg display
+ * - Applies markdown table formatting
  */
 const processChunksToConversation = (
   chunks: StreamChunk[],
@@ -480,6 +534,9 @@ const processChunksToConversation = (
   formatCollapsedOutputFn: (content: string) => string
 ): ConversationMessage[] => {
   const messages: ConversationMessage[] = [];
+  
+  // Track pending tool calls for Edit/Write diff regeneration
+  const pendingToolCalls = new Map<string, PendingToolCallInfo>();
 
   for (const chunk of chunks) {
     // WATCH-011: Extract correlation fields from chunk
@@ -552,24 +609,18 @@ const processChunksToConversation = (
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
       const toolCall = chunk.toolCall;
       let argsDisplay = '';
+      let parsedInput: Record<string, unknown> = {};
+      
       try {
-        const parsedInput = JSON.parse(toolCall.input);
-        if (typeof parsedInput === 'object' && parsedInput !== null) {
-          const inputObj = parsedInput as Record<string, unknown>;
-          if (inputObj.command) argsDisplay = String(inputObj.command);
-          else if (inputObj.file_path) argsDisplay = String(inputObj.file_path);
-          else if (inputObj.pattern) argsDisplay = String(inputObj.pattern);
-          else {
-            const entries = Object.entries(inputObj);
-            if (entries.length > 0) {
-              const [, value] = entries[0];
-              argsDisplay = typeof value === 'string' ? value : JSON.stringify(value).slice(0, 50);
-            }
-          }
-        }
+        parsedInput = JSON.parse(toolCall.input) as Record<string, unknown>;
+        argsDisplay = extractToolArgsDisplay(toolCall.name, parsedInput);
       } catch {
         argsDisplay = toolCall.input;
       }
+      
+      // Store for ToolResult processing (Edit/Write diff regeneration)
+      pendingToolCalls.set(toolCall.id, { name: toolCall.name, input: parsedInput });
+      
       // Finalize streaming assistant message (remove if empty, or format and mark complete)
       const streamingIdx = messages.findLastIndex(m => m.isStreaming);
       if (streamingIdx >= 0) {
@@ -591,14 +642,48 @@ const processChunksToConversation = (
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
       const result = chunk.toolResult;
       const sanitizedContent = result.content.replace(/\t/g, '  ');
+      
+      // Look up pending tool call for Edit/Write diff regeneration
+      const pendingTool = pendingToolCalls.get(result.toolCallId);
+      const toolNameLower = pendingTool?.name?.toLowerCase() || '';
+      const inputObj = pendingTool?.input || {};
+      
+      let resultContent: string;
+      let resultFullContent: string;
+      
+      // TUI-038: Regenerate diff for Edit/Write tools
+      if (
+        (toolNameLower === 'edit' || toolNameLower === 'replace') &&
+        typeof inputObj.old_string === 'string' &&
+        typeof inputObj.new_string === 'string'
+      ) {
+        // Edit tool - generate diff from old/new strings
+        const diffLines = formatEditDiff(inputObj.old_string, inputObj.new_string);
+        resultContent = formatDiffForDisplay(diffLines);
+        resultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
+      } else if (
+        (toolNameLower === 'write' || toolNameLower === 'write_file') &&
+        typeof inputObj.content === 'string'
+      ) {
+        // Write tool - generate diff (all additions)
+        const diffLines = formatWriteDiff(inputObj.content);
+        resultContent = formatDiffForDisplay(diffLines);
+        resultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
+      } else {
+        // Normal tool - use collapsed output
+        resultContent = formatCollapsedOutputFn(sanitizedContent);
+        resultFullContent = formatFullOutput(sanitizedContent);
+      }
+      
       // Find tool header and combine with result
       for (let i = messages.length - 1; i >= 0; i--) {
         if (messages[i].type === 'tool-call' && messages[i].content.startsWith('●')) {
           const headerLine = messages[i].content.split('\n')[0];
-          const formattedContent = formatCollapsedOutputFn(sanitizedContent);
           // Don't add newline if result is empty
-          const hasContent = formattedContent && formattedContent.trim();
-          messages[i].content = hasContent ? `${headerLine}\n${formattedContent}` : headerLine;
+          const hasContent = resultContent && resultContent.trim();
+          messages[i].content = hasContent ? `${headerLine}\n${resultContent}` : headerLine;
+          // TUI-043: Set fullContent for expansion
+          messages[i].fullContent = hasContent ? `${headerLine}\n${resultFullContent}` : headerLine;
           messages[i].isError = result.isError;
           break;
         }
@@ -2873,7 +2958,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
               }
               return updated;
             });
-            refreshRustState();
+            refreshRustState(activeSessionId);
 
             // PERSIST-001: Persist token state to disk when streaming completes
             // This ensures /resume can restore token counts from persisted sessions
@@ -3097,8 +3182,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       sessionSendInput(activeSessionId, userMessage, thinkingConfig);
       
       // Refresh Rust state to pick up status change (running) after sending input
-      // This is needed because useRustSessionState caches snapshots and only re-fetches on refresh
-      refreshRustState();
+      // CRITICAL: Pass activeSessionId explicitly to handle race condition with React state updates.
+      // When creating a new session, setCurrentSessionId() schedules a batched update that hasn't
+      // taken effect yet, so the hook's captured sessionId is still null. Using the local variable
+      // ensures we refresh the correct session immediately.
+      refreshRustState(activeSessionId);
       
       // Wait for the prompt to complete (Done chunk received)
       await promptComplete;
@@ -3394,7 +3482,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       if (currentSessionId) {
         try {
           await sessionSetModel(currentSessionId, section.providerId, modelId);
-          refreshRustState();
+          refreshRustState(currentSessionId);
         } catch (err) {
           logger.error('Failed to update background session model', { error: err });
         }
@@ -3681,7 +3769,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         }
         return updated;
       });
-      refreshRustState();
+      refreshRustState(currentSessionIdRef.current);
 
       // PERSIST-001: Persist token state to disk when streaming completes
       // This ensures /resume can restore token counts from persisted sessions
@@ -3710,7 +3798,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         updated.push({ type: 'status', content: '⚠ Interrupted' });
         return updated;
       });
-      refreshRustState();
+      refreshRustState(currentSessionIdRef.current);
     } else if (chunk.type === 'TokenUpdate' || chunk.type === 'ContextFillUpdate') {
       // TUI-049: Use centralized helper for token state updates (DRY)
       updateTokenStateFromChunk(chunk);
@@ -3760,7 +3848,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         updated.push({ type: 'status', content: `API Error: ${chunk.error}` });
         return updated;
       });
-      refreshRustState();
+      refreshRustState(currentSessionIdRef.current);
     } else if (chunk.type === 'UserInput' && chunk.text) {
       // User input from buffer replay (NAPI-009: resume/attach)
       setConversation(prev => [
@@ -3937,136 +4025,124 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   }, [switchToSession]);
 
   // SESS-001: Shared function to resume a session by ID (used by /resume and auto-resume)
-  // Handles both background sessions (attach) and persisted-only (load from disk)
+  // UNIFIED: Both background and persisted sessions use the same chunk-based restore flow.
   const resumeSessionById = useCallback(async (sessionId: string): Promise<boolean> => {
     try {
       // Check if this is a background session
       const backgroundSessions = sessionManagerList();
       const bgSession = backgroundSessions.find(bg => bg.id === sessionId);
 
-      if (bgSession) {
-        // Background session - get merged output and attach
-        logger.debug(`SESS-001: Resuming background session ${sessionId}`);
+      // For persisted-only sessions, create background session first
+      if (!bgSession) {
+        logger.debug(`SESS-001: Creating background session for persisted session ${sessionId}`);
 
-        // Get merged buffered output and process into conversation in one state update
-        const mergedChunks = sessionGetMergedOutput(sessionId);
-        const restoredMessages = processChunksToConversation(
-          mergedChunks,
-          formatToolHeader,
-          formatCollapsedOutput
-        );
-        setConversation(restoredMessages);
+        // Load session manifest to get provider and token info
+        let sessionManifest: { provider: string; name: string; tokenUsage?: { currentContextTokens: number; cumulativeBilledOutput: number; cacheReadTokens?: number; cacheCreationTokens?: number; cumulativeBilledInput?: number } } | null = null;
+        try {
+          sessionManifest = persistenceLoadSession(sessionId);
+        } catch {
+          // Session may not exist in persistence - continue with defaults
+          logger.debug(`SESS-001: Could not load session manifest for ${sessionId}`);
+        }
 
-        // Attach for live streaming
-        sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
-          if (chunk) {
-            handleStreamChunk(chunk);
-          }
-        });
+        const modelPath = sessionManifest?.provider || currentProvider;
+        const project = currentProjectRef.current;
+        const sessionName = sessionManifest?.name || 'Restored Session';
 
-        // Update session state
-        setCurrentSessionId(sessionId);
+        // Create background session
+        try {
+          await sessionManagerCreateWithId(sessionId, modelPath, project, sessionName);
+        } catch {
+          // Session may already exist - continue
+        }
 
-        return true;
-      } else {
-        // Persisted-only session - load from persistence
-        logger.debug(`SESS-001: Resuming persisted session ${sessionId}`);
-
-        // Get FULL envelopes with all content blocks
+        // Get envelopes from persistence and restore to background session
         const envelopes: string[] = persistenceGetSessionMessageEnvelopes(sessionId);
-        const restored: ConversationMessage[] = [];
+        await sessionRestoreMessages(sessionId, envelopes);
 
-        // First pass: collect all tool results by their tool_use_id
-        const toolResultsByUseId = new Map<string, { content: string; isError: boolean }>();
-        for (const envelopeJson of envelopes) {
-          try {
-            const envelope = JSON.parse(envelopeJson);
-            const messageType = envelope.type || envelope.message_type || envelope.messageType;
-            const message = envelope.message;
-            if (!message) continue;
+        // Restore token state if available
+        if (sessionManifest?.tokenUsage) {
+          await sessionRestoreTokenState(
+            sessionId,
+            sessionManifest.tokenUsage.currentContextTokens,
+            sessionManifest.tokenUsage.cumulativeBilledOutput,
+            sessionManifest.tokenUsage.cacheReadTokens ?? 0,
+            sessionManifest.tokenUsage.cacheCreationTokens ?? 0,
+            sessionManifest.tokenUsage.cumulativeBilledInput ?? 0,
+            sessionManifest.tokenUsage.cumulativeBilledOutput
+          );
 
-            if (messageType === 'user') {
-              const contents = message.content || [];
-              for (const content of contents) {
-                if (content.type === 'tool_result' && content.tool_use_id) {
-                  toolResultsByUseId.set(content.tool_use_id, {
-                    content: content.content || '',
-                    isError: content.is_error || false,
-                  });
-                }
-              }
-            }
-          } catch {
-            // Skip malformed envelopes in first pass
-          }
+          // Update UI token state from manifest
+          setTokenUsage({
+            inputTokens: sessionManifest.tokenUsage.currentContextTokens,
+            outputTokens: sessionManifest.tokenUsage.cumulativeBilledOutput,
+            cacheReadInputTokens: sessionManifest.tokenUsage.cacheReadTokens,
+            cacheCreationInputTokens: sessionManifest.tokenUsage.cacheCreationTokens,
+          });
         }
 
-        // Second pass: process envelopes and interleave tool results
-        for (const envelopeJson of envelopes) {
-          try {
-            const envelope = JSON.parse(envelopeJson);
-            const messageType = envelope.type || envelope.message_type || envelope.messageType;
-            const message = envelope.message;
-            if (!message) continue;
-
-            if (messageType === 'user') {
-              const contents = message.content || [];
-              for (const content of contents) {
-                if (content.type === 'text' && content.text) {
-                  restored.push({ type: 'user-input', content: content.text });
-                }
-              }
-            } else if (messageType === 'assistant') {
-              const contents = message.content || [];
-              for (const content of contents) {
-                if (content.type === 'thinking' && content.thinking) {
-                  restored.push({
-                    type: 'thinking',
-                    content: content.thinking,
-                  });
-                } else if (content.type === 'text' && content.text) {
-                  restored.push({ type: 'assistant-text', content: content.text });
-                } else if (content.type === 'tool_use' && content.id) {
-                  // Render tool call header
-                  const toolName = content.name || 'unknown';
-                  restored.push({
-                    type: 'tool-call',
-                    content: `● ${toolName}`,
-                    toolCallId: content.id,
-                  });
-                  // Find and render tool result
-                  const result = toolResultsByUseId.get(content.id);
-                  if (result) {
-                    // Combine tool header with result (find and update the previous tool-call)
-                    const lastIdx = restored.length - 1;
-                    if (lastIdx >= 0 && restored[lastIdx].type === 'tool-call') {
-                      const header = restored[lastIdx].content;
-                      restored[lastIdx] = {
-                        ...restored[lastIdx],
-                        content: `${header}\n${result.content}`,
-                        isError: result.isError,
-                      };
-                    }
-                  }
-                }
-              }
-            }
-          } catch {
-            // Skip malformed envelopes
+        // Update provider state if available
+        if (sessionManifest?.provider?.includes('/')) {
+          const [providerId, modelId] = sessionManifest.provider.split('/');
+          const internalName = mapProviderIdToInternal(providerId);
+          setCurrentProvider(internalName);
+          // Find matching model info from provider sections
+          const section = providerSections.find(s => s.providerId === providerId);
+          const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+          if (model && section) {
+            setCurrentModel({
+              providerId,
+              modelId,
+              apiModelId: model.id,
+              displayName: model.name,
+              reasoning: model.reasoning,
+              hasVision: model.hasVision,
+              contextWindow: model.contextWindow,
+              maxOutput: model.maxOutput,
+            });
           }
         }
-
-        setCurrentSessionId(sessionId);
-        setConversation(restored);
-        isFirstMessageRef.current = false;
-
-        return true;
+      } else {
+        logger.debug(`SESS-001: Resuming existing background session ${sessionId}`);
       }
+
+      // UNIFIED: Get merged output and convert to conversation messages
+      const mergedChunks = sessionGetMergedOutput(sessionId);
+      const restoredMessages = processChunksToConversation(
+        mergedChunks,
+        formatToolHeader,
+        formatCollapsedOutput
+      );
+      setConversation(restoredMessages);
+
+      // For background sessions, extract token state from chunks
+      if (bgSession) {
+        const extractedState = extractTokenStateFromChunks(mergedChunks);
+        if (extractedState.tokenUsage) {
+          setTokenUsage(extractedState.tokenUsage);
+        }
+        if (extractedState.contextFillPercentage !== null) {
+          setContextFillPercentage(extractedState.contextFillPercentage);
+        }
+      }
+
+      // Attach for live streaming
+      sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
+        if (chunk) {
+          handleStreamChunk(chunk);
+        }
+      });
+
+      // Update session state
+      setCurrentSessionId(sessionId);
+      isFirstMessageRef.current = false;
+
+      return true;
     } catch (err) {
       logger.error(`SESS-001: Failed to resume session: ${err instanceof Error ? err.message : String(err)}`);
       return false;
     }
-  }, [handleStreamChunk]);
+  }, [handleStreamChunk, currentProvider, providerSections]);
 
   // SESS-001: Auto-resume attached session on mount
   useEffect(() => {
@@ -4320,7 +4396,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   }, [currentSessionId, handleWatcherMode]);
 
   // NAPI-003 + TUI-047: Select session and restore conversation
-  // Now handles both background sessions (attach) and persisted-only (load from disk)
+  // UNIFIED: Both background and persisted sessions now use the same chunk-based restore flow.
+  // For persisted-only sessions, we first create a background session and restore messages,
+  // then use sessionGetMergedOutput() → processChunksToConversation() (same as background).
   const handleResumeSelect = useCallback(async () => {
     if (
       availableSessions.length === 0 ||
@@ -4332,20 +4410,78 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     const selectedSession = availableSessions[resumeSessionIndex];
 
     try {
-      // TUI-047: Check if this is a background session
+      // For persisted-only sessions, create background session first
+      if (!selectedSession.isBackgroundSession) {
+        // TUI-034: Use full model path if available, fallback to provider
+        const modelPath = selectedSession.provider || currentProvider;
+        const project = currentProjectRef.current;
+
+        // Create background session for this restored session
+        try {
+          await sessionManagerCreateWithId(selectedSession.id, modelPath, project, selectedSession.name);
+        } catch {
+          // Session may already exist - continue
+        }
+
+        // Get envelopes from persistence and restore to background session
+        const envelopes: string[] = persistenceGetSessionMessageEnvelopes(selectedSession.id);
+        await sessionRestoreMessages(selectedSession.id, envelopes);
+
+        // Restore token state to background session for accurate context fill calculations
+        if (selectedSession.tokenUsage) {
+          await sessionRestoreTokenState(
+            selectedSession.id,
+            selectedSession.tokenUsage.currentContextTokens,
+            selectedSession.tokenUsage.cumulativeBilledOutput,
+            selectedSession.tokenUsage.cacheReadTokens ?? 0,
+            selectedSession.tokenUsage.cacheCreationTokens ?? 0,
+            selectedSession.tokenUsage.cumulativeBilledInput ?? 0,
+            selectedSession.tokenUsage.cumulativeBilledOutput
+          );
+        }
+
+        // Update provider/model state from stored provider
+        if (selectedSession.provider) {
+          const storedProvider = selectedSession.provider;
+          if (storedProvider.includes('/')) {
+            const [providerId, modelId] = storedProvider.split('/');
+            const internalName = mapProviderIdToInternal(providerId);
+            setCurrentProvider(internalName);
+            // Find matching model info from provider sections
+            const section = providerSections.find(s => s.providerId === providerId);
+            const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+            if (model && section) {
+              setCurrentModel({
+                providerId,
+                modelId,
+                apiModelId: model.id,
+                displayName: model.name,
+                reasoning: model.reasoning,
+                hasVision: model.hasVision,
+                contextWindow: model.contextWindow,
+                maxOutput: model.maxOutput,
+              });
+            }
+          } else {
+            setCurrentProvider(storedProvider);
+          }
+        }
+      }
+
+      // UNIFIED: Get merged output and convert to conversation messages
+      // For background sessions: output_buffer has live streaming history
+      // For persisted sessions: output_buffer populated by sessionRestoreMessages()
+      const mergedChunks = sessionGetMergedOutput(selectedSession.id);
+      const restoredMessages = processChunksToConversation(
+        mergedChunks,
+        formatToolHeader,
+        formatCollapsedOutput
+      );
+      setConversation(restoredMessages);
+
+      // Extract token state from chunks (for background sessions)
+      // For persisted sessions, prefer manifest data which has accurate cumulative values
       if (selectedSession.isBackgroundSession) {
-        // Background session - use sessionAttach instead of loading from persistence
-
-        // Get merged buffered output and process into conversation in one state update
-        const mergedChunks = sessionGetMergedOutput(selectedSession.id);
-        const restoredMessages = processChunksToConversation(
-          mergedChunks,
-          formatToolHeader,
-          formatCollapsedOutput
-        );
-        setConversation(restoredMessages);
-
-        // DRY: Use shared utility to extract and restore token state from chunks
         const extractedState = extractTokenStateFromChunks(mergedChunks);
         if (extractedState.tokenUsage) {
           setTokenUsage(extractedState.tokenUsage);
@@ -4353,348 +4489,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         if (extractedState.contextFillPercentage !== null) {
           setContextFillPercentage(extractedState.contextFillPercentage);
         }
-
-        // Attach for live streaming
-        sessionAttach(selectedSession.id, (_err: Error | null, chunk: StreamChunk) => {
-          if (chunk) {
-            handleStreamChunk(chunk);
-          }
-        });
-
-        // Update session state
-        setCurrentSessionId(selectedSession.id);
-        setIsResumeMode(false);
-        setAvailableSessions([]);
-
-        // SESS-001: Attach resumed session to work unit
-        if (workUnitId) {
-          attachSessionToWorkUnit(workUnitId, selectedSession.id);
-          logger.debug(`SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`);
-        }
-        return;
-      }
-      
-      // Persisted-only session - use existing persistence load code path
-      const messages = persistenceGetSessionMessages(selectedSession.id);
-
-      // Get FULL envelopes with all content blocks (ToolUse, ToolResult, Text, etc.)
-      const envelopes: string[] = persistenceGetSessionMessageEnvelopes(
-        selectedSession.id
-      );
-
-      // Convert full envelopes to conversation format for UI display
-      // This properly restores tool calls, tool results, thinking, etc.
-      //
-      // CRITICAL: Tool results are stored in separate user envelopes after assistant
-      // messages, but we need to interleave them correctly by matching tool_use_id.
-      const restored: ConversationMessage[] = [];
-
-      // First pass: collect all tool results by their tool_use_id
-      const toolResultsByUseId = new Map<
-        string,
-        { content: string; isError: boolean }
-      >();
-      for (const envelopeJson of envelopes) {
-        try {
-          const envelope = JSON.parse(envelopeJson);
-          const messageType =
-            envelope.type || envelope.message_type || envelope.messageType;
-          const message = envelope.message;
-          if (!message) continue;
-
-          if (messageType === 'user') {
-            const contents = message.content || [];
-            for (const content of contents) {
-              if (content.type === 'tool_result' && content.tool_use_id) {
-                toolResultsByUseId.set(content.tool_use_id, {
-                  content: content.content || '',
-                  isError: content.is_error || false,
-                });
-              }
-            }
-          }
-        } catch {
-          // Skip malformed envelopes in first pass
-        }
-      }
-
-      // Second pass: process envelopes and interleave tool results
-      for (const envelopeJson of envelopes) {
-        try {
-          const envelope = JSON.parse(envelopeJson);
-          const messageType =
-            envelope.type || envelope.message_type || envelope.messageType;
-          const message = envelope.message;
-
-          if (!message) continue;
-
-          if (messageType === 'user') {
-            // User messages - extract text only (tool results handled via interleaving)
-            const contents = message.content || [];
-            for (const content of contents) {
-              if (content.type === 'text' && content.text) {
-                restored.push({
-                  type: 'user-input',
-                  content: `${content.text}`,
-                  isStreaming: false,
-                });
-              }
-              // Skip tool_result here - they're interleaved with tool_use below
-            }
-          } else if (messageType === 'assistant') {
-            // Assistant messages - extract text, tool use, and thinking
-            // Interleave tool results immediately after their corresponding tool_use
-            const contents = message.content || [];
-            let textContent = '';
-
-            for (const content of contents) {
-              if (content.type === 'text' && content.text) {
-                textContent += content.text;
-              } else if (content.type === 'tool_use') {
-                // Flush accumulated text first
-                if (textContent) {
-                  // TUI-044: Apply markdown table formatting to restored assistant text
-                  restored.push({
-                    type: 'assistant-text',
-                    content: formatMarkdownTables(textContent),
-                    isStreaming: false,
-                  });
-                  textContent = '';
-                }
-                // TUI-037: Tool call in Claude Code style: ● ToolName(args)
-                const input = content.input;
-                let argsDisplay = '';
-                if (typeof input === 'object' && input !== null) {
-                  const inputObj = input as Record<string, unknown>;
-                  const toolNameLower = (content.name || '').toLowerCase();
-                  
-                  // Handle web_search specially - show action_type and key param
-                  if (toolNameLower === 'web_search') {
-                    const parts: string[] = [];
-                    if (inputObj.action_type) {
-                      parts.push(`${inputObj.action_type}`);
-                    }
-                    // Show the relevant parameter based on action
-                    if (inputObj.query) {
-                      parts.push(`query: "${inputObj.query}"`);
-                    } else if (inputObj.url) {
-                      parts.push(`url: "${inputObj.url}"`);
-                    } else if (inputObj.pattern) {
-                      parts.push(`pattern: "${inputObj.pattern}"`);
-                    }
-                    argsDisplay = parts.join(', ');
-                  } else if (inputObj.command) {
-                    argsDisplay = String(inputObj.command);
-                  } else if (inputObj.file_path) {
-                    argsDisplay = String(inputObj.file_path);
-                  } else if (inputObj.pattern) {
-                    argsDisplay = String(inputObj.pattern);
-                  } else {
-                    const entries = Object.entries(inputObj);
-                    if (entries.length > 0) {
-                      const [key, value] = entries[0];
-                      argsDisplay =
-                        typeof value === 'string'
-                          ? value
-                          : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
-                    }
-                  }
-                }
-                const toolHeader = formatToolHeader(content.name, argsDisplay);
-
-                // TUI-037 + TUI-038: Combine tool header with result as ONE message
-                // Check if this is Edit/Write tool to regenerate diff formatting
-                const toolResult = toolResultsByUseId.get(content.id);
-                if (toolResult) {
-                  let resultContent: string;
-                  let resultFullContent: string; // TUI-043: Full content for expansion
-                  const toolNameLower = content.name?.toLowerCase() || '';
-                  const inputObj =
-                    typeof input === 'object' && input !== null
-                      ? (input as Record<string, unknown>)
-                      : {};
-
-                  // TUI-038: Regenerate diff for Edit/Write tools on restore
-                  // Note: We don't calculate startLine on restore because the file has already
-                  // been edited - old_string no longer exists in the current file content.
-                  // Line numbers will be relative to the diff (starting at 1).
-                  if (
-                    (toolNameLower === 'edit' || toolNameLower === 'replace') &&
-                    typeof inputObj.old_string === 'string' &&
-                    typeof inputObj.new_string === 'string'
-                  ) {
-                    // Edit tool - generate diff from old/new strings
-                    const diffLines = formatEditDiff(
-                      inputObj.old_string,
-                      inputObj.new_string
-                    );
-                    resultContent = formatDiffForDisplay(diffLines);
-                    // TUI-043: Full content shows all diff lines
-                    resultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
-                  } else if (
-                    (toolNameLower === 'write' ||
-                      toolNameLower === 'write_file') &&
-                    typeof inputObj.content === 'string'
-                  ) {
-                    // Write tool - generate diff (all additions)
-                    const diffLines = formatWriteDiff(inputObj.content);
-                    resultContent = formatDiffForDisplay(diffLines);
-                    // TUI-043: Full content shows all diff lines
-                    resultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
-                  } else {
-                    // Normal tool - use collapsed output
-                    const sanitizedContent = toolResult.content.replace(
-                      /\t/g,
-                      '  '
-                    );
-                    resultContent = formatCollapsedOutput(sanitizedContent);
-                    // TUI-043: Full content without truncation
-                    resultFullContent = formatFullOutput(sanitizedContent);
-                  }
-
-                  restored.push({
-                    type: 'tool-call',
-                    content: `${toolHeader}\n${resultContent}`,
-                    fullContent: `${toolHeader}\n${resultFullContent}`, // TUI-043
-                    isStreaming: false,
-                    toolCallId: content.id,
-                  });
-                } else {
-                  // No result yet, just show header
-                  restored.push({
-                    type: 'tool-call',
-                    content: toolHeader,
-                    isStreaming: false,
-                    toolCallId: content.id,
-                  });
-                }
-              } else if (content.type === 'thinking' && content.thinking) {
-                // ALWAYS show thinking blocks on restore - thinking is valuable context
-                restored.push({
-                  type: 'thinking',
-                  content: `[Thinking]\n${content.thinking}`,
-                  isStreaming: false,
-                });
-              }
-            }
-
-            // Flush remaining text
-            if (textContent) {
-              // TUI-044: Apply markdown table formatting to restored assistant text
-              restored.push({
-                type: 'assistant-text',
-                content: formatMarkdownTables(textContent),
-                isStreaming: false,
-              });
-            }
-          }
-        } catch (err) {
-          // If envelope parsing fails, fall back to simple format
-          logger.error(
-            'Failed to parse envelope, falling back to simple format',
-            { error: err }
-          );
-        }
-      }
-
-      // If envelope parsing yielded nothing, fall back to simple messages
-      if (restored.length === 0) {
-        for (const m of messages) {
-          // TUI-044: Apply markdown table formatting to restored assistant messages
-          const formattedContent = m.role === 'assistant' ? formatMarkdownTables(m.content) : m.content;
-          restored.push({
-            type: m.role === 'user' ? 'user-input' : 'assistant-text',
-            content: formattedContent,
-            isStreaming: false,
-          });
-        }
-      }
-
-      // NAPI-009: Restore messages to background session for LLM context
-      // Create the background session if it doesn't exist, then restore messages
-
-      // TUI-034: Use full model path if available, fallback to provider
-      const modelPath = selectedSession.provider || currentProvider;
-      const project = currentProjectRef.current;
-
-      // Create background session for this restored session
-      // Note: Must await - the function is async because it uses tokio::spawn internally
-      try {
-        await sessionManagerCreateWithId(selectedSession.id, modelPath, project, selectedSession.name);
-      } catch {
-        // Session may already exist - continue
-      }
-
-      // Restore messages to the background session
-      await sessionRestoreMessages(selectedSession.id, envelopes);
-
-      // Restore token state to background session for accurate context fill calculations
-      if (selectedSession.tokenUsage) {
-        await sessionRestoreTokenState(
-          selectedSession.id,
-          selectedSession.tokenUsage.currentContextTokens,
-          selectedSession.tokenUsage.cumulativeBilledOutput,
-          selectedSession.tokenUsage.cacheReadTokens ?? 0,
-          selectedSession.tokenUsage.cacheCreationTokens ?? 0,
-          selectedSession.tokenUsage.cumulativeBilledInput ?? 0,
-          selectedSession.tokenUsage.cumulativeBilledOutput
-        );
-      }
-
-      // Update provider/model state from stored provider
-      if (selectedSession.provider) {
-        const storedProvider = selectedSession.provider;
-        if (storedProvider.includes('/')) {
-          const [providerId, modelId] = storedProvider.split('/');
-          const internalName = mapProviderIdToInternal(providerId);
-          setCurrentProvider(internalName);
-          // Find matching model info from provider sections
-          const section = providerSections.find(s => s.providerId === providerId);
-          const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
-          if (model && section) {
-            setCurrentModel({
-              providerId,
-              modelId,
-              apiModelId: model.id,
-              displayName: model.name,
-              reasoning: model.reasoning,
-              hasVision: model.hasVision,
-              contextWindow: model.contextWindow,
-              maxOutput: model.maxOutput,
-            });
-          }
-        } else {
-          setCurrentProvider(storedProvider);
-        }
-      }
-
-      // Update state - replace current conversation entirely
-      setCurrentSessionId(selectedSession.id);
-      setConversation(restored);
-      setIsResumeMode(false);
-      setAvailableSessions([]);
-      setResumeSessionIndex(0);
-      // Don't rename resumed sessions with their first new message
-      isFirstMessageRef.current = false;
-
-      // SESS-001: Attach resumed session to work unit
-      if (workUnitId) {
-        attachSessionToWorkUnit(workUnitId, selectedSession.id);
-        logger.debug(`SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`);
-      }
-
-      // Restore token usage from session manifest (including cache tokens)
-      // CTX-003: Use currentContextTokens for display, cumulativeBilledOutput for output
-      if (selectedSession.tokenUsage) {
+      } else if (selectedSession.tokenUsage) {
+        // Use manifest token data for persisted sessions
         setTokenUsage({
           inputTokens: selectedSession.tokenUsage.currentContextTokens,
           outputTokens: selectedSession.tokenUsage.cumulativeBilledOutput,
           cacheReadInputTokens: selectedSession.tokenUsage.cacheReadTokens,
-          cacheCreationInputTokens:
-            selectedSession.tokenUsage.cacheCreationTokens,
+          cacheCreationInputTokens: selectedSession.tokenUsage.cacheCreationTokens,
         });
 
-        // DRY: Use shared utility to calculate context fill percentage from model info
+        // Calculate context fill percentage from model info
         if (selectedSession.provider?.includes('/')) {
           const [providerId, modelId] = selectedSession.provider.split('/');
           const section = providerSections.find(s => s.providerId === providerId);
@@ -4709,6 +4513,27 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           }
         }
       }
+
+      // Attach for live streaming
+      sessionAttach(selectedSession.id, (_err: Error | null, chunk: StreamChunk) => {
+        if (chunk) {
+          handleStreamChunk(chunk);
+        }
+      });
+
+      // Update session state
+      setCurrentSessionId(selectedSession.id);
+      setIsResumeMode(false);
+      setAvailableSessions([]);
+      setResumeSessionIndex(0);
+      // Don't rename resumed sessions with their first new message
+      isFirstMessageRef.current = false;
+
+      // SESS-001: Attach resumed session to work unit
+      if (workUnitId) {
+        attachSessionToWorkUnit(workUnitId, selectedSession.id);
+        logger.debug(`SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`);
+      }
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to restore session';
@@ -4720,7 +4545,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setAvailableSessions([]);
       setResumeSessionIndex(0);
     }
-  }, [availableSessions, resumeSessionIndex]);
+  }, [availableSessions, resumeSessionIndex, handleStreamChunk]);
 
   // NAPI-003: Cancel resume mode
   const handleResumeCancel = useCallback(() => {
@@ -5662,7 +5487,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         if (displayIsLoading && currentSessionId) {
           try {
             sessionInterrupt(currentSessionId);
-            refreshRustState();
+            refreshRustState(currentSessionId);
           } catch {
             // Ignore interrupt errors
           }
@@ -6738,17 +6563,21 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
                 );
               }
 
+              // Stderr marker constant - used for error and stderr rendering
+              const STDERR_MARKER = '⚠stderr⚠';
+
               // Error output (isError=true from tool result) - render in red
+              // Also strip stderr marker since errors from bash tool include marked stderr
               if (line.isError) {
+                const cleanContent = content.replace(new RegExp(STDERR_MARKER, 'g'), '');
                 return (
                   <Box flexGrow={1}>
-                    <Text color="red">{content}</Text>
+                    <Text color="red">{cleanContent}</Text>
                   </Box>
                 );
               }
 
               // Stderr output (marked with ⚠stderr⚠ prefix during streaming) - render in red
-              const STDERR_MARKER = '⚠stderr⚠';
               if (content.includes(STDERR_MARKER)) {
                 // Remove the marker and render in red
                 const cleanContent = content.replace(new RegExp(STDERR_MARKER, 'g'), '');

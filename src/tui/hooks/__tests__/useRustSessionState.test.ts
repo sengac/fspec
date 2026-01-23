@@ -308,6 +308,33 @@ describe('Feature: Rust session state subscription with proper caching', () => {
       // And the version should have incremented
       expect(sub!.version).toBe(1);
     });
+
+    it('should allow refreshing a different session than captured in hook closure', () => {
+      // This tests the race condition fix: when creating a new session,
+      // React state updates are batched, so the hook's captured sessionId
+      // may still be null. By allowing an override sessionId, callers can
+      // refresh the correct session using a local variable.
+      const mock = createMockStateSource({
+        status: 'running',
+        model: null,
+        tokens: { inputTokens: 100, outputTokens: 50 },
+        debugEnabled: false,
+      });
+      setRustStateSource(mock.source);
+
+      // Simulate: hook has null sessionId (no session yet)
+      // but caller has a newly created session ID in a local variable
+      const newlyCreatedSessionId = 'newly-created-session';
+
+      // Refresh the new session (simulates what refresh(activeSessionId) does)
+      refreshSessionState(newlyCreatedSessionId);
+
+      // Verify the session was properly registered and can be fetched
+      const snapshot = getSessionSnapshotForTesting(newlyCreatedSessionId);
+      expect(snapshot.status).toBe('running');
+      expect(snapshot.isLoading).toBe(true);
+      expect(snapshot.tokens.inputTokens).toBe(100);
+    });
   });
 
   // ===========================================================================
