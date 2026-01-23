@@ -3775,7 +3775,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
       // PERSIST-001: Persist token state to disk when streaming completes
       // This ensures /resume can restore token counts from persisted sessions
-      persistTokenState(sessionIdForRefresh);
+      persistTokenState(currentSessionIdRef.current);
     } else if (chunk.type === 'Status' && chunk.status) {
       // Show status messages (except compaction notifications)
       const statusMessage = chunk.status;
