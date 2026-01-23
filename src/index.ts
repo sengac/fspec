@@ -12,6 +12,11 @@ setInterval(() => {
   performance.clearMeasures();
 }, 30000).unref();
 
+// LOG-003: Capture all console methods and redirect to winston logger
+// This MUST run before any other imports that might use console to ensure all output is captured
+import { initializeConsoleCapture } from './utils/console-capture';
+initializeConsoleCapture();
+
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { fileURLToPath } from 'url';

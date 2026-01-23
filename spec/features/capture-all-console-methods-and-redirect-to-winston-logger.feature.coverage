@@ -1,0 +1,217 @@
+{
+  "scenarios": [
+    {
+      "name": "Capture console.log to info level",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "47-68",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Capture console.error to error level",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "70-86",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                74,
+                75,
+                76,
+                77,
+                78,
+                79
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Capture console.warn to warn level",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "88-104",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Strip ANSI escape codes from log file",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "106-122",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Join multiple arguments with spaces",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "124-136",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Serialize objects to JSON",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "138-152",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                39,
+                40,
+                41,
+                42
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Include stack trace for Error objects",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "154-170",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Capture console.trace with stack trace at debug level",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "172-188",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restore console methods for test isolation",
+      "testMappings": [
+        {
+          "file": "src/utils/__tests__/console-capture.test.ts",
+          "lines": "190-211",
+          "implMappings": [
+            {
+              "file": "src/utils/console-capture.ts",
+              "lines": [
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/utils/__tests__/console-capture.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/console-capture.ts"
+    ],
+    "totalLinesCovered": 214
+  }
+}
