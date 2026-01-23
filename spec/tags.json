@@ -158,6 +158,10 @@
           "description": "Features related to AI agent initialization, detection, and integration"
         },
         {
+          "name": "@agent-interaction",
+          "description": "Agent interaction functionality"
+        },
+        {
           "name": "@agent-modal",
           "description": "Agent modal component features and interactions"
         },
@@ -786,6 +790,10 @@
           "description": "Tool execution and subprocess management features"
         },
         {
+          "name": "@tools-development",
+          "description": "Tool development features"
+        },
+        {
           "name": "@tracking",
           "description": "Metric tracking operations"
         },
@@ -830,8 +838,16 @@
           "description": "Data visualization"
         },
         {
+          "name": "@watcher",
+          "description": "Watcher functionality"
+        },
+        {
           "name": "@watcher-management",
           "description": "Features related to watcher session management including /watcher overlay, watcher creation, and navigation"
+        },
+        {
+          "name": "@watcher-sessions",
+          "description": "Watcher session functionality"
         },
         {
           "name": "@web-tools",
@@ -896,6 +912,10 @@
         {
           "name": "@anti-drift",
           "description": "Features that prevent AI drift and maintain workflow discipline"
+        },
+        {
+          "name": "@append-mode",
+          "description": "AST refactor append mode"
         },
         {
           "name": "@ast",
@@ -1432,6 +1452,10 @@
         {
           "name": "@registry",
           "description": "Provider or component registry"
+        },
+        {
+          "name": "@replace-mode",
+          "description": "AST refactor replace mode"
         },
         {
           "name": "@request-id",
@@ -1990,10 +2014,6 @@
           "description": "Scenarios testing Enter key behavior for session resume"
         },
         {
-          "name": "@space-esc",
-          "description": "Scenarios testing Space+ESC key behavior"
-        },
-        {
           "name": "@simple-command",
           "description": "Simple command with minimal options"
         },
@@ -2006,6 +2026,10 @@
           "description": "Smoke tests - quick validation of critical functionality"
         },
         {
+          "name": "@space-esc",
+          "description": "Scenarios testing Space+ESC key behavior"
+        },
+        {
           "name": "@test",
           "description": "Test-related scenarios"
         },
@@ -2016,6 +2040,10 @@
         {
           "name": "@test-isolation",
           "description": "Test isolation and concurrent execution"
+        },
+        {
+          "name": "@unit",
+          "description": "Unit test scope"
         },
         {
           "name": "@unit-test",
@@ -2254,7 +2282,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-22T00:06:07.990Z",
+    "lastUpdated": "2026-01-22T23:45:13.736Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

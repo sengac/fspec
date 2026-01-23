@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-22T02:25:04.876Z"
+    "lastUpdated": "2026-01-22T23:25:02.903Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -62644,7 +62644,9 @@
         "WATCH-014",
         "WATCH-015",
         "WATCH-016",
-        "WATCH-019"
+        "WATCH-019",
+        "WATCH-020",
+        "WATCH-021"
       ],
       "attachments": [
         "spec/attachments/WATCH-001/watcher-sessions-architecture.md"
@@ -65501,6 +65503,450 @@
       "nextQuestionId": 0,
       "nextNoteId": 0,
       "updated": "2026-01-22T02:25:04.908Z"
+    },
+    "WATCH-020": {
+      "id": "WATCH-020",
+      "title": "Autonomous Watcher Interjection with Response Parsing",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-22T09:05:30.385Z",
+      "updatedAt": "2026-01-22T23:17:51.616Z",
+      "children": [],
+      "description": "Implement autonomous interjection logic where the watcher AI evaluates observations at breakpoints and can automatically inject messages into the parent session. The evaluation prompt must instruct the AI to respond with [INTERJECT]/[CONTINUE] blocks, and the watcher loop must parse these responses to trigger automatic injection via watcher_inject. This completes WATCH-019 Rule [3] which specified this behavior but was not implemented.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-019"
+      ],
+      "attachments": [
+        "spec/attachments/WATCH-020/autonomous-interjection-design.md",
+        "spec/attachments/WATCH-020/ast-research-watcher-interjection.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-22T09:07:05.735Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-22T23:07:37.974Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-22T23:09:59.157Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T23:17:26.098Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-22T23:17:51.616Z"
+        }
+      ],
+      "userStory": {
+        "role": "watcher session AI agent",
+        "action": "autonomously evaluate parent session observations and inject warnings or advice when my watching brief is triggered",
+        "benefit": "the parent session receives real-time feedback without requiring manual intervention from the watcher's user"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "The evaluation prompt must include explicit instructions for the AI to respond with either [INTERJECT]...[/INTERJECT] or [CONTINUE]...[/CONTINUE] blocks",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:07:25.725Z"
+        },
+        {
+          "id": 1,
+          "text": "The [INTERJECT] block must contain two fields: 'urgent: true/false' (whether to interrupt parent mid-stream) and 'content:' (the message to inject)",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:07:30.998Z"
+        },
+        {
+          "id": 2,
+          "text": "The watcher loop must capture the full AI response text (not just stream it) to enable parsing after the response completes",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:07:36.682Z"
+        },
+        {
+          "id": 3,
+          "text": "parse_interjection() must extract the interjection from the response, returning Some(Interjection) for valid [INTERJECT] blocks and None for [CONTINUE] or malformed responses",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:07:41.481Z"
+        },
+        {
+          "id": 4,
+          "text": "When a valid [INTERJECT] block is parsed, the watcher must automatically call watcher_inject() with the extracted content - no manual user action required",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:07:47.247Z"
+        },
+        {
+          "id": 5,
+          "text": "When urgent: true, the injection must interrupt the parent session mid-stream; when urgent: false, the injection waits for the parent's current turn to complete",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:07:52.288Z"
+        },
+        {
+          "id": 6,
+          "text": "The watcher's evaluation response must still be shown in the watcher UI (for transparency) in addition to being parsed for injection",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:07:57.244Z"
+        },
+        {
+          "id": 7,
+          "text": "Malformed [INTERJECT] blocks (missing closing tag, missing fields, empty content) must be treated as [CONTINUE] - fail safe, no injection",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:01.748Z"
+        },
+        {
+          "id": 8,
+          "text": "The evaluation prompt must include authority-aware context: Supervisor watchers are told their interjections should be followed; Peer watchers are told their interjections are suggestions",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:07.338Z"
+        },
+        {
+          "id": 9,
+          "text": "Yes, add a configurable 'auto-inject' toggle per watcher. Default is enabled (autonomous injection). When disabled, watcher shows [INTERJECT] decision in UI but requires manual user action to inject.",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:14:51.043Z"
+        },
+        {
+          "id": 10,
+          "text": "Strict format with good error feedback. Require exact block markers [INTERJECT]/[/INTERJECT] (case-sensitive), exact field names 'urgent:' and 'content:' (lowercase), exact boolean values 'true' or 'false' only. One small flexibility: allow optional whitespace after colons. Log specific parsing failures for debugging. Invest in clear prompt engineering rather than flexible parsing.",
+          "deleted": false,
+          "createdAt": "2026-01-22T11:13:33.920Z"
+        },
+        {
+          "id": 11,
+          "text": "Use a WatcherOutput wrapper struct that captures turn-specific text during streaming. WatcherOutput wraps BackgroundOutput, accumulates text chunks in a turn_text buffer, and delegates all other events to the inner handler. After run_with_provider completes, get_turn_text() retrieves the full response for parsing. This keeps watcher-specific logic separate from shared infrastructure and follows existing codebase patterns.",
+          "deleted": false,
+          "createdAt": "2026-01-22T11:17:44.521Z"
+        },
+        {
+          "id": 12,
+          "text": "Parse [INTERJECT]/[CONTINUE] blocks ONLY for observation evaluations (is_user_prompt=false). Direct user prompts to the watcher are normal conversation - no parsing, no risk of accidental injection from explanatory text. This matches the architecture intent where the structured format is specifically for evaluation decisions. If user-initiated injection is needed later, add an explicit /inject command as a separate feature.",
+          "deleted": false,
+          "createdAt": "2026-01-22T11:19:04.667Z"
+        }
+      ],
+      "nextRuleId": 13,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Security Reviewer watcher (Supervisor) observes parent writing SQL with string interpolation → AI evaluates at ToolResult breakpoint → responds with [INTERJECT] urgent: true content: 'SQL injection vulnerability' → watcher_inject called automatically → parent receives purple watcher message",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:13.505Z"
+        },
+        {
+          "id": 1,
+          "text": "Architecture Advisor watcher (Peer) observes parent implementing a service → AI evaluates at Done breakpoint → responds with [CONTINUE] noting 'implementation follows good patterns' → no injection occurs → watcher UI shows the evaluation for user reference",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:19.181Z"
+        },
+        {
+          "id": 2,
+          "text": "Test Enforcer watcher observes parent writing implementation code → AI evaluates → responds with [INTERJECT] urgent: false content: 'Tests should be written first' → injection is queued until parent's current turn completes → parent sees suggestion after finishing current response",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:24.794Z"
+        },
+        {
+          "id": 3,
+          "text": "Watcher AI responds with malformed block '[INTERJECT] this is not properly formatted' (missing closing tag and fields) → parser returns None → no injection occurs → watcher UI shows the response but system logs warning about malformed interjection block",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:30.225Z"
+        },
+        {
+          "id": 4,
+          "text": "Watcher with role 'Security Reviewer' and brief 'Watch for SQL injection, XSS' evaluates observations → evaluation prompt includes: role context, authority level, watching brief, formatted observations, and explicit instructions for [INTERJECT]/[CONTINUE] response format with field requirements",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:36.014Z"
+        },
+        {
+          "id": 5,
+          "text": "Watcher AI responds with multiline content in [INTERJECT] block: 'urgent: true\\ncontent: ⚠️ Security Issue\\n\\nThe code uses eval() which is dangerous.\\nConsider using JSON.parse() instead.' → parser extracts full multiline content → injection preserves formatting",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:41.705Z"
+        },
+        {
+          "id": 6,
+          "text": "Watcher created with auto-inject disabled → watcher evaluates observations → responds with [INTERJECT] block → parser extracts interjection → watcher UI shows 'Would inject: ...' with manual inject button → no automatic injection occurs → user can click to inject or ignore",
+          "deleted": false,
+          "createdAt": "2026-01-22T11:19:16.198Z"
+        },
+        {
+          "id": 7,
+          "text": "User talks directly to watcher: 'What issues have you seen?' → watcher responds with summary (no [INTERJECT] block) → response shown normally in watcher UI → no parsing occurs because is_user_prompt=true",
+          "deleted": false,
+          "createdAt": "2026-01-22T11:19:20.810Z"
+        }
+      ],
+      "nextExampleId": 8,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should there be a configurable 'auto-inject' toggle per watcher that allows users to disable autonomous injection and require manual review before injecting?",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:47.470Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, add a configurable 'auto-inject' toggle per watcher. Default is enabled (autonomous injection). When disabled, watcher shows [INTERJECT] decision in UI but requires manual user action to inject."
+        },
+        {
+          "id": 1,
+          "text": "@human: When parsing [INTERJECT], should we require exact field format ('urgent: true' and 'content:') or be more flexible with variations like 'urgent=true' or 'Urgent: True'?",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:52.764Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Strict format with good error feedback. Require exact block markers [INTERJECT]/[/INTERJECT] (case-sensitive), exact field names 'urgent:' and 'content:' (lowercase), exact boolean values 'true' or 'false' only. One small flexibility: allow optional whitespace after colons. Log specific parsing failures for debugging. Invest in clear prompt engineering rather than flexible parsing."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should there be rate limiting on autonomous injections to prevent a chatty watcher from flooding the parent session? (e.g., max 1 injection per 30 seconds)",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:08:58.090Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No rate limiting. Trust the AI's judgment and the user's watcher brief configuration. If a watcher is too chatty, the user can adjust the brief or disable auto-inject."
+        },
+        {
+          "id": 3,
+          "text": "@human: If the parent session ends/exits while the watcher is processing an evaluation that would trigger injection, should we silently drop the injection or show an error in the watcher UI?",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:09:03.646Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Silently drop the injection. The parent is gone, nothing to inject into, just move on. No error shown in watcher UI."
+        },
+        {
+          "id": 4,
+          "text": "@human: For capturing the AI response to parse: should we buffer during streaming (cleaner, captures exact turn) or reconstruct from output_buffer after completion (simpler, but may include more than current turn)?",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:09:09.239Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Use a WatcherOutput wrapper struct that captures turn-specific text during streaming. WatcherOutput wraps BackgroundOutput, accumulates text chunks in a turn_text buffer, and delegates all other events to the inner handler. After run_with_provider completes, get_turn_text() retrieves the full response for parsing. This keeps watcher-specific logic separate from shared infrastructure and follows existing codebase patterns."
+        },
+        {
+          "id": 5,
+          "text": "@human: Should [INTERJECT]/[CONTINUE] parsing ONLY apply to observation evaluations (is_user_prompt=false), or should direct user prompts to the watcher also be parsed for injection blocks?",
+          "deleted": false,
+          "createdAt": "2026-01-22T09:09:14.774Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Parse [INTERJECT]/[CONTINUE] blocks ONLY for observation evaluations (is_user_prompt=false). Direct user prompts to the watcher are normal conversation - no parsing, no risk of accidental injection from explanatory text. This matches the architecture intent where the structured format is specifically for evaluation decisions. If user-initiated injection is needed later, add an explicit /inject command as a separate feature."
+        }
+      ],
+      "nextQuestionId": 6,
+      "estimate": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "WatcherOutput struct wraps BackgroundOutput, adding turn_text: String buffer. Implements StreamOutput trait by delegating to inner handler while accumulating Text chunks. Location: codelet/napi/src/session_manager/watcher_output.rs (new file)",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:05:44.791Z"
+        },
+        {
+          "id": 1,
+          "text": "parse_interjection() function in codelet/napi/src/session_manager/interjection.rs (new file): Takes &str response, returns Option<Interjection>. Uses regex to find [INTERJECT]...[/INTERJECT] or [CONTINUE]...[/CONTINUE]. Extracts 'urgent: bool' and 'content:' fields with strict parsing. Returns None for malformed blocks.",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:05:50.150Z"
+        },
+        {
+          "id": 2,
+          "text": "Modify watcher_agent_loop() in codelet/napi/src/session_manager/watcher.rs: After run_with_provider completes for is_user_prompt=false, call watcher_output.get_turn_text(), pass to parse_interjection(). If Some(interjection) and auto_inject enabled, call watcher_inject() with content.",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:05:55.629Z"
+        },
+        {
+          "id": 3,
+          "text": "Extend SessionRole struct in codelet/napi/src/session_manager/mod.rs: Add auto_inject: bool field (default true). This field is set during watcher creation and read during evaluation parsing to determine if automatic injection should occur.",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:06:00.482Z"
+        },
+        {
+          "id": 4,
+          "text": "Modify format_evaluation_prompt() in watcher.rs: Include structured response format instructions at end of prompt: 'Respond with [INTERJECT] urgent: true/false content: <message> [/INTERJECT] to inject a message, or [CONTINUE] <reasoning> [/CONTINUE] to continue observing.' Include authority context for Supervisor vs Peer.",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:06:06.347Z"
+        },
+        {
+          "id": 5,
+          "text": "Interjection struct: { urgent: bool, content: String }. When urgent=true, call watcher_inject with interrupt flag. When urgent=false, queue injection via existing pending injection mechanism (if parent mid-turn) or inject immediately (if parent idle).",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:06:11.835Z"
+        },
+        {
+          "id": 6,
+          "text": "When auto_inject=false and [INTERJECT] parsed: emit a new WatcherPendingInjection event via BackgroundOutput containing the Interjection. Frontend WatcherView displays pending injection with 'Inject' / 'Dismiss' buttons. User action triggers manual watcher_inject call.",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:06:17.497Z"
+        }
+      ],
+      "nextNoteId": 7,
+      "updated": "2026-01-22T23:17:51.616Z"
+    },
+    "WATCH-021": {
+      "id": "WATCH-021",
+      "title": "Auto-Inject Toggle in Watcher Creation Dialog",
+      "type": "story",
+      "status": "validating",
+      "createdAt": "2026-01-22T11:24:48.738Z",
+      "updatedAt": "2026-01-22T23:42:42.823Z",
+      "children": [],
+      "description": "Add an auto-inject toggle checkbox to the WatcherCreateView component. This toggle allows users to enable or disable autonomous injection when creating a new watcher. When enabled (default), watchers automatically inject messages into the parent session when they decide to interject. When disabled, watchers show pending injections in the UI for manual review before injecting.",
+      "parent": "WATCH-001",
+      "dependsOn": [
+        "WATCH-020",
+        "WATCH-009"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-22T22:59:58.105Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-22T23:25:10.374Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-22T23:27:54.161Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T23:31:31.844Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-22T23:42:42.823Z"
+        }
+      ],
+      "userStory": {
+        "role": "user creating a new watcher",
+        "action": "toggle whether the watcher automatically injects messages or requires manual review",
+        "benefit": "I can choose between fully autonomous watchers or watchers that ask before injecting"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "WatcherCreateView adds an 'Auto-inject' toggle field between Brief and Create button in the focus order",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:00:20.362Z"
+        },
+        {
+          "id": 1,
+          "text": "Auto-inject toggle defaults to enabled (true) - matching WATCH-020's default behavior for autonomous injection",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:00:25.796Z"
+        },
+        {
+          "id": 2,
+          "text": "Left/Right arrow keys toggle the auto-inject value when the field is focused (consistent with Authority selector pattern)",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:00:31.089Z"
+        },
+        {
+          "id": 3,
+          "text": "The onCreate callback signature must be extended to include autoInject: boolean as the fifth parameter",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:00:36.457Z"
+        },
+        {
+          "id": 4,
+          "text": "AgentView's handleWatcherCreate must pass autoInject to the NAPI layer when creating the watcher session",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:00:41.795Z"
+        },
+        {
+          "id": 5,
+          "text": "Auto-inject toggle displays as '[●] Enabled' (green) or '[ ] Disabled' (gray) with hint text '(←/→ to toggle)' when focused",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:00:47.273Z"
+        },
+        {
+          "id": 6,
+          "text": "When auto-inject is disabled, the watcher UI will show pending injections for manual review (actual behavior implemented in WATCH-020)",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:00:52.392Z"
+        }
+      ],
+      "nextRuleId": 7,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User opens watcher creation dialog → sees Auto-inject field defaulted to Enabled → leaves it enabled → creates watcher → watcher will automatically inject when it detects issues",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:00:58.126Z"
+        },
+        {
+          "id": 1,
+          "text": "User opens watcher creation dialog → tabs to Auto-inject field → presses Right arrow to disable → sees '[  ] Disabled' in gray → creates watcher → watcher will show pending injections for manual review",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:01:03.891Z"
+        },
+        {
+          "id": 2,
+          "text": "User is in Brief field → presses Tab → focus moves to Auto-inject field → presses Tab again → focus moves to Create button (auto-inject is between brief and create in focus order)",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:01:09.070Z"
+        },
+        {
+          "id": 3,
+          "text": "User tabs to Auto-inject field when enabled → sees 'Auto-inject:' label in cyan, '[●] Enabled' in green with blue highlight, and '(←/→ to toggle)' hint",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:01:14.719Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "estimate": 2,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "WatcherCreateView.tsx: Add 'autoInject' to FocusField type union. Update FOCUS_ORDER array to ['name', 'authority', 'model', 'brief', 'autoInject', 'create']. Add useState<boolean> for autoInject defaulting to true. Handle Left/Right arrow keys for autoInject field (toggle between true/false). Update handleCreate to pass autoInject to onCreate.",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:24:12.300Z"
+        },
+        {
+          "id": 1,
+          "text": "WatcherCreateView props: Update onCreate callback signature from (name, authority, model, brief) to (name, authority, model, brief, autoInject: boolean). This is a breaking interface change that requires AgentView.tsx update.",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:24:17.640Z"
+        },
+        {
+          "id": 2,
+          "text": "NAPI session_set_role: Add optional auto_inject: Option<bool> parameter (5th param). When Some(value), use SessionRole::new_with_auto_inject instead of SessionRole::new. When None, default to true (backward compatible).",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:24:22.585Z"
+        },
+        {
+          "id": 3,
+          "text": "AgentView.tsx handleWatcherCreate: Update function signature to accept 5th parameter autoInject: boolean. Pass autoInject to sessionSetRole call. The sessionSetRole TypeScript binding will need updating in codelet-napi index.d.ts.",
+          "deleted": false,
+          "createdAt": "2026-01-22T23:24:28.198Z"
+        }
+      ],
+      "nextNoteId": 4,
+      "attachments": [
+        "spec/attachments/WATCH-021/ast-research-auto-inject-toggle.md"
+      ]
+    },
+    "WATCH-022": {
+      "id": "WATCH-022",
+      "title": "Split Session View Component Extraction",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2026-01-22T23:44:29.718Z",
+      "updatedAt": "2026-01-22T23:44:29.718Z",
+      "children": []
+    },
+    "CACHE-001": {
+      "id": "CACHE-001",
+      "title": "Tool Result and File Content Cache",
+      "type": "task",
+      "status": "backlog",
+      "createdAt": "2026-01-22T23:44:30.342Z",
+      "updatedAt": "2026-01-22T23:44:30.342Z",
+      "children": []
     }
   },
   "states": {
@@ -65558,7 +66004,9 @@
       "DOC-014",
       "DOC-017",
       "AGENT-022",
-      "RLM-001"
+      "RLM-001",
+      "WATCH-022",
+      "CACHE-001"
     ],
     "specifying": [
       "LANG-001",
@@ -65576,8 +66024,11 @@
     "implementing": [
       "NAPI-009"
     ],
-    "validating": [],
+    "validating": [
+      "WATCH-021"
+    ],
     "done": [
+      "WATCH-020",
       "WATCH-019",
       "WATCH-016",
       "WATCH-011",
@@ -66108,6 +66559,7 @@
     "RLM": 1,
     "SESS": 1,
     "CMPCT": 2,
-    "WATCH": 19
+    "WATCH": 22,
+    "CACHE": 1
   }
 }

@@ -99,6 +99,8 @@ pub enum ChunkType {
     Error,
     /// User input message (NAPI-009: for resume/attach to restore user messages)
     UserInput,
+    /// Watcher pending injection - shown when auto_inject=false (WATCH-020)
+    WatcherPendingInjection,
 }
 
 /// Context window fill information (TUI-033)
@@ -116,7 +118,18 @@ pub struct ContextFillInfo {
     pub context_window: f64,
 }
 
-/// A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress)
+/// Watcher pending injection information (WATCH-020)
+/// Sent when auto_inject=false and watcher detects an [INTERJECT] block
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct WatcherPendingInjectionInfo {
+    /// Whether this is an urgent injection
+    pub urgent: bool,
+    /// The message content that would be injected
+    pub content: String,
+}
+
+/// A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress, WATCH-020: added watcher_pending_injection)
 #[napi(object)]
 #[derive(Debug, Clone)]
 pub struct StreamChunk {
@@ -140,6 +153,8 @@ pub struct StreamChunk {
     /// IDs of observed parent chunks that triggered this watcher response (WATCH-011)
     /// Only populated on watcher session output chunks
     pub observed_correlation_ids: Option<Vec<String>>,
+    /// Pending injection from watcher when auto_inject=false (WATCH-020)
+    pub watcher_pending_injection: Option<WatcherPendingInjectionInfo>,
 }
 
 impl StreamChunk {
@@ -158,6 +173,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -177,6 +193,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -195,6 +212,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -213,6 +231,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -232,6 +251,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -250,6 +270,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -268,6 +289,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -286,6 +308,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -305,6 +328,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -323,6 +347,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -341,6 +366,7 @@ impl StreamChunk {
             error: Some(message),
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -360,6 +386,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -379,6 +406,7 @@ impl StreamChunk {
             error: None,
             correlation_id: None,
             observed_correlation_ids: None,
+            watcher_pending_injection: None,
         }
     }
 
@@ -386,6 +414,26 @@ impl StreamChunk {
     pub fn with_observed_correlation_ids(mut self, ids: Vec<String>) -> Self {
         self.observed_correlation_ids = Some(ids);
         self
+    }
+    
+    /// Watcher pending injection - when auto_inject=false (WATCH-020)
+    pub fn watcher_pending_injection(urgent: bool, content: String) -> Self {
+        Self {
+            chunk_type: "WatcherPendingInjection".to_string(),
+            text: None,
+            thinking: None,
+            tool_call: None,
+            tool_result: None,
+            tool_progress: None,
+            status: None,
+            queued_inputs: None,
+            tokens: None,
+            context_fill: None,
+            error: None,
+            correlation_id: None,
+            observed_correlation_ids: None,
+            watcher_pending_injection: Some(WatcherPendingInjectionInfo { urgent, content }),
+        }
     }
 }
 

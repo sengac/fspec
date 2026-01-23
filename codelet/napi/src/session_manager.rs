@@ -78,7 +78,115 @@ impl RoleAuthority {
     }
 }
 
-/// Session role for watcher sessions (WATCH-004)
+// =============================================================================
+// INTERJECTION PARSING (WATCH-020)
+// =============================================================================
+
+/// Parsed interjection from watcher AI response (WATCH-020)
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Interjection {
+    /// Whether this is an urgent interjection (interrupt parent mid-stream)
+    pub urgent: bool,
+    /// The message content to inject
+    pub content: String,
+}
+
+/// Parse an interjection from a watcher AI response (WATCH-020)
+///
+/// Looks for [INTERJECT]...[/INTERJECT] or [CONTINUE]...[/CONTINUE] blocks.
+/// Returns Some(Interjection) for valid [INTERJECT] blocks, None otherwise.
+///
+/// Format requirements (strict parsing):
+/// - Block markers must be exact: [INTERJECT], [/INTERJECT], [CONTINUE], [/CONTINUE]
+/// - Field names must be lowercase: 'urgent:', 'content:'
+/// - urgent value must be 'true' or 'false' (exact)
+/// - Optional whitespace allowed after colons
+/// - Empty content is invalid
+///
+/// Example valid [INTERJECT] block:
+/// ```text
+/// [INTERJECT]
+/// urgent: true
+/// content: Security vulnerability detected
+/// [/INTERJECT]
+/// ```
+pub fn parse_interjection(response: &str) -> Option<Interjection> {
+    // Check for [CONTINUE] block first - this means no interjection
+    if response.contains("[CONTINUE]") && response.contains("[/CONTINUE]") {
+        tracing::debug!("Watcher response contains [CONTINUE] block - no interjection");
+        return None;
+    }
+    
+    // Look for [INTERJECT] block
+    let start_marker = "[INTERJECT]";
+    let end_marker = "[/INTERJECT]";
+    
+    let start_idx = response.find(start_marker)?;
+    let content_start = start_idx + start_marker.len();
+    let end_idx = response[content_start..].find(end_marker)?;
+    
+    let block_content = &response[content_start..content_start + end_idx];
+    
+    // Parse urgent field - must be 'urgent:' followed by 'true' or 'false'
+    let urgent = if let Some(urgent_line) = block_content.lines()
+        .find(|line| line.trim().starts_with("urgent:"))
+    {
+        let value = urgent_line.trim()
+            .strip_prefix("urgent:")
+            .map(|s| s.trim())?;
+        
+        match value {
+            "true" => true,
+            "false" => false,
+            _ => {
+                tracing::warn!("Invalid urgent value '{}' in [INTERJECT] block - must be 'true' or 'false'", value);
+                return None;
+            }
+        }
+    } else {
+        tracing::warn!("Missing 'urgent:' field in [INTERJECT] block");
+        return None;
+    };
+    
+    // Parse content field - 'content:' followed by the message (can be multiline)
+    let content_line_idx = block_content.lines()
+        .position(|line| line.trim().starts_with("content:"))?;
+    
+    let lines: Vec<&str> = block_content.lines().collect();
+    let first_content_line = lines.get(content_line_idx)?;
+    
+    // Get content after 'content:' prefix
+    let first_part = first_content_line.trim()
+        .strip_prefix("content:")
+        .map(|s| s.trim_start())?;
+    
+    // Collect remaining lines as part of content (multiline support)
+    let mut content_parts = vec![first_part.to_string()];
+    for line in lines.iter().skip(content_line_idx + 1) {
+        // Stop if we hit another field (like a malformed duplicate)
+        if line.trim().starts_with("urgent:") {
+            break;
+        }
+        content_parts.push(line.to_string());
+    }
+    
+    let content = content_parts.join("\n").trim().to_string();
+    
+    if content.is_empty() {
+        tracing::warn!("Empty content in [INTERJECT] block");
+        return None;
+    }
+    
+    tracing::info!(
+        "Parsed interjection: urgent={}, content_len={}",
+        urgent,
+        content.len()
+    );
+    
+    Some(Interjection { urgent, content })
+}
+
+/// Session role for watcher sessions (WATCH-004, extended by WATCH-020)
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SessionRole {
     /// Role name (e.g., "code-reviewer", "supervisor")
@@ -87,6 +195,10 @@ pub struct SessionRole {
     pub description: Option<String>,
     /// Authority level
     pub authority: RoleAuthority,
+    /// Whether to automatically inject interjections (WATCH-020)
+    /// When true, parsed [INTERJECT] blocks trigger automatic watcher_inject calls.
+    /// When false, interjections are shown in UI for manual review.
+    pub auto_inject: bool,
 }
 
 impl SessionRole {
@@ -95,7 +207,20 @@ impl SessionRole {
         if name.is_empty() {
             return Err("Role name cannot be empty".to_string());
         }
-        Ok(Self { name, description, authority })
+        Ok(Self { name, description, authority, auto_inject: true })
+    }
+    
+    /// Create a new session role with auto_inject setting (WATCH-020)
+    pub fn new_with_auto_inject(
+        name: String,
+        description: Option<String>,
+        authority: RoleAuthority,
+        auto_inject: bool,
+    ) -> std::result::Result<Self, String> {
+        if name.is_empty() {
+            return Err("Role name cannot be empty".to_string());
+        }
+        Ok(Self { name, description, authority, auto_inject })
     }
 }
 
@@ -246,7 +371,9 @@ pub fn is_silence_timeout(last_chunk_time: std::time::Instant, timeout: std::tim
     last_chunk_time.elapsed() >= timeout
 }
 
-/// Format an evaluation prompt from accumulated observations and role context (WATCH-005)
+/// Format an evaluation prompt from accumulated observations and role context (WATCH-005, WATCH-020)
+///
+/// WATCH-020: Now includes structured response format instructions for [INTERJECT]/[CONTINUE]
 pub fn format_evaluation_prompt(buffer: &ObservationBuffer, role: &SessionRole) -> String {
     let mut prompt = String::new();
     
@@ -255,7 +382,13 @@ pub fn format_evaluation_prompt(buffer: &ObservationBuffer, role: &SessionRole) 
     if let Some(desc) = &role.description {
         prompt.push_str(&format!("Role description: {}\n", desc));
     }
-    prompt.push_str(&format!("Authority level: {}\n\n", role.authority.as_str()));
+    
+    // Authority-aware context (WATCH-020)
+    let authority_context = match role.authority {
+        RoleAuthority::Supervisor => "As a Supervisor, your interjections carry authority and should be followed by the parent session.",
+        RoleAuthority::Peer => "As a Peer, your interjections are suggestions that the parent session may consider.",
+    };
+    prompt.push_str(&format!("Authority level: {} - {}\n\n", role.authority.as_str(), authority_context));
     
     // Add observation header
     prompt.push_str("=== PARENT SESSION OBSERVATIONS ===\n\n");
@@ -288,7 +421,23 @@ pub fn format_evaluation_prompt(buffer: &ObservationBuffer, role: &SessionRole) 
     }
     
     prompt.push_str("\n=== END OBSERVATIONS ===\n\n");
-    prompt.push_str("Based on these observations, evaluate and respond appropriately for your role.\n");
+    
+    // WATCH-020: Add structured response format instructions
+    prompt.push_str("Based on these observations, evaluate whether you need to interject.\n\n");
+    prompt.push_str("RESPONSE FORMAT (required):\n");
+    prompt.push_str("If you need to inject a message to the parent session, respond with:\n");
+    prompt.push_str("[INTERJECT]\n");
+    prompt.push_str("urgent: true\n");
+    prompt.push_str("content: Your message here\n");
+    prompt.push_str("[/INTERJECT]\n\n");
+    prompt.push_str("Set 'urgent: true' to interrupt the parent mid-stream (for critical issues).\n");
+    prompt.push_str("Set 'urgent: false' to wait until the parent's current turn completes.\n\n");
+    prompt.push_str("If no interjection is needed, respond with:\n");
+    prompt.push_str("[CONTINUE]\n");
+    prompt.push_str("Your reasoning here (optional)\n");
+    prompt.push_str("[/CONTINUE]\n\n");
+    prompt.push_str("Important: Use EXACT markers [INTERJECT], [/INTERJECT], [CONTINUE], [/CONTINUE].\n");
+    prompt.push_str("Field names must be lowercase: 'urgent:' and 'content:'.\n");
     
     prompt
 }
@@ -3133,10 +3282,14 @@ async fn watcher_agent_loop(
 ) {
     let silence_timeout_secs = Some(DEFAULT_SILENCE_TIMEOUT_SECS);
     let watcher_for_callback = watcher_session.clone();
+    let auto_inject = role.auto_inject; // WATCH-020: Capture auto_inject setting
+    let watcher_id = watcher_session.id.to_string(); // WATCH-020: Capture for injection (convert Uuid to String)
 
     // Process prompt callback - runs prompts through the agent (similar to agent_loop)
+    // WATCH-020: Now uses WatcherOutput for observation evaluations to capture turn text
     let process_prompt = |prompt: String, is_user_prompt: bool, observed_correlation_ids: Vec<String>| {
         let session = watcher_for_callback.clone();
+        let watcher_id = watcher_id.clone();
         async move {
             // WATCH-011: Set pending observed correlation IDs for watcher responses
             if !is_user_prompt && !observed_correlation_ids.is_empty() {
@@ -3154,29 +3307,77 @@ async fn watcher_agent_loop(
             session.set_status(SessionStatus::Running);
             session.reset_interrupt();
 
-            // Create output handler
+            // WATCH-020: Use WatcherOutput for observation evaluations to capture turn text
+            // User prompts use BackgroundOutput directly (no parsing needed)
             let session_for_output = session.clone();
-            let output = BackgroundOutput::new(session_for_output);
+            let watcher_output = WatcherOutput::new(session_for_output.clone());
 
             // Lock inner session and run agent
             let mut inner_session = session.inner.lock().await;
             let current_provider = inner_session.current_provider_name().to_string();
             
             let result = match current_provider.as_str() {
-                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, session, &output, None::<serde_json::Value>),
-                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, session, &output, None::<serde_json::Value>),
-                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, session, &output, None::<serde_json::Value>),
-                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, session, &output, None::<serde_json::Value>),
+                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, session, &watcher_output, None::<serde_json::Value>),
+                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, session, &watcher_output, None::<serde_json::Value>),
+                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, session, &watcher_output, None::<serde_json::Value>),
+                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, session, &watcher_output, None::<serde_json::Value>),
                 _ => {
                     tracing::error!("Unsupported provider: {}", current_provider);
                     Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
                 }
             };
 
+            // Release the lock before any injection calls
+            drop(inner_session);
+
             if let Err(e) = result {
                 tracing::error!("Watcher agent error for session {}: {}", session.id, e);
                 session.handle_output(StreamChunk::error(e.to_string()));
                 session.handle_output(StreamChunk::done());
+            } else {
+                // WATCH-020: Parse for interjections on observation evaluations only
+                if !is_user_prompt {
+                    let turn_text = watcher_output.get_turn_text();
+                    if !turn_text.is_empty() {
+                        if let Some(interjection) = parse_interjection(&turn_text) {
+                            tracing::info!(
+                                "Watcher {} detected interjection: urgent={}, content_len={}",
+                                watcher_id,
+                                interjection.urgent,
+                                interjection.content.len()
+                            );
+                            
+                            if auto_inject {
+                                // WATCH-020: Automatic injection
+                                tracing::info!("Watcher {} auto-injecting to parent", watcher_id);
+                                
+                                // Call watcher_inject with the extracted content
+                                // Note: watcher_inject is a NAPI function that handles the injection
+                                if let Err(e) = watcher_inject(watcher_id.clone(), interjection.content) {
+                                    tracing::error!("Failed to auto-inject from watcher {}: {}", watcher_id, e);
+                                }
+                            } else {
+                                // WATCH-020: Manual review mode - emit pending injection event
+                                tracing::info!(
+                                    "Watcher {} has pending interjection (auto_inject=false): {:?}",
+                                    watcher_id,
+                                    &interjection.content[..interjection.content.len().min(50)]
+                                );
+                                
+                                // Emit a special chunk to notify UI of pending injection
+                                session.handle_output(StreamChunk::watcher_pending_injection(
+                                    interjection.urgent,
+                                    interjection.content,
+                                ));
+                            }
+                        } else {
+                            tracing::debug!(
+                                "Watcher {} response parsed as [CONTINUE] or no interjection block",
+                                watcher_id
+                            );
+                        }
+                    }
+                }
             }
 
             session.set_status(SessionStatus::Idle);
@@ -3292,6 +3493,56 @@ impl codelet_cli::interactive::StreamOutput for BackgroundProgressEmitter {
             });
             self.session.handle_output(chunk);
         }
+    }
+}
+
+// =============================================================================
+// WATCHER OUTPUT (WATCH-020)
+// =============================================================================
+
+/// Watcher output handler that captures turn text during streaming (WATCH-020)
+///
+/// Wraps BackgroundOutput to accumulate Text chunks for parsing after turn completion.
+/// Used for observation evaluations to detect [INTERJECT]/[CONTINUE] blocks.
+struct WatcherOutput {
+    inner: BackgroundOutput,
+    turn_text: std::sync::Mutex<String>,
+}
+
+impl WatcherOutput {
+    fn new(session: Arc<BackgroundSession>) -> Self {
+        Self {
+            inner: BackgroundOutput::new(session),
+            turn_text: std::sync::Mutex::new(String::new()),
+        }
+    }
+    
+    /// Get the accumulated turn text for parsing
+    fn get_turn_text(&self) -> String {
+        self.turn_text.lock().unwrap().clone()
+    }
+    
+    /// Clear the turn text buffer (for reuse)
+    #[allow(dead_code)]
+    fn clear_turn_text(&self) {
+        self.turn_text.lock().unwrap().clear();
+    }
+}
+
+impl codelet_cli::interactive::StreamOutput for WatcherOutput {
+    fn emit(&self, event: codelet_cli::interactive::StreamEvent) {
+        // Capture Text events for later parsing (WATCH-020)
+        if let codelet_cli::interactive::StreamEvent::Text(ref text) = event {
+            let mut turn_text = self.turn_text.lock().unwrap();
+            turn_text.push_str(text);
+        }
+        
+        // Delegate all events to inner handler for normal output
+        self.inner.emit(event);
+    }
+    
+    fn progress_emitter(&self) -> Option<std::sync::Arc<dyn codelet_cli::interactive::StreamOutput>> {
+        self.inner.progress_emitter()
     }
 }
 
@@ -3477,14 +3728,20 @@ pub fn session_set_role(
     role_name: String,
     role_description: Option<String>,
     authority: String,
+    auto_inject: Option<bool>, // WATCH-021: Optional auto_inject parameter
 ) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
     
     let auth = RoleAuthority::from_str(&authority)
         .ok_or_else(|| Error::from_reason("Invalid authority: must be peer or supervisor"))?;
     
-    let role = SessionRole::new(role_name, role_description, auth)
-        .map_err(|e| Error::from_reason(e))?;
+    // WATCH-021: Use new_with_auto_inject when auto_inject is specified
+    let role = SessionRole::new_with_auto_inject(
+        role_name,
+        role_description,
+        auth,
+        auto_inject.unwrap_or(true), // Default to true if not specified
+    ).map_err(|e| Error::from_reason(e))?;
     
     session.set_role(role);
     Ok(())

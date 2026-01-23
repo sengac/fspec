@@ -1,3 +1,5 @@
+@watcher
+@tui
 @WATCH-008
 Feature: Watcher Management Overlay UI
 

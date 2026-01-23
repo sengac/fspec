@@ -1,3 +1,5 @@
+@watcher
+@codelet
 @WATCH-007
 Feature: NAPI Bindings for Watcher Operations
 

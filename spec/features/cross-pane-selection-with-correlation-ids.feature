@@ -1,3 +1,5 @@
+@watcher
+@tui
 @done
 @WATCH-011
 Feature: Cross-Pane Selection with Correlation IDs

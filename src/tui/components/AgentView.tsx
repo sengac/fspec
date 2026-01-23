@@ -4258,7 +4258,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     name: string,
     authority: 'peer' | 'supervisor',
     model: string,
-    brief: string
+    brief: string,
+    autoInject: boolean // WATCH-021: Added autoInject parameter
   ) => {
     if (!currentSessionId || !name.trim()) {
       return;
@@ -4273,12 +4274,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         name.trim()
       );
 
-      // Set the role information (name, brief, authority)
+      // Set the role information (name, brief, authority, autoInject)
+      // WATCH-021: Pass autoInject to sessionSetRole
       sessionSetRole(
         watcherId,
         name.trim(),
         brief.trim() || null,
-        authority
+        authority,
+        autoInject
       );
 
       // Refresh the watcher list by re-calling handleWatcherMode
@@ -5095,11 +5098,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             if (selectedWatcher) {
               // Persist to backend via NAPI - only update local state on success
               try {
+                // WATCH-021: Pass null for autoInject - defaults to true.
+                // Note: This will reset auto_inject to true if it was previously false.
+                // For now, editing only changes the name. To preserve auto_inject,
+                // we'd need to extend sessionGetRole to return the current value.
                 sessionSetRole(
                   selectedWatcher.id,
                   watcherEditValue.trim(),
                   selectedWatcher.role?.description || null,
-                  selectedWatcher.role?.authority || 'peer'
+                  selectedWatcher.role?.authority || 'peer',
+                  null // Defaults to true - see note above
                 );
                 // Update local state ONLY if backend save succeeded
                 const updatedList = [...watcherList];

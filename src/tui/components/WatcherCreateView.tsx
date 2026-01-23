@@ -2,6 +2,7 @@
  * WatcherCreateView - Full-screen form view for creating a new watcher session
  *
  * WATCH-009: Watcher Creation Dialog UI
+ * WATCH-021: Auto-inject toggle added
  *
  * This component follows the architecture design from WATCH-001:
  * - Full-screen form overlay (similar to /resume and /search modes)
@@ -9,10 +10,11 @@
  * - Authority selector (Peer | Supervisor)
  * - Model selector (populated from available provider models)
  * - Brief textarea (watching instructions)
+ * - Auto-inject toggle (WATCH-021)
  *
  * Keyboard Navigation:
  * - Tab: Cycle focus between fields
- * - ←/→: Toggle Authority when focused
+ * - ←/→: Toggle Authority or Auto-inject when focused
  * - ↑/↓: Navigate Model selection when focused
  * - Enter: Create watcher (when valid)
  * - Esc: Cancel and return to overlay
@@ -21,11 +23,12 @@
 import React, { useState, useCallback } from 'react';
 import { Box, Text, useInput } from 'ink';
 
-// Focus field type for cycling
-type FocusField = 'name' | 'authority' | 'model' | 'brief' | 'create';
+// Focus field type for cycling - WATCH-021: Added 'autoInject'
+type FocusField = 'name' | 'authority' | 'model' | 'brief' | 'autoInject' | 'create';
 
 // Focus order constant - single source of truth for tab cycling
-const FOCUS_ORDER: FocusField[] = ['name', 'authority', 'model', 'brief', 'create'];
+// WATCH-021: autoInject is between brief and create
+const FOCUS_ORDER: FocusField[] = ['name', 'authority', 'model', 'brief', 'autoInject', 'create'];
 
 interface WatcherCreateViewProps {
   /** Current model of the parent session (default for new watcher) */
@@ -35,8 +38,8 @@ interface WatcherCreateViewProps {
   /** Terminal dimensions */
   terminalWidth: number;
   terminalHeight: number;
-  /** Callback when watcher is created */
-  onCreate: (name: string, authority: 'peer' | 'supervisor', model: string, brief: string) => void;
+  /** Callback when watcher is created - WATCH-021: Added autoInject parameter */
+  onCreate: (name: string, authority: 'peer' | 'supervisor', model: string, brief: string, autoInject: boolean) => void;
   /** Callback when creation is cancelled */
   onCancel: () => void;
 }
@@ -57,6 +60,8 @@ export function WatcherCreateView({
     return idx >= 0 ? idx : 0;
   });
   const [brief, setBrief] = useState('');
+  // WATCH-021: Auto-inject toggle - defaults to enabled (true)
+  const [autoInject, setAutoInject] = useState(true);
   const [focusField, setFocusField] = useState<FocusField>('name');
 
   // Focus cycling logic using FOCUS_ORDER constant (DRY)
@@ -70,12 +75,12 @@ export function WatcherCreateView({
     setFocusField(FOCUS_ORDER[(currentIndex - 1 + FOCUS_ORDER.length) % FOCUS_ORDER.length]);
   }, [focusField]);
 
-  // Handle create action
+  // Handle create action - WATCH-021: Pass autoInject to onCreate
   const handleCreate = useCallback(() => {
     if (!name.trim()) return; // Name is required
     const selectedModel = availableModels[selectedModelIndex] || currentModel;
-    onCreate(name.trim(), authority, selectedModel, brief.trim());
-  }, [name, authority, selectedModelIndex, availableModels, currentModel, brief, onCreate]);
+    onCreate(name.trim(), authority, selectedModel, brief.trim(), autoInject);
+  }, [name, authority, selectedModelIndex, availableModels, currentModel, brief, autoInject, onCreate]);
 
   // Keyboard input handling
   useInput((input, key) => {
@@ -134,6 +139,14 @@ export function WatcherCreateView({
           setBrief(prev => prev.slice(0, -1));
         } else if (input && !key.ctrl && !key.meta) {
           setBrief(prev => prev + input);
+        }
+        break;
+
+      // WATCH-021: Auto-inject toggle field
+      case 'autoInject':
+        // Left/Right toggles auto-inject
+        if (key.leftArrow || key.rightArrow) {
+          setAutoInject(prev => !prev);
         }
         break;
 
@@ -244,6 +257,24 @@ export function WatcherCreateView({
                 {brief || (focusField === 'brief' ? '' : '(optional - describe what to watch for)')}
                 {focusField === 'brief' ? '▌' : ''}
               </Text>
+            </Box>
+          </Box>
+
+          {/* WATCH-021: Auto-inject toggle */}
+          <Box marginBottom={1} flexDirection="column">
+            <Text color={focusField === 'autoInject' ? 'cyan' : 'white'}>
+              Auto-inject:
+            </Text>
+            <Box>
+              <Text
+                backgroundColor={focusField === 'autoInject' ? 'blue' : undefined}
+                color={autoInject ? 'green' : 'gray'}
+              >
+                {autoInject ? '[●] Enabled' : '[ ] Disabled'}
+              </Text>
+              {focusField === 'autoInject' && (
+                <Text dimColor> (←/→ to toggle)</Text>
+              )}
             </Box>
           </Box>
 

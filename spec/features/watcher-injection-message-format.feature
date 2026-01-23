@@ -1,3 +1,5 @@
+@watcher
+@codelet
 @WATCH-006
 Feature: Watcher Injection Message Format
 

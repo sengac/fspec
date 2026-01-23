@@ -422,6 +422,8 @@ export declare const enum ChunkType {
   Error = 'Error',
   /** User input message (NAPI-009: for resume/attach to restore user messages) */
   UserInput = 'UserInput',
+  /** Watcher pending injection - shown when auto_inject=false (WATCH-020) */
+  WatcherPendingInjection = 'WatcherPendingInjection',
 }
 
 /**
@@ -1252,7 +1254,8 @@ export declare function sessionSetRole(
   sessionId: string,
   roleName: string,
   roleDescription: string | undefined | null,
-  authority: string
+  authority: string,
+  autoInject?: boolean | undefined | null
 ): void;
 
 /**
@@ -1291,7 +1294,7 @@ export declare function sessionUpdateDebugMetadata(
 /** Set the logging callback from TypeScript and initialize the tracing subscriber */
 export declare function setRustLogCallback(callback: LogCallback): void;
 
-/** A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress) */
+/** A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress, WATCH-020: added watcher_pending_injection) */
 export interface StreamChunk {
   type: string;
   text?: string;
@@ -1316,6 +1319,8 @@ export interface StreamChunk {
    * Only populated on watcher session output chunks
    */
   observedCorrelationIds?: Array<string>;
+  /** Pending injection from watcher when auto_inject=false (WATCH-020) */
+  watcherPendingInjection?: WatcherPendingInjectionInfo;
 }
 
 /**
@@ -1382,3 +1387,14 @@ export interface ToolResultInfo {
  * on the parent session via receive_watcher_input().
  */
 export declare function watcherInject(watcherId: string, message: string): void;
+
+/**
+ * Watcher pending injection information (WATCH-020)
+ * Sent when auto_inject=false and watcher detects an [INTERJECT] block
+ */
+export interface WatcherPendingInjectionInfo {
+  /** Whether this is an urgent injection */
+  urgent: boolean;
+  /** The message content that would be injected */
+  content: string;
+}

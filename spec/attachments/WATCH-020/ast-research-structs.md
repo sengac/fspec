@@ -1,0 +1,13 @@
+codelet/napi/src/session_manager.rs:27:12:struct
+codelet/napi/src/session_manager.rs:83:5:struct
+codelet/napi/src/session_manager.rs:104:5:struct
+codelet/napi/src/session_manager.rs:162:5:struct
+codelet/napi/src/session_manager.rs:514:5:struct
+codelet/napi/src/session_manager.rs:529:5:struct
+codelet/napi/src/session_manager.rs:539:5:struct
+codelet/napi/src/session_manager.rs:551:5:struct
+codelet/napi/src/session_manager.rs:909:5:struct
+codelet/napi/src/session_manager.rs:2722:5:struct
+codelet/napi/src/session_manager.rs:3206:1:struct
+codelet/napi/src/session_manager.rs:3279:1:struct
+codelet/napi/src/session_manager.rs:3461:5:struct

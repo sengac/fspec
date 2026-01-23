@@ -314,6 +314,11 @@
       "prefix": "WATCH",
       "description": "Watcher Sessions - Background AI agents that observe and interact with parent sessions",
       "createdAt": "2026-01-21T00:54:32.563Z"
+    },
+    "CACHE": {
+      "prefix": "CACHE",
+      "description": "Caching system features",
+      "createdAt": "2026-01-22T23:44:25.359Z"
     }
   }
 }

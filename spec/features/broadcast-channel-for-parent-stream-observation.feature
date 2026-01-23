@@ -1,3 +1,5 @@
+@watcher
+@codelet
 @WATCH-003
 Feature: Broadcast Channel for Parent Stream Observation
 

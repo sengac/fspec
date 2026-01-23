@@ -57,6 +57,7 @@ Tags that categorize features by functional area.
 | `@agent-compatibility` | Features ensuring correct behavior across all 18 supported AI agents |
 | `@agent-detection` | Agent detection and runtime configuration features |
 | `@agent-integration` | Features related to AI agent initialization, detection, and integration |
+| `@agent-interaction` | Agent interaction functionality |
 | `@agent-modal` | Agent modal component features and interactions |
 | `@agent-support` | Multi-agent support and agent-specific configurations |
 | `@ai-assistance` | AI-assisted features for analysis and extraction |
@@ -214,6 +215,7 @@ Tags that categorize features by functional area.
 | `@tool-discovery` | Tool discovery and listing features |
 | `@tool-display` | Tool output display and formatting features |
 | `@tool-execution` | Tool execution and subprocess management features |
+| `@tools-development` | Tool development features |
 | `@tracking` | Metric tracking operations |
 | `@ui-enhancement` | TUI user interface enhancements and visual improvements |
 | `@ui-refinement` | UI refinement and enhancement operations |
@@ -225,7 +227,9 @@ Tags that categorize features by functional area.
 | `@video-recording` | Video recording and demo playback features |
 | `@visual-design` | Visual design and branding features |
 | `@visualization` | Data visualization |
+| `@watcher` | Watcher functionality |
 | `@watcher-management` | Features related to watcher session management including /watcher overlay, watcher creation, and navigation |
+| `@watcher-sessions` | Watcher session functionality |
 | `@web-tools` | Web tools including search, page fetching, and screenshot capture |
 | `@work-management` | Work unit management and Kanban workflow operations |
 | `@work-unit-automation` | Automatic work unit creation and management |
@@ -249,6 +253,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@ai-driven` | AI-driven interactive and conversational commands |
 | `@ai-guidance` | Features that provide contextual guidance to AI agents |
 | `@anti-drift` | Features that prevent AI drift and maintain workflow discipline |
+| `@append-mode` | AST refactor append mode |
 | `@ast` | Abstract Syntax Tree |
 | `@ast-analysis` | AST-based code analysis features |
 | `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |
@@ -383,6 +388,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@react` | React framework and component lifecycle features |
 | `@real-time` | Features with real-time data synchronization and live updates |
 | `@registry` | Provider or component registry |
+| `@replace-mode` | AST refactor replace mode |
 | `@request-id` | API request ID scenarios |
 | `@resilience` | Error handling and graceful degradation features |
 | `@responsive` | Components that respond to viewport or terminal dimension changes |
@@ -550,13 +556,14 @@ Tags for test-related scenarios and requirements.
 | `@removal` | Scenario for removed or deprecated functionality |
 | `@resume-command` | Scenarios testing the /resume command |
 | `@resume-on-enter` | Scenarios testing Enter key behavior for session resume |
-| `@space-esc` | Scenarios testing Space+ESC key behavior |
 | `@simple-command` | Simple command with minimal options |
 | `@single-message` | Single message edge case scenarios |
 | `@smoke` | Smoke tests - quick validation of critical functionality |
+| `@space-esc` | Scenarios testing Space+ESC key behavior |
 | `@test` | Test-related scenarios |
 | `@test-infrastructure` | Test infrastructure and framework code |
 | `@test-isolation` | Test isolation and concurrent execution |
+| `@unit` | Unit test scope |
 | `@unit-test` | Unit Test Coverage Required |
 | `@unregistered-scenario-tag` | Example tag used in test scenarios to demonstrate error handling |
 | `@unregistered-tag1` | Example tag used in test scenarios to demonstrate error handling |
@@ -805,7 +812,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-22T00:06:07.990Z_
+_Last updated: 2026-01-22T23:45:13.736Z_
 
 **Update Command**: `fspec tag-stats`
 
