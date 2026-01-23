@@ -428,7 +428,7 @@ where
                                 agent.tool_server_handle.call_tool(&tool_call.function.name, &tool_args).await {
                                     Ok(thing) => thing,
                                     Err(e) => {
-                                        tracing::warn!("Error while calling tool: {e}");
+                                        tracing::debug!("Error while calling tool: {e}");
                                         e.to_string()
                                     }
                                 };
