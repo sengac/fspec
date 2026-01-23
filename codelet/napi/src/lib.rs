@@ -55,6 +55,7 @@ mod logging {
     use std::sync::Mutex;
     use tracing_subscriber::layer::SubscriberExt;
     use tracing_subscriber::util::SubscriberInitExt;
+    use tracing_subscriber::EnvFilter;
 
     /// Type alias for log callback - matches NAPI v3 signature
     type LogCallback = ThreadsafeFunction<String, UnknownReturnValue, String, Status, false>;
@@ -122,7 +123,41 @@ mod logging {
         }
     }
 
-    /// Set the logging callback from TypeScript and initialize the tracing subscriber
+    /// Build the EnvFilter for Rust log levels.
+    ///
+    /// LOG-002: Respects FSPEC_RUST_LOG_LEVEL environment variable for controlling
+    /// which Rust tracing events are forwarded to TypeScript. This prevents
+    /// expensive JSON serialization of full API requests at TRACE level when
+    /// not needed.
+    ///
+    /// Priority order:
+    /// 1. FSPEC_RUST_LOG_LEVEL (fspec-specific, e.g., "debug", "trace")
+    /// 2. RUST_LOG (standard tracing env var, e.g., "info,rig::completions=off")
+    /// 3. Default: "info" (only INFO, WARN, ERROR forwarded)
+    ///
+    /// Examples:
+    /// - FSPEC_RUST_LOG_LEVEL=debug  -> enables DEBUG and above
+    /// - FSPEC_RUST_LOG_LEVEL=trace  -> enables all levels (verbose API logging)
+    /// - RUST_LOG=debug,rig::completions=off -> debug except API request bodies
+    fn build_env_filter() -> EnvFilter {
+        // Check fspec-specific env var first
+        if let Ok(level) = std::env::var("FSPEC_RUST_LOG_LEVEL") {
+            if let Ok(filter) = EnvFilter::try_new(&level) {
+                return filter;
+            }
+        }
+
+        // Fall back to standard RUST_LOG
+        EnvFilter::try_from_default_env()
+            // Default to INFO level - prevents TRACE/DEBUG log bloat
+            .unwrap_or_else(|_| EnvFilter::new("info"))
+    }
+
+    /// Set the logging callback from TypeScript and initialize the tracing subscriber.
+    ///
+    /// LOG-002: The subscriber is initialized with an EnvFilter that respects
+    /// FSPEC_RUST_LOG_LEVEL or RUST_LOG environment variables. Default level
+    /// is INFO, which prevents expensive TRACE-level API request logging.
     #[napi]
     pub fn set_rust_log_callback(callback: LogCallback) {
         // Store the callback
@@ -133,8 +168,12 @@ mod logging {
         // Initialize tracing subscriber only once
         if let Ok(mut initialized) = SUBSCRIBER_INITIALIZED.lock() {
             if !*initialized {
+                // LOG-002: Apply EnvFilter to control which log levels are forwarded
+                let filter = build_env_filter();
+
                 let _ = tracing_subscriber::registry()
                     .with(TypeScriptLayer)
+                    .with(filter)
                     .try_init();
                 *initialized = true;
             }
