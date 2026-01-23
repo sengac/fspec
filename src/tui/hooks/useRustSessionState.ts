@@ -10,6 +10,7 @@
  */
 
 import { useSyncExternalStore, useCallback } from 'react';
+import { logger } from '../../utils/logger';
 import {
   sessionGetStatus,
   sessionGetModel,
@@ -81,6 +82,18 @@ function getOrCreateSubscription(sessionId: string): SessionSubscription {
     subscriptions.set(sessionId, sub);
   }
   return sub;
+}
+
+/**
+ * Invalidate the cache for a session, forcing the next getSnapshot to fetch fresh state.
+ * This is the key fix for the detached Done issue - when we subscribe to a session,
+ * we invalidate its cache so we always get fresh state from Rust on first read.
+ */
+function invalidateCache(sessionId: string): void {
+  const sub = subscriptions.get(sessionId);
+  if (sub) {
+    sub.version++;
+  }
 }
 
 /**
@@ -194,9 +207,10 @@ function fetchFreshSnapshot(
   version: number
 ): RustSessionSnapshot {
   const status = rustStateSource.getStatus(sessionId);
+  const isLoading = status === 'running';
   return {
     status,
-    isLoading: status === 'running',
+    isLoading,
     model: rustStateSource.getModel(sessionId),
     tokens: rustStateSource.getTokens(sessionId),
     isDebugEnabled: rustStateSource.getDebugEnabled(sessionId),
@@ -272,6 +286,12 @@ export function useRustSessionState(sessionId: string | null): {
 
       const sub = getOrCreateSubscription(sessionId);
       sub.subscribers.add(callback);
+
+      // KEY FIX: Invalidate cache on subscribe to force fresh fetch from Rust.
+      // This handles the case where a session completed while detached (Done chunk
+      // not forwarded because is_attached=false). When we re-subscribe, we need
+      // fresh state from Rust, not stale cached state that still says "running".
+      invalidateCache(sessionId);
 
       return () => {
         sub.subscribers.delete(callback);
