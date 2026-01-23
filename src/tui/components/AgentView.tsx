@@ -1531,11 +1531,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Wire up Rust tracing to TypeScript logger
         try {
           setRustLogCallback((msg: string) => {
-            // Route Rust logs through TypeScript logger
+            // Route Rust logs through TypeScript logger at appropriate levels
+            // The logger's configured level (FSPEC_LOG_LEVEL) controls what gets written
             if (msg.includes('[RUST:ERROR]')) {
               logger.error(msg);
             } else if (msg.includes('[RUST:WARN]')) {
               logger.warn(msg);
+            } else if (msg.includes('[RUST:INFO]')) {
+              logger.info(msg);
+            } else if (msg.includes('[RUST:DEBUG]')) {
+              logger.debug(msg);
+            } else if (msg.includes('[RUST:TRACE]')) {
+              // TRACE is very verbose - route to debug level
+              // Will only be written if FSPEC_LOG_LEVEL=debug
+              logger.debug(msg);
             }
           });
         } catch (err) {

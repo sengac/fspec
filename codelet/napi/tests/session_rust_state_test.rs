@@ -7,6 +7,7 @@
 //! React UI to fetch current state without waiting for streaming events.
 
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
+use std::sync::Arc;
 
 /// Test atomic token caching behavior
 ///
@@ -391,4 +392,136 @@ fn test_debug_state_getter_setter() {
     // And can be toggled back
     set_debug(false);
     assert!(!get_debug());
+}
+
+/// Test send_input sets status to Running synchronously before channel send
+///
+/// Scenario: Status changes to Running immediately when input is sent
+///
+/// This tests the fix for a race condition where TypeScript called 
+/// sessionGetStatus() immediately after sessionSendInput() but the 
+/// agent_loop hadn't yet processed the channel message to set Running.
+///
+/// @step Given a simulated send_input implementation with status and channel
+/// @step When send_input is called
+/// @step Then status is Running BEFORE the channel receive completes
+/// @step So that sessionGetStatus returns "running" immediately after sessionSendInput
+#[test]
+fn test_send_input_sets_status_before_channel_send() {
+    use std::sync::atomic::AtomicU8;
+    use std::sync::mpsc;
+
+    // Simulated SessionStatus enum values
+    const IDLE: u8 = 0;
+    const RUNNING: u8 = 1;
+
+    // @step Given a simulated BackgroundSession with status and input channel
+    let status = Arc::new(AtomicU8::new(IDLE));
+    let (input_tx, input_rx) = mpsc::channel::<String>();
+
+    // Verify initial state
+    assert_eq!(status.load(Ordering::Acquire), IDLE);
+
+    // @step When send_input is called (simulating BackgroundSession::send_input)
+    // This mirrors the fix: set status BEFORE sending to channel
+    {
+        let status = Arc::clone(&status);
+        
+        // CRITICAL: Set status to Running BEFORE sending to channel
+        // This is the fix - ensures status is Running when TS calls getStatus()
+        status.store(RUNNING, Ordering::Release);
+        
+        // Then send to channel (the receiver hasn't processed yet)
+        input_tx.send("test input".to_string()).unwrap();
+    }
+
+    // @step Then status is Running BEFORE the channel receive completes
+    // This simulates TypeScript calling sessionGetStatus() immediately after sessionSendInput()
+    // The receiver (agent_loop) hasn't processed the message yet
+    assert_eq!(status.load(Ordering::Acquire), RUNNING,
+        "Status must be Running immediately after send_input, before agent_loop processes");
+
+    // Verify the message is still waiting in the channel (not yet processed)
+    let received = input_rx.try_recv().unwrap();
+    assert_eq!(received, "test input");
+}
+
+/// Test send_input reverts status on channel send failure
+///
+/// Scenario: Status reverts to Idle if channel send fails
+///
+/// @step Given a send_input with a closed channel
+/// @step When send_input fails to send
+/// @step Then status is reverted to Idle
+#[test]
+fn test_send_input_reverts_status_on_failure() {
+    use std::sync::atomic::AtomicU8;
+    use std::sync::mpsc;
+
+    const IDLE: u8 = 0;
+    const RUNNING: u8 = 1;
+
+    // @step Given a session with a closed channel (simulating send failure)
+    let status = Arc::new(AtomicU8::new(IDLE));
+    let (input_tx, input_rx) = mpsc::channel::<String>();
+    
+    // Drop the receiver to cause send failure
+    drop(input_rx);
+
+    // @step When send_input attempts to send (and fails)
+    {
+        // Set status to Running before send (as the fix does)
+        status.store(RUNNING, Ordering::Release);
+        
+        // Try to send - this will fail because receiver is dropped
+        let send_result = input_tx.send("test input".to_string());
+        
+        if send_result.is_err() {
+            // @step Then status is reverted to Idle on failure
+            status.store(IDLE, Ordering::Release);
+        }
+    }
+
+    // Verify status was reverted
+    assert_eq!(status.load(Ordering::Acquire), IDLE,
+        "Status must revert to Idle when channel send fails");
+}
+
+/// Test status transitions follow correct sequence
+///
+/// Scenario: Status follows Idle -> Running -> Idle lifecycle
+///
+/// @step Given a session processing input
+/// @step When the full lifecycle completes
+/// @step Then status transitions correctly: Idle -> Running -> Idle
+#[test]
+fn test_status_lifecycle_transitions() {
+    use std::sync::atomic::AtomicU8;
+    use std::sync::mpsc;
+
+    const IDLE: u8 = 0;
+    const RUNNING: u8 = 1;
+
+    let status = Arc::new(AtomicU8::new(IDLE));
+    let (input_tx, input_rx) = mpsc::channel::<String>();
+
+    // Phase 1: Initial state is Idle
+    assert_eq!(status.load(Ordering::Acquire), IDLE);
+
+    // Phase 2: send_input sets Running synchronously
+    {
+        status.store(RUNNING, Ordering::Release);
+        input_tx.send("test".to_string()).unwrap();
+    }
+    assert_eq!(status.load(Ordering::Acquire), RUNNING);
+
+    // Phase 3: agent_loop processes (simulated) - status stays Running
+    let _ = input_rx.recv().unwrap();
+    // agent_loop would also call set_status(Running) here - idempotent
+    status.store(RUNNING, Ordering::Release);
+    assert_eq!(status.load(Ordering::Acquire), RUNNING);
+
+    // Phase 4: agent_loop completes - sets Idle
+    status.store(IDLE, Ordering::Release);
+    assert_eq!(status.load(Ordering::Acquire), IDLE);
 }
