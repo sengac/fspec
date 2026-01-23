@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/gemini-provider-with-google-generative-ai-api.feature
 //!
 //! Tests for GeminiProvider implementation following ACDD workflow.

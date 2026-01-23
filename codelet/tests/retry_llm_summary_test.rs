@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/retry-llm-summary.feature
 //!
 //! Tests for CLI-018: Retry Logic for LLM Summary Generation

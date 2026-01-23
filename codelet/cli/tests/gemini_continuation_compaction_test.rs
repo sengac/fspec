@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/handle-gemini-continuation-compaction-gracefully.feature
 //
 // CMPCT-002: Handle Gemini continuation + compaction gracefully

@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/retry-llm-summary.feature
 //!
 //! Tests for CLI-018: Retry Logic for LLM Summary Generation
@@ -44,7 +46,7 @@ fn create_turn_with_file_edit(
         }],
         tool_results: vec![ToolResult {
             success: true,
-            output: format!("Edited file: {}", file_path),
+            output: format!("Edited file: {file_path}"),
             error: None,
         }],
         assistant_response: assistant_response.to_string(),

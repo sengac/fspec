@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/full-page-scrollable-screenshot-capture.feature
 //
 // Tests for BROWSE-002: Full-page scrollable screenshot capture
@@ -28,21 +29,19 @@ fn test_capture_viewport_screenshot_with_default_settings() -> Result<(), Chrome
     // @step Then the tool should return a file path to a PNG screenshot
     assert!(
         screenshot_path.ends_with(".png"),
-        "Screenshot path should end with .png: {}",
-        screenshot_path
+        "Screenshot path should end with .png: {screenshot_path}"
     );
 
     // @step And the screenshot file should exist at the returned path
     assert!(
         Path::new(&screenshot_path).exists(),
-        "Screenshot file should exist at: {}",
-        screenshot_path
+        "Screenshot file should exist at: {screenshot_path}"
     );
 
     // @step And the screenshot should capture the visible viewport
     // Verify the file is a valid PNG by checking magic bytes
     let file_contents = std::fs::read(&screenshot_path)
-        .map_err(|e| ChromeError::TabError(format!("Failed to read screenshot: {}", e)))?;
+        .map_err(|e| ChromeError::TabError(format!("Failed to read screenshot: {e}")))?;
     assert!(
         file_contents.starts_with(&[0x89, 0x50, 0x4E, 0x47]),
         "File should be a valid PNG (checking magic bytes)"
@@ -78,14 +77,13 @@ fn test_capture_full_page_screenshot_of_scrollable_content() -> Result<(), Chrom
     // @step Then the screenshot should capture the entire scrollable page content
     assert!(
         Path::new(&screenshot_path).exists(),
-        "Screenshot file should exist at: {}",
-        screenshot_path
+        "Screenshot file should exist at: {screenshot_path}"
     );
 
     // @step And the screenshot height should exceed the viewport height
     // Read the PNG and check dimensions - full page should be taller than viewport (typically 600-800px)
     let file_contents = std::fs::read(&screenshot_path)
-        .map_err(|e| ChromeError::TabError(format!("Failed to read screenshot: {}", e)))?;
+        .map_err(|e| ChromeError::TabError(format!("Failed to read screenshot: {e}")))?;
 
     // PNG IHDR chunk starts at byte 8, width at offset 16, height at offset 20
     // Format: 4 bytes width (big-endian), 4 bytes height (big-endian)
@@ -98,8 +96,7 @@ fn test_capture_full_page_screenshot_of_scrollable_content() -> Result<(), Chrom
         ]);
         assert!(
             height > 800,
-            "Full-page screenshot height ({}) should exceed typical viewport height (800px)",
-            height
+            "Full-page screenshot height ({height}) should exceed typical viewport height (800px)"
         );
     }
 
@@ -130,8 +127,7 @@ fn test_capture_screenshot_to_custom_output_path() -> Result<(), ChromeError> {
     // @step Then the screenshot should be saved to "/tmp/my-custom-screenshot.png"
     assert!(
         Path::new(custom_path).exists(),
-        "Screenshot should be saved to custom path: {}",
-        custom_path
+        "Screenshot should be saved to custom path: {custom_path}"
     );
 
     // @step And the returned path should match the specified output_path
@@ -169,7 +165,7 @@ fn test_view_captured_screenshot_using_read_tool() -> Result<(), ChromeError> {
     // The Read tool in codelet already supports images via file_type detection
     // We verify the file can be read and is a valid PNG
     let file_contents = std::fs::read(&returned_path)
-        .map_err(|e| ChromeError::TabError(format!("Failed to read screenshot: {}", e)))?;
+        .map_err(|e| ChromeError::TabError(format!("Failed to read screenshot: {e}")))?;
 
     // @step Then the Read tool should return image data with type "image"
     // Verify it's a valid PNG by checking magic bytes

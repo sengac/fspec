@@ -7,6 +7,8 @@
 // polluting ~/.fspec with test data. Each test gets its own temp dir
 // via setup_test_env().
 
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
+
 use super::*;
 use std::path::PathBuf;
 use std::sync::Mutex;

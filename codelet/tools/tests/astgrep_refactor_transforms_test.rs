@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Tests for Enhanced AST Refactor Tool with Transforms and Batch Mode (TOOLS-004)
 //!
 //! Feature: spec/features/enhanced-ast-refactor-tool-with-transforms-and-batch-mode.feature
@@ -60,8 +62,7 @@ async fn test_match_function_using_partial_pattern_with_meta_variables() {
     // The result should show the match - in preview mode, this verifies pattern matching works
     assert!(
         output.contains("calculate_sum") || output.contains("preview"),
-        "Should show matched content or preview info: {}",
-        output
+        "Should show matched content or preview info: {output}"
     );
 }
 
@@ -97,8 +98,7 @@ async fn test_match_call_expressions_without_full_statement_as_pattern() {
     let output = result.unwrap();
     assert!(
         output.contains("console.log") || output.contains("preview"),
-        "Should match console.log call: {}",
-        output
+        "Should match console.log call: {output}"
     );
 }
 
@@ -145,13 +145,11 @@ async fn test_rename_function_using_convert_transform_with_case_conversion() {
     let updated_content = fs::read_to_string(&source_file).unwrap();
     assert!(
         updated_content.contains("oldSnakeName"),
-        "Expected camelCase conversion 'oldSnakeName', got: {}",
-        updated_content
+        "Expected camelCase conversion 'oldSnakeName', got: {updated_content}"
     );
     assert!(
         !updated_content.contains("old_snake_name"),
-        "Original snake_case should be replaced: {}",
-        updated_content
+        "Original snake_case should be replaced: {updated_content}"
     );
 }
 
@@ -198,8 +196,7 @@ async fn test_extract_substring_from_captured_variable() {
     let updated_content = fs::read_to_string(&source_file).unwrap();
     assert!(
         updated_content.contains("userName") && !updated_content.contains("userNameInput"),
-        "Expected 'userName' after removing 'Input', got: {}",
-        updated_content
+        "Expected 'userName' after removing 'Input', got: {updated_content}"
     );
 }
 
@@ -246,8 +243,7 @@ async fn test_remove_suffix_using_replace_transform_with_regex() {
     let updated_content = fs::read_to_string(&source_file).unwrap();
     assert!(
         updated_content.contains("get_user") && !updated_content.contains("get_user_id"),
-        "Expected 'get_user' after removing '_id' suffix, got: {}",
-        updated_content
+        "Expected 'get_user' after removing '_id' suffix, got: {updated_content}"
     );
 }
 
@@ -294,21 +290,18 @@ oldFunc(arg5);
     let output = result.unwrap();
     assert!(
         output.contains("matches_count") && output.contains("5"),
-        "Expected matches_count: 5 in result: {}",
-        output
+        "Expected matches_count: 5 in result: {output}"
     );
 
     let updated_content = fs::read_to_string(&source_file).unwrap();
     assert!(
         !updated_content.contains("oldFunc"),
-        "All oldFunc calls should be replaced: {}",
-        updated_content
+        "All oldFunc calls should be replaced: {updated_content}"
     );
     assert_eq!(
         updated_content.matches("newFunc").count(),
         5,
-        "Should have exactly 5 newFunc calls: {}",
-        updated_content
+        "Should have exactly 5 newFunc calls: {updated_content}"
     );
 }
 
@@ -346,8 +339,7 @@ async fn test_preview_changes_without_modifying_files() {
     let output = result.unwrap();
     assert!(
         output.contains("preview") || output.contains("location"),
-        "Result should contain preview info: {}",
-        output
+        "Result should contain preview info: {output}"
     );
 
     // Verify file was NOT modified
@@ -409,8 +401,7 @@ async fn test_chain_multiple_transforms_with_dependency_ordering() {
     let updated_content = fs::read_to_string(&source_file).unwrap();
     assert!(
         updated_content.contains("GetUser"),
-        "Expected PascalCase 'GetUser' after chained transforms, got: {}",
-        updated_content
+        "Expected PascalCase 'GetUser' after chained transforms, got: {updated_content}"
     );
 }
 
@@ -457,8 +448,7 @@ async fn test_use_separated_by_option_to_control_word_splitting() {
     let updated_content = fs::read_to_string(&source_file).unwrap();
     assert!(
         updated_content.contains("user_accountname"),
-        "Expected 'user_accountname' (lowercased within underscore segments), got: {}",
-        updated_content
+        "Expected 'user_accountname' (lowercased within underscore segments), got: {updated_content}"
     );
 }
 
@@ -502,15 +492,13 @@ async fn test_fail_operation_when_transform_has_invalid_regex() {
     // @step Then the operation fails with an error message indicating invalid regex in the transform
     assert!(
         result.is_err(),
-        "Expected error for invalid regex, got: {:?}",
-        result
+        "Expected error for invalid regex, got: {result:?}"
     );
     let err = result.unwrap_err();
     let err_msg = err.to_string().to_lowercase();
     assert!(
         err_msg.contains("regex") || err_msg.contains("invalid") || err_msg.contains("pattern"),
-        "Error should mention invalid regex: {}",
-        err_msg
+        "Error should mention invalid regex: {err_msg}"
     );
 }
 
@@ -562,8 +550,7 @@ async fn test_reject_transforms_when_using_extract_mode() {
     let err_msg = err.to_string().to_lowercase();
     assert!(
         err_msg.contains("transform") && err_msg.contains("extract"),
-        "Error should mention transforms not supported in extract mode: {}",
-        err_msg
+        "Error should mention transforms not supported in extract mode: {err_msg}"
     );
 }
 
@@ -612,8 +599,7 @@ fn bar() { }
     let err_msg = err.to_string().to_lowercase();
     assert!(
         err_msg.contains("batch") && err_msg.contains("extract"),
-        "Error should mention batch not supported in extract mode: {}",
-        err_msg
+        "Error should mention batch not supported in extract mode: {err_msg}"
     );
 }
 
@@ -671,7 +657,6 @@ async fn test_fail_operation_when_transforms_have_cyclic_dependency() {
     let err_msg = err.to_string().to_lowercase();
     assert!(
         err_msg.contains("cyclic") || err_msg.contains("cycle") || err_msg.contains("circular"),
-        "Error should mention cyclic dependency: {}",
-        err_msg
+        "Error should mention cyclic dependency: {err_msg}"
     );
 }

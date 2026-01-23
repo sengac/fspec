@@ -90,6 +90,7 @@ impl ProviderToolRegistry {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 
@@ -127,7 +128,9 @@ mod tests {
         let gemini_tools = registry.tools_for_provider("gemini");
 
         // Gemini tools should not include Claude's web_search
-        let tool_names: Vec<&str> = gemini_tools.iter().map(|t| t.tool_name()).collect();
-        assert!(!tool_names.contains(&"web_search"));
+        assert!(!gemini_tools
+            .iter()
+            .map(|t| t.tool_name())
+            .any(|name| name == "web_search"));
     }
 }

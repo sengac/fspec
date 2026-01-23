@@ -3271,11 +3271,15 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             if let Err(e) = result {
                 tracing::error!("Agent stream error for session {}: {}", session.id, e);
                 session.handle_output(StreamChunk::error(e.to_string()));
+                // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
+                // This prevents race condition where JS receives Done before status is Idle
+                session.set_status(SessionStatus::Idle);
                 session.handle_output(StreamChunk::done());
+            } else {
+                // Success case: BackgroundOutput::emit already set status to Idle when Done was emitted
+                // Setting it again here is idempotent and ensures consistency
+                session.set_status(SessionStatus::Idle);
             }
-
-            // Set status back to idle
-            session.set_status(SessionStatus::Idle);
         }
     }
 }
@@ -3348,6 +3352,9 @@ async fn watcher_agent_loop(
             if let Err(e) = result {
                 tracing::error!("Watcher agent error for session {}: {}", session.id, e);
                 session.handle_output(StreamChunk::error(e.to_string()));
+                // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
+                // This prevents race condition where JS receives Done before status is Idle
+                session.set_status(SessionStatus::Idle);
                 session.handle_output(StreamChunk::done());
             } else {
                 // WATCH-020: Parse for interjections on observation evaluations only
@@ -3393,9 +3400,10 @@ async fn watcher_agent_loop(
                         }
                     }
                 }
+                // Success case: BackgroundOutput::emit already set status to Idle when Done was emitted
+                // Setting it again here is idempotent and ensures consistency
+                session.set_status(SessionStatus::Idle);
             }
-
-            session.set_status(SessionStatus::Idle);
             
             // Clear pending observed correlation IDs after processing
             if !is_user_prompt {
@@ -3478,7 +3486,15 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             }),
             StreamEvent::Error(error) => StreamChunk::error(error),
             StreamEvent::Interrupted(queued) => StreamChunk::interrupted(queued),
-            StreamEvent::Done => StreamChunk::done(),
+            StreamEvent::Done => {
+                // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
+                // This prevents a race condition where JavaScript receives the Done callback
+                // and calls sessionGetStatus() before Rust has set the status to Idle.
+                // The NonBlocking callback mode means JS could process Done at any time,
+                // so we must ensure status is Idle before the chunk is sent.
+                self.session.set_status(SessionStatus::Idle);
+                StreamChunk::done()
+            }
         };
 
         self.session.handle_output(chunk);
@@ -3756,7 +3772,7 @@ pub fn session_set_role(
         role_description,
         auth,
         auto_inject.unwrap_or(true), // Default to true if not specified
-    ).map_err(|e| Error::from_reason(e))?;
+    ).map_err(Error::from_reason)?;
     
     session.set_role(role);
     Ok(())
@@ -3816,7 +3832,7 @@ pub async fn session_create_watcher(
         name.clone(),
         None,
         RoleAuthority::Peer,
-    ).map_err(|e| Error::from_reason(e))?;
+    ).map_err(Error::from_reason)?;
     
     // Create watcher session with watcher-specific loop
     SessionManager::instance()
@@ -3833,7 +3849,7 @@ pub async fn session_create_watcher(
     // Register in WatchGraph (tracks parent-watcher relationships)
     SessionManager::instance()
         .add_watcher(parent_uuid, watcher_id)
-        .map_err(|e| Error::from_reason(e))?;
+        .map_err(Error::from_reason)?;
     
     Ok(watcher_id_str)
 }
@@ -3895,11 +3911,11 @@ pub fn watcher_inject(watcher_id: String, message: String) -> Result<()> {
         role.name,
         role.authority,
         message,
-    ).map_err(|e| Error::from_reason(e))?;
+    ).map_err(Error::from_reason)?;
     
     // Queue on parent
     parent.receive_watcher_input(input)
-        .map_err(|e| Error::from_reason(e))?;
+        .map_err(Error::from_reason)?;
     
     Ok(())
 }

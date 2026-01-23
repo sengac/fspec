@@ -3,6 +3,8 @@
 // Tests for SystemPromptFacade trait and provider-specific implementations (TOOL-008).
 // Each test maps to a Gherkin scenario with @step comments.
 
+#![allow(clippy::unwrap_used, clippy::expect_used)]
+
 use codelet_tools::facade::{
     ClaudeApiKeySystemPromptFacade, ClaudeOAuthSystemPromptFacade, GeminiSystemPromptFacade,
     OpenAISystemPromptFacade, SystemPromptFacade,
@@ -37,8 +39,7 @@ fn test_claude_oauth_facade_prepends_identity_prefix_to_preamble() {
     let text = first_block["text"].as_str().unwrap();
     assert!(
         text.starts_with("You are Claude Code"),
-        "Text should start with Claude Code prefix, got: {}",
-        text
+        "Text should start with Claude Code prefix, got: {text}"
     );
 
     // @step And the text should contain the original preamble

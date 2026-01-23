@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/debug-capture-system-for-llm-session-diagnostics.feature
 //!
 //! Tests for the debug capture system that records LLM session diagnostics.

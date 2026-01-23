@@ -92,7 +92,7 @@ mod tests {
         };
         let tokens = estimate_message_tokens(&message);
         // 10,000 chars of 'x' should be roughly 1,250-2,500 tokens depending on encoding
-        assert!(tokens > 1000, "Expected >1000 tokens, got {}", tokens);
+        assert!(tokens > 1000, "Expected >1000 tokens, got {tokens}");
     }
 
     #[test]
@@ -141,7 +141,7 @@ mod tests {
             },
         ];
         let tokens = estimate_messages_tokens(&messages);
-        assert!(tokens > 5, "Expected >5 tokens for 3 messages, got {}", tokens);
+        assert!(tokens > 5, "Expected >5 tokens for 3 messages, got {tokens}");
     }
 
     #[test]
@@ -177,7 +177,7 @@ mod tests {
         ];
         let tokens = estimate_messages_tokens(&messages);
         // Large file content should dominate the token count
-        assert!(tokens > 5000, "Expected >5000 tokens for large file, got {}", tokens);
+        assert!(tokens > 5000, "Expected >5000 tokens for large file, got {tokens}");
     }
 
     #[test]

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/fix-context-compaction-to-match-typescript-reference.feature
 //
 // CTX-002: Fix context compaction to match TypeScript reference implementation
@@ -125,10 +126,10 @@ fn test_weighted_summary_provider_no_llm_call() {
     // @step Given a session with 5 conversation turns
     let turns: Vec<ConversationTurn> = (0..5)
         .map(|i| ConversationTurn {
-            user_message: format!("User request {}", i),
+            user_message: format!("User request {i}"),
             tool_calls: vec![],
             tool_results: vec![],
-            assistant_response: format!("Assistant response {}", i),
+            assistant_response: format!("Assistant response {i}"),
             tokens: 1000,
             timestamp: SystemTime::now(),
             previous_error: None,
@@ -195,10 +196,10 @@ async fn test_compaction_warns_on_low_compression() {
     // @step Given a session requiring compaction
     let turns: Vec<ConversationTurn> = (0..5)
         .map(|i| ConversationTurn {
-            user_message: format!("Short message {}", i),
+            user_message: format!("Short message {i}"),
             tool_calls: vec![],
             tool_results: vec![],
-            assistant_response: format!("Short response {}", i),
+            assistant_response: format!("Short response {i}"),
             tokens: 100, // Small token count
             timestamp: SystemTime::now(),
             previous_error: None,
@@ -279,8 +280,7 @@ fn test_anchor_point_marked_with_prefix() {
     // @step Then the summary should include "[ANCHOR]" prefix for the anchor turn
     assert!(
         outcome.starts_with("[ANCHOR]"),
-        "Anchor turn should be marked with [ANCHOR] prefix. Got: {}",
-        outcome
+        "Anchor turn should be marked with [ANCHOR] prefix. Got: {outcome}"
     );
 
     // @step And the anchor turn summary should reference the file changes
@@ -299,10 +299,10 @@ fn test_turn_selection_from_anchor_forward() {
     // @step Given a session with 10 conversation turns
     let turns: Vec<ConversationTurn> = (0..10)
         .map(|i| ConversationTurn {
-            user_message: format!("Turn {} message", i),
+            user_message: format!("Turn {i} message"),
             tool_calls: vec![],
             tool_results: vec![],
-            assistant_response: format!("Turn {} response", i),
+            assistant_response: format!("Turn {i} response"),
             tokens: 1000,
             timestamp: SystemTime::now(),
             previous_error: None,

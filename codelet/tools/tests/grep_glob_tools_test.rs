@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/grep-and-glob-tools-implementation.feature
 //!
 //! Tests for Grep and Glob Tools Implementation - CORE-004

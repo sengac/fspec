@@ -132,7 +132,7 @@ pub fn install_browser_cleanup_handler() {
         // Exit after cleanup - use 130 for SIGINT (128 + 2)
         std::process::exit(130);
     }) {
-        tracing::warn!("Failed to install browser cleanup handler: {e}");
+        tracing::error!("Failed to install browser cleanup handler: {e}");
     }
 }
 
@@ -596,6 +596,7 @@ fn find_pattern_in_page(url: &str, pattern: &str) -> Result<String, ChromeError>
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
 
@@ -689,16 +690,14 @@ mod tests {
             let request: Result<WebSearchRequest, _> = serde_json::from_str(json);
             assert!(
                 request.is_ok(),
-                "Failed to parse: {} (expected {})",
-                json,
-                expected_type
+                "Failed to parse: {json} (expected {expected_type})"
             );
             let action = request.unwrap().action;
             match (expected_type, &action) {
                 ("search", WebSearchAction::Search { .. }) => {}
                 ("open_page", WebSearchAction::OpenPage { .. }) => {}
                 ("find_in_page", WebSearchAction::FindInPage { .. }) => {}
-                _ => panic!("Wrong action type for {}: got {:?}", json, action),
+                _ => panic!("Wrong action type for {json}: got {action:?}"),
             }
         }
     }

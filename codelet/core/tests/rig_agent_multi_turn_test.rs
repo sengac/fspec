@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/refactor-agent-loop-to-use-rig-with-multi-turn.feature
 //!
 //! Tests for Refactoring Agent Loop to use Rig with Multi-Turn - REFAC-004
@@ -5,7 +7,6 @@
 //! These tests verify that the agent loop is refactored to use rig::agent::Agent
 //! with automatic multi-turn tool calling, depth control, and streaming support.
 
-use codelet_core::RigAgent;
 use codelet_providers::ClaudeProvider;
 use codelet_tools::facade::ProviderToolRegistry;
 

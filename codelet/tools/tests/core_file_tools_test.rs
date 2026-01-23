@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/core-file-tools-implementation.feature
 //!
 //! Tests for Core File Tools (Read, Write, Edit) - CORE-002
@@ -104,8 +106,8 @@ async fn test_read_file_truncated_with_warning() {
         .unwrap();
 
     // @step Then the output should contain at most 2000 lines
-    let content_lines: Vec<&str> = result.lines().filter(|l| !l.starts_with("...")).collect();
-    assert!(content_lines.len() <= OutputLimits::MAX_LINES);
+    let content_line_count = result.lines().filter(|l| !l.starts_with("...")).count();
+    assert!(content_line_count <= OutputLimits::MAX_LINES);
 
     // @step And the output should end with a truncation warning
     assert!(result.contains("truncated"));

@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/custom-http-middleware-for-anthropic-prompt-cache-control.feature
 //!
 //! Tests for PROV-006: Custom HTTP Middleware for Anthropic Prompt Cache Control

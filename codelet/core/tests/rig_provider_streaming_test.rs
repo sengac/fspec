@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/refactor-providers-to-use-rig-with-streaming.feature
 //!
 //! Tests for Refactoring Providers to use Rig with Streaming - REFAC-003
@@ -5,7 +7,6 @@
 //! These tests verify that ClaudeProvider is refactored to use rig::providers::anthropic
 //! with full streaming support including text chunks, tool call deltas, and extended thinking.
 
-use codelet_core::{Message, MessageContent, MessageRole};
 use codelet_providers::{ClaudeProvider, LlmProvider};
 use codelet_tools::ToolDefinition;
 use serde_json::json;
@@ -80,7 +81,7 @@ fn test_stream_tool_call_deltas_during_tool_execution() {
     let provider = ClaudeProvider::from_api_key("test-key").expect("Provider should be created");
 
     // Create a simple tool definition
-    let tool = ToolDefinition {
+    let _tool = ToolDefinition {
         name: "Read".to_string(),
         description: "Read a file".to_string(),
         input_schema: json!({

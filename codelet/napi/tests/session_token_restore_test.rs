@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/background-session-management-with-attach-detach.feature
 //!
 //! Tests for NAPI-009: Background Session Token State Restoration

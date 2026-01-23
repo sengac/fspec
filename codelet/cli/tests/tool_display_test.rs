@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/display-tool-execution-information.feature
 //
 // Tests for displaying tool execution information during agent streaming.
@@ -50,7 +51,7 @@ async fn test_display_multiple_tool_calls_in_sequence() {
 fn test_tool_display_format_matches_codelet() {
     // Verify the format matches codelet's pattern: [Planning to use tool: <name>]
     let tool_name = "read";
-    let formatted = format!("[Planning to use tool: {}]", tool_name);
+    let formatted = format!("[Planning to use tool: {tool_name}]");
 
     assert_eq!(formatted, "[Planning to use tool: read]");
 }

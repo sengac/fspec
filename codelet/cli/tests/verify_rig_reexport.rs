@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Proof-of-concept test to verify rig re-export works
 //!
 //! This test proves that `pub use rig;` in src/lib.rs actually works

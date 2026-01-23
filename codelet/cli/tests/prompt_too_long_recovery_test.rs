@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Tests for prompt too long error detection and recovery
 //!
 //! Tests the is_prompt_too_long_error helper and related compaction recovery logic.
@@ -90,7 +91,7 @@ fn test_payload_estimation_prevents_overflow() {
     let existing_messages: Vec<Message> = (0..10).map(|i| {
         Message::User {
             content: OneOrMany::one(UserContent::Text(Text {
-                text: format!("Message number {} with some content", i),
+                text: format!("Message number {i} with some content"),
             })),
         }
     }).collect();
@@ -116,8 +117,6 @@ fn test_payload_estimation_prevents_overflow() {
     // The estimated payload should exceed the threshold
     assert!(
         estimated > threshold,
-        "Large tool result should push payload over threshold: {} > {}",
-        estimated,
-        threshold
+        "Large tool result should push payload over threshold: {estimated} > {threshold}"
     );
 }

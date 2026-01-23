@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/background-session-management-with-attach-detach.feature
 //!
 //! Tests for Context Injection in Background Sessions

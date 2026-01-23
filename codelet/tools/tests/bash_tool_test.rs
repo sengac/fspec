@@ -2,6 +2,8 @@
 //!
 //! Tests for Bash Tool Implementation - CORE-003
 
+#![allow(clippy::unwrap_used, clippy::expect_used)]
+
 use codelet_tools::bash::BashTool;
 use codelet_tools::limits::OutputLimits;
 use rig::tool::Tool;
@@ -47,7 +49,7 @@ async fn test_execute_command_fails_returns_error() {
     
     // @step And the error should contain stderr information
     let err = result.unwrap_err();
-    let err_msg = format!("{:?}", err);
+    let err_msg = format!("{err:?}");
     assert!(
         err_msg.contains("No such file")
             || err_msg.contains("cannot access")

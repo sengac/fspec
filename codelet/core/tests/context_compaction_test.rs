@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/context-compaction-with-anchoring-system.feature
 //!
 //! Tests for Context Compaction with Anchoring System - CLI-009
@@ -7,7 +9,7 @@
 
 use anyhow::Result;
 use codelet_core::compaction::{
-    AnchorPoint, AnchorType, CompactionMetrics, CompactionStrategy, ContextCompactor,
+    AnchorPoint, AnchorType, CompactionMetrics,
     ConversationTurn, TokenTracker, ToolCall as CompactionToolCall,
     ToolResult as CompactionToolResult,
 };
@@ -30,7 +32,7 @@ fn create_test_turn(
             .into_iter()
             .map(|name| CompactionToolCall {
                 tool: name.to_string(),
-                id: format!("tool_{}", name),
+                id: format!("tool_{name}"),
                 parameters: serde_json::json!({}),
             })
             .collect(),
@@ -59,7 +61,7 @@ async fn test_compaction_trigger_at_90_percent_context_window() -> Result<()> {
     // @step Given I have a session with 100k token context window
     let context_window_size = 100_000u64;
     let autocompact_buffer = 50_000u64;
-    let effective_window = context_window_size - autocompact_buffer; // 50k
+    let _effective_window = context_window_size - autocompact_buffer; // 50k
     let threshold = (context_window_size as f64 * 0.9) as u64; // 90k (90% of full window)
 
     // @step And the session has 90 conversation turns totaling 85k tokens
@@ -75,7 +77,7 @@ async fn test_compaction_trigger_at_90_percent_context_window() -> Result<()> {
     let total_input_tokens = 95_000u64;
     let cache_read_tokens = 0u64; // No cache for this test
     let cache_discount = (cache_read_tokens as f64 * 0.9) as u64;
-    let effective_tokens = total_input_tokens - cache_discount;
+    let _effective_tokens = total_input_tokens - cache_discount;
 
     // @step When I calculate if compaction should trigger
     let tracker = TokenTracker {
@@ -262,8 +264,7 @@ async fn test_select_turns_for_compaction_using_anchor() -> Result<()> {
     let compression_estimate: f64 = (40.0 / 90.0) * 100.0;
     assert!(
         (compression_estimate - 44.4_f64).abs() < 1.0,
-        "Compression estimate should be ~44%, got {}%",
-        compression_estimate
+        "Compression estimate should be ~44%, got {compression_estimate}%"
     );
 
     Ok(())

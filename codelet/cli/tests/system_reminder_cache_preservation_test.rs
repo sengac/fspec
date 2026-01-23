@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/fix-system-reminder-replacement-to-preserve-prompt-cache-prefix.feature
 //
 // CLI-013: Fix system-reminder replacement to preserve prompt cache prefix
@@ -26,7 +27,7 @@ fn create_test_message(content: &str) -> Message {
 fn get_message_text(msg: &Message) -> Option<String> {
     match msg {
         Message::User { content } => match content.first() {
-            UserContent::Text(t) => Some(t.text.clone()),
+            UserContent::Text(t) => Some(t.text),
             _ => None,
         },
         _ => None,
@@ -44,7 +45,7 @@ fn test_adding_replacement_preserves_old_reminder() {
     let msg2 = create_test_message("How can I help?");
     let token_status_v1 = add_system_reminder(&[], SystemReminderType::TokenStatus, "50% used");
 
-    let messages = vec![msg1.clone(), msg2.clone(), token_status_v1[0].clone()];
+    let messages = vec![msg1, msg2, token_status_v1[0].clone()];
 
     // Verify initial state - should have 1 tokenStatus reminder
     assert_eq!(
@@ -101,9 +102,9 @@ fn test_partition_extracts_only_latest_reminder_per_type() {
     let token_v2 = create_test_message(token_v2_content);
 
     let messages = vec![
-        msg1.clone(),
+        msg1,
         token_v1.clone(),
-        msg2.clone(),
+        msg2,
         token_v2.clone(),
     ];
 
@@ -172,10 +173,10 @@ fn test_compaction_preserves_latest_reminder_at_start() {
     let msg2 = create_test_message("User message 2");
 
     let messages = vec![
-        token_v1.clone(),
-        msg1.clone(),
-        token_v2.clone(),
-        msg2.clone(),
+        token_v1,
+        msg1,
+        token_v2,
+        msg2,
     ];
 
     // @step And the session has conversation turns to compact
@@ -296,7 +297,7 @@ fn test_multiple_types_each_preserve_latest() {
     // Verify the preserved reminders are the latest versions
     let preserved_texts: Vec<String> = system_reminders
         .iter()
-        .filter_map(|m| get_message_text(m))
+        .filter_map(get_message_text)
         .collect();
 
     assert!(

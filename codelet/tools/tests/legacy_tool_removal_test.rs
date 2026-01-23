@@ -3,6 +3,8 @@
 //! Tests to verify the legacy Tool trait, ToolRegistry, and Runner have been removed
 //! and only rig::tool::Tool implementations remain.
 
+#![allow(clippy::unwrap_used, clippy::expect_used)]
+
 /// Scenario: Tool files contain only rig::tool::Tool implementation
 #[test]
 fn test_tool_files_contain_only_rig_tool_impl() {

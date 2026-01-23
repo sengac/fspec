@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Integration test to verify REFAC-003 and REFAC-004 are fully wired up
 //!
 //! This test proves:

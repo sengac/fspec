@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/project-scaffold.feature
 //!
 //! Tests for Project Scaffold for Codelet Rust Port

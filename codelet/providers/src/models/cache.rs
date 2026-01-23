@@ -229,6 +229,7 @@ impl std::fmt::Display for CacheError {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
     use serial_test::serial;
@@ -250,7 +251,7 @@ mod tests {
     #[tokio::test]
     async fn test_cache_miss_returns_fallback() {
         let (_temp_dir, cache_path) = test_cache_path();
-        let cache = ModelCache::new_with_path(cache_path.clone());
+        let cache = ModelCache::new_with_path(cache_path);
 
         // Cache doesn't exist, should use fallback
         let result = cache.load_fallback();
@@ -335,8 +336,7 @@ mod tests {
         // Should end with .fspec/cache
         assert!(
             result.ends_with(".fspec/cache"),
-            "Default should be ~/.fspec/cache, got: {:?}",
-            result
+            "Default should be ~/.fspec/cache, got: {result:?}"
         );
 
         reset_cache_directory();

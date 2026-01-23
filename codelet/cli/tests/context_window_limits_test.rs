@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 // Feature: spec/features/use-model-specific-context-window-limits.feature
 //
 // CLI-015: Use model-specific context window limits

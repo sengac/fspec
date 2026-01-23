@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/codex-provider-chatgpt-backend-api-with-oauth.feature
 //!
 //! Tests for Codex Provider implementation following ACDD workflow.

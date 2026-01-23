@@ -25,7 +25,7 @@ pub fn extract_exit_code(error: &str) -> Option<i32> {
     if let Some(idx) = error.find("exit code ") {
         let after = &error[idx + 10..];
         // Extract consecutive digits
-        let code_str: String = after.chars().take_while(|c| c.is_ascii_digit()).collect();
+        let code_str: String = after.chars().take_while(char::is_ascii_digit).collect();
         code_str.parse().ok()
     } else {
         None

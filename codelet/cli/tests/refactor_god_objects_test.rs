@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Tests for REFAC-013: Refactor God Objects and Unify Error Handling
 //!
 //! Feature: spec/features/refactor-god-objects-and-unify-error-handling.feature

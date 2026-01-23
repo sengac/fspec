@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/add-rig-core-dependency-and-compatibility-layer.feature
 //!
 //! Tests for Adding rig-core Dependency and Compatibility Layer - REFAC-002
@@ -35,7 +37,7 @@ fn test_add_rig_core_dependency_to_cargo_toml() {
 
     // @step And I run "cargo build"
     let build_result = Command::new("cargo")
-        .args(&["build", "--quiet"])
+        .args(["build", "--quiet"])
         .output()
         .expect("Failed to execute cargo build");
 
@@ -65,7 +67,7 @@ fn test_all_existing_tests_pass_after_adding_rig_core() {
 
     // @step And the project builds successfully
     let build_result = Command::new("cargo")
-        .args(&["build", "--quiet"])
+        .args(["build", "--quiet"])
         .output()
         .expect("Failed to execute cargo build");
     assert!(
@@ -75,7 +77,7 @@ fn test_all_existing_tests_pass_after_adding_rig_core() {
 
     // @step When I run "cargo test"
     let test_result = Command::new("cargo")
-        .args(&["test", "--quiet", "--lib", "--bins"])
+        .args(["test", "--quiet", "--lib", "--bins"])
         .output()
         .expect("Failed to execute cargo test");
 
@@ -154,7 +156,7 @@ fn test_cargo_clippy_completes_without_warnings() {
     // @step And all code changes are complete
     // @step When I run "cargo clippy -- -D warnings"
     let clippy_result = Command::new("cargo")
-        .args(&["clippy", "--", "-D", "warnings"])
+        .args(["clippy", "--", "-D", "warnings"])
         .output()
         .expect("Failed to execute cargo clippy");
 
@@ -164,14 +166,12 @@ fn test_cargo_clippy_completes_without_warnings() {
     let clippy_stderr = String::from_utf8_lossy(&clippy_result.stderr);
     assert!(
         clippy_result.status.success(),
-        "cargo clippy should complete without warnings. Stderr: {}",
-        clippy_stderr
+        "cargo clippy should complete without warnings. Stderr: {clippy_stderr}"
     );
 
     // Verify no warnings in output
     assert!(
         !clippy_stderr.contains("warning:"),
-        "clippy should not emit any warnings. Stderr: {}",
-        clippy_stderr
+        "clippy should not emit any warnings. Stderr: {clippy_stderr}"
     );
 }

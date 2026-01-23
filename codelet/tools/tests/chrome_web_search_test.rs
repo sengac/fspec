@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/chrome-devtools-web-search-implementation.feature
 //
 // Tests for WEB-002: Chrome DevTools Web Search Implementation
@@ -207,7 +208,7 @@ fn test_agent_finds_pattern_in_page_with_context() -> Result<(), ChromeError> {
 
     // @step And multiple matches are returned if present
     // example.com mentions "example" multiple times
-    assert!(matches.len() >= 1, "Should return matches if present");
+    assert!(!matches.is_empty(), "Should return matches if present");
 
     Ok(())
 }

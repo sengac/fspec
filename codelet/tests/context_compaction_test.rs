@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/context-compaction-with-anchoring-system.feature
 //!
 //! Tests for Context Compaction with Anchoring System - CLI-009

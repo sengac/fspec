@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/dynamic-model-selection-via-models-dev.feature
 // Work Unit: MODEL-001 - Dynamic Model Selection via models.dev
 //
@@ -527,15 +528,13 @@ fn test_unknown_model_shows_error_with_fuzzy_suggestions() {
     let error_msg = error.to_string();
     assert!(
         error_msg.contains("not found"),
-        "Error should mention model not found: {}",
-        error_msg
+        "Error should mention model not found: {error_msg}"
     );
 
     // @step And fuzzy match suggestions should be shown
     assert!(
         error_msg.contains("Did you mean"),
-        "Error should include suggestions: {}",
-        error_msg
+        "Error should include suggestions: {error_msg}"
     );
 }
 
@@ -559,8 +558,7 @@ fn test_reject_model_without_tool_call_capability() {
     let error_msg = error.to_string();
     assert!(
         error_msg.contains("tool_call"),
-        "Error should mention tool_call requirement: {}",
-        error_msg
+        "Error should mention tool_call requirement: {error_msg}"
     );
     // @step And the command should exit with code 1
     // (CLI exit code testing is at CLI level, here we verify the error is returned)
@@ -650,8 +648,10 @@ fn test_filter_models_by_vision_capability() {
     }
 
     // Verify gemini-2.0-flash-thinking-exp is NOT included (no modalities)
-    let model_ids: Vec<&str> = models.iter().map(|(_, m)| m.id.as_str()).collect();
-    assert!(!model_ids.contains(&"gemini-2.0-flash-thinking-exp"));
+    assert!(!models
+        .iter()
+        .map(|(_, m)| m.id.as_str())
+        .any(|id| id == "gemini-2.0-flash-thinking-exp"));
 }
 
 /// Scenario: Search models with fuzzy matching
@@ -675,18 +675,15 @@ fn test_search_models_with_fuzzy_matching() {
     let model_ids: Vec<&str> = results.iter().map(|(_, m)| m.id.as_str()).collect();
     assert!(
         model_ids.iter().any(|id| id.contains("sonnet")),
-        "Should find claude-sonnet: {:?}",
-        model_ids
+        "Should find claude-sonnet: {model_ids:?}"
     );
     assert!(
         model_ids.iter().any(|id| id.contains("opus")),
-        "Should find claude-opus: {:?}",
-        model_ids
+        "Should find claude-opus: {model_ids:?}"
     );
     assert!(
         model_ids.iter().any(|id| id.contains("haiku")),
-        "Should find claude-haiku: {:?}",
-        model_ids
+        "Should find claude-haiku: {model_ids:?}"
     );
 }
 

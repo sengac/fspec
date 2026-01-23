@@ -149,6 +149,7 @@ pub fn handle_debug_command_with_dir(base_dir: Option<&str>) -> DebugCommandResu
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
 mod tests {
     use super::*;
     use manager::sanitize_headers;
@@ -179,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_format_duration() {
-        let manager = DebugCaptureManager::new().expect("Failed to create manager");
+        let manager = DebugCaptureManager::new().unwrap();
 
         assert_eq!(manager.format_duration(500), "0s");
         assert_eq!(manager.format_duration(5000), "5s");

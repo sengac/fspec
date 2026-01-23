@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! PDF Reading Tests
 //!
 //! Feature: spec/features/add-pdf-reading-support-to-read-tool.feature
@@ -48,7 +49,7 @@ async fn test_read_pdf_default_visual_mode_renders_pages_as_images() {
                 eprintln!("To enable visual mode, install libpdfium for your platform.");
                 return;
             }
-            panic!("PDF read with default visual mode should succeed: {}", err_msg);
+            panic!("PDF read with default visual mode should succeed: {err_msg}");
         }
     };
 
@@ -214,8 +215,7 @@ async fn test_reject_password_protected_pdf_with_clear_error() {
     // @step And the error message should be "Cannot read password-protected PDF: encrypted.pdf"
     assert!(
         err_msg.contains("password") || err_msg.contains("protected") || err_msg.contains("encrypted"),
-        "Error should mention password protection: {}",
-        err_msg
+        "Error should mention password protection: {err_msg}"
     );
 }
 
@@ -231,8 +231,8 @@ async fn test_visual_mode_includes_page_count() {
     let temp_dir = tempfile::tempdir().expect("Failed to create temp dir");
     let file_path = temp_dir.path().join("report.pdf");
     // Create a 25-page PDF
-    let pages: Vec<String> = (1..=25).map(|i| format!("Report page {} content", i)).collect();
-    let page_refs: Vec<&str> = pages.iter().map(|s| s.as_str()).collect();
+    let pages: Vec<String> = (1..=25).map(|i| format!("Report page {i} content")).collect();
+    let page_refs: Vec<&str> = pages.iter().map(std::string::String::as_str).collect();
     let pdf_bytes = create_test_pdf_with_pages(&page_refs);
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
@@ -257,7 +257,7 @@ async fn test_visual_mode_includes_page_count() {
                 eprintln!("Note: Pdfium library not available, skipping visual mode page count test");
                 return;
             }
-            panic!("Visual mode should succeed: {}", err_msg);
+            panic!("Visual mode should succeed: {err_msg}");
         }
     };
 
@@ -271,7 +271,7 @@ async fn test_visual_mode_includes_page_count() {
         .expect("Content should be valid JSON");
 
     // Verify total_pages is 25
-    let total_pages = parsed.get("total_pages").and_then(|t| t.as_u64());
+    let total_pages = parsed.get("total_pages").and_then(serde_json::Value::as_u64);
     assert_eq!(total_pages, Some(25), "Should have 25 total pages");
 
     // @step And all 25 pages should be rendered as base64-encoded PNG images
@@ -335,9 +335,9 @@ async fn test_pdf_modes_exempt_from_token_limits() {
     let file_path = temp_dir.path().join("huge.pdf");
     // Create a PDF with substantial content that would exceed 10 tokens
     let pages: Vec<String> = (1..=10).map(|i| {
-        format!("This is page {} with substantial content that would definitely exceed the token limit if it were a text file. Lorem ipsum dolor sit amet.", i)
+        format!("This is page {i} with substantial content that would definitely exceed the token limit if it were a text file. Lorem ipsum dolor sit amet.")
     }).collect();
-    let page_refs: Vec<&str> = pages.iter().map(|s| s.as_str()).collect();
+    let page_refs: Vec<&str> = pages.iter().map(std::string::String::as_str).collect();
     let pdf_bytes = create_test_pdf_with_pages(&page_refs);
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 

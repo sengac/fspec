@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/astgrep-tool-for-ast-based-code-search.feature
 //!
 //! Tests for AstGrep Tool Implementation - CORE-005

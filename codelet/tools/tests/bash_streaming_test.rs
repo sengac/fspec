@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::await_holding_lock, clippy::needless_collect)]
 //! Feature: spec/features/bash-tool-ui-streaming-during-execution.feature
 //!
 //! Tests for Bash Tool UI Streaming During Execution - TOOL-011
@@ -277,15 +278,13 @@ async fn test_abort_running_bash_command() {
     // Should have been interrupted, not completed
     assert!(
         result.is_err(),
-        "Command should have been interrupted, but got: {:?}",
-        result
+        "Command should have been interrupted, but got: {result:?}"
     );
 
     // Should complete quickly after abort (within polling interval + some margin)
     assert!(
         elapsed < Duration::from_millis(200),
-        "Abort should terminate command quickly, but took {:?}",
-        elapsed
+        "Abort should terminate command quickly, but took {elapsed:?}"
     );
 
     // The output should NOT contain "completed" since we aborted before sleep finished

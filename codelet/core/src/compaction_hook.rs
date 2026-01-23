@@ -166,7 +166,7 @@ where
     ) {
         // Handle mutex lock gracefully - if poisoned, skip the check
         let Ok(mut state) = self.state.lock() else {
-            tracing::warn!("CompactionHook state mutex poisoned, skipping compaction check");
+            tracing::error!("CompactionHook state mutex poisoned, skipping compaction check");
             return;
         };
 
@@ -213,7 +213,7 @@ where
         if let Some(usage) = response.token_usage() {
             // Handle mutex lock gracefully - if poisoned, skip the update
             let Ok(mut state) = self.state.lock() else {
-                tracing::warn!("CompactionHook state mutex poisoned, skipping token update");
+                tracing::error!("CompactionHook state mutex poisoned, skipping token update");
                 return;
             };
             state.input_tokens = usage.input_tokens;
@@ -227,6 +227,7 @@ where
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
 mod tests {
     use super::*;
     use rig::agent::CancelSignal;

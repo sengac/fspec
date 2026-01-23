@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/autocompact-buffer.feature
 //!
 //! Tests for CLI-020: Autocompact Buffer for Compaction Threshold
@@ -189,5 +190,5 @@ fn test_compaction_does_not_trigger_at_exact_threshold() {
     let effective_tokens: u64 = threshold;
 
     // @step Then compaction should NOT trigger (uses strictly greater than)
-    assert!(!(effective_tokens > threshold));
+    assert!((effective_tokens <= threshold));
 }

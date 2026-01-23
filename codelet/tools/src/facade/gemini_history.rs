@@ -343,6 +343,7 @@ impl TurnCompletionFacade for DefaultTurnCompletionFacade {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
     use rig::message::{Text, ToolCall, ToolFunction};

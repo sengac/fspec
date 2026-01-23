@@ -23,7 +23,7 @@ static ESTIMATOR: Lazy<TokenEstimator> = Lazy::new(|| {
     TokenEstimator::new().unwrap_or_else(|e| {
         // Fall back to a dummy estimator that uses byte-based estimation
         // This should never happen in practice, but we need a fallback
-        tracing::warn!("Failed to initialize tiktoken encoder: {}. Using byte-based fallback.", e);
+        tracing::error!("Failed to initialize tiktoken encoder: {}. Using byte-based fallback.", e);
         TokenEstimator { encoder: None }
     })
 });
@@ -104,6 +104,7 @@ pub fn check_token_limit(content: &str) -> Option<(usize, usize)> {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
 mod tests {
     use super::*;
 

@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Test for the fix to prevent "Cannot compact empty turn history" error
 //!
 //! This test verifies that compaction is not triggered when session.turns is empty,
@@ -39,9 +40,7 @@ async fn test_compaction_not_triggered_when_turns_empty() -> Result<()> {
 
     assert!(
         effective_tokens > threshold,
-        "Test setup: effective tokens ({}) should exceed threshold ({})",
-        effective_tokens,
-        threshold
+        "Test setup: effective tokens ({effective_tokens}) should exceed threshold ({threshold})"
     );
 
     // When the compaction check logic runs (simulated here)
@@ -109,7 +108,7 @@ fn test_defensive_check_logic() {
     let effective_tokens = 195_000u64;
     let threshold = 191_808u64;
     let empty_turns = Vec::<codelet_core::compaction::ConversationTurn>::new();
-    let non_empty_turns = vec![codelet_core::compaction::ConversationTurn {
+    let non_empty_turns = [codelet_core::compaction::ConversationTurn {
         user_message: "Test".to_string(),
         tool_calls: vec![],
         tool_results: vec![],

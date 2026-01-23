@@ -1,3 +1,5 @@
+
+#![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/basic-agent-execution-loop.feature
 //!
 //! Tests for Basic Agent Execution Loop - AGENT-001

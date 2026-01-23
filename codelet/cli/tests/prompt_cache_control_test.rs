@@ -1,3 +1,4 @@
+#![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 //! Feature: spec/features/add-anthropic-prompt-cache-control-metadata.feature
 //!
 //! Tests for CLI-017: Add Anthropic prompt cache control metadata
