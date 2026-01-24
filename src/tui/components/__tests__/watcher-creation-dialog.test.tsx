@@ -124,7 +124,8 @@ describe('Feature: Watcher Creation Dialog UI', () => {
 
       // @step When the user presses the N key
       // Implementation: setShowWatcherCreateDialog(true) with default state
-      const currentSessionModel = 'claude-sonnet-4';
+      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
+      const currentSessionModel = 'anthropic/claude-sonnet-4-20250514';
       const dialogState: WatcherCreateDialogState = {
         showWatcherCreateDialog: true,
         watcherName: '',
@@ -144,8 +145,8 @@ describe('Feature: Watcher Creation Dialog UI', () => {
       // @step And the authority should be set to "Peer" by default
       expect(dialogState.watcherAuthority).toBe('peer');
 
-      // @step And the model should be set to the current session model
-      expect(dialogState.watcherModel).toBe('claude-sonnet-4');
+      // @step And the model should be set to the current session model (with provider prefix)
+      expect(dialogState.watcherModel).toBe('anthropic/claude-sonnet-4-20250514');
     });
   });
 
@@ -156,7 +157,7 @@ describe('Feature: Watcher Creation Dialog UI', () => {
         showWatcherCreateDialog: true,
         watcherName: '',
         watcherAuthority: 'peer',
-        watcherModel: 'claude-sonnet-4',
+        watcherModel: 'anthropic/claude-sonnet-4-20250514',
         watcherBrief: '',
         createDialogFocus: 'name',
       };
@@ -213,11 +214,12 @@ describe('Feature: Watcher Creation Dialog UI', () => {
   describe('Scenario: Create watcher successfully', () => {
     it('should call NAPI functions and create watcher', async () => {
       // @step Given the Watcher Creation dialog is open
+      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
       const state: WatcherCreateDialogState = {
         showWatcherCreateDialog: true,
         watcherName: 'Code Reviewer',
         watcherAuthority: 'peer',
-        watcherModel: 'claude-sonnet-4',
+        watcherModel: 'anthropic/claude-sonnet-4-20250514',
         watcherBrief: 'Reviews code changes',
         createDialogFocus: 'name',
       };
@@ -228,8 +230,8 @@ describe('Feature: Watcher Creation Dialog UI', () => {
       // @step And the user has selected authority "Peer"
       expect(state.watcherAuthority).toBe('peer');
 
-      // @step And the user has selected model "claude-sonnet-4"
-      expect(state.watcherModel).toBe('claude-sonnet-4');
+      // @step And the user has selected model "anthropic/claude-sonnet-4-20250514"
+      expect(state.watcherModel).toBe('anthropic/claude-sonnet-4-20250514');
 
       // @step And the user has entered brief "Reviews code changes"
       expect(state.watcherBrief).toBe('Reviews code changes');
@@ -246,10 +248,10 @@ describe('Feature: Watcher Creation Dialog UI', () => {
         mockSessionSetRole
       );
 
-      // @step Then sessionCreateWatcher should be called with the parent session ID and model
+      // @step Then sessionCreateWatcher should be called with the parent session ID and model (with provider prefix)
       expect(mockSessionCreateWatcher).toHaveBeenCalledWith(
         'parent-session-uuid',
-        'claude-sonnet-4',
+        'anthropic/claude-sonnet-4-20250514',
         '/project/path',
         'Code Reviewer'
       );
@@ -274,11 +276,12 @@ describe('Feature: Watcher Creation Dialog UI', () => {
   describe('Scenario: Cancel watcher creation with Escape', () => {
     it('should close dialog without creating watcher', () => {
       // @step Given the Watcher Creation dialog is open
+      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
       let state: WatcherCreateDialogState = {
         showWatcherCreateDialog: true,
         watcherName: 'Some Name',
         watcherAuthority: 'supervisor',
-        watcherModel: 'claude-sonnet-4',
+        watcherModel: 'anthropic/claude-sonnet-4-20250514',
         watcherBrief: 'Some description',
         createDialogFocus: 'name',
       };
@@ -292,7 +295,7 @@ describe('Feature: Watcher Creation Dialog UI', () => {
         showWatcherCreateDialog: false,
         watcherName: '',
         watcherAuthority: 'peer',
-        watcherModel: 'claude-sonnet-4',
+        watcherModel: 'anthropic/claude-sonnet-4-20250514',
         watcherBrief: '',
         createDialogFocus: 'name',
       };
@@ -311,11 +314,12 @@ describe('Feature: Watcher Creation Dialog UI', () => {
   describe('Scenario: Create button disabled when name is empty', () => {
     it('should not create watcher when name is empty', async () => {
       // @step Given the Watcher Creation dialog is open
+      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
       const state: WatcherCreateDialogState = {
         showWatcherCreateDialog: true,
         watcherName: '',
         watcherAuthority: 'peer',
-        watcherModel: 'claude-sonnet-4',
+        watcherModel: 'anthropic/claude-sonnet-4-20250514',
         watcherBrief: '',
         createDialogFocus: 'name',
       };

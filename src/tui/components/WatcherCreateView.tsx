@@ -234,7 +234,7 @@ export function WatcherCreateView({
                 backgroundColor={focusField === 'model' ? 'blue' : undefined}
                 color={focusField === 'model' ? 'white' : 'gray'}
               >
-                {selectedModel}
+                {selectedModel.split('/').pop() || selectedModel}
               </Text>
               {focusField === 'model' && (
                 <Text dimColor> (↑/↓ to change, {selectedModelIndex + 1}/{availableModels.length})</Text>

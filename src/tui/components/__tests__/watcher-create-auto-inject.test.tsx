@@ -274,11 +274,12 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
       expect(disabledState.autoInject).toBe(false);
 
       // @step When the user presses Enter to create the watcher
+      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
       const mockOnCreate = vi.fn<Parameters<OnCreateCallback>, void>();
       mockOnCreate(
         disabledState.name.trim(),
         disabledState.authority,
-        'claude-sonnet-4', // selectedModel
+        'anthropic/claude-sonnet-4-20250514', // selectedModel with provider prefix
         disabledState.brief.trim(),
         disabledState.autoInject
       );
@@ -287,7 +288,7 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
       expect(mockOnCreate).toHaveBeenCalledWith(
         'Code Reviewer',
         'peer',
-        'claude-sonnet-4',
+        'anthropic/claude-sonnet-4-20250514',
         'Watch for bugs',
         false
       );
@@ -303,11 +304,12 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
         focusField: 'create',
       };
 
+      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
       const mockOnCreate = vi.fn<Parameters<OnCreateCallback>, void>();
       mockOnCreate(
         state.name.trim(),
         state.authority,
-        'claude-sonnet-4',
+        'anthropic/claude-sonnet-4-20250514',
         state.brief.trim(),
         state.autoInject
       );
@@ -315,7 +317,7 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
       expect(mockOnCreate).toHaveBeenCalledWith(
         'Security Reviewer',
         'supervisor',
-        'claude-sonnet-4',
+        'anthropic/claude-sonnet-4-20250514',
         '',
         true
       );
@@ -333,6 +335,7 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
       mockSessionSetRole.mockReturnValue(undefined);
 
       // Simulate what AgentView.handleWatcherCreate does with WATCH-021 changes
+      // WATCH-023 FIX: Model IDs now include provider prefix for Rust parsing
       const handleWatcherCreate = async (
         name: string,
         authority: 'peer' | 'supervisor',
@@ -357,11 +360,11 @@ describe('Feature: Auto-Inject Toggle in Watcher Creation Dialog', () => {
         );
       };
 
-      // Execute
+      // Execute - model now includes provider prefix
       await handleWatcherCreate(
         'Test Reviewer',
         'peer',
-        'claude-sonnet-4',
+        'anthropic/claude-sonnet-4-20250514',
         'Test brief',
         false // autoInject disabled
       );

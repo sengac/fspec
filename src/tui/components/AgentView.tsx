@@ -118,6 +118,10 @@ import {
   getProviderRegistryEntry,
   type ProviderRegistryEntry,
 } from '../../utils/provider-config';
+import { findTemplateBySlug, loadWatcherTemplates, saveWatcherTemplates, createTemplate, updateTemplate, buildFlatWatcherList } from '../utils/watcherTemplateStorage';
+import type { WatcherTemplate, WatcherInstance } from '../types/watcherTemplate';
+import { WatcherTemplateList } from './WatcherTemplateList';
+import { WatcherTemplateForm } from './WatcherTemplateForm';
 import {
   computeLineDiff,
   changesToDiffLines,
@@ -1150,6 +1154,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [watcherEditValue, setWatcherEditValue] = useState('');
   // WATCH-009: Watcher creation view state
   const [isWatcherCreateMode, setIsWatcherCreateMode] = useState(false);
+  // WATCH-023: Watcher template management state
+  const [watcherTemplates, setWatcherTemplates] = useState<WatcherTemplate[]>([]);
+  const [watcherInstances, setWatcherInstances] = useState<WatcherInstance[]>([]);
+  const [isTemplateFormMode, setIsTemplateFormMode] = useState(false);
+  const [templateFormMode, setTemplateFormMode] = useState<'create' | 'edit'>('create');
+  const [editingTemplate, setEditingTemplate] = useState<WatcherTemplate | undefined>(undefined);
+  const [showTemplateDeleteDialog, setShowTemplateDeleteDialog] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<{ template: WatcherTemplate; instances: WatcherInstance[] } | null>(null);
+  const [instanceToKill, setInstanceToKill] = useState<WatcherInstance | null>(null);
+  const [showInstanceKillDialog, setShowInstanceKillDialog] = useState(false);
   // WATCH-010: Watcher split view state
   const [isWatcherSessionView, setIsWatcherSessionView] = useState(false);
   const [activePane, setActivePane] = useState<'parent' | 'watcher'>('watcher');
@@ -1998,6 +2012,72 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     if (userMessage === '/resume') {
       setInputValue('');
       void handleResumeMode();
+      return;
+    }
+
+    // WATCH-023: Handle /watcher spawn <slug> command - quick spawn from template
+    if (userMessage.startsWith('/watcher spawn ')) {
+      setInputValue('');
+      const slug = userMessage.slice('/watcher spawn '.length).trim();
+      
+      if (!slug) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'Usage: /watcher spawn <slug>' },
+        ]);
+        return;
+      }
+      
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'No active session. Start a session first.' },
+        ]);
+        return;
+      }
+      
+      // Find template by slug
+      void (async () => {
+        try {
+          const template = await findTemplateBySlug(slug);
+          
+          if (!template) {
+            setConversation(prev => [
+              ...prev,
+              { type: 'status', content: `No template found with slug: ${slug}` },
+            ]);
+            return;
+          }
+          
+          // Create watcher from template
+          const watcherId = await sessionCreateWatcher(
+            currentSessionId,
+            template.modelId,
+            currentProjectRef.current,
+            template.name
+          );
+          
+          // Set role with template settings
+          sessionSetRole(
+            watcherId,
+            template.name,
+            template.brief || null,
+            template.authority,
+            template.autoInject
+          );
+          
+          setConversation(prev => [
+            ...prev,
+            { type: 'status', content: `Spawned watcher "${template.name}" from template` },
+          ]);
+        } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to spawn watcher';
+          setConversation(prev => [
+            ...prev,
+            { type: 'status', content: `Spawn failed: ${errorMessage}` },
+          ]);
+        }
+      })();
       return;
     }
 
@@ -4243,11 +4323,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
 
     try {
-      // Get watchers for current session
+      // WATCH-023: Load templates from storage
+      const templates = await loadWatcherTemplates();
+      setWatcherTemplates(templates);
+
+      // Get watchers for current session and map to instances
       const watcherIds = sessionGetWatchers(currentSessionId);
       
-      // Build watcher info list
+      // Build watcher info list (for backwards compatibility) and instances
       const watchers: WatcherInfo[] = [];
+      const instances: WatcherInstance[] = [];
+      
       for (const id of watcherIds) {
         const role = sessionGetRole(id);
         const status = sessionGetStatus(id);
@@ -4257,9 +4343,21 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           role,
           status: status === 'running' ? 'running' : 'idle',
         });
+        
+        // WATCH-023: Map watchers to template instances
+        // Find matching template by name (templates store the "role name")
+        const matchingTemplate = templates.find(t => t.name === role?.name);
+        if (matchingTemplate) {
+          instances.push({
+            sessionId: id,
+            templateId: matchingTemplate.id,
+            status: status === 'running' ? 'running' : 'idle',
+          });
+        }
       }
 
       setWatcherList(watchers);
+      setWatcherInstances(instances);
       setWatcherIndex(0);
       setWatcherScrollOffset(0);
       setIsWatcherMode(true);
@@ -4396,6 +4494,213 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setIsWatcherCreateMode(false);
     }
   }, [currentSessionId, handleWatcherMode]);
+
+  // WATCH-023: Spawn watcher from template
+  const handleTemplateSpawn = useCallback(async (template: WatcherTemplate) => {
+    if (!currentSessionId) return;
+
+    try {
+      const watcherId = await sessionCreateWatcher(
+        currentSessionId,
+        template.modelId,
+        currentProjectRef.current,
+        template.name
+      );
+
+      sessionSetRole(
+        watcherId,
+        template.name,
+        template.brief || null,
+        template.authority,
+        template.autoInject
+      );
+
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Spawned watcher "${template.name}" from template` },
+      ]);
+
+      // Refresh the watcher list
+      await handleWatcherMode();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to spawn watcher';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Spawn failed: ${errorMessage}` },
+      ]);
+    }
+  }, [currentSessionId, handleWatcherMode]);
+
+  // WATCH-023: Open existing watcher instance
+  const handleInstanceOpen = useCallback(async (instance: WatcherInstance) => {
+    try {
+      setCurrentSessionId(instance.sessionId);
+      setIsWatcherMode(false);
+      setWatcherList([]);
+
+      sessionAttach(instance.sessionId, (_err: Error | null, chunk: StreamChunk) => {
+        if (chunk) {
+          handleStreamChunk(chunk);
+        }
+      });
+
+      const mergedChunks = sessionGetMergedOutput(instance.sessionId);
+      const restoredMessages = processChunksToConversation(
+        mergedChunks,
+        formatToolHeader,
+        formatCollapsedOutput
+      );
+      setConversation(restoredMessages);
+
+      const template = watcherTemplates.find(t => t.id === instance.templateId);
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Switched to watcher: ${template?.name || 'Unknown'}` },
+      ]);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to switch to watcher';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Switch failed: ${errorMessage}` },
+      ]);
+    }
+  }, [watcherTemplates, handleStreamChunk, formatToolHeader, formatCollapsedOutput]);
+
+  // WATCH-023: Edit template
+  const handleTemplateEdit = useCallback((template: WatcherTemplate) => {
+    setEditingTemplate(template);
+    setTemplateFormMode('edit');
+    setIsTemplateFormMode(true);
+  }, []);
+
+  // WATCH-023: Delete template (shows confirmation dialog)
+  const handleTemplateDelete = useCallback((template: WatcherTemplate, instances: WatcherInstance[]) => {
+    setTemplateToDelete({ template, instances });
+    setShowTemplateDeleteDialog(true);
+  }, []);
+
+  // WATCH-023: Confirm template deletion
+  const handleTemplateDeleteConfirm = useCallback(async () => {
+    if (!templateToDelete) return;
+
+    try {
+      // Kill all instances first
+      for (const instance of templateToDelete.instances) {
+        try {
+          sessionManagerDestroy(instance.sessionId);
+        } catch {
+          // Instance may already be dead - continue
+        }
+      }
+
+      // Delete template from storage
+      const updatedTemplates = watcherTemplates.filter(t => t.id !== templateToDelete.template.id);
+      saveWatcherTemplates(updatedTemplates);
+      setWatcherTemplates(updatedTemplates);
+
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Deleted template "${templateToDelete.template.name}"` },
+      ]);
+
+      // Refresh the watcher list
+      await handleWatcherMode();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete template';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Delete failed: ${errorMessage}` },
+      ]);
+    } finally {
+      setShowTemplateDeleteDialog(false);
+      setTemplateToDelete(null);
+    }
+  }, [templateToDelete, watcherTemplates, handleWatcherMode]);
+
+  // WATCH-023: Kill watcher instance (shows confirmation dialog)
+  const handleInstanceKill = useCallback((instance: WatcherInstance) => {
+    setInstanceToKill(instance);
+    setShowInstanceKillDialog(true);
+  }, []);
+
+  // WATCH-023: Confirm instance kill
+  const handleInstanceKillConfirm = useCallback(async () => {
+    if (!instanceToKill) return;
+
+    try {
+      sessionManagerDestroy(instanceToKill.sessionId);
+
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: 'Killed watcher instance' },
+      ]);
+
+      // Refresh the watcher list
+      await handleWatcherMode();
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to kill instance';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Kill failed: ${errorMessage}` },
+      ]);
+    } finally {
+      setShowInstanceKillDialog(false);
+      setInstanceToKill(null);
+    }
+  }, [instanceToKill, handleWatcherMode]);
+
+  // WATCH-023: Create new template
+  const handleTemplateCreateNew = useCallback(() => {
+    setEditingTemplate(undefined);
+    setTemplateFormMode('create');
+    setIsTemplateFormMode(true);
+  }, []);
+
+  // WATCH-023: Save template (create or edit)
+  const handleTemplateSave = useCallback(async (
+    name: string,
+    authority: 'peer' | 'supervisor',
+    modelId: string,
+    brief: string,
+    autoInject: boolean
+  ) => {
+    try {
+      let updatedTemplates: WatcherTemplate[];
+
+      if (templateFormMode === 'edit' && editingTemplate) {
+        // Update existing template
+        const updated = updateTemplate(editingTemplate, { name, authority, modelId, brief, autoInject });
+        updatedTemplates = watcherTemplates.map(t => t.id === updated.id ? updated : t);
+      } else {
+        // Create new template
+        const newTemplate = createTemplate(name, modelId, authority, brief, autoInject);
+        updatedTemplates = [...watcherTemplates, newTemplate];
+      }
+
+      saveWatcherTemplates(updatedTemplates);
+      setWatcherTemplates(updatedTemplates);
+
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: templateFormMode === 'edit' ? `Updated template "${name}"` : `Created template "${name}"` },
+      ]);
+
+      setIsTemplateFormMode(false);
+      setEditingTemplate(undefined);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to save template';
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: `Save failed: ${errorMessage}` },
+      ]);
+    }
+  }, [templateFormMode, editingTemplate, watcherTemplates]);
+
+  // WATCH-023: Cancel template form
+  const handleTemplateFormCancel = useCallback(() => {
+    setIsTemplateFormMode(false);
+    setEditingTemplate(undefined);
+  }, []);
 
   // NAPI-003 + TUI-047: Select session and restore conversation
   // UNIFIED: Both background and persisted sessions now use the same chunk-based restore flow.
@@ -4907,50 +5212,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return;
       }
 
-      // WATCH-008: Watcher mode keyboard handling
+      // WATCH-023: Watcher mode - WatcherTemplateList handles its own input
       if (isWatcherMode) {
-        // Handle delete dialog keyboard input first
-        if (showWatcherDeleteDialog) {
-          // Dialog handles its own input via useInput
+        // Dialogs handle their own input via useInput
+        if (showTemplateDeleteDialog || showInstanceKillDialog) {
           return;
         }
-        if (key.escape) {
-          setIsWatcherMode(false);
-          setWatcherList([]);
-          return;
-        }
-        if (key.return) {
-          void handleWatcherSelect();
-          return;
-        }
-        if (key.upArrow) {
-          setWatcherIndex(prev => Math.max(0, prev - 1));
-          return;
-        }
-        if (key.downArrow) {
-          setWatcherIndex(prev =>
-            Math.min(watcherList.length - 1, prev + 1)
-          );
-          return;
-        }
-        // D key opens delete confirmation dialog
-        if (input.toLowerCase() === 'd' && watcherList.length > 0) {
-          setShowWatcherDeleteDialog(true);
-          return;
-        }
-        // N key opens watcher creation view (WATCH-009)
-        if (input.toLowerCase() === 'n') {
-          setIsWatcherCreateMode(true);
-          return;
-        }
-        // E key opens edit mode for watcher name
-        if (input.toLowerCase() === 'e' && watcherList.length > 0) {
-          const selectedWatcher = watcherList[watcherIndex];
-          setWatcherEditValue(selectedWatcher.name);
-          setIsWatcherEditMode(true);
-          return;
-        }
-        // No text input in watcher mode - just navigation
+        // Let WatcherTemplateList handle all other input
         return;
       }
 
@@ -6199,11 +6467,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // WATCH-009: Watcher creation view (full-screen form)
   if (isWatcherCreateMode) {
     // Build list of available model IDs from providerSections
+    // WATCH-023 FIX: Include provider prefix so Rust can parse "provider/model"
     const availableModelIds: string[] = providerSections.flatMap(section =>
-      section.models.map(model => model.id)
+      section.models.map(model => `${section.providerId}/${model.id}`)
     );
-    // Get current model ID for default selection
-    const currentModelId = rustModelInfo.modelId || currentModel?.modelId || '';
+    // Get current model ID for default selection (include provider prefix)
+    const currentModelId = currentProvider && (rustModelInfo.modelId || currentModel?.modelId)
+      ? `${currentProvider}/${rustModelInfo.modelId || currentModel?.modelId}`
+      : '';
 
     return (
       <WatcherCreateView
@@ -6217,133 +6488,93 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     );
   }
 
-  // WATCH-008: Watcher management overlay
+  // WATCH-023: Template create/edit form
+  if (isTemplateFormMode) {
+    // WATCH-023 FIX: Include provider prefix so Rust can parse "provider/model"
+    const availableModelIds: string[] = providerSections.flatMap(section =>
+      section.models.map(model => `${section.providerId}/${model.id}`)
+    );
+    // Get current model ID for default selection (include provider prefix)
+    const currentModelId = currentProvider && (rustModelInfo.modelId || currentModel?.modelId)
+      ? `${currentProvider}/${rustModelInfo.modelId || currentModel?.modelId}`
+      : '';
+
+    return (
+      <WatcherTemplateForm
+        mode={templateFormMode}
+        template={editingTemplate}
+        currentModel={currentModelId}
+        availableModels={availableModelIds.length > 0 ? availableModelIds : [currentModelId]}
+        terminalWidth={terminalWidth}
+        terminalHeight={terminalHeight}
+        onSave={handleTemplateSave}
+        onCancel={handleTemplateFormCancel}
+      />
+    );
+  }
+
+  // WATCH-023: Watcher template management overlay (replaces old WATCH-008 overlay)
   if (isWatcherMode) {
     return (
-      <Box
-        position="absolute"
-        flexDirection="column"
-        width={terminalWidth}
-        height={terminalHeight}
-      >
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          backgroundColor="black"
-        >
-          <Box flexDirection="column" padding={2} flexGrow={1}>
-            <Box marginBottom={1}>
-              <Text bold color="magenta">
-                Watcher Management ({watcherList.length} watcher{watcherList.length !== 1 ? 's' : ''})
-              </Text>
-              {watcherList.length > watcherVisibleHeight && (
-                <Text dimColor>
-                  {' '}
-                  (showing {watcherScrollOffset + 1}-
-                  {Math.min(
-                    watcherScrollOffset + watcherVisibleHeight,
-                    watcherList.length
-                  )}
-                  )
-                </Text>
-              )}
-            </Box>
-            {watcherList.length === 0 && (
-              <Box flexGrow={1}>
-                <Text dimColor>No watchers. Press N to create one.</Text>
-              </Box>
-            )}
-            {/* Scrollable watcher list */}
-            <Box flexDirection="row" flexGrow={1}>
-              <Box flexDirection="column" flexGrow={1}>
-                {watcherList
-                  .slice(
-                    watcherScrollOffset,
-                    watcherScrollOffset + watcherVisibleHeight
-                  )
-                  .flatMap((watcher, visibleIdx) => {
-                    const actualIdx = watcherScrollOffset + visibleIdx;
-                    const isSelected = actualIdx === watcherIndex;
-                    const authorityDisplay = watcher.role?.authority === 'supervisor' ? 'Supervisor' : 'Peer';
-                    const statusIcon = watcher.status === 'running' ? '🔄' : '⏸️';
-                    const isEditing = isSelected && isWatcherEditMode;
-                    // Return two rows per watcher (name line and detail line)
-                    return [
-                      <Box key={`${watcher.id}-name`}>
-                        <Box flexGrow={1}>
-                          <Text
-                            backgroundColor={isSelected ? 'magenta' : undefined}
-                            color={isSelected ? 'black' : 'white'}
-                            wrap="truncate"
-                          >
-                            {isSelected ? '> ' : '  '}
-                            {statusIcon} {isEditing ? watcherEditValue + '▌' : watcher.name}
-                          </Text>
-                        </Box>
-                      </Box>,
-                      <Box key={`${watcher.id}-detail`}>
-                        <Box flexGrow={1}>
-                          <Text
-                            backgroundColor={isSelected ? 'magenta' : undefined}
-                            color={isSelected ? 'black' : 'gray'}
-                            dimColor={!isSelected}
-                            wrap="truncate"
-                          >
-                            {'    '}
-                            {isEditing ? '(editing - Enter to save, Esc to cancel)' : `${authorityDisplay} | ${watcher.status}${watcher.role?.description ? ` | ${watcher.role.description}` : ''}`}
-                          </Text>
-                        </Box>
-                      </Box>,
-                    ];
-                  })}
-              </Box>
-              {/* Scrollbar - each watcher is 2 lines */}
-              {watcherList.length > watcherVisibleHeight && (
-                <Box flexDirection="column" marginLeft={1}>
-                  {Array.from({ length: watcherVisibleHeight * 2 }).map((_, i) => {
-                    const scrollbarHeight = watcherVisibleHeight * 2;
-                    const thumbHeight = Math.max(
-                      2,
-                      Math.floor(
-                        (watcherVisibleHeight / watcherList.length) *
-                          scrollbarHeight
-                      )
-                    );
-                    const thumbPos = Math.floor(
-                      (watcherScrollOffset / watcherList.length) *
-                        scrollbarHeight
-                    );
-                    const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
-                    return (
-                      <Text key={i} dimColor>
-                        {isThumb ? '■' : '│'}
-                      </Text>
-                    );
-                  })}
-                </Box>
-              )}
-            </Box>
-            <Box marginTop={1}>
-              <Text dimColor>Enter Open | ↑↓ Navigate | N New | D Delete | E Edit | Esc Cancel</Text>
-            </Box>
-          </Box>
-        </Box>
-        {/* WATCH-008: Delete watcher confirmation dialog */}
-        {showWatcherDeleteDialog && watcherList[watcherIndex] && (
+      <>
+        <WatcherTemplateList
+          templates={watcherTemplates}
+          instances={watcherInstances}
+          terminalWidth={terminalWidth}
+          terminalHeight={terminalHeight}
+          onSpawn={handleTemplateSpawn}
+          onOpen={handleInstanceOpen}
+          onEdit={handleTemplateEdit}
+          onDelete={handleTemplateDelete}
+          onKillInstance={handleInstanceKill}
+          onCreateNew={handleTemplateCreateNew}
+          onClose={() => {
+            setIsWatcherMode(false);
+            setWatcherList([]);
+          }}
+        />
+        {/* Template delete confirmation dialog */}
+        {showTemplateDeleteDialog && templateToDelete && (
           <ThreeButtonDialog
-            message={`Delete watcher "${watcherList[watcherIndex].name}"?`}
+            message={`Delete template "${templateToDelete.template.name}"?`}
+            description={templateToDelete.instances.length > 0 
+              ? `This will kill ${templateToDelete.instances.length} active watcher${templateToDelete.instances.length !== 1 ? 's' : ''}.`
+              : undefined}
             options={['Delete', 'Cancel']}
             onSelect={(index: number) => {
               if (index === 0) {
-                void handleWatcherDelete();
+                void handleTemplateDeleteConfirm();
               } else {
-                setShowWatcherDeleteDialog(false);
+                setShowTemplateDeleteDialog(false);
+                setTemplateToDelete(null);
               }
             }}
-            onCancel={() => setShowWatcherDeleteDialog(false)}
+            onCancel={() => {
+              setShowTemplateDeleteDialog(false);
+              setTemplateToDelete(null);
+            }}
           />
         )}
-        {/* TUI-046: Exit confirmation dialog (shown in watcher mode too) */}
+        {/* Instance kill confirmation dialog */}
+        {showInstanceKillDialog && instanceToKill && (
+          <ThreeButtonDialog
+            message="Kill this watcher instance?"
+            options={['Kill', 'Cancel']}
+            onSelect={(index: number) => {
+              if (index === 0) {
+                void handleInstanceKillConfirm();
+              } else {
+                setShowInstanceKillDialog(false);
+                setInstanceToKill(null);
+              }
+            }}
+            onCancel={() => {
+              setShowInstanceKillDialog(false);
+              setInstanceToKill(null);
+            }}
+          />
+        )}
+        {/* TUI-046: Exit confirmation dialog */}
         {showExitConfirmation && (
           <ThreeButtonDialog
             message="Exit Session?"
@@ -6356,7 +6587,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             onCancel={() => setShowExitConfirmation(false)}
           />
         )}
-      </Box>
+      </>
     );
   }
 
