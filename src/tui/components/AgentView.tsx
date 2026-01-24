@@ -4013,8 +4013,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const sessionNavigation = useSessionNavigation({
     onNavigate: async (targetSessionId: string) => {
       // Switch to the target session using existing resumeSessionById
-      logger.debug(`[VIEWNV-001] Navigating to session ${targetSessionId}`);
-      
       // Save pending input to current session before switching
       if (currentSessionId && inputValue) {
         try {
@@ -4038,7 +4036,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     },
     onNavigateToBoard: () => {
       // Exit AgentView back to BoardView
-      logger.debug('[VIEWNV-001] Navigating to BoardView');
       if (currentSessionId) {
         try {
           sessionDetach(currentSessionId);

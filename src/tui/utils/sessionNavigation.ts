@@ -16,9 +16,7 @@ import {
   sessionGetPrev,
   sessionGetFirst,
   sessionClearActive,
-  sessionManagerList,
 } from '@sengac/codelet-napi';
-import { logger } from '../../utils/logger';
 
 export type NavigationResult =
   | { type: 'session'; sessionId: string }
@@ -32,14 +30,7 @@ export type NavigationResult =
  * - If no next session: show create dialog
  */
 export function navigateRight(): NavigationResult {
-  // Debug: log all sessions in Rust
-  const allSessions = sessionManagerList();
-  logger.debug(
-    `[VIEWNV-001] navigateRight: allSessions=${JSON.stringify(allSessions.map(s => s.id))}`
-  );
-
   const next = sessionGetNext();
-  logger.debug(`[VIEWNV-001] navigateRight: sessionGetNext() returned ${next}`);
 
   if (next) {
     return { type: 'session', sessionId: next };
@@ -56,7 +47,6 @@ export function navigateRight(): NavigationResult {
  */
 export function navigateLeft(): NavigationResult {
   const prev = sessionGetPrev();
-  logger.debug(`[VIEWNV-001] navigateLeft: sessionGetPrev() returned ${prev}`);
 
   if (prev) {
     return { type: 'session', sessionId: prev };
@@ -69,8 +59,6 @@ export function navigateLeft(): NavigationResult {
  * Clear active session tracking (call when returning to BoardView)
  */
 export function clearActiveSession(): void {
-  logger.warn('[VIEWNV-001] clearActiveSession called');
-  logger.warn('[VIEWNV-001] Stack trace:', new Error().stack);
   sessionClearActive();
 }
 
@@ -78,9 +66,5 @@ export function clearActiveSession(): void {
  * Get first session (for BoardView → first session navigation)
  */
 export function getFirstSession(): string | null {
-  const first = sessionGetFirst();
-  logger.debug(
-    `[VIEWNV-001] getFirstSession: sessionGetFirst() returned ${first}`
-  );
-  return first;
+  return sessionGetFirst();
 }
