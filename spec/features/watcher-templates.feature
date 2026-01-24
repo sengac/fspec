@@ -45,6 +45,7 @@ Feature: Watcher Templates and Improved Creation UX
   #   23. Success actions show NotificationDialog (auto-dismiss in 2s)
   #   24. Error actions show ErrorDialog (ESC to dismiss)
   #   25. Feedback uses dialogs, NOT setConversation status messages
+  #   26. Switching between sessions (watcher/parent) does NOT show notification (UI change is feedback)
   #
   # ========================================
 
@@ -114,7 +115,6 @@ Feature: Watcher Templates and Improved Creation UX
     When I press Enter
     Then the overlay closes
     And I switch to that watcher's session
-    And a success notification shows "Switched to watcher"
 
   Scenario: Quick spawn via slash command
     Given I have a "Security Reviewer" template with slug "security-reviewer"
