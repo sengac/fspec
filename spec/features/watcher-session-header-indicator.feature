@@ -18,7 +18,7 @@ Feature: Watcher Session Header Indicator
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. Watcher session header shows '👁️ Role Name (watching: Parent Name)' at the start
+  #   1. Watcher session header shows '[WATCHER] Role Name (watching: Parent Name)' at the start
   #   2. Header includes model capability indicators [R] for reasoning, [V] for vision after the watcher indicator
   #   3. Header includes context window size in brackets (e.g., [200k])
   #   4. Header shows token usage on the right side (e.g., 'tokens: 1234↓ 567↑')
@@ -26,7 +26,7 @@ Feature: Watcher Session Header Indicator
   #   6. Watcher indicator text uses magenta/purple color to match watcher message styling
   #
   # EXAMPLES:
-  #   1. User views Security Reviewer watcher watching Main Dev Session with claude-sonnet-4-20250514 model → header shows '👁️ Security Reviewer (watching: Main Dev Session) [R] [200k] tokens: 1234↓ 567↑ [45%]'
+  #   1. User views Security Reviewer watcher watching Main Dev Session with claude-sonnet-4-20250514 model → header shows '[WATCHER] Security Reviewer (watching: Main Dev Session) [R] [200k] 1234in 567out [45%]'
   #   2. Watcher using model with reasoning support → [R] indicator appears in magenta after the watcher info
   #   3. Watcher using model with vision support → [V] indicator appears in blue after capability indicators
   #   4. Context fill reaches 80% → percentage displays in yellow warning color
@@ -49,7 +49,7 @@ Feature: Watcher Session Header Indicator
     And current token usage is 1234 input and 567 output
     And context fill is at 45 percent
     When I view the watcher session
-    Then the header shows watcher indicator "👁️ Security Reviewer (watching: Main Dev Session)"
+    Then the header shows watcher indicator "[WATCHER] Security Reviewer (watching: Main Dev Session)"
     And the header shows reasoning indicator "[R]" in magenta color
     And the header shows context window "[200k]"
     And the header shows token usage "tokens: 1234↓ 567↑"

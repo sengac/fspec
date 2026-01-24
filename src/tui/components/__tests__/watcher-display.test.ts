@@ -178,7 +178,7 @@ Third line`;
       const parsed = parseWatcherPrefix(chunk.text);
       expect(parsed).not.toBeNull();
 
-      const formattedContent = `👁️ ${parsed!.role}> ${parsed!.content}`;
+      const formattedContent = `[W] ${parsed!.role}> ${parsed!.content}`;
       const conversationMessage = {
         type: 'watcher-input' as const,
         content: formattedContent,
@@ -187,9 +187,9 @@ Third line`;
       // @step Then a ConversationMessage with type "watcher-input" should be created
       expect(conversationMessage.type).toBe('watcher-input');
 
-      // @step And the message content should show "👁️ Security Reviewer> Vulnerability detected"
+      // @step And the message content should show "[W] Security Reviewer> Vulnerability detected"
       expect(conversationMessage.content).toBe(
-        '👁️ Security Reviewer> Vulnerability detected'
+        '[W] Security Reviewer> Vulnerability detected'
       );
     });
   });

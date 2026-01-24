@@ -17,13 +17,13 @@ Feature: Purple Watcher Input Display
   #   2. Watcher message format is: [WATCHER: role | Authority: level | Session: id] followed by newline and content
   #   3. parseWatcherPrefix function extracts role, authority, sessionId, and content from the formatted message
   #   4. Watcher input is displayed in magenta (purple) color, distinct from green (user) and white (assistant)
-  #   5. Watcher input prefix shows eye emoji and role name: '👁️ RoleName>' followed by the message content
+  #   5. Watcher input prefix shows role indicator and role name: '[W] RoleName>' followed by the message content
   #   6. ConversationMessage type 'watcher-input' is added to MessageType union for semantic identification
   #   7. ConversationLine role 'watcher' is added for display color determination
   #   8. processChunksToConversation handles WatcherInput chunk type and creates watcher-input messages
   #
   # EXAMPLES:
-  #   1. WatcherInput chunk with text='[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]\nSQL injection vulnerability detected' → displays as '👁️ Security Reviewer> SQL injection vulnerability detected' in magenta
+  #   1. WatcherInput chunk with text='[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]\nSQL injection vulnerability detected' → displays as '[W] Security Reviewer> SQL injection vulnerability detected' in magenta
   #   2. parseWatcherPrefix('[WATCHER: Code Reviewer | Authority: Peer | Session: xyz-789]\nConsider adding error handling') → { role: 'Code Reviewer', authority: 'Peer', sessionId: 'xyz-789', content: 'Consider adding error handling' }
   #   3. parseWatcherPrefix('Regular user message without prefix') → null (no watcher prefix detected)
   #   4. Multiline watcher message: '[WATCHER: Arch Advisor | Authority: Peer | Session: def-456]\nFirst line\nSecond line\nThird line' → content preserves all three lines after prefix
@@ -88,5 +88,5 @@ Feature: Purple Watcher Input Display
     And the text field contains "[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]\nVulnerability detected"
     When processChunksToConversation processes the chunk
     Then a ConversationMessage with type "watcher-input" should be created
-    And the message content should show "👁️ Security Reviewer> Vulnerability detected"
+    And the message content should show "[W] Security Reviewer> Vulnerability detected"
 

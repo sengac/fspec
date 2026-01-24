@@ -122,6 +122,9 @@ import { findTemplateBySlug, loadWatcherTemplates, saveWatcherTemplates, createT
 import type { WatcherTemplate, WatcherInstance } from '../types/watcherTemplate';
 import { WatcherTemplateList } from './WatcherTemplateList';
 import { WatcherTemplateForm } from './WatcherTemplateForm';
+import { SessionHeader } from './SessionHeader';
+import { formatContextWindow } from '../utils/sessionHeaderUtils';
+import type { TokenTracker } from '../utils/sessionHeaderUtils';
 import {
   computeLineDiff,
   changesToDiffLines,
@@ -129,6 +132,7 @@ import {
 } from '../../git/diff-parser';
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
+import { NotificationDialog } from '../../components/NotificationDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import { useFspecStore } from '../store/fspecStore';
 import {
@@ -264,22 +268,6 @@ const mapModelsDevToRegistryId = (modelsDevProviderId: string): string => {
       return modelsDevProviderId;
   }
 };
-
-// TUI-034: Format context window size for display
-const formatContextWindow = (contextWindow: number): string => {
-  if (contextWindow >= 1000000) {
-    return `${(contextWindow / 1000000).toFixed(0)}M`;
-  }
-  return `${Math.round(contextWindow / 1000)}k`;
-};
-
-// Types from codelet-napi
-interface TokenTracker {
-  inputTokens: number;
-  outputTokens: number;
-  cacheReadInputTokens?: number;
-  cacheCreationInputTokens?: number;
-}
 
 interface StreamChunk {
   type: string;
@@ -558,8 +546,8 @@ const processChunksToConversation = (
       // WATCH-012: Handle watcher input messages - parse prefix and format for display
       const watcherInfo = parseWatcherPrefix(chunk.text);
       if (watcherInfo) {
-        // Format content with eye emoji and role prefix
-        const formattedContent = `👁️ ${watcherInfo.role}> ${watcherInfo.content}`;
+        // Format content with role prefix (no emoji)
+        const formattedContent = `[W] ${watcherInfo.role}> ${watcherInfo.content}`;
         messages.push({
           type: 'watcher-input',
           content: formattedContent,
@@ -1164,13 +1152,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [templateToDelete, setTemplateToDelete] = useState<{ template: WatcherTemplate; instances: WatcherInstance[] } | null>(null);
   const [instanceToKill, setInstanceToKill] = useState<WatcherInstance | null>(null);
   const [showInstanceKillDialog, setShowInstanceKillDialog] = useState(false);
+  // WATCH-023: Watcher notification/error dialog state
+  const [watcherNotification, setWatcherNotification] = useState<string | null>(null);
+  const [watcherError, setWatcherError] = useState<string | null>(null);
   // WATCH-010: Watcher split view state
   const [isWatcherSessionView, setIsWatcherSessionView] = useState(false);
   const [activePane, setActivePane] = useState<'parent' | 'watcher'>('watcher');
   const [parentSessionId, setParentSessionId] = useState<string | null>(null);
   const [parentSessionName, setParentSessionName] = useState<string>('');
   const [parentConversation, setParentConversation] = useState<ConversationLine[]>([]);
-  const [watcherRoleName, setWatcherRoleName] = useState<string>('');
   const [isSplitViewSelectMode, setIsSplitViewSelectMode] = useState(false);
   const [splitViewSelectedIndex, setSplitViewSelectedIndex] = useState(0);
   // WATCH-016: Modal state for watcher pane turn viewing
@@ -1326,14 +1316,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // This tells React that conversation updates are lower priority than user interactions
   const deferredConversation = useDeferredValue(conversation);
 
-  // TUI-033: Get color based on fill percentage
-  const getContextFillColor = (percentage: number): string => {
-    if (percentage < 50) return 'green';
-    if (percentage < 70) return 'yellow';
-    if (percentage < 85) return 'magenta';
-    return 'red';
-  };
-
   // Get terminal dimensions for full-screen layout
   const terminalWidth = stdout?.columns ?? 80;
   const terminalHeight = stdout?.rows ?? 24;
@@ -1468,7 +1450,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setParentSessionId(null);
       setParentSessionName('');
       setParentConversation([]);
-      setWatcherRoleName('');
       return;
     }
 
@@ -1479,10 +1460,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // This is a watcher session - enable split view
         setIsWatcherSessionView(true);
         setParentSessionId(parentId);
-        
-        // Get watcher role name
-        const role = sessionGetRole(currentSessionId);
-        setWatcherRoleName(role?.name || 'Watcher');
         
         // Get parent session name from session list
         const sessions = sessionManagerList();
@@ -1527,7 +1504,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         setParentSessionId(null);
         setParentSessionName('');
         setParentConversation([]);
-        setWatcherRoleName('');
       }
     } catch (err) {
       // Error checking parent - not a watcher
@@ -2021,18 +1997,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       const slug = userMessage.slice('/watcher spawn '.length).trim();
       
       if (!slug) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'Usage: /watcher spawn <slug>' },
-        ]);
+        setWatcherError('Usage: /watcher spawn <slug>');
         return;
       }
       
       if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'No active session. Start a session first.' },
-        ]);
+        setWatcherError('No active session. Start a session first.');
         return;
       }
       
@@ -2042,10 +2012,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           const template = await findTemplateBySlug(slug);
           
           if (!template) {
-            setConversation(prev => [
-              ...prev,
-              { type: 'status', content: `No template found with slug: ${slug}` },
-            ]);
+            setWatcherError(`No template found with slug: ${slug}`);
             return;
           }
           
@@ -2066,16 +2033,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             template.autoInject
           );
           
-          setConversation(prev => [
-            ...prev,
-            { type: 'status', content: `Spawned watcher "${template.name}" from template` },
-          ]);
+          setWatcherNotification(`Spawned watcher "${template.name}" from template`);
         } catch (err) {
           const errorMessage = err instanceof Error ? err.message : 'Failed to spawn watcher';
-          setConversation(prev => [
-            ...prev,
-            { type: 'status', content: `Spawn failed: ${errorMessage}` },
-          ]);
+          setWatcherError(`Spawn failed: ${errorMessage}`);
         }
       })();
       return;
@@ -2138,16 +2099,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         );
         setConversation(restoredMessages);
         
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Switched to parent session: ${parentName}` },
-        ]);
+        // Show notification instead of adding to conversation
+        setWatcherNotification(`Switched to parent session: ${parentName}`);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to switch to parent';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Switch failed: ${errorMessage}` },
-        ]);
+        // Show error dialog instead of adding to conversation
+        setWatcherError(`Switch failed: ${errorMessage}`);
       }
       return;
     }
@@ -4364,10 +4321,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to list watchers';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Watcher list failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Watcher list failed: ${errorMessage}`);
     }
   }, [currentSessionId]);
 
@@ -4401,17 +4355,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       );
       setConversation(restoredMessages);
 
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Switched to watcher: ${selectedWatcher.name}` },
-      ]);
+      setWatcherNotification(`Switched to watcher: ${selectedWatcher.name}`);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to switch to watcher';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Switch failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Switch failed: ${errorMessage}`);
     }
   }, [watcherList, watcherIndex, handleStreamChunk, formatToolHeader, formatCollapsedOutput, processChunksToConversation]);
 
@@ -4440,10 +4388,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to delete watcher';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Delete failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Delete failed: ${errorMessage}`);
       setShowWatcherDeleteDialog(false);
     }
   }, [watcherList, watcherIndex]);
@@ -4487,10 +4432,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to create watcher';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Watcher creation failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Watcher creation failed: ${errorMessage}`);
       setIsWatcherCreateMode(false);
     }
   }, [currentSessionId, handleWatcherMode]);
@@ -4515,19 +4457,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         template.autoInject
       );
 
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Spawned watcher "${template.name}" from template` },
-      ]);
+      setWatcherNotification(`Spawned watcher "${template.name}" from template`);
 
       // Refresh the watcher list
       await handleWatcherMode();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to spawn watcher';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Spawn failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Spawn failed: ${errorMessage}`);
     }
   }, [currentSessionId, handleWatcherMode]);
 
@@ -4553,16 +4489,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setConversation(restoredMessages);
 
       const template = watcherTemplates.find(t => t.id === instance.templateId);
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Switched to watcher: ${template?.name || 'Unknown'}` },
-      ]);
+      setWatcherNotification(`Switched to watcher: ${template?.name || 'Unknown'}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to switch to watcher';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Switch failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Switch failed: ${errorMessage}`);
     }
   }, [watcherTemplates, handleStreamChunk, formatToolHeader, formatCollapsedOutput]);
 
@@ -4598,19 +4528,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       saveWatcherTemplates(updatedTemplates);
       setWatcherTemplates(updatedTemplates);
 
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Deleted template "${templateToDelete.template.name}"` },
-      ]);
+      setWatcherNotification(`Deleted template "${templateToDelete.template.name}"`);
 
       // Refresh the watcher list
       await handleWatcherMode();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete template';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Delete failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Delete failed: ${errorMessage}`);
     } finally {
       setShowTemplateDeleteDialog(false);
       setTemplateToDelete(null);
@@ -4630,19 +4554,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     try {
       sessionManagerDestroy(instanceToKill.sessionId);
 
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: 'Killed watcher instance' },
-      ]);
+      setWatcherNotification('Killed watcher instance');
 
       // Refresh the watcher list
       await handleWatcherMode();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to kill instance';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Kill failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Kill failed: ${errorMessage}`);
     } finally {
       setShowInstanceKillDialog(false);
       setInstanceToKill(null);
@@ -4680,19 +4598,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       saveWatcherTemplates(updatedTemplates);
       setWatcherTemplates(updatedTemplates);
 
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: templateFormMode === 'edit' ? `Updated template "${name}"` : `Created template "${name}"` },
-      ]);
+      setWatcherNotification(templateFormMode === 'edit' ? `Updated template "${name}"` : `Created template "${name}"`);
 
       setIsTemplateFormMode(false);
       setEditingTemplate(undefined);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to save template';
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: `Save failed: ${errorMessage}` },
-      ]);
+      setWatcherError(`Save failed: ${errorMessage}`);
     }
   }, [templateFormMode, editingTemplate, watcherTemplates]);
 
@@ -6609,8 +6521,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     return (
       <>
         <SplitSessionView
+          sessionId={currentSessionId}
           parentSessionName={parentSessionName}
-          watcherRoleName={watcherRoleName}
           terminalWidth={terminalWidth}
           parentConversation={parentConversation}
           watcherConversation={conversationLines}
@@ -6618,6 +6530,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           onInputChange={setInputValue}
           onSubmit={handleSubmit}
           isLoading={displayIsLoading}
+          modelId={displayModelId}
           displayReasoning={displayReasoning}
           displayHasVision={displayHasVision}
           displayContextWindow={displayContextWindow}
@@ -6649,73 +6562,22 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       flexDirection="column"
       flexGrow={1}
     >
-      {/* TUI-034: Header with model name, capability indicators, and token usage */}
-      <Box
-        borderStyle="single"
-        borderBottom={true}
-        borderTop={false}
-        borderLeft={false}
-        borderRight={false}
-        paddingX={1}
-        flexDirection="row"
-        flexWrap="nowrap"
-      >
-        <Box flexGrow={1} flexShrink={1} overflow="hidden">
-          <Text bold color="cyan">
-            Agent: {displayModelId}
-          </Text>
-          {/* TUI-034: Model capability indicators */}
-          {displayReasoning && <Text color="magenta"> [R]</Text>}
-          {displayHasVision && <Text color="blue"> [V]</Text>}
-          {displayContextWindow > 0 && (
-            <Text dimColor>
-              {' '}
-              [{formatContextWindow(displayContextWindow)}]
-            </Text>
-          )}
-          {/* AGENT-021: DEBUG indicator when debug capture is enabled */}
-          {displayIsDebugEnabled && (
-            <Text color="red" bold>
-              {' '}
-              [DEBUG]
-            </Text>
-          )}
-          {/* TUI-042: SELECT indicator when turn selection mode is enabled */}
-          {isTurnSelectMode && (
-            <Text color="cyan" bold>
-              {' '}
-              [SELECT]
-            </Text>
-          )}
-          {/* TOOL-010: Thinking level indicator - only show while streaming */}
-          {displayIsLoading &&
-            detectedThinkingLevel !== null &&
-            detectedThinkingLevel !== JsThinkingLevel.Off && (
-              <Text color="magenta" bold>
-                {' '}
-                {getThinkingLevelLabel(detectedThinkingLevel)}
-              </Text>
-            )}
-        </Box>
-        {/* Right side: token stats and percentage - these should never wrap */}
-        <Box flexShrink={0} flexGrow={0}>
-          {/* TUI-031: Tokens per second display during streaming */}
-          {displayIsLoading && displayedTokPerSec !== null && (
-            <Text color="magenta">{displayedTokPerSec.toFixed(1)} tok/s  </Text>
-          )}
-          {/* Display tokens from whichever source has higher values:
-              - rustTokens: From Rust cache, correct when attaching to session
-              - tokenUsage: From TokenUpdate chunks, updated during streaming */}
-          <Text dimColor>
-            tokens: {Math.max(tokenUsage.inputTokens, rustTokens.inputTokens)}↓ {Math.max(tokenUsage.outputTokens, rustTokens.outputTokens)}↑
-          </Text>
-          {/* TUI-033 + TUI-044: Context window fill percentage indicator with compaction notification */}
-          {/* Format: [X%] normal, [X%: COMPACTED -Y%] after compaction */}
-          <Text color={getContextFillColor(contextFillPercentage)}>
-            {' '}[{contextFillPercentage}%{compactionReduction !== null ? `: COMPACTED -${compactionReduction}%` : ''}]
-          </Text>
-        </Box>
-      </Box>
+      {/* TUI-034: Shared session header with model info, capabilities, and token usage */}
+      <SessionHeader
+        modelId={displayModelId}
+        hasReasoning={displayReasoning}
+        hasVision={displayHasVision}
+        contextWindow={displayContextWindow}
+        isDebugEnabled={displayIsDebugEnabled}
+        isSelectMode={isTurnSelectMode}
+        thinkingLevel={detectedThinkingLevel}
+        isLoading={displayIsLoading}
+        tokensPerSecond={displayedTokPerSec}
+        tokenUsage={tokenUsage}
+        rustTokens={rustTokens}
+        contextFillPercentage={contextFillPercentage}
+        compactionReduction={compactionReduction}
+      />
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
       <Box flexGrow={1} flexBasis={0}>
@@ -6910,6 +6772,24 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           defaultSelectedIndex={0}
           onSelect={handleExitChoice}
           onCancel={() => setShowExitConfirmation(false)}
+        />
+      )}
+
+      {/* WATCH-023: Watcher notification dialog */}
+      {watcherNotification && (
+        <NotificationDialog
+          message={watcherNotification}
+          type="success"
+          autoDismissMs={2000}
+          onClose={() => setWatcherNotification(null)}
+        />
+      )}
+
+      {/* WATCH-023: Watcher error dialog */}
+      {watcherError && (
+        <ErrorDialog
+          message={watcherError}
+          onClose={() => setWatcherError(null)}
         />
       )}
 

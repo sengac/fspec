@@ -27,7 +27,7 @@ Feature: Watcher Split View UI
   #   9. Enter key on selected message pre-fills input with context (Discuss Selected feature)
   #   10. Parent pane content is loaded from sessionGetMergedOutput(parentSessionId) NAPI call
   #   11. Split view detects watcher session via sessionGetParent(sessionId) returning non-null
-  #   12. Header shows watcher role and parent session name (e.g., '👁️ Security Reviewer (watching: Main Dev Session)')
+  #   12. Header shows watcher role and parent session name (e.g., '[WATCHER] Security Reviewer (watching: Main Dev Session)')
   #
   # EXAMPLES:
   #   1. User switches to watcher session via /watcher overlay → AgentView renders with left pane showing parent conversation and right pane showing watcher conversation
@@ -54,7 +54,7 @@ Feature: Watcher Split View UI
     Then the view renders with two vertical panes
     And the left pane shows the parent conversation from "Main Dev Session"
     And the right pane shows the watcher conversation
-    And the header shows "👁️ Security Reviewer (watching: Main Dev Session)"
+    And the header shows "[WATCHER] Security Reviewer (watching: Main Dev Session)"
 
   Scenario: Switch active pane to watcher with right arrow
     Given I am viewing the watcher split view

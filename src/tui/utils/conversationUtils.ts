@@ -58,7 +58,7 @@ export const wrapMessageToLines = (
 
   // Add role prefix to first line
   // SOLID: Thinking messages get no prefix (the [Thinking] header is already in content)
-  // WATCH-012: Watcher messages already have '👁️ RoleName>' prefix from processChunksToConversation
+  // WATCH-012: Watcher messages already have '[W] RoleName>' prefix from processChunksToConversation
   const isThinking = msg.type === 'thinking';
   const isWatcher = msg.type === 'watcher-input';
   const prefix =
