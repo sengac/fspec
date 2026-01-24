@@ -2,8 +2,8 @@
  * Hook discovery and event naming
  */
 
-import type { HookConfig, HookDefinition } from './types.js';
-import type { WorkUnit, VirtualHook } from '../types/index.js';
+import type { HookConfig, HookDefinition } from './types';
+import type { WorkUnit, VirtualHook } from '../types/index';
 
 export function discoverHooks(
   config: HookConfig,

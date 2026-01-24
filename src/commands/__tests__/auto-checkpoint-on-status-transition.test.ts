@@ -11,8 +11,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
-import { updateWorkUnitStatus } from '../update-work-unit-status.js';
-import { listCheckpoints } from '../list-checkpoints.js';
+import { updateWorkUnitStatus } from '../update-work-unit-status';
+import { listCheckpoints } from '../list-checkpoints';
 
 describe('Feature: Auto-checkpoints not working - lazy import fails in bundled dist', () => {
   let testDir: string;

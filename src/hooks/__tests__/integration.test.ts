@@ -9,8 +9,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { runCommandWithHooks } from '../integration.js';
-import type { HookConfig } from '../types.js';
+import { runCommandWithHooks } from '../integration';
+import type { HookConfig } from '../types';
 
 describe('Feature: Integrate hooks into all commands', () => {
   let testDir: string;

@@ -9,11 +9,11 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { listHooks } from '../list-hooks.js';
-import { validateHooks } from '../validate-hooks.js';
-import { addHook } from '../add-hook.js';
-import { removeHook } from '../remove-hook.js';
-import type { HookConfig } from '../../hooks/types.js';
+import { listHooks } from '../list-hooks';
+import { validateHooks } from '../validate-hooks';
+import { addHook } from '../add-hook';
+import { removeHook } from '../remove-hook';
+import type { HookConfig } from '../../hooks/types';
 
 describe('Feature: Hook management CLI commands', () => {
   let testDir: string;

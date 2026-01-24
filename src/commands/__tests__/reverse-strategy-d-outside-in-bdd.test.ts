@@ -9,8 +9,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { reverse } from '../reverse.js';
-import { getSessionPath } from '../../utils/reverse-session.js';
+import { reverse } from '../reverse';
+import { getSessionPath } from '../../utils/reverse-session';
 
 describe('Feature: Reverse ACDD Strategy D Not Detecting Implementation Files', () => {
   let testDir: string;

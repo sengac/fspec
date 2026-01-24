@@ -6,11 +6,11 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { queryWorkUnits } from '../query-work-units.js';
-import { searchScenarios } from '../search-scenarios.js';
-import { compareImplementations } from '../compare-implementations.js';
-import { searchImplementation } from '../search-implementation.js';
-import { showTestPatterns } from '../show-test-patterns.js';
+import { queryWorkUnits } from '../query-work-units';
+import { searchScenarios } from '../search-scenarios';
+import { compareImplementations } from '../compare-implementations';
+import { searchImplementation } from '../search-implementation';
+import { showTestPatterns } from '../show-test-patterns';
 
 describe('Feature: Enhanced search and comparison commands for similar story analysis', () => {
   describe('Scenario: Search for completed work units by type, status, and tag', () => {

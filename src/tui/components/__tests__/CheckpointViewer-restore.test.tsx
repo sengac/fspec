@@ -10,6 +10,7 @@ import { render } from 'ink-testing-library';
 import React from 'react';
 import { CheckpointViewer } from '../CheckpointViewer';
 import * as gitCheckpoint from '../../../utils/git-checkpoint';
+import * as checkpointIndex from '../../../utils/checkpoint-index';
 import * as ipc from '../../../utils/ipc';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
@@ -17,15 +18,31 @@ import { join } from 'path';
 
 // Mock dependencies
 vi.mock('../../../utils/git-checkpoint');
+vi.mock('../../../utils/checkpoint-index');
 vi.mock('../../../utils/ipc');
 vi.mock('isomorphic-git');
 vi.mock('fs');
+
+// Import store for proper mocking
+import { useFspecStore } from '../../store/fspecStore';
 
 describe('Feature: Restore individual files or all files from checkpoint in checkpoint viewer', () => {
   const mockCwd = '/test/project';
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Reset store to clean state before each test
+    useFspecStore.setState({
+      stagedFiles: [],
+      unstagedFiles: [],
+      workUnits: [],
+      epics: [],
+      stashes: [],
+      isLoaded: false,
+      error: null,
+      cwd: mockCwd, // Set the cwd so CheckpointViewer can read it
+    });
 
     // Mock sendIPCMessage
     vi.mocked(ipc.sendIPCMessage).mockResolvedValue(undefined);
@@ -78,16 +95,16 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
       ];
 
       // Mock checkpoint loading
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({
-            name: cp.name,
-            message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
-          })),
-        })
-      );
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['AUTH-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
+      });
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue([
@@ -170,16 +187,17 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockReturnValue(['TUI-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({
-            name: cp.name,
-            message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
-          })),
-        })
-      );
+      // Mock checkpoint-index utilities
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['TUI-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
+      });
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(mockFiles);
@@ -256,16 +274,17 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockReturnValue(['REFACTOR.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({
-            name: cp.name,
-            message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
-          })),
-        })
-      );
+      // Mock checkpoint-index utilities
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['REFACTOR.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
+      });
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-789');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/deleted-file.ts']);
@@ -329,16 +348,17 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockReturnValue(['CONFIG.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({
-            name: cp.name,
-            message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
-          })),
-        })
-      );
+      // Mock checkpoint-index utilities
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['CONFIG.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
+      });
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-999');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/config.ts']);
@@ -417,16 +437,17 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({
-            name: cp.name,
-            message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
-          })),
-        })
-      );
+      // Mock checkpoint-index utilities
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['AUTH-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
+      });
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
@@ -482,16 +503,17 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockReturnValue(['TUI-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({
-            name: cp.name,
-            message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
-          })),
-        })
-      );
+      // Mock checkpoint-index utilities
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['TUI-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
+      });
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(mockFiles);
@@ -542,16 +564,17 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({
-            name: cp.name,
-            message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
-          })),
-        })
-      );
+      // Mock checkpoint-index utilities
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['AUTH-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
+      });
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
@@ -596,16 +619,17 @@ describe('Feature: Restore individual files or all files from checkpoint in chec
         },
       ];
 
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readdirSync).mockReturnValue(['TUI-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({
-            name: cp.name,
-            message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
-          })),
-        })
-      );
+      // Mock checkpoint-index utilities
+      const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['TUI-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
+      });
 
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-456');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/file.ts']);

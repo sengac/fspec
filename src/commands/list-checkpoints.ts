@@ -4,7 +4,7 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
-import { listCheckpoints as listCheckpointsUtil } from '../utils/git-checkpoint.js';
+import { listCheckpoints as listCheckpointsUtil } from '../utils/git-checkpoint';
 
 export interface ListCheckpointsOptions {
   workUnitId: string;

@@ -8,7 +8,7 @@ import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import type { WorkUnitsData, QuestionItem, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 import {
   getStatusChangeReminder,
   getVirtualHooksReminder,
@@ -23,7 +23,7 @@ import {
 } from '../utils/temporal-validation';
 import * as gitCheckpoint from '../utils/git-checkpoint';
 import { existsSync } from 'fs';
-import { checkTestCommand, checkQualityCommands } from './configure-tools.js';
+import { checkTestCommand, checkQualityCommands } from './configure-tools';
 import {
   insertWorkUnitSorted,
   compareByUpdatedDescending,
@@ -31,7 +31,7 @@ import {
 import { compactWorkUnit } from './compact-work-unit';
 import { validateSteps, formatValidationError } from '../utils/step-validation';
 import { parseAllFeatures, findFeaturesByTag } from '../utils/feature-parser';
-import { sendIPCMessage } from '../utils/ipc.js';
+import { sendIPCMessage } from '../utils/ipc';
 import { executeHooks } from '../hooks/executor';
 import type { HookDefinition } from '../hooks/types';
 import { performReviewValidation } from '../utils/review-validation';

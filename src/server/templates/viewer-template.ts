@@ -11,13 +11,13 @@
  * - TUI-020: Local web server for rendering markdown/mermaid attachments
  */
 
-import { getViewerStyles } from './viewer-styles.js';
+import { getViewerStyles } from './viewer-styles';
 import {
   getMermaidScript,
   getPrismScripts,
   getInteractionScript,
-} from './viewer-scripts.js';
-import { escapeHtml } from '../utils/html-escape.js';
+} from './viewer-scripts';
+import { escapeHtml } from '../utils/html-escape';
 
 export interface ViewerTemplateOptions {
   title: string;

@@ -1,10 +1,7 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import type { Command } from 'commander';
-import {
-  formatAgentOutput,
-  getAgentConfig,
-} from '../utils/agentRuntimeConfig.js';
+import { formatAgentOutput, getAgentConfig } from '../utils/agentRuntimeConfig';
 
 interface ToolsConfig {
   test?: {

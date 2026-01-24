@@ -10,8 +10,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { mkdtemp, rm, writeFile, mkdir, readFile } from 'fs/promises';
 import { tmpdir } from 'os';
-import { generateScenarios } from '../generate-scenarios.js';
-import { auditScenarios } from '../audit-scenarios.js';
+import { generateScenarios } from '../generate-scenarios';
+import { auditScenarios } from '../audit-scenarios';
 
 describe('Feature: Scenario deduplication and refactoring detection during generation', () => {
   let tmpDir: string;

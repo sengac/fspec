@@ -10,7 +10,7 @@
 
 import { marked } from 'marked';
 import { gfmHeadingId } from 'marked-gfm-heading-id';
-import { escapeHtml } from './html-escape.js';
+import { escapeHtml } from './html-escape';
 
 /**
  * Marked code token interface

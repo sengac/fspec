@@ -13,8 +13,8 @@ import type {
   HookDefinition,
   HookContext,
   HookExecutionResult,
-} from '../types.js';
-import { executeHook, executeHooks } from '../executor.js';
+} from '../types';
+import { executeHook, executeHooks } from '../executor';
 
 let testDir: string;
 

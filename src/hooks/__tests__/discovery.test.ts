@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { HookConfig, HookDefinition } from '../types.js';
-import { discoverHooks, generateEventNames } from '../discovery.js';
+import type { HookConfig, HookDefinition } from '../types';
+import { discoverHooks, generateEventNames } from '../discovery';
 
 describe('Feature: Hook discovery and event naming', () => {
   describe('Scenario: Discover hooks for specific event', () => {

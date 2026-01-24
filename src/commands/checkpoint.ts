@@ -4,8 +4,8 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
-import { createCheckpoint as createCheckpointUtil } from '../utils/git-checkpoint.js';
-import { sendIPCMessage } from '../utils/ipc.js';
+import { createCheckpoint as createCheckpointUtil } from '../utils/git-checkpoint';
+import { sendIPCMessage } from '../utils/ipc';
 
 export interface CheckpointOptions {
   workUnitId: string;

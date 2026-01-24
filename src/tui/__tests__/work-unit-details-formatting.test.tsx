@@ -18,9 +18,9 @@ import { render } from 'ink-testing-library';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import type { WorkUnit } from '../../types.js';
-import { BoardView } from '../components/BoardView.js';
-import { useFspecStore } from '../store/fspecStore.js';
+import type { WorkUnit } from '../../types';
+import { BoardView } from '../components/BoardView';
+import { useFspecStore } from '../store/fspecStore';
 
 describe('Feature: Improve work unit details panel formatting', () => {
   let testDir: string;

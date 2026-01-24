@@ -10,7 +10,7 @@ import type {
   ReverseCommandResult,
   GapAnalysis,
   AnalysisResult,
-} from '../types/reverse-session.js';
+} from '../types/reverse-session';
 import {
   sessionExists,
   loadSession,
@@ -20,7 +20,7 @@ import {
   setStrategy,
   incrementStep,
   validateCompletion,
-} from '../utils/reverse-session.js';
+} from '../utils/reverse-session';
 
 export async function reverse(
   options: ReverseCommandOptions = {}

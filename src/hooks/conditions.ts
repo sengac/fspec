@@ -2,8 +2,8 @@
  * Hook condition evaluation
  */
 
-import type { HookDefinition, HookContext } from './types.js';
-import type { WorkUnit } from '../types/index.js';
+import type { HookDefinition, HookContext } from './types';
+import type { WorkUnit } from '../types/index';
 
 export function evaluateHookCondition(
   hook: HookDefinition,

@@ -2,18 +2,18 @@
  * Hook integration with commands
  */
 
-import { loadHookConfig } from './config.js';
+import { loadHookConfig } from './config';
 import {
   discoverHooks,
   discoverVirtualHooks,
   generateEventNames,
-} from './discovery.js';
-import { executeHooks } from './executor.js';
-import { evaluateHookCondition } from './conditions.js';
-import { formatHookOutput } from './formatting.js';
-import { getGitContext } from './git-context.js';
-import type { HookContext, HookExecutionResult } from './types.js';
-import type { WorkUnit } from '../types/work-units.js';
+} from './discovery';
+import { executeHooks } from './executor';
+import { evaluateHookCondition } from './conditions';
+import { formatHookOutput } from './formatting';
+import { getGitContext } from './git-context';
+import type { HookContext, HookExecutionResult } from './types';
+import type { WorkUnit } from '../types/work-units';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 

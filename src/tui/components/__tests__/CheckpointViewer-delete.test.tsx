@@ -10,6 +10,7 @@ import { render } from 'ink-testing-library';
 import React from 'react';
 import { CheckpointViewer } from '../CheckpointViewer';
 import * as gitCheckpoint from '../../../utils/git-checkpoint';
+import * as checkpointIndex from '../../../utils/checkpoint-index';
 import * as ipc from '../../../utils/ipc';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
@@ -17,6 +18,7 @@ import { join } from 'path';
 
 // Mock dependencies
 vi.mock('../../../utils/git-checkpoint');
+vi.mock('../../../utils/checkpoint-index');
 vi.mock('../../../utils/ipc');
 vi.mock('isomorphic-git');
 vi.mock('fs', async (importOriginal) => {
@@ -91,27 +93,16 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
 
       // Mock checkpoint loading
       const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
-      const indexFile = join(indexDir, 'AUTH-001.json');
 
-      // Mock fs methods
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
-        const pathStr = String(path);
-        return pathStr === indexDir || pathStr === indexFile;
-      });
-
-      vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
-
-      vi.mocked(fs.readFileSync).mockImplementation((path: any, encoding?: any) => {
-        const pathStr = String(path);
-        if (pathStr.includes('AUTH-001.json')) {
-          return JSON.stringify({
-            checkpoints: mockCheckpoints.map(cp => ({
-              name: cp.name,
-              message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${now}`
-            }))
-          });
-        }
-        return '{}';
+      // Mock checkpoint-index utilities
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['AUTH-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${now}`,
+        })),
       });
 
       // Mock git.resolveRef to return OIDs for checkpoints
@@ -189,15 +180,18 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
       ];
 
       const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
-        return path === indexDir;
+
+      // Mock checkpoint-index utilities
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['AUTH-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
       });
-      vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({ name: cp.name, message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}` }))
-        })
-      );
+
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
 
@@ -246,15 +240,18 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
       }));
 
       const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
-        return path === indexDir;
+
+      // Mock checkpoint-index utilities
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['AUTH-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
       });
-      vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({ name: cp.name, message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}` }))
-        })
-      );
+
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
       vi.mocked(gitCheckpoint.deleteAllCheckpoints).mockResolvedValue({
@@ -328,15 +325,18 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
       ];
 
       const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
-        return path === indexDir;
+
+      // Mock checkpoint-index utilities
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['AUTH-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
       });
-      vi.mocked(fs.readdirSync).mockReturnValue(['AUTH-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({ name: cp.name, message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}` }))
-        })
-      );
+
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/auth.ts']);
       vi.mocked(gitCheckpoint.deleteCheckpoint).mockResolvedValue({
@@ -383,15 +383,18 @@ describe('Feature: Delete checkpoint or all checkpoints from checkpoint viewer w
       }));
 
       const indexDir = join(mockCwd, '.git', 'fspec-checkpoints-index');
-      vi.mocked(fs.existsSync).mockImplementation((path: any) => {
-        return path === indexDir;
+
+      // Mock checkpoint-index utilities
+      vi.mocked(checkpointIndex.checkpointIndexDirExists).mockReturnValue(true);
+      vi.mocked(checkpointIndex.getCheckpointIndexDir).mockReturnValue(indexDir);
+      vi.mocked(checkpointIndex.listCheckpointIndexFiles).mockResolvedValue(['TUI-001.json']);
+      vi.mocked(checkpointIndex.readCheckpointIndexFile).mockResolvedValue({
+        checkpoints: mockCheckpoints.map(cp => ({
+          name: cp.name,
+          message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}`,
+        })),
       });
-      vi.mocked(fs.readdirSync).mockReturnValue(['TUI-001.json'] as any);
-      vi.mocked(fs.readFileSync).mockReturnValue(
-        JSON.stringify({
-          checkpoints: mockCheckpoints.map(cp => ({ name: cp.name, message: `fspec-checkpoint:${cp.workUnitId}:${cp.name}:${Date.now()}` }))
-        })
-      );
+
       vi.mocked(git.resolveRef).mockResolvedValue('mock-checkpoint-oid-123');
       vi.mocked(gitCheckpoint.getCheckpointFilesChangedFromHead).mockResolvedValue(['src/tui.ts']);
 

@@ -12,7 +12,7 @@ import { tmpdir } from 'os';
 
 // Import detectConflicts - will need to be exported from git-checkpoint.ts
 // This is intentionally importing a function that doesn't exist yet (red phase)
-import type { ConflictInfo } from '../git-checkpoint.js';
+import type { ConflictInfo } from '../git-checkpoint';
 
 // Mock import that will fail until implementation
 let detectConflicts: (cwd: string, targetOid: string) => Promise<ConflictInfo>;

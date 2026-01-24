@@ -4,8 +4,8 @@
 
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import type { HookConfig, HookDefinition } from './types.js';
-import { isShellCommand, validateScriptExists } from './command-utils.js';
+import type { HookConfig, HookDefinition } from './types';
+import { isShellCommand, validateScriptExists } from './command-utils';
 
 const DEFAULT_TIMEOUT = 60;
 

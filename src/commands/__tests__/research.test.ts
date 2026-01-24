@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdir, writeFile, chmod, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
-import { research } from '../research.js';
+import { research } from '../research';
 
 describe('Feature: Research framework with custom script integration', () => {
   let testDir: string;

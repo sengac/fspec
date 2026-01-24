@@ -8,7 +8,7 @@ import { mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
-import type { WorkUnit } from '../../types/work-unit.js';
+import type { WorkUnit } from '../../types/work-unit';
 
 describe('Feature: Work Unit Dependency Management', () => {
   let tempDir: string;

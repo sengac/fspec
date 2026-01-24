@@ -15,7 +15,7 @@ import type {
   EventStormExternalSystem,
   EventStormBoundedContext,
   SuggestedTags,
-} from '../index.js';
+} from '../index';
 
 describe('Feature: Event Storm data model for work units', () => {
   describe('Scenario: Store Process Modeling Event Storm with multiple domain events', () => {

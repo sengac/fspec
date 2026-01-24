@@ -19,7 +19,7 @@ import * as Messages from '@cucumber/messages';
 import {
   findMatchingScenarios,
   extractKeywords,
-} from '../utils/scenario-similarity.js';
+} from '../utils/scenario-similarity';
 
 interface ScenarioMatch {
   feature: string;

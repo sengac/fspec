@@ -5,7 +5,7 @@
 import { readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import type { Command } from 'commander';
-import type { HookConfig } from '../hooks/types.js';
+import type { HookConfig } from '../hooks/types';
 import { fileManager } from '../utils/file-manager';
 
 export interface AddHookOptions {

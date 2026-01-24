@@ -16,7 +16,7 @@ import { join, dirname } from 'path';
 import { existsSync } from 'fs';
 import { parse as dotenvParse } from 'dotenv';
 import { readFileSync } from 'fs';
-import { getFspecUserDir } from './config.js';
+import { getFspecUserDir } from './config';
 
 /**
  * Provider credential data

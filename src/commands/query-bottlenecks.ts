@@ -1,7 +1,7 @@
-import type { WorkUnitsData, WorkUnit } from '../types/work-unit.js';
+import type { WorkUnitsData, WorkUnit } from '../types/work-unit';
 import chalk from 'chalk';
 import type { Command } from 'commander';
-import { ensureWorkUnitsFile } from '../utils/ensure-files.js';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface Bottleneck {
   id: string;
