@@ -12,8 +12,15 @@
  *   ─────────────────────────────────────────────────────────────────
  *
  * Watcher mode:
- *   Watcher: security-reviewer #1 - Agent: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
+ *   Watcher: security-reviewer #1 | Agent: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
  *   ──────────────────────────────────────────────────────────────────────────────────────────
+ *
+ * Badge Colors:
+ *   - [R] = magenta (reasoning)
+ *   - [V] = blue (vision)
+ *   - [DEBUG] = red bold
+ *   - [SELECT] = cyan
+ *   - [T:*] = yellow (thinking level)
  */
 
 import React from 'react';
@@ -103,64 +110,69 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
 }) => {
   const { inputTokens, outputTokens } = getMaxTokens(tokenUsage, rustTokens);
 
-  // Build left side parts as a single string for proper truncation
-  const leftParts: string[] = [];
+  const percentText =
+    compactionReduction !== null
+      ? `[${contextFillPercentage}%: COMPACTED -${compactionReduction}%]`
+      : `[${contextFillPercentage}%]`;
 
-  if (watcherInfo) {
-    leftParts.push(`Watcher: ${watcherInfo.slug} #${watcherInfo.instanceNumber} -`);
-  }
-  leftParts.push(`Agent: ${modelId}`);
-  if (hasReasoning) leftParts.push('[R]');
-  if (hasVision) leftParts.push('[V]');
-  if (contextWindow > 0) leftParts.push(`[${formatContextWindow(contextWindow)}]`);
-  if (isDebugEnabled) leftParts.push('[DEBUG]');
-  if (isSelectMode) leftParts.push('[SELECT]');
-  if (isLoading && thinkingLevel !== null && thinkingLevel !== JsThinkingLevel.Off) {
-    leftParts.push(getThinkingLevelLabel(thinkingLevel));
-  }
-
-  const leftText = leftParts.join(' ');
-
-  // Build right side as a single string
-  const rightParts: string[] = [];
-  if (isLoading && tokensPerSecond !== null) {
-    rightParts.push(`${tokensPerSecond.toFixed(1)} tok/s`);
-  }
-  rightParts.push(`${inputTokens}↓ ${outputTokens}↑`);
-
-  const percentText = compactionReduction !== null
-    ? `[${contextFillPercentage}%: COMPACTED -${compactionReduction}%]`
-    : `[${contextFillPercentage}%]`;
-
-  const rightText = rightParts.join(' ') + ' ' + percentText;
+  // Get thinking label if applicable
+  const thinkingLabel =
+    isLoading && thinkingLevel !== null && thinkingLevel !== JsThinkingLevel.Off
+      ? getThinkingLevelLabel(thinkingLevel)
+      : '';
 
   return (
-    <Box
-      flexDirection="column"
-      width="100%"
-    >
-      <Box
-        height={1}
-        width="100%"
-        flexDirection="row"
-        overflow="hidden"
-      >
-      {/* Left side: truncated to fit available space */}
-      <Box flexGrow={1} flexShrink={1} overflow="hidden">
-        <Text wrap="truncate" color={watcherInfo ? 'magenta' : 'cyan'} bold>
-          {leftText}
-        </Text>
-      </Box>
-
-      {/* Spacer */}
-      <Text> </Text>
-
-      {/* Right side: never shrink, always visible */}
-        <Box flexShrink={0}>
-          <Text wrap="truncate" dimColor>
-            {rightText.replace(percentText, '')}
+    <Box flexDirection="column" width="100%">
+      <Box height={1} width="100%" flexDirection="row" overflow="hidden">
+        {/* Left side: model info and badges with proper colors */}
+        <Box flexGrow={1} flexShrink={1} overflow="hidden">
+          {/* Watcher prefix (if applicable) - blue text */}
+          {watcherInfo && (
+            <>
+              <Text color="blue" bold>
+                Watcher: {watcherInfo.slug} #{watcherInfo.instanceNumber}
+              </Text>
+              <Text> | </Text>
+            </>
+          )}
+          {/* Agent label and model */}
+          <Text color="cyan" bold>
+            Agent: {modelId}
           </Text>
-          <Text wrap="truncate" color={getContextFillColor(contextFillPercentage)}>
+          {/* Reasoning badge - magenta */}
+          {hasReasoning && <Text color="magenta"> [R]</Text>}
+          {/* Vision badge - blue */}
+          {hasVision && <Text color="blue"> [V]</Text>}
+          {/* Context window - dimColor */}
+          {contextWindow > 0 && (
+            <Text dimColor> [{formatContextWindow(contextWindow)}]</Text>
+          )}
+          {/* Debug badge - red bold */}
+          {isDebugEnabled && (
+            <Text color="red" bold>
+              {' '}
+              [DEBUG]
+            </Text>
+          )}
+          {/* Select mode badge - cyan */}
+          {isSelectMode && <Text color="cyan"> [SELECT]</Text>}
+          {/* Thinking level badge - yellow */}
+          {thinkingLabel && <Text color="yellow"> {thinkingLabel}</Text>}
+        </Box>
+
+        {/* Spacer */}
+        <Text> </Text>
+
+        {/* Right side: never shrink, always visible */}
+        <Box flexShrink={0}>
+          {/* Tokens per second - magenta, only shown when loading */}
+          {isLoading && tokensPerSecond !== null && (
+            <Text color="magenta">{tokensPerSecond.toFixed(1)} tok/s </Text>
+          )}
+          {/* Token counts - dimmed */}
+          <Text dimColor>{inputTokens}↓ {outputTokens}↑ </Text>
+          {/* Context fill percentage - color varies by fill level */}
+          <Text color={getContextFillColor(contextFillPercentage)}>
             {percentText}
           </Text>
         </Box>

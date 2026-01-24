@@ -2098,9 +2098,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           formatCollapsedOutput
         );
         setConversation(restoredMessages);
-        
-        // Show notification instead of adding to conversation
-        setWatcherNotification(`Switched to parent session: ${parentName}`);
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Failed to switch to parent';
         // Show error dialog instead of adding to conversation
@@ -4354,8 +4351,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         formatCollapsedOutput
       );
       setConversation(restoredMessages);
-
-      setWatcherNotification(`Switched to watcher: ${selectedWatcher.name}`);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to switch to watcher';
@@ -4487,9 +4482,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         formatCollapsedOutput
       );
       setConversation(restoredMessages);
-
-      const template = watcherTemplates.find(t => t.id === instance.templateId);
-      setWatcherNotification(`Switched to watcher: ${template?.name || 'Unknown'}`);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to switch to watcher';
       setWatcherError(`Switch failed: ${errorMessage}`);

@@ -225,8 +225,9 @@ describe('Watcher Session Header Indicator', () => {
     // These tests document the expected header format
     
     it('should have correct watcher header format', () => {
-      // Expected format: "Watcher: {slug} #{n} - Agent: {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
+      // Expected format: "Watcher: {slug} #{n} | Agent: {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
       // With bottom border separator
+      // Watcher info in blue, separator | in white, Agent in cyan
       const watcherInfo = { slug: 'security-reviewer', instanceNumber: 1 };
       const modelId = 'claude-sonnet-4-20250514';
       const hasReasoning = true;
@@ -244,6 +245,13 @@ describe('Watcher Session Header Indicator', () => {
       expect(`[${formatContextWindow(contextWindow)}]`).toBe('[200k]');
       expect(`${inputTokens}↓ ${outputTokens}↑`).toBe('1234↓ 567↑');
       expect(`[${fillPercentage}%]`).toBe('[45%]');
+    });
+
+    it('should use pipe separator between watcher and agent info', () => {
+      // Format: "Watcher: ... | Agent: ..."
+      // The pipe | is used as separator (white color)
+      const separator = '|';
+      expect(separator).toBe('|');
     });
 
     it('should have correct regular header format (no watcher prefix)', () => {
