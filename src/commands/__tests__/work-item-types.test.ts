@@ -22,13 +22,15 @@ import { updateWorkUnit } from '../update-work-unit';
 import { queryWorkUnits } from '../query-work-units';
 import { queryMetrics } from '../query-metrics';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Work unit types for stories, tasks, and bugs', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-work-item-types');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('work-item-types');
     await mkdir(join(testDir, 'spec/features'), { recursive: true });
 
     // Create foundation.json for all tests (required by commands)
@@ -36,7 +38,7 @@ describe('Feature: Work unit types for stories, tasks, and bugs', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Create story work unit with explicit type', () => {

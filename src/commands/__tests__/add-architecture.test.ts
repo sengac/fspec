@@ -5,17 +5,20 @@ import { addArchitecture } from '../add-architecture';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Add Architecture Documentation to Feature Files', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-add-architecture');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('add-architecture');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add architecture notes to feature without existing doc string', () => {

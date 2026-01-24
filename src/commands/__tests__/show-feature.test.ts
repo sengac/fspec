@@ -10,17 +10,20 @@ import { mkdir, writeFile, rm, readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { showFeature } from '../show-feature';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Display Feature File Contents', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-show-feature');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('show-feature');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Show feature file contents in text format', () => {

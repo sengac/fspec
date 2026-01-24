@@ -11,17 +11,19 @@ import type { Foundation } from '../../types/foundation';
 import type { Tags } from '../../types/tags';
 import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Internal JSON Schema Validation', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-validate-json-schema');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('validate-json-schema');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Validate valid foundation.json', () => {

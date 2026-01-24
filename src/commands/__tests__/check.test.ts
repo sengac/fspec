@@ -3,17 +3,20 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { check } from '../check';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Run All Validations', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-check');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('check');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: All validation checks pass', () => {

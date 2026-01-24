@@ -7,17 +7,19 @@ import { queryMetrics } from '../query-metrics';
 import { queryEstimateAccuracy } from '../query-estimate-accuracy';
 import { queryEstimationGuide } from '../query-estimation-guide';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Work Unit Estimation and Metrics', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-work-unit-estimation-and-metrics');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('work-unit-estimation-and-metrics');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Assign story points to work unit', () => {

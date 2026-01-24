@@ -3,17 +3,20 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { getScenarios } from '../get-scenarios';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Get Scenarios by Tag', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-get-scenarios');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('get-scenarios');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Get scenarios from features with single tag', () => {

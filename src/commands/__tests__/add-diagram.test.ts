@@ -5,17 +5,19 @@ import { addDiagram } from '../add-diagram';
 import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 import type { DiagramSection } from '../../types/foundation';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-add-diagram');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('add-diagram');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add new diagram to existing section', () => {

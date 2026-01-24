@@ -12,20 +12,22 @@ import { deleteWorkUnit } from '../delete-work-unit';
 import { validateWorkUnits } from '../validate-work-units';
 import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Work Unit Management', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-work-unit-management');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('work-unit-management');
 
     // Create foundation.json for all tests (required by create-work-unit)
     await createMinimalFoundation(testDir);
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Create work unit with auto-incrementing ID', () => {

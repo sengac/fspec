@@ -3,17 +3,20 @@ import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { showAcceptanceCriteria } from '../show-acceptance-criteria';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Show Acceptance Criteria by Tag', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-show-acs');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('show-acs');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Show acceptance criteria for single tag', () => {

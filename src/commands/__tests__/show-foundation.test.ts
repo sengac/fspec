@@ -4,17 +4,19 @@ import { join } from 'path';
 import { showFoundation } from '../show-foundation';
 import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Display Foundation Documentation', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-show-foundation');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('show-foundation');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Display entire foundation in JSON format', () => {

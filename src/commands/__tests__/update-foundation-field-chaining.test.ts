@@ -11,6 +11,10 @@ import { discoverFoundation } from '../discover-foundation';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 // Mock discoverFoundation to track if it's called
 vi.mock('../discover-foundation', async () => {
   const actual = await vi.importActual('../discover-foundation');
@@ -26,9 +30,8 @@ describe('Feature: update-foundation field chaining during discovery', () => {
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir('update-foundation-field-chaining');
     draftPath = join(testDir, 'spec/foundation.json.draft');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
 
     // Clear mock
     vi.clearAllMocks();
@@ -36,7 +39,7 @@ describe('Feature: update-foundation field chaining during discovery', () => {
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Chain to next field after updating first field', () => {

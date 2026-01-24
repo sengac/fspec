@@ -10,20 +10,23 @@ import { removeCapability } from '../remove-capability';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: remove-capability command', () => {
   let testDir: string;
   let foundationPath: string;
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir('remove-capability');
     foundationPath = join(testDir, 'spec/foundation.json');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Remove capability from foundation.json by name', () => {

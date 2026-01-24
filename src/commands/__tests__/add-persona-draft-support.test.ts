@@ -10,6 +10,10 @@ import { addPersona } from '../add-persona';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: add-persona draft support', () => {
   let testDir: string;
   let draftPath: string;
@@ -17,15 +21,14 @@ describe('Feature: add-persona draft support', () => {
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir('add-persona-draft-support');
     draftPath = join(testDir, 'spec/foundation.json.draft');
     foundationPath = join(testDir, 'spec/foundation.json');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add persona to foundation.json.draft during discovery', () => {

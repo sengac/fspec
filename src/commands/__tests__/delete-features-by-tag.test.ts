@@ -3,17 +3,20 @@ import { mkdir, writeFile, rm, readdir, access } from 'fs/promises';
 import { join } from 'path';
 import { deleteFeaturesByTag } from '../delete-features-by-tag';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Bulk Delete Feature Files by Tag', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-delete-features-by-tag');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('delete-features-by-tag');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Delete feature files by single tag', () => {

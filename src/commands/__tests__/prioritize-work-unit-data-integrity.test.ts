@@ -12,16 +12,16 @@ import type { WorkUnitsData } from '../../types';
 import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 import { prioritizeWorkUnit } from '../prioritize-work-unit';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
+
 describe('Feature: Data integrity validation missing in prioritize-work-unit', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(
-      process.cwd(),
-      'test-tmp-prioritize-work-unit-data-integrity'
-    );
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('prioritize-work-unit-data-integrity');
     await mkdir(join(testDir, 'spec/features'), { recursive: true });
 
     // Create foundation.json for all tests (required by commands)
@@ -29,7 +29,7 @@ describe('Feature: Data integrity validation missing in prioritize-work-unit', (
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Detect work unit in wrong states array', () => {

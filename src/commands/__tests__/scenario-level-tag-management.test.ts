@@ -5,12 +5,15 @@ import { addTagToScenario } from '../add-tag-to-scenario';
 import { removeTagFromScenario } from '../remove-tag-from-scenario';
 import { listScenarioTags } from '../list-scenario-tags';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Scenario-Level Tag Management', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-scenario-tag-management');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('scenario-tag-management');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
 
     // Create minimal tags.json for validation tests
@@ -95,7 +98,7 @@ describe('Feature: Scenario-Level Tag Management', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add single tag to scenario', () => {

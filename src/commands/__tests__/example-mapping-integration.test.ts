@@ -17,18 +17,20 @@ import { importExampleMap } from '../import-example-map';
 import { exportExampleMap } from '../export-example-map';
 import { queryExampleMappingStats } from '../query-example-mapping-stats';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Example Mapping Integration', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-example-mapping-integration');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('example-mapping-integration');
     await mkdir(join(testDir, 'spec/features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add rule to work unit during discovery', () => {

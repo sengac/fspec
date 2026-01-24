@@ -11,21 +11,22 @@ import { updateWorkUnitStatus } from '../update-work-unit-status';
 import { ensureWorkUnitsFile } from '../../utils/ensure-files';
 import type { WorkUnitsData } from '../../types';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
+
 describe('Feature: Prevent retroactive state walking - enforce temporal ordering', () => {
   let tmpDir: string;
 
   beforeEach(async () => {
-    tmpDir = join(
-      process.cwd(),
-      `test-tmp-temporal-${Date.now()}-${Math.random().toString(36).slice(2)}`
-    );
-    await mkdir(tmpDir, { recursive: true });
+    tmpDir = await createTempTestDir('temporal-ordering');
     await mkdir(join(tmpDir, 'spec', 'features'), { recursive: true });
     await mkdir(join(tmpDir, 'src', '__tests__'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await removeTempTestDir(tmpDir);
   });
 
   describe('Scenario: Detect retroactive feature file creation', () => {

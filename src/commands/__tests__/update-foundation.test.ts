@@ -4,17 +4,19 @@ import { join } from 'path';
 import { updateFoundation } from '../update-foundation';
 import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Update Foundation Section Content', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-update-foundation');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('update-foundation');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Update existing section content', () => {

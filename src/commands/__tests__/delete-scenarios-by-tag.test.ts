@@ -5,17 +5,20 @@ import { deleteScenariosByTag } from '../delete-scenarios-by-tag';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Bulk Delete Scenarios by Tag', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-delete-scenarios-by-tag');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('delete-scenarios-by-tag');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Delete scenarios by single tag from one feature file', () => {

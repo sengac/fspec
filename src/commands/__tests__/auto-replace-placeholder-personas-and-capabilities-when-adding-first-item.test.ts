@@ -12,6 +12,10 @@ import { addPersona } from '../add-persona';
 import { addCapability } from '../add-capability';
 import type { GenericFoundation } from '../../types/foundation';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Auto-replace placeholder personas and capabilities when adding first item', () => {
   let testDir: string;
   let foundationPath: string;
@@ -19,7 +23,9 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = path.join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir(
+      'auto-replace-placeholder-personas-and-capabilities-when-adding-first-item'
+    );
     foundationPath = path.join(testDir, 'spec/foundation.json');
     draftPath = path.join(testDir, 'spec/foundation.json.draft');
     await mkdir(path.join(testDir, 'spec'), { recursive: true });
@@ -27,7 +33,7 @@ describe('Feature: Auto-replace placeholder personas and capabilities when addin
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add first persona removes placeholder persona', () => {

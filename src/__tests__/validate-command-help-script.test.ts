@@ -9,6 +9,10 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { execFile } from 'child_process';
 import { promisify } from 'util';
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../test-helpers/temp-directory';
 
 const execFileAsync = promisify(execFile);
 
@@ -18,7 +22,7 @@ describe('Feature: Command Help File Validation Script', () => {
   let srcDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-validate-help');
+    testDir = await createTempTestDir('validate-help');
     srcDir = join(testDir, 'src');
     commandsDir = join(srcDir, 'commands');
 
@@ -26,7 +30,7 @@ describe('Feature: Command Help File Validation Script', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Detect missing help file for registered command', () => {
@@ -486,6 +490,7 @@ EXAMPLES
       const indexContent = `
 import { registerAddCapabilityCommand } from './commands/register-add-capability';
 
+import { createTempTestDir, removeTempTestDir } from '../test-helpers/temp-directory';
 program.addCommand(registerAddCapabilityCommand());
 `;
       await writeFile(join(srcDir, 'index.ts'), indexContent);

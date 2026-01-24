@@ -15,20 +15,25 @@ import { discoverFoundation } from '../discover-foundation';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Fix incorrect command name in discover-foundation system reminder', () => {
   let testDir: string;
   let draftPath: string;
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir(
+      'discover-foundation-system-reminder-accuracy'
+    );
     draftPath = join(testDir, 'spec/foundation.json.draft');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: System reminder instructs to use problemTitle command for title field', () => {

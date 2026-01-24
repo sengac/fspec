@@ -9,20 +9,22 @@ import { generateSummaryReport } from '../generate-summary-report';
 import { exportWorkUnits } from '../export-work-units';
 import { displayBoard } from '../display-board';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Work Unit Query and Reporting', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-work-unit-query-reporting');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('work-unit-query-reporting');
 
     // Create foundation.json for all tests (required by commands)
     await createMinimalFoundation(testDir);
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Query work units by status', () => {

@@ -5,28 +5,29 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, readFile, rm } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { bootstrap } from '../bootstrap';
-
-const TEST_DIR = join(__dirname, '../../../test-temp-bootstrap-event-storm');
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 
 describe('Feature: Update bootstrap output with Big Picture Event Storming guidance', () => {
+  let testDir: string;
+
   beforeEach(async () => {
-    // Create test directory structure
-    await mkdir(TEST_DIR, { recursive: true });
-    await mkdir(join(TEST_DIR, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('bootstrap-event-storm');
   });
 
   afterEach(async () => {
-    // Cleanup test directory
-    await rm(TEST_DIR, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Reminder emitted when eventStorm empty and work unit exists', () => {
     it('should emit system-reminder with work unit ID and next steps', async () => {
       // @step Given foundation.json exists with empty eventStorm field
-      const foundationPath = join(TEST_DIR, 'spec', 'foundation.json');
+      const foundationPath = join(testDir, 'spec', 'foundation.json');
       await writeFile(
         foundationPath,
         JSON.stringify(
@@ -47,7 +48,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       );
 
       // @step And a FOUND-XXX Event Storm work unit exists in backlog status
-      const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsPath,
         JSON.stringify(
@@ -71,7 +72,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       );
 
       // @step When I run "fspec bootstrap"
-      const output = await bootstrap({ cwd: TEST_DIR });
+      const output = await bootstrap({ cwd: testDir });
 
       // @step Then a system-reminder should be emitted
       expect(output).toContain('<system-reminder>');
@@ -109,7 +110,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
   describe('Scenario: Reminder emitted when eventStorm empty and no work unit', () => {
     it('should emit system-reminder suggesting to create work unit or run commands', async () => {
       // @step Given foundation.json exists with empty eventStorm field
-      const foundationPath = join(TEST_DIR, 'spec', 'foundation.json');
+      const foundationPath = join(testDir, 'spec', 'foundation.json');
       await writeFile(
         foundationPath,
         JSON.stringify(
@@ -130,7 +131,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       );
 
       // @step And NO Event Storm work unit exists
-      const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsPath,
         JSON.stringify(
@@ -144,7 +145,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       );
 
       // @step When I run "fspec bootstrap"
-      const output = await bootstrap({ cwd: TEST_DIR });
+      const output = await bootstrap({ cwd: testDir });
 
       // @step Then a system-reminder should be emitted
       expect(output).toContain('<system-reminder>');
@@ -172,7 +173,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
   describe('Scenario: No reminder when eventStorm already populated', () => {
     it('should not emit system-reminder about Event Storm', async () => {
       // @step Given foundation.json exists with populated eventStorm field
-      const foundationPath = join(TEST_DIR, 'spec', 'foundation.json');
+      const foundationPath = join(testDir, 'spec', 'foundation.json');
       await writeFile(
         foundationPath,
         JSON.stringify(
@@ -198,7 +199,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
         )
       );
 
-      const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsPath,
         JSON.stringify(
@@ -212,7 +213,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       );
 
       // @step When I run "fspec bootstrap"
-      const output = await bootstrap({ cwd: TEST_DIR });
+      const output = await bootstrap({ cwd: testDir });
 
       // @step Then NO system-reminder should be emitted about Event Storm
       expect(output).not.toContain('BIG PICTURE EVENT STORMING NEEDED');
@@ -228,7 +229,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       // @step Given foundation.json does NOT exist
       // (No foundation.json created in this test)
 
-      const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsPath,
         JSON.stringify(
@@ -242,7 +243,7 @@ describe('Feature: Update bootstrap output with Big Picture Event Storming guida
       );
 
       // @step When I run "fspec bootstrap"
-      const output = await bootstrap({ cwd: TEST_DIR });
+      const output = await bootstrap({ cwd: testDir });
 
       // @step Then NO system-reminder should be emitted about Event Storm
       expect(output).not.toContain('BIG PICTURE EVENT STORMING NEEDED');

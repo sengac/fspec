@@ -80,3 +80,7 @@ spec/CRUSH.md
 # GitHub Copilot (uses IDE settings, no project files)
 # VS Code Copilot workspace state is in .vscode/ (already ignored)
 
+# Test temporary directories (created by tests, should never be committed)
+test-temp-*/
+test-tmp-*/
+

@@ -6,27 +6,59 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { tmpdir } from 'os';
-import { execSync } from 'child_process';
 import packageJson from '../../../package.json';
+import { syncVersion } from '../sync-version';
+import { installAgents } from '../init';
+import { writeAgentConfig } from '../../utils/agentRuntimeConfig';
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
+
+interface SyncVersionResult {
+  exitCode: number;
+  output: string;
+}
+
+async function runSyncVersion(
+  embeddedVersion: string,
+  testDir: string
+): Promise<SyncVersionResult> {
+  let output = '';
+  const originalLog = console.log;
+  const originalWarn = console.warn;
+
+  console.log = (...args: unknown[]) => {
+    output += args.join(' ') + '\n';
+  };
+  console.warn = (...args: unknown[]) => {
+    output += args.join(' ') + '\n';
+  };
+
+  try {
+    const exitCode = await syncVersion({
+      embeddedVersion,
+      cwd: testDir,
+    });
+    return { exitCode, output };
+  } finally {
+    console.log = originalLog;
+    console.warn = originalWarn;
+  }
+}
 
 describe('Feature: Automatic version check and update for slash command files', () => {
   let testDir: string;
-  const fspecBin = join(process.cwd(), 'dist/index.js');
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `fspec-test-sync-${Date.now()}`);
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('sync-version');
   });
 
   afterEach(async () => {
-    if (existsSync(testDir)) {
-      await rm(testDir, { recursive: true, force: true });
-    }
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Version mismatch detected on upgrade (Claude Code)', () => {
@@ -61,23 +93,11 @@ IMMEDIATELY - run these commands and store them into your context:
 
       // @step And I run /fspec in Claude Code
       // @step And the AI agent executes "fspec --sync-version 0.5.0" as the first command
-      let exitCode = 0;
-      let output = '';
-      try {
-        output = execSync(`node ${fspecBin} --sync-version 0.5.0`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error: any) {
-        exitCode = error.status || 1;
-        output = error.stdout || error.stderr || '';
-      }
+      const result = await runSyncVersion('0.5.0', testDir);
 
       // Then the command should detect version mismatch (0.6.0 != current package.json version)
-      // NOTE: This test will FAIL in RED phase because --sync-version command doesn't exist yet
       // @step And it should exit with code 1 (stopping workflow)
-      expect(exitCode).toBe(1);
+      expect(result.exitCode).toBe(1);
 
       // And it should update .claude/commands/fspec.md with new content including current version
       const updatedFspecMd = await readFile(
@@ -98,15 +118,17 @@ IMMEDIATELY - run these commands and store them into your context:
       expect(updatedClaudeMd.length).toBeGreaterThan(1000); // Latest doc should be comprehensive
 
       // @step And it should print "⚠️  fspec files updated from v0.5.0 to v0.6.0"
-      expect(output).toContain('⚠️');
-      expect(output).toContain('fspec files updated from v0.5.0');
+      expect(result.output).toContain('⚠️');
+      expect(result.output).toContain('fspec files updated from v0.5.0');
 
       // And it should print Claude-specific restart message wrapped in <system-reminder> tags
-      expect(output).toContain('<system-reminder>');
+      expect(result.output).toContain('<system-reminder>');
       // @step And the restart message should say "Exit this conversation and start a new one. Run /fspec again."
-      expect(output).toContain('Exit this conversation and start a new one');
-      expect(output).toContain('Run /fspec again');
-      expect(output).toContain('</system-reminder>');
+      expect(result.output).toContain(
+        'Exit this conversation and start a new one'
+      );
+      expect(result.output).toContain('Run /fspec again');
+      expect(result.output).toContain('</system-reminder>');
 
       // @step And the AI agent should stop loading further help commands
       // (Verified by exit code 1 which stops execution)
@@ -118,10 +140,6 @@ IMMEDIATELY - run these commands and store them into your context:
       // Given I have fspec with current version in fspec.md
       await mkdir(join(testDir, '.claude', 'commands'), { recursive: true });
 
-      // Read actual package.json version
-      const packageJson = JSON.parse(
-        await readFile(join(process.cwd(), 'package.json'), 'utf-8')
-      );
       const currentVersion = packageJson.version;
 
       const currentFspecMd = `# fspec Command - Kanban-Based Project Management
@@ -152,25 +170,12 @@ IMMEDIATELY - run these commands and store them into your context:
       const originalContent = currentFspecMd;
 
       // @step When I run /fspec in Claude Code
-      // @step And the AI agent executes "fspec --sync-version 0.7.0" as the first command
-      let exitCode = 1; // Default to failure
-      let output = '';
-      try {
-        output = execSync(`node ${fspecBin} --sync-version ${currentVersion}`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-        exitCode = 0;
-      } catch (error: any) {
-        exitCode = error.status || 1;
-        output = error.stdout || error.stderr || '';
-      }
+      // @step And the AI agent executes "fspec --sync-version <version>" as the first command
+      const result = await runSyncVersion(currentVersion, testDir);
 
       // Then the command should detect version match
-      // NOTE: This test will FAIL in RED phase
       // @step And it should exit with code 0 (continuing workflow)
-      expect(exitCode).toBe(0);
+      expect(result.exitCode).toBe(0);
 
       // And it should not update any files
       const unchangedContent = await readFile(
@@ -181,8 +186,8 @@ IMMEDIATELY - run these commands and store them into your context:
 
       // And it should emit tool configuration checks (CONFIG-003)
       // Tools are configured, so should see "RUN TESTS" message
-      expect(output).toContain('RUN TESTS');
-      expect(output).toContain('Run tests: npm test');
+      expect(result.output).toContain('RUN TESTS');
+      expect(result.output).toContain('Run tests: npm test');
 
       // @step And the AI agent should proceed to load help commands normally
       // (Verified by exit code 0 which allows workflow to continue)
@@ -223,23 +228,11 @@ Old cursor content...`;
       // @step When I upgrade to fspec v0.6.0
       // @step And I run /fspec in Cursor
       // @step And the AI agent executes "fspec --sync-version 0.5.0" as the first command
-      let exitCode = 0;
-      let output = '';
-      try {
-        output = execSync(`node ${fspecBin} --sync-version 0.5.0`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error: any) {
-        exitCode = error.status || 1;
-        output = error.stdout || error.stderr || '';
-      }
+      const result = await runSyncVersion('0.5.0', testDir);
 
       // Then the command should detect version mismatch
-      // NOTE: This test will FAIL in RED phase
       // @step And it should exit with code 1
-      expect(exitCode).toBe(1);
+      expect(result.exitCode).toBe(1);
 
       // And it should update .cursor/commands/fspec.md
       const updatedFspecMd = await readFile(
@@ -257,13 +250,13 @@ Old cursor content...`;
       expect(updatedCursorMd).not.toBe('# Old CURSOR.md');
 
       // @step And it should print "⚠️  fspec files updated from v0.5.0 to v0.6.0" as plain text (no system-reminder tags)
-      expect(output).toContain('⚠️');
-      expect(output).toContain('fspec files updated from v0.5.0');
-      expect(output).not.toContain('<system-reminder>'); // No tags for Cursor
+      expect(result.output).toContain('⚠️');
+      expect(result.output).toContain('fspec files updated from v0.5.0');
+      expect(result.output).not.toContain('<system-reminder>'); // No tags for Cursor
 
       // And it should print Cursor-specific restart instructions
-      expect(output).toContain('Restart Cursor');
-      expect(output).toContain('/fspec again');
+      expect(result.output).toContain('Restart Cursor');
+      expect(result.output).toContain('/fspec again');
     });
   });
 
@@ -289,23 +282,11 @@ Old cursor content...`;
       // @step When I upgrade to fspec v0.6.0
       // @step And I run /fspec
       // @step And the AI agent executes "fspec --sync-version 0.5.0" as the first command
-      let exitCode = 0;
-      let output = '';
-      try {
-        output = execSync(`node ${fspecBin} --sync-version 0.5.0`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error: any) {
-        exitCode = error.status || 1;
-        output = error.stdout || error.stderr || '';
-      }
+      const result = await runSyncVersion('0.5.0', testDir);
 
       // Then the command should detect version mismatch
-      // NOTE: This test will FAIL in RED phase
       // @step And it should exit with code 1
-      expect(exitCode).toBe(1);
+      expect(result.exitCode).toBe(1);
 
       // And it should attempt to detect agent from filesystem (.claude/ exists)
       // And it should update both files
@@ -322,11 +303,11 @@ Old cursor content...`;
       expect(updatedClaudeMd).not.toBe('# Old CLAUDE.md');
 
       // And it should detect Claude supports system-reminders
-      expect(output).toContain('<system-reminder>');
+      expect(result.output).toContain('<system-reminder>');
 
       // And it should print generic restart instructions
-      expect(output).toContain('Restart your AI agent');
-      expect(output).toContain('/fspec again');
+      expect(result.output).toContain('Restart your AI agent');
+      expect(result.output).toContain('/fspec again');
     });
   });
 
@@ -336,21 +317,10 @@ Old cursor content...`;
       // (Using current installation)
 
       // When I run "fspec init --agent=claude"
-      let output = '';
-      try {
-        output = execSync(`node ${fspecBin} init --agent=claude`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error: any) {
-        output = error.stdout || error.stderr || '';
-      }
+      await installAgents(testDir, ['claude']);
+      writeAgentConfig(testDir, 'claude');
 
       // Then it should read version from package.json
-      const packageJson = JSON.parse(
-        await readFile(join(process.cwd(), 'package.json'), 'utf-8')
-      );
       const currentVersion = packageJson.version;
 
       // And it should generate .claude/commands/fspec.md with current version
@@ -359,7 +329,6 @@ Old cursor content...`;
         'utf-8'
       );
 
-      // NOTE: This test will FAIL in RED phase - init doesn't embed version yet
       expect(fspecMd).toContain(`fspec --sync-version ${currentVersion}`);
 
       // And the version check command should appear as first command in the list (after "IMMEDIATELY")
@@ -387,9 +356,6 @@ Old cursor content...`;
       // Given embedded version matches current package.json version
       await mkdir(join(testDir, '.claude', 'commands'), { recursive: true });
 
-      const packageJson = JSON.parse(
-        await readFile(join(process.cwd(), 'package.json'), 'utf-8')
-      );
       const currentVersion = packageJson.version;
 
       const currentFspecMd = `# fspec Command
@@ -409,89 +375,20 @@ fspec --sync-version ${currentVersion}`;
       // And spec/fspec-config.json does not have tools configured
       // (Only agent field exists, no tools field)
 
-      // When AI runs 'fspec --sync-version 0.6.0'
-      let exitCode = 0;
-      let output = '';
-      try {
-        output = execSync(`node ${fspecBin} --sync-version ${currentVersion}`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error: any) {
-        exitCode = error.status || 1;
-        output = error.stdout || error.stderr || '';
-      }
+      // When AI runs 'fspec --sync-version <current-version>'
+      const result = await runSyncVersion(currentVersion, testDir);
 
       // Then sync-version should call checkTestCommand function
-      // And sync-version should call checkQualityCommands function
       // And system-reminders should be emitted: 'NO TEST COMMAND CONFIGURED'
-      expect(output).toContain('<system-reminder>');
-      expect(output).toContain('NO TEST COMMAND CONFIGURED');
-      expect(output).toContain('fspec configure-tools --test-command');
+      expect(result.output).toContain('<system-reminder>');
+      expect(result.output).toContain('NO TEST COMMAND CONFIGURED');
+      expect(result.output).toContain('fspec configure-tools --test-command');
 
       // And command should exit with code 1 (CONFIG-003: fail when tools missing)
-      expect(exitCode).toBe(1);
+      expect(result.exitCode).toBe(1);
 
       // And this helps onboard new AI agents to configure tools
       // (Verified by system-reminder emission guiding AI to run fspec configure-tools)
-    });
-  });
-
-  describe('Scenario: Fail sync-version when tool configuration is missing (CONFIG-003)', () => {
-    it('should exit with code 1 when tool config is missing and stop AI workflow', async () => {
-      // Given versions match (embedded version equals package.json version)
-      await mkdir(join(testDir, '.claude', 'commands'), { recursive: true });
-
-      const packageJson = JSON.parse(
-        await readFile(join(process.cwd(), 'package.json'), 'utf-8')
-      );
-      const currentVersion = packageJson.version;
-
-      const currentFspecMd = `# fspec Command
-fspec --sync-version ${currentVersion}`;
-      await writeFile(
-        join(testDir, '.claude', 'commands', 'fspec.md'),
-        currentFspecMd,
-        'utf-8'
-      );
-
-      await writeFile(
-        join(testDir, 'spec', 'fspec-config.json'),
-        JSON.stringify({ agent: 'claude' }),
-        'utf-8'
-      );
-
-      // And spec/fspec-config.json does not have tools.test.command configured
-      // (Only agent field exists, no tools field)
-
-      // When AI runs 'fspec --sync-version <current-version>'
-      let exitCode = 0;
-      let output = '';
-      let stderr = '';
-      try {
-        output = execSync(`node ${fspecBin} --sync-version ${currentVersion}`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error: any) {
-        exitCode = error.status || 1;
-        output = error.stdout || '';
-        stderr = error.stderr || '';
-      }
-
-      // Then sync-version should call checkTestCommand function
-      // And system-reminder should be emitted: 'NO TEST COMMAND CONFIGURED'
-      expect(output).toContain('<system-reminder>');
-      expect(output).toContain('NO TEST COMMAND CONFIGURED');
-      expect(output).toContain('fspec configure-tools --test-command');
-
-      // And command should exit with code 1 (failure)
-      expect(exitCode).toBe(1);
-
-      // And AI agent workflow should stop (cannot continue without tool setup)
-      // (Verified by exit code 1 which prevents further command execution)
     });
   });
 
@@ -509,9 +406,6 @@ fspec --sync-version ${currentVersion}`;
       );
 
       // And embedded version is 0.6.0 but AI provides 0.5.0
-      const packageJson = JSON.parse(
-        await readFile(join(process.cwd(), 'package.json'), 'utf-8')
-      );
       const actualVersion = packageJson.version;
       const wrongVersion = '0.5.0';
 
@@ -522,31 +416,20 @@ fspec --sync-version ${currentVersion}`;
       );
 
       // When AI runs 'fspec --sync-version 0.5.0'
-      let exitCode = 0;
-      let output = '';
-      try {
-        output = execSync(`node ${fspecBin} --sync-version ${wrongVersion}`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error: any) {
-        exitCode = error.status || 1;
-        output = error.stdout || error.stderr || '';
-      }
+      const result = await runSyncVersion(wrongVersion, testDir);
 
       // Then command should display version mismatch error
-      expect(output).toContain('⚠️');
-      expect(output).toContain('fspec files updated from');
+      expect(result.output).toContain('⚠️');
+      expect(result.output).toContain('fspec files updated from');
 
-      // And error should show expected version: 0.6.0
-      expect(output).toContain(actualVersion);
+      // And error should show expected version
+      expect(result.output).toContain(actualVersion);
 
       // And error should show provided version: 0.5.0
-      expect(output).toContain(wrongVersion);
+      expect(result.output).toContain(wrongVersion);
 
       // And command should exit with code 1 (failure)
-      expect(exitCode).toBe(1);
+      expect(result.exitCode).toBe(1);
 
       // And AI agent workflow should stop (cannot continue with wrong version)
       // (Verified by exit code 1 which prevents further command execution)
@@ -558,9 +441,6 @@ fspec --sync-version ${currentVersion}`;
       // Given versions match (embedded version equals package.json version)
       await mkdir(join(testDir, '.claude', 'commands'), { recursive: true });
 
-      const packageJson = JSON.parse(
-        await readFile(join(process.cwd(), 'package.json'), 'utf-8')
-      );
       const currentVersion = packageJson.version;
 
       await writeFile(
@@ -573,30 +453,19 @@ fspec --sync-version ${currentVersion}`;
       // (Don't create the file)
 
       // When AI runs 'fspec --sync-version <current-version>'
-      let exitCode = 0;
-      let output = '';
-      try {
-        output = execSync(`node ${fspecBin} --sync-version ${currentVersion}`, {
-          cwd: testDir,
-          encoding: 'utf-8',
-          stdio: 'pipe',
-        });
-      } catch (error: any) {
-        exitCode = error.status || 1;
-        output = error.stdout || error.stderr || '';
-      }
+      const result = await runSyncVersion(currentVersion, testDir);
 
       // Then sync-version should call checkTestCommand function
-      expect(output).toContain('<system-reminder>');
+      expect(result.output).toContain('<system-reminder>');
 
       // And system-reminder should be emitted: 'NO TEST COMMAND CONFIGURED'
-      expect(output).toContain('NO TEST COMMAND CONFIGURED');
+      expect(result.output).toContain('NO TEST COMMAND CONFIGURED');
 
       // And system-reminder should guide AI to run: 'fspec configure-tools --test-command <cmd>'
-      expect(output).toContain('fspec configure-tools --test-command');
+      expect(result.output).toContain('fspec configure-tools --test-command');
 
       // And command should exit with code 1 (failure)
-      expect(exitCode).toBe(1);
+      expect(result.exitCode).toBe(1);
     });
   });
 });

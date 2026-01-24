@@ -10,6 +10,10 @@ import { discoverFoundation } from '../discover-foundation';
 import { mkdir, writeFile, rm, access } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Template persona with placeholders remains in finalized foundation.json', () => {
   let testDir: string;
   let draftPath: string;
@@ -17,15 +21,16 @@ describe('Feature: Template persona with placeholders remains in finalized found
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir(
+      'discover-foundation-placeholder-detection'
+    );
     draftPath = join(testDir, 'spec/foundation.json.draft');
     finalPath = join(testDir, 'spec/foundation.json');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Reject finalization when template persona with placeholders remains in draft', () => {

@@ -3,17 +3,20 @@ import { mkdir, writeFile, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { addStep } from '../add-step';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Add Step to Existing Scenario', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-add-step');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('add-step');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add Given step to scenario', () => {

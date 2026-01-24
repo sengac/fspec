@@ -10,17 +10,20 @@ import { mkdir, writeFile, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { removeTagFromScenario } from '../remove-tag-from-scenario';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Scenario Tag Removal (BUG-009)', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-bug-009');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('bug-009');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Remove single tag from scenario', () => {

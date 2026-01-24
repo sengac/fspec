@@ -5,12 +5,15 @@ import { addTagToFeature } from '../add-tag-to-feature';
 import { removeTagFromFeature } from '../remove-tag-from-feature';
 import { listFeatureTags } from '../list-feature-tags';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Feature-Level Tag Management', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-tag-management');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('tag-management');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
 
     // Create minimal tags.json for validation tests
@@ -93,7 +96,7 @@ describe('Feature: Feature-Level Tag Management', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add single tag to feature file', () => {

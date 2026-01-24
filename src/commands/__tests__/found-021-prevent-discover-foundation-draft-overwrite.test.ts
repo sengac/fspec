@@ -10,6 +10,10 @@ import { discoverFoundation } from '../discover-foundation';
 import { mkdir, writeFile, rm, access, readFile } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: discover-foundation overwrites draft without warning', () => {
   let testDir: string;
   let draftPath: string;
@@ -17,15 +21,16 @@ describe('Feature: discover-foundation overwrites draft without warning', () => 
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir(
+      'found-021-prevent-discover-foundation-draft-overwrite'
+    );
     draftPath = join(testDir, 'spec/foundation.json.draft');
     finalPath = join(testDir, 'spec/foundation.json');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Prevent overwriting existing draft without --force flag', () => {

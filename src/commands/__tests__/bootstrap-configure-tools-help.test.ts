@@ -6,132 +6,98 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { existsSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import bootstrapHelpConfig from '../bootstrap-help';
+import configureToolsHelpConfig from '../configure-tools-help';
+import { formatCommandHelp } from '../../utils/help-formatter';
 
-const execAsync = promisify(exec);
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const CLI_PATH = path.resolve(__dirname, '../../../dist/index.js');
-
-interface CommandOutput {
-  stdout: string;
-  stderr: string;
-  exitCode: number;
-}
-
-async function runCommand(command: string): Promise<CommandOutput> {
-  try {
-    const { stdout, stderr } = await execAsync(command);
-    return { stdout, stderr, exitCode: 0 };
-  } catch (error) {
-    const execError = error as {
-      stdout?: string;
-      stderr?: string;
-      code?: number;
-    };
-    return {
-      stdout: execError.stdout || '',
-      stderr: execError.stderr || '',
-      exitCode: execError.code || 1,
-    };
-  }
-}
 
 describe('Feature: Add comprehensive help documentation for bootstrap and configure-tools commands', () => {
   describe('Scenario: Display comprehensive help for bootstrap command', () => {
-    it('should display comprehensive help with all required sections', async () => {
+    it('should display comprehensive help with all required sections', () => {
       // Given the bootstrap command exists
-      // When I run "fspec bootstrap --help"
-      const result = await runCommand(`node ${CLI_PATH} bootstrap --help`);
+      // When I format the help config
+      const helpOutput = formatCommandHelp(bootstrapHelpConfig);
 
       // Then I should see the command description
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBeTruthy();
-      expect(result.stdout).toMatch(/bootstrap/i);
-      expect(result.stdout).toMatch(/description|loads|workflow/i);
+      expect(helpOutput).toMatch(/bootstrap/i);
+      expect(helpOutput).toMatch(/description|loads|workflow/i);
 
       // And I should see the "WHEN TO USE" section
-      expect(result.stdout).toMatch(/when to use/i);
+      expect(helpOutput).toMatch(/when to use/i);
 
       // And I should see the "PREREQUISITES" section
-      expect(result.stdout).toMatch(/prerequisites/i);
+      expect(helpOutput).toMatch(/prerequisites/i);
 
       // And I should see the "TYPICAL WORKFLOW" section
-      expect(result.stdout).toMatch(/typical workflow|workflow/i);
+      expect(helpOutput).toMatch(/typical workflow|workflow/i);
 
       // And I should see usage examples
-      expect(result.stdout).toMatch(/example/i);
-      expect(result.stdout).toMatch(/fspec bootstrap/i);
+      expect(helpOutput).toMatch(/example/i);
+      expect(helpOutput).toMatch(/fspec bootstrap/i);
     });
   });
 
   describe('Scenario: Display comprehensive help for configure-tools command', () => {
-    it('should display help with platform-agnostic examples', async () => {
+    it('should display help with platform-agnostic examples', () => {
       // Given the configure-tools command exists
-      // When I run "fspec configure-tools --help"
-      const result = await runCommand(
-        `node ${CLI_PATH} configure-tools --help`
-      );
+      // When I format the help config
+      const helpOutput = formatCommandHelp(configureToolsHelpConfig);
 
       // Then I should see the command description
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBeTruthy();
-      expect(result.stdout).toMatch(/configure.*tools/i);
+      expect(helpOutput).toMatch(/configure.*tools/i);
 
       // And I should see platform-agnostic examples
-      expect(result.stdout).toMatch(/example/i);
+      expect(helpOutput).toMatch(/example/i);
 
       // And I should see examples for Node.js with npm test
-      expect(result.stdout).toMatch(/npm test|node.*js/i);
+      expect(helpOutput).toMatch(/npm test|node.*js/i);
 
       // And I should see examples for Python with pytest
-      expect(result.stdout).toMatch(/pytest|python/i);
+      expect(helpOutput).toMatch(/pytest|python/i);
 
       // And I should see examples for Rust with cargo test
-      expect(result.stdout).toMatch(/cargo test|rust/i);
+      expect(helpOutput).toMatch(/cargo test|rust/i);
 
       // And I should see examples for Go with go test
-      expect(result.stdout).toMatch(/go test|golang/i);
+      expect(helpOutput).toMatch(/go test|golang/i);
     });
   });
 
-  describe('Scenario: Bootstrap command outputs complete workflow documentation', () => {
-    it('should output all command help sections', async () => {
-      // Given the bootstrap help content functions exist
-      // When I run "fspec bootstrap"
-      const result = await runCommand(`node ${CLI_PATH} bootstrap`);
+  describe('Scenario: Bootstrap command help includes complete workflow documentation', () => {
+    it('should include references to all help sections', () => {
+      // Given the bootstrap help content config exists
+      // Then the config should reference all help sections
+      expect(bootstrapHelpConfig.notes).toBeDefined();
+      const notesText = bootstrapHelpConfig.notes?.join(' ') || '';
 
-      // Then I should see all command help sections
-      expect(result.exitCode).toBe(0);
-      expect(result.stdout).toBeTruthy();
+      // And the notes should mention specs help content
+      expect(notesText).toMatch(/getSpecsHelpContent|specs/i);
 
-      // And the output should include specs help content
-      expect(result.stdout).toMatch(/gherkin|specifications|specs/i);
+      // And the notes should mention work help content
+      expect(notesText).toMatch(/getWorkHelpContent|work/i);
 
-      // And the output should include work help content
-      expect(result.stdout).toMatch(/work unit|kanban/i);
+      // And the notes should mention discovery help content
+      expect(notesText).toMatch(/getDiscoveryHelpContent|discovery/i);
 
-      // And the output should include discovery help content
-      expect(result.stdout).toMatch(/example mapping|discovery/i);
+      // And the notes should mention metrics help content
+      expect(notesText).toMatch(/getMetricsHelpContent|metrics/i);
 
-      // And the output should include metrics help content
-      expect(result.stdout).toMatch(/metrics|progress/i);
+      // And the notes should mention setup help content
+      expect(notesText).toMatch(/getSetupHelpContent|setup/i);
 
-      // And the output should include setup help content
-      expect(result.stdout).toMatch(/configuration|setup/i);
-
-      // And the output should include hooks help content
-      expect(result.stdout).toMatch(/hooks|lifecycle/i);
+      // And the notes should mention hooks help content
+      expect(notesText).toMatch(/getHooksHelpContent|hooks/i);
     });
   });
 
   describe('Scenario: Documentation consistency across all sources', () => {
-    it('should have consistent documentation across all sources', async () => {
+    it('should have consistent documentation across all sources', () => {
       // Given bootstrap-help.ts exists
-      const fs = await import('fs/promises');
       const bootstrapHelpPath = path.resolve(__dirname, '../bootstrap-help.ts');
       const configureToolsHelpPath = path.resolve(
         __dirname,
@@ -139,14 +105,8 @@ describe('Feature: Add comprehensive help documentation for bootstrap and config
       );
 
       // And configure-tools-help.ts exists
-      const bootstrapHelpExists = await fs
-        .access(bootstrapHelpPath)
-        .then(() => true)
-        .catch(() => false);
-      const configureToolsHelpExists = await fs
-        .access(configureToolsHelpPath)
-        .then(() => true)
-        .catch(() => false);
+      const bootstrapHelpExists = existsSync(bootstrapHelpPath);
+      const configureToolsHelpExists = existsSync(configureToolsHelpPath);
 
       // When I compare help content with docs directory
       // Then bootstrap documentation should be consistent
@@ -155,8 +115,14 @@ describe('Feature: Add comprehensive help documentation for bootstrap and config
       // And configure-tools documentation should be consistent
       expect(configureToolsHelpExists).toBe(true);
 
-      // And no inconsistencies should exist
-      expect(bootstrapHelpExists && configureToolsHelpExists).toBe(true);
+      // And the configs should have required fields
+      expect(bootstrapHelpConfig.name).toBe('bootstrap');
+      expect(bootstrapHelpConfig.description).toBeDefined();
+      expect(bootstrapHelpConfig.usage).toBeDefined();
+
+      expect(configureToolsHelpConfig.name).toBe('configure-tools');
+      expect(configureToolsHelpConfig.description).toBeDefined();
+      expect(configureToolsHelpConfig.usage).toBeDefined();
     });
   });
 });

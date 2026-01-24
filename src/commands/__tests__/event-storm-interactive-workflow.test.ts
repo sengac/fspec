@@ -5,24 +5,32 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { execSync } from 'child_process';
-import { mkdirSync, writeFileSync, rmSync, readFileSync } from 'fs';
+import { writeFile, readFile } from 'fs/promises';
+import { readFileSync } from 'fs';
 import { join } from 'path';
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
+import { createPrefix } from '../create-prefix';
+import { createStory } from '../create-story';
+import { listWorkUnits } from '../list-work-units';
+import { updateWorkUnitStatus } from '../update-work-unit-status';
+import { discoverEventStormCommand } from '../discover-event-storm';
+import { bootstrap } from '../bootstrap';
 
 describe('Feature: Complete Event Storm interactive workflow with Example Mapping integration', () => {
   let testDir: string;
 
-  beforeEach(() => {
-    testDir = join(__dirname, '../../../test-temp-' + Date.now());
-    mkdirSync(testDir, { recursive: true });
-    mkdirSync(join(testDir, 'spec'), { recursive: true });
+  beforeEach(async () => {
+    testDir = await createTempTestDir('event-storm-workflow');
 
     // Initialize foundation and work units
-    writeFileSync(
+    await writeFile(
       join(testDir, 'spec/foundation.json'),
       JSON.stringify({ project: { name: 'Test' } }, null, 2)
     );
-    writeFileSync(
+    await writeFile(
       join(testDir, 'spec/work-units.json'),
       JSON.stringify(
         {
@@ -45,81 +53,108 @@ describe('Feature: Complete Event Storm interactive workflow with Example Mappin
     );
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     if (testDir) {
-      rmSync(testDir, { recursive: true, force: true });
+      await removeTempTestDir(testDir);
     }
   });
 
   describe('Scenario: System-reminder prompts AI to assess domain complexity when moving to specifying', () => {
-    it('should emit Event Storm assessment system-reminder when moving to specifying', () => {
+    it('should emit Event Storm assessment system-reminder when moving to specifying', async () => {
       // @step Given I have a work unit in backlog status
-      execSync('fspec create-prefix TEST "Test"', { cwd: testDir });
-      execSync('fspec create-story TEST "Test Story"', { cwd: testDir });
-      const output1 = execSync('fspec list-work-units', {
+      await createPrefix({
+        prefix: 'TEST',
+        description: 'Test',
         cwd: testDir,
-        encoding: 'utf-8',
       });
-      const workUnitId = output1.match(/TEST-\d{3}/)?.[0];
+      await createStory({
+        prefix: 'TEST',
+        title: 'Test Story',
+        cwd: testDir,
+      });
+      const listResult = await listWorkUnits({ cwd: testDir });
+      const workUnitId = listResult.workUnits[0]?.id;
       expect(workUnitId).toBeTruthy();
 
       // @step When I run "fspec update-work-unit-status TEST-001 specifying"
-      const output = execSync(
-        `fspec update-work-unit-status ${workUnitId} specifying`,
-        {
-          cwd: testDir,
-          encoding: 'utf-8',
-        }
-      );
+      const result = await updateWorkUnitStatus({
+        workUnitId: workUnitId!,
+        status: 'specifying',
+        cwd: testDir,
+        skipTemporalValidation: true,
+      });
 
       // @step Then a system-reminder should appear with Event Storm assessment questions
-      expect(output).toContain('<system-reminder>');
-      expect(output).toContain('EVENT STORM ASSESSMENT');
+      expect(result.systemReminder).toContain('<system-reminder>');
+      expect(result.systemReminder).toContain('EVENT STORM ASSESSMENT');
 
       // @step And the reminder should ask "Do you understand the core domain events?"
-      expect(output).toContain('Do you understand the core domain events?');
+      expect(result.systemReminder).toContain(
+        'Do you understand the core domain events?'
+      );
 
       // @step And the reminder should ask "Are commands and policies clear?"
-      expect(output).toContain('Are commands and policies clear?');
+      expect(result.systemReminder).toContain(
+        'Are commands and policies clear?'
+      );
 
       // @step And the reminder should ask "Is there significant domain complexity?"
-      expect(output).toContain('Is there significant domain complexity?');
+      expect(result.systemReminder).toContain(
+        'Is there significant domain complexity?'
+      );
 
       // @step And the reminder should present choice: Run Event Storm FIRST or skip to Example Mapping
-      expect(output).toContain('RUN EVENT STORM FIRST');
-      expect(output).toContain('SKIP TO EXAMPLE MAPPING');
+      expect(result.systemReminder).toContain('RUN EVENT STORM FIRST');
+      expect(result.systemReminder).toContain('SKIP TO EXAMPLE MAPPING');
 
       // @step And the reminder should include concrete examples of when Event Storm helped
-      expect(output).toContain('Payment Processing');
-      expect(output).toContain('saved 4 hours');
+      expect(result.systemReminder).toContain('Payment Processing');
+      expect(result.systemReminder).toContain('saved 4 hours');
 
       // @step And the reminder should use ULTRATHINK-style prompts to prevent skipping
-      expect(output).toContain('CONSCIOUS CHOICE');
+      expect(result.systemReminder).toContain('CONSCIOUS CHOICE');
     });
   });
 
   describe('Scenario: AI runs discover-event-storm and receives comprehensive guidance', () => {
-    it('should emit comprehensive guidance when running discover-event-storm', () => {
+    it('should emit comprehensive guidance when running discover-event-storm', async () => {
       // @step Given I have a work unit "AUTH-001" in specifying status
-      execSync('fspec create-prefix AUTH "Auth"', { cwd: testDir });
-      execSync('fspec create-story AUTH "User Authentication"', {
+      await createPrefix({
+        prefix: 'AUTH',
+        description: 'Auth',
         cwd: testDir,
       });
-      const listOutput = execSync('fspec list-work-units', {
+      await createStory({
+        prefix: 'AUTH',
+        title: 'User Authentication',
         cwd: testDir,
-        encoding: 'utf-8',
       });
-      const workUnitId = listOutput.match(/AUTH-\d{3}/)?.[0];
+      const listResult = await listWorkUnits({ cwd: testDir });
+      const workUnitId = listResult.workUnits[0]?.id;
       expect(workUnitId).toBeTruthy();
-      execSync(`fspec update-work-unit-status ${workUnitId} specifying`, {
+      await updateWorkUnitStatus({
+        workUnitId: workUnitId!,
+        status: 'specifying',
         cwd: testDir,
+        skipTemporalValidation: true,
       });
 
       // @step When I run "fspec discover-event-storm AUTH-001"
-      const output = execSync(`fspec discover-event-storm ${workUnitId}`, {
-        cwd: testDir,
-        encoding: 'utf-8',
-      });
+      // Capture stdout since discoverEventStormCommand uses console.log
+      let output = '';
+      const originalLog = console.log;
+      console.log = (...args: unknown[]) => {
+        output += args.join(' ') + '\n';
+      };
+
+      try {
+        await discoverEventStormCommand({
+          workUnitId: workUnitId!,
+          cwd: testDir,
+        });
+      } finally {
+        console.log = originalLog;
+      }
 
       // @step Then comprehensive guidance should be emitted as system-reminder
       expect(output).toContain('<system-reminder>');
@@ -197,7 +232,7 @@ describe('Feature: Complete Event Storm interactive workflow with Example Mappin
   });
 
   describe('Scenario: Event Storm section is integrated into bootstrap', () => {
-    it('should integrate eventStorm section into bootstrap output', () => {
+    it('should integrate eventStorm section into bootstrap output', async () => {
       // @step Given I have created eventStorm.ts section file
       const templatePath = join(
         __dirname,
@@ -214,10 +249,7 @@ describe('Feature: Complete Event Storm interactive workflow with Example Mappin
       expect(templateContent).toContain('getEventStormSection()');
 
       // @step Then bootstrap output should include Event Storm guidance
-      const output = execSync('fspec bootstrap', {
-        cwd: testDir,
-        encoding: 'utf-8',
-      });
+      const output = await bootstrap({ cwd: testDir });
       expect(output).toContain('Event Storm');
 
       // @step And guidance should appear between bootstrap-foundation and example-mapping sections
@@ -226,15 +258,12 @@ describe('Feature: Complete Event Storm interactive workflow with Example Mappin
   });
 
   describe('Scenario: bootstrap guidance displays Event Storm workflow', () => {
-    it('should display Event Storm guidance in bootstrap output', () => {
+    it('should display Event Storm guidance in bootstrap output', async () => {
       // @step Given Event Storm section is integrated
       // (Already integrated in previous test)
 
       // @step When AI runs "fspec bootstrap"
-      const output = execSync('fspec bootstrap', {
-        cwd: testDir,
-        encoding: 'utf-8',
-      });
+      const output = await bootstrap({ cwd: testDir });
 
       // @step Then AI should see Event Storm section in output
       expect(output).toContain('Event Storm');

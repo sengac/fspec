@@ -10,18 +10,21 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Enhance fspec review with architecture alignment and AST verification', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-review-arch-alignment');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('review-arch-alignment');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
     await mkdir(join(testDir, 'spec', 'attachments'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Block transition when AST research is missing', () => {
