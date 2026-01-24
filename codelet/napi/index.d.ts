@@ -1003,6 +1003,12 @@ export declare function sessionAttach(
 ): void;
 
 /**
+ * Clear the active session tracking (VIEWNV-001)
+ * Call this when returning to BoardView to ensure navigation works correctly
+ */
+export declare function sessionClearActive(): void;
+
+/**
  * Clear pending observed correlation IDs for a session (WATCH-011)
  *
  * Call this after the watcher finishes processing an observation response.
@@ -1060,6 +1066,12 @@ export declare function sessionGetBufferedOutput(
 export declare function sessionGetDebugEnabled(sessionId: string): boolean;
 
 /**
+ * Get the first session (VIEWNV-001)
+ * Returns None if no sessions exist
+ */
+export declare function sessionGetFirst(): string | null;
+
+/**
  * Get buffered output with consecutive Text/Thinking chunks merged.
  * This is more efficient for reattachment - JS can process fewer chunks.
  */
@@ -1069,6 +1081,13 @@ export declare function sessionGetMergedOutput(
 
 /** Get the model info for a background session */
 export declare function sessionGetModel(sessionId: string): SessionModel;
+
+/**
+ * Get the next session after the currently active one (VIEWNV-001)
+ * Returns None if no sessions exist or at the last session
+ * If no active session (BoardView), returns the first session
+ */
+export declare function sessionGetNext(): string | null;
 
 /**
  * Get the parent session ID for a watcher (WATCH-007)
@@ -1086,6 +1105,12 @@ export declare function sessionGetParent(sessionId: string): string | null;
 export declare function sessionGetPendingInput(
   sessionId: string
 ): string | null;
+
+/**
+ * Get the previous session before the currently active one (VIEWNV-001)
+ * Returns None if no sessions exist or at the first session (should go to board)
+ */
+export declare function sessionGetPrev(): string | null;
 
 /**
  * Get the role for a session (WATCH-004)

@@ -13,6 +13,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'ink-testing-library';
 import { Box } from 'ink';
+import { useSessionStore } from '../store/sessionStore';
 
 // Mock model data matching models.dev structure
 const mockModels = vi.hoisted(() => ({
@@ -244,6 +245,9 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceStoreMessageEnvelope: vi.fn(),
   // TUI-047: Session management for background sessions
   sessionManagerList: vi.fn().mockReturnValue([]),
+  // VIEWNV-001: Session navigation helpers
+  sessionGetParent: vi.fn().mockReturnValue(null),
+  sessionGetWatchers: vi.fn().mockReturnValue([]),
   sessionAttach: vi.fn(),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
@@ -363,6 +367,8 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetMockSession();
+    // VIEWNV-001: Reset sessionStore state between tests
+    useSessionStore.getState().reset();
   });
 
   afterEach(() => {

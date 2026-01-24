@@ -238,6 +238,9 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceRenameSession: vi.fn(),
   // TUI-047: Session management for background sessions
   sessionManagerList: vi.fn().mockReturnValue([]),
+  // VIEWNV-001: Session navigation helpers
+  sessionGetParent: vi.fn().mockReturnValue(null),
+  sessionGetWatchers: vi.fn().mockReturnValue([]),
   // NAPI-009: sessionAttach captures callback for streaming chunks
   sessionAttach: vi.fn().mockImplementation((_sessionId: string, callback: (err: Error | null, chunk: unknown) => void) => {
     capturedCallback = callback;

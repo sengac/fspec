@@ -11,6 +11,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render } from 'ink-testing-library';
 import { Box } from 'ink';
+import { useSessionStore } from '../store/sessionStore';
 
 // Mock model data matching models.dev structure
 const mockModels = vi.hoisted(() => ({
@@ -190,6 +191,9 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionInterrupt: vi.fn(),
   // AGENT-021: Debug enabled state from Rust
   sessionGetDebugEnabled: vi.fn().mockReturnValue(false),
+  // VIEWNV-001: Navigation functions for session/watcher navigation
+  sessionGetParent: vi.fn().mockReturnValue(null),
+  sessionGetWatchers: vi.fn().mockReturnValue([]),
 }));
 
 // Mock Dialog to render children without position="absolute" which breaks ink-testing-library
@@ -337,6 +341,8 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetMockSession();
+    // VIEWNV-001: Reset sessionStore state between tests
+    useSessionStore.getState().reset();
   });
 
   afterEach(() => {

@@ -17,6 +17,11 @@ setInterval(() => {
 import { initializeConsoleCapture } from './utils/console-capture';
 initializeConsoleCapture();
 
+// LOG-004: Wire up Rust tracing logs to TypeScript logger
+// This MUST run early to capture all Rust logs (including session navigation)
+import { initializeRustLogCapture } from './utils/rust-log-capture';
+initializeRustLogCapture();
+
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { fileURLToPath } from 'url';

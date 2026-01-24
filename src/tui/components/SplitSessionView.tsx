@@ -165,12 +165,13 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     if (isLoading) return;
 
     // Left/Right arrows switch panes (only when NOT in select mode)
+    // VIEWNV-001: Exclude Shift+Arrow which is handled by AgentView for navigation
     if (!activeSelectMode) {
-      if (key.leftArrow) {
+      if (key.leftArrow && !key.shift) {
         setActivePane('parent');
         return;
       }
-      if (key.rightArrow) {
+      if (key.rightArrow && !key.shift) {
         setActivePane('watcher');
         return;
       }

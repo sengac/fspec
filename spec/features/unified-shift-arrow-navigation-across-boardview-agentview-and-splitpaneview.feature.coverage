@@ -1,0 +1,531 @@
+{
+  "scenarios": [
+    {
+      "name": "Shift+Right from BoardView with no sessions shows create session dialog",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "67-89",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from BoardView with sessions navigates to first session",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "91-122",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left from BoardView does nothing",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "124-139",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left from first session returns to BoardView",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "142-169",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from session with watchers navigates to first watcher",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "171-199",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from session without watchers navigates to next session",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "201-230",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from last session without watchers shows create session dialog",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "232-266",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left from first watcher returns to parent session",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "268-298",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from watcher navigates to next sibling watcher",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "300-321",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Left from watcher navigates to previous sibling watcher",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "323-344",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                186,
+                187,
+                188,
+                189,
+                190,
+                191,
+                192,
+                193,
+                194
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from last watcher navigates to next session",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "346-381",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Shift+Right from last watcher of last session shows create session dialog",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "383-426",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Confirming create session dialog creates new unattached session",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "428-456",
+          "implMappings": [
+            {
+              "file": "src/components/CreateSessionDialog.tsx",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Canceling create session dialog stays at current position",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "458-482",
+          "implMappings": [
+            {
+              "file": "src/components/CreateSessionDialog.tsx",
+              "lines": [
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "/parent command still works alongside Shift+Left navigation",
+      "testMappings": [
+        {
+          "file": "src/__tests__/unified-view-navigation.test.ts",
+          "lines": "484-510",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/sessionNavigation.ts",
+              "lines": [
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 15,
+    "coveredScenarios": 15,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/__tests__/unified-view-navigation.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/utils/sessionNavigation.ts",
+      "src/components/CreateSessionDialog.tsx"
+    ],
+    "totalLinesCovered": 703
+  }
+}

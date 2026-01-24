@@ -26,6 +26,14 @@ import type { Server as HttpServer } from 'http';
 import { logger } from '../../utils/logger';
 import { openInBrowser } from '../../utils/openBrowser';
 import { startAttachmentServer, stopAttachmentServer, getServerPort } from '../../server/attachment-server';
+import { CreateSessionDialog } from '../../components/CreateSessionDialog';
+import { useSessionNavigation } from '../hooks/useSessionNavigation';
+import { clearActiveSession } from '../utils/sessionNavigation';
+import {
+  useShowCreateSessionDialog,
+  useNavigationTargetSessionId,
+  useSessionActions,
+} from '../store/sessionStore';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -58,6 +66,29 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
   const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
   const [attachmentServerPort, setAttachmentServerPort] = useState<number | null>(null);
+  
+  // VIEWNV-001: Session state from Zustand store (shared with AgentView)
+  const showCreateSessionDialog = useShowCreateSessionDialog();
+  const navigationTargetSessionId = useNavigationTargetSessionId();
+  const {
+    setNavigationTarget,
+    clearNavigationTarget,
+    closeCreateSessionDialog,
+    prepareForNewSession,
+  } = useSessionActions();
+
+  // VIEWNV-001: Session navigation hook for Shift+Arrow navigation
+  // Note: Hook gets currentSessionId from store (null for BoardView) and handles create dialog via store
+  const { handleShiftRight } = useSessionNavigation({
+    onNavigate: (targetSessionId) => {
+      // Navigate to the target session
+      setNavigationTarget(targetSessionId);
+      setViewMode('agent');
+    },
+    onNavigateToBoard: () => {
+      // Already on board, no-op
+    },
+  });
 
   const columns = [
     'backlog',
@@ -309,7 +340,18 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       }
       return;
     }
-  }, { isActive: viewMode === 'board' && !showAttachmentDialog });
+
+    // VIEWNV-001: Shift+Right to navigate to first session or show create dialog
+    // Check escape sequences first, then Ink key detection
+    if (
+      input.includes('[1;2C') ||
+      input.includes('\x1b[1;2C') ||
+      (key.shift && key.rightArrow)
+    ) {
+      handleShiftRight();
+      return;
+    }
+  }, { isActive: viewMode === 'board' && !showAttachmentDialog && !showCreateSessionDialog });
 
   // Checkpoint viewer (GIT-004)
   if (viewMode === 'checkpoint-viewer') {
@@ -336,12 +378,19 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   }
 
   // Agent view (NAPI-002)
+  // VIEWNV-001: Support both work unit selection and navigation target session
   if (viewMode === 'agent') {
     return (
       <FullScreenWrapper>
         <AgentView
-          onExit={() => setViewMode('board')}
+          onExit={() => {
+            setViewMode('board');
+            clearNavigationTarget();
+            clearActiveSession(); // VIEWNV-001: Tell Rust we're back on board
+            prepareForNewSession(); // VIEWNV-001: Reset store state so BoardView navigation works correctly
+          }}
           workUnitId={selectedWorkUnit?.id}
+          initialSessionId={navigationTargetSessionId ?? undefined}
         />
       </FullScreenWrapper>
     );
@@ -486,6 +535,22 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
             setShowAttachmentDialog(false);
           }}
           onClose={() => setShowAttachmentDialog(false)}
+        />
+      )}
+
+      {/* VIEWNV-001: Create session dialog */}
+      {showCreateSessionDialog && (
+        <CreateSessionDialog
+          onConfirm={() => {
+            // Prepare for new session and navigate to agent view
+            prepareForNewSession();
+            setSelectedWorkUnit(null);
+            clearNavigationTarget();
+            setViewMode('agent');
+          }}
+          onCancel={() => {
+            closeCreateSessionDialog();
+          }}
         />
       )}
     </FullScreenWrapper>

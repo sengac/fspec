@@ -85,7 +85,6 @@ import {
   sessionManagerDestroy,
   sessionRestoreMessages,
   sessionRestoreTokenState,
-  setRustLogCallback,
   sessionSetPendingInput,
   sessionGetPendingInput,
   // WATCH-008: Watcher management NAPI functions
@@ -133,14 +132,23 @@ import {
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
 import { NotificationDialog } from '../../components/NotificationDialog';
+import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import { useFspecStore } from '../store/fspecStore';
+import {
+  useSessionStore,
+  useCurrentSessionId,
+  useIsReadyForNewSession,
+  useShowCreateSessionDialog,
+  useSessionActions,
+} from '../store/sessionStore';
 import {
   useRustSessionState,
   manualAttach,
   manualDetach,
   getSessionChunks,
 } from '../hooks/useRustSessionState';
+import { useSessionNavigation } from '../hooks/useSessionNavigation';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -372,6 +380,7 @@ interface CodeletSessionType {
 export interface AgentViewProps {
   onExit: () => void;
   workUnitId?: string; // SESS-001: Work unit ID for session attachment
+  initialSessionId?: string; // VIEWNV-001: Initial session ID to resume (from navigation)
 }
 
 // ConversationMessage, ConversationLine, and MessageType are imported from '../types/conversation'
@@ -1021,7 +1030,7 @@ const calculateStartLine = (
   }
 };
 
-export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
+export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initialSessionId }) => {
   const { stdout } = useStdout();
 
   // NAPI-009: Removed session state - we use SessionManager background sessions exclusively
@@ -1113,11 +1122,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   const [searchResultIndex, setSearchResultIndex] = useState(0);
 
   // NAPI-006: Session persistence state
-  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  // VIEWNV-001: Session state from Zustand store (atomic state machine transitions)
+  const currentSessionId = useCurrentSessionId();
+  const isReadyForNewSession = useIsReadyForNewSession();
+  const showCreateSessionDialog = useShowCreateSessionDialog();
+  const {
+    activateSession,
+    prepareForNewSession,
+    closeCreateSessionDialog,
+  } = useSessionActions();
   // Ref to track current session ID for use in callbacks without stale closures
   const currentSessionIdRef = useRef<string | null>(null);
-  // Track if first message has been sent (for auto-renaming session)
-  const isFirstMessageRef = useRef(true);
   const currentProjectRef = useRef<string>(process.cwd());
 
   // NAPI-003: Resume mode state (session selection overlay)
@@ -1603,29 +1618,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           // Ignore if already set
         }
 
-        // Wire up Rust tracing to TypeScript logger
-        try {
-          setRustLogCallback((msg: string) => {
-            // Route Rust logs through TypeScript logger at appropriate levels
-            // The logger's configured level (FSPEC_LOG_LEVEL) controls what gets written
-            if (msg.includes('[RUST:ERROR]')) {
-              logger.error(msg);
-            } else if (msg.includes('[RUST:WARN]')) {
-              logger.warn(msg);
-            } else if (msg.includes('[RUST:INFO]')) {
-              logger.info(msg);
-            } else if (msg.includes('[RUST:DEBUG]')) {
-              logger.debug(msg);
-            } else if (msg.includes('[RUST:TRACE]')) {
-              // TRACE is very verbose - route to debug level
-              // Will only be written if FSPEC_LOG_LEVEL=debug
-              logger.debug(msg);
-            }
-          });
-        } catch (err) {
-          logger.error('Failed to set up Rust log callback', { error: err });
-        }
-
         // TUI-034: Load models and build provider sections
         let allModels: NapiProviderModels[] = [];
         try {
@@ -2082,8 +2074,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Detach from current watcher session
         sessionDetach(currentSessionId);
         
-        // Switch to parent session
-        setCurrentSessionId(parentId);
+        // Switch to parent session (atomic state transition via store)
+        activateSession(parentId);
         
         // Attach to parent session for live streaming
         sessionAttach(parentId, (_err: Error | null, chunk: StreamChunk) => {
@@ -2117,9 +2109,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         // Clear conversation for fresh start
         setConversation([]);
         setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-        // Reset session state
-        setCurrentSessionId(null);
-        isFirstMessageRef.current = true;
+        // Reset session state (atomic transition via store)
+        prepareForNewSession();
         setConversation([{ type: 'status', content: 'Session detached from work unit. Ready for fresh session.' }]);
       } else {
         setConversation(prev => [
@@ -2140,7 +2131,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           (s: SessionManifest) => s.name === targetName
         );
         if (target) {
-          setCurrentSessionId(target.id);
+          activateSession(target.id);
           setConversation(prev => [
             ...prev,
             { type: 'status', content: `Switched to session: "${target.name}"` },
@@ -2217,7 +2208,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           index,
           name
         );
-        setCurrentSessionId(forkedSession.id);
+        activateSession(forkedSession.id);
         setConversation(prev => [
           ...prev,
           {
@@ -2419,8 +2410,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     // This prevents empty sessions from being persisted when user opens modal
     // but doesn't send any messages
     // TUI-034: Store full model path (provider/model-id) for proper restore
+    // VIEWNV-001: Use isReadyForNewSession from store (replaces isFirstMessageRef)
     let activeSessionId = currentSessionId;
-    if (!activeSessionId && isFirstMessageRef.current) {
+    if (!activeSessionId && isReadyForNewSession) {
       try {
         const project = currentProjectRef.current;
         // Use first message as session name (truncated to 500 chars to allow wrapping in UI)
@@ -2439,7 +2431,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         );
 
         activeSessionId = persistedSession.id;
-        setCurrentSessionId(activeSessionId);
+        // Atomic state transition via store (sets currentSessionId + isReadyForNewSession=false)
+        activateSession(activeSessionId);
 
         // NAPI-009: Register session with SessionManager for background execution
         // This enables ESC + Detach and /resume to work properly
@@ -2463,9 +2456,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           attachSessionToWorkUnit(workUnitId, activeSessionId);
           logger.debug(`SESS-001: Attached session ${activeSessionId} to work unit ${workUnitId}`);
         }
-
-        // Mark first message as processed (session already named with message content)
-        isFirstMessageRef.current = false;
+        // Note: activateSession() already sets isReadyForNewSession=false atomically
       } catch (err) {
         // Session creation failed - show error and abort
         const errorMsg = err instanceof Error ? err.message : String(err);
@@ -3219,8 +3210,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       sessionSendInput(activeSessionId, userMessage, thinkingConfig);
       
       // Refresh Rust state to pick up status change (running) after sending input
-      // CRITICAL: Pass activeSessionId explicitly to handle race condition with React state updates.
-      // When creating a new session, setCurrentSessionId() schedules a batched update that hasn't
+      // CRITICAL: Pass activeSessionId explicitly to handle race condition with Zustand state updates.
+      // When creating a new session, activateSession() schedules a batched update that hasn't
       // taken effect yet, so the hook's captured sessionId is still null. Using the local variable
       // ensures we refresh the correct session immediately.
       refreshRustState(activeSessionId);
@@ -3285,7 +3276,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return updated;
       });
     }
-  }, [inputValue, displayIsLoading, currentSessionId, currentProvider, currentModel, workUnitId, attachSessionToWorkUnit, detachSessionFromWorkUnit]);
+  }, [inputValue, displayIsLoading, currentSessionId, currentProvider, currentModel, workUnitId, attachSessionToWorkUnit, detachSessionFromWorkUnit, isReadyForNewSession, activateSession, prepareForNewSession]);
 
   // Handle provider switching - now just updates local state
   // Actual provider change happens on next session creation
@@ -3896,174 +3887,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     }
   }, []);
 
-  // TUI-049: Switch to a different background session
-  // Extracted helper to eliminate duplication between handleSessionPrev and handleSessionNext
-  const switchToSession = useCallback((direction: 'prev' | 'next') => {
-    // Get background sessions from Rust session manager only
-    let backgroundSessions = sessionManagerList();
-    logger.debug(`[TUI-049] switchToSession(${direction}): found ${backgroundSessions.length} background sessions, currentSessionId=${currentSessionId}, currentProvider=${currentProvider}`);
-    
-    // WATCH-013: Filter to sibling watchers when in a watcher session
-    // If current session is a watcher (has a parent), only navigate between siblings (same parent)
-    if (currentSessionId) {
-      const currentParentId = sessionGetParent(currentSessionId);
-      if (currentParentId) {
-        // In a watcher session - filter to only sibling watchers (same parent)
-        backgroundSessions = backgroundSessions.filter(s => sessionGetParent(s.id) === currentParentId);
-        logger.debug(`[WATCH-013] switchToSession: filtered to ${backgroundSessions.length} sibling watchers (parent=${currentParentId})`);
-      }
-    }
-    
-    if (backgroundSessions.length < 2) {
-      logger.debug(`[TUI-049] switchToSession: need at least 2 sessions to switch, aborting`);
-      return; // Need at least 2 sessions to switch
-    }
-
-    // Find current session index
-    const currentIndex = backgroundSessions.findIndex(s => s.id === currentSessionId);
-
-    // Calculate target index based on direction
-    let targetIndex: number;
-    if (currentIndex === -1) {
-      // Current session not in background manager - navigate to first or last
-      targetIndex = direction === 'next' ? 0 : backgroundSessions.length - 1;
-    } else {
-      // Normal wrap-around navigation
-      targetIndex = direction === 'next'
-        ? (currentIndex + 1) % backgroundSessions.length
-        : (currentIndex - 1 + backgroundSessions.length) % backgroundSessions.length;
-    }
-
-    const targetSession = backgroundSessions[targetIndex];
-
-    // Save pending input to current session before detaching
-    if (currentSessionId && inputValue) {
-      try {
-        sessionSetPendingInput(currentSessionId, inputValue);
-      } catch {
-        // Session may not exist in manager, ignore
-      }
-    }
-
-    // Detach from current session
-    if (currentSessionId) {
-      try {
-        sessionDetach(currentSessionId);
-      } catch {
-        // Silently ignore detach errors
-      }
-    }
-
-    // TUI-049: Skip input animation when switching sessions
-    setSkipInputAnimation(true);
-
-    // TUI-049: CRITICAL - Clear ALL transient token display state BEFORE switching
-    // This ensures stale values from the old session don't persist in the UI
-    setDisplayedTokPerSec(null);
-    setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-    setContextFillPercentage(0);
-
-    // Load conversation from new session
-    const chunks = sessionGetMergedOutput(targetSession.id);
-    const newConversation = processChunksToConversation(
-      chunks,
-      formatToolHeader,
-      formatCollapsedOutput
-    );
-
-    // TUI-049: Restore token state from the new session's buffered output
-    // DRY: Use shared utility to extract last token/context state from chunks
-    const extractedState = extractTokenStateFromChunks(chunks);
-
-    // Apply the restored token state
-    // Note: We use setTokenUsage directly (not updateTokenStateFromChunk) because
-    // restoration has different logic: only restore tokensPerSecond for running sessions
-    if (extractedState.tokenUsage) {
-      setTokenUsage(extractedState.tokenUsage);
-      // TUI-049: Only restore tokens per second if session is CURRENTLY running
-      // Don't restore stale tokensPerSecond from finished sessions
-      const targetStatus = sessionGetStatus(targetSession.id);
-      if (targetStatus === 'running' && extractedState.tokensPerSecond !== null) {
-        setDisplayedTokPerSec(extractedState.tokensPerSecond);
-        setLastChunkTime(Date.now());
-      }
-    }
-    if (extractedState.contextFillPercentage !== null) {
-      setContextFillPercentage(extractedState.contextFillPercentage);
-    }
-
-    // Restore pending input for new session
-    const restoredInput = sessionGetPendingInput(targetSession.id);
-
-    // TUI-049: Sync debug state from target session's Rust state
-    // This ensures the local isDebugEnabled state matches the target session
-    try {
-      const targetDebugEnabled = sessionGetDebugEnabled(targetSession.id);
-      setIsDebugEnabled(targetDebugEnabled);
-    } catch {
-      // Session may not have debug state, default to false
-      setIsDebugEnabled(false);
-    }
-
-    // TUI-049: Restore provider state from target session
-    // CRITICAL: Without this, handleSubmit will block because currentProvider is empty/stale
-    if (targetSession.providerId) {
-      // Map from models.dev provider ID to internal provider name
-      const internalProvider = mapProviderIdToInternal(targetSession.providerId);
-      setCurrentProvider(internalProvider);
-      logger.debug(`[TUI-049] switchToSession: restored provider from session, providerId=${targetSession.providerId}, internalProvider=${internalProvider}`);
-      
-      // Also restore currentModel if possible
-      if (targetSession.modelId) {
-        const section = providerSections.find(s => s.providerId === targetSession.providerId);
-        const model = section?.models.find(m => extractModelIdForRegistry(m.id) === targetSession.modelId);
-        if (model && section) {
-          setCurrentModel({
-            providerId: section.providerId,
-            modelId: targetSession.modelId,
-            apiModelId: model.id,
-            displayName: model.name,
-            reasoning: model.reasoning,
-            hasVision: model.hasVision,
-            contextWindow: model.contextWindow,
-            maxOutput: model.maxOutput,
-          });
-          logger.debug(`[TUI-049] switchToSession: restored model, modelId=${targetSession.modelId}`);
-        }
-      }
-    } else {
-      logger.debug(`[TUI-049] switchToSession: target session has no providerId, keeping current provider=${currentProvider}`);
-    }
-
-    // Update state
-    setCurrentSessionId(targetSession.id);
-    setConversation(newConversation);
-    setInputValue(restoredInput || '');
-    logger.debug(`[TUI-049] switchToSession: state updated, new sessionId=${targetSession.id}, inputValue="${restoredInput || ''}", currentProvider=${currentProvider}`);
-
-    // Attach to new session for streaming
-    sessionAttach(targetSession.id, (_err: Error | null, chunk: StreamChunk) => {
-      if (chunk) {
-        handleStreamChunk(chunk);
-      }
-    });
-
-    // TUI-049: Reset skip animation flag after the state updates have been applied
-    setTimeout(() => setSkipInputAnimation(false), 0);
-  }, [currentSessionId, inputValue, handleStreamChunk, currentProvider, providerSections]);
-
-  // TUI-049: Switch to previous session (Shift+Left)
-  const handleSessionPrev = useCallback(() => {
-    switchToSession('prev');
-  }, [switchToSession]);
-
-  // TUI-049: Switch to next session (Shift+Right)
-  const handleSessionNext = useCallback(() => {
-    switchToSession('next');
-  }, [switchToSession]);
-
-  // SESS-001: Shared function to resume a session by ID (used by /resume and auto-resume)
+  // SESS-001: Shared function to resume a session by ID (used by /resume, auto-resume, and VIEWNV-001 navigation)
   // UNIFIED: Both background and persisted sessions use the same chunk-based restore flow.
+  // NOTE: Defined before sessionNavigation to avoid closure issues with callback references
   const resumeSessionById = useCallback(async (sessionId: string): Promise<boolean> => {
     try {
       // Check if this is a background session
@@ -4171,16 +3997,59 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         }
       });
 
-      // Update session state
-      setCurrentSessionId(sessionId);
-      isFirstMessageRef.current = false;
+      // Update session state (atomic transition via store)
+      activateSession(sessionId);
 
       return true;
     } catch (err) {
       logger.error(`SESS-001: Failed to resume session: ${err instanceof Error ? err.message : String(err)}`);
       return false;
     }
-  }, [handleStreamChunk, currentProvider, providerSections]);
+  }, [handleStreamChunk, currentProvider, providerSections, activateSession]);
+
+  // VIEWNV-001: Unified session navigation hook for Shift+Arrow navigation
+  // This provides the navigation logic that determines targets based on the session tree
+  // Note: Hook gets currentSessionId from store and uses store action for create dialog
+  const sessionNavigation = useSessionNavigation({
+    onNavigate: async (targetSessionId: string) => {
+      // Switch to the target session using existing resumeSessionById
+      logger.debug(`[VIEWNV-001] Navigating to session ${targetSessionId}`);
+      
+      // Save pending input to current session before switching
+      if (currentSessionId && inputValue) {
+        try {
+          sessionSetPendingInput(currentSessionId, inputValue);
+        } catch {
+          // Session may not exist in manager, ignore
+        }
+      }
+
+      // Detach from current session
+      if (currentSessionId) {
+        try {
+          sessionDetach(currentSessionId);
+        } catch {
+          // Silently ignore detach errors
+        }
+      }
+
+      // Resume the target session
+      await resumeSessionById(targetSessionId);
+    },
+    onNavigateToBoard: () => {
+      // Exit AgentView back to BoardView
+      logger.debug('[VIEWNV-001] Navigating to BoardView');
+      if (currentSessionId) {
+        try {
+          sessionDetach(currentSessionId);
+        } catch {
+          // Silently ignore detach errors
+        }
+      }
+      onExit();
+    },
+    // Note: Create dialog is now handled by the hook via store action (openCreateSessionDialog)
+  });
 
   // SESS-001: Auto-resume attached session on mount
   useEffect(() => {
@@ -4189,6 +4058,21 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
 
     // Clear ref so we don't resume again
     needsAutoResumeRef.current = null;
+
+    void resumeSessionById(sessionIdToResume);
+  }, [resumeSessionById]);
+
+  // VIEWNV-001: Auto-resume session from navigation (initialSessionId prop)
+  // Track if we need to auto-resume from initialSessionId
+  const needsInitialSessionResumeRef = useRef<string | null>(initialSessionId ?? null);
+
+  // VIEWNV-001: Auto-resume initial session on mount
+  useEffect(() => {
+    const sessionIdToResume = needsInitialSessionResumeRef.current;
+    if (!sessionIdToResume) return;
+
+    // Clear ref so we don't resume again
+    needsInitialSessionResumeRef.current = null;
 
     void resumeSessionById(sessionIdToResume);
   }, [resumeSessionById]);
@@ -4333,8 +4217,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
     const selectedWatcher = watcherList[watcherIndex];
 
     try {
-      // Switch to the watcher session
-      setCurrentSessionId(selectedWatcher.id);
+      // Switch to the watcher session (atomic transition via store)
+      activateSession(selectedWatcher.id);
       setIsWatcherMode(false);
       setWatcherList([]);
 
@@ -4358,7 +4242,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         err instanceof Error ? err.message : 'Failed to switch to watcher';
       setWatcherError(`Switch failed: ${errorMessage}`);
     }
-  }, [watcherList, watcherIndex, handleStreamChunk, formatToolHeader, formatCollapsedOutput, processChunksToConversation]);
+  }, [watcherList, watcherIndex, handleStreamChunk, formatToolHeader, formatCollapsedOutput, processChunksToConversation, activateSession]);
 
   // WATCH-008: Delete selected watcher
   const handleWatcherDelete = useCallback(async () => {
@@ -4467,7 +4351,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
   // WATCH-023: Open existing watcher instance
   const handleInstanceOpen = useCallback(async (instance: WatcherInstance) => {
     try {
-      setCurrentSessionId(instance.sessionId);
+      // Switch to watcher instance session (atomic transition via store)
+      activateSession(instance.sessionId);
       setIsWatcherMode(false);
       setWatcherList([]);
 
@@ -4488,7 +4373,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to switch to watcher';
       setWatcherError(`Switch failed: ${errorMessage}`);
     }
-  }, [watcherTemplates, handleStreamChunk, formatToolHeader, formatCollapsedOutput]);
+  }, [watcherTemplates, handleStreamChunk, formatToolHeader, formatCollapsedOutput, activateSession]);
 
   // WATCH-023: Edit template
   const handleTemplateEdit = useCallback((template: WatcherTemplate) => {
@@ -4734,13 +4619,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         }
       });
 
-      // Update session state
-      setCurrentSessionId(selectedSession.id);
+      // Update session state (atomic transition via store)
+      // Note: activateSession sets both currentSessionId and isReadyForNewSession=false atomically
+      activateSession(selectedSession.id);
       setIsResumeMode(false);
       setAvailableSessions([]);
       setResumeSessionIndex(0);
-      // Don't rename resumed sessions with their first new message
-      isFirstMessageRef.current = false;
 
       // SESS-001: Attach resumed session to work unit
       if (workUnitId) {
@@ -4758,7 +4642,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
       setAvailableSessions([]);
       setResumeSessionIndex(0);
     }
-  }, [availableSessions, resumeSessionIndex, handleStreamChunk]);
+  }, [availableSessions, resumeSessionIndex, handleStreamChunk, activateSession]);
 
   // NAPI-003: Cancel resume mode
   const handleResumeCancel = useCallback(() => {
@@ -5580,14 +5464,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         return;
       }
 
-      // TUI-049: Shift+Left/Right for session switching (works in main view, even during loading)
+      // VIEWNV-001: Shift+Left/Right for unified session navigation
+      // Uses sessionNavigation hook which determines correct target based on position in tree
       // Check escape sequences first, then Ink key detection
       if (
         input.includes('[1;2D') ||
         input.includes('\x1b[1;2D') ||
         (key.shift && key.leftArrow)
       ) {
-        handleSessionPrev();
+        sessionNavigation.handleShiftLeft();
         return;
       }
       if (
@@ -5595,7 +5480,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
         input.includes('\x1b[1;2C') ||
         (key.shift && key.rightArrow)
       ) {
-        handleSessionNext();
+        sessionNavigation.handleShiftRight();
         return;
       }
 
@@ -6736,8 +6621,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             placeholder="Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn | 'Space+Esc' detach)"
             onHistoryPrev={handleHistoryPrev}
             onHistoryNext={handleHistoryNext}
-            onSessionPrev={handleSessionPrev}
-            onSessionNext={handleSessionNext}
             maxVisibleLines={5}
             skipAnimation={skipInputAnimation}
           />
@@ -6766,6 +6649,30 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
           defaultSelectedIndex={0}
           onSelect={handleExitChoice}
           onCancel={() => setShowExitConfirmation(false)}
+        />
+      )}
+
+      {/* VIEWNV-001: Create session dialog (shown when navigating past right edge) */}
+      {showCreateSessionDialog && (
+        <CreateSessionDialog
+          onConfirm={() => {
+            // Detach from current session if any
+            if (currentSessionId) {
+              try {
+                sessionDetach(currentSessionId);
+              } catch {
+                // Silently ignore detach errors
+              }
+            }
+            // Prepare for new session (atomic transition via store)
+            // This clears currentSessionId, sets isReadyForNewSession=true, and closes dialog
+            prepareForNewSession();
+            setConversation([]);
+            setInputValue('');
+          }}
+          onCancel={() => {
+            closeCreateSessionDialog();
+          }}
         />
       )}
 
