@@ -167,7 +167,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
         <Box flexShrink={0}>
           {/* Tokens per second - magenta, only shown when loading */}
           {isLoading && tokensPerSecond !== null && (
-            <Text color="magenta">{tokensPerSecond.toFixed(1)} tok/s </Text>
+            <Text color="magenta">{tokensPerSecond.toFixed(1)} tok/s  </Text>
           )}
           {/* Token counts - dimmed */}
           <Text dimColor>{inputTokens}↓ {outputTokens}↑ </Text>
