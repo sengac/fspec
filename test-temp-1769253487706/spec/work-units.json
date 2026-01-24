@@ -1,0 +1,14 @@
+{
+  "workUnits": {},
+  "nextId": {},
+  "prefixes": {},
+  "states": {
+    "backlog": [],
+    "specifying": [],
+    "testing": [],
+    "implementing": [],
+    "validating": [],
+    "done": []
+  },
+  "version": "0.7.0"
+}

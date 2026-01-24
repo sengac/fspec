@@ -19,6 +19,7 @@ use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 use tokio::sync::{broadcast, mpsc, Mutex, Notify};
 use uuid::Uuid;
+use indexmap::IndexMap;
 
 /// Maximum concurrent sessions
 const MAX_SESSIONS: usize = 10;
@@ -2883,10 +2884,16 @@ mod watcher_integration_tests {
 }
 
 /// Singleton session manager
+/// 
+/// VIEWNV-001: Uses IndexMap instead of HashMap to maintain insertion order.
+/// Sessions are stored in creation order, which allows navigation to traverse
+/// sessions from oldest to newest without needing timestamps.
 pub struct SessionManager {
-    sessions: RwLock<HashMap<Uuid, Arc<BackgroundSession>>>,
+    sessions: RwLock<IndexMap<Uuid, Arc<BackgroundSession>>>,
     /// Tracks parent-watcher relationships between sessions (WATCH-002)
     watch_graph: WatchGraph,
+    /// Tracks the currently active (attached) session for navigation (VIEWNV-001)
+    active_session_id: RwLock<Option<Uuid>>,
 }
 
 impl Default for SessionManager {
@@ -2899,8 +2906,9 @@ impl SessionManager {
     /// Create new session manager
     pub fn new() -> Self {
         Self {
-            sessions: RwLock::new(HashMap::new()),
+            sessions: RwLock::new(IndexMap::new()),
             watch_graph: WatchGraph::new(),
+            active_session_id: RwLock::new(None),
         }
     }
     
@@ -3099,6 +3107,80 @@ impl SessionManager {
             .collect()
     }
     
+    // === VIEWNV-001: Active session tracking for navigation ===
+    
+    /// Set the active (currently viewed) session
+    pub fn set_active_session(&self, id: Uuid) {
+        *self.active_session_id.write().expect("active_session lock poisoned") = Some(id);
+    }
+    
+    /// Clear the active session (when returning to board)
+    pub fn clear_active_session(&self) {
+        *self.active_session_id.write().expect("active_session lock poisoned") = None;
+    }
+    
+    /// Get the active session ID
+    pub fn get_active_session(&self) -> Option<Uuid> {
+        *self.active_session_id.read().expect("active_session lock poisoned")
+    }
+    
+    /// Get the next session after the active one (VIEWNV-001)
+    /// Returns None if no sessions exist or if we're at the last session
+    /// If no active session (BoardView), returns the first session
+    pub fn get_next_session(&self) -> Option<String> {
+        let sessions = self.sessions.read().expect("sessions lock poisoned");
+        let active = self.active_session_id.read().expect("active_session lock poisoned");
+        
+        if sessions.is_empty() {
+            return None;
+        }
+        
+        match *active {
+            None => {
+                // No active session (BoardView) - return first session
+                sessions.keys().next().map(|id| id.to_string())
+            }
+            Some(active_id) => {
+                // Find current index and return next
+                let keys: Vec<&Uuid> = sessions.keys().collect();
+                let current_idx = keys.iter().position(|&&id| id == active_id);
+                
+                match current_idx {
+                    Some(idx) if idx + 1 < keys.len() => Some(keys[idx + 1].to_string()),
+                    _ => None, // At last session or not found
+                }
+            }
+        }
+    }
+    
+    /// Get the previous session before the active one (VIEWNV-001)
+    /// Returns None if no sessions exist or if we're at the first session (should go to board)
+    pub fn get_prev_session(&self) -> Option<String> {
+        let sessions = self.sessions.read().expect("sessions lock poisoned");
+        let active = self.active_session_id.read().expect("active_session lock poisoned");
+        
+        match *active {
+            None => None, // No active session (BoardView) - no previous
+            Some(active_id) => {
+                // Find current index and return previous
+                let keys: Vec<&Uuid> = sessions.keys().collect();
+                let current_idx = keys.iter().position(|&&id| id == active_id);
+                
+                match current_idx {
+                    Some(idx) if idx > 0 => Some(keys[idx - 1].to_string()),
+                    _ => None, // At first session or not found - should go to board
+                }
+            }
+        }
+    }
+    
+    /// Get the first session (VIEWNV-001)
+    /// Returns None if no sessions exist
+    pub fn get_first_session(&self) -> Option<String> {
+        let sessions = self.sessions.read().expect("sessions lock poisoned");
+        sessions.keys().next().map(|id| id.to_string())
+    }
+    
     /// Get a session by ID
     pub fn get_session(&self, id: &str) -> Result<Arc<BackgroundSession>> {
         let uuid = Uuid::parse_str(id)
@@ -3123,7 +3205,8 @@ impl SessionManager {
         // If this session was a watcher, remove its relationship
         self.watch_graph.remove_watcher(uuid);
         
-        let session = self.sessions.write().expect("sessions lock poisoned").remove(&uuid);
+        // VIEWNV-001: Use shift_remove to maintain insertion order
+        let session = self.sessions.write().expect("sessions lock poisoned").shift_remove(&uuid);
         
         if let Some(session) = session {
             // Interrupt to stop the agent loop
@@ -3619,16 +3702,24 @@ pub fn session_manager_destroy(session_id: String) -> Result<()> {
 /// Attach to a session for live streaming
 #[napi]
 pub fn session_attach(session_id: String, callback: ThreadsafeFunction<StreamChunk>) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id)?;
+    let uuid = uuid::Uuid::parse_str(&session_id)
+        .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+    let manager = SessionManager::instance();
+    let session = manager.get_session(&session_id)?;
     session.attach(callback);
+    // VIEWNV-001: Track this as the active session for navigation
+    manager.set_active_session(uuid);
     Ok(())
 }
 
 /// Detach from a session (session continues running)
 #[napi]
 pub fn session_detach(session_id: String) -> Result<()> {
-    let session = SessionManager::instance().get_session(&session_id)?;
+    let manager = SessionManager::instance();
+    let session = manager.get_session(&session_id)?;
     session.detach();
+    // VIEWNV-001: Clear active session when detaching
+    manager.clear_active_session();
     Ok(())
 }
 
@@ -3653,6 +3744,37 @@ pub fn session_get_status(session_id: String) -> Result<String> {
     let session = SessionManager::instance().get_session(&session_id)?;
     let status = session.get_status();
     Ok(status.as_str().to_string())
+}
+
+// === VIEWNV-001: Session navigation NAPI functions ===
+
+/// Get the next session after the currently active one (VIEWNV-001)
+/// Returns None if no sessions exist or at the last session
+/// If no active session (BoardView), returns the first session
+#[napi]
+pub fn session_get_next() -> Option<String> {
+    SessionManager::instance().get_next_session()
+}
+
+/// Get the previous session before the currently active one (VIEWNV-001)
+/// Returns None if no sessions exist or at the first session (should go to board)
+#[napi]
+pub fn session_get_prev() -> Option<String> {
+    SessionManager::instance().get_prev_session()
+}
+
+/// Get the first session (VIEWNV-001)
+/// Returns None if no sessions exist
+#[napi]
+pub fn session_get_first() -> Option<String> {
+    SessionManager::instance().get_first_session()
+}
+
+/// Clear the active session tracking (VIEWNV-001)
+/// Call this when returning to BoardView to ensure navigation works correctly
+#[napi]
+pub fn session_clear_active() {
+    SessionManager::instance().clear_active_session();
 }
 
 /// Update the model for a background session

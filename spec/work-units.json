@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-23T20:54:44.683Z"
+    "lastUpdated": "2026-01-24T03:12:57.781Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -66523,6 +66523,286 @@
       "nextNoteId": 9,
       "estimate": 8,
       "updated": "2026-01-23T20:54:44.714Z"
+    },
+    "VIEWNV-001": {
+      "id": "VIEWNV-001",
+      "title": "Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPaneView",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-24T02:09:23.260Z",
+      "updatedAt": "2026-01-24T03:12:57.814Z",
+      "description": "Enable Shift+Left/Right arrow navigation that seamlessly moves between BoardView, AgentView sessions, and SplitPaneView watcher sessions with create-session prompts when needed",
+      "children": [],
+      "attachments": [
+        "spec/attachments/VIEWNV-001/VIEWNV-001-research-notes.md",
+        "spec/attachments/VIEWNV-001/ast-research-navigation.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-24T02:10:24.727Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-24T02:36:36.163Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-24T02:40:07.738Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-24T02:53:00.510Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-24T03:12:57.814Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the fspec TUI",
+        "action": "navigate between BoardView, sessions, and watcher sessions using Shift+Left/Right arrows",
+        "benefit": "I can quickly move through my workflow without switching to mouse or typing commands"
+      },
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: When at the first session and pressing Shift+Left, should it go back to BoardView? Or wrap to the last session?",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:10:34.104Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Shift+Left from the first session should go back to BoardView (exit sessions entirely, no wrap-around)"
+        },
+        {
+          "id": 1,
+          "text": "@human: Should watchers be included in the 'create new session' flow at the right edge, or only regular (non-watcher) sessions?",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:10:38.019Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Only regular (non-watcher) sessions should be created via the create session prompt. Watchers are created through a separate workflow."
+        },
+        {
+          "id": 2,
+          "text": "@human: What should be the ordering of sessions in the navigation list - creation time (oldest first), last updated (most recent first), or alphabetical by name?",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:10:42.198Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Sessions should be ordered by creation time (oldest first) in the navigation list."
+        },
+        {
+          "id": 3,
+          "text": "@human: When navigating away from a watcher in SplitPaneView (e.g., Shift+Right to next session), should the split view close and show regular AgentView, or should the split view be preserved somehow?",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:10:46.299Z",
+          "selected": true,
+          "answered": true,
+          "answer": "The split view automatically closes when switching to a non-watcher session. AgentView uses a useEffect that detects if currentSessionId has a parent - if not, it sets isWatcherSessionView=false. So navigation just changes currentSessionId and the view mode updates automatically (same pattern as /parent command)."
+        },
+        {
+          "id": 4,
+          "text": "@human: Should the existing /parent command continue to work alongside the new Shift+Left navigation for watcher sessions?",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:10:50.597Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, keep both. The /parent command should continue to work alongside Shift+Left navigation. They serve the same purpose but /parent is explicit while Shift+Left is part of the broader navigation flow."
+        }
+      ],
+      "nextQuestionId": 5,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Shift+Left from BoardView does nothing (already at leftmost position)",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:20:28.454Z"
+        },
+        {
+          "id": 1,
+          "text": "Shift+Right from BoardView navigates to the first session, or shows create session dialog if no sessions exist",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:20:32.968Z"
+        },
+        {
+          "id": 2,
+          "text": "Shift+Left from the first session returns to BoardView (no wrap-around)",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:20:36.956Z"
+        },
+        {
+          "id": 3,
+          "text": "Shift+Right from a session with watchers navigates to its first watcher",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:20:41.151Z"
+        },
+        {
+          "id": 4,
+          "text": "Shift+Right from a session without watchers navigates to the next session, or shows create session dialog if at the last session",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:20:44.759Z"
+        },
+        {
+          "id": 5,
+          "text": "Shift+Left from the first watcher of a session navigates to the parent session",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:20:48.526Z"
+        },
+        {
+          "id": 6,
+          "text": "Shift+Right from a watcher navigates to the next sibling watcher, or to the next session if no more siblings",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:20:52.516Z"
+        },
+        {
+          "id": 7,
+          "text": "Shift+Left from a watcher navigates to the previous sibling watcher, or to the parent session if at the first sibling",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:20:56.210Z"
+        },
+        {
+          "id": 8,
+          "text": "Sessions are ordered by creation time (oldest first) in the navigation list",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:00.201Z"
+        },
+        {
+          "id": 9,
+          "text": "Create session dialog only creates regular sessions, not watchers",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:04.398Z"
+        },
+        {
+          "id": 10,
+          "text": "The /parent command continues to work alongside Shift+Left navigation",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:08.148Z"
+        },
+        {
+          "id": 11,
+          "text": "View mode (split vs regular AgentView) is automatically determined by whether currentSessionId has a parent",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:12.294Z"
+        }
+      ],
+      "nextRuleId": 12,
+      "examples": [
+        {
+          "id": 0,
+          "text": "From BoardView with no sessions: Shift+Right shows create session dialog",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:16.171Z"
+        },
+        {
+          "id": 1,
+          "text": "From BoardView with sessions: Shift+Right navigates to Session A (oldest)",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:20.157Z"
+        },
+        {
+          "id": 2,
+          "text": "From Session A (first): Shift+Left returns to BoardView",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:24.362Z"
+        },
+        {
+          "id": 3,
+          "text": "From Session A with watchers W1, W2: Shift+Right navigates to W1",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:28.569Z"
+        },
+        {
+          "id": 4,
+          "text": "From W1 (first watcher): Shift+Left returns to parent Session A",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:32.360Z"
+        },
+        {
+          "id": 5,
+          "text": "From W1: Shift+Right navigates to sibling W2",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:37.272Z"
+        },
+        {
+          "id": 6,
+          "text": "From W2 (last watcher of Session A), with Session B next: Shift+Right navigates to Session B",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:41.442Z"
+        },
+        {
+          "id": 7,
+          "text": "From last session (no watchers) at right edge: Shift+Right shows create session dialog",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:45.664Z"
+        },
+        {
+          "id": 8,
+          "text": "From last watcher of last session at right edge: Shift+Right shows create session dialog",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:49.781Z"
+        },
+        {
+          "id": 9,
+          "text": "User confirms create session dialog: new unattached session is created and user navigates to it",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:54.465Z"
+        },
+        {
+          "id": 10,
+          "text": "User cancels create session dialog: stays at current position",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:21:57.857Z"
+        }
+      ],
+      "nextExampleId": 11,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Create new file src/tui/utils/sessionNavigation.ts for pure navigation logic (buildNavigationList, getNextTarget, getPrevTarget)",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:33:38.073Z"
+        },
+        {
+          "id": 1,
+          "text": "Create new file src/tui/hooks/useSessionNavigation.ts - React hook wrapping navigation logic with callbacks for view switching",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:33:43.868Z"
+        },
+        {
+          "id": 2,
+          "text": "Create new file src/components/CreateSessionDialog.tsx - Confirmation dialog reusing Dialog base component",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:33:48.501Z"
+        },
+        {
+          "id": 3,
+          "text": "Modify BoardView.tsx - Add Shift+Right handler to navigate to first session or show create dialog",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:33:53.929Z"
+        },
+        {
+          "id": 4,
+          "text": "Modify AgentView.tsx - Refactor switchToSession to use shared navigation logic, add create session dialog trigger at right edge",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:33:59.062Z"
+        },
+        {
+          "id": 5,
+          "text": "Modify SplitSessionView.tsx - Add Shift+Left/Right handlers for watcher navigation (currently only has regular Left/Right for pane switching)",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:34:04.061Z"
+        },
+        {
+          "id": 6,
+          "text": "Dependencies: Uses @sengac/codelet-napi APIs (sessionManagerList, sessionGetParent, sessionGetWatchers, sessionAttach, sessionDetach)",
+          "deleted": false,
+          "createdAt": "2026-01-24T02:34:09.680Z"
+        }
+      ],
+      "nextNoteId": 7,
+      "estimate": 8,
+      "updated": "2026-01-24T03:12:57.814Z"
     }
   },
   "states": {
@@ -66602,6 +66882,7 @@
     ],
     "validating": [],
     "done": [
+      "VIEWNV-001",
       "WATCH-023",
       "LOG-003",
       "WATCH-021",
@@ -67138,6 +67419,7 @@
     "CMPCT": 2,
     "WATCH": 23,
     "CACHE": 1,
-    "LOG": 3
+    "LOG": 3,
+    "VIEWNV": 1
   }
 }

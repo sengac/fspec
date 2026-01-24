@@ -319,6 +319,11 @@
       "prefix": "CACHE",
       "description": "Caching system features",
       "createdAt": "2026-01-22T23:44:25.359Z"
+    },
+    "VIEWNV": {
+      "prefix": "VIEWNV",
+      "description": "View Navigation - Shift+Arrow navigation across TUI views and sessions",
+      "createdAt": "2026-01-24T02:09:18.612Z"
     }
   }
 }
