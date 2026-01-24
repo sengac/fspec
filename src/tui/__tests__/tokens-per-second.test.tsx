@@ -471,6 +471,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
       expect(frame).toContain('tok/s');
 
       // @step And the header should show 'tokens: 1234↓ 567↑'
+      expect(frame).toContain('tokens:');
       expect(frame).toContain('1234');
       expect(frame).toContain('567');
 
