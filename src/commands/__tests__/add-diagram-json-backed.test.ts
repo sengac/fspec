@@ -4,17 +4,19 @@ import { join } from 'path';
 import { addDiagramJsonBacked } from '../add-diagram-json-backed';
 import { createFoundationWithDiagrams } from '../../test-helpers/foundation-with-diagram-fixtures';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Add Diagram to JSON-Backed Foundation', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-add-diagram-json-backed');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('add-diagram-json-backed');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add new Mermaid diagram to Architecture Diagrams section', () => {

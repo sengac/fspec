@@ -12,16 +12,18 @@ import type { WorkUnitsData } from '../../types';
 import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 import { prioritizeWorkUnit } from '../prioritize-work-unit';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
+
 describe('Feature: Work unit ordering across all Kanban columns', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(
-      process.cwd(),
-      'test-tmp-work-unit-ordering-across-all-kanban-columns'
+    testDir = await createTempTestDir(
+      'work-unit-ordering-across-all-kanban-columns'
     );
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
     await mkdir(join(testDir, 'spec/features'), { recursive: true });
 
     // Create foundation.json for all tests (required by commands)
@@ -29,7 +31,7 @@ describe('Feature: Work unit ordering across all Kanban columns', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Prioritize work unit within specifying column', () => {

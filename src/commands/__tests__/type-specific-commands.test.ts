@@ -16,13 +16,15 @@ import { createStory } from '../create-story';
 import { createBug } from '../create-bug';
 import { createTask } from '../create-task';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Replace generic create-work-unit with type-specific commands', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-type-specific-commands');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('type-specific-commands');
 
     // Create foundation.json for all tests
     await createMinimalFoundation(testDir);
@@ -72,7 +74,7 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Create story with Example Mapping guidance', () => {

@@ -13,17 +13,19 @@ import { addHotspot } from '../add-hotspot';
 import { addExternalSystem } from '../add-external-system';
 import { addBoundedContext } from '../add-bounded-context';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Event Storm artifact commands (policies, hotspots, external systems)', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-event-storm-artifacts');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('event-storm-artifacts');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add policy with when and then flags', () => {

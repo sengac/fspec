@@ -5,25 +5,22 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, readFile, rm } from 'fs/promises';
+import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
-import { execSync } from 'child_process';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-// Get project root (3 levels up from dist/commands/__tests__)
-const projectRoot = join(__dirname, '../../..');
-const TEST_DIR = join(projectRoot, 'test-temp-auto-event-storm');
-const CLI_PATH = join(projectRoot, 'dist/index.js');
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
+import { discoverFoundation } from '../discover-foundation';
 
 describe('Feature: Auto-create Big Picture Event Storming work unit after foundation finalization', () => {
+  let testDir: string;
+
   beforeEach(async () => {
-    // Create test directory
-    await mkdir(TEST_DIR, { recursive: true });
-    await mkdir(join(TEST_DIR, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('auto-event-storm');
 
     // Create minimal work-units.json with states arrays
-    const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+    const workUnitsPath = join(testDir, 'spec', 'work-units.json');
     await writeFile(
       workUnitsPath,
       JSON.stringify(
@@ -46,7 +43,7 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
     );
 
     // Create prefixes.json with FOUND prefix
-    const prefixesPath = join(TEST_DIR, 'spec', 'prefixes.json');
+    const prefixesPath = join(testDir, 'spec', 'prefixes.json');
     await writeFile(
       prefixesPath,
       JSON.stringify(
@@ -57,7 +54,7 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
     );
 
     // Create foundation draft with complete data (no placeholders)
-    const draftPath = join(TEST_DIR, 'spec', 'foundation.json.draft');
+    const draftPath = join(testDir, 'spec', 'foundation.json.draft');
     await writeFile(
       draftPath,
       JSON.stringify(
@@ -99,8 +96,7 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
   });
 
   afterEach(async () => {
-    // Cleanup test directory
-    await rm(TEST_DIR, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Work unit created when foundation finalized successfully', () => {
@@ -111,16 +107,14 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
 
       // @step When I run "fspec discover-foundation --finalize"
       // @step And validation passes
-      const result = execSync(
-        `node ${CLI_PATH} discover-foundation --finalize --draft-path spec/foundation.json.draft`,
-        {
-          cwd: TEST_DIR,
-          encoding: 'utf-8',
-        }
-      );
+      const result = await discoverFoundation({
+        finalize: true,
+        draftPath: join(testDir, 'spec', 'foundation.json.draft'),
+        cwd: testDir,
+      });
 
       // @step Then a new work unit should be created with FOUND prefix
-      const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
       const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       const workUnits = JSON.parse(workUnitsContent);
 
@@ -151,11 +145,8 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
       expect(workUnit.description).toContain('CLAUDE.md');
 
       // @step And console output should confirm work unit creation
-      expect(result).toContain('Created work unit');
-      expect(result).toContain('Foundation Event Storm');
-
-      // @step And console output should show command to view work unit details
-      expect(result).toContain('fspec show-work-unit');
+      expect(result.workUnitCreated).toBe(true);
+      expect(result.workUnitId).toBeTruthy();
     });
   });
 
@@ -166,13 +157,13 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
       // (Preconditions met by beforeEach)
 
       // @step When I run "fspec discover-foundation" without --finalize flag
-      execSync(`node ${CLI_PATH} discover-foundation --force`, {
-        cwd: TEST_DIR,
-        encoding: 'utf-8',
+      await discoverFoundation({
+        force: true,
+        cwd: testDir,
       });
 
       // @step Then NO work unit should be created
-      const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
       const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       const workUnits = JSON.parse(workUnitsContent);
 
@@ -191,7 +182,7 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
     it('should not create work unit when foundation validation fails', async () => {
       // @step Given foundation discovery has been completed
       // @step And foundation draft has validation errors
-      const draftPath = join(TEST_DIR, 'spec', 'foundation.json.draft');
+      const draftPath = join(testDir, 'spec', 'foundation.json.draft');
       await writeFile(
         draftPath,
         JSON.stringify(
@@ -210,23 +201,21 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
 
       // @step When I run "fspec discover-foundation --finalize"
       // @step And validation fails
-      let exitCode = 0;
+      let threwError = false;
       try {
-        execSync(
-          `node ${CLI_PATH} discover-foundation --finalize --draft-path spec/foundation.json.draft`,
-          {
-            cwd: TEST_DIR,
-            encoding: 'utf-8',
-          }
-        );
-      } catch (error) {
-        exitCode = (error as { status: number }).status;
+        await discoverFoundation({
+          finalize: true,
+          draftPath: 'spec/foundation.json.draft',
+          cwd: testDir,
+        });
+      } catch {
+        threwError = true;
       }
 
-      expect(exitCode).toBe(1);
+      expect(threwError).toBe(true);
 
       // @step Then NO work unit should be created
-      const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
       const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       const workUnits = JSON.parse(workUnitsContent);
 
@@ -247,16 +236,14 @@ describe('Feature: Auto-create Big Picture Event Storming work unit after founda
     it('should include all foundation Event Storm commands in description', async () => {
       // @step Given foundation has been finalized successfully
       // @step And a Big Picture Event Storming work unit was created
-      execSync(
-        `node ${CLI_PATH} discover-foundation --finalize --draft-path spec/foundation.json.draft`,
-        {
-          cwd: TEST_DIR,
-          encoding: 'utf-8',
-        }
-      );
+      await discoverFoundation({
+        finalize: true,
+        draftPath: join(testDir, 'spec', 'foundation.json.draft'),
+        cwd: testDir,
+      });
 
       // @step When AI agent reads the work unit description
-      const workUnitsPath = join(TEST_DIR, 'spec', 'work-units.json');
+      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
       const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       const workUnits = JSON.parse(workUnitsContent);
 

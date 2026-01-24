@@ -10,13 +10,16 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Review command with done status integration', () => {
   let testDir: string;
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-review-reminder');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('review-reminder');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
 
     // Spy on console.log to capture system-reminder output
@@ -24,7 +27,7 @@ describe('Feature: Review command with done status integration', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
     consoleLogSpy.mockRestore();
   });
 

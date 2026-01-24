@@ -10,6 +10,10 @@ import { removePersona } from '../remove-persona';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: remove-persona command', () => {
   let testDir: string;
   let draftPath: string;
@@ -17,15 +21,14 @@ describe('Feature: remove-persona command', () => {
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir('remove-persona');
     draftPath = join(testDir, 'spec/foundation.json.draft');
     foundationPath = join(testDir, 'spec/foundation.json');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Remove persona from draft by name', () => {

@@ -10,16 +10,19 @@ import { join } from 'path';
 import { answerQuestion } from '../answer-question';
 import type { WorkUnitsData, RuleItem } from '../../types';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Answer Question Data Integrity', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-answer-question');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('answer-question');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Answer question with --add-to rule creates RuleItem object', () => {

@@ -3,6 +3,10 @@ import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { generateFoundationMdCommand } from '../generate-foundation-md';
 import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
+import {
   createMinimalFoundation,
   createCompleteFoundation,
   type GenericFoundation,
@@ -12,13 +16,11 @@ describe('Feature: Generate FOUNDATION.md from foundation.json', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-generate-foundation');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('generate-foundation');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Generate FOUNDATION.md from valid foundation.json', () => {

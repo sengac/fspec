@@ -11,13 +11,15 @@ import { displayBoard } from '../display-board';
 import { repairWorkUnits } from '../repair-work-units';
 import { queryWorkUnits } from '../query-work-units';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Kanban Workflow State Management', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-kanban-workflow-state-management');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('kanban-workflow-state-management');
     await mkdir(join(testDir, 'spec/features'), { recursive: true });
 
     // Create foundation.json for all tests (required by commands)
@@ -25,7 +27,7 @@ describe('Feature: Kanban Workflow State Management', () => {
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Move work unit from backlog to specifying', () => {

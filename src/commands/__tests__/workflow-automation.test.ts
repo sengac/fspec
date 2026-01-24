@@ -5,17 +5,19 @@ import { recordIteration } from '../record-iteration';
 import { validateSpecAlignment } from '../validate-spec-alignment';
 import { autoAdvance } from '../auto-advance';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Workflow Automation', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-workflow-automation');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('workflow-automation');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Record iteration after tool use', () => {

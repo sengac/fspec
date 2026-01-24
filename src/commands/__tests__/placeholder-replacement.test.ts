@@ -6,24 +6,25 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdirSync, writeFileSync, readFileSync, rmSync } from 'fs';
+import { writeFileSync, readFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
-import { tmpdir } from 'os';
-import { execSync } from 'child_process';
+import { installAgents } from '../init';
+import { writeAgentConfig } from '../../utils/agentRuntimeConfig';
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 
 describe('Feature: Conversational Test and Quality Check Tool Detection', () => {
   describe('Scenario: Replace placeholders in generated spec/CLAUDE.md with configured commands', () => {
     let testDir: string;
 
-    beforeEach(() => {
-      testDir = join(tmpdir(), `fspec-test-${Date.now()}`);
-      mkdirSync(testDir, { recursive: true });
+    beforeEach(async () => {
+      testDir = await createTempTestDir('placeholder-replacement');
     });
 
-    afterEach(() => {
-      if (testDir) {
-        rmSync(testDir, { recursive: true, force: true });
-      }
+    afterEach(async () => {
+      await removeTempTestDir(testDir);
     });
 
     it('should replace <test-command> and <quality-check-commands> placeholders with configured commands', async () => {
@@ -54,17 +55,8 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
 
       // @step When fspec init command calls slash command section generators and assembles the output
       // @step And placeholder replacement logic reads spec/fspec-config.json to get configured commands
-      try {
-        execSync(
-          `node ${join(process.cwd(), 'dist/index.js')} init --agent claude`,
-          {
-            cwd: testDir,
-            stdio: 'pipe',
-          }
-        );
-      } catch (_error) {
-        // Init might fail, but we're checking the file content
-      }
+      await installAgents(testDir, ['claude']);
+      writeAgentConfig(testDir, 'claude');
 
       // @step Then the generated spec/CLAUDE.md file should have all <test-command> placeholders replaced with 'npm test'
       const claudeMdPath = join(specDir, 'CLAUDE.md');
@@ -102,17 +94,8 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
     it('should either preserve placeholders or use user-level config when project-level fspec-config.json does not exist', async () => {
       // Given: No project-level fspec-config.json exists (user-level config may still be loaded)
       // When: fspec init generates spec/CLAUDE.md
-      try {
-        execSync(
-          `node ${join(process.cwd(), 'dist/index.js')} init --agent claude`,
-          {
-            cwd: testDir,
-            stdio: 'pipe',
-          }
-        );
-      } catch (_error) {
-        // Init might fail, but we're checking the file content
-      }
+      await installAgents(testDir, ['claude']);
+      writeAgentConfig(testDir, 'claude');
 
       // Then: The file should be generated
       const specDir = join(testDir, 'spec');

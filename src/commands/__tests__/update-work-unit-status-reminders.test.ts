@@ -6,17 +6,23 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
-
-const TEST_DIR = join(process.cwd(), '.test-remind-009');
-const SPEC_DIR = join(TEST_DIR, 'spec');
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 
 describe('Feature: Context-aware system-reminders for workflow state transitions', () => {
+  let testDir: string;
+  let specDir: string;
+
   beforeEach(async () => {
-    await mkdir(SPEC_DIR, { recursive: true });
-    await mkdir(join(SPEC_DIR, 'features'), { recursive: true });
+    testDir = await createTempTestDir('remind-009');
+    specDir = join(testDir, 'spec');
+
+    await mkdir(join(specDir, 'features'), { recursive: true });
 
     // Create minimal work-units.json
     const workUnits = {
@@ -50,7 +56,7 @@ describe('Feature: Context-aware system-reminders for workflow state transitions
     };
 
     await writeFile(
-      join(SPEC_DIR, 'work-units.json'),
+      join(specDir, 'work-units.json'),
       JSON.stringify(workUnits, null, 2)
     );
 
@@ -69,7 +75,7 @@ Feature: Test Feature
     Then I see results
 `;
     await writeFile(
-      join(SPEC_DIR, 'features', 'test-feature.feature'),
+      join(specDir, 'features', 'test-feature.feature'),
       featureContent
     );
 
@@ -94,12 +100,12 @@ Feature: Test Feature
       ],
     };
     await writeFile(
-      join(SPEC_DIR, 'features', 'test-feature.feature.coverage'),
+      join(specDir, 'features', 'test-feature.feature.coverage'),
       JSON.stringify(coverageContent, null, 2)
     );
 
     // Create the test file referenced in coverage
-    await mkdir(join(TEST_DIR, 'src', '__tests__'), { recursive: true });
+    await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
     const testFileContent = `// @step Given  I have a test
 // @step When  I run a test
 // @step Then  I see results
@@ -110,7 +116,7 @@ describe('Test scenario', () => {
 });
 `;
     await writeFile(
-      join(TEST_DIR, 'src', '__tests__', 'test-feature.test.ts'),
+      join(testDir, 'src', '__tests__', 'test-feature.test.ts'),
       testFileContent
     );
 
@@ -119,11 +125,11 @@ describe('Test scenario', () => {
   return true;
 }
 `;
-    await writeFile(join(TEST_DIR, 'src', 'test-impl.ts'), implFileContent);
+    await writeFile(join(testDir, 'src', 'test-impl.ts'), implFileContent);
   });
 
   afterEach(async () => {
-    await rm(TEST_DIR, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Show command reminder when transitioning to SPECIFYING state', () => {
@@ -135,7 +141,7 @@ describe('Test scenario', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -177,7 +183,7 @@ describe('Test scenario', () => {
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -185,7 +191,7 @@ describe('Test scenario', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'testing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -218,13 +224,13 @@ describe('Test scenario', () => {
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'testing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -232,7 +238,7 @@ describe('Test scenario', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'implementing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -267,19 +273,19 @@ describe('Test scenario', () => {
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'testing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'implementing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -287,7 +293,7 @@ describe('Test scenario', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'validating',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -320,7 +326,7 @@ describe('Test scenario', () => {
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -330,7 +336,7 @@ describe('Test scenario', () => {
         updateWorkUnitStatus({
           workUnitId: 'TEST-001',
           status: 'backlog',
-          cwd: TEST_DIR,
+          cwd: testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow('Cannot move work back to backlog');
@@ -343,25 +349,25 @@ describe('Test scenario', () => {
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'testing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'implementing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'validating',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -369,7 +375,7 @@ describe('Test scenario', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'done',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -388,19 +394,19 @@ describe('Test scenario', () => {
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'testing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'implementing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -409,7 +415,7 @@ describe('Test scenario', () => {
         workUnitId: 'TEST-001',
         status: 'blocked',
         blockedReason: 'Test block reason',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -431,7 +437,7 @@ describe('Test scenario', () => {
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -439,7 +445,7 @@ describe('Test scenario', () => {
       await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'testing',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -447,7 +453,7 @@ describe('Test scenario', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: TEST_DIR,
+        cwd: testDir,
         skipTemporalValidation: true,
       });
 
@@ -462,39 +468,7 @@ describe('Test scenario', () => {
   });
 });
 
-// Helper functions
-interface CapturedOutput {
-  stdout: string;
-  stderr: string;
-}
-
-async function captureOutput(fn: () => Promise<void>): Promise<CapturedOutput> {
-  const originalStdout = process.stdout.write;
-  const originalStderr = process.stderr.write;
-
-  let stdout = '';
-  let stderr = '';
-
-  process.stdout.write = ((chunk: string) => {
-    stdout += chunk;
-    return true;
-  }) as any;
-
-  process.stderr.write = ((chunk: string) => {
-    stderr += chunk;
-    return true;
-  }) as any;
-
-  try {
-    await fn();
-  } finally {
-    process.stdout.write = originalStdout;
-    process.stderr.write = originalStderr;
-  }
-
-  return { stdout, stderr };
-}
-
+// Helper function
 function extractReminderContent(stderr: string): string {
   const start = stderr.indexOf('<system-reminder>');
   const end = stderr.indexOf('</system-reminder>');

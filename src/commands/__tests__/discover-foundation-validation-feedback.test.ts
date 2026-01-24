@@ -10,20 +10,25 @@ import { discoverFoundation } from '../discover-foundation';
 import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: discover-foundation --finalize validation error feedback', () => {
   let testDir: string;
   let draftPath: string;
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir(
+      'discover-foundation-validation-feedback'
+    );
     draftPath = join(testDir, 'spec/foundation.json.draft');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Show detailed error when personas array has placeholder data', () => {

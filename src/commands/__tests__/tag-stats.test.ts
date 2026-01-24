@@ -3,17 +3,20 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { tagStats } from '../tag-stats';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Show Tag Usage Statistics', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-tag-stats');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('tag-stats');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Show overall tag statistics', () => {

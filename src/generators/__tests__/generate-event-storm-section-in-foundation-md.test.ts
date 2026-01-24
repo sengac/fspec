@@ -3,33 +3,30 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import { execSync } from 'child_process';
 import { generateFoundationMd } from '../foundation-md';
+import { addFoundationBoundedContext } from '../../commands/add-foundation-bounded-context';
+import {
+  createTempTestDirSync,
+  removeTempTestDirSync,
+} from '../../test-helpers/temp-directory';
 
 describe('Feature: Generate Event Storm section in FOUNDATION.md with validated Mermaid diagram', () => {
   describe('Scenario: FOUNDATION.md auto-regenerates with Event Storm section when bounded context added', () => {
-    const testDir = path.join(
-      __dirname,
-      '../../../test-temp-foundation-autogen'
-    );
-    const foundationJsonPath = path.join(testDir, 'spec/foundation.json');
-    const foundationMdPath = path.join(testDir, 'spec/FOUNDATION.md');
+    let testDir: string;
+    let foundationJsonPath: string;
+    let foundationMdPath: string;
 
     beforeEach(() => {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
-      fs.mkdirSync(testDir, { recursive: true });
-      fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+      testDir = createTempTestDirSync('foundation-autogen');
+      foundationJsonPath = path.join(testDir, 'spec/foundation.json');
+      foundationMdPath = path.join(testDir, 'spec/FOUNDATION.md');
     });
 
     afterEach(() => {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
+      removeTempTestDirSync(testDir);
     });
 
-    it('should auto-regenerate FOUNDATION.md with Event Storm section when bounded context is added', () => {
+    it('should auto-regenerate FOUNDATION.md with Event Storm section when bounded context is added', async () => {
       // @step Given foundation.json exists with eventStorm field initialized
       const foundationData = {
         version: '2.0.0',
@@ -70,13 +67,7 @@ describe('Feature: Generate Event Storm section in FOUNDATION.md with validated 
       );
 
       // @step When I run "fspec add-foundation-bounded-context 'Work Management'"
-      execSync(
-        `node ${path.join(__dirname, '../../../dist/index.js')} add-foundation-bounded-context "Work Management"`,
-        {
-          cwd: testDir,
-          stdio: 'pipe',
-        }
-      );
+      await addFoundationBoundedContext('Work Management', { cwd: testDir });
 
       // @step Then FOUNDATION.md should be automatically regenerated
       expect(fs.existsSync(foundationMdPath)).toBe(true);
@@ -112,25 +103,18 @@ describe('Feature: Generate Event Storm section in FOUNDATION.md with validated 
   });
 
   describe('Scenario: FOUNDATION.md includes Mermaid graph with all bounded contexts', () => {
-    const testDir = path.join(
-      __dirname,
-      '../../../test-temp-foundation-mermaid'
-    );
-    const foundationJsonPath = path.join(testDir, 'spec/foundation.json');
-    const foundationMdPath = path.join(testDir, 'FOUNDATION.md');
+    let testDir: string;
+    let foundationJsonPath: string;
+    let foundationMdPath: string;
 
     beforeEach(() => {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
-      fs.mkdirSync(testDir, { recursive: true });
-      fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+      testDir = createTempTestDirSync('foundation-mermaid');
+      foundationJsonPath = path.join(testDir, 'spec/foundation.json');
+      foundationMdPath = path.join(testDir, 'FOUNDATION.md');
     });
 
     afterEach(() => {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
+      removeTempTestDirSync(testDir);
     });
 
     it('should include Mermaid graph with all 7 bounded contexts', async () => {
@@ -249,25 +233,16 @@ describe('Feature: Generate Event Storm section in FOUNDATION.md with validated 
   });
 
   describe('Scenario: Mermaid validation error prevents FOUNDATION.md generation', () => {
-    const testDir = path.join(
-      __dirname,
-      '../../../test-temp-foundation-validation'
-    );
-    const foundationJsonPath = path.join(testDir, 'spec/foundation.json');
-    const foundationMdPath = path.join(testDir, 'FOUNDATION.md');
+    let testDir: string;
+    let foundationMdPath: string;
 
     beforeEach(() => {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
-      fs.mkdirSync(testDir, { recursive: true });
-      fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+      testDir = createTempTestDirSync('foundation-validation');
+      foundationMdPath = path.join(testDir, 'FOUNDATION.md');
     });
 
     afterEach(() => {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
+      removeTempTestDirSync(testDir);
     });
 
     it('Scenario: Bounded context with malicious code injection causes validation error', async () => {
@@ -444,25 +419,18 @@ describe('Feature: Generate Event Storm section in FOUNDATION.md with validated 
   });
 
   describe('Scenario: Event Storm section only appears when eventStorm data exists', () => {
-    const testDir = path.join(
-      __dirname,
-      '../../../test-temp-foundation-no-eventstorm'
-    );
-    const foundationJsonPath = path.join(testDir, 'spec/foundation.json');
-    const foundationMdPath = path.join(testDir, 'FOUNDATION.md');
+    let testDir: string;
+    let foundationJsonPath: string;
+    let foundationMdPath: string;
 
     beforeEach(() => {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
-      fs.mkdirSync(testDir, { recursive: true });
-      fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+      testDir = createTempTestDirSync('foundation-no-eventstorm');
+      foundationJsonPath = path.join(testDir, 'spec/foundation.json');
+      foundationMdPath = path.join(testDir, 'FOUNDATION.md');
     });
 
     afterEach(() => {
-      if (fs.existsSync(testDir)) {
-        fs.rmSync(testDir, { recursive: true, force: true });
-      }
+      removeTempTestDirSync(testDir);
     });
 
     it('should not include Domain Architecture section when eventStorm field does not exist', async () => {

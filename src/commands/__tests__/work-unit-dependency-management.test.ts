@@ -11,17 +11,19 @@ import { clearDependencies } from '../clear-dependencies';
 import { exportDependencies } from '../export-dependencies';
 import { queryDependencyStats } from '../query-dependency-stats';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Work Unit Dependency Management', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-work-unit-dependency-management');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('work-unit-dependency-management');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add blocks relationship to work unit', () => {

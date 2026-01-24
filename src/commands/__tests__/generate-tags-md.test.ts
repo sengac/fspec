@@ -4,17 +4,19 @@ import { join } from 'path';
 import { generateTagsMdCommand } from '../generate-tags-md';
 import type { TagsRegistry } from '../../types/tags';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Generate TAGS.md from tags.json', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-generate-tags');
-    await mkdir(testDir, { recursive: true });
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    testDir = await createTempTestDir('generate-tags');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Generate TAGS.md from valid tags.json', () => {

@@ -10,6 +10,10 @@ import { addCapability } from '../add-capability';
 import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: add-capability draft support', () => {
   let testDir: string;
   let draftPath: string;
@@ -17,15 +21,14 @@ describe('Feature: add-capability draft support', () => {
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir('add-capability-draft-support');
     draftPath = join(testDir, 'spec/foundation.json.draft');
     foundationPath = join(testDir, 'spec/foundation.json');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
     // Clean up
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Add capability to foundation.json.draft during discovery', () => {

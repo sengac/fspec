@@ -14,6 +14,10 @@ import { join } from 'path';
 import type { GenericFoundation } from '../../types/generic-foundation';
 import type { WorkUnitsData } from '../../types/work-unit';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: BUG-084 - discover-foundation --finalize does not auto-create Foundation Event Storm work unit', () => {
   let testDir: string;
   let draftPath: string;
@@ -62,12 +66,13 @@ describe('Feature: BUG-084 - discover-foundation --finalize does not auto-create
 
   beforeEach(async () => {
     // Create isolated temp directory for tests (CRITICAL: never write to actual spec/)
-    testDir = join(process.cwd(), `test-temp-${Date.now()}`);
+    testDir = await createTempTestDir(
+      'discover-foundation-finalize-auto-create-work-unit'
+    );
     draftPath = join(testDir, 'spec/foundation.json.draft');
     finalPath = join(testDir, 'spec/foundation.json');
     workUnitsPath = join(testDir, 'spec/work-units.json');
     prefixesPath = join(testDir, 'spec/prefixes.json');
-    await mkdir(join(testDir, 'spec'), { recursive: true });
 
     // Create minimal prefixes.json structure (EMPTY prefixes)
     const emptyPrefixesData = {
@@ -114,7 +119,7 @@ describe('Feature: BUG-084 - discover-foundation --finalize does not auto-create
 
   afterEach(async () => {
     // Clean up isolated test directory
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: First finalize auto-creates FOUND-001 work unit in isolated test directory', () => {
@@ -165,7 +170,7 @@ describe('Feature: BUG-084 - discover-foundation --finalize does not auto-create
 
       // @step And the test MUST NOT write to the actual spec/work-units.json file
       // (verified by using isolated testDir, not process.cwd())
-      expect(workUnitsPath).toContain('test-temp-');
+      expect(workUnitsPath).toContain('fspec-test-');
       expect(workUnitsPath).not.toContain(
         join(process.cwd(), 'spec/work-units.json')
       );
@@ -209,7 +214,7 @@ describe('Feature: BUG-084 - discover-foundation --finalize does not auto-create
       );
 
       // @step And the test MUST NOT write to the actual spec/work-units.json file
-      expect(workUnitsPath).toContain('test-temp-');
+      expect(workUnitsPath).toContain('fspec-test-');
       expect(workUnitsPath).not.toContain(
         join(process.cwd(), 'spec/work-units.json')
       );
@@ -271,7 +276,7 @@ describe('Feature: BUG-084 - discover-foundation --finalize does not auto-create
       expect(foundWorkUnits[0]).toBe('FOUND-001');
 
       // @step And the test MUST NOT write to the actual spec/work-units.json file
-      expect(workUnitsPath).toContain('test-temp-');
+      expect(workUnitsPath).toContain('fspec-test-');
       expect(workUnitsPath).not.toContain(
         join(process.cwd(), 'spec/work-units.json')
       );

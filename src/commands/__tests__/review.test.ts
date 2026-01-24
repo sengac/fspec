@@ -10,19 +10,22 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { review } from '../review';
 
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 describe('Feature: Review command with done status integration', () => {
   let testDir: string;
 
   beforeEach(async () => {
-    testDir = join(process.cwd(), 'test-tmp-review');
-    await mkdir(testDir, { recursive: true });
+    testDir = await createTempTestDir('review');
     await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
     await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
     await mkdir(join(testDir, 'src', 'commands'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: Review completed work unit with comprehensive analysis', () => {

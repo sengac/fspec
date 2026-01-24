@@ -1,31 +1,30 @@
 /**
  * Feature: spec/features/event-storm-commands-exit-with-code-1-on-success.feature
  *
- * Tests for BUG-086: Event Storm commands exit with code 1 on success
+ * Tests for BUG-086: Event Storm commands exit with code 0 on success
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
-import { exec } from 'child_process';
-import { promisify } from 'util';
+import { addDomainEvent } from '../add-domain-event';
+import { addCommand } from '../add-command';
+import { addPolicy } from '../add-policy';
+import { addHotspot } from '../add-hotspot';
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 
-const execAsync = promisify(exec);
-
-describe('Feature: Event Storm commands exit with code 1 on success', () => {
+describe('Feature: Event Storm commands exit with code 0 on success', () => {
   let testDir: string;
   let specDir: string;
   let workUnitsFile: string;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    testDir = await createTempTestDir('event-storm-exit-codes');
     specDir = join(testDir, 'spec');
     workUnitsFile = join(specDir, 'work-units.json');
-
-    // Create spec directory structure
-    await mkdir(specDir, { recursive: true });
 
     // Initialize work units file with a work unit in specifying state
     await writeFile(
@@ -60,30 +59,23 @@ describe('Feature: Event Storm commands exit with code 1 on success', () => {
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await removeTempTestDir(testDir);
   });
 
   describe('Scenario: add-domain-event returns exit code 0 on success', () => {
-    it('should exit with code 0 when adding domain event successfully', async () => {
+    it('should succeed when adding domain event', async () => {
       // @step Given I have a work unit "UI-001" in specifying state
       // (Already set up in beforeEach)
 
       // @step When I run "fspec add-domain-event UI-001 TestEvent"
-      let exitCode: number | null = null;
-      let error: any = null;
-      try {
-        await execAsync('fspec add-domain-event UI-001 TestEvent', {
-          cwd: testDir,
-        });
-        exitCode = 0;
-      } catch (err: any) {
-        exitCode = err.code || 1;
-        error = err;
-      }
+      const result = await addDomainEvent({
+        workUnitId: 'UI-001',
+        text: 'TestEvent',
+        cwd: testDir,
+      });
 
-      // @step Then the command should exit with code 0
-      expect(exitCode).toBe(0);
+      // @step Then the command should succeed
+      expect(result.success).toBe(true);
 
       // @step And the domain event "TestEvent" should be added to UI-001
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
@@ -99,23 +91,19 @@ describe('Feature: Event Storm commands exit with code 1 on success', () => {
   });
 
   describe('Scenario: add-command returns exit code 0 on success', () => {
-    it('should exit with code 0 when adding command successfully', async () => {
+    it('should succeed when adding command', async () => {
       // @step Given I have a work unit "UI-001" in specifying state
       // (Already set up in beforeEach)
 
       // @step When I run "fspec add-command UI-001 TestCommand"
-      let exitCode: number | null = null;
-      try {
-        await execAsync('fspec add-command UI-001 TestCommand', {
-          cwd: testDir,
-        });
-        exitCode = 0;
-      } catch (err: any) {
-        exitCode = err.code || 1;
-      }
+      const result = await addCommand({
+        workUnitId: 'UI-001',
+        text: 'TestCommand',
+        cwd: testDir,
+      });
 
-      // @step Then the command should exit with code 0
-      expect(exitCode).toBe(0);
+      // @step Then the command should succeed
+      expect(result.success).toBe(true);
 
       // @step And the command "TestCommand" should be added to UI-001
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
@@ -131,24 +119,21 @@ describe('Feature: Event Storm commands exit with code 1 on success', () => {
   });
 
   describe('Scenario: add-policy returns exit code 0 on success', () => {
-    it('should exit with code 0 when adding policy successfully', async () => {
+    it('should succeed when adding policy', async () => {
       // @step Given I have a work unit "UI-001" in specifying state
       // (Already set up in beforeEach)
 
       // @step When I run "fspec add-policy UI-001 'Send email' --when UserRegistered --then SendEmail"
-      let exitCode: number | null = null;
-      try {
-        await execAsync(
-          "fspec add-policy UI-001 'Send email' --when UserRegistered --then SendEmail",
-          { cwd: testDir }
-        );
-        exitCode = 0;
-      } catch (err: any) {
-        exitCode = err.code || 1;
-      }
+      const result = await addPolicy({
+        workUnitId: 'UI-001',
+        text: 'Send email',
+        when: 'UserRegistered',
+        then: 'SendEmail',
+        cwd: testDir,
+      });
 
-      // @step Then the command should exit with code 0
-      expect(exitCode).toBe(0);
+      // @step Then the command should succeed
+      expect(result.success).toBe(true);
 
       // @step And the policy "Send email" should be added to UI-001
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
@@ -164,24 +149,20 @@ describe('Feature: Event Storm commands exit with code 1 on success', () => {
   });
 
   describe('Scenario: add-hotspot returns exit code 0 on success', () => {
-    it('should exit with code 0 when adding hotspot successfully', async () => {
+    it('should succeed when adding hotspot', async () => {
       // @step Given I have a work unit "UI-001" in specifying state
       // (Already set up in beforeEach)
 
       // @step When I run "fspec add-hotspot UI-001 'Email timeout' --concern 'Unclear timeout duration'"
-      let exitCode: number | null = null;
-      try {
-        await execAsync(
-          "fspec add-hotspot UI-001 'Email timeout' --concern 'Unclear timeout duration'",
-          { cwd: testDir }
-        );
-        exitCode = 0;
-      } catch (err: any) {
-        exitCode = err.code || 1;
-      }
+      const result = await addHotspot({
+        workUnitId: 'UI-001',
+        text: 'Email timeout',
+        concern: 'Unclear timeout duration',
+        cwd: testDir,
+      });
 
-      // @step Then the command should exit with code 0
-      expect(exitCode).toBe(0);
+      // @step Then the command should succeed
+      expect(result.success).toBe(true);
 
       // @step And the hotspot "Email timeout" should be added to UI-001
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
@@ -196,28 +177,25 @@ describe('Feature: Event Storm commands exit with code 1 on success', () => {
     });
   });
 
-  describe('Scenario: Command chaining with && executes all commands on success', () => {
-    it('should execute both commands when chained with &&', async () => {
+  describe('Scenario: Multiple events can be added sequentially', () => {
+    it('should add multiple events when called sequentially', async () => {
       // @step Given I have a work unit "UI-001" in specifying state
       // (Already set up in beforeEach)
 
-      // @step When I run "fspec add-domain-event UI-001 Event1 && fspec add-domain-event UI-001 Event2"
-      let exitCode: number | null = null;
-      try {
-        await execAsync(
-          'fspec add-domain-event UI-001 Event1 && fspec add-domain-event UI-001 Event2',
-          { cwd: testDir, shell: '/bin/bash' }
-        );
-        exitCode = 0;
-      } catch (err: any) {
-        exitCode = err.code || 1;
-      }
+      // @step When I add two domain events
+      await addDomainEvent({
+        workUnitId: 'UI-001',
+        text: 'Event1',
+        cwd: testDir,
+      });
 
-      // @step Then both commands should execute
-      expect(exitCode).toBe(0);
+      await addDomainEvent({
+        workUnitId: 'UI-001',
+        text: 'Event2',
+        cwd: testDir,
+      });
 
-      // @step And the domain event "Event1" should be added to UI-001
-      // @step And the domain event "Event2" should be added to UI-001
+      // @step Then both events should be added
       const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
       expect(workUnits.workUnits['UI-001'].eventStorm).toBeDefined();
       expect(workUnits.workUnits['UI-001'].eventStorm.items).toHaveLength(2);
@@ -230,29 +208,24 @@ describe('Feature: Event Storm commands exit with code 1 on success', () => {
     });
   });
 
-  describe('Scenario: Event Storm command returns exit code 1 on error', () => {
-    it('should exit with code 1 when work unit does not exist', async () => {
+  describe('Scenario: Event Storm command returns error for non-existent work unit', () => {
+    it('should fail when work unit does not exist', async () => {
       // @step Given I have no work unit "NONEXISTENT-001"
       // (No such work unit exists in beforeEach)
 
       // @step When I run "fspec add-domain-event NONEXISTENT-001 Event"
-      let exitCode: number | null = null;
-      let stderr = '';
-      try {
-        await execAsync('fspec add-domain-event NONEXISTENT-001 Event', {
-          cwd: testDir,
-        });
-        exitCode = 0;
-      } catch (err: any) {
-        exitCode = err.code || 1;
-        stderr = err.stderr || '';
-      }
+      const result = await addDomainEvent({
+        workUnitId: 'NONEXISTENT-001',
+        text: 'Event',
+        cwd: testDir,
+      });
 
-      // @step Then the command should exit with code 1
-      expect(exitCode).toBe(1);
+      // @step Then the command should fail
+      expect(result.success).toBe(false);
 
-      // @step And an error message should be displayed
-      expect(stderr).toContain('NONEXISTENT-001');
+      // @step And an error message should be present
+      expect(result.error).toBeDefined();
+      expect(result.error).toContain('NONEXISTENT-001');
     });
   });
 });

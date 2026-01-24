@@ -12,24 +12,22 @@ import path from 'path';
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import type { GenericFoundation } from '../../types/foundation';
 import type { EventStormItem } from '../../types';
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../../test-helpers/temp-directory';
 
 // Test helpers
 let testDir: string;
 
 beforeEach(async () => {
   // Create temporary test directory
-  testDir = path.join(process.cwd(), `.test-${Date.now()}`);
-  await fs.mkdir(testDir, { recursive: true });
-  await fs.mkdir(path.join(testDir, 'spec'), { recursive: true });
+  testDir = await createTempTestDir('add-foundation-event-storm');
 });
 
 afterEach(async () => {
   // Cleanup test directory
-  try {
-    await fs.rm(testDir, { recursive: true, force: true });
-  } catch {
-    // Ignore cleanup errors
-  }
+  await removeTempTestDir(testDir);
 });
 
 describe('Feature: Implement Foundation Event Storm Commands for Aggregates, Events, and Commands', () => {
