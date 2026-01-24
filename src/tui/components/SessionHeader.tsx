@@ -170,7 +170,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
             <Text color="magenta">{tokensPerSecond.toFixed(1)} tok/s  </Text>
           )}
           {/* Token counts - dimmed */}
-          <Text dimColor>{inputTokens}↓ {outputTokens}↑ </Text>
+          <Text dimColor>tokens: {inputTokens}↓ {outputTokens}↑  </Text>
           {/* Context fill percentage - color varies by fill level */}
           <Text color={getContextFillColor(contextFillPercentage)}>
             {percentText}
