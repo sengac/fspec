@@ -12,6 +12,7 @@ Feature: Watcher Templates and Improved Creation UX
   - Form: Refactor WatcherCreateView.tsx → WatcherTemplateForm.tsx (create/edit modes)
   - Integration: Replace watcher overlay in AgentView.tsx, add /watcher spawn command
   - Dialogs: Reuse ConfirmationDialog from src/components/ConfirmationDialog.tsx
+  - Feedback: Use NotificationDialog (success) and ErrorDialog (errors) - NOT setConversation
   """
 
   # ========================================
@@ -41,6 +42,9 @@ Feature: Watcher Templates and Improved Creation UX
   #   20. Templates listed alphabetically with type-to-filter search
   #   21. Auto-generated slug in kebab-case (Security Reviewer → security-reviewer)
   #   22. /watcher spawn <slug> command for quick spawning
+  #   23. Success actions show NotificationDialog (auto-dismiss in 2s)
+  #   24. Error actions show ErrorDialog (ESC to dismiss)
+  #   25. Feedback uses dialogs, NOT setConversation status messages
   #
   # ========================================
 
@@ -103,22 +107,25 @@ Feature: Watcher Templates and Improved Creation UX
     When I press Enter
     Then a new watcher instance spawns with the template's settings
     And the active count badge updates accordingly
+    And a success notification shows "Spawned watcher"
 
   Scenario: Open existing watcher instance
     Given "Security Reviewer" is expanded with instance "#1 running" selected
     When I press Enter
     Then the overlay closes
     And I switch to that watcher's session
+    And a success notification shows "Switched to watcher"
 
   Scenario: Quick spawn via slash command
     Given I have a "Security Reviewer" template with slug "security-reviewer"
     When I type "/watcher spawn security-reviewer"
     Then a watcher instance spawns immediately without opening the overlay
+    And a success notification shows "Spawned watcher"
 
   Scenario: Quick spawn with unknown slug shows error
     Given no template exists with slug "unknown-watcher"
     When I type "/watcher spawn unknown-watcher"
-    Then I should see error "No template found with slug: unknown-watcher"
+    Then an error dialog shows "No template found with slug: unknown-watcher"
 
   # ===========================================
   # Template CRUD Operations
@@ -142,6 +149,7 @@ Feature: Watcher Templates and Improved Creation UX
     Then a confirmation dialog appears
     When I confirm
     Then the template is deleted
+    And a success notification shows "Deleted template"
 
   Scenario: Delete template with active instances shows warning
     Given "Security Reviewer" template has 2 active instances and is selected
@@ -150,6 +158,7 @@ Feature: Watcher Templates and Improved Creation UX
     When I confirm
     Then all active instances are killed
     And the template is deleted
+    And a success notification shows "Deleted template"
 
   Scenario: Kill watcher instance
     Given "Security Reviewer" is expanded with instance "#2 idle" selected
@@ -157,6 +166,7 @@ Feature: Watcher Templates and Improved Creation UX
     Then the instance is killed
     And it disappears from the list
     And the active count badge decreases
+    And a success notification shows "Killed watcher instance"
 
   # ===========================================
   # Template Form - Navigation

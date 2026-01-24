@@ -119,7 +119,7 @@ const generateDiscussSelectedPrefill = (
 
 // Function to format header for watcher session
 const formatWatcherHeader = (roleName: string, parentName: string): string => {
-  return `👁️ ${roleName} (watching: ${parentName})`;
+  return `[WATCHER] ${roleName} (watching: ${parentName})`;
 };
 
 describe('Feature: Watcher Split View UI', () => {
@@ -175,9 +175,9 @@ describe('Feature: Watcher Split View UI', () => {
       expect(state.watcherConversation).toBeDefined();
       expect(state.activePane).toBe('watcher');
 
-      // @step And the header shows "👁️ Security Reviewer (watching: Main Dev Session)"
+      // @step And the header shows "[WATCHER] Security Reviewer (watching: Main Dev Session)"
       const header = formatWatcherHeader('Security Reviewer', 'Main Dev Session');
-      expect(header).toBe('👁️ Security Reviewer (watching: Main Dev Session)');
+      expect(header).toBe('[WATCHER] Security Reviewer (watching: Main Dev Session)');
     });
   });
 

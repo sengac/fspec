@@ -14,7 +14,7 @@
  * - Enter on selected parent turn pre-fills input with "Discuss Selected" context
  * - Input area always sends to watcher session
  * - WATCH-011: Cross-pane highlighting shows correlation between parent/watcher turns
- * - WATCH-015: Header shows model capabilities, token usage, and context fill
+ * - WATCH-015: Header shows watcher info, model capabilities, token usage, and context fill
  */
 
 import React, { useCallback, useMemo } from 'react';
@@ -22,8 +22,10 @@ import { Box, Text, useInput } from 'ink';
 import { VirtualList } from './VirtualList';
 import { ConversationInputArea } from './ConversationInputArea';
 import { SelectionSeparatorBar } from './SelectionSeparatorBar';
+import { SessionHeader } from './SessionHeader';
 import { useTerminalSize } from '../hooks/useTerminalSize';
 import { useTurnSelection } from '../hooks/useTurnSelection';
+import { useWatcherHeaderInfo } from '../hooks/useWatcherHeaderInfo';
 import {
   getSelectionSeparatorType,
   getFirstContentOfTurn,
@@ -32,34 +34,12 @@ import {
 } from '../utils/turnSelection';
 import { buildCorrelationMaps } from '../utils/correlationMapping';
 import type { ConversationLine } from '../types/conversation';
-
-// WATCH-015: Token usage tracker interface
-interface TokenTracker {
-  inputTokens: number;
-  outputTokens: number;
-  cacheReadInputTokens?: number;
-  cacheCreationInputTokens?: number;
-}
-
-// WATCH-015: Format context window size for display (200000 → "200k")
-const formatContextWindow = (contextWindow: number): string => {
-  if (contextWindow >= 1000000) {
-    return `${(contextWindow / 1000000).toFixed(0)}M`;
-  }
-  return `${Math.round(contextWindow / 1000)}k`;
-};
-
-// WATCH-015: Get color based on context fill percentage
-const getContextFillColor = (percentage: number): string => {
-  if (percentage < 50) return 'green';
-  if (percentage < 70) return 'yellow';
-  if (percentage < 85) return 'magenta';
-  return 'red';
-};
+import type { TokenTracker } from '../utils/sessionHeaderUtils';
 
 interface SplitSessionViewProps {
+  /** Current watcher session ID - used to compute watcher header info */
+  sessionId: string;
   parentSessionName: string;
-  watcherRoleName: string;
   terminalWidth: number;
   parentConversation: ConversationLine[];
   watcherConversation: ConversationLine[];
@@ -71,7 +51,9 @@ interface SplitSessionViewProps {
   onSubmit: (value: string) => void;
   /** Whether the AI is currently processing */
   isLoading: boolean;
-  // WATCH-015: New props for header display
+  // WATCH-015: Header display props
+  /** Model ID to display */
+  modelId: string;
   /** Whether the model supports reasoning/extended thinking */
   displayReasoning?: boolean;
   /** Whether the model supports vision */
@@ -91,8 +73,8 @@ interface SplitSessionViewProps {
 }
 
 export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
+  sessionId,
   parentSessionName,
-  watcherRoleName,
   terminalWidth,
   parentConversation,
   watcherConversation,
@@ -100,7 +82,8 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   onInputChange,
   onSubmit,
   isLoading,
-  // WATCH-015: New props
+  // WATCH-015: Header props
+  modelId,
   displayReasoning = false,
   displayHasVision = false,
   displayContextWindow = 0,
@@ -112,17 +95,23 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 }) => {
   const { height: terminalHeight } = useTerminalSize();
 
+  // Get watcher header info (slug, instance number) from session ID
+  const watcherHeaderInfo = useWatcherHeaderInfo(sessionId);
+
   // Pane state
-  const [activePane, setActivePane] = React.useState<'parent' | 'watcher'>('watcher');
+  const [activePane, setActivePane] = React.useState<'parent' | 'watcher'>(
+    'watcher'
+  );
 
   // Turn selection state (separate for each pane)
   const parentSelection = useTurnSelection();
   const watcherSelection = useTurnSelection();
 
   // Get current select mode for active pane
-  const activeSelectMode = activePane === 'parent'
-    ? parentSelection.isSelectMode
-    : watcherSelection.isSelectMode;
+  const activeSelectMode =
+    activePane === 'parent'
+      ? parentSelection.isSelectMode
+      : watcherSelection.isSelectMode;
 
   // WATCH-011: Build correlation maps between parent and watcher turns
   const { parentToWatcherTurns, watcherToParentTurns } = useMemo(
@@ -215,10 +204,16 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
       if (selectedLine) {
         const messageIndex = selectedLine.messageIndex;
         const turnNumber = messageIndex + 1; // 1-indexed for display
-        const turnContent = getFirstContentOfTurn(parentConversation, messageIndex);
+        const turnContent = getFirstContentOfTurn(
+          parentConversation,
+          messageIndex
+        );
 
         if (turnContent) {
-          const prefill = generateDiscussSelectedPrefill(turnNumber, turnContent);
+          const prefill = generateDiscussSelectedPrefill(
+            turnNumber,
+            turnContent
+          );
           onInputChange(prefill);
           parentSelection.exitSelectMode();
         }
@@ -227,14 +222,22 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     }
 
     // WATCH-016: Enter in watcher pane select mode: Open TurnContentModal
-    if (key.return && activePane === 'watcher' && watcherSelection.isSelectMode) {
+    if (
+      key.return &&
+      activePane === 'watcher' &&
+      watcherSelection.isSelectMode
+    ) {
       const selectedIndex = watcherSelection.selectionRef.current.selectedIndex;
       const selectedLine = watcherConversation[selectedIndex];
 
       if (selectedLine && onOpenTurnContent) {
         // Collect all content lines for this turn to build full content
         const fullContent = watcherConversation
-          .filter(line => line.messageIndex === selectedLine.messageIndex && !line.isSeparator)
+          .filter(
+            line =>
+              line.messageIndex === selectedLine.messageIndex &&
+              !line.isSeparator
+          )
           .map(line => line.content)
           .join('\n');
         onOpenTurnContent(selectedLine.messageIndex, fullContent);
@@ -244,134 +247,117 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   });
 
   // Calculate layout dimensions
-  // header(2) + input area(2)
-  const outerReservedLines = 4;
-  const paneHeaderLines = 2;
-  const splitPanesHeight = Math.max(1, terminalHeight - 1 - outerReservedLines);
-  const virtualListHeight = Math.max(1, splitPanesHeight - paneHeaderLines);
-  const paneContentWidth = Math.floor(terminalWidth / 2) - 6;
+  // Layout: SessionHeader(2: content+border) + split panes (flex) + input area(1)
+  // Each pane has: pane header(1) + virtual list content
+  const reservedHeight = 4; // SessionHeader(2) + input area(1) + buffer(1)
+  const paneHeaderHeight = 1;
+  const availableHeight = Math.max(1, terminalHeight - reservedHeight);
+  const virtualListHeight = Math.max(1, availableHeight - paneHeaderHeight);
+  const paneContentWidth = Math.floor(terminalWidth / 2) - 4;
 
   // Render function for conversation lines with selection and cross-pane highlighting
-  const renderConversationItem = useCallback((
-    isParentPane: boolean,
-    selectMode: boolean,
-    paneLines: ConversationLine[],
-    crossPaneHighlighted: Set<number>
-  ) => (
-    line: ConversationLine,
-    index: number,
-    _isSelected: boolean,
-    selectedIndex: number
-  ) => {
-    const paneActive = isParentPane ? activePane === 'parent' : activePane === 'watcher';
+  const renderConversationItem = useCallback(
+    (
+      isParentPane: boolean,
+      selectMode: boolean,
+      paneLines: ConversationLine[],
+      crossPaneHighlighted: Set<number>
+    ) =>
+      (
+        line: ConversationLine,
+        index: number,
+        _isSelected: boolean,
+        selectedIndex: number
+      ) => {
+        const paneActive = isParentPane
+          ? activePane === 'parent'
+          : activePane === 'watcher';
 
-    // WATCH-011: Check if this line's turn should be cross-pane highlighted
-    // Cross-pane highlight applies to the INACTIVE pane
-    const isCrossPaneHighlighted = !paneActive && crossPaneHighlighted.has(line.messageIndex);
+        // WATCH-011: Check if this line's turn should be cross-pane highlighted
+        // Cross-pane highlight applies to the INACTIVE pane
+        const isCrossPaneHighlighted =
+          !paneActive && crossPaneHighlighted.has(line.messageIndex);
 
-    // Selection separator bars
-    const separatorType = getSelectionSeparatorType(
-      line, index, paneLines, selectedIndex, selectMode
-    );
-    if (separatorType) {
-      return (
-        <SelectionSeparatorBar
-          direction={separatorType}
-          width={paneContentWidth}
-          reactKey={`line-${index}`}
-        />
-      );
-    }
+        // Selection separator bars
+        const separatorType = getSelectionSeparatorType(
+          line,
+          index,
+          paneLines,
+          selectedIndex,
+          selectMode
+        );
+        if (separatorType) {
+          return (
+            <SelectionSeparatorBar
+              direction={separatorType}
+              width={paneContentWidth}
+              reactKey={`line-${index}`}
+            />
+          );
+        }
 
-    // Regular separator
-    if (line.isSeparator) {
-      return (
-        <Box key={`line-${index}`}>
-          <Text> </Text>
-        </Box>
-      );
-    }
+        // Regular separator
+        if (line.isSeparator) {
+          return (
+            <Box key={`line-${index}`}>
+              <Text> </Text>
+            </Box>
+          );
+        }
 
-    // Content line with role-based coloring
-    // WATCH-011: Cross-pane highlighted lines get cyan color
-    // WATCH-012: Watcher role gets magenta color
-    const baseColor = isCrossPaneHighlighted
-      ? 'cyan'
-      : line.role === 'user'
-        ? 'green'
-        : line.role === 'watcher'
-          ? 'magenta'
-          : line.isThinking
-            ? 'yellow'
-            : line.isError
-              ? 'red'
-              : undefined;
+        // Content line with role-based coloring
+        // WATCH-011: Cross-pane highlighted lines get cyan color
+        // WATCH-012: Watcher role gets magenta color
+        const baseColor = isCrossPaneHighlighted
+          ? 'cyan'
+          : line.role === 'user'
+            ? 'green'
+            : line.role === 'watcher'
+              ? 'magenta'
+              : line.isThinking
+                ? 'yellow'
+                : line.isError
+                  ? 'red'
+                  : undefined;
 
-    return (
-      <Box key={`line-${index}`}>
-        <Text
-          dimColor={!paneActive && !isCrossPaneHighlighted}
-          color={baseColor}
-          bold={isCrossPaneHighlighted}
-          wrap="truncate"
-        >
-          {isCrossPaneHighlighted ? '│ ' : ''}{line.content}
-        </Text>
-      </Box>
-    );
-  }, [activePane, paneContentWidth]);
+        return (
+          <Box key={`line-${index}`}>
+            <Text
+              dimColor={!paneActive && !isCrossPaneHighlighted}
+              color={baseColor}
+              bold={isCrossPaneHighlighted}
+              wrap="truncate"
+            >
+              {isCrossPaneHighlighted ? '│ ' : ''}
+              {line.content}
+            </Text>
+          </Box>
+        );
+      },
+    [activePane, paneContentWidth]
+  );
 
   return (
-    <Box flexDirection="column" flexGrow={1}>
-      {/* WATCH-015: Enhanced header with model info, capabilities, and token stats */}
-      <Box
-        borderStyle="single"
-        borderBottom={true}
-        borderTop={false}
-        borderLeft={false}
-        borderRight={false}
-        paddingX={1}
-        flexDirection="row"
-        flexWrap="nowrap"
-      >
-        <Box flexGrow={1} flexShrink={1} overflow="hidden">
-          {/* Watcher indicator in magenta */}
-          <Text bold color="magenta">
-            👁️ {watcherRoleName} (watching: {parentSessionName})
-          </Text>
-          {/* Model capability indicators */}
-          {displayReasoning && <Text color="magenta"> [R]</Text>}
-          {displayHasVision && <Text color="blue"> [V]</Text>}
-          {displayContextWindow > 0 && (
-            <Text dimColor>
-              {' '}
-              [{formatContextWindow(displayContextWindow)}]
-            </Text>
-          )}
-          {/* WATCH-015: Turn select mode indicator */}
-          {isTurnSelectMode && (
-            <Text color="cyan" bold>
-              {' '}
-              [SELECT]
-            </Text>
-          )}
-        </Box>
-        {/* Right side: token stats and percentage */}
-        <Box flexShrink={0} flexGrow={0}>
-          {isLoading && <Text color="yellow">⏳ </Text>}
-          {/* Token usage display */}
-          <Text dimColor>
-            tokens: {Math.max(tokenUsage.inputTokens, rustTokens.inputTokens)}↓ {Math.max(tokenUsage.outputTokens, rustTokens.outputTokens)}↑
-          </Text>
-          {/* Context fill percentage with color coding */}
-          <Text color={getContextFillColor(contextFillPercentage)}>
-            {' '}[{contextFillPercentage}%]
-          </Text>
-        </Box>
-      </Box>
+    <Box flexDirection="column" flexGrow={1} overflow="hidden">
+      {/* WATCH-015: Shared session header with watcher info */}
+      <SessionHeader
+        modelId={modelId}
+        hasReasoning={displayReasoning}
+        hasVision={displayHasVision}
+        contextWindow={displayContextWindow}
+        isSelectMode={isTurnSelectMode}
+        isLoading={isLoading}
+        tokenUsage={tokenUsage}
+        rustTokens={rustTokens}
+        contextFillPercentage={contextFillPercentage}
+        watcherInfo={watcherHeaderInfo ? {
+          slug: watcherHeaderInfo.slug,
+          instanceNumber: watcherHeaderInfo.instanceNumber,
+        } : undefined}
+      />
 
       {/* Split panes container */}
-      <Box flexDirection="row" height={splitPanesHeight}>
+      <Box flexDirection="row" flexGrow={1} overflow="hidden">
         {/* Left pane: Parent conversation */}
         <Box
           flexDirection="column"
@@ -382,27 +368,37 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
           borderLeft={false}
           borderTop={false}
           borderBottom={false}
+          overflow="hidden"
         >
-          <Box paddingX={1} borderStyle="single" borderBottom={true} borderTop={false} borderLeft={false} borderRight={false}>
-            <Text bold dimColor={activePane !== 'parent'}>
-              {activePane === 'parent' ? '→ ' : '  '}PARENT
+          {/* Pane header */}
+          <Box height={1} paddingX={1} overflow="hidden">
+            <Text bold dimColor={activePane !== 'parent'} wrap="truncate">
+              {activePane === 'parent' ? '> ' : '  '}PARENT
+              {parentSelection.isSelectMode ? ' [SELECT]' : ''}
+              {' '}({getContentLineCount(parentConversation)})
             </Text>
-            {parentSelection.isSelectMode && (
-              <Text color="yellow" bold> [SELECT]</Text>
-            )}
-            <Text dimColor={activePane !== 'parent'}> ({getContentLineCount(parentConversation)})</Text>
           </Box>
-          <Box flexGrow={1} flexBasis={0}>
+          {/* Pane content */}
+          <Box flexGrow={1} flexBasis={0} overflow="hidden">
             <VirtualList
               items={parentConversation}
-              renderItem={renderConversationItem(true, parentSelection.isSelectMode, parentConversation, crossPaneHighlightedTurns)}
+              renderItem={renderConversationItem(
+                true,
+                parentSelection.isSelectMode,
+                parentConversation,
+                crossPaneHighlightedTurns
+              )}
               keyExtractor={(_line, index) => `parent-${index}`}
               emptyMessage="No parent conversation"
               showScrollbar={true}
               isFocused={activePane === 'parent' && !isLoading}
               scrollToEnd={true}
               selectionMode={parentSelection.isSelectMode ? 'item' : 'scroll'}
-              groupBy={parentSelection.isSelectMode ? (line) => line.messageIndex : undefined}
+              groupBy={
+                parentSelection.isSelectMode
+                  ? line => line.messageIndex
+                  : undefined
+              }
               groupPaddingBefore={parentSelection.isSelectMode ? 1 : 0}
               selectionRef={parentSelection.selectionRef}
               fixedHeight={virtualListHeight}
@@ -411,27 +407,36 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         </Box>
 
         {/* Right pane: Watcher conversation */}
-        <Box flexDirection="column" flexGrow={1} flexBasis={0}>
-          <Box paddingX={1} borderStyle="single" borderBottom={true} borderTop={false} borderLeft={false} borderRight={false}>
-            <Text bold dimColor={activePane !== 'watcher'}>
-              {activePane === 'watcher' ? '→ ' : '  '}WATCHER
+        <Box flexDirection="column" flexGrow={1} flexBasis={0} overflow="hidden">
+          {/* Pane header */}
+          <Box height={1} paddingX={1} overflow="hidden">
+            <Text bold dimColor={activePane !== 'watcher'} wrap="truncate">
+              {activePane === 'watcher' ? '> ' : '  '}WATCHER
+              {watcherSelection.isSelectMode ? ' [SELECT]' : ''}
+              {' '}({getContentLineCount(watcherConversation)})
             </Text>
-            {watcherSelection.isSelectMode && (
-              <Text color="yellow" bold> [SELECT]</Text>
-            )}
-            <Text dimColor={activePane !== 'watcher'}> ({getContentLineCount(watcherConversation)})</Text>
           </Box>
-          <Box flexGrow={1} flexBasis={0}>
+          {/* Pane content */}
+          <Box flexGrow={1} flexBasis={0} overflow="hidden">
             <VirtualList
               items={watcherConversation}
-              renderItem={renderConversationItem(false, watcherSelection.isSelectMode, watcherConversation, crossPaneHighlightedTurns)}
+              renderItem={renderConversationItem(
+                false,
+                watcherSelection.isSelectMode,
+                watcherConversation,
+                crossPaneHighlightedTurns
+              )}
               keyExtractor={(_line, index) => `watcher-${index}`}
               emptyMessage="Start chatting with your watcher..."
               showScrollbar={true}
               isFocused={activePane === 'watcher' && !isLoading}
               scrollToEnd={true}
               selectionMode={watcherSelection.isSelectMode ? 'item' : 'scroll'}
-              groupBy={watcherSelection.isSelectMode ? (line) => line.messageIndex : undefined}
+              groupBy={
+                watcherSelection.isSelectMode
+                  ? line => line.messageIndex
+                  : undefined
+              }
               groupPaddingBefore={watcherSelection.isSelectMode ? 1 : 0}
               selectionRef={watcherSelection.selectionRef}
               fixedHeight={virtualListHeight}
@@ -446,9 +451,11 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         onChange={onInputChange}
         onSubmit={onSubmit}
         isLoading={isLoading}
-        placeholder={activeSelectMode
-          ? "↑↓ Navigate | Enter Discuss | Tab/Esc Exit Select"
-          : "Type a message... ('←/→' switch pane | 'Tab' select turn | '↑↓' scroll | 'Esc' cancel)"}
+        placeholder={
+          activeSelectMode
+            ? '↑↓ Navigate | Enter Discuss | Tab/Esc Exit Select'
+            : "Type a message... ('←/→' switch pane | 'Tab' select turn | '↑↓' scroll | 'Esc' cancel)"
+        }
         isActive={!isLoading}
       />
     </Box>
