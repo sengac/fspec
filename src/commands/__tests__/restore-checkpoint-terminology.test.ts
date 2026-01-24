@@ -12,8 +12,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
-import { restoreCheckpoint } from '../restore-checkpoint.js';
-import { checkpoint } from '../checkpoint.js';
+import { restoreCheckpoint } from '../restore-checkpoint';
+import { checkpoint } from '../checkpoint';
 
 describe('Feature: Checkpoint restore shows confusing merge terminology when it actually overwrites files', () => {
   let testDir: string;

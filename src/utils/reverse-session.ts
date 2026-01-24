@@ -11,8 +11,8 @@ import type {
   SessionPhase,
   StrategyType,
   GapAnalysis,
-} from '../types/reverse-session.js';
-import { findProjectRoot } from './project-root-detection.js';
+} from '../types/reverse-session';
+import { findProjectRoot } from './project-root-detection';
 
 export async function getSessionPath(cwd: string): Promise<string> {
   // Get project root for deterministic hashing

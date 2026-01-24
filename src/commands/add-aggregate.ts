@@ -8,7 +8,7 @@ import { join } from 'path';
 import type { Command } from 'commander';
 import type { WorkUnitsData, EventStormAggregate } from '../types';
 import { fileManager } from '../utils/file-manager';
-import { logger } from '../utils/logger.js';
+import { logger } from '../utils/logger';
 
 export interface AddAggregateOptions {
   workUnitId: string;

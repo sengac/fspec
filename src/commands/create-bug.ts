@@ -9,7 +9,7 @@ import {
   ensurePrefixesFile,
   ensureEpicsFile,
 } from '../utils/ensure-files';
-import { checkFoundationExists } from '../utils/foundation-check.js';
+import { checkFoundationExists } from '../utils/foundation-check';
 
 const MAX_NESTING_DEPTH = 3;
 

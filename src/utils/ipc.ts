@@ -9,7 +9,7 @@ import net from 'net';
 import fs from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { logger } from './logger.js';
+import { logger } from './logger';
 
 export interface IPCMessage {
   type: string;

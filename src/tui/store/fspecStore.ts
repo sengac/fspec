@@ -21,7 +21,6 @@ import { ensureEpicsFile } from '../../utils/ensure-files';
 import { fileManager } from '../../utils/file-manager';
 import git from 'isomorphic-git';
 import fs from 'fs';
-import { promises as fsPromises } from 'fs';
 import path from 'path';
 import {
   getStagedFilesWithChangeType,
@@ -30,6 +29,7 @@ import {
 } from '../../git/status';
 import { logger } from '../../utils/logger';
 import { moveWorkUnitInArray } from '../../utils/states-array';
+import { countCheckpoints } from '../../utils/checkpoint-index';
 
 interface StateHistoryEntry {
   state: string;
@@ -236,60 +236,28 @@ export const useFspecStore = create<FspecState>()(
         const cwd = get().cwd;
         logger.debug(`[ZUSTAND] Loading checkpoints from cwd: ${cwd}`);
 
-        const checkpointIndexDir = path.join(
-          cwd,
-          '.git',
-          'fspec-checkpoints-index'
-        );
-        logger.debug(`[ZUSTAND] Checkpoint index dir: ${checkpointIndexDir}`);
-
-        // Read all JSON files in checkpoint index directory
-        const files = await fsPromises.readdir(checkpointIndexDir);
-        logger.debug(
-          `[ZUSTAND] Found ${files.length} files in checkpoint index`
-        );
-        const jsonFiles = files.filter(f => f.endsWith('.json'));
-        logger.debug(`[ZUSTAND] Found ${jsonFiles.length} JSON files`);
-
-        let manual = 0;
-        let auto = 0;
-
-        // Parse each JSON file and count checkpoints
-        for (const jsonFile of jsonFiles) {
-          const filePath = path.join(checkpointIndexDir, jsonFile);
-          const content = await fsPromises.readFile(filePath, 'utf-8');
-          const data = JSON.parse(content);
-
-          logger.debug(
-            `[ZUSTAND] Parsing ${jsonFile}: found ${(data.checkpoints || []).length} checkpoints`
-          );
-
-          // Count manual vs auto checkpoints based on name pattern
-          for (const checkpoint of data.checkpoints || []) {
-            if (checkpoint.name.includes('-auto-')) {
-              auto++;
-            } else {
-              manual++;
-            }
-          }
-        }
+        // Use shared utility for checkpoint counting (handles missing directory gracefully)
+        const counts = await countCheckpoints(cwd);
 
         logger.debug(
-          `[ZUSTAND] Checkpoint counts calculated: manual=${manual}, auto=${auto}`
+          `[ZUSTAND] Checkpoint counts calculated: manual=${counts.manual}, auto=${counts.auto}`
         );
         logger.debug(
           `[ZUSTAND] Current state before update: ${JSON.stringify(get().checkpointCounts)}`
         );
 
         set(state => {
-          state.checkpointCounts = { manual, auto };
+          state.checkpointCounts = counts;
         });
 
         logger.debug(
           `[ZUSTAND] State updated. New state: ${JSON.stringify(get().checkpointCounts)}`
         );
       } catch (error) {
-        logger.error(`[ZUSTAND] Error loading checkpoint counts: ${error}`);
+        // Only log unexpected errors (countCheckpoints handles ENOENT gracefully)
+        logger.warn(
+          `[ZUSTAND] Unexpected error loading checkpoint counts: ${error}`
+        );
         set(state => {
           state.checkpointCounts = { manual: 0, auto: 0 };
         });

@@ -11,8 +11,8 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
-import { updateWorkUnitStatus } from '../update-work-unit-status.js';
-import { createCheckpoint } from '../../utils/git-checkpoint.js';
+import { updateWorkUnitStatus } from '../update-work-unit-status';
+import { createCheckpoint } from '../../utils/git-checkpoint';
 import { existsSync } from 'fs';
 
 describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done', () => {

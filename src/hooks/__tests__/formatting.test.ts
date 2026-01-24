@@ -6,8 +6,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { HookExecutionResult } from '../types.js';
-import { formatHookOutput } from '../formatting.js';
+import type { HookExecutionResult } from '../types';
+import { formatHookOutput } from '../formatting';
 
 describe('Feature: System reminder formatting for AI', () => {
   describe('Scenario: Blocking hook fails with stderr wrapped in system-reminder', () => {

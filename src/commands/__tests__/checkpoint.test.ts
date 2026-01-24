@@ -11,11 +11,11 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
-import { checkpoint } from '../checkpoint.js';
-import { restoreCheckpoint } from '../restore-checkpoint.js';
-import { listCheckpoints } from '../list-checkpoints.js';
-import { cleanupCheckpoints } from '../cleanup-checkpoints.js';
-import { updateWorkUnitStatus } from '../update-work-unit-status.js';
+import { checkpoint } from '../checkpoint';
+import { restoreCheckpoint } from '../restore-checkpoint';
+import { listCheckpoints } from '../list-checkpoints';
+import { cleanupCheckpoints } from '../cleanup-checkpoints';
+import { updateWorkUnitStatus } from '../update-work-unit-status';
 
 describe('Feature: Intelligent checkpoint system for workflow transitions', () => {
   let testDir: string;

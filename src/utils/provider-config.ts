@@ -7,7 +7,7 @@
  * This module supports all 19 rig providers with their specific configuration needs.
  */
 
-import { loadConfig, writeConfig, getFspecUserDir } from './config.js';
+import { loadConfig, writeConfig, getFspecUserDir } from './config';
 import { join } from 'path';
 import { readFile } from 'fs/promises';
 

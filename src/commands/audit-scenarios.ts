@@ -13,7 +13,7 @@ import * as Messages from '@cucumber/messages';
 import {
   calculateScenarioSimilarity,
   extractTokens,
-} from '../utils/scenario-similarity.js';
+} from '../utils/scenario-similarity';
 
 interface DuplicateGroup {
   files: string[];

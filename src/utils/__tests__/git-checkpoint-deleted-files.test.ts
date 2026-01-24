@@ -13,7 +13,7 @@ import { tmpdir } from 'os';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
-import { createCheckpoint } from '../../utils/git-checkpoint.js';
+import { createCheckpoint } from '../../utils/git-checkpoint';
 
 describe('Feature: Checkpoint creation fails when deleted files exist', () => {
   let testDir: string;

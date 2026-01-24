@@ -7,7 +7,7 @@ import type { Command } from 'commander';
 import {
   restoreCheckpoint as restoreCheckpointUtil,
   isWorkingDirectoryDirty,
-} from '../utils/git-checkpoint.js';
+} from '../utils/git-checkpoint';
 
 export interface RestoreCheckpointOptions {
   workUnitId: string;

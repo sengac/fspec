@@ -10,7 +10,7 @@ import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { homedir } from 'os';
-import { loadConfig, writeConfig } from '../config.js';
+import { loadConfig, writeConfig } from '../config';
 
 describe('Feature: Shared configuration management utilities', () => {
   let testDir: string;

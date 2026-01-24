@@ -6,7 +6,11 @@
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import { join, dirname } from 'path';
-import { logger } from './logger.js';
+import { logger } from './logger';
+import {
+  isAutomaticCheckpoint,
+  AUTO_CHECKPOINT_PATTERN,
+} from './checkpoint-index';
 
 /**
  * Get git author information from config with fallback defaults
@@ -511,9 +515,7 @@ export async function listCheckpoints(
       // Parse checkpoint message
       const parsed = parseCheckpointMessage(message);
       if (parsed) {
-        const isAutomatic = parsed.checkpointName.startsWith(
-          `${workUnitId}-auto-`
-        );
+        const isAutomatic = isAutomaticCheckpoint(parsed.checkpointName);
         checkpoints.push({
           name: parsed.checkpointName,
           workUnitId: parsed.workUnitId,
@@ -651,7 +653,7 @@ export function createAutomaticCheckpointName(
   workUnitId: string,
   fromState: string
 ): string {
-  return `${workUnitId}-auto-${fromState}`;
+  return `${workUnitId}${AUTO_CHECKPOINT_PATTERN}${fromState}`;
 }
 
 /**

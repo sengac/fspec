@@ -24,14 +24,14 @@ import {
   getProviderConfig,
   resolveCredential,
   maskApiKey,
-} from '../credentials.js';
+} from '../credentials';
 
 import {
   loadProviderConfig,
   saveProviderConfig,
   getProviderRegistry,
   SUPPORTED_PROVIDERS,
-} from '../provider-config.js';
+} from '../provider-config';
 
 describe('Feature: Provider Configuration and Credentials Management', () => {
   let testDir: string;

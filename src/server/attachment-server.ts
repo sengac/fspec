@@ -11,9 +11,9 @@
 import express, { type Express, type Request, type Response } from 'express';
 import { readFile } from 'fs/promises';
 import path from 'path';
-import { logger } from '../utils/logger.js';
-import { renderMarkdown } from './utils/markdown-renderer.js';
-import { getViewerTemplate } from './templates/viewer-template.js';
+import { logger } from '../utils/logger';
+import { renderMarkdown } from './utils/markdown-renderer';
+import { getViewerTemplate } from './templates/viewer-template';
 import type { Server } from 'http';
 
 export interface AttachmentServerOptions {

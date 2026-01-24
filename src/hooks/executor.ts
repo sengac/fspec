@@ -4,12 +4,8 @@
 
 import { execa } from 'execa';
 import { join } from 'path';
-import type {
-  HookDefinition,
-  HookContext,
-  HookExecutionResult,
-} from './types.js';
-import { isShellCommand } from './command-utils.js';
+import type { HookDefinition, HookContext, HookExecutionResult } from './types';
+import { isShellCommand } from './command-utils';
 
 export async function executeHook(
   hook: HookDefinition,

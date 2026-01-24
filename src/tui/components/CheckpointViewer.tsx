@@ -25,6 +25,14 @@ import {
   restoreCheckpointFile,
   restoreCheckpoint,
 } from '../../utils/git-checkpoint';
+import {
+  checkpointIndexDirExists,
+  listCheckpointIndexFiles,
+  getCheckpointIndexDir,
+  readCheckpointIndexFile,
+  isAutomaticCheckpoint,
+  parseAutomaticCheckpointName,
+} from '../../utils/checkpoint-index';
 import { ConfirmationDialog } from '../../components/ConfirmationDialog';
 import { StatusDialog } from '../../components/StatusDialog';
 import { sendIPCMessage } from '../../utils/ipc';
@@ -82,29 +90,23 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     const loadAllCheckpoints = async () => {
       setIsLoadingCheckpoints(true);
       try {
-        const indexDir = join(cwd, '.git', 'fspec-checkpoints-index');
+        // Use shared utility to list index files (handles ENOENT gracefully)
+        const indexFiles = await listCheckpointIndexFiles(cwd);
 
-        // Check if index directory exists
-        if (!fs.existsSync(indexDir)) {
+        // No checkpoint files = no checkpoints
+        if (indexFiles.length === 0) {
           setCheckpoints([]);
           setIsLoadingCheckpoints(false);
           return;
         }
 
-        // Read all work unit index files
-        const indexFiles = fs
-          .readdirSync(indexDir)
-          .filter(f => f.endsWith('.json'));
         const allCheckpoints: Checkpoint[] = [];
 
         for (const indexFile of indexFiles) {
           const workUnitId = indexFile.replace('.json', '');
-          const indexPath = join(indexDir, indexFile);
 
-          const content = fs.readFileSync(indexPath, 'utf-8');
-          const index = JSON.parse(content) as {
-            checkpoints: { name: string; message: string }[];
-          };
+          // Use shared utility for reading index files (DRY)
+          const index = await readCheckpointIndexFile(cwd, workUnitId);
 
           for (const cp of index.checkpoints) {
             const ref = `refs/fspec-checkpoints/${workUnitId}/${cp.name}`;
@@ -129,7 +131,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
                 workUnitId,
                 timestamp,
                 stashRef: ref,
-                isAutomatic: cp.name.includes('-auto-'),
+                isAutomatic: isAutomaticCheckpoint(cp.name),
                 files,
                 fileCount: files.length,
               });
@@ -749,12 +751,17 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     isSelected: boolean
   ): React.ReactNode => {
     // Extract compact name from checkpoint name (e.g., "TUI-001-auto-testing" -> "TUI-001: Testing")
-    const parts = checkpoint.name.split('-auto-');
-    const workUnit = parts[0]; // e.g., "TUI-001"
-    const phase = parts[1]
-      ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1).toLowerCase()
-      : 'Unknown'; // e.g., "Testing"
-    const displayName = `${workUnit}: ${phase}`;
+    const parsed = parseAutomaticCheckpointName(checkpoint.name);
+    let displayName: string;
+
+    if (parsed) {
+      // Automatic checkpoint - format as "WORK-001: Testing"
+      const phase = parsed.state.charAt(0).toUpperCase() + parsed.state.slice(1).toLowerCase();
+      displayName = `${parsed.workUnitId}: ${phase}`;
+    } else {
+      // Manual checkpoint - use name directly
+      displayName = checkpoint.name;
+    }
 
     return (
       <Box flexGrow={1}>

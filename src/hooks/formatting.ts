@@ -2,7 +2,7 @@
  * System reminder formatting for AI
  */
 
-import type { HookExecutionResult } from './types.js';
+import type { HookExecutionResult } from './types';
 
 export function formatHookOutput(
   result: HookExecutionResult,

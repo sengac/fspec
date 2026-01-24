@@ -1,6 +1,6 @@
 import type { Command } from 'commander';
 import chalk from 'chalk';
-import { checkFoundationExists } from '../utils/foundation-check.js';
+import { checkFoundationExists } from '../utils/foundation-check';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
 interface WorkUnit {

@@ -15,6 +15,7 @@ import type { Server } from 'net';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { tmpdir } from 'os';
+import { isAutomaticCheckpoint } from '../../utils/checkpoint-index';
 
 describe('Feature: TUI-016 incomplete: CheckpointPanel using chokidar instead of IPC+Zustand', () => {
   let server: Server | null = null;
@@ -112,8 +113,8 @@ describe('Feature: TUI-016 incomplete: CheckpointPanel using chokidar instead of
       // @step When user starts TUI
       // @step Then CheckpointPanel calls loadCheckpointCounts() on mount
       const files = await fs.readdir(checkpointIndexDir);
-      const manual = files.filter(f => !f.includes('-auto-')).length;
-      const auto = files.filter(f => f.includes('-auto-')).length;
+      const manual = files.filter(f => !isAutomaticCheckpoint(f)).length;
+      const auto = files.filter(f => isAutomaticCheckpoint(f)).length;
 
       // @step Then CheckpointPanel displays 21 manual and 59 auto checkpoints
       expect(manual).toBe(21);

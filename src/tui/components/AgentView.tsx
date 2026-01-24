@@ -1685,7 +1685,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId }) => {
             );
           }
         } catch (err) {
-          logger.error(
+          // Log at warn level since we gracefully fall back to defaults
+          // This can happen if config has invalid JSON - not a critical error
+          logger.warn(
             'Failed to load config for persisted model, using default',
             { error: err }
           );

@@ -6,9 +6,9 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { HookDefinition, HookContext } from '../types.js';
-import type { WorkUnit } from '../../types/index.js';
-import { evaluateHookCondition } from '../conditions.js';
+import type { HookDefinition, HookContext } from '../types';
+import type { WorkUnit } from '../../types/index';
+import { evaluateHookCondition } from '../conditions';
 
 describe('Feature: Hook condition evaluation', () => {
   describe('Scenario: Hook with no condition always matches', () => {

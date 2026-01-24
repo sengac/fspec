@@ -8,7 +8,7 @@ import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { describe, it, beforeEach, afterEach, expect } from 'vitest';
-import { updateWorkUnitStatus } from '../update-work-unit-status.js';
+import { updateWorkUnitStatus } from '../update-work-unit-status';
 
 describe('Feature: Coverage enforcement gap: 21.3% of features bypass validation', () => {
   let tempDir: string;

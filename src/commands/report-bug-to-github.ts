@@ -17,11 +17,11 @@ import { readFile, readdir } from 'fs/promises';
 import { join } from 'path';
 import { Command } from 'commander';
 import chalk from 'chalk';
-import { findProjectRoot } from '../utils/project-root-detection.js';
-import { openInBrowser } from '../utils/openBrowser.js';
-import { getCurrentBranch, getGitStatus } from '../git/status.js';
-import { ensureWorkUnitsFile } from '../utils/ensure-files.js';
-import type { WorkUnitsData } from '../types/index.js';
+import { findProjectRoot } from '../utils/project-root-detection';
+import { openInBrowser } from '../utils/openBrowser';
+import { getCurrentBranch, getGitStatus } from '../git/status';
+import { ensureWorkUnitsFile } from '../utils/ensure-files';
+import type { WorkUnitsData } from '../types/index';
 
 export interface BugReportContext {
   fspecVersion: string;

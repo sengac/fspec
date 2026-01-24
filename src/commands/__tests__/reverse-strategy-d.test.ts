@@ -8,8 +8,8 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { reverse } from '../reverse.js';
-import type { ReverseCommandResult } from '../../types/reverse-session.js';
+import { reverse } from '../reverse';
+import type { ReverseCommandResult } from '../../types/reverse-session';
 
 describe('Feature: Strategy D processes existing feature files instead of scanning src/ for implementation files', () => {
   let testDir: string;

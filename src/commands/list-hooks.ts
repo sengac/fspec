@@ -5,7 +5,7 @@
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 import type { Command } from 'commander';
-import type { HookConfig } from '../hooks/types.js';
+import type { HookConfig } from '../hooks/types';
 
 export interface ListHooksOptions {
   cwd?: string;
