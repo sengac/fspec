@@ -314,6 +314,15 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     // Home/End are handled via raw stdin event emitter above
     // because useInput filters them out before we can see them
 
+    // VIEWNV-001: Ignore arrow keys when shift is held
+    // Shift+arrow combinations are reserved for cross-component navigation
+    // (e.g., Shift+Right to navigate to AgentView or create new session)
+    // Without this check, both BoardView's shift+arrow handler AND this
+    // handler would fire, since Ink's useInput doesn't stop propagation.
+    if (key.shift) {
+      return;
+    }
+
     // Arrow keys handled by parent
     if (key.leftArrow || key.rightArrow) {
       onColumnChange?.(key.rightArrow ? 1 : -1);
