@@ -5579,7 +5579,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       }
       // Note: TUI-042 turn navigation is handled by VirtualList via getNextIndex/getIsSelected
     },
-    { isActive: true }
+    // VIEWNV-001: Disable main input handling when CreateSessionDialog is showing
+    // This prevents ESC from firing both the dialog's handler AND this handler
+    // (Ink's useInput doesn't have event propagation stopping like DOM events)
+    { isActive: !showCreateSessionDialog }
   );
 
   // PERF-002: Incremental line computation with caching
@@ -6620,6 +6623,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             onHistoryNext={handleHistoryNext}
             maxVisibleLines={5}
             skipAnimation={skipInputAnimation}
+            isActive={!showCreateSessionDialog}
           />
         </Box>
       </Box>

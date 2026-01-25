@@ -1,5 +1,5 @@
 /**
- * CreateSessionDialog.tsx - Confirmation dialog for creating a new session
+ * CreateSessionDialog.tsx - Confirmation dialog for starting a new agent conversation
  *
  * VIEWNV-001: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPaneView
  *
@@ -8,7 +8,7 @@
  *
  * Features:
  * - Simple Yes/No confirmation
- * - Creates a new unattached session (not attached to any work unit)
+ * - Creates a new agent conversation not linked to any work unit
  * - Uses the base Dialog component for consistent modal styling
  */
 
@@ -17,14 +17,14 @@ import { Box, Text, useInput } from 'ink';
 import { Dialog } from './Dialog';
 
 export interface CreateSessionDialogProps {
-  /** Callback when user confirms - creates new session */
+  /** Callback when user confirms - starts new agent conversation */
   onConfirm: () => void;
   /** Callback when user cancels - stays at current position */
   onCancel: () => void;
 }
 
 /**
- * CreateSessionDialog - A simple Yes/No confirmation dialog for creating a new session.
+ * CreateSessionDialog - A simple Yes/No confirmation dialog for starting a new agent.
  *
  * Uses Left/Right arrow keys to navigate between buttons.
  * Enter selects the currently highlighted option.
@@ -53,8 +53,8 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
 
   return (
     <Dialog onClose={onCancel} borderColor="cyan">
-      <Text bold>Would you like to create a new session?</Text>
-      <Text dimColor>A new unattached session will be created.</Text>
+      <Text bold>Start New Agent?</Text>
+      <Text dimColor>Begin a fresh AI conversation, not linked to any task.</Text>
       <Box marginTop={1} justifyContent="center">
         <Box marginX={1}>
           <Text

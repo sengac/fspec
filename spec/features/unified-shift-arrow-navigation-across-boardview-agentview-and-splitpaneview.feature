@@ -76,7 +76,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
     And no sessions exist
     When I press Shift+Right
     Then I should see a create session dialog
-    And the dialog should ask "Would you like to create a new session?"
+    And the dialog should ask "Start New Agent?"
 
   @BoardView
   Scenario: Shift+Right from BoardView with sessions navigates to first session
