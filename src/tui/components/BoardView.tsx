@@ -457,7 +457,11 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         terminalWidth={terminalWidth}
         terminalHeight={terminalHeight}
         cwd={cwd}
-        isDialogOpen={showAttachmentDialog}
+        // VIEWNV-001: Disable board input when ANY modal dialog is open.
+        // This prevents arrow keys from navigating the board while user
+        // is interacting with a dialog (e.g., Yes/No button selection).
+        // Add new dialog states here with || when adding new modals.
+        isDialogOpen={showAttachmentDialog || showCreateSessionDialog}
         onColumnChange={(delta) => {
           setFocusedColumnIndex(prev => {
             const newIndex = prev + delta;
