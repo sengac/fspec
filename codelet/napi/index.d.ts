@@ -1326,6 +1326,10 @@ export declare function sessionUpdateDebugMetadata(
  * LOG-002: The subscriber is initialized with an EnvFilter that respects
  * FSPEC_RUST_LOG_LEVEL or RUST_LOG environment variables. Default level
  * is WARN, which keeps logs quiet unless there are actual problems.
+ *
+ * LOG-004: The callback uses Weak=true in its type definition, which automatically
+ * unrefs the ThreadsafeFunction. This prevents keeping the Node.js event loop alive,
+ * allowing CLI commands to exit normally after completion.
  */
 export declare function setRustLogCallback(callback: LogCallback): void;
 

@@ -51,14 +51,16 @@ mod logging {
     use napi::threadsafe_function::{
         ThreadsafeFunction, ThreadsafeFunctionCallMode, UnknownReturnValue,
     };
-    use napi::Status;
+    use napi::{Env, Status};
     use std::sync::Mutex;
     use tracing_subscriber::layer::SubscriberExt;
     use tracing_subscriber::util::SubscriberInitExt;
     use tracing_subscriber::EnvFilter;
 
     /// Type alias for log callback - matches NAPI v3 signature
-    type LogCallback = ThreadsafeFunction<String, UnknownReturnValue, String, Status, false>;
+    /// LOG-004: The 6th parameter (Weak = true) ensures this ThreadsafeFunction doesn't
+    /// keep the Node.js event loop alive, allowing CLI commands to exit normally.
+    type LogCallback = ThreadsafeFunction<String, UnknownReturnValue, String, Status, false, true>;
 
     lazy_static::lazy_static! {
         static ref LOG_CALLBACK: Mutex<Option<LogCallback>> = Mutex::new(None);
@@ -158,8 +160,15 @@ mod logging {
     /// LOG-002: The subscriber is initialized with an EnvFilter that respects
     /// FSPEC_RUST_LOG_LEVEL or RUST_LOG environment variables. Default level
     /// is WARN, which keeps logs quiet unless there are actual problems.
+    ///
+    /// LOG-004: The callback uses Weak=true in its type definition, which automatically
+    /// unrefs the ThreadsafeFunction. This prevents keeping the Node.js event loop alive,
+    /// allowing CLI commands to exit normally after completion.
     #[napi]
-    pub fn set_rust_log_callback(callback: LogCallback) {
+    pub fn set_rust_log_callback(env: Env, callback: LogCallback) -> napi::Result<()> {
+        // LOG-004: No need to call unref() manually - Weak=true in type handles this
+        let _ = env; // Silence unused warning - env was needed for deprecated unref()
+        
         // Store the callback
         if let Ok(mut guard) = LOG_CALLBACK.lock() {
             *guard = Some(callback);
@@ -178,6 +187,8 @@ mod logging {
                 *initialized = true;
             }
         }
+        
+        Ok(())
     }
 }
 

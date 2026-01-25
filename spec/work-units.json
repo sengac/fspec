@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-24T03:12:57.781Z"
+    "lastUpdated": "2026-01-25T00:07:28.033Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -66803,6 +66803,41 @@
       "nextNoteId": 7,
       "estimate": 8,
       "updated": "2026-01-24T03:12:57.814Z"
+    },
+    "TUI-050": {
+      "id": "TUI-050",
+      "title": "Slash Command Autocomplete Palette",
+      "type": "story",
+      "status": "specifying",
+      "createdAt": "2026-01-25T00:06:40.171Z",
+      "updatedAt": "2026-01-25T00:17:54.266Z",
+      "description": "Floating popup palette that appears above the input area when / is typed, showing matching commands with descriptions. Uses fuzzy filtering, keyboard navigation, and integrates with both AgentView and SplitSessionView.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-050/TUI-050-slash-command-palette-design.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-25T00:11:11.399Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-25T00:16:29.766Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-25T00:17:04.327Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-25T00:17:27.092Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-25T00:17:54.266Z"
+        }
+      ]
     }
   },
   "states": {
@@ -66874,7 +66909,8 @@
       "MODEL-001",
       "PROV-003",
       "CMPCT-001",
-      "WATCH-001"
+      "WATCH-001",
+      "TUI-050"
     ],
     "testing": [],
     "implementing": [
@@ -67377,7 +67413,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 49,
+    "TUI": 50,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,
