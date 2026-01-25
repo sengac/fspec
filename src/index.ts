@@ -17,11 +17,6 @@ setInterval(() => {
 import { initializeConsoleCapture } from './utils/console-capture';
 initializeConsoleCapture();
 
-// LOG-004: Wire up Rust tracing logs to TypeScript logger
-// This MUST run early to capture all Rust logs (including session navigation)
-import { initializeRustLogCapture } from './utils/rust-log-capture';
-initializeRustLogCapture();
-
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { fileURLToPath } from 'url';
@@ -412,6 +407,14 @@ async function main(): Promise<void> {
       );
       process.exit(1);
     }
+
+    // LOG-004: Wire up Rust tracing logs to TypeScript logger
+    // Only initialize for TUI mode - CLI commands don't need this and it would
+    // prevent the process from exiting due to ThreadsafeFunction references
+    const { initializeRustLogCapture } = await import(
+      './utils/rust-log-capture'
+    );
+    initializeRustLogCapture();
 
     const { waitUntilExit } = render(
       React.createElement(BoardView, {
