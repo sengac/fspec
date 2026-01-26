@@ -62,15 +62,23 @@ impl From<ChromeError> for ToolError {
 /// Global browser instance - lazily initialized on first use, can be recreated on error
 static BROWSER: Mutex<Option<Arc<ChromeBrowser>>> = Mutex::new(None);
 
-/// Create a new browser instance
-fn create_browser() -> Result<Arc<ChromeBrowser>, ChromeError> {
+/// Current headless mode of the browser instance
+static BROWSER_HEADLESS: Mutex<bool> = Mutex::new(true);
+
+/// Create a new browser instance with specified headless mode
+fn create_browser_with_headless(headless: bool) -> Result<Arc<ChromeBrowser>, ChromeError> {
     let config = ChromeConfig::default();
-    let browser = ChromeBrowser::new(config)?;
+    // Override headless setting from config with requested value
+    let mut launch_config = config.clone();
+    launch_config.headless = headless;
+
+    let browser = ChromeBrowser::new(launch_config)?;
     Ok(Arc::new(browser))
 }
 
 /// Get or initialize the global browser instance
 /// If the browser connection has closed, creates a new one
+/// Returns the browser (may restart if headless mode changed)
 fn get_browser() -> Result<Arc<ChromeBrowser>, ChromeError> {
     let mut guard = BROWSER
         .lock()
@@ -81,10 +89,47 @@ fn get_browser() -> Result<Arc<ChromeBrowser>, ChromeError> {
         return Ok(Arc::clone(browser));
     }
 
-    // Create a new browser
-    let browser = create_browser()?;
+    // Create a new browser with default headless mode
+    let headless_guard = BROWSER_HEADLESS
+        .lock()
+        .map_err(|e| ChromeError::LaunchError(format!("Failed to acquire headless lock: {e}")))?;
+    let headless = *headless_guard;
+    drop(headless_guard);
+
+    let browser = create_browser_with_headless(headless)?;
     *guard = Some(Arc::clone(&browser));
     Ok(browser)
+}
+
+/// Ensure browser is in correct headless mode, recreating if necessary
+fn ensure_browser_mode(headless: bool) -> Result<Arc<ChromeBrowser>, ChromeError> {
+    let mut headless_guard = BROWSER_HEADLESS
+        .lock()
+        .map_err(|e| ChromeError::LaunchError(format!("Failed to acquire headless lock: {e}")))?;
+
+    // If mode changed, we need to recreate the browser
+    if *headless_guard != headless {
+        *headless_guard = headless;
+        drop(headless_guard);
+
+        // Clear the old browser instance
+        clear_browser();
+
+        // Create new browser with the correct mode
+        let browser = create_browser_with_headless(headless)?;
+
+        // Store it
+        let mut guard = BROWSER
+            .lock()
+            .map_err(|e| ChromeError::LaunchError(format!("Failed to acquire browser lock: {e}")))?;
+        *guard = Some(Arc::clone(&browser));
+        drop(guard);
+
+        Ok(browser)
+    } else {
+        drop(headless_guard);
+        get_browser()
+    }
 }
 
 /// Clear the cached browser instance (called on connection errors)
@@ -153,6 +198,19 @@ where
         }
         Err(e) => Err(e),
     }
+}
+
+/// Execute a browser operation with a specific headless mode
+/// Recreates browser if mode changes
+fn with_browser_mode<T, F>(headless: bool, operation: F) -> Result<T, ChromeError>
+where
+    F: Fn(Arc<ChromeBrowser>) -> Result<T, ChromeError>,
+{
+    // Ensure browser is in correct mode (may recreate if mode changed)
+    let browser = ensure_browser_mode(headless)?;
+
+    // Execute the operation
+    operation(Arc::clone(&browser))
 }
 
 /// Web Search Tool
@@ -268,7 +326,7 @@ impl Tool for WebSearchTool {
         // This matches the schema structure that was working in the previous implementation
         ToolDefinition {
             name: "WebSearch".to_string(),
-            description: "Perform web search, open web pages, find content within pages, or capture screenshots using Chrome-based web scraping with full JavaScript support".to_string(),
+            description: "Perform web search, open web pages, find content within pages, or capture screenshots using Chrome-based web scraping with full JavaScript support. Supports both headless (no UI, default) and non-headless (visible browser) modes for debugging".to_string(),
             parameters: json!({
                 "additionalProperties": false,
                 "properties": {
@@ -299,6 +357,10 @@ impl Tool for WebSearchTool {
                                     "url": {
                                         "description": "URL to open",
                                         "type": "string"
+                                    },
+                                    "headless": {
+                                        "description": "If true (default), runs Chrome in headless mode (no UI). If false, runs Chrome with a visible window. Use false when debugging or when you need to see the browser behavior",
+                                        "type": "boolean"
                                     }
                                 },
                                 "required": ["type"],
@@ -318,6 +380,10 @@ impl Tool for WebSearchTool {
                                     "url": {
                                         "description": "URL of page to search",
                                         "type": "string"
+                                    },
+                                    "headless": {
+                                        "description": "If true (default), runs Chrome in headless mode (no UI). If false, runs Chrome with a visible window. Use false when debugging or when you need to see the browser behavior",
+                                        "type": "boolean"
                                     }
                                 },
                                 "required": ["type"],
@@ -340,6 +406,10 @@ impl Tool for WebSearchTool {
                                     },
                                     "full_page": {
                                         "description": "If true, captures entire scrollable page. If false (default), captures visible viewport only",
+                                        "type": "boolean"
+                                    },
+                                    "headless": {
+                                        "description": "If true (default), runs Chrome in headless mode (no UI). If false, runs Chrome with a visible window. Use false when debugging or when you need to see the browser behavior",
                                         "type": "boolean"
                                     }
                                 },
@@ -373,7 +443,7 @@ impl Tool for WebSearchTool {
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::OpenPage { url } => {
+            WebSearchAction::OpenPage { url, headless } => {
                 let url = url.as_deref().unwrap_or("");
                 if url.is_empty() {
                     return Err(ToolError::Validation {
@@ -381,12 +451,12 @@ impl Tool for WebSearchTool {
                         message: "URL is required".to_string(),
                     });
                 }
-                match fetch_page_content(url) {
+                match fetch_page_content(url, *headless) {
                     Ok(content) => (true, format!("Page content from {url}:\n{content}")),
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::FindInPage { url, pattern } => {
+            WebSearchAction::FindInPage { url, pattern, headless } => {
                 let url = url.as_deref().unwrap_or("");
                 let pattern = pattern.as_deref().unwrap_or("");
                 if url.is_empty() {
@@ -401,7 +471,7 @@ impl Tool for WebSearchTool {
                         message: "Pattern is required for find_in_page".to_string(),
                     });
                 }
-                match find_pattern_in_page(url, pattern) {
+                match find_pattern_in_page(url, pattern, *headless) {
                     Ok(found) => (
                         true,
                         format!("Pattern '{pattern}' search results in {url}:\n{found}"),
@@ -413,6 +483,7 @@ impl Tool for WebSearchTool {
                 url,
                 output_path,
                 full_page,
+                headless,
             } => {
                 let url = url.as_deref().unwrap_or("");
                 if url.is_empty() {
@@ -422,7 +493,7 @@ impl Tool for WebSearchTool {
                     });
                 }
                 let full_page = full_page.unwrap_or(false);
-                match capture_page_screenshot(url, output_path.clone(), full_page) {
+                match capture_page_screenshot(url, output_path.clone(), full_page, *headless) {
                     Ok(file_path) => (true, format!("Screenshot saved to: {file_path}")),
                     Err(e) => return Err(e.into()),
                 }
@@ -487,10 +558,10 @@ fn perform_web_search(query: &str) -> Result<String, ChromeError> {
 }
 
 /// Fetch content from a web page using Chrome
-fn fetch_page_content(url: &str) -> Result<String, ChromeError> {
+fn fetch_page_content(url: &str, headless: bool) -> Result<String, ChromeError> {
     let url = url.to_string();
-    with_browser_retry(|browser| {
-        let page_fetcher = PageFetcher::new(browser);
+    with_browser_mode(headless, |browser| {
+        let page_fetcher = PageFetcher::new(Arc::clone(&browser));
         let content = page_fetcher.fetch(&url)?;
 
         let mut output = Vec::new();
@@ -544,9 +615,10 @@ fn capture_page_screenshot(
     url: &str,
     output_path: Option<String>,
     full_page: bool,
+    headless: bool,
 ) -> Result<String, ChromeError> {
     let url = url.to_string();
-    with_browser_retry(|browser| {
+    with_browser_mode(headless, |browser| {
         let tab = browser.new_tab()?;
         browser.navigate_and_wait(&tab, &url)?;
         let file_path = browser.capture_screenshot(&tab, output_path.clone(), full_page)?;
@@ -556,11 +628,11 @@ fn capture_page_screenshot(
 }
 
 /// Find a pattern in a web page using Chrome
-fn find_pattern_in_page(url: &str, pattern: &str) -> Result<String, ChromeError> {
+fn find_pattern_in_page(url: &str, pattern: &str, headless: bool) -> Result<String, ChromeError> {
     let url = url.to_string();
     let pattern = pattern.to_string();
-    with_browser_retry(|browser| {
-        let page_fetcher = PageFetcher::new(browser);
+    with_browser_mode(headless, |browser| {
+        let page_fetcher = PageFetcher::new(Arc::clone(&browser));
         let matches = page_fetcher.find_in_page(&url, &pattern)?;
 
         if matches.is_empty() {

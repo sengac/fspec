@@ -78,24 +78,32 @@ impl Tool for FacadeToolWrapper {
             InternalWebSearchParams::Search { query } => WebSearchRequest {
                 action: WebSearchAction::Search { query: Some(query) },
             },
-            InternalWebSearchParams::OpenPage { url } => WebSearchRequest {
-                action: WebSearchAction::OpenPage { url: Some(url) },
-            },
-            InternalWebSearchParams::FindInPage { url, pattern } => WebSearchRequest {
-                action: WebSearchAction::FindInPage {
+            InternalWebSearchParams::OpenPage { url, headless } => WebSearchRequest {
+                action: WebSearchAction::OpenPage {
                     url: Some(url),
-                    pattern: Some(pattern),
+                    headless,
                 },
             },
+            InternalWebSearchParams::FindInPage { url, pattern, headless } => {
+                WebSearchRequest {
+                    action: WebSearchAction::FindInPage {
+                        url: Some(url),
+                        pattern: Some(pattern),
+                        headless,
+                    },
+                }
+            }
             InternalWebSearchParams::CaptureScreenshot {
                 url,
                 output_path,
                 full_page,
+                headless,
             } => WebSearchRequest {
                 action: WebSearchAction::CaptureScreenshot {
                     url: Some(url),
                     output_path,
                     full_page: Some(full_page),
+                    headless,
                 },
             },
         };

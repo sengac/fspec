@@ -86,7 +86,8 @@ async fn test_map_gemini_web_fetch_url_to_internal_open_page_format() -> Result<
     assert_eq!(
         internal,
         InternalWebSearchParams::OpenPage {
-            url: "https://example.com".to_string()
+            url: "https://example.com".to_string(),
+            headless: true,
         }
     );
 

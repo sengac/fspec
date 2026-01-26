@@ -23,7 +23,7 @@ impl ToolFacade for ClaudeWebSearchFacade {
         // Use flat schema to avoid Claude serializing nested objects as strings
         ToolDefinition {
             name: "WebSearch".to_string(),
-            description: "Perform web search, open web pages, find content within pages, or capture screenshots. Use action_type to specify the operation.".to_string(),
+            description: "Perform web search, open web pages, find content within pages, or capture screenshots. Supports both headless (no UI, default) and non-headless (visible browser) modes for debugging. Use action_type to specify the operation.".to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
@@ -51,6 +51,10 @@ impl ToolFacade for ClaudeWebSearchFacade {
                     "full_page": {
                         "type": "boolean",
                         "description": "If true, captures entire scrollable page. If false (default), captures visible viewport only (optional for 'capture_screenshot' action)"
+                    },
+                    "headless": {
+                        "type": "boolean",
+                        "description": "If true (default), runs Chrome in headless mode with no visible UI. If false, shows the browser window for debugging or visual confirmation (optional for all actions except 'search')"
                     }
                 },
                 "required": ["action_type"]
@@ -83,7 +87,11 @@ impl ToolFacade for ClaudeWebSearchFacade {
                     .and_then(|u| u.as_str())
                     .unwrap_or("")
                     .to_string();
-                Ok(InternalWebSearchParams::OpenPage { url })
+                let headless = input
+                    .get("headless")
+                    .and_then(serde_json::Value::as_bool)
+                    .unwrap_or(true);
+                Ok(InternalWebSearchParams::OpenPage { url, headless })
             }
             "find_in_page" => {
                 let url = input
@@ -96,7 +104,11 @@ impl ToolFacade for ClaudeWebSearchFacade {
                     .and_then(|p| p.as_str())
                     .unwrap_or("")
                     .to_string();
-                Ok(InternalWebSearchParams::FindInPage { url, pattern })
+                let headless = input
+                    .get("headless")
+                    .and_then(serde_json::Value::as_bool)
+                    .unwrap_or(true);
+                Ok(InternalWebSearchParams::FindInPage { url, pattern, headless })
             }
             "capture_screenshot" => {
                 let url = input
@@ -112,10 +124,15 @@ impl ToolFacade for ClaudeWebSearchFacade {
                     .get("full_page")
                     .and_then(serde_json::Value::as_bool)
                     .unwrap_or(false);
+                let headless = input
+                    .get("headless")
+                    .and_then(serde_json::Value::as_bool)
+                    .unwrap_or(true);
                 Ok(InternalWebSearchParams::CaptureScreenshot {
                     url,
                     output_path,
                     full_page,
+                    headless,
                 })
             }
             _ => Err(ToolError::Validation {
@@ -190,7 +207,7 @@ impl ToolFacade for GeminiWebFetchFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "web_fetch".to_string(),
-            description: "Fetch content from a URL. Use this after google_web_search to retrieve page content from search results.".to_string(),
+            description: "Fetch content from a URL. Use this after google_web_search to retrieve page content from search results. Supports both headless (no UI, default) and non-headless (visible browser) modes for debugging.".to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
@@ -202,6 +219,10 @@ impl ToolFacade for GeminiWebFetchFacade {
                         "type": "string",
                         "enum": ["text", "markdown", "html"],
                         "description": "The format to return the content in (default: markdown)"
+                    },
+                    "headless": {
+                        "type": "boolean",
+                        "description": "If true (default), runs Chrome in headless mode with no visible UI. If false, shows the browser window for debugging or visual confirmation"
                     }
                 },
                 "required": ["url"]
@@ -233,8 +254,14 @@ impl ToolFacade for GeminiWebFetchFacade {
             message: format!("Invalid URL: {e}"),
         })?;
 
+        let headless = input
+            .get("headless")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(true);
+
         Ok(InternalWebSearchParams::OpenPage {
             url: url.to_string(),
+            headless,
         })
     }
 }
@@ -257,7 +284,7 @@ impl ToolFacade for GeminiWebScreenshotFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "capture_screenshot".to_string(),
-            description: "Capture a screenshot of a web page. Returns the file path to the saved PNG image. Use the Read tool to view the screenshot.".to_string(),
+            description: "Capture a screenshot of a web page. Returns the file path to the saved PNG image. Use the Read tool to view the screenshot. Supports both headless (no UI, default) and non-headless (visible browser) modes for debugging.".to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
@@ -272,6 +299,10 @@ impl ToolFacade for GeminiWebScreenshotFacade {
                     "full_page": {
                         "type": "boolean",
                         "description": "If true, captures the entire scrollable page. If false (default), captures only the visible viewport"
+                    },
+                    "headless": {
+                        "type": "boolean",
+                        "description": "If true (default), runs Chrome in headless mode with no visible UI. If false, shows the browser window for debugging or visual confirmation"
                     }
                 },
                 "required": ["url"]
@@ -313,10 +344,16 @@ impl ToolFacade for GeminiWebScreenshotFacade {
             .and_then(serde_json::Value::as_bool)
             .unwrap_or(false);
 
+        let headless = input
+            .get("headless")
+            .and_then(serde_json::Value::as_bool)
+            .unwrap_or(true);
+
         Ok(InternalWebSearchParams::CaptureScreenshot {
             url: url.to_string(),
             output_path,
             full_page,
+            headless,
         })
     }
 }
@@ -357,7 +394,8 @@ mod tests {
         assert_eq!(
             result,
             InternalWebSearchParams::OpenPage {
-                url: "https://example.com".to_string()
+                url: "https://example.com".to_string(),
+                headless: true,
             }
         );
     }
@@ -389,7 +427,8 @@ mod tests {
         assert_eq!(
             result,
             InternalWebSearchParams::OpenPage {
-                url: "https://example.com".to_string()
+                url: "https://example.com".to_string(),
+                headless: true,
             }
         );
     }
@@ -406,7 +445,8 @@ mod tests {
         assert_eq!(
             result,
             InternalWebSearchParams::OpenPage {
-                url: "https://example.com".to_string()
+                url: "https://example.com".to_string(),
+                headless: true,
             }
         );
     }
@@ -434,6 +474,24 @@ mod tests {
     }
 
     #[test]
+    fn test_gemini_web_fetch_facade_with_headless_false() {
+        let facade = GeminiWebFetchFacade;
+        let input = json!({
+            "url": "https://example.com",
+            "headless": false
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::OpenPage {
+                url: "https://example.com".to_string(),
+                headless: false,
+            }
+        );
+    }
+
+    #[test]
     fn test_claude_facade_maps_capture_screenshot_action() {
         let facade = ClaudeWebSearchFacade;
         let input = json!({
@@ -450,6 +508,7 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: Some("/tmp/screenshot.png".to_string()),
                 full_page: true,
+                headless: true,
             }
         );
     }
@@ -469,6 +528,49 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: None,
                 full_page: false,
+                headless: true,
+            }
+        );
+    }
+
+    #[test]
+    fn test_claude_facade_maps_capture_screenshot_visible_mode() {
+        let facade = ClaudeWebSearchFacade;
+        let input = json!({
+            "action_type": "capture_screenshot",
+            "url": "https://example.com",
+            "headless": false
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::CaptureScreenshot {
+                url: "https://example.com".to_string(),
+                output_path: None,
+                full_page: false,
+                headless: false,
+            }
+        );
+    }
+
+    #[test]
+    fn test_claude_facade_maps_find_in_page_with_headless() {
+        let facade = ClaudeWebSearchFacade;
+        let input = json!({
+            "action_type": "find_in_page",
+            "url": "https://example.com",
+            "pattern": "search term",
+            "headless": false
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::FindInPage {
+                url: "https://example.com".to_string(),
+                pattern: "search term".to_string(),
+                headless: false,
             }
         );
     }
@@ -486,6 +588,20 @@ mod tests {
         // url should be required
         let required = def.parameters["required"].as_array().unwrap();
         assert!(required.iter().any(|v| v == "url"));
+
+        // Test non-headless mode
+        let input_visible = json!({
+            "url": "https://example.com",
+            "headless": false
+        });
+        let result = facade.map_params(input_visible).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::OpenPage {
+                url: "https://example.com".to_string(),
+                headless: false,
+            }
+        );
     }
 
     #[test]
@@ -525,6 +641,28 @@ mod tests {
         assert!(def.parameters["properties"]["pattern"].is_object());
         assert!(def.parameters["properties"]["output_path"].is_object());
         assert!(def.parameters["properties"]["full_page"].is_object());
+        assert!(def.parameters["properties"]["headless"].is_object());
+
+        // Verify headless description mentions default behavior
+        let headless_desc = def.parameters["properties"]["headless"]["description"]
+            .as_str()
+            .unwrap_or("");
+        assert!(headless_desc.contains("default"));
+
+        // Test headless parameter mapping for open_page
+        let input_non_headless = json!({
+            "action_type": "open_page",
+            "url": "https://example.com",
+            "headless": false
+        });
+        let result = ClaudeWebSearchFacade.map_params(input_non_headless).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::OpenPage {
+                url: "https://example.com".to_string(),
+                headless: false,
+            }
+        );
     }
 
     #[test]
@@ -543,6 +681,7 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: Some("/tmp/screenshot.png".to_string()),
                 full_page: true,
+                headless: true,
             }
         );
     }
@@ -561,6 +700,7 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: None,
                 full_page: false,
+                headless: true,
             }
         );
     }
@@ -599,9 +739,26 @@ mod tests {
         assert!(def.parameters["properties"]["url"].is_object());
         assert!(def.parameters["properties"]["output_path"].is_object());
         assert!(def.parameters["properties"]["full_page"].is_object());
+        assert!(def.parameters["properties"]["headless"].is_object());
 
         // url should be required
         let required = def.parameters["required"].as_array().unwrap();
         assert!(required.iter().any(|v| v == "url"));
+
+        // Test non-headless mode
+        let input_visible = json!({
+            "url": "https://example.com",
+            "headless": false
+        });
+        let result = facade.map_params(input_visible).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::CaptureScreenshot {
+                url: "https://example.com".to_string(),
+                output_path: None,
+                full_page: false,
+                headless: false,
+            }
+        );
     }
 }
