@@ -3045,27 +3045,32 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             resolve();
           } else if (chunk.type === 'Status' && chunk.status) {
             const statusMessage = chunk.status;
-            // TUI-044: Parse compaction notifications and show in percentage indicator
-            // Format: "[Context compacted: 95000→30000 tokens, 68% compression]"
-            const compactionMatch = statusMessage.match(/Context compacted:.*?(\d+)% compression/);
-            if (compactionMatch) {
-              const reductionPct = parseInt(compactionMatch[1], 10);
-              setCompactionReduction(reductionPct);
-              // Don't add to conversation - just show notification indicator
-            } else if (statusMessage.includes('Continuing with compacted context')) {
-              // Skip this status message too - it's part of the compaction notification
-            } else if (statusMessage.includes('Generating summary') || statusMessage.includes('generating summary')) {
-              // Skip - this is the compaction "generating summary" notification from Rust
-              // Handles both "[Generating summary...]" and "[Context near limit, generating summary...]"
+            
+            // Refresh session state when status changes (for pause detection)
+            if (statusMessage === 'paused' || statusMessage === 'running' || statusMessage === 'idle' || statusMessage === 'interrupted') {
+              refreshRustState(activeSessionId);
+              // Don't add simple status changes to conversation
             } else {
-              // Other status messages still go to conversation
-              setConversation(prev => [
-                ...prev,
-                {
-                  type: 'status',
-                  content: statusMessage,
-                },
-              ]);
+              // TUI-044: Parse compaction notifications and show in percentage indicator
+              // Format: "[Context compacted: 95000→30000 tokens, 68% compression]"
+              const compactionMatch = statusMessage.match(/Context compacted:.*?(\d+)% compression/);
+              if (compactionMatch) {
+                const reductionPct = parseInt(compactionMatch[1], 10);
+                setCompactionReduction(reductionPct);
+              } else if (statusMessage.includes('Continuing with compacted context')) {
+                // Skip this status message too - it's part of the compaction notification
+              } else if (statusMessage.includes('Generating summary') || statusMessage.includes('generating summary')) {
+                // Skip - this is the compaction "generating summary" notification from Rust
+              } else {
+                // Other status messages go to conversation
+                setConversation(prev => [
+                  ...prev,
+                  {
+                    type: 'status',
+                    content: statusMessage,
+                  },
+                ]);
+              }
             }
           } else if (chunk.type === 'Interrupted') {
             // Agent was interrupted by user
@@ -4090,9 +4095,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // This ensures /resume can restore token counts from persisted sessions
       persistTokenState(currentSessionIdRef.current);
     } else if (chunk.type === 'Status' && chunk.status) {
-      // Show status messages (except compaction notifications)
       const statusMessage = chunk.status;
-      if (!statusMessage.includes('compacted') && !statusMessage.includes('summary')) {
+      
+      // Refresh session state when status changes (for pause detection)
+      if (statusMessage === 'paused' || statusMessage === 'running' || statusMessage === 'idle' || statusMessage === 'interrupted') {
+        refreshRustState(currentSessionIdRef.current);
+      }
+      
+      // Show status messages (except compaction notifications and simple status changes)
+      if (!statusMessage.includes('compacted') && !statusMessage.includes('summary') &&
+          statusMessage !== 'paused' && statusMessage !== 'running' && statusMessage !== 'idle' && statusMessage !== 'interrupted') {
         setConversation(prev => [
           ...prev,
           { type: 'status', content: statusMessage },

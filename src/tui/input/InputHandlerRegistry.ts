@@ -26,14 +26,13 @@ export function createInputHandlerRegistry(): InputManagerAPI & {
 } {
   const handlers = new Map<string, RegisteredHandler>();
   let registrationCounter = 0;
-  let debugMode = false;
 
   /**
    * Get handlers sorted by priority (highest first).
    * Stable sort: equal priorities preserve registration order.
    */
   function getOrderedHandlers(): RegisteredHandler[] {
-    const sorted = Array.from(handlers.values()).sort((a, b) => {
+    return Array.from(handlers.values()).sort((a, b) => {
       // Higher priority first
       if (b.priority !== a.priority) {
         return b.priority - a.priority;
@@ -41,15 +40,6 @@ export function createInputHandlerRegistry(): InputManagerAPI & {
       // Equal priority: earlier registration first
       return a.registeredAt - b.registeredAt;
     });
-
-    if (debugMode && sorted.length > 0) {
-      console.log(
-        '[InputRegistry] Handlers:',
-        sorted.map(h => `${h.id}(${h.priority})`).join(' > ')
-      );
-    }
-
-    return sorted;
   }
 
   /**
@@ -57,14 +47,6 @@ export function createInputHandlerRegistry(): InputManagerAPI & {
    */
   function register(config: InputHandlerConfig): () => void {
     const { id, handler, priority, isActive, description } = config;
-
-    if (handlers.has(id)) {
-      if (debugMode) {
-        console.warn(
-          `[InputRegistry] Handler '${id}' already registered, replacing`
-        );
-      }
-    }
 
     const registered: RegisteredHandler = {
       id,
@@ -77,12 +59,6 @@ export function createInputHandlerRegistry(): InputManagerAPI & {
 
     handlers.set(id, registered);
 
-    if (debugMode) {
-      console.log(
-        `[InputRegistry] Registered '${id}' with priority ${priority}`
-      );
-    }
-
     // Return unregister function
     return () => unregister(id);
   }
@@ -91,10 +67,7 @@ export function createInputHandlerRegistry(): InputManagerAPI & {
    * Unregister a handler by ID.
    */
   function unregister(id: string): void {
-    const deleted = handlers.delete(id);
-    if (debugMode && deleted) {
-      console.log(`[InputRegistry] Unregistered '${id}'`);
-    }
+    handlers.delete(id);
   }
 
   /**
@@ -112,13 +85,6 @@ export function createInputHandlerRegistry(): InputManagerAPI & {
   }
 
   /**
-   * Enable/disable debug logging.
-   */
-  function setDebugMode(enabled: boolean): void {
-    debugMode = enabled;
-  }
-
-  /**
    * Get all handlers (for debugging).
    */
   function getAllHandlers(): Map<string, RegisteredHandler> {
@@ -130,7 +96,6 @@ export function createInputHandlerRegistry(): InputManagerAPI & {
     unregister,
     has,
     getHandlerIds,
-    setDebugMode,
     getOrderedHandlers,
     getAllHandlers,
   };

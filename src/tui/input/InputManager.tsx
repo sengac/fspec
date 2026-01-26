@@ -34,12 +34,6 @@ interface InputManagerProps {
    * @default true
    */
   isActive?: boolean;
-
-  /**
-   * Enable debug logging of input dispatch.
-   * @default false
-   */
-  debug?: boolean;
 }
 
 /**
@@ -49,7 +43,6 @@ interface InputManagerProps {
 export function InputManager({
   children,
   isActive = true,
-  debug = false,
 }: InputManagerProps): React.JSX.Element {
   // Use ref to maintain stable registry across renders
   const registryRef = useRef<InputHandlerRegistry | null>(null);
@@ -57,17 +50,9 @@ export function InputManager({
   // Initialize registry lazily
   if (!registryRef.current) {
     registryRef.current = createInputHandlerRegistry();
-    if (debug) {
-      registryRef.current.setDebugMode(true);
-    }
   }
 
   const registry = registryRef.current;
-
-  // Update debug mode if it changes
-  React.useEffect(() => {
-    registry.setDebugMode(debug);
-  }, [debug, registry]);
 
   // Create stable API object for context
   const api: InputManagerAPI = useMemo(
@@ -76,7 +61,6 @@ export function InputManager({
       unregister: registry.unregister,
       has: registry.has,
       getHandlerIds: registry.getHandlerIds,
-      setDebugMode: registry.setDebugMode,
     }),
     [registry]
   );
@@ -86,55 +70,19 @@ export function InputManager({
     (input, key) => {
       const handlers = registry.getOrderedHandlers();
 
-      if (debug) {
-        // eslint-disable-next-line no-console
-        console.log(
-          `[InputManager] Dispatching input="${input}" key=${JSON.stringify({
-            return: key.return,
-            escape: key.escape,
-            tab: key.tab,
-            upArrow: key.upArrow,
-            downArrow: key.downArrow,
-            ctrl: key.ctrl,
-            meta: key.meta,
-          })} to ${handlers.length} handlers`
-        );
-      }
-
       // Dispatch to handlers in priority order
       for (const handler of handlers) {
         // Skip inactive handlers
         if (!handler.isActive()) {
-          if (debug) {
-            // eslint-disable-next-line no-console
-            console.log(`[InputManager] Skipping inactive handler '${handler.id}'`);
-          }
           continue;
         }
 
-        try {
-          const handled = handler.handler(input, key);
+        const handled = handler.handler(input, key);
 
-          if (debug) {
-            // eslint-disable-next-line no-console
-            console.log(
-              `[InputManager] Handler '${handler.id}' returned ${handled ? 'true (stopping)' : 'false/void (continuing)'}`
-            );
-          }
-
-          if (handled === true) {
-            // Handler consumed the input, stop propagation
-            return;
-          }
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(`[InputManager] Error in handler '${handler.id}':`, error);
+        if (handled === true) {
+          // Handler consumed the input, stop propagation
+          return;
         }
-      }
-
-      if (debug && handlers.length === 0) {
-        // eslint-disable-next-line no-console
-        console.log('[InputManager] No handlers registered');
       }
     },
     { isActive }

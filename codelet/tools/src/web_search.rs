@@ -181,17 +181,27 @@ pub fn install_browser_cleanup_handler() {
     }
 }
 
+/// Check if an error indicates a dead browser connection
+fn is_connection_closed_error(err: &ChromeError) -> bool {
+    let msg = match err {
+        ChromeError::TabError(msg) => msg,
+        ChromeError::NavigationError(msg) => msg,
+        ChromeError::EvaluationError(msg) => msg,
+        ChromeError::ConnectionError(msg) => msg,
+        _ => return false,
+    };
+    msg.contains("connection is closed") || msg.contains("connection closed")
+}
+
 /// Execute a browser operation with automatic retry on connection failure
 fn with_browser_retry<T, F>(operation: F) -> Result<T, ChromeError>
 where
     F: Fn(Arc<ChromeBrowser>) -> Result<T, ChromeError>,
 {
-    // First attempt
     let browser = get_browser()?;
     match operation(Arc::clone(&browser)) {
         Ok(result) => Ok(result),
-        Err(ChromeError::TabError(msg)) if msg.contains("connection is closed") => {
-            // Browser connection died, clear cache and retry once
+        Err(ref e) if is_connection_closed_error(e) => {
             clear_browser();
             let new_browser = get_browser()?;
             operation(new_browser)
@@ -201,16 +211,22 @@ where
 }
 
 /// Execute a browser operation with a specific headless mode
-/// Recreates browser if mode changes
+/// Recreates browser if mode changes, and retries on connection failure
 fn with_browser_mode<T, F>(headless: bool, operation: F) -> Result<T, ChromeError>
 where
     F: Fn(Arc<ChromeBrowser>) -> Result<T, ChromeError>,
 {
-    // Ensure browser is in correct mode (may recreate if mode changed)
     let browser = ensure_browser_mode(headless)?;
 
-    // Execute the operation
-    operation(Arc::clone(&browser))
+    match operation(Arc::clone(&browser)) {
+        Ok(result) => Ok(result),
+        Err(ref e) if is_connection_closed_error(e) => {
+            clear_browser();
+            let new_browser = ensure_browser_mode(headless)?;
+            operation(new_browser)
+        }
+        Err(e) => Err(e),
+    }
 }
 
 /// Web Search Tool
