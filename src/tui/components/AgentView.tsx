@@ -104,6 +104,9 @@ import {
   // WATCH-011: Cross-pane correlation ID functions
   sessionSetObservedCorrelationIds,
   sessionClearObservedCorrelationIds,
+  // PAUSE-001: Pause resume/confirm functions
+  sessionPauseResume,
+  sessionPauseConfirm,
   type SessionRoleInfo,
   type NapiProviderModels,
   type NapiModelInfo,
@@ -1327,6 +1330,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const displayIsLoading = rustSnapshot.isLoading;
   const rustTokens = rustSnapshot.tokens;
   const displayIsDebugEnabled = rustSnapshot.isDebugEnabled || isDebugEnabled;
+  // PAUSE-001: Extract pause state from Rust snapshot
+  const displayIsPaused = rustSnapshot.isPaused;
+  const displayPauseInfo = rustSnapshot.pauseInfo;
 
   // TUI-044: Compaction notification indicator (shows in percentage indicator for 10 seconds)
   const [compactionReduction, setCompactionReduction] = useState<number | null>(null);
@@ -5170,6 +5176,57 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     [availableSessions.length]
   );
 
+  // PAUSE-001: Handle keyboard input during pause state with HIGH priority
+  useInputCompat({
+    id: 'agent-view-pause',
+    priority: InputPriority.HIGH,
+    description: 'Agent view pause keyboard handler (Enter to resume, Y/N for confirm)',
+    isActive: displayIsPaused && currentSessionId !== null,
+    handler: (input, key) => {
+      if (!currentSessionId || !displayPauseInfo) {
+        return false;
+      }
+
+      // Handle Continue pause (Enter to resume)
+      if (displayPauseInfo.kind === 'continue') {
+        if (key.return) {
+          try {
+            sessionPauseResume(currentSessionId);
+          } catch (e) {
+            logger.error('[PAUSE-001] Error resuming pause:', e);
+          }
+          return true;
+        }
+        // Esc interrupts the pause (tool will receive Interrupted response)
+        // This is handled by the existing Esc handler for session interrupt
+        return false;
+      }
+
+      // Handle Confirm pause (Y to approve, N to deny)
+      if (displayPauseInfo.kind === 'confirm') {
+        if (input.toLowerCase() === 'y') {
+          try {
+            sessionPauseConfirm(currentSessionId, true);
+          } catch (e) {
+            logger.error('[PAUSE-001] Error confirming pause (approve):', e);
+          }
+          return true;
+        }
+        if (input.toLowerCase() === 'n' || key.escape) {
+          try {
+            sessionPauseConfirm(currentSessionId, false);
+          } catch (e) {
+            logger.error('[PAUSE-001] Error confirming pause (deny):', e);
+          }
+          return true;
+        }
+        return false;
+      }
+
+      return false;
+    },
+  });
+
   // Handle keyboard input with LOW priority (main view navigation)
   useInputCompat({
     id: 'agent-view-main',
@@ -6979,6 +7036,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         <Box flexGrow={1}>
           <InputTransition
             isLoading={displayIsLoading}
+            isPaused={displayIsPaused}
+            pauseInfo={displayPauseInfo}
             value={inputValue}
             onChange={handleInputChange}
             onSubmit={handleSubmit}

@@ -87,7 +87,15 @@ const Scrollbar = memo(function Scrollbar({
 });
 
 interface VirtualListProps<T> {
+  // Standard mode: provide all items upfront
   items: T[];
+  
+  // PERF-004: Lazy mode - provide item count and accessor function
+  // When provided, getItems is used instead of items.slice() for viewport access.
+  // This enables viewport-aware lazy computation for very large lists.
+  itemCount?: number;
+  getItems?: (startIndex: number, endIndex: number) => T[];
+  
   renderItem: (item: T, index: number, isSelected: boolean, selectedIndex: number) => React.ReactNode;
   onSelect?: (item: T, index: number) => void;
   onFocus?: (item: T, index: number) => void;
@@ -113,6 +121,10 @@ interface VirtualListProps<T> {
   // and selection is preserved by group ID when content changes.
   groupBy?: (item: T) => string | number;
   
+  // PERF-004: Lazy mode alternative - provide groupBy that works with index
+  // instead of item. Use when items aren't readily available (lazy loading).
+  groupByIndex?: (index: number) => string | number;
+  
   // Extra lines to include before the group when scrolling (for separator bars)
   groupPaddingBefore?: number;
   
@@ -122,6 +134,8 @@ interface VirtualListProps<T> {
 
 export function VirtualList<T>({
   items,
+  itemCount: itemCountProp,
+  getItems,
   renderItem,
   onSelect,
   onFocus,
@@ -136,9 +150,29 @@ export function VirtualList<T>({
   fixedHeight,
   heightAdjustment = 0,
   groupBy,
+  groupByIndex,
   groupPaddingBefore = 0,
   selectionRef,
 }: VirtualListProps<T>): React.ReactElement {
+  // PERF-004: Determine total item count
+  // Use itemCount prop for lazy mode, otherwise use items.length
+  const totalItemCount = itemCountProp ?? items.length;
+  
+  // PERF-004: Determine if lazy mode is active
+  const isLazyMode = getItems !== undefined && itemCountProp !== undefined;
+  
+  // PERF-004: Unified group function that works with either groupBy or groupByIndex
+  // This allows lazy mode to use groupByIndex without needing to fetch items
+  const getGroupId = useCallback((index: number): string | number | null => {
+    if (groupByIndex) {
+      return groupByIndex(index);
+    }
+    if (groupBy && items[index]) {
+      return groupBy(items[index]);
+    }
+    return null;
+  }, [groupBy, groupByIndex, items]);
+  
   // Generate unique ID for this component instance
   const instanceId = useId();
 
@@ -166,26 +200,30 @@ export function VirtualList<T>({
     if (selectionRef) {
       selectionRef.current = { selectedIndex };
     }
-    if (groupBy && items[selectedIndex]) {
-      selectedGroupIdRef.current = groupBy(items[selectedIndex]);
+    // PERF-004: Use unified getGroupId for group tracking
+    const groupId = getGroupId(selectedIndex);
+    if (groupId !== null) {
+      selectedGroupIdRef.current = groupId;
     }
-  }, [selectedIndex, selectionRef, groupBy, items]);
+  }, [selectedIndex, selectionRef, getGroupId]);
 
   // Preserve selection by group ID when items change
   useEffect(() => {
-    if (!groupBy || selectedGroupIdRef.current === null || items.length === 0) return;
+    // PERF-004: Skip group preservation in lazy mode (handled by parent)
+    if (isLazyMode) return;
+    if (!groupBy || selectedGroupIdRef.current === null || totalItemCount === 0) return;
     
     const targetGroupId = selectedGroupIdRef.current;
     // Find first item with same group ID
-    for (let i = 0; i < items.length; i++) {
-      if (groupBy(items[i]) === targetGroupId) {
+    for (let i = 0; i < totalItemCount; i++) {
+      if (getGroupId(i) === targetGroupId) {
         if (i !== selectedIndex) {
           setSelectedIndex(i);
         }
         return;
       }
     }
-  }, [items, groupBy, selectedIndex]);
+  }, [items, groupBy, selectedIndex, totalItemCount, getGroupId, isLazyMode]);
 
   // Measure container height
   const containerRef = useRef<DOMElement>(null);
@@ -231,18 +269,24 @@ export function VirtualList<T>({
       : Math.max(1, terminalHeight - reservedLines);
   }, [measuredHeight, terminalHeight, reservedLines, fixedHeight]);
 
+  // PERF-004: Compute visible items using lazy accessor when available
   const visibleItems = useMemo(() => {
     const start = scrollOffset;
-    const end = Math.min(items.length, scrollOffset + visibleHeight);
+    const end = Math.min(totalItemCount, scrollOffset + visibleHeight);
+    
+    // Use lazy accessor if available, otherwise slice the items array
+    if (isLazyMode && getItems) {
+      return getItems(start, end);
+    }
     return items.slice(start, end);
-  }, [items, scrollOffset, visibleHeight]);
+  }, [items, scrollOffset, visibleHeight, totalItemCount, isLazyMode, getItems]);
 
   // Clamp selection if items shrink
   useEffect(() => {
-    if (items.length > 0 && selectedIndex >= items.length) {
-      setSelectedIndex(Math.max(0, items.length - 1));
+    if (totalItemCount > 0 && selectedIndex >= totalItemCount) {
+      setSelectedIndex(Math.max(0, totalItemCount - 1));
     }
-  }, [items.length, selectedIndex]);
+  }, [totalItemCount, selectedIndex]);
 
   // Select last item when transitioning from scroll mode to item mode (with scrollToEnd)
   // This ensures the last turn is selected when entering turn selection mode
@@ -252,48 +296,51 @@ export function VirtualList<T>({
     const wasScrollMode = prevSelectionModeRef.current === 'scroll';
     prevSelectionModeRef.current = selectionMode;
     
-    if (wasScrollMode && selectionMode === 'item' && scrollToEnd && items.length > 0) {
-      setSelectedIndex(items.length - 1);
+    if (wasScrollMode && selectionMode === 'item' && scrollToEnd && totalItemCount > 0) {
+      setSelectedIndex(totalItemCount - 1);
     }
-  }, [selectionMode, scrollToEnd, items.length]);
+  }, [selectionMode, scrollToEnd, totalItemCount]);
 
   const maxScrollOffset = useMemo(
-    () => Math.max(0, items.length - visibleHeight),
-    [items.length, visibleHeight]
+    () => Math.max(0, totalItemCount - visibleHeight),
+    [totalItemCount, visibleHeight]
   );
 
   // Auto-scroll to end (only in scroll mode to preserve selection in item mode)
   useEffect(() => {
-    if (scrollToEnd && items.length > 0 && !userScrolledAway && selectionMode !== 'item') {
-      const lastIndex = items.length - 1;
+    if (scrollToEnd && totalItemCount > 0 && !userScrolledAway && selectionMode !== 'item') {
+      const lastIndex = totalItemCount - 1;
       const newOffset = Math.max(0, lastIndex - visibleHeight + 1);
       setScrollOffset(newOffset);
     }
-  }, [scrollToEnd, items.length, visibleHeight, selectionMode, userScrolledAway]);
+  }, [scrollToEnd, totalItemCount, visibleHeight, selectionMode, userScrolledAway]);
 
   // Get visible range for current selection (including group padding)
+  // PERF-004: Updated to use getGroupId for lazy mode compatibility
   const getVisibleRange = useCallback((index: number): [number, number] => {
-    if (!groupBy || items.length === 0) {
+    const hasGrouping = groupBy || groupByIndex;
+    if (!hasGrouping || totalItemCount === 0) {
       return [index, index];
     }
     
-    const groupId = items[index] ? groupBy(items[index]) : null;
+    const groupId = getGroupId(index);
     if (groupId === null) return [index, index];
     
     // Find first and last item in group
+    // PERF-004: Use getGroupId for lazy mode compatibility
     let rangeStart = index;
     let rangeEnd = index;
     
     for (let i = index - 1; i >= 0; i--) {
-      if (groupBy(items[i]) === groupId) {
+      if (getGroupId(i) === groupId) {
         rangeStart = i;
       } else {
         break;
       }
     }
     
-    for (let i = index + 1; i < items.length; i++) {
-      if (groupBy(items[i]) === groupId) {
+    for (let i = index + 1; i < totalItemCount; i++) {
+      if (getGroupId(i) === groupId) {
         rangeEnd = i;
       } else {
         break;
@@ -304,7 +351,7 @@ export function VirtualList<T>({
     rangeStart = Math.max(0, rangeStart - groupPaddingBefore);
     
     return [rangeStart, rangeEnd];
-  }, [groupBy, items, groupPaddingBefore]);
+  }, [getGroupId, totalItemCount, groupPaddingBefore, groupBy, groupByIndex]);
 
   // Adjust scroll to keep selection visible
   useEffect(() => {
@@ -325,35 +372,42 @@ export function VirtualList<T>({
   }, [selectedIndex, scrollOffset, visibleHeight, selectionMode, getVisibleRange]);
 
   // Call onFocus when selection changes
+  // PERF-004: Only call onFocus in non-lazy mode (lazy mode has different data access)
   useEffect(() => {
-    if (selectionMode === 'item' && items.length > 0 && selectedIndex >= 0 && selectedIndex < items.length) {
-      onFocus?.(items[selectedIndex], selectedIndex);
+    if (isLazyMode) return;  // Skip in lazy mode - parent handles this
+    if (selectionMode === 'item' && totalItemCount > 0 && selectedIndex >= 0 && selectedIndex < totalItemCount) {
+      const item = items[selectedIndex];
+      if (item !== undefined) {
+        onFocus?.(item, selectedIndex);
+      }
     }
-  }, [selectedIndex, items, onFocus, selectionMode]);
+  }, [selectedIndex, items, onFocus, selectionMode, totalItemCount, isLazyMode]);
 
   // Navigate to previous/next group (or item if no groupBy)
+  // PERF-004: Updated to use getGroupId for lazy mode compatibility
   const navigateToGroup = useCallback((direction: 'up' | 'down'): void => {
-    if (items.length === 0) return;
+    if (totalItemCount === 0) return;
     
-    if (!groupBy) {
+    const hasGrouping = groupBy || groupByIndex;
+    if (!hasGrouping) {
       // No grouping - standard single item navigation
       const newIndex = direction === 'up' 
         ? Math.max(0, selectedIndex - 1)
-        : Math.min(items.length - 1, selectedIndex + 1);
+        : Math.min(totalItemCount - 1, selectedIndex + 1);
       setSelectedIndex(newIndex);
       return;
     }
     
-    const currentGroupId = items[selectedIndex] ? groupBy(items[selectedIndex]) : null;
+    const currentGroupId = getGroupId(selectedIndex);
     
     if (direction === 'up') {
       // Find first line of previous group
       for (let i = selectedIndex - 1; i >= 0; i--) {
-        if (groupBy(items[i]) !== currentGroupId) {
-          const prevGroupId = groupBy(items[i]);
+        if (getGroupId(i) !== currentGroupId) {
+          const prevGroupId = getGroupId(i);
           // Find first line of that group
           for (let j = i; j >= 0; j--) {
-            if (groupBy(items[j]) !== prevGroupId) {
+            if (getGroupId(j) !== prevGroupId) {
               setSelectedIndex(j + 1);
               return;
             }
@@ -363,41 +417,41 @@ export function VirtualList<T>({
         }
       }
       // Already at first group - stay at first line of current group
-      for (let i = 0; i < items.length; i++) {
-        if (groupBy(items[i]) === currentGroupId) {
+      for (let i = 0; i < totalItemCount; i++) {
+        if (getGroupId(i) === currentGroupId) {
           setSelectedIndex(i);
           return;
         }
       }
     } else {
       // Find first line of next group
-      for (let i = selectedIndex + 1; i < items.length; i++) {
-        if (groupBy(items[i]) !== currentGroupId) {
+      for (let i = selectedIndex + 1; i < totalItemCount; i++) {
+        if (getGroupId(i) !== currentGroupId) {
           setSelectedIndex(i);
           return;
         }
       }
       // Already at last group - stay at first line of current group
-      for (let i = 0; i < items.length; i++) {
-        if (groupBy(items[i]) === currentGroupId) {
+      for (let i = 0; i < totalItemCount; i++) {
+        if (getGroupId(i) === currentGroupId) {
           setSelectedIndex(i);
           return;
         }
       }
     }
-  }, [items, selectedIndex, groupBy]);
+  }, [totalItemCount, selectedIndex, getGroupId, groupBy, groupByIndex]);
 
   const navigateTo = useCallback((newIndex: number): void => {
-    if (items.length === 0) return;
+    if (totalItemCount === 0) return;
     let targetIndex = newIndex;
     if (enableWrapAround) {
-      if (targetIndex < 0) targetIndex = items.length - 1;
-      else if (targetIndex >= items.length) targetIndex = 0;
+      if (targetIndex < 0) targetIndex = totalItemCount - 1;
+      else if (targetIndex >= totalItemCount) targetIndex = 0;
     } else {
-      targetIndex = Math.max(0, Math.min(items.length - 1, targetIndex));
+      targetIndex = Math.max(0, Math.min(totalItemCount - 1, targetIndex));
     }
     setSelectedIndex(targetIndex);
-  }, [items.length, enableWrapAround]);
+  }, [totalItemCount, enableWrapAround]);
 
   // Mouse scroll handler with acceleration
   const handleScroll = useCallback((direction: 'up' | 'down'): void => {
@@ -436,7 +490,7 @@ export function VirtualList<T>({
     description: 'Virtual list mouse scroll',
     isActive: isFocused,
     handler: (input, key) => {
-      if (items.length === 0) return false;
+      if (totalItemCount === 0) return false;
       if (input.startsWith('[M')) {
         const buttonByte = input.charCodeAt(2);
         if (buttonByte === 96) { handleScroll('up'); return true; }
@@ -480,22 +534,27 @@ export function VirtualList<T>({
     pageUp?: boolean; pageDown?: boolean;
     home?: boolean; end?: boolean; return?: boolean;
   }): void => {
+    const hasGrouping = groupBy || groupByIndex;
     if (key.upArrow) {
-      if (groupBy) navigateToGroup('up');
+      if (hasGrouping) navigateToGroup('up');
       else navigateTo(selectedIndex - 1);
     } else if (key.downArrow) {
-      if (groupBy) navigateToGroup('down');
+      if (hasGrouping) navigateToGroup('down');
       else navigateTo(selectedIndex + 1);
     } else if (key.pageUp) {
       navigateTo(Math.max(0, selectedIndex - visibleHeight));
     } else if (key.pageDown) {
-      navigateTo(Math.min(items.length - 1, selectedIndex + visibleHeight));
+      navigateTo(Math.min(totalItemCount - 1, selectedIndex + visibleHeight));
     } else if (key.home) {
       navigateTo(0);
     } else if (key.end) {
-      navigateTo(items.length - 1);
-    } else if (key.return && onSelect) {
-      onSelect(items[selectedIndex], selectedIndex);
+      navigateTo(totalItemCount - 1);
+    } else if (key.return && onSelect && !isLazyMode) {
+      // PERF-004: In lazy mode, parent must handle selection via selectionRef
+      const item = items[selectedIndex];
+      if (item !== undefined) {
+        onSelect(item, selectedIndex);
+      }
     }
   };
 
@@ -506,7 +565,7 @@ export function VirtualList<T>({
     description: 'Virtual list keyboard navigation',
     isActive: isFocused,
     handler: (input, key) => {
-      if (items.length === 0) return false;
+      if (totalItemCount === 0) return false;
       if (input.startsWith('[M') || key.mouse) return false;
       if (key.shift && (key.upArrow || key.downArrow)) return false;
 
@@ -521,14 +580,15 @@ export function VirtualList<T>({
   });
 
   // Check if item is selected (for group selection, all items in group are selected)
+  // PERF-004: Updated to use getGroupId for lazy mode compatibility
   const isItemSelected = useCallback((index: number): boolean => {
     if (selectionMode !== 'item') return false;
-    if (!groupBy) return index === selectedIndex;
-    if (!items[index] || !items[selectedIndex]) return false;
-    return groupBy(items[index]) === groupBy(items[selectedIndex]);
-  }, [selectionMode, groupBy, items, selectedIndex]);
+    const hasGrouping = groupBy || groupByIndex;
+    if (!hasGrouping) return index === selectedIndex;
+    return getGroupId(index) === getGroupId(selectedIndex);
+  }, [selectionMode, groupBy, groupByIndex, getGroupId, selectedIndex]);
 
-  if (items.length === 0) {
+  if (totalItemCount === 0) {
     return (
       <Box ref={containerRef} flexGrow={1} flexDirection="column">
         <Text dimColor>{emptyMessage}</Text>
@@ -551,7 +611,7 @@ export function VirtualList<T>({
       </Box>
       {showScrollbar && (
         <Scrollbar
-          itemCount={items.length}
+          itemCount={totalItemCount}
           visibleHeight={visibleHeight}
           scrollOffset={scrollOffset}
         />

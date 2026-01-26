@@ -12,7 +12,7 @@ use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
 };
 use codelet_tools::{clear_bash_abort, request_bash_abort};
-use codelet_tools::tool_pause::{PauseKind, PauseRequest, PauseResponse, PauseState, set_pause_handler};
+use codelet_tools::tool_pause::{PauseKind, PauseRequest, PauseResponse, PauseState, with_pause_handler_async, PauseHandler};
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use std::collections::HashMap;
@@ -3452,10 +3452,12 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             // Lock the inner session and run agent stream
             let mut inner_session = session.inner.lock().await;
 
-            // PAUSE-001: Set up pause handler BEFORE running the agent stream
+            // PAUSE-001: Set up pause handler using task-local scope
             // This handler captures the session context and coordinates with the TypeScript UI
+            // The with_pause_handler function uses tokio::task_local which properly follows
+            // the async task across thread migrations in tokio's multi-threaded runtime
             let session_for_pause = session.clone();
-            set_pause_handler(Some(Arc::new(move |request: PauseRequest| {
+            let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
                 // Convert PauseRequest to PauseState and set on session
                 let state = PauseState {
                     kind: request.kind,
@@ -3466,23 +3468,23 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 session_for_pause.set_pause_state(Some(state));
                 // Block until TypeScript sends response (via sessionPauseResume or sessionPauseConfirm)
                 session_for_pause.wait_for_pause_response()
-            })));
+            });
 
             // Get provider and run agent stream using the macro to eliminate duplication
+            // Wrap the entire agent execution in with_pause_handler_async scope for async code
             let current_provider = inner_session.current_provider_name().to_string();
-            let result = match current_provider.as_str() {
-                "claude" => run_with_provider!(&mut inner_session, get_claude, &input, session, &output, thinking_config_value),
-                "openai" => run_with_provider!(&mut inner_session, get_openai, &input, session, &output, thinking_config_value),
-                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &input, session, &output, thinking_config_value),
-                "zai" => run_with_provider!(&mut inner_session, get_zai, &input, session, &output, thinking_config_value),
-                _ => {
-                    tracing::error!("Unsupported provider: {}", current_provider);
-                    Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
+            let result = with_pause_handler_async(Some(pause_handler), async {
+                match current_provider.as_str() {
+                    "claude" => run_with_provider!(&mut inner_session, get_claude, &input, session, &output, thinking_config_value),
+                    "openai" => run_with_provider!(&mut inner_session, get_openai, &input, session, &output, thinking_config_value),
+                    "gemini" => run_with_provider!(&mut inner_session, get_gemini, &input, session, &output, thinking_config_value),
+                    "zai" => run_with_provider!(&mut inner_session, get_zai, &input, session, &output, thinking_config_value),
+                    _ => {
+                        tracing::error!("Unsupported provider: {}", current_provider);
+                        Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
+                    }
                 }
-            };
-
-            // PAUSE-001: Clear pause handler AFTER agent stream completes (success or error)
-            set_pause_handler(None);
+            }).await;
 
             // Handle result
             // Note: run_agent_stream emits StreamEvent::Done on successful completion,
@@ -3554,10 +3556,10 @@ async fn watcher_agent_loop(
             let mut inner_session = session.inner.lock().await;
             let current_provider = inner_session.current_provider_name().to_string();
             
-            // PAUSE-001: Set up pause handler BEFORE running the agent stream
+            // PAUSE-001: Set up pause handler using task-local scope
             // This handler captures the session context and coordinates with the TypeScript UI
             let session_for_pause = session.clone();
-            set_pause_handler(Some(Arc::new(move |request: PauseRequest| {
+            let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
                 // Convert PauseRequest to PauseState and set on session
                 let state = PauseState {
                     kind: request.kind,
@@ -3568,21 +3570,21 @@ async fn watcher_agent_loop(
                 session_for_pause.set_pause_state(Some(state));
                 // Block until TypeScript sends response (via sessionPauseResume or sessionPauseConfirm)
                 session_for_pause.wait_for_pause_response()
-            })));
+            });
             
-            let result = match current_provider.as_str() {
-                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, session, &watcher_output, None::<serde_json::Value>),
-                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, session, &watcher_output, None::<serde_json::Value>),
-                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, session, &watcher_output, None::<serde_json::Value>),
-                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, session, &watcher_output, None::<serde_json::Value>),
-                _ => {
-                    tracing::error!("Unsupported provider: {}", current_provider);
-                    Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
+            // Wrap the entire agent execution in with_pause_handler_async scope for async code
+            let result = with_pause_handler_async(Some(pause_handler), async {
+                match current_provider.as_str() {
+                    "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, session, &watcher_output, None::<serde_json::Value>),
+                    "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, session, &watcher_output, None::<serde_json::Value>),
+                    "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, session, &watcher_output, None::<serde_json::Value>),
+                    "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, session, &watcher_output, None::<serde_json::Value>),
+                    _ => {
+                        tracing::error!("Unsupported provider: {}", current_provider);
+                        Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
+                    }
                 }
-            };
-            
-            // PAUSE-001: Clear pause handler AFTER agent stream completes (success or error)
-            set_pause_handler(None);
+            }).await;
 
             // Release the lock before any injection calls
             drop(inner_session);
