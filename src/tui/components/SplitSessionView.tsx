@@ -38,6 +38,8 @@ import { buildCorrelationMaps } from '../utils/correlationMapping';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { useShowCreateSessionDialog, useSessionActions } from '../store/sessionStore';
+import { SlashCommandPalette } from './SlashCommandPalette';
+import { useSlashCommand } from '../hooks/useSlashCommand';
 import type { ConversationLine } from '../types/conversation';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
 
@@ -119,6 +121,32 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     onNavigateToBoard,
   });
 
+  // TUI-050: Slash command autocomplete palette
+  const slashCommand = useSlashCommand();
+
+  // TUI-050: Handle input changes with slash command palette detection
+  const handleInputChangeWithSlash = React.useCallback((newValue: string) => {
+    onInputChange(newValue);
+    
+    // Detect "/" at position 0 to show palette
+    if (newValue.startsWith('/') && !slashCommand.isVisible) {
+      slashCommand.show();
+      slashCommand.setFilter(newValue.slice(1));
+    } else if (newValue.startsWith('/') && slashCommand.isVisible) {
+      // Update filter as user types after "/"
+      slashCommand.setFilter(newValue.slice(1));
+    } else if (!newValue.startsWith('/') && slashCommand.isVisible) {
+      // Close palette if "/" is removed
+      slashCommand.hide();
+    }
+  }, [onInputChange, slashCommand]);
+
+  // TUI-050: Handle slash command selection
+  const handleSlashCommandSelect = React.useCallback((commandName: string) => {
+    onInputChange(`/${commandName} `);
+    slashCommand.hide();
+  }, [onInputChange, slashCommand]);
+
   // Pane state
   const [activePane, setActivePane] = React.useState<'parent' | 'watcher'>(
     'watcher'
@@ -186,6 +214,41 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     // VIEWNV-001: Skip input handling when create dialog is showing
     if (showCreateSessionDialog) return;
     if (isLoading) return;
+
+    // TUI-050: Slash command palette keyboard handling (takes precedence)
+    if (slashCommand.isVisible) {
+      if (key.escape) {
+        slashCommand.hide();
+        return;
+      }
+      if (key.upArrow) {
+        slashCommand.moveUp();
+        return;
+      }
+      if (key.downArrow) {
+        slashCommand.moveDown();
+        return;
+      }
+      if (key.tab) {
+        const selected = slashCommand.getSelectedCommand();
+        if (selected) {
+          handleSlashCommandSelect(selected.name);
+        }
+        return;
+      }
+      if (key.return) {
+        const selected = slashCommand.getSelectedCommand();
+        if (selected) {
+          // Execute command directly
+          onInputChange(`/${selected.name}`);
+          slashCommand.hide();
+          // Use onSubmit with the command value
+          onSubmit(`/${selected.name}`);
+        }
+        return;
+      }
+      // Let other keys pass through to input handler
+    }
 
     // VIEWNV-001: Shift+Left/Right for session navigation
     // Handle escape sequences first (some terminals), then Ink key detection
@@ -490,7 +553,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
       {/* Input area - matches AgentView pattern with hints in placeholder */}
       <ConversationInputArea
         value={inputValue}
-        onChange={onInputChange}
+        onChange={handleInputChangeWithSlash}
         onSubmit={onSubmit}
         isLoading={isLoading}
         placeholder={
@@ -498,8 +561,19 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
             ? '↑↓ Navigate | Enter Discuss | Tab/Esc Exit Select'
             : "Type a message... ('←/→' pane | 'Shift+←/→' sessions | 'Tab' select | 'Esc' cancel)"
         }
-        isActive={!isLoading && !showCreateSessionDialog}
+        isActive={!isLoading && !showCreateSessionDialog && !slashCommand.isVisible}
       />
+
+      {/* TUI-050: Slash command autocomplete palette */}
+      {slashCommand.isVisible && (
+        <SlashCommandPalette
+          isVisible={slashCommand.isVisible}
+          filter={slashCommand.filter}
+          commands={slashCommand.filteredCommands}
+          selectedIndex={slashCommand.selectedIndex}
+          maxVisibleItems={8}
+        />
+      )}
 
       {/* VIEWNV-001: Create session dialog (shown when navigating past right edge) */}
       {showCreateSessionDialog && (

@@ -7,22 +7,47 @@
  * CRITICAL: getSnapshot MUST return a cached reference when version hasn't changed.
  * React may call getSnapshot multiple times during a single render, and returning
  * different object references will cause infinite loops.
+ *
+ * Architecture:
+ * - Types: src/tui/types/pause.ts (PauseInfo, PauseKind)
+ * - Subscriptions: ./sessionSubscription.ts (pub/sub management)
+ * - State Source: ./rustStateSource.ts (NAPI abstraction)
+ * - Attachment: ./sessionAttachment.ts (attach/detach helpers)
  */
 
 import { useSyncExternalStore, useCallback } from 'react';
-import { logger } from '../../utils/logger';
+import type { SessionModel, SessionTokens } from '@sengac/codelet-napi';
+import { type PauseInfo, pauseInfoEqual } from '../types/pause';
 import {
-  sessionGetStatus,
-  sessionGetModel,
-  sessionGetTokens,
-  sessionGetDebugEnabled,
-  sessionGetMergedOutput,
-  sessionAttach,
-  sessionDetach,
-  type StreamChunk,
-  type SessionModel,
-  type SessionTokens,
-} from '@sengac/codelet-napi';
+  getOrCreateSubscription,
+  invalidateCache,
+  refreshSessionState,
+  clearAllSubscriptions,
+  getSubscriptionForTesting,
+  type SessionSubscription,
+} from './sessionSubscription';
+import {
+  getRustStateSource,
+  setRustStateSource,
+  resetRustStateSource,
+  DEFAULT_TOKENS,
+  type RustStateSource,
+} from './rustStateSource';
+
+// Re-exports for backwards compatibility
+export type { PauseInfo } from '../types/pause';
+export type { RustStateSource } from './rustStateSource';
+export { setRustStateSource, resetRustStateSource } from './rustStateSource';
+export {
+  refreshSessionState,
+  clearAllSubscriptions,
+  getSubscriptionForTesting,
+} from './sessionSubscription';
+export {
+  manualAttach,
+  manualDetach,
+  getSessionChunks,
+} from './sessionAttachment';
 
 // =============================================================================
 // Types
@@ -31,6 +56,10 @@ import {
 export interface RustSessionSnapshot {
   status: string;
   isLoading: boolean;
+  /** PAUSE-001: True when session status is "paused" */
+  isPaused: boolean;
+  /** PAUSE-001: Pause details when session is paused, null otherwise */
+  pauseInfo: PauseInfo | null;
   model: SessionModel | null;
   tokens: SessionTokens;
   isDebugEnabled: boolean;
@@ -41,72 +70,16 @@ export interface RustSessionSnapshot {
 // Constants
 // =============================================================================
 
-const DEFAULT_TOKENS: SessionTokens = Object.freeze({
-  inputTokens: 0,
-  outputTokens: 0,
-});
-
 const EMPTY_SNAPSHOT: RustSessionSnapshot = Object.freeze({
   status: 'idle',
   isLoading: false,
+  isPaused: false,
+  pauseInfo: null,
   model: null,
   tokens: DEFAULT_TOKENS,
   isDebugEnabled: false,
   version: 0,
 });
-
-// =============================================================================
-// Session Subscription Management (Single Responsibility)
-// =============================================================================
-
-type Subscriber = () => void;
-
-interface SessionSubscription {
-  subscribers: Set<Subscriber>;
-  version: number;
-  cachedSnapshot: RustSessionSnapshot | null;
-  cachedVersion: number;
-}
-
-const subscriptions = new Map<string, SessionSubscription>();
-
-function getOrCreateSubscription(sessionId: string): SessionSubscription {
-  let sub = subscriptions.get(sessionId);
-  if (!sub) {
-    sub = {
-      subscribers: new Set(),
-      version: 0,
-      cachedSnapshot: null,
-      cachedVersion: -1,
-    };
-    subscriptions.set(sessionId, sub);
-  }
-  return sub;
-}
-
-/**
- * Invalidate the cache for a session, forcing the next getSnapshot to fetch fresh state.
- * This is the key fix for the detached Done issue - when we subscribe to a session,
- * we invalidate its cache so we always get fresh state from Rust on first read.
- */
-function invalidateCache(sessionId: string): void {
-  const sub = subscriptions.get(sessionId);
-  if (sub) {
-    sub.version++;
-  }
-}
-
-/**
- * Notify all subscribers that state has changed for a session.
- * Call this after any operation that changes Rust state.
- */
-export function refreshSessionState(sessionId: string): void {
-  const sub = subscriptions.get(sessionId);
-  if (sub) {
-    sub.version++;
-    sub.subscribers.forEach(callback => callback());
-  }
-}
 
 // =============================================================================
 // Snapshot Equality (DRY - reusable comparison functions)
@@ -133,87 +106,35 @@ function snapshotsAreEqual(
   return (
     a.status === b.status &&
     a.isDebugEnabled === b.isDebugEnabled &&
+    a.isPaused === b.isPaused &&
+    pauseInfoEqual(a.pauseInfo, b.pauseInfo) &&
     tokensEqual(a.tokens, b.tokens) &&
     modelEqual(a.model, b.model)
   );
 }
 
 // =============================================================================
-// Rust State Fetching (Composable - injectable for testing)
-// =============================================================================
-
-export interface RustStateSource {
-  getStatus(sessionId: string): string;
-  getModel(sessionId: string): SessionModel | null;
-  getTokens(sessionId: string): SessionTokens;
-  getDebugEnabled(sessionId: string): boolean;
-}
-
-// Default implementation using actual NAPI calls
-const defaultRustStateSource: RustStateSource = {
-  getStatus(sessionId: string): string {
-    try {
-      return sessionGetStatus(sessionId);
-    } catch {
-      return 'idle';
-    }
-  },
-  getModel(sessionId: string): SessionModel | null {
-    try {
-      return sessionGetModel(sessionId);
-    } catch {
-      return null;
-    }
-  },
-  getTokens(sessionId: string): SessionTokens {
-    try {
-      return sessionGetTokens(sessionId);
-    } catch {
-      return DEFAULT_TOKENS;
-    }
-  },
-  getDebugEnabled(sessionId: string): boolean {
-    try {
-      return sessionGetDebugEnabled(sessionId);
-    } catch {
-      return false;
-    }
-  },
-};
-
-// Injectable state source for testing
-let rustStateSource: RustStateSource = defaultRustStateSource;
-
-/**
- * Inject a custom state source (for testing)
- */
-export function setRustStateSource(source: RustStateSource): void {
-  rustStateSource = source;
-}
-
-/**
- * Reset to default NAPI state source
- */
-export function resetRustStateSource(): void {
-  rustStateSource = defaultRustStateSource;
-}
-
-// =============================================================================
-// Snapshot Creation (Single Responsibility)
+// Snapshot Creation
 // =============================================================================
 
 function fetchFreshSnapshot(
   sessionId: string,
   version: number
 ): RustSessionSnapshot {
-  const status = rustStateSource.getStatus(sessionId);
+  const source = getRustStateSource();
+  const status = source.getStatus(sessionId);
   const isLoading = status === 'running';
+  const isPaused = status === 'paused';
+  const pauseInfo = isPaused ? source.getPauseState(sessionId) : null;
+
   return {
     status,
     isLoading,
-    model: rustStateSource.getModel(sessionId),
-    tokens: rustStateSource.getTokens(sessionId),
-    isDebugEnabled: rustStateSource.getDebugEnabled(sessionId),
+    isPaused,
+    pauseInfo,
+    model: source.getModel(sessionId),
+    tokens: source.getTokens(sessionId),
+    isDebugEnabled: source.getDebugEnabled(sessionId),
     version,
   };
 }
@@ -232,7 +153,7 @@ function getSessionSnapshot(sessionId: string): RustSessionSnapshot {
   // CRITICAL FIX: Check cache FIRST, before any Rust/NAPI calls
   // If version matches, return cached snapshot immediately - no external calls needed
   if (sub.cachedSnapshot !== null && sub.cachedVersion === sub.version) {
-    return sub.cachedSnapshot;
+    return sub.cachedSnapshot as RustSessionSnapshot;
   }
 
   // Cache is stale (version mismatch) - fetch fresh state from Rust
@@ -242,10 +163,10 @@ function getSessionSnapshot(sessionId: string): RustSessionSnapshot {
   // This provides additional stability for React (avoids re-renders when data hasn't changed)
   if (
     sub.cachedSnapshot !== null &&
-    snapshotsAreEqual(sub.cachedSnapshot, newSnapshot)
+    snapshotsAreEqual(sub.cachedSnapshot as RustSessionSnapshot, newSnapshot)
   ) {
-    sub.cachedVersion = sub.version; // Mark cache as current version
-    return sub.cachedSnapshot; // Return existing reference for React stability
+    sub.cachedVersion = sub.version;
+    return sub.cachedSnapshot as RustSessionSnapshot;
   }
 
   // Data actually changed - update cache with new snapshot
@@ -310,9 +231,6 @@ export function useRustSessionState(sessionId: string | null): {
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
   // Accept optional targetSessionId to handle race conditions with React state updates.
-  // When creating a new session, the local activeSessionId variable has the correct value
-  // before React's batched state update takes effect. Passing it explicitly ensures
-  // we refresh the correct session immediately.
   const refresh = useCallback(
     (targetSessionId?: string | null) => {
       const sessionToRefresh = targetSessionId ?? sessionId;
@@ -351,55 +269,8 @@ export function useRustDebugEnabled(sessionId: string | null): boolean {
 }
 
 // =============================================================================
-// Session attachment helpers
+// Testing utilities
 // =============================================================================
-
-export function manualAttach(
-  sessionId: string,
-  onChunk: (err: Error | null, chunk: StreamChunk) => void
-): void {
-  try {
-    sessionAttach(sessionId, onChunk);
-  } catch {
-    // Ignore attach errors
-  }
-}
-
-export function manualDetach(sessionId: string): void {
-  try {
-    sessionDetach(sessionId);
-  } catch {
-    // Ignore detach errors
-  }
-}
-
-export function getSessionChunks(sessionId: string): StreamChunk[] {
-  try {
-    return sessionGetMergedOutput(sessionId);
-  } catch {
-    return [];
-  }
-}
-
-// =============================================================================
-// Testing utilities (exported for test isolation)
-// =============================================================================
-
-/**
- * Clear all subscription state - use in test cleanup
- */
-export function clearAllSubscriptions(): void {
-  subscriptions.clear();
-}
-
-/**
- * Get subscription for test inspection (read-only)
- */
-export function getSubscriptionForTesting(
-  sessionId: string
-): Readonly<SessionSubscription> | undefined {
-  return subscriptions.get(sessionId);
-}
 
 /**
  * Get empty snapshot constant for test assertions

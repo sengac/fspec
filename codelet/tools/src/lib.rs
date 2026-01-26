@@ -19,6 +19,7 @@ pub mod page_fetcher;
 pub mod pdf;
 pub mod read;
 pub mod search_engine;
+pub mod tool_pause;
 pub mod tool_progress;
 pub mod truncation;
 pub mod validation;
@@ -42,6 +43,10 @@ pub use ls::LsTool;
 pub use page_fetcher::{Heading, Link, PageContent, PageFetcher};
 pub use read::{ReadOutput, ReadTool};
 pub use search_engine::{SearchEngine, SearchResult};
+pub use tool_pause::{
+    has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
+    PauseResponse, PauseState,
+};
 pub use tool_progress::{emit_tool_progress, set_tool_progress_callback, ToolProgressCallback};
 pub use web_search::{install_browser_cleanup_handler, shutdown_browser, WebSearchTool};
 pub use write::WriteTool;

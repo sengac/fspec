@@ -4,6 +4,70 @@ use super::traits::{InternalWebSearchParams, ToolDefinition, ToolFacade};
 use crate::ToolError;
 use serde_json::{json, Value};
 
+/// Default headless mode for browser operations
+const DEFAULT_HEADLESS: bool = true;
+
+/// Extract the headless parameter from JSON input with a default of true
+fn extract_headless(input: &Value) -> bool {
+    input
+        .get("headless")
+        .and_then(serde_json::Value::as_bool)
+        .unwrap_or(DEFAULT_HEADLESS)
+}
+
+/// Extract a string field from JSON input, returning empty string if missing
+fn extract_string(input: &Value, field: &str) -> String {
+    input
+        .get(field)
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .to_string()
+}
+
+/// Extract an optional string field from JSON input
+fn extract_optional_string(input: &Value, field: &str) -> Option<String> {
+    input
+        .get(field)
+        .and_then(|v| v.as_str())
+        .map(std::string::ToString::to_string)
+}
+
+/// Extract a boolean field from JSON input with a default value
+fn extract_bool(input: &Value, field: &str, default: bool) -> bool {
+    input
+        .get(field)
+        .and_then(serde_json::Value::as_bool)
+        .unwrap_or(default)
+}
+
+/// Validate and extract a URL from JSON input
+/// Returns an error if the URL is missing, doesn't start with http(s)://, or is malformed
+fn extract_validated_url(input: &Value, tool_name: &'static str) -> Result<String, ToolError> {
+    let url = input
+        .get("url")
+        .and_then(|u| u.as_str())
+        .ok_or_else(|| ToolError::Validation {
+            tool: tool_name,
+            message: "Missing 'url' field".to_string(),
+        })?;
+
+    // Validate URL format (must start with http:// or https://)
+    if !url.starts_with("http://") && !url.starts_with("https://") {
+        return Err(ToolError::Validation {
+            tool: tool_name,
+            message: "URL must start with http:// or https://".to_string(),
+        });
+    }
+
+    // Validate it's a well-formed URL
+    url::Url::parse(url).map_err(|e| ToolError::Validation {
+        tool: tool_name,
+        message: format!("Invalid URL: {e}"),
+    })?;
+
+    Ok(url.to_string())
+}
+
 /// Claude-specific web search facade.
 ///
 /// Claude supports complex schemas with `oneOf` and nested action objects,
@@ -73,68 +137,27 @@ impl ToolFacade for ClaudeWebSearchFacade {
             })?;
 
         match action_type {
-            "search" => {
-                let query = input
-                    .get("query")
-                    .and_then(|q| q.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                Ok(InternalWebSearchParams::Search { query })
-            }
-            "open_page" => {
-                let url = input
-                    .get("url")
-                    .and_then(|u| u.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                let headless = input
-                    .get("headless")
-                    .and_then(serde_json::Value::as_bool)
-                    .unwrap_or(true);
-                Ok(InternalWebSearchParams::OpenPage { url, headless })
-            }
-            "find_in_page" => {
-                let url = input
-                    .get("url")
-                    .and_then(|u| u.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                let pattern = input
-                    .get("pattern")
-                    .and_then(|p| p.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                let headless = input
-                    .get("headless")
-                    .and_then(serde_json::Value::as_bool)
-                    .unwrap_or(true);
-                Ok(InternalWebSearchParams::FindInPage { url, pattern, headless })
-            }
-            "capture_screenshot" => {
-                let url = input
-                    .get("url")
-                    .and_then(|u| u.as_str())
-                    .unwrap_or("")
-                    .to_string();
-                let output_path = input
-                    .get("output_path")
-                    .and_then(|p| p.as_str())
-                    .map(std::string::ToString::to_string);
-                let full_page = input
-                    .get("full_page")
-                    .and_then(serde_json::Value::as_bool)
-                    .unwrap_or(false);
-                let headless = input
-                    .get("headless")
-                    .and_then(serde_json::Value::as_bool)
-                    .unwrap_or(true);
-                Ok(InternalWebSearchParams::CaptureScreenshot {
-                    url,
-                    output_path,
-                    full_page,
-                    headless,
-                })
-            }
+            "search" => Ok(InternalWebSearchParams::Search {
+                query: extract_string(&input, "query"),
+            }),
+            "open_page" => Ok(InternalWebSearchParams::OpenPage {
+                url: extract_string(&input, "url"),
+                headless: extract_headless(&input),
+                pause: false,
+            }),
+            "find_in_page" => Ok(InternalWebSearchParams::FindInPage {
+                url: extract_string(&input, "url"),
+                pattern: extract_string(&input, "pattern"),
+                headless: extract_headless(&input),
+                pause: false,
+            }),
+            "capture_screenshot" => Ok(InternalWebSearchParams::CaptureScreenshot {
+                url: extract_string(&input, "url"),
+                output_path: extract_optional_string(&input, "output_path"),
+                full_page: extract_bool(&input, "full_page", false),
+                headless: extract_headless(&input),
+                pause: false,
+            }),
             _ => Err(ToolError::Validation {
                 tool: "web_search",
                 message: format!("Unknown action type: {action_type}"),
@@ -231,37 +254,12 @@ impl ToolFacade for GeminiWebFetchFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {
-        let url =
-            input
-                .get("url")
-                .and_then(|u| u.as_str())
-                .ok_or_else(|| ToolError::Validation {
-                    tool: "web_fetch",
-                    message: "Missing 'url' field".to_string(),
-                })?;
-
-        // Validate URL format
-        if !url.starts_with("http://") && !url.starts_with("https://") {
-            return Err(ToolError::Validation {
-                tool: "web_fetch",
-                message: "URL must start with http:// or https://".to_string(),
-            });
-        }
-
-        // Validate it's a proper URL
-        url::Url::parse(url).map_err(|e| ToolError::Validation {
-            tool: "web_fetch",
-            message: format!("Invalid URL: {e}"),
-        })?;
-
-        let headless = input
-            .get("headless")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(true);
+        let url = extract_validated_url(&input, "web_fetch")?;
 
         Ok(InternalWebSearchParams::OpenPage {
-            url: url.to_string(),
-            headless,
+            url,
+            headless: extract_headless(&input),
+            pause: false,
         })
     }
 }
@@ -311,49 +309,14 @@ impl ToolFacade for GeminiWebScreenshotFacade {
     }
 
     fn map_params(&self, input: Value) -> Result<InternalWebSearchParams, ToolError> {
-        let url =
-            input
-                .get("url")
-                .and_then(|u| u.as_str())
-                .ok_or_else(|| ToolError::Validation {
-                    tool: "capture_screenshot",
-                    message: "Missing 'url' field".to_string(),
-                })?;
-
-        // Validate URL format
-        if !url.starts_with("http://") && !url.starts_with("https://") {
-            return Err(ToolError::Validation {
-                tool: "capture_screenshot",
-                message: "URL must start with http:// or https://".to_string(),
-            });
-        }
-
-        // Validate it's a proper URL
-        url::Url::parse(url).map_err(|e| ToolError::Validation {
-            tool: "capture_screenshot",
-            message: format!("Invalid URL: {e}"),
-        })?;
-
-        let output_path = input
-            .get("output_path")
-            .and_then(|p| p.as_str())
-            .map(std::string::ToString::to_string);
-
-        let full_page = input
-            .get("full_page")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(false);
-
-        let headless = input
-            .get("headless")
-            .and_then(serde_json::Value::as_bool)
-            .unwrap_or(true);
+        let url = extract_validated_url(&input, "capture_screenshot")?;
 
         Ok(InternalWebSearchParams::CaptureScreenshot {
-            url: url.to_string(),
-            output_path,
-            full_page,
-            headless,
+            url,
+            output_path: extract_optional_string(&input, "output_path"),
+            full_page: extract_bool(&input, "full_page", false),
+            headless: extract_headless(&input),
+            pause: false,
         })
     }
 }
@@ -395,7 +358,7 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: true,
+                headless: true, pause: false,
             }
         );
     }
@@ -428,7 +391,7 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: true,
+                headless: true, pause: false,
             }
         );
     }
@@ -446,7 +409,7 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: true,
+                headless: true, pause: false,
             }
         );
     }
@@ -486,7 +449,7 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: false,
+                headless: false, pause: false,
             }
         );
     }
@@ -508,7 +471,7 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: Some("/tmp/screenshot.png".to_string()),
                 full_page: true,
-                headless: true,
+                headless: true, pause: false,
             }
         );
     }
@@ -528,7 +491,7 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: None,
                 full_page: false,
-                headless: true,
+                headless: true, pause: false,
             }
         );
     }
@@ -549,7 +512,7 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: None,
                 full_page: false,
-                headless: false,
+                headless: false, pause: false,
             }
         );
     }
@@ -570,7 +533,7 @@ mod tests {
             InternalWebSearchParams::FindInPage {
                 url: "https://example.com".to_string(),
                 pattern: "search term".to_string(),
-                headless: false,
+                headless: false, pause: false,
             }
         );
     }
@@ -599,7 +562,7 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: false,
+                headless: false, pause: false,
             }
         );
     }
@@ -660,7 +623,7 @@ mod tests {
             result,
             InternalWebSearchParams::OpenPage {
                 url: "https://example.com".to_string(),
-                headless: false,
+                headless: false, pause: false,
             }
         );
     }
@@ -681,7 +644,7 @@ mod tests {
                 url: "https://example.com".to_string(),
                 output_path: Some("/tmp/screenshot.png".to_string()),
                 full_page: true,
-                headless: true,
+                headless: true, pause: false,
             }
         );
     }
@@ -701,6 +664,7 @@ mod tests {
                 output_path: None,
                 full_page: false,
                 headless: true,
+                pause: false,
             }
         );
     }
@@ -758,6 +722,7 @@ mod tests {
                 output_path: None,
                 full_page: false,
                 headless: false,
+                pause: false,
             }
         );
     }

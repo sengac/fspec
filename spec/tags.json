@@ -546,6 +546,10 @@
           "description": "Parent-child work unit relationships"
         },
         {
+          "name": "@pause-integration",
+          "description": "Tool pause mechanism integration with sessions and TUI"
+        },
+        {
           "name": "@prediction",
           "description": "Prediction operations"
         },
@@ -2282,7 +2286,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-22T23:45:13.736Z",
+    "lastUpdated": "2026-01-26T06:40:05.907Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

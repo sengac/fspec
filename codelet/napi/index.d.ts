@@ -687,6 +687,18 @@ export interface NapiModelInfo {
   hasVision: boolean;
 }
 
+/** PAUSE-001: Pause state returned to TypeScript via NAPI */
+export interface NapiPauseState {
+  /** "continue" or "confirm" */
+  kind: string;
+  /** Tool name that initiated the pause (e.g., "WebSearch") */
+  toolName: string;
+  /** Human-readable message (e.g., "Page loaded at https://...") */
+  message: string;
+  /** Optional additional details (e.g., command text for confirm) */
+  details?: string;
+}
+
 /**
  * Provider configuration for programmatic credential passing (CONFIG-004)
  *
@@ -1097,6 +1109,16 @@ export declare function sessionGetNext(): string | null;
 export declare function sessionGetParent(sessionId: string): string | null;
 
 /**
+ * Get pause state for a session (PAUSE-001)
+ *
+ * Returns the current pause state if the session is paused, null otherwise.
+ * TypeScript uses this to display pause UI (tool name, message, kind).
+ */
+export declare function sessionGetPauseState(
+  sessionId: string
+): NapiPauseState | null;
+
+/**
  * Get pending input text for a background session (TUI-049)
  *
  * Returns the input text that was being typed when the user switched away from this session.
@@ -1185,6 +1207,25 @@ export interface SessionModel {
   /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
   modelId?: string;
 }
+
+/**
+ * Confirm or deny a paused session (PAUSE-001)
+ *
+ * Called when user presses Y (approved=true) or N (approved=false) during a Confirm pause.
+ * Sends Approved or Denied response to unblock the waiting tool.
+ */
+export declare function sessionPauseConfirm(
+  sessionId: string,
+  approved: boolean
+): void;
+
+/**
+ * Resume a paused session (PAUSE-001)
+ *
+ * Called when user presses Enter during a Continue pause.
+ * Sends Resumed response to unblock the waiting tool.
+ */
+export declare function sessionPauseResume(sessionId: string): void;
 
 /**
  * Restore messages to a background session from persisted envelopes.

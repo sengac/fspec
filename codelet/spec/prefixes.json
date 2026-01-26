@@ -54,6 +54,11 @@
       "prefix": "BROWSE",
       "description": "Browser functionality and web browsing tools",
       "createdAt": "2025-12-29T06:12:07.533Z"
+    },
+    "PAUSE": {
+      "prefix": "PAUSE",
+      "description": "Tool pause and interactive debugging features",
+      "createdAt": "2026-01-26T03:49:58.729Z"
     }
   }
 }

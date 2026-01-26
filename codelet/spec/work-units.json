@@ -2,7 +2,7 @@
   "version": "0.7.1",
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-02T08:34:55.860Z"
+    "lastUpdated": "2026-01-26T04:37:35.490Z"
   },
   "workUnits": {
     "FOUND-001": {
@@ -8676,6 +8676,224 @@
       "createdAt": "2025-12-31T04:41:46.951Z",
       "updatedAt": "2025-12-31T04:41:46.951Z",
       "children": []
+    },
+    "PAUSE-001": {
+      "id": "PAUSE-001",
+      "title": "Interactive Tool Pause for Browser Debugging",
+      "type": "story",
+      "status": "testing",
+      "createdAt": "2026-01-26T03:50:02.986Z",
+      "updatedAt": "2026-01-26T04:37:47.661Z",
+      "children": [],
+      "attachments": [
+        "spec/attachments/PAUSE-001/architecture-notes.md",
+        "spec/attachments/PAUSE-001/ast-research-integration-points.md"
+      ],
+      "userStory": {
+        "role": "developer debugging web interactions",
+        "action": "pause a tool mid-execution to inspect the browser and DevTools",
+        "benefit": "I can interactively debug page content before the tool returns results to the agent"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-26T03:51:31.105Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-26T04:37:47.661Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the pause be triggered explicitly via a parameter (pause: true) in the tool call, or automatically whenever headless: false?",
+          "deleted": false,
+          "createdAt": "2026-01-26T03:51:36.808Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Explicit parameter (pause: true). Two orthogonal concerns: headless=false for visibility, pause=true for interactivity. Agent chooses based on user intent. Bonus: pause: true auto-implies headless: false (pausing headless is pointless)."
+        },
+        {
+          "id": 1,
+          "text": "@human: What key should the user press to resume? Enter, Space, or a specific combo like Ctrl+R?",
+          "deleted": false,
+          "createdAt": "2026-01-26T03:51:41.042Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Enter for Continue pauses, Y/N for Confirm pauses, Esc to interrupt in either case. This supports the two pause kinds: simple continuation and security confirmation gates."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should we attempt to automatically open Chrome DevTools when pausing, or just leave the browser visible for manual DevTools opening?",
+          "deleted": false,
+          "createdAt": "2026-01-26T03:51:45.496Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No, do not auto-open DevTools. Keep it simple - the user can open DevTools themselves if needed. Less intrusive, simpler implementation."
+        },
+        {
+          "id": 3,
+          "text": "@human: Should this pause capability apply only to WebSearchTool, or should it be a general feature available to all tools?",
+          "deleted": false,
+          "createdAt": "2026-01-26T03:51:49.619Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Generic mechanism designed for all tools, but initial implementation scope is WebSearchTool only (anything using rust-headless-chrome). The architecture supports future extension to BashTool confirmation pauses etc."
+        },
+        {
+          "id": 4,
+          "text": "@human: If a tool execution involves multiple steps (navigate → wait → extract), should there be pause points at each step, or just one pause before returning the final result?",
+          "deleted": false,
+          "createdAt": "2026-01-26T03:51:54.190Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Single pause per tool call. The AI determines when to pause by setting pause: true. No multiple pause points within a single tool execution - keep it simple."
+        }
+      ],
+      "nextQuestionId": 5,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Pause is triggered explicitly via pause: true parameter in the tool call, not automatically",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:06:33.805Z"
+        },
+        {
+          "id": 1,
+          "text": "pause: true auto-implies headless: false (pausing a headless browser is pointless)",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:06:39.328Z"
+        },
+        {
+          "id": 2,
+          "text": "Two pause kinds: Continue (Enter to resume) and Confirm (Y to approve, N to deny)",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:06:43.321Z"
+        },
+        {
+          "id": 3,
+          "text": "Esc key interrupts the agent during any pause (same as during normal execution)",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:06:47.748Z"
+        },
+        {
+          "id": 4,
+          "text": "Rust is the single source of truth for pause state - SessionStatus::Paused with PauseState struct",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:06:52.224Z"
+        },
+        {
+          "id": 5,
+          "text": "Pause state syncs to React the same way isLoading syncs (via useRustSessionState hook)",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:06:56.775Z"
+        },
+        {
+          "id": 6,
+          "text": "Paused state replaces the Thinking indicator in the same location (InputTransition component)",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:01.153Z"
+        },
+        {
+          "id": 7,
+          "text": "Single pause per tool call - no multiple pause points within one execution",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:05.816Z"
+        },
+        {
+          "id": 8,
+          "text": "Initial scope: WebSearchTool only (rust-headless-chrome). Generic mechanism supports future tools.",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:10.122Z"
+        },
+        {
+          "id": 9,
+          "text": "Do not auto-open Chrome DevTools - user opens manually if needed",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:14.130Z"
+        }
+      ],
+      "nextRuleId": 10,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent calls OpenPage with {url: 'https://example.com', pause: true} → browser opens visibly, page loads, TUI shows 'WebSearch paused: Page loaded... (Enter to continue)', user inspects, presses Enter, tool extracts content and returns",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:20.009Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent calls OpenPage with {url: 'https://example.com', pause: true, headless: true} → headless is auto-overridden to false, browser opens visibly",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:24.549Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses Esc during pause → agent is interrupted, tool returns error, same as interrupting during normal Thinking state",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:29.111Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent calls CaptureScreenshot with {url: 'https://example.com', pause: true} → browser opens, page loads, user can interact/scroll, presses Enter, screenshot is captured of current state",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:33.962Z"
+        },
+        {
+          "id": 4,
+          "text": "Confirm pause (future): BashTool detects dangerous command, TUI shows warning with command text, user presses Y to approve or N to deny",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:38.877Z"
+        },
+        {
+          "id": 5,
+          "text": "TUI state during pause: 'Thinking...' line is replaced with pause indicator showing tool name and message, returns to 'Thinking...' after resume",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:07:44.009Z"
+        }
+      ],
+      "nextExampleId": 6,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Core mechanism: codelet/tools/src/tool_pause.rs with PauseKind enum (Continue/Confirm), PauseRequest struct, PauseResponse enum, and pause_for_user() blocking function. Uses Condvar for blocking/resume synchronization.",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:35:29.118Z"
+        },
+        {
+          "id": 1,
+          "text": "Session integration: Add SessionStatus::Paused variant to codelet/napi/src/session_manager.rs. Add pause_state: RwLock<Option<PauseState>> field to Session struct. Follows existing AtomicU8 status pattern.",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:35:34.834Z"
+        },
+        {
+          "id": 2,
+          "text": "NAPI bindings: codelet/napi/src/tool_pause.rs exports session_get_pause_state(), session_pause_resume(), session_pause_confirm(). Follows existing session_get_status() pattern for TypeScript interop.",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:35:39.660Z"
+        },
+        {
+          "id": 3,
+          "text": "React state sync: Extend useRustSessionState hook in src/tui/hooks/useRustSessionState.ts. Add isPaused boolean and pauseInfo to RustSessionSnapshot. Follows existing isLoading pattern.",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:35:44.219Z"
+        },
+        {
+          "id": 4,
+          "text": "TUI integration: Modify InputTransition.tsx to check isPaused and render PauseIndicator instead of ThinkingIndicator when paused. Handle Enter key for resume in AgentView.tsx keyboard handler.",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:35:49.213Z"
+        },
+        {
+          "id": 5,
+          "text": "WebSearchTool integration: Add pause field to OpenPage, FindInPage, CaptureScreenshot variants in codelet/common/src/web_search.rs. Call pause_for_user() in codelet/tools/src/web_search.rs when pause=true.",
+          "deleted": false,
+          "createdAt": "2026-01-26T04:35:54.747Z"
+        }
+      ],
+      "nextNoteId": 6
     }
   },
   "states": {
@@ -8689,7 +8907,9 @@
       "AGENT-002",
       "TOOL-001"
     ],
-    "testing": [],
+    "testing": [
+      "PAUSE-001"
+    ],
     "implementing": [],
     "validating": [],
     "done": [
@@ -8765,6 +8985,7 @@
     "WEB": 2,
     "NAPI": 3,
     "TOOL": 1,
-    "BROWSE": 1
+    "BROWSE": 1,
+    "PAUSE": 1
   }
 }

@@ -27,6 +27,8 @@ pub enum InternalWebSearchParams {
         url: String,
         /// If true, runs Chrome in headless mode (no visible UI). If false, shows the browser window.
         headless: bool,
+        /// If true, pause after page load for user interaction before returning.
+        pause: bool,
     },
     /// Find a pattern within a page's content
     FindInPage {
@@ -34,6 +36,8 @@ pub enum InternalWebSearchParams {
         pattern: String,
         /// If true, runs Chrome in headless mode (no visible UI). If false, shows the browser window.
         headless: bool,
+        /// If true, pause after page load for user interaction before returning.
+        pause: bool,
     },
     /// Capture a screenshot of a web page
     CaptureScreenshot {
@@ -42,6 +46,8 @@ pub enum InternalWebSearchParams {
         full_page: bool,
         /// If true, runs Chrome in headless mode (no visible UI). If false, shows the browser window.
         headless: bool,
+        /// If true, pause after page load for user interaction before capturing screenshot.
+        pause: bool,
     },
 }
 

@@ -47,6 +47,6 @@ Feature: Input state not restored when navigating from BoardView to AgentView
   Scenario: Pending input is preserved when switching between sessions with Shift+Right/Left
     Given the user has typed "Hello world" in Session A's AgentView input area
     When the user presses Shift+Right to switch to Session B
-    Then the input area displays "Hello world" in Session A
     And the user presses Shift+Left to return to Session A
+    Then Session A's AgentView input area should display "Hello world"
 
