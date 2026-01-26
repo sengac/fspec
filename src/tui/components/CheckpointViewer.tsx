@@ -4,27 +4,28 @@
  * Coverage:
  * - GIT-004: Interactive checkpoint viewer with diff and commit capabilities
  * - TUI-002: Checkpoint Viewer Three-Pane Layout
+ * - INPUT-001: Uses centralized input handling with HIGH priority
  */
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { VirtualList } from './VirtualList';
-import type { FileItem } from './FileDiffViewer';
+import { Box, Text } from 'ink';
+import { VirtualList } from './VirtualList.js';
+import type { FileItem } from './FileDiffViewer.js';
 import { Worker } from 'worker_threads';
-import { parseDiff, DiffLine } from '../../git/diff-parser';
-import { getWorkerPath } from '../../git/worker-path';
-import { useFspecStore } from '../store/fspecStore';
+import { parseDiff, DiffLine } from '../../git/diff-parser.js';
+import { getWorkerPath } from '../../git/worker-path.js';
+import { useFspecStore } from '../store/fspecStore.js';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import { join } from 'path';
-import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
+import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint.js';
 import {
   getCheckpointFilesChangedFromHead,
   deleteCheckpoint,
   deleteAllCheckpoints,
   restoreCheckpointFile,
   restoreCheckpoint,
-} from '../../utils/git-checkpoint';
+} from '../../utils/git-checkpoint.js';
 import {
   checkpointIndexDirExists,
   listCheckpointIndexFiles,
@@ -32,10 +33,11 @@ import {
   readCheckpointIndexFile,
   isAutomaticCheckpoint,
   parseAutomaticCheckpointName,
-} from '../../utils/checkpoint-index';
-import { ConfirmationDialog } from '../../components/ConfirmationDialog';
-import { StatusDialog } from '../../components/StatusDialog';
-import { sendIPCMessage } from '../../utils/ipc';
+} from '../../utils/checkpoint-index.js';
+import { ConfirmationDialog } from '../../components/ConfirmationDialog.js';
+import { StatusDialog } from '../../components/StatusDialog.js';
+import { sendIPCMessage } from '../../utils/ipc.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 export interface Checkpoint {
   name: string;
@@ -479,12 +481,16 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
     setShowStatusDialog(false);
   };
 
-  // Handle keyboard input
-  useInput(
-    (input, key) => {
+  // Handle keyboard input with HIGH priority (full-screen viewer)
+  useInputCompat({
+    id: 'checkpoint-viewer',
+    priority: InputPriority.HIGH,
+    description: 'Checkpoint viewer keyboard navigation',
+    isActive: !showDeleteDialog && !showRestoreDialog,
+    handler: (input, key) => {
       if (key.escape) {
         onExit();
-        return;
+        return true;
       }
 
       // R key for single file restore (files pane only)
@@ -493,7 +499,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           setRestoreMode('single');
           setShowRestoreDialog(true);
         }
-        return;
+        return true;
       }
 
       // T key for restore all files
@@ -505,7 +511,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           setRestoreMode('all');
           setShowRestoreDialog(true);
         }
-        return;
+        return true;
       }
 
       // D key for single deletion
@@ -514,7 +520,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           setDeleteMode('single');
           setShowDeleteDialog(true);
         }
-        return;
+        return true;
       }
 
       // A key for delete ALL
@@ -523,7 +529,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           setDeleteMode('all');
           setShowDeleteDialog(true);
         }
-        return;
+        return true;
       }
 
       // Tab key or right arrow to cycle forward through three panes
@@ -533,7 +539,7 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           if (prev === 'files') return 'diff';
           return 'checkpoints';
         });
-        return;
+        return true;
       }
 
       // Left arrow to cycle backward through three panes
@@ -543,13 +549,13 @@ export const CheckpointViewer: React.FC<CheckpointViewerProps> = ({
           if (prev === 'files') return 'checkpoints';
           return 'files';
         });
-        return;
+        return true;
       }
 
       // Up/down arrow key navigation handled by VirtualList when focused
+      return false;
     },
-    { isActive: !showDeleteDialog && !showRestoreDialog }
-  );
+  });
 
   // Loading state
   if (isLoadingCheckpoints) {

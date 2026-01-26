@@ -1,7 +1,16 @@
+/**
+ * AgentSelector - Interactive CLI component for selecting AI coding agent
+ *
+ * Used during `fspec init` to let users choose which agent they want to use.
+ * Renders standalone (outside main TUI), so uses useInputCompat's fallback mode.
+ *
+ * INPUT-001: Uses centralized input handling (falls back to useInput when no InputManager)
+ */
+
 import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput, useApp } from 'ink';
+import { Box, Text, useApp } from 'ink';
 import type { AgentConfig } from '../utils/agentRegistry';
-import { getActivationMessage } from '../utils/activationMessage';
+import { useInputCompat, InputPriority } from '../tui/input/index.js';
 
 interface AgentSelectorProps {
   agents: AgentConfig[];
@@ -22,19 +31,28 @@ export const AgentSelector: React.FC<AgentSelectorProps> = ({
   const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
   const { exit } = useApp();
 
-  useInput((input, key) => {
-    if (selectedAgent) {
-      return;
-    }
+  useInputCompat({
+    id: 'agent-selector-nav',
+    priority: InputPriority.MEDIUM,
+    isActive: !selectedAgent,
+    handler: (_input, key) => {
+      if (selectedAgent) {
+        return false;
+      }
 
-    if (key.upArrow) {
-      setCursor(Math.max(0, cursor - 1));
-    } else if (key.downArrow) {
-      setCursor(Math.min(agents.length - 1, cursor + 1));
-    } else if (key.return) {
-      // Select the agent
-      setSelectedAgent(agents[cursor].id);
-    }
+      if (key.upArrow) {
+        setCursor(Math.max(0, cursor - 1));
+        return true;
+      } else if (key.downArrow) {
+        setCursor(Math.min(agents.length - 1, cursor + 1));
+        return true;
+      } else if (key.return) {
+        // Select the agent
+        setSelectedAgent(agents[cursor].id);
+        return true;
+      }
+      return false;
+    },
   });
 
   useEffect(() => {

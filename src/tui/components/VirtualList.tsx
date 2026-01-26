@@ -6,9 +6,11 @@ import React, {
   useLayoutEffect,
   useCallback,
   memo,
+  useId,
 } from 'react';
-import { Box, Text, useInput, measureElement, type DOMElement } from 'ink';
-import { useTerminalSize } from '../hooks/useTerminalSize';
+import { Box, Text, measureElement, type DOMElement } from 'ink';
+import { useTerminalSize } from '../hooks/useTerminalSize.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 // Unicode characters for scrollbar
 const SCROLLBAR_CHARS = {
@@ -137,6 +139,9 @@ export function VirtualList<T>({
   groupPaddingBefore = 0,
   selectionRef,
 }: VirtualListProps<T>): React.ReactElement {
+  // Generate unique ID for this component instance
+  const instanceId = useId();
+
   // Enable mouse tracking mode for button events only (not mouse movement)
   useEffect(() => {
     if (!isFocused) return;
@@ -424,19 +429,26 @@ export function VirtualList<T>({
     }
   }, [scrollOffset, selectedIndex, selectionMode, maxScrollOffset, navigateTo, navigateToGroup, scrollToEnd, groupBy]);
 
-  // Mouse scroll input handler
-  useInput((input, key) => {
-    if (items.length === 0) return;
-    if (input.startsWith('[M')) {
-      const buttonByte = input.charCodeAt(2);
-      if (buttonByte === 96) { handleScroll('up'); return; }
-      if (buttonByte === 97) { handleScroll('down'); return; }
-    }
-    if (key.mouse) {
-      if (key.mouse.button === 'wheelDown') { handleScroll('down'); return; }
-      if (key.mouse.button === 'wheelUp') { handleScroll('up'); return; }
-    }
-  }, { isActive: isFocused });
+  // Mouse scroll input handler with BACKGROUND priority
+  useInputCompat({
+    id: `virtual-list-scroll-${instanceId}`,
+    priority: InputPriority.BACKGROUND,
+    description: 'Virtual list mouse scroll',
+    isActive: isFocused,
+    handler: (input, key) => {
+      if (items.length === 0) return false;
+      if (input.startsWith('[M')) {
+        const buttonByte = input.charCodeAt(2);
+        if (buttonByte === 96) { handleScroll('up'); return true; }
+        if (buttonByte === 97) { handleScroll('down'); return true; }
+      }
+      if (key.mouse) {
+        if (key.mouse.button === 'wheelDown') { handleScroll('down'); return true; }
+        if (key.mouse.button === 'wheelUp') { handleScroll('up'); return true; }
+      }
+      return false;
+    },
+  });
 
   // Scroll mode navigation
   const handleScrollNavigation = (key: {
@@ -487,18 +499,26 @@ export function VirtualList<T>({
     }
   };
 
-  // Keyboard navigation
-  useInput((input, key) => {
-    if (items.length === 0) return;
-    if (input.startsWith('[M') || key.mouse) return;
-    if (key.shift && (key.upArrow || key.downArrow)) return;
+  // Keyboard navigation with BACKGROUND priority
+  useInputCompat({
+    id: `virtual-list-nav-${instanceId}`,
+    priority: InputPriority.BACKGROUND,
+    description: 'Virtual list keyboard navigation',
+    isActive: isFocused,
+    handler: (input, key) => {
+      if (items.length === 0) return false;
+      if (input.startsWith('[M') || key.mouse) return false;
+      if (key.shift && (key.upArrow || key.downArrow)) return false;
 
-    if (selectionMode === 'scroll') {
-      handleScrollNavigation(key);
-    } else {
-      handleItemNavigation(key);
-    }
-  }, { isActive: isFocused });
+      if (selectionMode === 'scroll') {
+        handleScrollNavigation(key);
+        return true;
+      } else {
+        handleItemNavigation(key);
+        return true;
+      }
+    },
+  });
 
   // Check if item is selected (for group selection, all items in group are selected)
   const isItemSelected = useCallback((index: number): boolean => {

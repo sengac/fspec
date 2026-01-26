@@ -1,13 +1,3 @@
-import React, { ReactNode } from 'react';
-import { Box, useInput } from 'ink';
-
-export interface DialogProps {
-  children: ReactNode;
-  onClose: () => void;
-  borderColor?: string;
-  isActive?: boolean;
-}
-
 /**
  * Base Dialog component - provides ONLY modal overlay infrastructure.
  *
@@ -23,6 +13,24 @@ export interface DialogProps {
  * - Callbacks other than onClose
  *
  * Implements composition pattern - accepts children for content.
+ *
+ * INPUT-001: Uses centralized input handling with CRITICAL priority
+ * (Modal dialogs should capture input before any other handlers)
+ */
+
+import React, { ReactNode } from 'react';
+import { Box } from 'ink';
+import { useInputCompat, InputPriority } from '../tui/input/index.js';
+
+export interface DialogProps {
+  children: ReactNode;
+  onClose: () => void;
+  borderColor?: string;
+  isActive?: boolean;
+}
+
+/**
+ * Base Dialog component - provides ONLY modal overlay infrastructure.
  */
 export const Dialog: React.FC<DialogProps> = ({
   children,
@@ -31,11 +39,19 @@ export const Dialog: React.FC<DialogProps> = ({
   isActive = true,
 }) => {
   // Handle ESC key to close dialog (only when active)
-  useInput((input, key) => {
-    if (key.escape) {
-      onClose();
-    }
-  }, { isActive });
+  // Uses CRITICAL priority to ensure modal captures input before other handlers
+  useInputCompat({
+    id: 'dialog-esc',
+    priority: InputPriority.CRITICAL,
+    isActive,
+    handler: (_input, key) => {
+      if (key.escape) {
+        onClose();
+        return true;
+      }
+      return false;
+    },
+  });
 
   return (
     <Box

@@ -1,6 +1,19 @@
+/**
+ * ThreeButtonDialog - A dialog with three horizontal button options.
+ *
+ * Uses Left/Right arrow keys to navigate between buttons.
+ * Enter selects the currently highlighted option.
+ * ESC cancels (calls onCancel).
+ *
+ * Extends base Dialog component for modal overlay infrastructure.
+ *
+ * INPUT-001: Uses centralized input handling with CRITICAL priority
+ */
+
 import React, { useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
+import { useInputCompat, InputPriority } from '../tui/input/index.js';
 
 export interface ThreeButtonDialogProps {
   message: string;
@@ -13,12 +26,6 @@ export interface ThreeButtonDialogProps {
 
 /**
  * ThreeButtonDialog - A dialog with three horizontal button options.
- *
- * Uses Left/Right arrow keys to navigate between buttons.
- * Enter selects the currently highlighted option.
- * ESC cancels (calls onCancel).
- *
- * Extends base Dialog component for modal overlay infrastructure.
  */
 export const ThreeButtonDialog: React.FC<ThreeButtonDialogProps> = ({
   message,
@@ -30,15 +37,24 @@ export const ThreeButtonDialog: React.FC<ThreeButtonDialogProps> = ({
 }) => {
   const [selectedIndex, setSelectedIndex] = useState(defaultSelectedIndex);
 
-  useInput((input, key) => {
-    if (key.leftArrow) {
-      setSelectedIndex(prev => (prev > 0 ? prev - 1 : options.length - 1));
-    } else if (key.rightArrow) {
-      setSelectedIndex(prev => (prev < options.length - 1 ? prev + 1 : 0));
-    } else if (key.return) {
-      onSelect(selectedIndex, options[selectedIndex]);
-    }
-    // ESC is handled by Dialog component via onClose
+  useInputCompat({
+    id: 'three-button-dialog-nav',
+    priority: InputPriority.CRITICAL,
+    isActive: true,
+    handler: (_input, key) => {
+      if (key.leftArrow) {
+        setSelectedIndex(prev => (prev > 0 ? prev - 1 : options.length - 1));
+        return true;
+      } else if (key.rightArrow) {
+        setSelectedIndex(prev => (prev < options.length - 1 ? prev + 1 : 0));
+        return true;
+      } else if (key.return) {
+        onSelect(selectedIndex, options[selectedIndex]);
+        return true;
+      }
+      // ESC is handled by Dialog component via onClose
+      return false;
+    },
   });
 
   return (

@@ -3,6 +3,7 @@
  *
  * WATCH-023: Watcher Templates and Improved Creation UX
  * Refactored from WatcherCreateView.tsx (WATCH-009, WATCH-021)
+ * INPUT-001: Uses centralized input handling with CRITICAL priority
  *
  * Features:
  * - Supports create/edit modes
@@ -15,8 +16,9 @@
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { Box, Text, useInput } from 'ink';
-import type { WatcherTemplate } from '../types/watcherTemplate';
+import { Box, Text } from 'ink';
+import type { WatcherTemplate } from '../types/watcherTemplate.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 type FocusField = 'name' | 'model' | 'authority' | 'brief' | 'autoInject';
 const FOCUS_ORDER: FocusField[] = ['name', 'model', 'authority', 'brief', 'autoInject'];
@@ -100,85 +102,93 @@ export function WatcherTemplateForm({
     onSave(name.trim(), authority, selectedModel, brief.trim(), autoInject);
   }, [name, authority, selectedModel, brief, autoInject, onSave]);
 
-  useInput((input, key) => {
-    if (key.escape) {
-      onCancel();
-      return;
-    }
-
-    if (key.tab) {
-      if (key.shift) {
-        cycleFocusBackward();
-      } else {
-        cycleFocusForward();
+  // Handle keyboard input with CRITICAL priority (full-screen form)
+  useInputCompat({
+    id: 'watcher-template-form',
+    priority: InputPriority.CRITICAL,
+    description: 'Watcher template form keyboard navigation',
+    handler: (input, key) => {
+      if (key.escape) {
+        onCancel();
+        return true;
       }
-      return;
-    }
 
-    if (key.return) {
-      handleSave();
-      return;
-    }
+      if (key.tab) {
+        if (key.shift) {
+          cycleFocusBackward();
+        } else {
+          cycleFocusForward();
+        }
+        return true;
+      }
 
-    // Field-specific handling
-    switch (focusField) {
-      case 'name':
-        if (key.upArrow) { cycleFocusBackward(); return; }
-        if (key.downArrow) { cycleFocusForward(); return; }
-        if (key.backspace || key.delete) {
-          setName(p => p.slice(0, -1));
-        } else if (input && !key.ctrl && !key.meta) {
-          setName(p => p + input);
-        }
-        break;
+      if (key.return) {
+        handleSave();
+        return true;
+      }
 
-      case 'model':
-        // Type-to-filter: typing filters the list
-        if (key.backspace || key.delete) {
-          setModelFilter(p => p.slice(0, -1));
-          return;
-        }
-        // ↑/↓ navigates filtered list
-        if (key.upArrow) {
-          setSelectedModelIndex(p => Math.max(0, p - 1));
-          return;
-        }
-        if (key.downArrow) {
-          setSelectedModelIndex(p => Math.min(filteredModels.length - 1, p + 1));
-          return;
-        }
-        // Accept printable characters for filtering
-        if (input && !key.ctrl && !key.meta) {
-          setModelFilter(p => p + input);
-        }
-        break;
+      // Field-specific handling
+      switch (focusField) {
+        case 'name':
+          if (key.upArrow) { cycleFocusBackward(); return true; }
+          if (key.downArrow) { cycleFocusForward(); return true; }
+          if (key.backspace || key.delete) {
+            setName(p => p.slice(0, -1));
+          } else if (input && !key.ctrl && !key.meta) {
+            setName(p => p + input);
+          }
+          break;
 
-      case 'authority':
-        if (key.upArrow) { cycleFocusBackward(); return; }
-        if (key.downArrow) { cycleFocusForward(); return; }
-        if (key.leftArrow || key.rightArrow) {
-          setAuthority(p => p === 'peer' ? 'supervisor' : 'peer');
-        }
-        break;
+        case 'model':
+          // Type-to-filter: typing filters the list
+          if (key.backspace || key.delete) {
+            setModelFilter(p => p.slice(0, -1));
+            return true;
+          }
+          // ↑/↓ navigates filtered list
+          if (key.upArrow) {
+            setSelectedModelIndex(p => Math.max(0, p - 1));
+            return true;
+          }
+          if (key.downArrow) {
+            setSelectedModelIndex(p => Math.min(filteredModels.length - 1, p + 1));
+            return true;
+          }
+          // Accept printable characters for filtering
+          if (input && !key.ctrl && !key.meta) {
+            setModelFilter(p => p + input);
+          }
+          break;
 
-      case 'brief':
-        if (key.upArrow) { cycleFocusBackward(); return; }
-        if (key.downArrow) { cycleFocusForward(); return; }
-        if (key.backspace || key.delete) {
-          setBrief(p => p.slice(0, -1));
-        } else if (input && !key.ctrl && !key.meta) {
-          setBrief(p => p + input);
-        }
-        break;
+        case 'authority':
+          if (key.upArrow) { cycleFocusBackward(); return true; }
+          if (key.downArrow) { cycleFocusForward(); return true; }
+          if (key.leftArrow || key.rightArrow) {
+            setAuthority(p => p === 'peer' ? 'supervisor' : 'peer');
+          }
+          break;
 
-      case 'autoInject':
-        if (key.upArrow) { cycleFocusBackward(); return; }
-        if (key.downArrow) { cycleFocusForward(); return; }
-        if (key.leftArrow || key.rightArrow) {
-          setAutoInject(p => !p);
-        }
-        break;
-    }
+        case 'brief':
+          if (key.upArrow) { cycleFocusBackward(); return true; }
+          if (key.downArrow) { cycleFocusForward(); return true; }
+          if (key.backspace || key.delete) {
+            setBrief(p => p.slice(0, -1));
+          } else if (input && !key.ctrl && !key.meta) {
+            setBrief(p => p + input);
+          }
+          break;
+
+        case 'autoInject':
+          if (key.upArrow) { cycleFocusBackward(); return true; }
+          if (key.downArrow) { cycleFocusForward(); return true; }
+          if (key.leftArrow || key.rightArrow) {
+            setAutoInject(p => !p);
+          }
+          break;
+      }
+
+      return true; // Consume all input when form is active
+    },
   });
 
   const isNameValid = name.trim().length > 0;

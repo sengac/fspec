@@ -10,11 +10,14 @@
  * - Simple Yes/No confirmation
  * - Creates a new agent conversation not linked to any work unit
  * - Uses the base Dialog component for consistent modal styling
+ *
+ * INPUT-001: Uses centralized input handling with CRITICAL priority
  */
 
 import React, { useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
+import { useInputCompat, InputPriority } from '../tui/input/index.js';
 
 export interface CreateSessionDialogProps {
   /** Callback when user confirms - starts new agent conversation */
@@ -36,19 +39,28 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
 }) => {
   const [selectedButton, setSelectedButton] = useState<'yes' | 'no'>('yes');
 
-  useInput((input, key) => {
-    if (key.leftArrow) {
-      setSelectedButton('yes');
-    } else if (key.rightArrow) {
-      setSelectedButton('no');
-    } else if (key.return) {
-      if (selectedButton === 'yes') {
-        onConfirm();
-      } else {
-        onCancel();
+  useInputCompat({
+    id: 'create-session-dialog-nav',
+    priority: InputPriority.CRITICAL,
+    isActive: true,
+    handler: (_input, key) => {
+      if (key.leftArrow) {
+        setSelectedButton('yes');
+        return true;
+      } else if (key.rightArrow) {
+        setSelectedButton('no');
+        return true;
+      } else if (key.return) {
+        if (selectedButton === 'yes') {
+          onConfirm();
+        } else {
+          onCancel();
+        }
+        return true;
       }
-    }
-    // ESC is handled by Dialog component via onClose
+      // ESC is handled by Dialog component via onClose
+      return false;
+    },
   });
 
   return (

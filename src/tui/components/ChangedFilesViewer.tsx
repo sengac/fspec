@@ -5,13 +5,15 @@
  * - GIT-004: Interactive checkpoint viewer with diff and commit capabilities
  * - TUI-002: Checkpoint Viewer Three-Pane Layout (refactored to use FileDiffViewer)
  * - TUI-014: Remove file watching from TUI main screen and lazy-load changed files view
+ * - INPUT-001: Uses centralized input handling with HIGH priority
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { FileDiffViewer, FileItem } from './FileDiffViewer';
-import { logger } from '../../utils/logger';
-import { useFspecStore } from '../store/fspecStore';
+import { Box, Text } from 'ink';
+import { FileDiffViewer, FileItem } from './FileDiffViewer.js';
+import { logger } from '../../utils/logger.js';
+import { useFspecStore } from '../store/fspecStore.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 interface ChangedFilesViewerProps {
   onExit: () => void;
@@ -42,26 +44,32 @@ const ChangedFilesViewerComponent: React.FC<ChangedFilesViewerProps> = ({
     ];
   }, [stagedFiles, unstagedFiles]);
 
-  // Handle keyboard input
-  useInput((input, key) => {
-    if (key.escape) {
-      onExit();
-      return;
-    }
+  // Handle keyboard input with HIGH priority (full-screen view)
+  useInputCompat({
+    id: 'changed-files-viewer',
+    priority: InputPriority.HIGH,
+    description: 'Changed files viewer keyboard navigation',
+    handler: (input, key) => {
+      if (key.escape) {
+        onExit();
+        return true;
+      }
 
-    // Tab key or right arrow to switch focus forward between panes
-    if (key.tab || key.rightArrow) {
-      setFocusedPane(prev => (prev === 'files' ? 'diff' : 'files'));
-      return;
-    }
+      // Tab key or right arrow to switch focus forward between panes
+      if (key.tab || key.rightArrow) {
+        setFocusedPane(prev => (prev === 'files' ? 'diff' : 'files'));
+        return true;
+      }
 
-    // Left arrow to switch focus backward between panes
-    if (key.leftArrow) {
-      setFocusedPane(prev => (prev === 'files' ? 'diff' : 'files'));
-      return;
-    }
+      // Left arrow to switch focus backward between panes
+      if (key.leftArrow) {
+        setFocusedPane(prev => (prev === 'files' ? 'diff' : 'files'));
+        return true;
+      }
 
-    // Up/down arrow key navigation handled by VirtualList when focused
+      // Up/down arrow key navigation handled by VirtualList when focused
+      return false;
+    },
   });
 
   // Custom render file item with status indicator for staged/unstaged

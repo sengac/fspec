@@ -249,6 +249,11 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerDestroy: vi.fn(),
   sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
+  // TUI-052: Pending input for session resume
+  sessionGetPendingInput: vi.fn().mockReturnValue(''),
+  sessionSetPendingInput: vi.fn(),
+  // UNIFIED: Merged output for session resume
+  sessionGetMergedOutput: vi.fn().mockReturnValue([]),
   // NAPI-009: New session manager functions
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),
   sessionRestoreMessages: vi.fn(),
@@ -923,19 +928,25 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step When I resume that session via /resume command
-      // Type /resume first, then send Enter separately (ink stdin requires this)
+      // Type /resume and immediately press Enter - don't wait for palette
+      // This uses the fallback path in AgentView's useInput
       stdin.write('/resume');
-      await waitForCondition(lastFrame, frame => frame.includes('/resume'));
+      await waitForFrame();
       stdin.write('\r');
+      
+      // Wait longer for React to process state changes
+      await waitForFrame(200);
 
-      // Wait until the Resume Session overlay appears (confirms TextInput is unmounted)
-      await waitForCondition(lastFrame, frame => frame.includes('Resume Session'));
+      // Wait until the Resume Session overlay appears
+      await waitForCondition(lastFrame, frame => frame.includes('Resume Session'), 100);
 
       // Now press Enter to select the first session in the list
       stdin.write('\r');
+      await waitForFrame(500); // Wait for state changes to propagate
 
-      // Wait for session restore to complete (overlay closes)
-      await waitForCondition(lastFrame, frame => !frame.includes('Resume Session'));
+      // Wait for session restore to complete (overlay closes and no slash command palette)
+      await waitForCondition(lastFrame, frame => !frame.includes('Resume Session') && !frame.includes('Slash Commands'), 100);
+      await waitForFrame(200);
 
       // @step Then the header should show "Agent: claude-opus-4"
       // NAPI-009: Model is restored via state management, reflected in header
@@ -970,13 +981,17 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step When I resume that session
-      // Type /resume first, then send Enter separately (ink stdin requires this)
+      // Type /resume and immediately press Enter - don't wait for palette
+      // This uses the fallback path in AgentView's useInput
       stdin.write('/resume');
-      await waitForCondition(lastFrame, frame => frame.includes('/resume'));
+      await waitForFrame();
       stdin.write('\r');
+      
+      // Wait longer for React to process state changes
+      await waitForFrame(200);
 
-      // Wait until the Resume Session overlay appears (confirms TextInput is unmounted)
-      await waitForCondition(lastFrame, frame => frame.includes('Resume Session'));
+      // Wait until the Resume Session overlay appears
+      await waitForCondition(lastFrame, frame => frame.includes('Resume Session'), 100);
 
       // Now press Enter to select the first session in the list
       stdin.write('\r');
@@ -1081,13 +1096,17 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
 
       // @step When I resume that session
-      // Type /resume first, then send Enter separately (ink stdin requires this)
+      // Type /resume and immediately press Enter - don't wait for palette
+      // This uses the fallback path in AgentView's useInput
       stdin.write('/resume');
-      await waitForCondition(lastFrame, frame => frame.includes('/resume'));
+      await waitForFrame();
       stdin.write('\r');
+      
+      // Wait longer for React to process state changes
+      await waitForFrame(200);
 
-      // Wait until Resume Session overlay appears (confirms TextInput unmounted)
-      await waitForCondition(lastFrame, frame => frame.includes('Resume Session'));
+      // Wait until the Resume Session overlay appears
+      await waitForCondition(lastFrame, frame => frame.includes('Resume Session'), 100);
 
       // Now press Enter to select the first session in the list
       stdin.write('\r');

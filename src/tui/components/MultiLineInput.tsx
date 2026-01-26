@@ -2,6 +2,7 @@
  * MultiLineInput - Multi-line text input component with cursor navigation
  *
  * Implements TUI-039: Multi-line text input with cursor navigation for AgentView
+ * INPUT-001: Uses centralized input handling with MEDIUM priority
  *
  * Features:
  * - Full cursor navigation (Left/Right, Up/Down, Home/End)
@@ -13,8 +14,9 @@
  */
 
 import React, { useEffect, useRef } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { useMultiLineInput } from '../hooks/useMultiLineInput';
+import { Box, Text } from 'ink';
+import { useMultiLineInput } from '../hooks/useMultiLineInput.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 export interface MultiLineInputProps {
   value: string;
@@ -25,10 +27,12 @@ export interface MultiLineInputProps {
   maxVisibleLines?: number;
   onHistoryPrev?: () => void;
   onHistoryNext?: () => void;
-  /** TUI-049: Switch to previous session (Shift+Left) */
-  onSessionPrev?: () => void;
-  /** TUI-049: Switch to next session (Shift+Right) */
-  onSessionNext?: () => void;
+  /**
+   * TUI-050: When true, Enter key is NOT handled by this component.
+   * This allows parent components (like slash command palette) to handle Enter.
+   * Use this when an overlay is active that needs to capture Enter.
+   */
+  suppressEnter?: boolean;
 }
 
 export const MultiLineInput: React.FC<MultiLineInputProps> = ({
@@ -40,8 +44,7 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
   maxVisibleLines = 5,
   onHistoryPrev,
   onHistoryNext,
-  onSessionPrev,
-  onSessionNext,
+  suppressEnter = false,
 }) => {
   const {
     lines,
@@ -75,33 +78,50 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
   });
 
   // Sync external value changes to internal state
+  // Use a flag to prevent the reverse sync from overwriting external changes
   const lastExternalValueRef = useRef(value);
+  const isSyncingFromExternalRef = useRef(false);
+
   useEffect(() => {
     if (value !== lastExternalValueRef.current && value !== hookValue) {
+      isSyncingFromExternalRef.current = true;
       setValue(value);
       lastExternalValueRef.current = value;
+      // Reset the flag after a microtask to allow the setValue to propagate
+      Promise.resolve().then(() => {
+        isSyncingFromExternalRef.current = false;
+      });
     }
   }, [value, hookValue, setValue]);
 
-  // Notify parent of internal value changes
+  // Notify parent of internal value changes (but not when syncing from external)
   useEffect(() => {
-    if (hookValue !== lastExternalValueRef.current) {
+    if (!isSyncingFromExternalRef.current && hookValue !== lastExternalValueRef.current) {
       lastExternalValueRef.current = hookValue;
       onChange(hookValue);
     }
   }, [hookValue, onChange]);
 
-  useInput(
-    (input, key) => {
+  // Handle keyboard input with MEDIUM priority (primary text input)
+  useInputCompat({
+    id: 'multi-line-input',
+    priority: InputPriority.MEDIUM,
+    description: 'Multi-line text input keyboard handler',
+    isActive,
+    handler: (input, key) => {
       // Ignore mouse escape sequences
       if (key.mouse || input.includes('[M') || input.includes('[<')) {
-        return;
+        return false;
       }
 
-      // Enter submits
+      // TUI-050: Enter submits UNLESS suppressed (for slash command palette)
+      // When suppressed, return false so Enter propagates to view-level handler for slash commands
       if (key.return) {
+        if (suppressEnter) {
+          return false; // Let Enter propagate to AgentView for slash command handling
+        }
         onSubmit();
-        return;
+        return true;
       }
 
       // Backspace
@@ -115,62 +135,51 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
 
           deleteCharBefore();
         }
-        return;
+        return true;
       }
 
       // Delete key (forward delete)
       if (input === '\x1b[3~') {
         
         deleteCharAt();
-        return;
+        return true;
       }
 
       // Shift+Arrow for history navigation (check before regular arrow handling)
       if (input.includes('[1;2A') || input.includes('\x1b[1;2A')) {
         
         handleHistoryPrev();
-        return;
+        return true;
       }
       if (input.includes('[1;2B') || input.includes('\x1b[1;2B')) {
         
         handleHistoryNext();
-        return;
+        return true;
       }
       if (key.shift && key.upArrow) {
         
         handleHistoryPrev();
-        return;
+        return true;
       }
       if (key.shift && key.downArrow) {
 
         handleHistoryNext();
-        return;
+        return true;
       }
 
-      // TUI-049: Shift+Left/Right for session switching
+      // TUI-049: Shift+Left/Right for session switching - let it propagate to view level
+      // These are handled by AgentView/SplitSessionView, not by the input component
       if (input.includes('[1;2D') || input.includes('\x1b[1;2D')) {
-        if (onSessionPrev) {
-          onSessionPrev();
-          return;
-        }
+        return false; // Let Shift+Left propagate to view level
       }
       if (input.includes('[1;2C') || input.includes('\x1b[1;2C')) {
-        if (onSessionNext) {
-          onSessionNext();
-          return;
-        }
+        return false; // Let Shift+Right propagate to view level
       }
       if (key.shift && key.leftArrow) {
-        if (onSessionPrev) {
-          onSessionPrev();
-          return;
-        }
+        return false; // Let Shift+Left propagate to view level
       }
       if (key.shift && key.rightArrow) {
-        if (onSessionNext) {
-          onSessionNext();
-          return;
-        }
+        return false; // Let Shift+Right propagate to view level
       }
 
       // Alt+Arrow for word movement
@@ -183,7 +192,7 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
       ) {
         
         moveWordLeft();
-        return;
+        return true;
       }
       if (
         input.includes('[1;3C') ||
@@ -192,56 +201,67 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
       ) {
         
         moveWordRight();
-        return;
+        return true;
       }
       if (key.meta && key.leftArrow) {
         
         moveWordLeft();
-        return;
+        return true;
       }
       if (key.meta && key.rightArrow) {
         
         moveWordRight();
-        return;
+        return true;
       }
 
       // Arrow keys for cursor movement
+      // Left/Right: Always consume (cursor movement within line)
+      // Up/Down: Only consume if there's a line to move to
+      // This allows propagation to slash command palette, VirtualList, etc. when at boundary
       if (key.leftArrow) {
         
         moveCursorLeft();
-        return;
+        return true;
       }
       if (key.rightArrow) {
         
         moveCursorRight();
-        return;
+        return true;
       }
       if (key.upArrow) {
-        
-        moveCursorUp();
-        return;
+        // Only consume if there's a line above to move to
+        if (cursorRow > 0) {
+          moveCursorUp();
+          return true;
+        }
+        // At top of input - let arrow propagate (for slash commands, VirtualList, etc.)
+        return false;
       }
       if (key.downArrow) {
-        
-        moveCursorDown();
-        return;
+        // Only consume if there's a line below to move to
+        if (cursorRow < lines.length - 1) {
+          moveCursorDown();
+          return true;
+        }
+        // At bottom of input - let arrow propagate
+        return false;
       }
 
       // Home/End keys
       if (key.home || input === '\x1b[H') {
         
         moveCursorToLineStart();
-        return;
+        return true;
       }
       if (key.end || input === '\x1b[F') {
         
         moveCursorToLineEnd();
-        return;
+        return true;
       }
 
       // Ignore other special keys
       if (key.escape || key.tab || key.pageUp || key.pageDown) {
-        return;
+        return false;
       }
 
       // Filter to only printable characters
@@ -258,12 +278,14 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
         
         // Use insertString for bulk insert to avoid stale closure issues
         insertString(clean);
+        return true;
       } else {
         
       }
+
+      return false;
     },
-    { isActive }
-  );
+  });
 
   // Render cursor at position
   const renderLineWithCursor = (

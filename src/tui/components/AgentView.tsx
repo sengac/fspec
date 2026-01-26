@@ -24,7 +24,7 @@ import React, {
   useDeferredValue,
 } from 'react';
 import fs from 'fs';
-import { Box, Text, useInput, useStdout } from 'ink';
+import { Box, Text, useStdout } from 'ink';
 import { VirtualList } from './VirtualList';
 import { MultiLineInput } from './MultiLineInput';
 import { InputTransition } from './InputTransition';
@@ -39,7 +39,8 @@ import {
   persistTokenState,
 } from '../utils/tokenStateUtils';
 import { calculatePaneWidth } from '../utils/textWrap';
-import { useSlashCommand } from '../hooks/useSlashCommand';
+import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
+import { useInputCompat, InputPriority } from '../input/index.js';
 import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelection';
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
@@ -1044,8 +1045,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // TUI-049: Skip input animation when switching sessions
   const [skipInputAnimation, setSkipInputAnimation] = useState(false);
 
-  // TUI-050: Slash command autocomplete palette
-  const slashCommand = useSlashCommand();
+  // TUI-050: Ref for slash command executor (set after handleSubmitWithCommand is defined)
+  const executeSlashCommandRef = useRef<(cmd: string) => void>();
 
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [tokenUsage, setTokenUsage] = useState<TokenTracker>({
@@ -1198,6 +1199,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const [watcherTurnModalRole, setWatcherTurnModalRole] = useState<'user' | 'assistant' | 'watcher'>('assistant');
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
+
+  // TUI-050: Slash command palette with clean input handling
+  // Hook is called here after all state that affects its `disabled` prop is defined
+  const slashCommand = useSlashCommandInput({
+    inputValue,
+    onInputChange: setInputValue,
+    onExecuteCommand: (cmd) => executeSlashCommandRef.current?.(cmd),
+    // Disable palette when other overlays/modes are active
+    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab,
+  });
 
   // TUI-048: Space+ESC detection for immediate detach
   // Space is detected as a regular character, so we use a timeout to track if ESC comes shortly after Space
@@ -3539,6 +3550,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     setInputValue('');
   }, [providerSections, currentModel, currentSessionId, workUnitId, detachSessionFromWorkUnit, prepareForNewSession]);
 
+  // TUI-050: Update slash command executor ref after handleSubmitWithCommand is defined
+  useEffect(() => {
+    executeSlashCommandRef.current = (cmd: string) => void handleSubmitWithCommand(cmd);
+  }, [handleSubmitWithCommand]);
+
   // Handle provider switching - now just updates local state
   // Actual provider change happens on next session creation
   const handleSwitchProvider = useCallback(async (providerName: string) => {
@@ -3843,28 +3859,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     }
   }, [historyEntries, historyIndex, savedInput]);
 
-  // TUI-050: Handle input changes with slash command palette detection
-  const handleInputChange = useCallback((newValue: string) => {
-    setInputValue(newValue);
-    
-    // Detect "/" at position 0 to show palette
-    if (newValue.startsWith('/') && !slashCommand.isVisible) {
-      slashCommand.show();
-      slashCommand.setFilter(newValue.slice(1));
-    } else if (newValue.startsWith('/') && slashCommand.isVisible) {
-      // Update filter as user types after "/"
-      slashCommand.setFilter(newValue.slice(1));
-    } else if (!newValue.startsWith('/') && slashCommand.isVisible) {
-      // Close palette if "/" is removed
-      slashCommand.hide();
-    }
-  }, [slashCommand]);
-
-  // TUI-050: Handle slash command selection
-  const handleSlashCommandSelect = useCallback((commandName: string) => {
-    setInputValue(`/${commandName} `);
-    slashCommand.hide();
-  }, [slashCommand]);
+  // TUI-050: Use slashCommand.handleInputChange from the hook
+  // The hook manages all slash command state and input detection internally
+  const handleInputChange = slashCommand.handleInputChange;
 
   // NAPI-006: Enter search mode (Ctrl+R)
   const handleSearchMode = useCallback(() => {
@@ -5173,9 +5170,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     [availableSessions.length]
   );
 
-  // Handle keyboard input
-  useInput(
-    (input, key) => {
+  // Handle keyboard input with LOW priority (main view navigation)
+  useInputCompat({
+    id: 'agent-view-main',
+    priority: InputPriority.LOW,
+    description: 'Agent view main keyboard handler',
+    isActive: !showCreateSessionDialog,
+    handler: (input, key) => {
       if (input.startsWith('[M') || key.mouse) {
         // Parse raw mouse escape sequences for scroll wheel
         if (input.startsWith('[M')) {
@@ -5185,28 +5186,28 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (isResumeMode) {
             if (buttonByte === 96) {
               navigateResumeByDelta(-1);
-              return;
+              return true;
             } else if (buttonByte === 97) {
               navigateResumeByDelta(1);
-              return;
+              return true;
             }
           }
           if (showModelSelector) {
             if (buttonByte === 96) {
               navigateModelSelectorByDelta(-1);
-              return;
+              return true;
             } else if (buttonByte === 97) {
               navigateModelSelectorByDelta(1);
-              return;
+              return true;
             }
           }
           if (showSettingsTab) {
             if (buttonByte === 96) {
               navigateSettingsByDelta(-1);
-              return;
+              return true;
             } else if (buttonByte === 97) {
               navigateSettingsByDelta(1);
-              return;
+              return true;
             }
           }
         }
@@ -5216,58 +5217,59 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (isResumeMode) {
             if (key.mouse.button === 'wheelUp') {
               navigateResumeByDelta(-1);
-              return;
+              return true;
             } else if (key.mouse.button === 'wheelDown') {
               navigateResumeByDelta(1);
-              return;
+              return true;
             }
           }
           if (showModelSelector) {
             if (key.mouse.button === 'wheelUp') {
               navigateModelSelectorByDelta(-1);
-              return;
+              return true;
             } else if (key.mouse.button === 'wheelDown') {
               navigateModelSelectorByDelta(1);
-              return;
+              return true;
             }
           }
           if (showSettingsTab) {
             if (key.mouse.button === 'wheelUp') {
               navigateSettingsByDelta(-1);
-              return;
+              return true;
             } else if (key.mouse.button === 'wheelDown') {
               navigateSettingsByDelta(1);
-              return;
+              return true;
             }
           }
         }
-        // Skip other mouse events (handled by VirtualList elsewhere)
-        return;
+        // Let unhandled mouse events propagate to VirtualList (BACKGROUND priority)
+        // This allows conversation scrolling when not in a modal/overlay mode
+        return false;
       }
 
       // NAPI-006: Search mode keyboard handling
       if (isSearchMode) {
         if (key.escape) {
           handleSearchCancel();
-          return;
+          return true;
         }
         if (key.return) {
           handleSearchSelect();
-          return;
+          return true;
         }
         if (key.upArrow) {
           setSearchResultIndex(prev => Math.max(0, prev - 1));
-          return;
+          return true;
         }
         if (key.downArrow) {
           setSearchResultIndex(prev =>
             Math.min(searchResults.length - 1, prev + 1)
           );
-          return;
+          return true;
         }
         if (key.backspace || key.delete) {
           void handleSearchInput(searchQuery.slice(0, -1));
-          return;
+          return true;
         }
         // Accept printable characters for search query
         const clean = input
@@ -5280,57 +5282,23 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         if (clean) {
           void handleSearchInput(searchQuery + clean);
         }
-        return;
+        return true;
       }
 
       // TUI-050: Slash command palette keyboard handling
-      // Note: We check inputValue.startsWith('/') for Enter to handle React state timing.
-      // When user types "/debug" quickly and presses Enter, slashCommand.isVisible may not
-      // have updated yet due to React's batched state updates. Checking inputValue directly
-      // ensures slash commands are always handled by handleSubmitWithCommand.
-      if (slashCommand.isVisible) {
-        if (key.escape) {
-          slashCommand.hide();
-          return;
-        }
-        if (key.upArrow) {
-          slashCommand.moveUp();
-          return;
-        }
-        if (key.downArrow) {
-          slashCommand.moveDown();
-          return;
-        }
-        if (key.tab) {
-          const selected = slashCommand.getSelectedCommand();
-          if (selected) {
-            handleSlashCommandSelect(selected.name);
-          }
-          return;
-        }
-        if (key.return) {
-          const selected = slashCommand.getSelectedCommand();
-          if (selected) {
-            // Execute command directly - set input and call handleSubmit with the command
-            const commandText = `/${selected.name}`;
-            setInputValue(commandText);
-            slashCommand.hide();
-            // Execute command by calling handleSubmitWithCommand directly
-            void handleSubmitWithCommand(commandText);
-          }
-          return;
-        }
-        // Let other keys pass through to input handler
+      // The hook handles all the complexity internally and returns true if it handled the input
+      if (slashCommand.handleInput(input, key)) {
+        return true;
       }
       
-      // TUI-050: Handle Enter for slash commands even if palette visibility state hasn't updated yet
-      // This fixes a race condition where typing "/command" and pressing Enter quickly results in
-      // both handleSubmit AND handleSubmitWithCommand being called, because React's batched state
-      // updates mean slashCommand.isVisible may still be false.
-      if (key.return && inputValue.startsWith('/') && inputValue.trim().length > 1) {
-        slashCommand.hide();
+      // TUI-050: Handle Enter for slash commands even if palette wasn't shown yet
+      // (e.g., user types "/debug" and presses Enter before palette could render)
+      // IMPORTANT: Only do this when NOT in another mode (resume, watcher, etc.)
+      // Otherwise Enter gets incorrectly captured when user is selecting from a list
+      if (key.return && inputValue.startsWith('/') && inputValue.trim().length > 1 &&
+          !isResumeMode && !isWatcherMode && !isWatcherEditMode && !showModelSelector && !showSettingsTab) {
         void handleSubmitWithCommand(inputValue.trim());
-        return;
+        return true;
       }
 
       // NAPI-003: Resume mode keyboard handling
@@ -5338,43 +5306,43 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // TUI-040: Handle delete dialog keyboard input first
         if (showSessionDeleteDialog) {
           // Dialog handles its own input via useInput
-          return;
+          return true;
         }
         if (key.escape) {
           handleResumeCancel();
-          return;
+          return true;
         }
         if (key.return) {
           void handleResumeSelect();
-          return;
+          return true;
         }
         if (key.upArrow) {
           setResumeSessionIndex(prev => Math.max(0, prev - 1));
-          return;
+          return true;
         }
         if (key.downArrow) {
           setResumeSessionIndex(prev =>
             Math.min(availableSessions.length - 1, prev + 1)
           );
-          return;
+          return true;
         }
         // TUI-040: D key opens delete confirmation dialog
         if (input.toLowerCase() === 'd' && availableSessions.length > 0) {
           setShowSessionDeleteDialog(true);
-          return;
+          return true;
         }
         // No text input in resume mode - just navigation
-        return;
+        return true;
       }
 
       // WATCH-023: Watcher mode - WatcherTemplateList handles its own input
       if (isWatcherMode) {
         // Dialogs handle their own input via useInput
         if (showTemplateDeleteDialog || showInstanceKillDialog) {
-          return;
+          return true;
         }
         // Let WatcherTemplateList handle all other input
-        return;
+        return true;
       }
 
       // WATCH-008: Watcher edit mode keyboard handling
@@ -5382,7 +5350,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         if (key.escape) {
           setIsWatcherEditMode(false);
           setWatcherEditValue('');
-          return;
+          return true;
         }
         if (key.return) {
           // Save the edited name and persist to backend
@@ -5422,11 +5390,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           }
           setIsWatcherEditMode(false);
           setWatcherEditValue('');
-          return;
+          return true;
         }
         if (key.backspace || key.delete) {
           setWatcherEditValue(prev => prev.slice(0, -1));
-          return;
+          return true;
         }
         // Accept printable characters for editing
         const clean = input
@@ -5439,7 +5407,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         if (clean) {
           setWatcherEditValue(prev => prev + clean);
         }
-        return;
+        return true;
       }
 
       // WATCH-010: Split view keyboard handling for watcher sessions
@@ -5447,21 +5415,21 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // Tab toggles turn-select mode
         if (key.tab && !key.shift) {
           setIsSplitViewSelectMode(prev => !prev);
-          return;
+          return true;
         }
 
         // Left arrow switches to parent pane
         if (key.leftArrow && !key.shift) {
           setActivePane('parent');
           setSplitViewSelectedIndex(0); // Reset selection when switching panes
-          return;
+          return true;
         }
 
         // Right arrow switches to watcher pane
         if (key.rightArrow && !key.shift) {
           setActivePane('watcher');
           setSplitViewSelectedIndex(0); // Reset selection when switching panes
-          return;
+          return true;
         }
 
         // Up/Down navigation in select mode
@@ -5471,11 +5439,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
           if (key.upArrow) {
             setSplitViewSelectedIndex(prev => Math.max(0, prev - 1));
-            return;
+            return true;
           }
           if (key.downArrow) {
             setSplitViewSelectedIndex(prev => Math.min(maxIndex, prev + 1));
-            return;
+            return true;
           }
 
           // Enter key for "Discuss Selected" - pre-fill input with context
@@ -5488,14 +5456,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               setInputValue(prefill);
               setIsSplitViewSelectMode(false);
             }
-            return;
+            return true;
           }
         }
 
         // Escape exits select mode if active
         if (key.escape && isSplitViewSelectMode) {
           setIsSplitViewSelectMode(false);
-          return;
+          return true;
         }
 
         // Don't intercept other keys - let them fall through to normal handling
@@ -5504,25 +5472,25 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       if (showProviderSelector) {
         if (key.escape) {
           setShowProviderSelector(false);
-          return;
+          return true;
         }
         if (key.upArrow) {
           setSelectedProviderIndex(prev =>
             prev > 0 ? prev - 1 : availableProviders.length - 1
           );
-          return;
+          return true;
         }
         if (key.downArrow) {
           setSelectedProviderIndex(prev =>
             prev < availableProviders.length - 1 ? prev + 1 : 0
           );
-          return;
+          return true;
         }
         if (key.return) {
           void handleSwitchProvider(availableProviders[selectedProviderIndex]);
-          return;
+          return true;
         }
-        return;
+        return true;
       }
 
       // TUI-034: Model selector keyboard handling
@@ -5532,15 +5500,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (key.escape) {
             setIsModelSelectorFilterMode(false);
             setModelSelectorFilter('');
-            return;
+            return true;
           }
           if (key.return) {
             setIsModelSelectorFilterMode(false);
-            return;
+            return true;
           }
           if (key.backspace || key.delete) {
             setModelSelectorFilter(prev => prev.slice(0, -1));
-            return;
+            return true;
           }
           // Accept printable characters for filter
           const clean = input
@@ -5553,22 +5521,22 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (clean) {
             setModelSelectorFilter(prev => prev + clean);
           }
-          return;
+          return true;
         }
 
         if (key.escape) {
           if (modelSelectorFilter) {
             setModelSelectorFilter('');
-            return;
+            return true;
           }
           setShowModelSelector(false);
-          return;
+          return true;
         }
 
         // '/' to enter filter mode
         if (input === '/') {
           setIsModelSelectorFilterMode(true);
-          return;
+          return true;
         }
 
         // Left arrow: collapse current section
@@ -5585,7 +5553,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             });
             setSelectedModelIdx(-1); // Move back to section header
           }
-          return;
+          return true;
         }
 
         // Right arrow: expand current section
@@ -5599,7 +5567,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               prev => new Set([...prev, currentSection.providerId])
             );
           }
-          return;
+          return true;
         }
 
         // Up arrow: navigate up through models and sections
@@ -5626,7 +5594,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               setSelectedModelIdx(-1);
             }
           }
-          return;
+          return true;
         }
 
         // Down arrow: navigate down through models and sections
@@ -5647,7 +5615,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             setSelectedSectionIdx(prev => prev + 1);
             setSelectedModelIdx(-1);
           }
-          return;
+          return true;
         }
 
         // Enter: select model or toggle section
@@ -5673,13 +5641,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               void handleSelectModel(currentSection, model);
             }
           }
-          return;
+          return true;
         }
 
         // CONFIG-004: 'r' to refresh models from models.dev
         if ((input === 'r' || input === 'R') && !isRefreshingModels) {
           void refreshModels();
-          return;
+          return true;
         }
 
         // CONFIG-004: Tab to switch to Settings view
@@ -5690,9 +5658,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           setEditingProviderId(null);
           setEditingApiKey('');
           void loadProviderStatuses();
-          return;
+          return true;
         }
-        return;
+        return true;
       }
 
       // CONFIG-004: Settings tab keyboard handling
@@ -5702,15 +5670,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (key.escape) {
             setIsSettingsFilterMode(false);
             setSettingsFilter('');
-            return;
+            return true;
           }
           if (key.return) {
             setIsSettingsFilterMode(false);
-            return;
+            return true;
           }
           if (key.backspace || key.delete) {
             setSettingsFilter(prev => prev.slice(0, -1));
-            return;
+            return true;
           }
           // Accept printable characters for filter
           const clean = input
@@ -5723,13 +5691,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (clean) {
             setSettingsFilter(prev => prev + clean);
           }
-          return;
+          return true;
         }
 
         if (key.escape) {
           if (settingsFilter) {
             setSettingsFilter('');
-            return;
+            return true;
           }
           if (editingProviderId) {
             // Cancel editing
@@ -5738,20 +5706,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           } else {
             setShowSettingsTab(false);
           }
-          return;
+          return true;
         }
 
         // '/' to enter filter mode (when not editing)
         if (input === '/' && !editingProviderId) {
           setIsSettingsFilterMode(true);
-          return;
+          return true;
         }
 
         // Tab to switch back to Model selector
         if (key.tab && !editingProviderId) {
           setShowSettingsTab(false);
           setShowModelSelector(true);
-          return;
+          return true;
         }
 
         // Up/Down arrow to navigate providers (when not editing)
@@ -5759,7 +5727,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (key.upArrow && selectedSettingsIdx > 0) {
             setSelectedSettingsIdx(prev => prev - 1);
             setConnectionTestResult(null);
-            return;
+            return true;
           }
           if (
             key.downArrow &&
@@ -5767,7 +5735,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           ) {
             setSelectedSettingsIdx(prev => prev + 1);
             setConnectionTestResult(null);
-            return;
+            return true;
           }
         }
 
@@ -5788,14 +5756,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             setEditingProviderId(providerId);
             setEditingApiKey('');
           }
-          return;
+          return true;
         }
 
         // 't' to test connection (when not editing)
         if (!editingProviderId && (input === 't' || input === 'T')) {
           const providerId = filteredSettingsProviders[selectedSettingsIdx];
           void handleTestConnection(providerId);
-          return;
+          return true;
         }
 
         // 'd' to delete API key (when not editing)
@@ -5804,14 +5772,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (providerStatuses[providerId]?.hasKey) {
             void handleDeleteApiKey(providerId);
           }
-          return;
+          return true;
         }
 
         // Handle text input when editing
         if (editingProviderId) {
           if (key.backspace || key.delete) {
             setEditingApiKey(prev => prev.slice(0, -1));
-            return;
+            return true;
           }
           // Filter to printable characters
           const clean = input
@@ -5824,9 +5792,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (clean) {
             setEditingApiKey(prev => prev + clean);
           }
-          return;
+          return true;
         }
-        return;
+        return true;
       }
 
       // VIEWNV-001: Shift+Left/Right for unified session navigation
@@ -5839,11 +5807,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
         if (isShiftLeft) {
           sessionNavigation.handleShiftLeft();
-          return;
+          return true;
         }
         if (isShiftRight) {
           sessionNavigation.handleShiftRight();
-          return;
+          return true;
         }
       }
 
@@ -5881,7 +5849,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           }
         }
         onExit();
-        return;
+        return true;
       }
 
       // TUI-045: Esc key handling with priority order:
@@ -5890,22 +5858,22 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // Priority 1: Close exit confirmation modal (TUI-046)
         if (showExitConfirmation) {
           setShowExitConfirmation(false);
-          return;
+          return true;
         }
         // Priority 2: Close watcher turn modal (WATCH-016)
         if (showWatcherTurnModal) {
           setShowWatcherTurnModal(false);
-          return;
+          return true;
         }
         // Priority 3: Close turn modal
         if (showTurnModal) {
           setShowTurnModal(false);
-          return;
+          return true;
         }
         // Priority 4: Disable select mode
         if (isTurnSelectMode) {
           setIsTurnSelectMode(false);
-          return;
+          return true;
         }
         // Priority 5: Interrupt loading - use background session interrupt
         if (displayIsLoading && currentSessionId) {
@@ -5915,12 +5883,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           } catch {
             // Ignore interrupt errors
           }
-          return;
+          return true;
         }
         // Priority 6: Clear input
         if (inputValue.trim() !== '') {
           setInputValue('');
-          return;
+          return true;
         }
         // Priority 7: Show exit confirmation if session exists, otherwise exit (TUI-046)
         if (currentSessionId) {
@@ -5928,7 +5896,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         } else {
           onExit();
         }
-        return;
+        return true;
       }
 
       // TUI-042: Tab to toggle turn selection mode (replaces /select command)
@@ -5941,15 +5909,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           setModalMessageIndex(null);
         }
         // Note: VirtualList will auto-select last item via scrollToEnd when enabled
-        return;
+        return true;
       }
       // Note: TUI-042 turn navigation is handled by VirtualList via getNextIndex/getIsSelected
+
+      return false;
     },
-    // VIEWNV-001: Disable main input handling when CreateSessionDialog is showing
-    // This prevents ESC from firing both the dialog's handler AND this handler
-    // (Ink's useInput doesn't have event propagation stopping like DOM events)
-    { isActive: !showCreateSessionDialog }
-  );
+  });
 
   // PERF-002: Incremental line computation with caching
   // Only recompute lines for messages that changed, reuse cached lines for unchanged messages
@@ -7022,6 +6988,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             maxVisibleLines={5}
             skipAnimation={skipInputAnimation}
             isActive={!showCreateSessionDialog}
+            suppressEnter={slashCommand.isVisible}
           />
         </Box>
       </Box>
@@ -7033,6 +7000,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           filter={slashCommand.filter}
           commands={slashCommand.filteredCommands}
           selectedIndex={slashCommand.selectedIndex}
+          dialogWidth={slashCommand.dialogWidth}
           maxVisibleItems={8}
         />
       )}

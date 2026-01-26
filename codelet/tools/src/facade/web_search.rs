@@ -119,6 +119,10 @@ impl ToolFacade for ClaudeWebSearchFacade {
                     "headless": {
                         "type": "boolean",
                         "description": "If true (default), runs Chrome in headless mode with no visible UI. If false, shows the browser window for debugging or visual confirmation (optional for all actions except 'search')"
+                    },
+                    "pause": {
+                        "type": "boolean",
+                        "description": "If true, pauses after page load so the user can interact with the visible browser before the tool returns. Automatically sets headless to false (pausing a headless browser is pointless). Use this when debugging or when you need to show the user something in the browser (optional for 'open_page', 'find_in_page', and 'capture_screenshot' actions)"
                     }
                 },
                 "required": ["action_type"]
@@ -143,20 +147,20 @@ impl ToolFacade for ClaudeWebSearchFacade {
             "open_page" => Ok(InternalWebSearchParams::OpenPage {
                 url: extract_string(&input, "url"),
                 headless: extract_headless(&input),
-                pause: false,
+                pause: extract_bool(&input, "pause", false),
             }),
             "find_in_page" => Ok(InternalWebSearchParams::FindInPage {
                 url: extract_string(&input, "url"),
                 pattern: extract_string(&input, "pattern"),
                 headless: extract_headless(&input),
-                pause: false,
+                pause: extract_bool(&input, "pause", false),
             }),
             "capture_screenshot" => Ok(InternalWebSearchParams::CaptureScreenshot {
                 url: extract_string(&input, "url"),
                 output_path: extract_optional_string(&input, "output_path"),
                 full_page: extract_bool(&input, "full_page", false),
                 headless: extract_headless(&input),
-                pause: false,
+                pause: extract_bool(&input, "pause", false),
             }),
             _ => Err(ToolError::Validation {
                 tool: "web_search",
@@ -246,6 +250,10 @@ impl ToolFacade for GeminiWebFetchFacade {
                     "headless": {
                         "type": "boolean",
                         "description": "If true (default), runs Chrome in headless mode with no visible UI. If false, shows the browser window for debugging or visual confirmation"
+                    },
+                    "pause": {
+                        "type": "boolean",
+                        "description": "If true, pauses after page load so the user can interact with the visible browser before the tool returns. Automatically sets headless to false"
                     }
                 },
                 "required": ["url"]
@@ -259,7 +267,7 @@ impl ToolFacade for GeminiWebFetchFacade {
         Ok(InternalWebSearchParams::OpenPage {
             url,
             headless: extract_headless(&input),
-            pause: false,
+            pause: extract_bool(&input, "pause", false),
         })
     }
 }
@@ -301,6 +309,10 @@ impl ToolFacade for GeminiWebScreenshotFacade {
                     "headless": {
                         "type": "boolean",
                         "description": "If true (default), runs Chrome in headless mode with no visible UI. If false, shows the browser window for debugging or visual confirmation"
+                    },
+                    "pause": {
+                        "type": "boolean",
+                        "description": "If true, pauses after page load so the user can interact with the browser before the screenshot is captured. Automatically sets headless to false"
                     }
                 },
                 "required": ["url"]
@@ -316,7 +328,7 @@ impl ToolFacade for GeminiWebScreenshotFacade {
             output_path: extract_optional_string(&input, "output_path"),
             full_page: extract_bool(&input, "full_page", false),
             headless: extract_headless(&input),
-            pause: false,
+            pause: extract_bool(&input, "pause", false),
         })
     }
 }
@@ -725,5 +737,145 @@ mod tests {
                 pause: false,
             }
         );
+    }
+
+    // ========== PAUSE PARAMETER TESTS ==========
+
+    #[test]
+    fn test_claude_facade_has_pause_in_schema() {
+        let facade = ClaudeWebSearchFacade;
+        let def = facade.definition();
+
+        // Should have pause property in schema
+        assert!(def.parameters["properties"]["pause"].is_object());
+
+        // Verify pause description mentions its behavior
+        let pause_desc = def.parameters["properties"]["pause"]["description"]
+            .as_str()
+            .unwrap_or("");
+        assert!(pause_desc.contains("pause"));
+        assert!(pause_desc.contains("headless"));
+    }
+
+    #[test]
+    fn test_claude_facade_maps_open_page_with_pause() {
+        let facade = ClaudeWebSearchFacade;
+        let input = json!({
+            "action_type": "open_page",
+            "url": "https://example.com",
+            "pause": true
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::OpenPage {
+                url: "https://example.com".to_string(),
+                headless: true, // Note: headless is still true here - the tool impl handles override
+                pause: true,
+            }
+        );
+    }
+
+    #[test]
+    fn test_claude_facade_maps_capture_screenshot_with_pause() {
+        let facade = ClaudeWebSearchFacade;
+        let input = json!({
+            "action_type": "capture_screenshot",
+            "url": "https://example.com",
+            "pause": true
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::CaptureScreenshot {
+                url: "https://example.com".to_string(),
+                output_path: None,
+                full_page: false,
+                headless: true, // Note: headless is still true here - the tool impl handles override
+                pause: true,
+            }
+        );
+    }
+
+    #[test]
+    fn test_claude_facade_maps_find_in_page_with_pause() {
+        let facade = ClaudeWebSearchFacade;
+        let input = json!({
+            "action_type": "find_in_page",
+            "url": "https://example.com",
+            "pattern": "test",
+            "pause": true
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::FindInPage {
+                url: "https://example.com".to_string(),
+                pattern: "test".to_string(),
+                headless: true,
+                pause: true,
+            }
+        );
+    }
+
+    #[test]
+    fn test_gemini_web_fetch_facade_maps_with_pause() {
+        let facade = GeminiWebFetchFacade;
+        let input = json!({
+            "url": "https://example.com",
+            "pause": true
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::OpenPage {
+                url: "https://example.com".to_string(),
+                headless: true,
+                pause: true,
+            }
+        );
+    }
+
+    #[test]
+    fn test_gemini_web_fetch_facade_has_pause_in_schema() {
+        let facade = GeminiWebFetchFacade;
+        let def = facade.definition();
+
+        // Should have pause property in schema
+        assert!(def.parameters["properties"]["pause"].is_object());
+    }
+
+    #[test]
+    fn test_gemini_web_screenshot_facade_maps_with_pause() {
+        let facade = GeminiWebScreenshotFacade;
+        let input = json!({
+            "url": "https://example.com",
+            "pause": true
+        });
+
+        let result = facade.map_params(input).unwrap();
+        assert_eq!(
+            result,
+            InternalWebSearchParams::CaptureScreenshot {
+                url: "https://example.com".to_string(),
+                output_path: None,
+                full_page: false,
+                headless: true,
+                pause: true,
+            }
+        );
+    }
+
+    #[test]
+    fn test_gemini_web_screenshot_facade_has_pause_in_schema() {
+        let facade = GeminiWebScreenshotFacade;
+        let def = facade.definition();
+
+        // Should have pause property in schema
+        assert!(def.parameters["properties"]["pause"].is_object());
     }
 }
