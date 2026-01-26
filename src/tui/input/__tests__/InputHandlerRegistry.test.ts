@@ -37,7 +37,6 @@ describe('InputHandlerRegistry', () => {
       expect(registry.unregister).toBeInstanceOf(Function);
       expect(registry.has).toBeInstanceOf(Function);
       expect(registry.getHandlerIds).toBeInstanceOf(Function);
-      expect(registry.setDebugMode).toBeInstanceOf(Function);
       expect(registry.getOrderedHandlers).toBeInstanceOf(Function);
     });
 

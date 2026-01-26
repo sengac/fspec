@@ -112,9 +112,4 @@ export interface InputManagerAPI {
    * Get list of registered handler IDs (for debugging).
    */
   getHandlerIds: () => string[];
-
-  /**
-   * Enable debug logging of input dispatch.
-   */
-  setDebugMode: (enabled: boolean) => void;
 }

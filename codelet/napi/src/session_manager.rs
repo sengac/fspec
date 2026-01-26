@@ -897,9 +897,20 @@ impl BackgroundSession {
         SessionStatus::from(self.status.load(Ordering::Acquire))
     }
     
-    /// Set status
+    /// Set status and notify attached callback
     pub fn set_status(&self, status: SessionStatus) {
-        self.status.store(status as u8, Ordering::Release);
+        let old_status = self.status.swap(status as u8, Ordering::AcqRel);
+        
+        // Notify TypeScript when status changes (especially for pause state)
+        if old_status != status as u8 {
+            let status_str = match status {
+                SessionStatus::Idle => "idle",
+                SessionStatus::Running => "running", 
+                SessionStatus::Interrupted => "interrupted",
+                SessionStatus::Paused => "paused",
+            };
+            self.handle_output(StreamChunk::status(status_str.to_string()));
+        }
     }
     
     /// Check if attached
