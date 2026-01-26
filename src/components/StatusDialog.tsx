@@ -5,11 +5,14 @@
  * with auto-close on completion and error state handling.
  *
  * Coverage: spec/features/checkpoint-restore-progress-dialog.feature
+ *
+ * INPUT-001: Uses centralized input handling with CRITICAL priority
  */
 
 import React, { useEffect, useState } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
+import { useInputCompat, InputPriority } from '../tui/input/index.js';
 
 export interface StatusDialogProps {
   /** Current item being processed */
@@ -62,14 +65,18 @@ export const StatusDialog: React.FC<StatusDialogProps> = ({
   }, [status, onClose]);
 
   // Handle ESC key to close (for complete and error states)
-  useInput(
-    (input, key) => {
+  useInputCompat({
+    id: 'status-dialog-esc',
+    priority: InputPriority.CRITICAL,
+    isActive: status === 'complete' || status === 'error',
+    handler: (_input, key) => {
       if (key.escape) {
         onClose();
+        return true;
       }
+      return false;
     },
-    { isActive: status === 'complete' || status === 'error' }
-  );
+  });
 
   // Validate and normalize props
   const displayIndex = Math.max(1, Math.min(currentIndex, totalItems));

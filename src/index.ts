@@ -196,6 +196,7 @@ import { handleCustomHelp } from './utils/help-interceptor';
 
 // TUI components
 import { BoardView } from './tui/components/BoardView';
+import { InputProvider } from './tui/components/InputProvider';
 
 const program = new Command();
 
@@ -417,11 +418,15 @@ async function main(): Promise<void> {
     initializeRustLogCapture();
 
     const { waitUntilExit } = render(
-      React.createElement(BoardView, {
-        onExit: () => {
-          process.exit(0);
-        },
-      }),
+      React.createElement(
+        InputProvider,
+        null,
+        React.createElement(BoardView, {
+          onExit: () => {
+            process.exit(0);
+          },
+        })
+      ),
       {
         // Enable mouse events (trackpad, scroll wheel, clicks)
         stdin: process.stdin,

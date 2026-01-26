@@ -4,18 +4,15 @@
  * A floating popup palette that appears centered on screen when "/" is typed,
  * showing matching commands with descriptions.
  *
+ * This is a pure presentational component - all state and input handling
+ * is managed by the useSlashCommandInput hook.
+ *
  * Work Unit: TUI-050
  */
 
 import React, { useMemo } from 'react';
 import { Box, Text } from 'ink';
 import type { SlashCommand } from '../utils/slashCommands';
-
-/** Maximum width for the dialog (prevents extremely wide dialogs) */
-const MAX_DIALOG_WIDTH = 70;
-
-/** Minimum width for the dialog (ensures reasonable sizing when few/no commands) */
-const MIN_DIALOG_WIDTH = 45;
 
 export interface SlashCommandPaletteProps {
   /** Whether the palette is visible */
@@ -26,6 +23,8 @@ export interface SlashCommandPaletteProps {
   commands: SlashCommand[];
   /** Currently selected command index */
   selectedIndex: number;
+  /** Fixed dialog width (calculated from all commands) */
+  dialogWidth: number;
   /** Maximum height of the palette (number of visible items) */
   maxVisibleItems?: number;
 }
@@ -35,30 +34,9 @@ export const SlashCommandPalette: React.FC<SlashCommandPaletteProps> = ({
   filter,
   commands,
   selectedIndex,
+  dialogWidth,
   maxVisibleItems = 8,
 }) => {
-  // Calculate fixed dialog width based on ALL commands (not just visible ones)
-  // This prevents the dialog from expanding/contracting during scroll
-  const dialogWidth = useMemo(() => {
-    if (commands.length === 0) {
-      return MIN_DIALOG_WIDTH;
-    }
-
-    // Calculate max widths across ALL commands
-    const maxNameWidth = Math.max(...commands.map((c) => c.name.length), 8);
-    const maxDescriptionWidth = Math.max(...commands.map((c) => c.description.length), 10);
-
-    // Total line width: "▸ " (2) + "/" (1) + name + " " (1) + description
-    const contentWidth = 2 + 1 + maxNameWidth + 1 + maxDescriptionWidth;
-
-    // Footer width: "↑↓ Navigate │ Tab/Enter Select │ Esc Close" = 43 chars
-    const footerWidth = 43;
-
-    // Take max of content and footer, then clamp to bounds
-    const calculatedWidth = Math.max(contentWidth, footerWidth, MIN_DIALOG_WIDTH);
-    return Math.min(calculatedWidth, MAX_DIALOG_WIDTH);
-  }, [commands]);
-
   // Calculate max name width for alignment (used in rendering)
   const maxNameWidth = useMemo(() => {
     return commands.length > 0

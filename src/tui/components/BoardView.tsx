@@ -6,34 +6,36 @@
  * - BOARD-003: Real-time board updates with git stash and file inspection
  * - ITF-004: Fix TUI Kanban column layout to match table style
  * - REFAC-004: Integrate attachment server with TUI (BoardView lifecycle)
+ * - INPUT-001: Uses centralized input handling
  */
 
 import React, { useEffect, useState } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { useFspecStore } from '../store/fspecStore';
+import { Box, Text } from 'ink';
+import { useFspecStore } from '../store/fspecStore.js';
 import fs from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
-import { UnifiedBoardLayout } from './UnifiedBoardLayout';
-import { FullScreenWrapper } from './FullScreenWrapper';
-import { CheckpointViewer } from './CheckpointViewer';
-import { ChangedFilesViewer } from './ChangedFilesViewer';
-import { AttachmentDialog } from './AttachmentDialog';
-import { AgentView } from './AgentView';
-import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
+import { UnifiedBoardLayout } from './UnifiedBoardLayout.js';
+import { FullScreenWrapper } from './FullScreenWrapper.js';
+import { CheckpointViewer } from './CheckpointViewer.js';
+import { ChangedFilesViewer } from './ChangedFilesViewer.js';
+import { AttachmentDialog } from './AttachmentDialog.js';
+import { AgentView } from './AgentView.js';
+import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc.js';
 import type { Server } from 'net';
 import type { Server as HttpServer } from 'http';
-import { logger } from '../../utils/logger';
-import { openInBrowser } from '../../utils/openBrowser';
-import { startAttachmentServer, stopAttachmentServer, getServerPort } from '../../server/attachment-server';
-import { CreateSessionDialog } from '../../components/CreateSessionDialog';
-import { useSessionNavigation } from '../hooks/useSessionNavigation';
-import { clearActiveSession } from '../utils/sessionNavigation';
+import { logger } from '../../utils/logger.js';
+import { openInBrowser } from '../../utils/openBrowser.js';
+import { startAttachmentServer, stopAttachmentServer, getServerPort } from '../../server/attachment-server.js';
+import { CreateSessionDialog } from '../../components/CreateSessionDialog.js';
+import { useSessionNavigation } from '../hooks/useSessionNavigation.js';
+import { clearActiveSession } from '../utils/sessionNavigation.js';
 import {
   useShowCreateSessionDialog,
   useNavigationTargetSessionId,
   useSessionActions,
-} from '../store/sessionStore';
+} from '../store/sessionStore.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -284,74 +286,82 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
               currentlySelectedWorkUnit.attachments.length > 0);
   };
 
-  // Handle keyboard navigation
-  useInput((input, key) => {
-    if (key.escape) {
-      if (viewMode === 'checkpoint-viewer' || viewMode === 'changed-files-viewer') {
-        setViewMode('board');
-        setSelectedWorkUnit(null);
-        return;
+  // Handle keyboard navigation with LOW priority (board navigation)
+  useInputCompat({
+    id: 'board-view-main',
+    priority: InputPriority.LOW,
+    description: 'Board view main keyboard navigation',
+    isActive: viewMode === 'board' && !showAttachmentDialog && !showCreateSessionDialog,
+    handler: (input, key) => {
+      if (key.escape) {
+        if (viewMode === 'checkpoint-viewer' || viewMode === 'changed-files-viewer') {
+          setViewMode('board');
+          setSelectedWorkUnit(null);
+          return true;
+        }
+        onExit?.();
+        return true;
       }
-      onExit?.();
-      return;
-    }
 
-    // C key to open checkpoint viewer (GIT-004)
-    if (input === 'c' || input === 'C') {
-      setViewMode('checkpoint-viewer');
-      return;
-    }
-
-    // F key to open changed files viewer (GIT-004)
-    if (input === 'f' || input === 'F') {
-      setViewMode('changed-files-viewer');
-      return;
-    }
-
-    // D key to open FOUNDATION.md in browser (TUI-029)
-    if (input === 'd' || input === 'D') {
-      const foundationPath = 'spec/FOUNDATION.md';
-
-      if (attachmentServerPort) {
-        const url = `http://localhost:${attachmentServerPort}/view/${foundationPath}`;
-        openInBrowser({ url, wait: false }).catch((error: Error) => {
-          logger.error(`[BoardView] Failed to open FOUNDATION.md: ${error.message}`);
-        });
+      // C key to open checkpoint viewer (GIT-004)
+      if (input === 'c' || input === 'C') {
+        setViewMode('checkpoint-viewer');
+        return true;
       }
-      return;
-    }
 
-    // A key to open attachment dialog (TUI-019)
-    if (input === 'a' || input === 'A') {
-      if (hasAttachments()) {
-        setShowAttachmentDialog(true);
+      // F key to open changed files viewer (GIT-004)
+      if (input === 'f' || input === 'F') {
+        setViewMode('changed-files-viewer');
+        return true;
       }
-      return;
-    }
 
-    // Tab key to switch panels (BOARD-003)
-    if (key.tab) {
-      if (focusedPanel === 'board') {
-        setFocusedPanel('stash');
-      } else if (focusedPanel === 'stash') {
-        setFocusedPanel('files');
-      } else {
-        setFocusedPanel('board');
+      // D key to open FOUNDATION.md in browser (TUI-029)
+      if (input === 'd' || input === 'D') {
+        const foundationPath = 'spec/FOUNDATION.md';
+
+        if (attachmentServerPort) {
+          const url = `http://localhost:${attachmentServerPort}/view/${foundationPath}`;
+          openInBrowser({ url, wait: false }).catch((error: Error) => {
+            logger.error(`[BoardView] Failed to open FOUNDATION.md: ${error.message}`);
+          });
+        }
+        return true;
       }
-      return;
-    }
 
-    // VIEWNV-001: Shift+Right to navigate to first session or show create dialog
-    // Check escape sequences first, then Ink key detection
-    if (
-      input.includes('[1;2C') ||
-      input.includes('\x1b[1;2C') ||
-      (key.shift && key.rightArrow)
-    ) {
-      handleShiftRight();
-      return;
-    }
-  }, { isActive: viewMode === 'board' && !showAttachmentDialog && !showCreateSessionDialog });
+      // A key to open attachment dialog (TUI-019)
+      if (input === 'a' || input === 'A') {
+        if (hasAttachments()) {
+          setShowAttachmentDialog(true);
+        }
+        return true;
+      }
+
+      // Tab key to switch panels (BOARD-003)
+      if (key.tab) {
+        if (focusedPanel === 'board') {
+          setFocusedPanel('stash');
+        } else if (focusedPanel === 'stash') {
+          setFocusedPanel('files');
+        } else {
+          setFocusedPanel('board');
+        }
+        return true;
+      }
+
+      // VIEWNV-001: Shift+Right to navigate to first session or show create dialog
+      // Check escape sequences first, then Ink key detection
+      if (
+        input.includes('[1;2C') ||
+        input.includes('\x1b[1;2C') ||
+        (key.shift && key.rightArrow)
+      ) {
+        handleShiftRight();
+        return true;
+      }
+
+      return false;
+    },
+  });
 
   // Checkpoint viewer (GIT-004)
   if (viewMode === 'checkpoint-viewer') {
@@ -400,11 +410,18 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   if (!isLoaded && !error) {
     // Loading view component with ESC key handler
     const LoadingView = () => {
-      useInput((input, key) => {
-        if (key.escape) {
-          onExit?.();
-        }
-      }, { isActive: true });
+      useInputCompat({
+        id: 'board-view-loading',
+        priority: InputPriority.LOW,
+        description: 'Board view loading state escape handler',
+        handler: (input, key) => {
+          if (key.escape) {
+            onExit?.();
+            return true;
+          }
+          return false;
+        },
+      });
 
       return (
         <Box flexDirection="column" padding={1}>
@@ -425,11 +442,18 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   if (error) {
     // Error view component with ESC key handler
     const ErrorView = () => {
-      useInput((input, key) => {
-        if (key.escape) {
-          onExit?.();
-        }
-      }, { isActive: true });
+      useInputCompat({
+        id: 'board-view-error',
+        priority: InputPriority.LOW,
+        description: 'Board view error state escape handler',
+        handler: (input, key) => {
+          if (key.escape) {
+            onExit?.();
+            return true;
+          }
+          return false;
+        },
+      });
 
       return (
         <Box flexDirection="column" padding={1}>

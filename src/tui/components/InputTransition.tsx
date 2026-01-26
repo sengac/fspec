@@ -13,14 +13,16 @@
  * - Animation constants centralized in animationConstants.ts
  * - Animation timing synchronized with Ink's render throttle (60fps)
  * - Multiple characters per frame for faster animation while staying smooth
+ * - INPUT-001: Uses centralized input handling with MEDIUM priority
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Text, useInput } from 'ink';
-import { useThinkingText } from './ThinkingIndicator';
-import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
-import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants';
-import type { PauseInfo } from '../types/pause';
+import { Text } from 'ink';
+import { useThinkingText } from './ThinkingIndicator.js';
+import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput.js';
+import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants.js';
+import type { PauseInfo } from '../types/pause.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 // Re-export PauseInfo for backwards compatibility with existing imports
 export type { PauseInfo } from '../types/pause';
@@ -94,6 +96,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   skipAnimation = false,
   isPaused = false,
   pauseInfo,
+  suppressEnter = false,
 }) => {
   // All useState hooks grouped together
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>(
@@ -153,26 +156,43 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   // Handle keyboard input during animation to interrupt it
   const isAnimating = animationPhase === 'hiding' || animationPhase === 'showing';
   
-  useInput(
-    (input, key) => {
-      // Ignore control keys that shouldn't trigger input
+  useInputCompat({
+    id: 'input-transition-animation',
+    priority: InputPriority.MEDIUM,
+    description: 'Input transition animation interrupt handler',
+    isActive: isActive && isAnimating,
+    handler: (input, key) => {
+      // Ignore control keys that shouldn't trigger input capture
       if (key.escape || key.ctrl || key.meta) {
-        return;
+        return false;
+      }
+      
+      // For Enter/Return: complete animation but let it propagate to input for submit
+      // This ensures the user's submit action isn't lost during animation
+      if (key.return) {
+        setAnimationPhase('complete');
+        return false; // Let Enter propagate to MultiLineInput for submit
+      }
+      
+      // For backspace/delete: complete animation but let it propagate
+      if (key.backspace || key.delete) {
+        setAnimationPhase('complete');
+        return false; // Let it propagate to handle the delete action
       }
       
       // For printable characters, capture them and skip animation
-      if (input && input.length > 0 && !key.return) {
+      // These characters will be appended to the input value
+      if (input && input.length > 0) {
         // Capture the typed character to pass to input
         setPendingInput(input);
         // Immediately complete the animation
         setAnimationPhase('complete');
-      } else if (key.return || key.backspace || key.delete) {
-        // For return/backspace/delete, just skip animation without capturing
-        setAnimationPhase('complete');
+        return true;
       }
+
+      return false;
     },
-    { isActive: isActive && isAnimating }
-  );
+  });
 
   // When animation completes with pending input, update the value
   useEffect(() => {
@@ -291,10 +311,9 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
       placeholder={placeholder}
       onHistoryPrev={onHistoryPrev}
       onHistoryNext={onHistoryNext}
-      onSessionPrev={onSessionPrev}
-      onSessionNext={onSessionNext}
       maxVisibleLines={maxVisibleLines}
       isActive={isActive}
+      suppressEnter={suppressEnter}
     />
   );
 };

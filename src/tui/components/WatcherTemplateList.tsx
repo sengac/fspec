@@ -3,6 +3,7 @@
  *
  * WATCH-023: Watcher Templates and Improved Creation UX
  * Replaces the old instance-centric watcher overlay (WATCH-008).
+ * INPUT-001: Uses centralized input handling with CRITICAL priority
  *
  * Features:
  * - Templates as primary list items (not instances)
@@ -15,9 +16,10 @@
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { Box, Text, useInput } from 'ink';
-import type { WatcherTemplate, WatcherInstance, WatcherListItem } from '../types/watcherTemplate';
-import { buildFlatWatcherList, filterTemplates, formatTemplateDisplay } from '../utils/watcherTemplateStorage';
+import { Box, Text } from 'ink';
+import type { WatcherTemplate, WatcherInstance, WatcherListItem } from '../types/watcherTemplate.js';
+import { buildFlatWatcherList, filterTemplates, formatTemplateDisplay } from '../utils/watcherTemplateStorage.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 interface WatcherTemplateListProps {
   templates: WatcherTemplate[];
@@ -111,85 +113,93 @@ export function WatcherTemplateList({
     }
   }, [flatList, selectedIndex, onSpawn, onOpen, onCreateNew]);
 
-  useInput((input, key) => {
-    // Escape closes overlay
-    if (key.escape) {
-      if (filterQuery) {
-        setFilterQuery('');
-      } else {
-        onClose();
+  // Handle keyboard input with CRITICAL priority (overlay)
+  useInputCompat({
+    id: 'watcher-template-list',
+    priority: InputPriority.CRITICAL,
+    description: 'Watcher template list overlay',
+    handler: (input, key) => {
+      // Escape closes overlay
+      if (key.escape) {
+        if (filterQuery) {
+          setFilterQuery('');
+        } else {
+          onClose();
+        }
+        return true;
       }
-      return;
-    }
 
-    // Enter performs action
-    if (key.return) {
-      handleAction();
-      return;
-    }
-
-    // Navigation
-    if (key.upArrow) {
-      setSelectedIndex(prev => Math.max(0, prev - 1));
-      return;
-    }
-    if (key.downArrow) {
-      setSelectedIndex(prev => Math.min(flatList.length - 1, prev + 1));
-      return;
-    }
-
-    // Expand/collapse
-    const item = flatList[selectedIndex];
-    if (key.leftArrow && item?.type === 'template') {
-      if (expandedTemplates.has(item.template.id)) {
-        toggleExpand(item.template.id);
+      // Enter performs action
+      if (key.return) {
+        handleAction();
+        return true;
       }
-      return;
-    }
-    if (key.rightArrow && item?.type === 'template') {
-      const templateInstances = instances.filter(i => i.templateId === item.template.id);
-      if (templateInstances.length > 0 && !expandedTemplates.has(item.template.id)) {
-        toggleExpand(item.template.id);
+
+      // Navigation
+      if (key.upArrow) {
+        setSelectedIndex(prev => Math.max(0, prev - 1));
+        return true;
       }
-      return;
-    }
+      if (key.downArrow) {
+        setSelectedIndex(prev => Math.min(flatList.length - 1, prev + 1));
+        return true;
+      }
 
-    // Actions
-    if (input.toLowerCase() === 'n') {
-      onCreateNew();
-      return;
-    }
-
-    if (input.toLowerCase() === 'e' && item?.type === 'template') {
-      onEdit(item.template);
-      return;
-    }
-
-    if (input.toLowerCase() === 'd') {
-      if (item?.type === 'template') {
+      // Expand/collapse
+      const item = flatList[selectedIndex];
+      if (key.leftArrow && item?.type === 'template') {
+        if (expandedTemplates.has(item.template.id)) {
+          toggleExpand(item.template.id);
+        }
+        return true;
+      }
+      if (key.rightArrow && item?.type === 'template') {
         const templateInstances = instances.filter(i => i.templateId === item.template.id);
-        onDelete(item.template, templateInstances);
-      } else if (item?.type === 'instance') {
-        onKillInstance(item.instance);
+        if (templateInstances.length > 0 && !expandedTemplates.has(item.template.id)) {
+          toggleExpand(item.template.id);
+        }
+        return true;
       }
-      return;
-    }
 
-    // Type-to-filter (printable characters)
-    if (key.backspace || key.delete) {
-      setFilterQuery(prev => prev.slice(0, -1));
-      return;
-    }
+      // Actions
+      if (input.toLowerCase() === 'n') {
+        onCreateNew();
+        return true;
+      }
 
-    // Accept printable characters for filtering
-    const clean = input.split('').filter(ch => {
-      const code = ch.charCodeAt(0);
-      return code >= 32 && code <= 126;
-    }).join('');
-    
-    if (clean && !key.ctrl && !key.meta) {
-      setFilterQuery(prev => prev + clean);
-    }
+      if (input.toLowerCase() === 'e' && item?.type === 'template') {
+        onEdit(item.template);
+        return true;
+      }
+
+      if (input.toLowerCase() === 'd') {
+        if (item?.type === 'template') {
+          const templateInstances = instances.filter(i => i.templateId === item.template.id);
+          onDelete(item.template, templateInstances);
+        } else if (item?.type === 'instance') {
+          onKillInstance(item.instance);
+        }
+        return true;
+      }
+
+      // Type-to-filter (printable characters)
+      if (key.backspace || key.delete) {
+        setFilterQuery(prev => prev.slice(0, -1));
+        return true;
+      }
+
+      // Accept printable characters for filtering
+      const clean = input.split('').filter(ch => {
+        const code = ch.charCodeAt(0);
+        return code >= 32 && code <= 126;
+      }).join('');
+      
+      if (clean && !key.ctrl && !key.meta) {
+        setFilterQuery(prev => prev + clean);
+      }
+
+      return true; // Consume all input when overlay is active
+    },
   });
 
   // Render list items

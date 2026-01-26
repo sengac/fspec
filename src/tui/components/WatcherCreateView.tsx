@@ -3,6 +3,7 @@
  *
  * WATCH-009: Watcher Creation Dialog UI
  * WATCH-021: Auto-inject toggle added
+ * INPUT-001: Uses centralized input handling with CRITICAL priority
  *
  * This component follows the architecture design from WATCH-001:
  * - Full-screen form overlay (similar to /resume and /search modes)
@@ -21,7 +22,8 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import { Box, Text, useInput } from 'ink';
+import { Box, Text } from 'ink';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 // Focus field type for cycling - WATCH-021: Added 'autoInject'
 type FocusField = 'name' | 'authority' | 'model' | 'brief' | 'autoInject' | 'create';
@@ -82,79 +84,86 @@ export function WatcherCreateView({
     onCreate(name.trim(), authority, selectedModel, brief.trim(), autoInject);
   }, [name, authority, selectedModelIndex, availableModels, currentModel, brief, autoInject, onCreate]);
 
-  // Keyboard input handling
-  useInput((input, key) => {
-    // Escape always cancels
-    if (key.escape) {
-      onCancel();
-      return;
-    }
-
-    // Tab cycles focus forward, Shift+Tab backward
-    if (key.tab) {
-      if (key.shift) {
-        cycleFocusBackward();
-      } else {
-        cycleFocusForward();
+  // Keyboard input handling with CRITICAL priority (full-screen form)
+  useInputCompat({
+    id: 'watcher-create-view',
+    priority: InputPriority.CRITICAL,
+    description: 'Watcher creation form keyboard navigation',
+    handler: (input, key) => {
+      // Escape always cancels
+      if (key.escape) {
+        onCancel();
+        return true;
       }
-      return;
-    }
 
-    // Enter creates watcher (from any field, if name is valid)
-    if (key.return) {
-      handleCreate();
-      return;
-    }
-
-    // Field-specific input handling
-    switch (focusField) {
-      case 'name':
-        // Text input for name field
-        if (key.backspace || key.delete) {
-          setName(prev => prev.slice(0, -1));
-        } else if (input && !key.ctrl && !key.meta) {
-          setName(prev => prev + input);
+      // Tab cycles focus forward, Shift+Tab backward
+      if (key.tab) {
+        if (key.shift) {
+          cycleFocusBackward();
+        } else {
+          cycleFocusForward();
         }
-        break;
+        return true;
+      }
 
-      case 'authority':
-        // Left/Right toggles authority
-        if (key.leftArrow || key.rightArrow) {
-          setAuthority(prev => (prev === 'peer' ? 'supervisor' : 'peer'));
-        }
-        break;
+      // Enter creates watcher (from any field, if name is valid)
+      if (key.return) {
+        handleCreate();
+        return true;
+      }
 
-      case 'model':
-        // Up/Down navigates model selection
-        if (key.upArrow) {
-          setSelectedModelIndex(prev => Math.max(0, prev - 1));
-        } else if (key.downArrow) {
-          setSelectedModelIndex(prev => Math.min(availableModels.length - 1, prev + 1));
-        }
-        break;
+      // Field-specific input handling
+      switch (focusField) {
+        case 'name':
+          // Text input for name field
+          if (key.backspace || key.delete) {
+            setName(prev => prev.slice(0, -1));
+          } else if (input && !key.ctrl && !key.meta) {
+            setName(prev => prev + input);
+          }
+          break;
 
-      case 'brief':
-        // Text input for brief field (multiline - Enter adds newline when focused here)
-        if (key.backspace || key.delete) {
-          setBrief(prev => prev.slice(0, -1));
-        } else if (input && !key.ctrl && !key.meta) {
-          setBrief(prev => prev + input);
-        }
-        break;
+        case 'authority':
+          // Left/Right toggles authority
+          if (key.leftArrow || key.rightArrow) {
+            setAuthority(prev => (prev === 'peer' ? 'supervisor' : 'peer'));
+          }
+          break;
 
-      // WATCH-021: Auto-inject toggle field
-      case 'autoInject':
-        // Left/Right toggles auto-inject
-        if (key.leftArrow || key.rightArrow) {
-          setAutoInject(prev => !prev);
-        }
-        break;
+        case 'model':
+          // Up/Down navigates model selection
+          if (key.upArrow) {
+            setSelectedModelIndex(prev => Math.max(0, prev - 1));
+          } else if (key.downArrow) {
+            setSelectedModelIndex(prev => Math.min(availableModels.length - 1, prev + 1));
+          }
+          break;
 
-      case 'create':
-        // Enter on create button triggers creation
-        // (already handled above)
-        break;
-    }
+        case 'brief':
+          // Text input for brief field (multiline - Enter adds newline when focused here)
+          if (key.backspace || key.delete) {
+            setBrief(prev => prev.slice(0, -1));
+          } else if (input && !key.ctrl && !key.meta) {
+            setBrief(prev => prev + input);
+          }
+          break;
+
+        // WATCH-021: Auto-inject toggle field
+        case 'autoInject':
+          // Left/Right toggles auto-inject
+          if (key.leftArrow || key.rightArrow) {
+            setAutoInject(prev => !prev);
+          }
+          break;
+
+        case 'create':
+          // Enter on create button triggers creation
+          // (already handled above)
+          break;
+      }
+
+      return true; // Consume all input when form is active
+    },
   });
 
   const isNameValid = name.trim().length > 0;

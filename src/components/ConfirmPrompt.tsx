@@ -1,5 +1,15 @@
+/**
+ * ConfirmPrompt - Interactive CLI component for yes/no confirmation
+ *
+ * Used during `fspec init` and `fspec remove-init-files` for user confirmation.
+ * Renders standalone (outside main TUI), so uses useInputCompat's fallback mode.
+ *
+ * INPUT-001: Uses centralized input handling (falls back to useInput when no InputManager)
+ */
+
 import React, { useState, useEffect } from 'react';
-import { Box, Text, useInput, useApp } from 'ink';
+import { Box, Text, useApp } from 'ink';
+import { useInputCompat, InputPriority } from '../tui/input/index.js';
 
 interface ConfirmPromptProps {
   message: string;
@@ -22,18 +32,27 @@ export const ConfirmPrompt: React.FC<ConfirmPromptProps> = ({
   const [selected, setSelected] = useState<boolean | null>(null);
   const { exit } = useApp();
 
-  useInput((input, key) => {
-    if (selected !== null) {
-      return;
-    }
+  useInputCompat({
+    id: 'confirm-prompt-nav',
+    priority: InputPriority.MEDIUM,
+    isActive: selected === null,
+    handler: (_input, key) => {
+      if (selected !== null) {
+        return false;
+      }
 
-    if (key.upArrow) {
-      setCursor(Math.max(0, cursor - 1));
-    } else if (key.downArrow) {
-      setCursor(Math.min(options.length - 1, cursor + 1));
-    } else if (key.return) {
-      setSelected(options[cursor].value);
-    }
+      if (key.upArrow) {
+        setCursor(Math.max(0, cursor - 1));
+        return true;
+      } else if (key.downArrow) {
+        setCursor(Math.min(options.length - 1, cursor + 1));
+        return true;
+      } else if (key.return) {
+        setSelected(options[cursor].value);
+        return true;
+      }
+      return false;
+    },
   });
 
   useEffect(() => {

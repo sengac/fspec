@@ -4,15 +4,17 @@
  * ALL FLEXBOX - NO borderStyle on any Box component
  * Borders are Text components with box-drawing characters
  * Content uses flexGrow/flexShrink for responsive sizing
+ * INPUT-001: Uses centralized input handling with BACKGROUND priority
  */
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { Box, Text, useInput, useStdout, useStdin } from 'ink';
+import { Box, Text, useStdout, useStdin } from 'ink';
 import chalk from 'chalk';
-import { Logo } from './Logo';
-import { getVisualWidth, fitToWidth } from '../utils/stringWidth';
-import { CheckpointStatus } from './CheckpointStatus';
-import { KeybindingShortcuts } from './KeybindingShortcuts';
+import { Logo } from './Logo.js';
+import { getVisualWidth, fitToWidth } from '../utils/stringWidth.js';
+import { CheckpointStatus } from './CheckpointStatus.js';
+import { KeybindingShortcuts } from './KeybindingShortcuts.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 import { WorkUnitTitle } from './WorkUnitTitle';
 import { WorkUnitDescription } from './WorkUnitDescription';
 import { WorkUnitMetadata } from './WorkUnitMetadata';
@@ -274,77 +276,90 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
     };
   }, [internal_eventEmitter, onWorkUnitChange, selectedWorkUnitIndex, focusedColumnIndex, groupedWorkUnits]);
 
-  // Handle keyboard input
-  useInput((input, key) => {
-    // Mouse scroll handling (TUI-010)
-    // Parse raw escape sequences for terminals that don't parse mouse events
-    if (input && input.startsWith('[M')) {
-      const buttonByte = input.charCodeAt(2);
-      if (buttonByte === 96) {  // Scroll up (ASCII '`')
-        handleColumnScroll('up');
-        return;
-      } else if (buttonByte === 97) {  // Scroll down (ASCII 'a')
-        handleColumnScroll('down');
-        return;
+  // Handle keyboard input with BACKGROUND priority (board navigation is low priority)
+  useInputCompat({
+    id: 'unified-board-layout',
+    priority: InputPriority.BACKGROUND,
+    description: 'Board layout keyboard navigation',
+    isActive: !isDialogOpen,
+    handler: (input, key) => {
+      // Mouse scroll handling (TUI-010)
+      // Parse raw escape sequences for terminals that don't parse mouse events
+      if (input && input.startsWith('[M')) {
+        const buttonByte = input.charCodeAt(2);
+        if (buttonByte === 96) {  // Scroll up (ASCII '`')
+          handleColumnScroll('up');
+          return true;
+        } else if (buttonByte === 97) {  // Scroll down (ASCII 'a')
+          handleColumnScroll('down');
+          return true;
+        }
       }
-    }
 
-    // Handle Ink-parsed mouse events (primary method)
-    if (key.mouse) {
-      if (key.mouse.button === 'wheelDown') {
-        handleColumnScroll('down');
-        return;
-      } else if (key.mouse.button === 'wheelUp') {
-        handleColumnScroll('up');
-        return;
+      // Handle Ink-parsed mouse events (primary method)
+      if (key.mouse) {
+        if (key.mouse.button === 'wheelDown') {
+          handleColumnScroll('down');
+          return true;
+        } else if (key.mouse.button === 'wheelUp') {
+          handleColumnScroll('up');
+          return true;
+        }
       }
-    }
 
-    // Page Up/Down: Move selector by viewport height
-    if (key.pageDown) {
-      onWorkUnitChange?.(VIEWPORT_HEIGHT);
-      return;
-    }
+      // Page Up/Down: Move selector by viewport height
+      if (key.pageDown) {
+        onWorkUnitChange?.(VIEWPORT_HEIGHT);
+        return true;
+      }
 
-    if (key.pageUp) {
-      onWorkUnitChange?.(-VIEWPORT_HEIGHT);
-      return;
-    }
+      if (key.pageUp) {
+        onWorkUnitChange?.(-VIEWPORT_HEIGHT);
+        return true;
+      }
 
-    // Home/End are handled via raw stdin event emitter above
-    // because useInput filters them out before we can see them
+      // Home/End are handled via raw stdin event emitter above
+      // because useInput filters them out before we can see them
 
-    // VIEWNV-001: Ignore arrow keys when shift is held
-    // Shift+arrow combinations are reserved for cross-component navigation
-    // (e.g., Shift+Right to navigate to AgentView or create new session)
-    // Without this check, both BoardView's shift+arrow handler AND this
-    // handler would fire, since Ink's useInput doesn't stop propagation.
-    if (key.shift) {
-      return;
-    }
+      // VIEWNV-001: Ignore arrow keys when shift is held
+      // Shift+arrow combinations are reserved for cross-component navigation
+      // (e.g., Shift+Right to navigate to AgentView or create new session)
+      // Without this check, both BoardView's shift+arrow handler AND this
+      // handler would fire, since Ink's useInput doesn't stop propagation.
+      if (key.shift) {
+        return false;
+      }
 
-    // Arrow keys handled by parent
-    if (key.leftArrow || key.rightArrow) {
-      onColumnChange?.(key.rightArrow ? 1 : -1);
-    }
-    if (key.upArrow || key.downArrow) {
-      onWorkUnitChange?.(key.downArrow ? 1 : -1);
-    }
-    if (key.return) {
-      onEnter?.();
-    }
+      // Arrow keys handled by parent
+      if (key.leftArrow || key.rightArrow) {
+        onColumnChange?.(key.rightArrow ? 1 : -1);
+        return true;
+      }
+      if (key.upArrow || key.downArrow) {
+        onWorkUnitChange?.(key.downArrow ? 1 : -1);
+        return true;
+      }
+      if (key.return) {
+        onEnter?.();
+        return true;
+      }
 
-    // BOARD-010: Bracket keys for priority reordering
-    if (input === '[') {
-      onMoveUp?.();
-    }
-    if (input === ']') {
-      onMoveDown?.();
-    }
+      // BOARD-010: Bracket keys for priority reordering
+      if (input === '[') {
+        onMoveUp?.();
+        return true;
+      }
+      if (input === ']') {
+        onMoveDown?.();
+        return true;
+      }
 
-    // TUI-019: Open attachment dialog (handled at BoardView level)
-    // The 'a' key handler is now in BoardView to show AttachmentDialog
-  }, { isActive: !isDialogOpen });
+      // TUI-019: Open attachment dialog (handled at BoardView level)
+      // The 'a' key handler is now in BoardView to show AttachmentDialog
+
+      return false;
+    },
+  });
 
   return (
     <Box flexDirection="column">

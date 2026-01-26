@@ -6,6 +6,7 @@
  * WATCH-015: Watcher Session Header Indicator
  * WATCH-018: Extract Split View to Separate Component
  * VIEWNV-001: Unified Shift+Arrow Navigation
+ * INPUT-001: Uses centralized input handling with LOW priority
  *
  * Features:
  * - Two vertical panes (parent left, watcher right)
@@ -20,28 +21,29 @@
  */
 
 import React, { useCallback, useMemo } from 'react';
-import { Box, Text, useInput } from 'ink';
-import { VirtualList } from './VirtualList';
-import { ConversationInputArea } from './ConversationInputArea';
-import { SelectionSeparatorBar } from './SelectionSeparatorBar';
-import { SessionHeader } from './SessionHeader';
-import { useTerminalSize } from '../hooks/useTerminalSize';
-import { useTurnSelection } from '../hooks/useTurnSelection';
-import { useWatcherHeaderInfo } from '../hooks/useWatcherHeaderInfo';
+import { Box, Text } from 'ink';
+import { VirtualList } from './VirtualList.js';
+import { ConversationInputArea } from './ConversationInputArea.js';
+import { SelectionSeparatorBar } from './SelectionSeparatorBar.js';
+import { SessionHeader } from './SessionHeader.js';
+import { useTerminalSize } from '../hooks/useTerminalSize.js';
+import { useTurnSelection } from '../hooks/useTurnSelection.js';
+import { useWatcherHeaderInfo } from '../hooks/useWatcherHeaderInfo.js';
 import {
   getSelectionSeparatorType,
   getFirstContentOfTurn,
   generateDiscussSelectedPrefill,
   getContentLineCount,
-} from '../utils/turnSelection';
-import { buildCorrelationMaps } from '../utils/correlationMapping';
-import { useSessionNavigation } from '../hooks/useSessionNavigation';
-import { CreateSessionDialog } from '../../components/CreateSessionDialog';
-import { useShowCreateSessionDialog, useSessionActions } from '../store/sessionStore';
-import { SlashCommandPalette } from './SlashCommandPalette';
-import { useSlashCommand } from '../hooks/useSlashCommand';
-import type { ConversationLine } from '../types/conversation';
-import type { TokenTracker } from '../utils/sessionHeaderUtils';
+} from '../utils/turnSelection.js';
+import { buildCorrelationMaps } from '../utils/correlationMapping.js';
+import { useSessionNavigation } from '../hooks/useSessionNavigation.js';
+import { CreateSessionDialog } from '../../components/CreateSessionDialog.js';
+import { useShowCreateSessionDialog, useSessionActions } from '../store/sessionStore.js';
+import { SlashCommandPalette } from './SlashCommandPalette.js';
+import { useSlashCommandInput } from '../hooks/useSlashCommandInput.js';
+import type { ConversationLine } from '../types/conversation.js';
+import type { TokenTracker } from '../utils/sessionHeaderUtils.js';
+import { useInputCompat, InputPriority } from '../input/index.js';
 
 interface SplitSessionViewProps {
   /** Current watcher session ID - used to compute watcher header info */
@@ -121,31 +123,16 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     onNavigateToBoard,
   });
 
-  // TUI-050: Slash command autocomplete palette
-  const slashCommand = useSlashCommand();
+  // TUI-050: Slash command autocomplete palette with clean input handling
+  const slashCommand = useSlashCommandInput({
+    inputValue,
+    onInputChange,
+    onExecuteCommand: (cmd) => onSubmit(cmd),
+    disabled: false, // SplitSessionView doesn't have overlays that would conflict
+  });
 
-  // TUI-050: Handle input changes with slash command palette detection
-  const handleInputChangeWithSlash = React.useCallback((newValue: string) => {
-    onInputChange(newValue);
-    
-    // Detect "/" at position 0 to show palette
-    if (newValue.startsWith('/') && !slashCommand.isVisible) {
-      slashCommand.show();
-      slashCommand.setFilter(newValue.slice(1));
-    } else if (newValue.startsWith('/') && slashCommand.isVisible) {
-      // Update filter as user types after "/"
-      slashCommand.setFilter(newValue.slice(1));
-    } else if (!newValue.startsWith('/') && slashCommand.isVisible) {
-      // Close palette if "/" is removed
-      slashCommand.hide();
-    }
-  }, [onInputChange, slashCommand]);
-
-  // TUI-050: Handle slash command selection
-  const handleSlashCommandSelect = React.useCallback((commandName: string) => {
-    onInputChange(`/${commandName} `);
-    slashCommand.hide();
-  }, [onInputChange, slashCommand]);
+  // TUI-050: Use slashCommand.handleInputChange from the hook
+  const handleInputChangeWithSlash = slashCommand.handleInputChange;
 
   // Pane state
   const [activePane, setActivePane] = React.useState<'parent' | 'watcher'>(
@@ -209,147 +196,126 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     watcherToParentTurns,
   ]);
 
-  // Handle keyboard input
-  useInput((input, key) => {
-    // VIEWNV-001: Skip input handling when create dialog is showing
-    if (showCreateSessionDialog) return;
-    if (isLoading) return;
+  // Handle keyboard input with LOW priority (view navigation)
+  useInputCompat({
+    id: 'split-session-view',
+    priority: InputPriority.LOW,
+    description: 'Split session view keyboard navigation',
+    isActive: !showCreateSessionDialog,
+    handler: (input, key) => {
+      // VIEWNV-001: Skip input handling when create dialog is showing
+      if (showCreateSessionDialog) return false;
+      if (isLoading) return false;
 
-    // TUI-050: Slash command palette keyboard handling (takes precedence)
-    if (slashCommand.isVisible) {
-      if (key.escape) {
-        slashCommand.hide();
-        return;
+      // TUI-050: Slash command palette keyboard handling
+      // The hook handles all the complexity internally and returns true if it handled the input
+      if (slashCommand.handleInput(input, key)) {
+        return true;
       }
-      if (key.upArrow) {
-        slashCommand.moveUp();
-        return;
+
+      // VIEWNV-001: Shift+Left/Right for session navigation
+      // Handle escape sequences first (some terminals), then Ink key detection
+      if (
+        input.includes('[1;2D') ||
+        input.includes('\x1b[1;2D') ||
+        (key.shift && key.leftArrow)
+      ) {
+        sessionNavigation.handleShiftLeft();
+        return true;
       }
-      if (key.downArrow) {
-        slashCommand.moveDown();
-        return;
+      if (
+        input.includes('[1;2C') ||
+        input.includes('\x1b[1;2C') ||
+        (key.shift && key.rightArrow)
+      ) {
+        sessionNavigation.handleShiftRight();
+        return true;
       }
+
+      // Left/Right arrows switch panes (only when NOT in select mode and NOT shift)
+      if (!activeSelectMode) {
+        if (key.leftArrow && !key.shift) {
+          setActivePane('parent');
+          return true;
+        }
+        if (key.rightArrow && !key.shift) {
+          setActivePane('watcher');
+          return true;
+        }
+      }
+
+      // Tab toggles turn-select mode in active pane
       if (key.tab) {
-        const selected = slashCommand.getSelectedCommand();
-        if (selected) {
-          handleSlashCommandSelect(selected.name);
+        if (activePane === 'parent') {
+          parentSelection.toggleSelectMode();
+        } else {
+          watcherSelection.toggleSelectMode();
         }
-        return;
+        return true;
       }
-      if (key.return) {
-        const selected = slashCommand.getSelectedCommand();
-        if (selected) {
-          // Execute command directly
-          onInputChange(`/${selected.name}`);
-          slashCommand.hide();
-          // Use onSubmit with the command value
-          onSubmit(`/${selected.name}`);
-        }
-        return;
-      }
-      // Let other keys pass through to input handler
-    }
 
-    // VIEWNV-001: Shift+Left/Right for session navigation
-    // Handle escape sequences first (some terminals), then Ink key detection
-    if (
-      input.includes('[1;2D') ||
-      input.includes('\x1b[1;2D') ||
-      (key.shift && key.leftArrow)
-    ) {
-      sessionNavigation.handleShiftLeft();
-      return;
-    }
-    if (
-      input.includes('[1;2C') ||
-      input.includes('\x1b[1;2C') ||
-      (key.shift && key.rightArrow)
-    ) {
-      sessionNavigation.handleShiftRight();
-      return;
-    }
-
-    // Left/Right arrows switch panes (only when NOT in select mode and NOT shift)
-    if (!activeSelectMode) {
-      if (key.leftArrow && !key.shift) {
-        setActivePane('parent');
-        return;
-      }
-      if (key.rightArrow && !key.shift) {
-        setActivePane('watcher');
-        return;
-      }
-    }
-
-    // Tab toggles turn-select mode in active pane
-    if (key.tab) {
-      if (activePane === 'parent') {
-        parentSelection.toggleSelectMode();
-      } else {
-        watcherSelection.toggleSelectMode();
-      }
-      return;
-    }
-
-    // Escape exits select mode
-    if (key.escape && activeSelectMode) {
-      if (activePane === 'parent') {
-        parentSelection.exitSelectMode();
-      } else {
-        watcherSelection.exitSelectMode();
-      }
-      return;
-    }
-
-    // Enter in parent pane select mode: "Discuss Selected" - pre-fill input
-    if (key.return && activePane === 'parent' && parentSelection.isSelectMode) {
-      const selectedIndex = parentSelection.selectionRef.current.selectedIndex;
-      const selectedLine = parentConversation[selectedIndex];
-
-      if (selectedLine) {
-        const messageIndex = selectedLine.messageIndex;
-        const turnNumber = messageIndex + 1; // 1-indexed for display
-        const turnContent = getFirstContentOfTurn(
-          parentConversation,
-          messageIndex
-        );
-
-        if (turnContent) {
-          const prefill = generateDiscussSelectedPrefill(
-            turnNumber,
-            turnContent
-          );
-          onInputChange(prefill);
+      // Escape exits select mode
+      if (key.escape && activeSelectMode) {
+        if (activePane === 'parent') {
           parentSelection.exitSelectMode();
+        } else {
+          watcherSelection.exitSelectMode();
         }
+        return true;
       }
-      return;
-    }
 
-    // WATCH-016: Enter in watcher pane select mode: Open TurnContentModal
-    if (
-      key.return &&
-      activePane === 'watcher' &&
-      watcherSelection.isSelectMode
-    ) {
-      const selectedIndex = watcherSelection.selectionRef.current.selectedIndex;
-      const selectedLine = watcherConversation[selectedIndex];
+      // Enter in parent pane select mode: "Discuss Selected" - pre-fill input
+      if (key.return && activePane === 'parent' && parentSelection.isSelectMode) {
+        const selectedIndex = parentSelection.selectionRef.current.selectedIndex;
+        const selectedLine = parentConversation[selectedIndex];
 
-      if (selectedLine && onOpenTurnContent) {
-        // Collect all content lines for this turn to build full content
-        const fullContent = watcherConversation
-          .filter(
-            line =>
-              line.messageIndex === selectedLine.messageIndex &&
-              !line.isSeparator
-          )
-          .map(line => line.content)
-          .join('\n');
-        onOpenTurnContent(selectedLine.messageIndex, fullContent);
+        if (selectedLine) {
+          const messageIndex = selectedLine.messageIndex;
+          const turnNumber = messageIndex + 1; // 1-indexed for display
+          const turnContent = getFirstContentOfTurn(
+            parentConversation,
+            messageIndex
+          );
+
+          if (turnContent) {
+            const prefill = generateDiscussSelectedPrefill(
+              turnNumber,
+              turnContent
+            );
+            onInputChange(prefill);
+            parentSelection.exitSelectMode();
+          }
+        }
+        return true;
       }
-      return;
-    }
-  }, { isActive: !showCreateSessionDialog });
+
+      // WATCH-016: Enter in watcher pane select mode: Open TurnContentModal
+      if (
+        key.return &&
+        activePane === 'watcher' &&
+        watcherSelection.isSelectMode
+      ) {
+        const selectedIndex = watcherSelection.selectionRef.current.selectedIndex;
+        const selectedLine = watcherConversation[selectedIndex];
+
+        if (selectedLine && onOpenTurnContent) {
+          // Collect all content lines for this turn to build full content
+          const fullContent = watcherConversation
+            .filter(
+              line =>
+                line.messageIndex === selectedLine.messageIndex &&
+                !line.isSeparator
+            )
+            .map(line => line.content)
+            .join('\n');
+          onOpenTurnContent(selectedLine.messageIndex, fullContent);
+        }
+        return true;
+      }
+
+      return false;
+    },
+  });
 
   // Calculate layout dimensions
   // Layout: SessionHeader(2: content+border) + split panes (flex) + input area(1)
@@ -571,6 +537,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
           filter={slashCommand.filter}
           commands={slashCommand.filteredCommands}
           selectedIndex={slashCommand.selectedIndex}
+          dialogWidth={slashCommand.dialogWidth}
           maxVisibleItems={8}
         />
       )}

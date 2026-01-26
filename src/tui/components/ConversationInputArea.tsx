@@ -35,10 +35,6 @@ export interface ConversationInputAreaProps {
   onHistoryPrev?: () => void;
   /** Callback for Shift+Down (history next) - optional */
   onHistoryNext?: () => void;
-  /** Callback for Shift+Left (session prev) - optional */
-  onSessionPrev?: () => void;
-  /** Callback for Shift+Right (session next) - optional */
-  onSessionNext?: () => void;
   /** Maximum visible lines for multi-line input */
   maxVisibleLines?: number;
   /** Prompt character/string (default: "> ") */
@@ -68,8 +64,6 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
   skipAnimation = false,
   onHistoryPrev,
   onHistoryNext,
-  onSessionPrev,
-  onSessionNext,
   maxVisibleLines = 5,
   promptChar = '> ',
   promptColor = 'green',
@@ -95,8 +89,6 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
           placeholder={placeholder}
           onHistoryPrev={onHistoryPrev}
           onHistoryNext={onHistoryNext}
-          onSessionPrev={onSessionPrev}
-          onSessionNext={onSessionNext}
           maxVisibleLines={maxVisibleLines}
           isActive={isActive}
           skipAnimation={skipAnimation}
