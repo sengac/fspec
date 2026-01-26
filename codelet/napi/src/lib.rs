@@ -19,6 +19,8 @@ mod output;
 #[cfg(not(feature = "noop"))]
 mod session;
 #[cfg(not(feature = "noop"))]
+pub mod navigation;
+#[cfg(not(feature = "noop"))]
 pub mod session_manager;
 #[cfg(not(feature = "noop"))]
 mod thinking_config;

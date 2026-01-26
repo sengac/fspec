@@ -5,10 +5,12 @@
  * WATCH-011: Cross-Pane Selection with Correlation IDs
  * WATCH-015: Watcher Session Header Indicator
  * WATCH-018: Extract Split View to Separate Component
+ * VIEWNV-001: Unified Shift+Arrow Navigation
  *
  * Features:
  * - Two vertical panes (parent left, watcher right)
  * - Left/Right arrows switch active pane
+ * - Shift+Left/Right navigates between sessions (VIEWNV-001)
  * - Tab toggles turn-select mode in active pane
  * - Up/Down navigate turns when in select mode (via VirtualList)
  * - Enter on selected parent turn pre-fills input with "Discuss Selected" context
@@ -33,6 +35,9 @@ import {
   getContentLineCount,
 } from '../utils/turnSelection';
 import { buildCorrelationMaps } from '../utils/correlationMapping';
+import { useSessionNavigation } from '../hooks/useSessionNavigation';
+import { CreateSessionDialog } from '../../components/CreateSessionDialog';
+import { useShowCreateSessionDialog, useSessionActions } from '../store/sessionStore';
 import type { ConversationLine } from '../types/conversation';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
 
@@ -70,6 +75,11 @@ interface SplitSessionViewProps {
   isTurnSelectMode?: boolean;
   /** Callback when user wants to open full turn content modal (WATCH-016) */
   onOpenTurnContent?: (messageIndex: number, content: string) => void;
+  // VIEWNV-001: Session navigation callbacks
+  /** Callback when navigating to another session */
+  onNavigate: (sessionId: string) => void;
+  /** Callback when navigating to board view */
+  onNavigateToBoard: () => void;
 }
 
 export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
@@ -92,11 +102,22 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
   contextFillPercentage = 0,
   isTurnSelectMode = false,
   onOpenTurnContent,
+  // VIEWNV-001: Navigation callbacks
+  onNavigate,
+  onNavigateToBoard,
 }) => {
   const { height: terminalHeight } = useTerminalSize();
 
   // Get watcher header info (slug, instance number) from session ID
   const watcherHeaderInfo = useWatcherHeaderInfo(sessionId);
+
+  // VIEWNV-001: Session navigation hook
+  const showCreateSessionDialog = useShowCreateSessionDialog();
+  const { closeCreateSessionDialog, prepareForNewSession } = useSessionActions();
+  const sessionNavigation = useSessionNavigation({
+    onNavigate,
+    onNavigateToBoard,
+  });
 
   // Pane state
   const [activePane, setActivePane] = React.useState<'parent' | 'watcher'>(
@@ -162,10 +183,30 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 
   // Handle keyboard input
   useInput((input, key) => {
+    // VIEWNV-001: Skip input handling when create dialog is showing
+    if (showCreateSessionDialog) return;
     if (isLoading) return;
 
-    // Left/Right arrows switch panes (only when NOT in select mode)
-    // VIEWNV-001: Exclude Shift+Arrow which is handled by AgentView for navigation
+    // VIEWNV-001: Shift+Left/Right for session navigation
+    // Handle escape sequences first (some terminals), then Ink key detection
+    if (
+      input.includes('[1;2D') ||
+      input.includes('\x1b[1;2D') ||
+      (key.shift && key.leftArrow)
+    ) {
+      sessionNavigation.handleShiftLeft();
+      return;
+    }
+    if (
+      input.includes('[1;2C') ||
+      input.includes('\x1b[1;2C') ||
+      (key.shift && key.rightArrow)
+    ) {
+      sessionNavigation.handleShiftRight();
+      return;
+    }
+
+    // Left/Right arrows switch panes (only when NOT in select mode and NOT shift)
     if (!activeSelectMode) {
       if (key.leftArrow && !key.shift) {
         setActivePane('parent');
@@ -245,7 +286,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
       }
       return;
     }
-  });
+  }, { isActive: !showCreateSessionDialog });
 
   // Calculate layout dimensions
   // Layout: SessionHeader(2: content+border) + split panes (flex) + input area(1)
@@ -455,10 +496,23 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         placeholder={
           activeSelectMode
             ? '↑↓ Navigate | Enter Discuss | Tab/Esc Exit Select'
-            : "Type a message... ('←/→' switch pane | 'Tab' select turn | '↑↓' scroll | 'Esc' cancel)"
+            : "Type a message... ('←/→' pane | 'Shift+←/→' sessions | 'Tab' select | 'Esc' cancel)"
         }
-        isActive={!isLoading}
+        isActive={!isLoading && !showCreateSessionDialog}
       />
+
+      {/* VIEWNV-001: Create session dialog (shown when navigating past right edge) */}
+      {showCreateSessionDialog && (
+        <CreateSessionDialog
+          onConfirm={() => {
+            // Prepare for new session (atomic transition via store)
+            prepareForNewSession();
+          }}
+          onCancel={() => {
+            closeCreateSessionDialog();
+          }}
+        />
+      )}
     </Box>
   );
 };

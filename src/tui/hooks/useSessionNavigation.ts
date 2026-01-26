@@ -16,6 +16,9 @@ import {
   useSessionActions,
 } from '../store/sessionStore';
 
+// Re-export for convenience
+export { clearActiveSession };
+
 interface UseSessionNavigationOptions {
   /** Called when navigating to a session */
   onNavigate: (sessionId: string) => void;

@@ -87,6 +87,9 @@ import {
   sessionRestoreTokenState,
   sessionSetPendingInput,
   sessionGetPendingInput,
+  // VIEWNV-001: Subscribe/unsubscribe without changing active session
+  sessionSubscribe,
+  sessionUnsubscribe,
   // WATCH-008: Watcher management NAPI functions
   sessionGetWatchers,
   sessionGetRole,
@@ -1494,8 +1497,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         const parentLines = messagesToLines(parentMessages, parentPaneWidth);
         setParentConversation(parentLines);
         
-        // Subscribe to parent session for live updates
-        sessionAttach(parentId, (_err: Error | null, chunk: StreamChunk) => {
+        // VIEWNV-001: Subscribe to parent session for live updates WITHOUT changing active session
+        // Use sessionSubscribe instead of sessionAttach to avoid corrupting navigation state
+        sessionSubscribe(parentId, (_err: Error | null, chunk: StreamChunk) => {
           if (chunk) {
             const updatedChunks = sessionGetMergedOutput(parentId);
             const updatedMessages = processChunksToConversation(
@@ -1509,9 +1513,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           }
         });
         
-        // Cleanup: detach from parent when effect re-runs or component unmounts
+        // Cleanup: unsubscribe from parent when effect re-runs or component unmounts
+        // VIEWNV-001: Use sessionUnsubscribe to avoid clearing the active session
         return () => {
-          sessionDetach(parentId);
+          sessionUnsubscribe(parentId);
         };
       } else {
         // Not a watcher session - disable split view
@@ -5462,23 +5467,21 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       }
 
       // VIEWNV-001: Shift+Left/Right for unified session navigation
+      // Skip when in watcher view - SplitSessionView handles its own navigation
       // Uses sessionNavigation hook which determines correct target based on position in tree
       // Check escape sequences first, then Ink key detection
-      if (
-        input.includes('[1;2D') ||
-        input.includes('\x1b[1;2D') ||
-        (key.shift && key.leftArrow)
-      ) {
-        sessionNavigation.handleShiftLeft();
-        return;
-      }
-      if (
-        input.includes('[1;2C') ||
-        input.includes('\x1b[1;2C') ||
-        (key.shift && key.rightArrow)
-      ) {
-        sessionNavigation.handleShiftRight();
-        return;
+      if (!isWatcherSessionView) {
+        const isShiftLeft = input.includes('[1;2D') || input.includes('\x1b[1;2D') || (key.shift && key.leftArrow);
+        const isShiftRight = input.includes('[1;2C') || input.includes('\x1b[1;2C') || (key.shift && key.rightArrow);
+
+        if (isShiftLeft) {
+          sessionNavigation.handleShiftLeft();
+          return;
+        }
+        if (isShiftRight) {
+          sessionNavigation.handleShiftRight();
+          return;
+        }
       }
 
       // TUI-048: Space+ESC for immediate detach (bypasses confirmation dialog)
@@ -6418,6 +6421,38 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           contextFillPercentage={contextFillPercentage}
           isTurnSelectMode={isTurnSelectMode}
           onOpenTurnContent={handleOpenWatcherTurnContent}
+          // VIEWNV-001: Navigation callbacks for Shift+Arrow handling
+          onNavigate={async (targetSessionId: string) => {
+            // Save pending input to current session before switching
+            if (currentSessionId && inputValue) {
+              try {
+                sessionSetPendingInput(currentSessionId, inputValue);
+              } catch {
+                // Session may not exist in manager, ignore
+              }
+            }
+            // Detach from current session
+            if (currentSessionId) {
+              try {
+                sessionDetach(currentSessionId);
+              } catch {
+                // Silently ignore detach errors
+              }
+            }
+            // Resume the target session
+            await resumeSessionById(targetSessionId);
+          }}
+          onNavigateToBoard={() => {
+            // Exit AgentView back to BoardView
+            if (currentSessionId) {
+              try {
+                sessionDetach(currentSessionId);
+              } catch {
+                // Silently ignore detach errors
+              }
+            }
+            onExit();
+          }}
         />
         {/* WATCH-016: Turn content modal for watcher pane */}
         {showWatcherTurnModal && (
