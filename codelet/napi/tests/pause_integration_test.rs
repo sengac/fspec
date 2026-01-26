@@ -2,7 +2,7 @@
 //! PAUSE-001: End-to-End Pause Integration Tests
 //!
 //! These tests verify the pause mechanism integration:
-//! 1. Tool pause handler mechanism works correctly
+//! 1. Tool pause handler mechanism works correctly with task-local storage
 //! 2. WebSearchAction has pause field
 //! 3. Pause types are properly exported
 //!
@@ -10,7 +10,7 @@
 //! Instead, we test the pattern used (AtomicU8 status + RwLock<Option<PauseState>>).
 
 use codelet_tools::tool_pause::{
-    has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
+    has_pause_handler, pause_for_user, with_pause_handler, PauseHandler, PauseKind, PauseRequest,
     PauseResponse, PauseState,
 };
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
@@ -28,15 +28,13 @@ const STATUS_PAUSED: u8 = 3;
 /// Simulated BackgroundSession for testing the pause pattern
 /// This mirrors the exact pattern that BackgroundSession should use
 struct SimulatedSession {
-    id: String,
     status: AtomicU8,
     pause_state: RwLock<Option<PauseState>>,
 }
 
 impl SimulatedSession {
-    fn new(id: &str) -> Self {
+    fn new() -> Self {
         Self {
-            id: id.to_string(),
             status: AtomicU8::new(STATUS_IDLE),
             pause_state: RwLock::new(None),
         }
@@ -82,8 +80,8 @@ impl SimulatedSession {
 /// @step: And session B status should be "running"
 #[test]
 fn test_pause_state_is_per_session() {
-    let session_a = Arc::new(SimulatedSession::new("session-a"));
-    let session_b = Arc::new(SimulatedSession::new("session-b"));
+    let session_a = Arc::new(SimulatedSession::new());
+    let session_b = Arc::new(SimulatedSession::new());
 
     // Both start running
     session_a.set_status(STATUS_RUNNING);
@@ -134,47 +132,49 @@ fn test_session_status_paused_value() {
 // Feature: Tool Pause Handler Mechanism
 // =============================================================================
 
-/// @scenario: Handler is set before tool execution
+/// @scenario: Handler is scoped with with_pause_handler
 /// @step: Given the stream loop is about to run
-/// @step: When a pause handler is registered
-/// @step: Then has_pause_handler should return true
+/// @step: When with_pause_handler is used with a handler
+/// @step: Then has_pause_handler should return true inside the scope
 /// @step: And pause_for_user should invoke the handler
 #[test]
 fn test_pause_handler_registration() {
-    // Clear any existing handler
-    set_pause_handler(None);
+    // Outside scope - no handler
     assert!(!has_pause_handler());
     
-    // Set a handler
     let handler_called = Arc::new(AtomicBool::new(false));
     let handler_called_clone = handler_called.clone();
     
-    set_pause_handler(Some(Arc::new(move |request: PauseRequest| {
+    let handler: PauseHandler = Arc::new(move |request: PauseRequest| {
         handler_called_clone.store(true, Ordering::SeqCst);
         assert_eq!(request.tool_name, "WebSearch");
         assert_eq!(request.kind, PauseKind::Continue);
         PauseResponse::Resumed
-    })));
+    });
     
-    assert!(has_pause_handler());
-    
-    // Call pause_for_user - should invoke the handler
-    let response = pause_for_user(PauseRequest {
-        kind: PauseKind::Continue,
-        tool_name: "WebSearch".to_string(),
-        message: "Page loaded".to_string(),
-        details: None,
+    // Inside scope - handler active
+    with_pause_handler(Some(handler), || {
+        assert!(has_pause_handler());
+        
+        // Call pause_for_user - should invoke the handler
+        let response = pause_for_user(PauseRequest {
+            kind: PauseKind::Continue,
+            tool_name: "WebSearch".to_string(),
+            message: "Page loaded".to_string(),
+            details: None,
+        });
+        
+        assert_eq!(response, PauseResponse::Resumed);
     });
     
     assert!(handler_called.load(Ordering::SeqCst), "Handler should have been called");
-    assert_eq!(response, PauseResponse::Resumed);
     
-    // Clean up
-    set_pause_handler(None);
+    // After scope - no handler
+    assert!(!has_pause_handler());
 }
 
 /// @scenario: Handler blocks until user responds
-/// @step: Given a blocking handler is registered
+/// @step: Given a blocking handler is scoped
 /// @step: When pause_for_user is called from one thread
 /// @step: And another thread signals the response
 /// @step: Then pause_for_user should unblock and return the response
@@ -199,15 +199,15 @@ fn test_pause_handler_blocking_and_resume() {
         guard.take().unwrap()
     });
     
-    set_pause_handler(Some(handler));
-    
-    // Spawn thread that calls pause_for_user
-    let pause_thread = thread::spawn(|| {
-        pause_for_user(PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Blocking test".to_string(),
-            details: None,
+    // Spawn thread that calls pause_for_user with scoped handler
+    let pause_thread = thread::spawn(move || {
+        with_pause_handler(Some(handler), || {
+            pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Blocking test".to_string(),
+                details: None,
+            })
         })
     });
     
@@ -224,8 +224,6 @@ fn test_pause_handler_blocking_and_resume() {
     // Verify the response
     let result = pause_thread.join().expect("Thread panicked");
     assert_eq!(result, PauseResponse::Resumed);
-    
-    set_pause_handler(None);
 }
 
 /// @scenario: Handler can return different responses
@@ -235,36 +233,40 @@ fn test_pause_handler_blocking_and_resume() {
 #[test]
 fn test_pause_handler_different_responses() {
     // Test Approved
-    set_pause_handler(Some(Arc::new(|_| PauseResponse::Approved)));
-    let response = pause_for_user(PauseRequest {
-        kind: PauseKind::Confirm,
-        tool_name: "Bash".to_string(),
-        message: "Confirm command".to_string(),
-        details: Some("rm -rf /tmp/*".to_string()),
+    let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
+    let response = with_pause_handler(Some(handler), || {
+        pause_for_user(PauseRequest {
+            kind: PauseKind::Confirm,
+            tool_name: "Bash".to_string(),
+            message: "Confirm command".to_string(),
+            details: Some("rm -rf /tmp/*".to_string()),
+        })
     });
     assert_eq!(response, PauseResponse::Approved);
     
     // Test Denied
-    set_pause_handler(Some(Arc::new(|_| PauseResponse::Denied)));
-    let response = pause_for_user(PauseRequest {
-        kind: PauseKind::Confirm,
-        tool_name: "Bash".to_string(),
-        message: "Confirm command".to_string(),
-        details: None,
+    let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
+    let response = with_pause_handler(Some(handler), || {
+        pause_for_user(PauseRequest {
+            kind: PauseKind::Confirm,
+            tool_name: "Bash".to_string(),
+            message: "Confirm command".to_string(),
+            details: None,
+        })
     });
     assert_eq!(response, PauseResponse::Denied);
     
     // Test Interrupted
-    set_pause_handler(Some(Arc::new(|_| PauseResponse::Interrupted)));
-    let response = pause_for_user(PauseRequest {
-        kind: PauseKind::Continue,
-        tool_name: "WebSearch".to_string(),
-        message: "User pressed Esc".to_string(),
-        details: None,
+    let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
+    let response = with_pause_handler(Some(handler), || {
+        pause_for_user(PauseRequest {
+            kind: PauseKind::Continue,
+            tool_name: "WebSearch".to_string(),
+            message: "User pressed Esc".to_string(),
+            details: None,
+        })
     });
     assert_eq!(response, PauseResponse::Interrupted);
-    
-    set_pause_handler(None);
 }
 
 // =============================================================================
@@ -379,19 +381,17 @@ fn test_pause_handler_type() {
         PauseResponse::Resumed
     });
     
-    // Use the handler
-    set_pause_handler(Some(handler));
-    
-    let _ = pause_for_user(PauseRequest {
-        kind: PauseKind::Continue,
-        tool_name: "Test".to_string(),
-        message: "Test".to_string(),
-        details: None,
+    // Use the handler with with_pause_handler
+    with_pause_handler(Some(handler), || {
+        let _ = pause_for_user(PauseRequest {
+            kind: PauseKind::Continue,
+            tool_name: "Test".to_string(),
+            message: "Test".to_string(),
+            details: None,
+        });
     });
     
     assert!(counter.load(Ordering::SeqCst));
-    
-    set_pause_handler(None);
 }
 
 /// @scenario: Multiple sessions can be paused independently
@@ -400,8 +400,8 @@ fn test_pause_handler_type() {
 /// @step: Then each has its own isolated state
 #[test]
 fn test_multiple_sessions_paused_independently() {
-    let session_a = Arc::new(SimulatedSession::new("session-a"));
-    let session_b = Arc::new(SimulatedSession::new("session-b"));
+    let session_a = Arc::new(SimulatedSession::new());
+    let session_b = Arc::new(SimulatedSession::new());
 
     session_a.set_status(STATUS_RUNNING);
     session_b.set_status(STATUS_RUNNING);
@@ -443,8 +443,8 @@ fn test_multiple_sessions_paused_independently() {
 /// @step: Then session A is running, session B is still paused
 #[test]
 fn test_resuming_session_is_isolated() {
-    let session_a = Arc::new(SimulatedSession::new("session-a"));
-    let session_b = Arc::new(SimulatedSession::new("session-b"));
+    let session_a = Arc::new(SimulatedSession::new());
+    let session_b = Arc::new(SimulatedSession::new());
 
     session_a.set_pause_state(Some(PauseState {
         kind: PauseKind::Continue,
@@ -483,7 +483,7 @@ fn test_resuming_session_is_isolated() {
 fn test_concurrent_pause_state_access() {
     use std::thread;
 
-    let session = Arc::new(SimulatedSession::new("session-concurrent"));
+    let session = Arc::new(SimulatedSession::new());
 
     // Set initial pause state
     session.set_pause_state(Some(PauseState {
@@ -536,4 +536,21 @@ fn test_concurrent_pause_state_access() {
     writer_handle.join().expect("Writer thread panicked");
 
     // Test passed - no data races
+}
+
+/// @scenario: No handler (outside scope) auto-resumes
+/// @step: Given no pause handler scope
+/// @step: When pause_for_user is called
+/// @step: Then it should return Resumed immediately
+#[test]
+fn test_no_scope_auto_resumes() {
+    // Outside any scope - no handler
+    let response = pause_for_user(PauseRequest {
+        kind: PauseKind::Continue,
+        tool_name: "WebSearch".to_string(),
+        message: "Should auto-resume".to_string(),
+        details: None,
+    });
+    
+    assert_eq!(response, PauseResponse::Resumed);
 }

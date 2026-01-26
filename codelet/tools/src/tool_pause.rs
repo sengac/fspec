@@ -9,25 +9,34 @@
 //!
 //! Pause state is PER-SESSION (not global). This module provides:
 //! 1. Type definitions shared between tools and session manager
-//! 2. Thread-local handler mechanism for tools to request pauses
+//! 2. Task-local handler mechanism for tools to request pauses
 //!
 //! The actual pause state is stored in `BackgroundSession` (napi crate).
 //! The stream loop sets a handler that captures session context.
 //!
+//! ## Important: Task-Local Storage
+//!
+//! This module uses `tokio::task_local!` because tokio's multi-threaded runtime
+//! can migrate async tasks between threads at `.await` points. Task-local storage
+//! stays with the task across thread migrations, unlike `thread_local!`.
+//!
 //! ## Usage
 //!
 //! ```ignore
-//! // Stream loop sets handler with session context:
-//! set_pause_handler(Some(Arc::new(move |request| {
+//! // Stream loop wraps agent execution with pause handler:
+//! let handler = Arc::new(move |request: PauseRequest| {
 //!     session.set_pause_state(Some(request.into()));
-//!     session.set_status(SessionStatus::Paused);
 //!     let response = session.wait_for_pause_response();
-//!     session.set_pause_state(None);
-//!     session.set_status(SessionStatus::Running);
+//!     session.clear_pause_state();
 //!     response
-//! })));
+//! });
 //!
-//! // Tool requests pause:
+//! // For sync code (blocking agent execution):
+//! with_pause_handler(Some(handler), || {
+//!     run_agent_stream(...)
+//! });
+//!
+//! // Tool requests pause (inside the scope):
 //! match pause_for_user(PauseRequest {
 //!     kind: PauseKind::Continue,
 //!     tool_name: "WebSearch".into(),
@@ -38,12 +47,8 @@
 //!     PauseResponse::Interrupted => { /* abort */ }
 //!     _ => unreachable!(),
 //! }
-//!
-//! // Stream loop clears handler after agent completes:
-//! set_pause_handler(None);
 //! ```
 
-use std::cell::RefCell;
 use std::sync::Arc;
 
 /// Kind of pause requested by a tool
@@ -103,33 +108,57 @@ impl From<PauseRequest> for PauseState {
 /// It blocks until the user responds (via NAPI calls from UI).
 pub type PauseHandler = Arc<dyn Fn(PauseRequest) -> PauseResponse + Send + Sync>;
 
-// Thread-local handler - each agent task has its own handler
-// This prevents concurrent sessions from interfering with each other
-thread_local! {
-    static PAUSE_HANDLER: RefCell<Option<PauseHandler>> = const { RefCell::new(None) };
+// Task-local handler - follows the async task across thread migrations
+tokio::task_local! {
+    pub static PAUSE_HANDLER: Option<PauseHandler>;
 }
 
-/// Set the pause handler for the current thread.
+/// Execute synchronous code with a pause handler in scope.
 ///
-/// Called by stream loop before running agent (with session context captured in closure).
-/// Called with `None` after agent completes to clean up.
+/// The handler is available to all `pause_for_user` calls within the closure.
+/// Uses `sync_scope` for synchronous code execution.
 ///
-/// # Thread Safety
+/// # Example
 ///
-/// Uses thread-local storage, so each agent execution context has its own handler.
-/// This is safe for concurrent sessions running in different threads/tasks.
-pub fn set_pause_handler(handler: Option<PauseHandler>) {
-    PAUSE_HANDLER.with(|h| {
-        *h.borrow_mut() = handler;
-    });
+/// ```ignore
+/// let handler = Arc::new(|request| PauseResponse::Resumed);
+/// with_pause_handler(Some(handler), || {
+///     // pause_for_user() calls will use this handler
+///     some_sync_function()
+/// });
+/// ```
+pub fn with_pause_handler<T>(handler: Option<PauseHandler>, f: impl FnOnce() -> T) -> T {
+    PAUSE_HANDLER.sync_scope(handler, f)
+}
+
+/// Execute async code with a pause handler in scope.
+///
+/// The handler is available to all `pause_for_user` calls within the async block.
+/// Uses `scope` which properly handles async code with `.await` points.
+///
+/// # Example
+///
+/// ```ignore
+/// let handler = Arc::new(|request| PauseResponse::Resumed);
+/// let result = with_pause_handler_async(Some(handler), async {
+///     // pause_for_user() calls will use this handler
+///     some_async_function().await
+/// }).await;
+/// ```
+pub async fn with_pause_handler_async<F, T>(handler: Option<PauseHandler>, f: F) -> T
+where
+    F: std::future::Future<Output = T>,
+{
+    PAUSE_HANDLER.scope(handler, f).await
 }
 
 /// Pause tool execution and wait for user response.
 ///
 /// This function BLOCKS until the user responds (Enter/Y/N/Esc).
 ///
-/// If no handler is registered (e.g., running in headless mode or tests),
-/// returns `PauseResponse::Resumed` immediately (no-op).
+/// If no handler is registered (e.g., running outside a scope, in headless
+/// mode, or in tests without a handler), returns `PauseResponse::Resumed`
+/// immediately (no-op).
 ///
 /// # Returns
 ///
@@ -138,22 +167,20 @@ pub fn set_pause_handler(handler: Option<PauseHandler>) {
 /// - `Denied` - User pressed N (Confirm pause)
 /// - `Interrupted` - User pressed Esc
 pub fn pause_for_user(request: PauseRequest) -> PauseResponse {
-    PAUSE_HANDLER.with(|h| {
-        let handler = h.borrow();
-        if let Some(handler) = handler.as_ref() {
-            handler(request)
-        } else {
-            // No handler = auto-resume (headless mode, tests, etc.)
+    match PAUSE_HANDLER.try_with(|h| h.clone()) {
+        Ok(Some(handler)) => handler(request),
+        Ok(None) | Err(_) => {
+            // No handler = auto-resume (headless mode, tests, outside scope, etc.)
             PauseResponse::Resumed
         }
-    })
+    }
 }
 
 /// Check if a pause handler is currently registered.
 ///
 /// Useful for tools to skip pause-related setup if no UI is attached.
 pub fn has_pause_handler() -> bool {
-    PAUSE_HANDLER.with(|h| h.borrow().is_some())
+    matches!(PAUSE_HANDLER.try_with(|h| h.is_some()), Ok(true))
 }
 
 #[cfg(test)]
@@ -193,95 +220,121 @@ mod tests {
 
     #[test]
     fn test_no_handler_returns_resumed() {
-        // Clear any existing handler
-        set_pause_handler(None);
-        
+        // Outside any scope - should return Resumed immediately
         let response = pause_for_user(PauseRequest {
             kind: PauseKind::Continue,
             tool_name: "Test".to_string(),
             message: "Test".to_string(),
             details: None,
         });
-        
         assert_eq!(response, PauseResponse::Resumed);
     }
 
     #[test]
-    fn test_has_pause_handler() {
-        set_pause_handler(None);
-        assert!(!has_pause_handler());
-        
-        set_pause_handler(Some(Arc::new(|_| PauseResponse::Resumed)));
-        assert!(has_pause_handler());
-        
-        set_pause_handler(None);
+    fn test_has_pause_handler_outside_scope() {
+        // Outside any scope
         assert!(!has_pause_handler());
     }
 
     #[test]
-    fn test_handler_is_called_with_correct_request() {
+    fn test_with_pause_handler_sets_handler() {
         let called = Arc::new(AtomicBool::new(false));
         let called_clone = called.clone();
-        
-        set_pause_handler(Some(Arc::new(move |request| {
+
+        let handler: PauseHandler = Arc::new(move |_| {
             called_clone.store(true, Ordering::SeqCst);
+            PauseResponse::Resumed
+        });
+
+        with_pause_handler(Some(handler), || {
+            assert!(has_pause_handler());
+
+            let response = pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            });
+
+            assert_eq!(response, PauseResponse::Resumed);
+        });
+
+        assert!(called.load(Ordering::SeqCst));
+
+        // After scope, handler should not be available
+        assert!(!has_pause_handler());
+    }
+
+    #[test]
+    fn test_handler_receives_correct_request() {
+        let handler: PauseHandler = Arc::new(|request| {
             assert_eq!(request.kind, PauseKind::Continue);
             assert_eq!(request.tool_name, "WebSearch");
             assert_eq!(request.message, "Page loaded");
             PauseResponse::Resumed
-        })));
-        
-        let response = pause_for_user(PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
         });
-        
-        assert!(called.load(Ordering::SeqCst));
-        assert_eq!(response, PauseResponse::Resumed);
-        
-        set_pause_handler(None);
+
+        with_pause_handler(Some(handler), || {
+            pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            });
+        });
     }
 
     #[test]
     fn test_handler_can_return_different_responses() {
         // Test Approved
-        set_pause_handler(Some(Arc::new(|_| PauseResponse::Approved)));
-        assert_eq!(
+        let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
+        let response = with_pause_handler(Some(handler), || {
             pause_for_user(PauseRequest {
                 kind: PauseKind::Confirm,
                 tool_name: "Test".to_string(),
                 message: "Test".to_string(),
                 details: None,
-            }),
-            PauseResponse::Approved
-        );
-        
+            })
+        });
+        assert_eq!(response, PauseResponse::Approved);
+
         // Test Denied
-        set_pause_handler(Some(Arc::new(|_| PauseResponse::Denied)));
-        assert_eq!(
+        let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
+        let response = with_pause_handler(Some(handler), || {
             pause_for_user(PauseRequest {
                 kind: PauseKind::Confirm,
                 tool_name: "Test".to_string(),
                 message: "Test".to_string(),
                 details: None,
-            }),
-            PauseResponse::Denied
-        );
-        
+            })
+        });
+        assert_eq!(response, PauseResponse::Denied);
+
         // Test Interrupted
-        set_pause_handler(Some(Arc::new(|_| PauseResponse::Interrupted)));
-        assert_eq!(
+        let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
+        let response = with_pause_handler(Some(handler), || {
             pause_for_user(PauseRequest {
                 kind: PauseKind::Continue,
                 tool_name: "Test".to_string(),
                 message: "Test".to_string(),
                 details: None,
-            }),
-            PauseResponse::Interrupted
-        );
-        
-        set_pause_handler(None);
+            })
+        });
+        assert_eq!(response, PauseResponse::Interrupted);
+    }
+
+    #[test]
+    fn test_none_handler_in_scope() {
+        // Explicitly passing None handler
+        let response = with_pause_handler(None, || {
+            assert!(!has_pause_handler());
+            pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "Test".to_string(),
+                message: "Test".to_string(),
+                details: None,
+            })
+        });
+        assert_eq!(response, PauseResponse::Resumed);
     }
 }

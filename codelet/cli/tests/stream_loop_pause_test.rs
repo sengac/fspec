@@ -2,19 +2,16 @@
 //! PAUSE-001: Stream Loop Pause Handler Integration Tests
 //!
 //! These tests verify that run_agent_stream correctly integrates with the
-//! pause handler mechanism:
+//! pause handler mechanism using task-local storage via with_pause_handler().
 //!
-//! 1. set_pause_handler is called before running the agent
+//! Key behaviors tested:
+//! 1. with_pause_handler() scopes the handler for the duration of the closure
 //! 2. The handler captures session context for per-session isolation
-//! 3. set_pause_handler(None) is called after agent completion
+//! 3. Concurrent tasks have isolated handlers (task-local storage)
 //! 4. The handler correctly sets session pause state and waits for response
-//!
-//! IMPORTANT: pause_for_user uses thread_local! storage, meaning handlers
-//! are per-thread. Tests that spawn threads must set the handler IN the
-//! spawned thread, not the main thread.
 
 use codelet_tools::tool_pause::{
-    has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
+    has_pause_handler, pause_for_user, with_pause_handler, PauseHandler, PauseKind, PauseRequest,
     PauseResponse, PauseState,
 };
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
@@ -106,43 +103,25 @@ impl MockSession {
 // Feature: Stream Loop Pause Handler Integration
 // =============================================================================
 
-/// @scenario: Stream loop sets pause handler before running agent
-/// @step: Given a session is about to run an agent
-/// @step: When the stream loop sets up the pause handler
-/// @step: Then has_pause_handler should return true
-/// @step: And the handler should capture the session context
+/// @scenario: with_pause_handler scopes handler for the duration of the closure
+/// @step: Given no handler is active outside the scope
+/// @step: When we enter with_pause_handler scope
+/// @step: Then has_pause_handler should return true inside the scope
+/// @step: And has_pause_handler should return false after the scope
 #[test]
-fn test_stream_loop_sets_pause_handler() {
-    // Clear any existing handler
-    set_pause_handler(None);
+fn test_with_pause_handler_scopes_correctly() {
+    // Outside scope - no handler
     assert!(!has_pause_handler());
     
-    // Simulate stream loop setting handler with session context
     let session = Arc::new(MockSession::new("test-session"));
     let handler = session.create_pause_handler();
-    set_pause_handler(Some(handler));
     
-    // Verify handler is set
-    assert!(has_pause_handler());
+    // Inside scope - handler active
+    with_pause_handler(Some(handler), || {
+        assert!(has_pause_handler());
+    });
     
-    // Clean up
-    set_pause_handler(None);
-}
-
-/// @scenario: Stream loop clears pause handler after agent completion
-/// @step: Given an agent has completed execution
-/// @step: When the stream loop cleans up
-/// @step: Then has_pause_handler should return false
-#[test]
-fn test_stream_loop_clears_pause_handler_after_completion() {
-    let session = Arc::new(MockSession::new("test-session"));
-    let handler = session.create_pause_handler();
-    set_pause_handler(Some(handler));
-    assert!(has_pause_handler());
-    
-    // Simulate stream loop cleanup after agent completion
-    set_pause_handler(None);
-    
+    // After scope - handler gone
     assert!(!has_pause_handler());
 }
 
@@ -152,9 +131,6 @@ fn test_stream_loop_clears_pause_handler_after_completion() {
 /// @step: Then the session status should be "paused"
 /// @step: And the session pause_state should contain the request details
 /// @step: And the tool should block until TypeScript responds
-///
-/// NOTE: This test spawns a thread that sets its own handler because
-/// thread_local! storage is per-thread.
 #[test]
 fn test_pause_handler_sets_session_state_and_blocks() {
     use std::thread;
@@ -163,23 +139,20 @@ fn test_pause_handler_sets_session_state_and_blocks() {
     let session = Arc::new(MockSession::new("test-session"));
     session.set_status(STATUS_RUNNING);
     
-    // Spawn thread simulating tool calling pause_for_user
-    // The thread must set its own handler (thread_local!)
+    // Spawn thread simulating tool execution with scoped handler
     let session_clone = Arc::clone(&session);
     let tool_thread = thread::spawn(move || {
-        // Set handler IN THIS THREAD (thread_local!)
         let handler = session_clone.create_pause_handler();
-        set_pause_handler(Some(handler));
         
-        let response = pause_for_user(PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded at https://example.com".to_string(),
-            details: None,
-        });
-        
-        set_pause_handler(None);
-        response
+        // with_pause_handler scopes the handler
+        with_pause_handler(Some(handler), || {
+            pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded at https://example.com".to_string(),
+                details: None,
+            })
+        })
     });
     
     // Give tool time to enter pause
@@ -221,23 +194,20 @@ fn test_pause_handler_is_per_session() {
     session_a.set_status(STATUS_RUNNING);
     session_b.set_status(STATUS_RUNNING);
     
-    // Spawn thread for session A's tool (sets its own handler)
+    // Spawn thread for session A's tool with scoped handler
     let session_a_clone = Arc::clone(&session_a);
     let session_a_clone2 = Arc::clone(&session_a);
     let tool_thread = thread::spawn(move || {
-        // Set handler for session A IN THIS THREAD
         let handler = session_a_clone.create_pause_handler();
-        set_pause_handler(Some(handler));
         
-        let response = pause_for_user(PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Session A page".to_string(),
-            details: None,
-        });
-        
-        set_pause_handler(None);
-        response
+        with_pause_handler(Some(handler), || {
+            pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Session A page".to_string(),
+                details: None,
+            })
+        })
     });
     
     // Give time for pause
@@ -276,17 +246,15 @@ fn test_confirm_pause_responses() {
         let session_clone2 = Arc::clone(&session);
         let tool_thread = thread::spawn(move || {
             let handler = session_clone.create_pause_handler();
-            set_pause_handler(Some(handler));
             
-            let response = pause_for_user(PauseRequest {
-                kind: PauseKind::Confirm,
-                tool_name: "Bash".to_string(),
-                message: "Confirm command".to_string(),
-                details: Some("rm -rf /tmp/*".to_string()),
-            });
-            
-            set_pause_handler(None);
-            response
+            with_pause_handler(Some(handler), || {
+                pause_for_user(PauseRequest {
+                    kind: PauseKind::Confirm,
+                    tool_name: "Bash".to_string(),
+                    message: "Confirm command".to_string(),
+                    details: Some("rm -rf /tmp/*".to_string()),
+                })
+            })
         });
         
         thread::sleep(Duration::from_millis(50));
@@ -311,17 +279,15 @@ fn test_confirm_pause_responses() {
         let session_clone2 = Arc::clone(&session);
         let tool_thread = thread::spawn(move || {
             let handler = session_clone.create_pause_handler();
-            set_pause_handler(Some(handler));
             
-            let response = pause_for_user(PauseRequest {
-                kind: PauseKind::Confirm,
-                tool_name: "Bash".to_string(),
-                message: "Confirm command".to_string(),
-                details: None,
-            });
-            
-            set_pause_handler(None);
-            response
+            with_pause_handler(Some(handler), || {
+                pause_for_user(PauseRequest {
+                    kind: PauseKind::Confirm,
+                    tool_name: "Bash".to_string(),
+                    message: "Confirm command".to_string(),
+                    details: None,
+                })
+            })
         });
         
         thread::sleep(Duration::from_millis(50));
@@ -349,17 +315,15 @@ fn test_interrupted_response() {
     let session_clone2 = Arc::clone(&session);
     let tool_thread = thread::spawn(move || {
         let handler = session_clone.create_pause_handler();
-        set_pause_handler(Some(handler));
         
-        let response = pause_for_user(PauseRequest {
-            kind: PauseKind::Continue,
-            tool_name: "WebSearch".to_string(),
-            message: "Page loaded".to_string(),
-            details: None,
-        });
-        
-        set_pause_handler(None);
-        response
+        with_pause_handler(Some(handler), || {
+            pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: "Page loaded".to_string(),
+                details: None,
+            })
+        })
     });
     
     thread::sleep(Duration::from_millis(50));
@@ -370,49 +334,42 @@ fn test_interrupted_response() {
     assert_eq!(response, PauseResponse::Interrupted);
 }
 
-/// @scenario: Thread-local handler isolation between concurrent tasks
+/// @scenario: Task-local handler isolation between concurrent threads
 /// @step: Given multiple threads running concurrently
-/// @step: When each thread sets its own pause handler
+/// @step: When each thread uses with_pause_handler with its own handler
 /// @step: Then each thread's handler is isolated
-///
-/// Note: This tests the thread_local! mechanism works correctly for
-/// per-task isolation (each Tokio task runs on a thread pool)
 #[test]
-fn test_thread_local_handler_isolation() {
+fn test_task_local_handler_isolation() {
     use std::thread;
     
-    // Clear global handler (main thread)
-    set_pause_handler(None);
-    
-    // Spawn multiple threads, each with its own handler
+    // Spawn multiple threads, each with its own scoped handler
     let handles: Vec<_> = (0..5)
         .map(|i| {
             thread::spawn(move || {
-                // Each thread sets its own handler IN ITS THREAD
                 let called = Arc::new(AtomicBool::new(false));
                 let called_clone = called.clone();
                 let expected_tool = format!("Tool{i}");
                 let expected_tool_clone = expected_tool.clone();
                 
-                set_pause_handler(Some(Arc::new(move |request: PauseRequest| {
+                let handler: PauseHandler = Arc::new(move |request: PauseRequest| {
                     called_clone.store(true, Ordering::SeqCst);
                     assert_eq!(request.tool_name, expected_tool_clone);
                     PauseResponse::Resumed
-                })));
+                });
                 
-                // Call pause_for_user - should use THIS thread's handler
-                let response = pause_for_user(PauseRequest {
-                    kind: PauseKind::Continue,
-                    tool_name: expected_tool,
-                    message: format!("Message {i}"),
-                    details: None,
+                // Use with_pause_handler to scope the handler
+                let response = with_pause_handler(Some(handler), || {
+                    pause_for_user(PauseRequest {
+                        kind: PauseKind::Continue,
+                        tool_name: expected_tool,
+                        message: format!("Message {i}"),
+                        details: None,
+                    })
                 });
                 
                 // Verify own handler was called
                 assert!(called.load(Ordering::SeqCst));
                 assert_eq!(response, PauseResponse::Resumed);
-                
-                set_pause_handler(None);
                 i
             })
         })
@@ -425,13 +382,12 @@ fn test_thread_local_handler_isolation() {
 }
 
 /// @scenario: No handler returns Resumed immediately (headless mode)
-/// @step: Given no pause handler is registered
+/// @step: Given no pause handler is registered (outside any scope)
 /// @step: When a tool calls pause_for_user
 /// @step: Then it should return Resumed immediately without blocking
 #[test]
 fn test_no_handler_auto_resumes() {
-    set_pause_handler(None);
-    
+    // Outside any scope - no handler
     let response = pause_for_user(PauseRequest {
         kind: PauseKind::Continue,
         tool_name: "WebSearch".to_string(),
@@ -440,5 +396,24 @@ fn test_no_handler_auto_resumes() {
     });
     
     // No handler = auto-resume (useful for headless mode / tests)
+    assert_eq!(response, PauseResponse::Resumed);
+}
+
+/// @scenario: None handler in scope also auto-resumes
+/// @step: Given with_pause_handler is called with None
+/// @step: When a tool calls pause_for_user
+/// @step: Then it should return Resumed immediately
+#[test]
+fn test_none_handler_auto_resumes() {
+    let response = with_pause_handler(None, || {
+        assert!(!has_pause_handler());
+        pause_for_user(PauseRequest {
+            kind: PauseKind::Continue,
+            tool_name: "WebSearch".to_string(),
+            message: "Should auto-resume with None handler".to_string(),
+            details: None,
+        })
+    });
+    
     assert_eq!(response, PauseResponse::Resumed);
 }
