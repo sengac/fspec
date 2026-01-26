@@ -1586,7 +1586,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         sessionSetPendingInput(currentSessionId, inputValue);
       } catch {
         // Session may not exist, ignore
-        logger.debug(`TUI-051: Failed to save pending input for session ${currentSessionId}`);
       }
     }
   }, [currentSessionId, inputValue]);
@@ -4024,7 +4023,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         setInputValue(pendingInput || '');
       } catch (err) {
         // Session may not have pending input, ignore
-        logger.debug(`TUI-052: No pending input to restore for session ${sessionId}`);
       }
 
       return true;
