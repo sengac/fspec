@@ -23,14 +23,25 @@ pub enum InternalWebSearchParams {
     /// Perform a web search with the given query
     Search { query: String },
     /// Open and fetch content from a URL
-    OpenPage { url: String },
+    OpenPage {
+        url: String,
+        /// If true, runs Chrome in headless mode (no visible UI). If false, shows the browser window.
+        headless: bool,
+    },
     /// Find a pattern within a page's content
-    FindInPage { url: String, pattern: String },
+    FindInPage {
+        url: String,
+        pattern: String,
+        /// If true, runs Chrome in headless mode (no visible UI). If false, shows the browser window.
+        headless: bool,
+    },
     /// Capture a screenshot of a web page
     CaptureScreenshot {
         url: String,
         output_path: Option<String>,
         full_page: bool,
+        /// If true, runs Chrome in headless mode (no visible UI). If false, shows the browser window.
+        headless: bool,
     },
 }
 

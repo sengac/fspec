@@ -201,6 +201,7 @@ fn test_web_search_action_capture_screenshot_variant() {
         url: Some("https://example.com".to_string()),
         output_path: None,
         full_page: Some(true),
+        headless: true,
     };
 
     // @step Then the action should serialize correctly

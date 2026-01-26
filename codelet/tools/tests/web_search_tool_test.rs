@@ -40,6 +40,7 @@ async fn test_agent_fetches_page_content() -> Result<()> {
     let page_request = codelet_tools::web_search::WebSearchRequest {
         action: WebSearchAction::OpenPage {
             url: Some("https://example.com".to_string()),
+            headless: true,
         },
     };
 
@@ -65,6 +66,7 @@ async fn test_agent_searches_within_page_content() -> Result<()> {
         action: WebSearchAction::FindInPage {
             url: Some("https://example.com".to_string()),
             pattern: Some("contact".to_string()),
+            headless: true,
         },
     };
 

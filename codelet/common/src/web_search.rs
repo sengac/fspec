@@ -14,12 +14,16 @@ pub enum WebSearchAction {
     OpenPage {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         url: Option<String>,
+        #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
+        headless: bool,
     },
     FindInPage {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         url: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         pattern: Option<String>,
+        #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
+        headless: bool,
     },
     CaptureScreenshot {
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -28,6 +32,8 @@ pub enum WebSearchAction {
         output_path: Option<String>,
         #[serde(default, skip_serializing_if = "Option::is_none")]
         full_page: Option<bool>,
+        #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
+        headless: bool,
     },
 
     #[serde(other)]
@@ -44,4 +50,14 @@ pub struct WebSearchBeginEvent {
 pub struct WebSearchEndEvent {
     pub call_id: String,
     pub query: String,
+}
+
+/// Default value for headless parameter (true)
+fn default_headless() -> bool {
+    true
+}
+
+/// Check if headless is the default value (for serialization skipping)
+fn is_default_headless(headless: &bool) -> bool {
+    *headless
 }
