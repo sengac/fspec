@@ -45,6 +45,11 @@ export interface ConversationInputAreaProps {
   isPaused?: boolean;
   /** PAUSE-001: Information about the current pause state */
   pauseInfo?: PauseInfo;
+  /**
+   * TUI-050: When true, Enter key propagates to view-level handler.
+   * Used when slash command palette is visible to let it handle Enter.
+   */
+  suppressEnter?: boolean;
 }
 
 /**
@@ -69,6 +74,7 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
   promptColor = 'green',
   isPaused = false,
   pauseInfo,
+  suppressEnter = false,
 }) => {
   return (
     <Box
@@ -94,6 +100,7 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
           skipAnimation={skipAnimation}
           isPaused={isPaused}
           pauseInfo={pauseInfo}
+          suppressEnter={suppressEnter}
         />
       </Box>
     </Box>

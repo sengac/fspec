@@ -205,13 +205,15 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
     handler: (input, key) => {
       // VIEWNV-001: Skip input handling when create dialog is showing
       if (showCreateSessionDialog) return false;
-      if (isLoading) return false;
 
       // TUI-050: Slash command palette keyboard handling
-      // The hook handles all the complexity internally and returns true if it handled the input
+      // Handle BEFORE isLoading check - user should be able to navigate/select commands while loading
       if (slashCommand.handleInput(input, key)) {
         return true;
       }
+
+      // Skip most input handling while loading (but slash commands are allowed above)
+      if (isLoading) return false;
 
       // VIEWNV-001: Shift+Left/Right for session navigation
       // Handle escape sequences first (some terminals), then Ink key detection
@@ -527,7 +529,8 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
             ? '↑↓ Navigate | Enter Discuss | Tab/Esc Exit Select'
             : "Type a message... ('←/→' pane | 'Shift+←/→' sessions | 'Tab' select | 'Esc' cancel)"
         }
-        isActive={!isLoading && !showCreateSessionDialog && !slashCommand.isVisible}
+        isActive={!isLoading && !showCreateSessionDialog}
+        suppressEnter={slashCommand.isVisible}
       />
 
       {/* TUI-050: Slash command autocomplete palette */}
