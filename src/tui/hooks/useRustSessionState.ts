@@ -33,6 +33,7 @@ import {
   DEFAULT_TOKENS,
   type RustStateSource,
 } from './rustStateSource';
+import { logger } from '../../utils/logger';
 
 // Re-exports for backwards compatibility
 export type { PauseInfo } from '../types/pause';

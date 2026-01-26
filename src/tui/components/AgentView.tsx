@@ -1330,7 +1330,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const displayIsLoading = rustSnapshot.isLoading;
   const rustTokens = rustSnapshot.tokens;
   const displayIsDebugEnabled = rustSnapshot.isDebugEnabled || isDebugEnabled;
-  // PAUSE-001: Extract pause state from Rust snapshot
   const displayIsPaused = rustSnapshot.isPaused;
   const displayPauseInfo = rustSnapshot.pauseInfo;
 

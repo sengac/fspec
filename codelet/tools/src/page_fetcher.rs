@@ -281,6 +281,15 @@ impl PageFetcher {
         Ok(content)
     }
 
+    /// Extract content from an already-navigated tab
+    /// 
+    /// Unlike `fetch`, this does NOT create or cleanup the tab - the caller
+    /// is responsible for tab lifecycle. This is useful when you need to
+    /// keep the tab open after extraction (e.g., for pause/user interaction).
+    pub fn fetch_from_tab(&self, tab: &Arc<Tab>, url: &str) -> Result<PageContent, ChromeError> {
+        self.extract_content(tab, url)
+    }
+
     /// Extract content from a loaded page
     fn extract_content(&self, tab: &Arc<Tab>, url: &str) -> Result<PageContent, ChromeError> {
         // Get main content
