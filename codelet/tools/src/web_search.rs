@@ -451,25 +451,15 @@ impl Tool for WebSearchTool {
                         message: "URL is required".to_string(),
                     });
                 }
-                // Rule: pause: true auto-implies headless: false
                 let effective_headless = if *pause { false } else { *headless };
-                match fetch_page_content(url, effective_headless) {
-                    Ok(content) => {
-                        // If pause is requested, call pause_for_user
-                        if *pause {
-                            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-                            let response = pause_for_user(PauseRequest {
-                                kind: PauseKind::Continue,
-                                tool_name: "WebSearch".to_string(),
-                                message: format!("Page loaded: {url}"),
-                                details: None,
+                
+                match fetch_page_content(url, effective_headless, *pause) {
+                    Ok((content, was_interrupted)) => {
+                        if was_interrupted {
+                            return Err(ToolError::Execution {
+                                tool: "web_search",
+                                message: "Operation interrupted by user".to_string(),
                             });
-                            if response == PauseResponse::Interrupted {
-                                return Err(ToolError::Execution {
-                                    tool: "web_search",
-                                    message: "Operation interrupted by user".to_string(),
-                                });
-                            }
                         }
                         (true, format!("Page content from {url}:\n{content}"))
                     }
@@ -491,25 +481,15 @@ impl Tool for WebSearchTool {
                         message: "Pattern is required for find_in_page".to_string(),
                     });
                 }
-                // Rule: pause: true auto-implies headless: false
                 let effective_headless = if *pause { false } else { *headless };
-                match find_pattern_in_page(url, pattern, effective_headless) {
-                    Ok(found) => {
-                        // If pause is requested, call pause_for_user
-                        if *pause {
-                            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-                            let response = pause_for_user(PauseRequest {
-                                kind: PauseKind::Continue,
-                                tool_name: "WebSearch".to_string(),
-                                message: format!("Pattern search complete on: {url}"),
-                                details: None,
+                
+                match find_pattern_in_page(url, pattern, effective_headless, *pause) {
+                    Ok((found, was_interrupted)) => {
+                        if was_interrupted {
+                            return Err(ToolError::Execution {
+                                tool: "web_search",
+                                message: "Operation interrupted by user".to_string(),
                             });
-                            if response == PauseResponse::Interrupted {
-                                return Err(ToolError::Execution {
-                                    tool: "web_search",
-                                    message: "Operation interrupted by user".to_string(),
-                                });
-                            }
                         }
                         (
                             true,
@@ -534,29 +514,18 @@ impl Tool for WebSearchTool {
                     });
                 }
                 let full_page = full_page.unwrap_or(false);
-                // Rule: pause: true auto-implies headless: false
                 let effective_headless = if *pause { false } else { *headless };
                 
-                // If pause is requested, we need to pause BEFORE taking screenshot
-                // so user can interact with the page first
-                if *pause {
-                    use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
-                    let response = pause_for_user(PauseRequest {
-                        kind: PauseKind::Continue,
-                        tool_name: "WebSearch".to_string(),
-                        message: format!("Page loaded at {url}. Interact with the page, then press Enter to capture screenshot."),
-                        details: None,
-                    });
-                    if response == PauseResponse::Interrupted {
-                        return Err(ToolError::Execution {
-                            tool: "web_search",
-                            message: "Operation interrupted by user".to_string(),
-                        });
+                match capture_page_screenshot(url, output_path.clone(), full_page, effective_headless, *pause) {
+                    Ok((file_path, was_interrupted)) => {
+                        if was_interrupted {
+                            return Err(ToolError::Execution {
+                                tool: "web_search",
+                                message: "Operation interrupted by user".to_string(),
+                            });
+                        }
+                        (true, format!("Screenshot saved to: {file_path}"))
                     }
-                }
-                
-                match capture_page_screenshot(url, output_path.clone(), full_page, effective_headless) {
-                    Ok(file_path) => (true, format!("Screenshot saved to: {file_path}")),
                     Err(e) => return Err(e.into()),
                 }
             }
@@ -619,12 +588,40 @@ fn perform_web_search(query: &str) -> Result<String, ChromeError> {
     })
 }
 
-/// Fetch content from a web page using Chrome
-fn fetch_page_content(url: &str, headless: bool) -> Result<String, ChromeError> {
+/// Fetch content from a web page, with optional pause for user interaction
+fn fetch_page_content(url: &str, headless: bool, pause: bool) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
     with_browser_mode(headless, |browser| {
+        let tab = browser.new_tab()?;
+        
+        if let Err(e) = browser.navigate_and_wait(&tab, &url) {
+            browser.cleanup_tab(&tab);
+            return Err(e);
+        }
+        
         let page_fetcher = PageFetcher::new(Arc::clone(&browser));
-        let content = page_fetcher.fetch(&url)?;
+        let content = match page_fetcher.fetch_from_tab(&tab, &url) {
+            Ok(c) => c,
+            Err(e) => {
+                browser.cleanup_tab(&tab);
+                return Err(e);
+            }
+        };
+        
+        let was_interrupted = if pause {
+            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
+            let response = pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: format!("Page loaded: {url}"),
+                details: None,
+            });
+            response == PauseResponse::Interrupted
+        } else {
+            false
+        };
+        
+        browser.cleanup_tab(&tab);
 
         let mut output = Vec::new();
 
@@ -652,8 +649,6 @@ fn fetch_page_content(url: &str, headless: bool) -> Result<String, ChromeError> 
         }
 
         let raw_output = output.join("\n");
-
-        // Apply truncation to prevent oversized output (page content can be large)
         let lines = process_output_lines(&raw_output);
         let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
         let mut final_output = truncate_result.output;
@@ -668,65 +663,154 @@ fn fetch_page_content(url: &str, headless: bool) -> Result<String, ChromeError> 
             final_output.push_str(&warning);
         }
 
-        Ok(final_output)
+        Ok((final_output, was_interrupted))
     })
 }
 
-/// Capture a screenshot of a web page using Chrome
+/// Capture a screenshot with optional pause for user interaction
 fn capture_page_screenshot(
     url: &str,
     output_path: Option<String>,
     full_page: bool,
     headless: bool,
-) -> Result<String, ChromeError> {
+    pause: bool,
+) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
     with_browser_mode(headless, |browser| {
         let tab = browser.new_tab()?;
-        browser.navigate_and_wait(&tab, &url)?;
-        let file_path = browser.capture_screenshot(&tab, output_path.clone(), full_page)?;
+        
+        if let Err(e) = browser.navigate_and_wait(&tab, &url) {
+            browser.cleanup_tab(&tab);
+            return Err(e);
+        }
+        
+        let was_interrupted = if pause {
+            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
+            let response = pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: format!("Page loaded at {url}. Interact with the page, then press Enter to capture screenshot."),
+                details: None,
+            });
+            response == PauseResponse::Interrupted
+        } else {
+            false
+        };
+        
+        if was_interrupted {
+            browser.cleanup_tab(&tab);
+            return Ok((String::new(), true));
+        }
+        
+        let file_path = match browser.capture_screenshot(&tab, output_path.clone(), full_page) {
+            Ok(path) => path,
+            Err(e) => {
+                browser.cleanup_tab(&tab);
+                return Err(e);
+            }
+        };
+        
         browser.cleanup_tab(&tab);
-        Ok(file_path)
+        Ok((file_path, false))
     })
 }
 
-/// Find a pattern in a web page using Chrome
-fn find_pattern_in_page(url: &str, pattern: &str, headless: bool) -> Result<String, ChromeError> {
+/// Find a pattern in a web page with optional pause for user inspection
+fn find_pattern_in_page(url: &str, pattern: &str, headless: bool, pause: bool) -> Result<(String, bool), ChromeError> {
     let url = url.to_string();
     let pattern = pattern.to_string();
     with_browser_mode(headless, |browser| {
+        let tab = browser.new_tab()?;
+        
+        if let Err(e) = browser.navigate_and_wait(&tab, &url) {
+            browser.cleanup_tab(&tab);
+            return Err(e);
+        }
+        
         let page_fetcher = PageFetcher::new(Arc::clone(&browser));
-        let matches = page_fetcher.find_in_page(&url, &pattern)?;
+        let content = match page_fetcher.fetch_from_tab(&tab, &url) {
+            Ok(c) => c,
+            Err(e) => {
+                browser.cleanup_tab(&tab);
+                return Err(e);
+            }
+        };
+        
+        let matches = find_matches_in_content(&content.main_content, &pattern);
+        
+        let result_output = if matches.is_empty() {
+            format!("Pattern '{pattern}' not found on page")
+        } else {
+            let mut output = Vec::new();
+            output.push(format!("Found {} matches:", matches.len()));
 
-        if matches.is_empty() {
-            return Ok(format!("Pattern '{pattern}' not found on page"));
-        }
+            for (i, context) in matches.iter().enumerate() {
+                output.push(format!("{}. ...{}...", i + 1, context));
+            }
 
-        let mut output = Vec::new();
-        output.push(format!("Found {} matches:", matches.len()));
+            let raw_output = output.join("\n");
+            let lines = process_output_lines(&raw_output);
+            let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
+            let mut final_output = truncate_result.output;
 
-        for (i, context) in matches.iter().enumerate() {
-            output.push(format!("{}. ...{}...", i + 1, context));
-        }
+            if truncate_result.char_truncated || truncate_result.remaining_count > 0 {
+                let warning = format_truncation_warning(
+                    truncate_result.remaining_count,
+                    "lines",
+                    truncate_result.char_truncated,
+                    OutputLimits::MAX_OUTPUT_CHARS,
+                );
+                final_output.push_str(&warning);
+            }
+            
+            final_output
+        };
+        
+        let was_interrupted = if pause {
+            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
+            let response = pause_for_user(PauseRequest {
+                kind: PauseKind::Continue,
+                tool_name: "WebSearch".to_string(),
+                message: format!("Pattern search complete on: {url}"),
+                details: None,
+            });
+            response == PauseResponse::Interrupted
+        } else {
+            false
+        };
 
-        let raw_output = output.join("\n");
-
-        // Apply truncation to prevent oversized output
-        let lines = process_output_lines(&raw_output);
-        let truncate_result = truncate_output(&lines, OutputLimits::MAX_OUTPUT_CHARS);
-        let mut final_output = truncate_result.output;
-
-        if truncate_result.char_truncated || truncate_result.remaining_count > 0 {
-            let warning = format_truncation_warning(
-                truncate_result.remaining_count,
-                "lines",
-                truncate_result.char_truncated,
-                OutputLimits::MAX_OUTPUT_CHARS,
-            );
-            final_output.push_str(&warning);
-        }
-
-        Ok(final_output)
+        browser.cleanup_tab(&tab);
+        Ok((result_output, was_interrupted))
     })
+}
+
+/// Helper function to find pattern matches in content text
+fn find_matches_in_content(content: &str, pattern: &str) -> Vec<String> {
+    let pattern_lower = pattern.to_lowercase();
+    let content_lower = content.to_lowercase();
+    let mut matches = Vec::new();
+    
+    let context_chars = 50;
+    let mut search_start = 0;
+    
+    while let Some(pos) = content_lower[search_start..].find(&pattern_lower) {
+        let absolute_pos = search_start + pos;
+        let start = absolute_pos.saturating_sub(context_chars);
+        let end = (absolute_pos + pattern.len() + context_chars).min(content.len());
+        
+        // Get the context string from original content (preserving case)
+        let context = &content[start..end];
+        matches.push(context.to_string());
+        
+        search_start = absolute_pos + pattern.len();
+        
+        // Limit matches to prevent huge output
+        if matches.len() >= 20 {
+            break;
+        }
+    }
+    
+    matches
 }
 
 #[cfg(test)]

@@ -185,8 +185,10 @@ describe('PAUSE-001 End-to-End Integration Tests', () => {
         expect(output).toContain('Thinking...');
       });
 
-      it('should not show pause indicator when isLoading is false', () => {
-        // Edge case: isPaused true but isLoading false (shouldn't happen, but test defensive code)
+      it('should show pause indicator when isPaused is true regardless of isLoading', () => {
+        // PAUSE-001: When status='paused', isPaused=true and isLoading=false
+        // (status can only be one value: 'running' OR 'paused', not both)
+        // So pause indicator should show when isPaused=true, regardless of isLoading
         const { lastFrame } = render(
           <InputTransition
             {...defaultProps}
@@ -200,14 +202,10 @@ describe('PAUSE-001 End-to-End Integration Tests', () => {
           />
         );
 
-        // Fast-forward through animation
-        for (let i = 0; i < 100; i++) {
-          vi.advanceTimersByTime(20);
-        }
-
         const output = lastFrame();
-        // Should show input, not pause indicator
-        expect(output).toContain('Type a message...');
+        // Should show pause indicator (isPaused=true with pauseInfo)
+        expect(output).toContain('⏸ WebSearch');
+        expect(output).toContain('Page loaded');
       });
     });
   });

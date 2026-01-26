@@ -23,6 +23,7 @@ import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput.js';
 import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants.js';
 import type { PauseInfo } from '../types/pause.js';
 import { useInputCompat, InputPriority } from '../input/index.js';
+import { logger } from '../../utils/logger.js';
 
 // Re-export PauseInfo for backwards compatibility with existing imports
 export type { PauseInfo } from '../types/pause';
@@ -129,9 +130,10 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   }, [skipAnimation, animationPhase]);
 
   // Track loading state changes to trigger animation
+  // PAUSE-001: Don't trigger hiding animation when entering paused state
   useEffect(() => {
-    if (wasLoadingRef.current && !isLoading) {
-      // Loading just finished
+    if (wasLoadingRef.current && !isLoading && !isPaused) {
+      // Loading just finished (and NOT entering pause state)
       if (skipAnimation) {
         // TUI-049: Skip animation when switching sessions - go straight to complete
         setAnimationPhase('complete');
@@ -144,14 +146,14 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
         setPendingInput('');
       }
     } else if (!wasLoadingRef.current && isLoading) {
-      // Loading just started
+      // Loading just started (or resuming from pause)
       setAnimationPhase('loading');
       setVisibleChars(0);
       setCapturedText('');
       setPendingInput('');
     }
     wasLoadingRef.current = isLoading;
-  }, [isLoading, currentThinkingText, skipAnimation]);
+  }, [isLoading, isPaused, currentThinkingText, skipAnimation]);
 
   // Handle keyboard input during animation to interrupt it
   const isAnimating = animationPhase === 'hiding' || animationPhase === 'showing';
@@ -248,8 +250,8 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
 
   // Render based on current state
   
-  // PAUSE-001: Show pause indicator when paused
-  if (isPaused && pauseInfo && isLoading) {
+  // Show pause indicator when paused
+  if (isPaused && pauseInfo) {
     if (pauseInfo.kind === 'confirm') {
       // Confirm pause: show warning with Y/N options
       return (
