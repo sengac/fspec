@@ -1234,6 +1234,16 @@ export declare function sessionSendInput(
   thinkingConfig?: string | undefined | null
 ): void;
 
+/**
+ * Explicitly set the active session for navigation.
+ *
+ * Use this when switching to a session that was already attached via session_subscribe,
+ * or when you need to update navigation state without re-attaching.
+ *
+ * VIEWNV-001: This allows TypeScript to explicitly control the navigation state.
+ */
+export declare function sessionSetActive(sessionId: string): void;
+
 /** Set debug enabled state for a background session (without toggling global state) */
 export declare function sessionSetDebugEnabled(
   sessionId: string,
@@ -1288,6 +1298,20 @@ export declare function sessionSetRole(
 ): void;
 
 /**
+ * Subscribe to a session for live streaming WITHOUT changing the active session.
+ *
+ * Use this when you want to observe a session's output (e.g., watching a parent
+ * session from a watcher view) without affecting navigation state.
+ *
+ * VIEWNV-001: This is separate from session_attach to avoid corrupting the
+ * active_session_id when subscribing to parent sessions for observation.
+ */
+export declare function sessionSubscribe(
+  sessionId: string,
+  callback: (err: Error | null, arg: StreamChunk) => any
+): void;
+
+/**
  * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
  *
  * Mirrors CodeletSession::toggle_debug() behavior but works with background sessions.
@@ -1310,6 +1334,16 @@ export interface SessionTokens {
   /** Output tokens */
   outputTokens: number;
 }
+
+/**
+ * Unsubscribe from a session WITHOUT clearing the active session.
+ *
+ * Use this to stop observing a session that was subscribed via session_subscribe.
+ *
+ * VIEWNV-001: This is separate from session_detach to avoid clearing the
+ * active_session_id when unsubscribing from parent sessions.
+ */
+export declare function sessionUnsubscribe(sessionId: string): void;
 
 /**
  * Update debug capture metadata with session info.

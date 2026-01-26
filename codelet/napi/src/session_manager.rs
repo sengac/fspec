@@ -3125,60 +3125,69 @@ impl SessionManager {
     }
     
     /// Get the next session after the active one (VIEWNV-001)
-    /// Returns None if no sessions exist or if we're at the last session
-    /// If no active session (BoardView), returns the first session
+    ///
+    /// Uses hierarchy-aware navigation:
+    /// - From board: returns first parent session
+    /// - From parent session with watchers: returns first watcher
+    /// - From parent session without watchers: returns next parent session
+    /// - From watcher: returns next sibling watcher, or next parent session
+    /// - From last item: returns None (show create dialog)
     pub fn get_next_session(&self) -> Option<String> {
+        use crate::navigation::{build_navigation_list, get_next_target, NavigationTarget};
+        
         let sessions = self.sessions.read().expect("sessions lock poisoned");
         let active = self.active_session_id.read().expect("active_session lock poisoned");
         
-        if sessions.is_empty() {
-            return None;
-        }
-        
-        match *active {
-            None => {
-                // No active session (BoardView) - return first session
-                sessions.keys().next().map(|id| id.to_string())
-            }
-            Some(active_id) => {
-                // Find current index and return next
-                let keys: Vec<&Uuid> = sessions.keys().collect();
-                let current_idx = keys.iter().position(|&&id| id == active_id);
-                
-                match current_idx {
-                    Some(idx) if idx + 1 < keys.len() => Some(keys[idx + 1].to_string()),
-                    _ => None, // At last session or not found
-                }
-            }
-        }
+        // Build the navigation list with watchers following their parents
+        let nav_list = build_navigation_list(&sessions, &self.watch_graph);
+
+        // Get the next target
+        let result = match get_next_target(&nav_list, *active) {
+            NavigationTarget::Session(id) => Some(id.to_string()),
+            NavigationTarget::CreateDialog => None,
+            NavigationTarget::Board => None, // Shouldn't happen on next
+            NavigationTarget::None => None,
+        };
+
+        result
     }
     
     /// Get the previous session before the active one (VIEWNV-001)
-    /// Returns None if no sessions exist or if we're at the first session (should go to board)
+    ///
+    /// Uses hierarchy-aware navigation:
+    /// - From board: returns None (stay on board)
+    /// - From first parent session: returns None (go to board)
+    /// - From watcher: returns prev sibling watcher, or parent session
+    /// - From parent session: returns last watcher of prev session, or prev session
     pub fn get_prev_session(&self) -> Option<String> {
+        use crate::navigation::{build_navigation_list, get_prev_target, NavigationTarget};
+        
         let sessions = self.sessions.read().expect("sessions lock poisoned");
         let active = self.active_session_id.read().expect("active_session lock poisoned");
-        
-        match *active {
-            None => None, // No active session (BoardView) - no previous
-            Some(active_id) => {
-                // Find current index and return previous
-                let keys: Vec<&Uuid> = sessions.keys().collect();
-                let current_idx = keys.iter().position(|&&id| id == active_id);
-                
-                match current_idx {
-                    Some(idx) if idx > 0 => Some(keys[idx - 1].to_string()),
-                    _ => None, // At first session or not found - should go to board
-                }
-            }
-        }
+
+        // Build the navigation list with watchers following their parents
+        let nav_list = build_navigation_list(&sessions, &self.watch_graph);
+
+        // Get the previous target
+        let result = match get_prev_target(&nav_list, *active) {
+            NavigationTarget::Session(id) => Some(id.to_string()),
+            NavigationTarget::Board => None, // Go to board
+            NavigationTarget::CreateDialog => None, // Shouldn't happen on prev
+            NavigationTarget::None => None,
+        };
+
+        result
     }
     
     /// Get the first session (VIEWNV-001)
-    /// Returns None if no sessions exist
+    /// Returns the first parent session (not a watcher)
     pub fn get_first_session(&self) -> Option<String> {
+        use crate::navigation::build_navigation_list;
+        
         let sessions = self.sessions.read().expect("sessions lock poisoned");
-        sessions.keys().next().map(|id| id.to_string())
+        let nav_list = build_navigation_list(&sessions, &self.watch_graph);
+        
+        nav_list.first().map(|id| id.to_string())
     }
     
     /// Get a session by ID
@@ -3723,6 +3732,54 @@ pub fn session_detach(session_id: String) -> Result<()> {
     Ok(())
 }
 
+/// Subscribe to a session for live streaming WITHOUT changing the active session.
+///
+/// Use this when you want to observe a session's output (e.g., watching a parent
+/// session from a watcher view) without affecting navigation state.
+///
+/// VIEWNV-001: This is separate from session_attach to avoid corrupting the
+/// active_session_id when subscribing to parent sessions for observation.
+#[napi]
+pub fn session_subscribe(session_id: String, callback: ThreadsafeFunction<StreamChunk>) -> Result<()> {
+    let manager = SessionManager::instance();
+    let session = manager.get_session(&session_id)?;
+    session.attach(callback);
+    // NOTE: Do NOT set active session here - this is just for observation
+    Ok(())
+}
+
+/// Unsubscribe from a session WITHOUT clearing the active session.
+///
+/// Use this to stop observing a session that was subscribed via session_subscribe.
+///
+/// VIEWNV-001: This is separate from session_detach to avoid clearing the
+/// active_session_id when unsubscribing from parent sessions.
+#[napi]
+pub fn session_unsubscribe(session_id: String) -> Result<()> {
+    let manager = SessionManager::instance();
+    let session = manager.get_session(&session_id)?;
+    session.detach();
+    // NOTE: Do NOT clear active session here - this is just for observation
+    Ok(())
+}
+
+/// Explicitly set the active session for navigation.
+///
+/// Use this when switching to a session that was already attached via session_subscribe,
+/// or when you need to update navigation state without re-attaching.
+///
+/// VIEWNV-001: This allows TypeScript to explicitly control the navigation state.
+#[napi]
+pub fn session_set_active(session_id: String) -> Result<()> {
+    let uuid = uuid::Uuid::parse_str(&session_id)
+        .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+    let manager = SessionManager::instance();
+    // Verify session exists
+    let _ = manager.get_session(&session_id)?;
+    manager.set_active_session(uuid);
+    Ok(())
+}
+
 /// Send input to a session with optional thinking config
 #[napi]
 pub fn session_send_input(session_id: String, input: String, thinking_config: Option<String>) -> Result<()> {
@@ -3973,7 +4030,7 @@ pub async fn session_create_watcher(
     SessionManager::instance()
         .add_watcher(parent_uuid, watcher_id)
         .map_err(Error::from_reason)?;
-    
+
     Ok(watcher_id_str)
 }
 
