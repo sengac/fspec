@@ -1,0 +1,16 @@
+{
+  "scenarios": [
+    {
+      "name": "Pause state is stored per-session not globally",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_pause_state_test.rs",
+          "lines": "81-128",
+          "implMappings": [
+            {"file": "codelet/tools/src/tool_pause.rs", "lines": [45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]}
+          ]
+        }
+      ]
+    }
+  ]
+}

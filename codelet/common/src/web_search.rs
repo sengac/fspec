@@ -16,6 +16,10 @@ pub enum WebSearchAction {
         url: Option<String>,
         #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
         headless: bool,
+        /// When true, pause after page load for user interaction before returning.
+        /// Also implies headless: false (pausing a headless browser is pointless).
+        #[serde(default, skip_serializing_if = "is_false")]
+        pause: bool,
     },
     FindInPage {
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -24,6 +28,10 @@ pub enum WebSearchAction {
         pattern: Option<String>,
         #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
         headless: bool,
+        /// When true, pause after page load for user interaction before returning.
+        /// Also implies headless: false (pausing a headless browser is pointless).
+        #[serde(default, skip_serializing_if = "is_false")]
+        pause: bool,
     },
     CaptureScreenshot {
         #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -34,6 +42,10 @@ pub enum WebSearchAction {
         full_page: Option<bool>,
         #[serde(default = "default_headless", skip_serializing_if = "is_default_headless")]
         headless: bool,
+        /// When true, pause after page load for user interaction before returning.
+        /// Also implies headless: false (pausing a headless browser is pointless).
+        #[serde(default, skip_serializing_if = "is_false")]
+        pause: bool,
     },
 
     #[serde(other)]
@@ -58,6 +70,13 @@ fn default_headless() -> bool {
 }
 
 /// Check if headless is the default value (for serialization skipping)
+#[allow(clippy::trivially_copy_pass_by_ref)]
 fn is_default_headless(headless: &bool) -> bool {
     *headless
+}
+
+/// Check if bool is false (for serialization skipping)
+#[allow(clippy::trivially_copy_pass_by_ref)]
+fn is_false(b: &bool) -> bool {
+    !*b
 }

@@ -324,6 +324,11 @@
       "prefix": "VIEWNV",
       "description": "View Navigation - Shift+Arrow navigation across TUI views and sessions",
       "createdAt": "2026-01-24T02:09:18.612Z"
+    },
+    "PAUSE": {
+      "prefix": "PAUSE",
+      "description": "Tool pause and debugging features",
+      "createdAt": "2026-01-26T04:48:43.172Z"
     }
   }
 }

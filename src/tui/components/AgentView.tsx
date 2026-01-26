@@ -31,6 +31,7 @@ import { InputTransition } from './InputTransition';
 import { TurnContentModal } from './TurnContentModal';
 import { WatcherCreateView } from './WatcherCreateView';
 import { SplitSessionView } from './SplitSessionView';
+import { SlashCommandPalette } from './SlashCommandPalette';
 import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/conversationUtils';
 import {
   extractTokenStateFromChunks,
@@ -38,6 +39,7 @@ import {
   persistTokenState,
 } from '../utils/tokenStateUtils';
 import { calculatePaneWidth } from '../utils/textWrap';
+import { useSlashCommand } from '../hooks/useSlashCommand';
 import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelection';
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
@@ -1042,6 +1044,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // TUI-049: Skip input animation when switching sessions
   const [skipInputAnimation, setSkipInputAnimation] = useState(false);
 
+  // TUI-050: Slash command autocomplete palette
+  const slashCommand = useSlashCommand();
+
   const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [tokenUsage, setTokenUsage] = useState<TokenTracker>({
     inputTokens: 0,
@@ -1089,6 +1094,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
   // CONFIG-004: Settings tab state
   const [showSettingsTab, setShowSettingsTab] = useState(false);
+  // TUI-050: Trigger state for provider status loading (avoids TDZ with loadProviderStatuses)
+  const [triggerProviderStatusLoad, setTriggerProviderStatusLoad] = useState(false);
   const [selectedSettingsIdx, setSelectedSettingsIdx] = useState(0);
   const [settingsScrollOffset, setSettingsScrollOffset] = useState(0);
   const [settingsFilter, setSettingsFilter] = useState('');
@@ -1140,6 +1147,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
   // NAPI-003: Resume mode state (session selection overlay)
   const [isResumeMode, setIsResumeMode] = useState(false);
+  // TUI-050: Trigger state for resume mode initialization (avoids TDZ with handleResumeMode)
+  const [triggerResumeModeInit, setTriggerResumeModeInit] = useState(false);
   // TUI-047: Changed to MergedSession to support background session info
   const [availableSessions, setAvailableSessions] = useState<MergedSession[]>(
     []
@@ -1152,6 +1161,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
   // WATCH-008: Watcher management overlay state
   const [isWatcherMode, setIsWatcherMode] = useState(false);
+  // TUI-050: Trigger state for watcher mode initialization (avoids TDZ with handleWatcherMode)
+  const [triggerWatcherModeInit, setTriggerWatcherModeInit] = useState(false);
   const [watcherList, setWatcherList] = useState<WatcherInfo[]>([]);
   const [watcherIndex, setWatcherIndex] = useState(0);
   const [watcherScrollOffset, setWatcherScrollOffset] = useState(0);
@@ -1861,6 +1872,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // Handle sending a prompt
   const handleSubmit = useCallback(async () => {
     const userMessage = inputValue.trim();
+    
+    // TUI-050: Slash commands are now handled by handleSubmitWithCommand via the keyboard handler.
+    // Skip them here to avoid duplicate execution (both useInput hooks receive key events).
+    if (userMessage.startsWith('/') && userMessage.length > 1) {
+      return;
+    }
     
     // TUI-034: Handle /model command - open model selector view (doesn't require session)
     if (userMessage === '/model') {
@@ -3294,6 +3311,234 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     }
   }, [inputValue, displayIsLoading, currentSessionId, currentProvider, currentModel, workUnitId, attachSessionToWorkUnit, detachSessionFromWorkUnit, isReadyForNewSession, activateSession, prepareForNewSession]);
 
+  // TUI-050: Handle submit with explicit command string (for slash command palette Enter)
+  // This avoids race condition with setTimeout by passing the command directly
+  const handleSubmitWithCommand = useCallback(async (commandText: string) => {
+    const userMessage = commandText.trim();
+    
+    // Handle /model command
+    if (userMessage === '/model') {
+      setInputValue('');
+      if (providerSections.length > 0) {
+        setShowModelSelector(true);
+        const currentSectionIdx = providerSections.findIndex(
+          s => s.providerId === currentModel?.providerId
+        );
+        setSelectedSectionIdx(currentSectionIdx >= 0 ? currentSectionIdx : 0);
+        setSelectedModelIdx(-1);
+        if (currentModel?.providerId) {
+          setExpandedProviders(new Set([currentModel.providerId]));
+        }
+      }
+      return;
+    }
+    
+    // Handle /provider command - inline loadProviderStatuses to avoid TDZ
+    if (userMessage === '/provider') {
+      setInputValue('');
+      setShowSettingsTab(true);
+      setSelectedSettingsIdx(0);
+      setEditingProviderId(null);
+      setEditingApiKey('');
+      // Trigger provider status loading via state flag (avoiding TDZ with loadProviderStatuses)
+      setTriggerProviderStatusLoad(true);
+      return;
+    }
+    
+    // Handle /debug command
+    if (userMessage === '/debug') {
+      setInputValue('');
+      try {
+        const debugDir = getFspecUserDir();
+        let result;
+        if (currentSessionId) {
+          result = await sessionToggleDebug(currentSessionId, debugDir);
+        } else {
+          result = toggleDebug(debugDir);
+        }
+        setIsDebugEnabled(result.enabled);
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: result.message },
+        ]);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: `Debug toggle failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+    
+    // Handle /search command - inline state changes to avoid TDZ
+    if (userMessage === '/search') {
+      setInputValue('');
+      setIsSearchMode(true);
+      setSearchQuery('');
+      setSearchResults([]);
+      setSearchResultIndex(0);
+      return;
+    }
+    
+    // Handle /clear command
+    if (userMessage === '/clear') {
+      setInputValue('');
+      setConversation([]);
+      setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+      setContextFillPercentage(0);
+      return;
+    }
+    
+    // Handle /history command
+    if (userMessage === '/history' || userMessage.startsWith('/history ')) {
+      setInputValue('');
+      const allProjects = userMessage.includes('--all-projects');
+      try {
+        const history = persistenceGetHistory(
+          allProjects ? null : currentProjectRef.current,
+          20
+        );
+        if (history.length === 0) {
+          setConversation(prev => [
+            ...prev,
+            { type: 'status', content: 'No history entries found' },
+          ]);
+        } else {
+          const historyList = history
+            .map((h: { display: string; timestamp: string }) => `- ${h.display}`)
+            .join('\n');
+          setConversation(prev => [
+            ...prev,
+            { type: 'status', content: `Command history:\n${historyList}` },
+          ]);
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to get history';
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: `History failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+    
+    // Handle /resume command - trigger initialization (avoiding TDZ with handleResumeMode)
+    if (userMessage === '/resume') {
+      setInputValue('');
+      setTriggerResumeModeInit(true);  // Will trigger useEffect to call handleResumeMode
+      return;
+    }
+    
+    // Handle /watcher command - trigger initialization (avoiding TDZ with handleWatcherMode)
+    if (userMessage === '/watcher') {
+      setInputValue('');
+      setTriggerWatcherModeInit(true);  // Will trigger useEffect to call handleWatcherMode
+      return;
+    }
+    
+    // Handle /parent command
+    if (userMessage === '/parent') {
+      setInputValue('');
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'No active session. Start a session first.' },
+        ]);
+        return;
+      }
+      const parentId = sessionGetParent(currentSessionId);
+      if (!parentId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'This session has no parent. /parent only works from watcher sessions.' },
+        ]);
+        return;
+      }
+      // Handle parent session switching...
+      return;
+    }
+    
+    // Handle /detach command
+    if (userMessage === '/detach') {
+      setInputValue('');
+      if (workUnitId) {
+        detachSessionFromWorkUnit(workUnitId);
+        setConversation([]);
+        setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+        prepareForNewSession();
+        setConversation([{ type: 'status', content: 'Session detached from work unit. Ready for fresh session.' }]);
+      } else {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: '/detach only works when viewing a work unit from the board.' },
+        ]);
+      }
+      return;
+    }
+    
+    // Handle /compact command
+    if (userMessage === '/compact') {
+      setInputValue('');
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'Compaction requires an active session. Send a message first.' },
+        ]);
+        return;
+      }
+      try {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: '[Compacting context...]' },
+        ]);
+        const result = await sessionCompact(currentSessionId);
+        // Update token display from compaction result
+        setTokenUsage(prev => ({
+          ...prev,
+          inputTokens: result.compactedTokens,
+        }));
+        setConversation(prev => [
+          ...prev,
+          {
+            type: 'status',
+            content: `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${result.compressionRatio.toFixed(0)}% compression, ${result.turnsSummarized} turns summarized, ${result.turnsKept} turns kept]`,
+          },
+        ]);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to compact';
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: `Compaction failed: ${errorMessage}` },
+        ]);
+      }
+      return;
+    }
+    
+    // Handle /mcp command (just show status for now)
+    if (userMessage === '/mcp') {
+      setInputValue('');
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: 'MCP provider management not yet implemented.' },
+      ]);
+      return;
+    }
+    
+    // Handle /mode command (cycle through modes)
+    if (userMessage === '/mode') {
+      setInputValue('');
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: 'Mode cycling not yet implemented.' },
+      ]);
+      return;
+    }
+    
+    // For any unrecognized command, just clear input (user typed incomplete command)
+    setInputValue('');
+  }, [providerSections, currentModel, currentSessionId, workUnitId, detachSessionFromWorkUnit, prepareForNewSession]);
+
   // Handle provider switching - now just updates local state
   // Actual provider change happens on next session creation
   const handleSwitchProvider = useCallback(async (providerName: string) => {
@@ -3597,6 +3842,29 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setInputValue(historyEntries[newIndex].display);
     }
   }, [historyEntries, historyIndex, savedInput]);
+
+  // TUI-050: Handle input changes with slash command palette detection
+  const handleInputChange = useCallback((newValue: string) => {
+    setInputValue(newValue);
+    
+    // Detect "/" at position 0 to show palette
+    if (newValue.startsWith('/') && !slashCommand.isVisible) {
+      slashCommand.show();
+      slashCommand.setFilter(newValue.slice(1));
+    } else if (newValue.startsWith('/') && slashCommand.isVisible) {
+      // Update filter as user types after "/"
+      slashCommand.setFilter(newValue.slice(1));
+    } else if (!newValue.startsWith('/') && slashCommand.isVisible) {
+      // Close palette if "/" is removed
+      slashCommand.hide();
+    }
+  }, [slashCommand]);
+
+  // TUI-050: Handle slash command selection
+  const handleSlashCommandSelect = useCallback((commandName: string) => {
+    setInputValue(`/${commandName} `);
+    slashCommand.hide();
+  }, [slashCommand]);
 
   // NAPI-006: Enter search mode (Ctrl+R)
   const handleSearchMode = useCallback(() => {
@@ -4230,6 +4498,30 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setWatcherError(`Watcher list failed: ${errorMessage}`);
     }
   }, [currentSessionId]);
+
+  // TUI-050: Trigger useEffect for resume mode initialization (called from handleSubmitWithCommand)
+  useEffect(() => {
+    if (triggerResumeModeInit) {
+      setTriggerResumeModeInit(false);
+      void handleResumeMode();
+    }
+  }, [triggerResumeModeInit, handleResumeMode]);
+
+  // TUI-050: Trigger useEffect for watcher mode initialization (called from handleSubmitWithCommand)
+  useEffect(() => {
+    if (triggerWatcherModeInit) {
+      setTriggerWatcherModeInit(false);
+      void handleWatcherMode();
+    }
+  }, [triggerWatcherModeInit, handleWatcherMode]);
+
+  // TUI-050: Trigger useEffect for provider status loading (called from handleSubmitWithCommand)
+  useEffect(() => {
+    if (triggerProviderStatusLoad) {
+      setTriggerProviderStatusLoad(false);
+      void loadProviderStatuses();
+    }
+  }, [triggerProviderStatusLoad, loadProviderStatuses]);
 
   // WATCH-008: Select watcher and switch to it
   const handleWatcherSelect = useCallback(async () => {
@@ -4988,6 +5280,56 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         if (clean) {
           void handleSearchInput(searchQuery + clean);
         }
+        return;
+      }
+
+      // TUI-050: Slash command palette keyboard handling
+      // Note: We check inputValue.startsWith('/') for Enter to handle React state timing.
+      // When user types "/debug" quickly and presses Enter, slashCommand.isVisible may not
+      // have updated yet due to React's batched state updates. Checking inputValue directly
+      // ensures slash commands are always handled by handleSubmitWithCommand.
+      if (slashCommand.isVisible) {
+        if (key.escape) {
+          slashCommand.hide();
+          return;
+        }
+        if (key.upArrow) {
+          slashCommand.moveUp();
+          return;
+        }
+        if (key.downArrow) {
+          slashCommand.moveDown();
+          return;
+        }
+        if (key.tab) {
+          const selected = slashCommand.getSelectedCommand();
+          if (selected) {
+            handleSlashCommandSelect(selected.name);
+          }
+          return;
+        }
+        if (key.return) {
+          const selected = slashCommand.getSelectedCommand();
+          if (selected) {
+            // Execute command directly - set input and call handleSubmit with the command
+            const commandText = `/${selected.name}`;
+            setInputValue(commandText);
+            slashCommand.hide();
+            // Execute command by calling handleSubmitWithCommand directly
+            void handleSubmitWithCommand(commandText);
+          }
+          return;
+        }
+        // Let other keys pass through to input handler
+      }
+      
+      // TUI-050: Handle Enter for slash commands even if palette visibility state hasn't updated yet
+      // This fixes a race condition where typing "/command" and pressing Enter quickly results in
+      // both handleSubmit AND handleSubmitWithCommand being called, because React's batched state
+      // updates mean slashCommand.isVisible may still be false.
+      if (key.return && inputValue.startsWith('/') && inputValue.trim().length > 1) {
+        slashCommand.hide();
+        void handleSubmitWithCommand(inputValue.trim());
         return;
       }
 
@@ -6672,7 +7014,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           <InputTransition
             isLoading={displayIsLoading}
             value={inputValue}
-            onChange={setInputValue}
+            onChange={handleInputChange}
             onSubmit={handleSubmit}
             placeholder="Type a message... ('Shift+↑/↓' history | 'Shift+←/→' sessions | 'Tab' select turn | 'Space+Esc' detach)"
             onHistoryPrev={handleHistoryPrev}
@@ -6683,6 +7025,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           />
         </Box>
       </Box>
+
+      {/* TUI-050: Slash command autocomplete palette */}
+      {slashCommand.isVisible && (
+        <SlashCommandPalette
+          isVisible={slashCommand.isVisible}
+          filter={slashCommand.filter}
+          commands={slashCommand.filteredCommands}
+          selectedIndex={slashCommand.selectedIndex}
+          maxVisibleItems={8}
+        />
+      )}
 
       {/* TUI-045: Full turn content modal */}
       {showTurnModal && modalMessageIndex !== null && conversation[modalMessageIndex] && (

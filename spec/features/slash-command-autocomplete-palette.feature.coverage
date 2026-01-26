@@ -1,0 +1,419 @@
+{
+  "scenarios": [
+    {
+      "name": "Show palette when typing slash at start of input",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/slash-command-palette.test.tsx",
+          "lines": "22-43",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useSlashCommand.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Filter commands by prefix matching",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/slash-command-palette.test.tsx",
+          "lines": "45-76",
+          "implMappings": [
+            {
+              "file": "src/tui/utils/slashCommands.ts",
+              "lines": [
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate through command list with arrow keys",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/slash-command-palette.test.tsx",
+          "lines": "78-97",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useSlashCommand.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accept selected command with Tab key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/slash-command-palette.test.tsx",
+          "lines": "99-120",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5027,
+                5028,
+                5029,
+                5030,
+                5031,
+                5032,
+                5033,
+                5034,
+                5035,
+                5036,
+                5037
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Close palette with Escape key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/slash-command-palette.test.tsx",
+          "lines": "122-140",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5020,
+                5021,
+                5022,
+                5023,
+                5024
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show no matching commands message",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/slash-command-palette.test.tsx",
+          "lines": "142-161",
+          "implMappings": [
+            {
+              "file": "src/tui/components/SlashCommandPalette.tsx",
+              "lines": [
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Close palette when deleting slash character",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/slash-command-palette.test.tsx",
+          "lines": "163-182",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3608,
+                3609,
+                3610,
+                3611,
+                3612,
+                3613,
+                3614,
+                3615,
+                3616,
+                3617,
+                3618,
+                3619,
+                3620
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Execute command immediately with Enter key",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/slash-command-palette.test.tsx",
+          "lines": "184-213",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                5039,
+                5040,
+                5041,
+                5042,
+                5043,
+                5044,
+                5045,
+                5046,
+                5047,
+                5048,
+                5049,
+                5050,
+                5051,
+                5052,
+                5053,
+                5054
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/slash-command-palette.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/hooks/useSlashCommand.ts",
+      "src/tui/utils/slashCommands.ts",
+      "src/tui/components/AgentView.tsx",
+      "src/tui/components/SlashCommandPalette.tsx"
+    ],
+    "totalLinesCovered": 457
+  }
+}

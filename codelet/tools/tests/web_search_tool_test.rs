@@ -41,6 +41,7 @@ async fn test_agent_fetches_page_content() -> Result<()> {
         action: WebSearchAction::OpenPage {
             url: Some("https://example.com".to_string()),
             headless: true,
+            pause: false,
         },
     };
 
@@ -67,6 +68,7 @@ async fn test_agent_searches_within_page_content() -> Result<()> {
             url: Some("https://example.com".to_string()),
             pattern: Some("contact".to_string()),
             headless: true,
+            pause: false,
         },
     };
 

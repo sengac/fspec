@@ -69,7 +69,7 @@ static BROWSER_HEADLESS: Mutex<bool> = Mutex::new(true);
 fn create_browser_with_headless(headless: bool) -> Result<Arc<ChromeBrowser>, ChromeError> {
     let config = ChromeConfig::default();
     // Override headless setting from config with requested value
-    let mut launch_config = config.clone();
+    let mut launch_config = config;
     launch_config.headless = headless;
 
     let browser = ChromeBrowser::new(launch_config)?;
@@ -443,7 +443,7 @@ impl Tool for WebSearchTool {
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::OpenPage { url, headless } => {
+            WebSearchAction::OpenPage { url, headless, pause } => {
                 let url = url.as_deref().unwrap_or("");
                 if url.is_empty() {
                     return Err(ToolError::Validation {
@@ -451,12 +451,32 @@ impl Tool for WebSearchTool {
                         message: "URL is required".to_string(),
                     });
                 }
-                match fetch_page_content(url, *headless) {
-                    Ok(content) => (true, format!("Page content from {url}:\n{content}")),
+                // Rule: pause: true auto-implies headless: false
+                let effective_headless = if *pause { false } else { *headless };
+                match fetch_page_content(url, effective_headless) {
+                    Ok(content) => {
+                        // If pause is requested, call pause_for_user
+                        if *pause {
+                            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
+                            let response = pause_for_user(PauseRequest {
+                                kind: PauseKind::Continue,
+                                tool_name: "WebSearch".to_string(),
+                                message: format!("Page loaded: {url}"),
+                                details: None,
+                            });
+                            if response == PauseResponse::Interrupted {
+                                return Err(ToolError::Execution {
+                                    tool: "web_search",
+                                    message: "Operation interrupted by user".to_string(),
+                                });
+                            }
+                        }
+                        (true, format!("Page content from {url}:\n{content}"))
+                    }
                     Err(e) => return Err(e.into()),
                 }
             }
-            WebSearchAction::FindInPage { url, pattern, headless } => {
+            WebSearchAction::FindInPage { url, pattern, headless, pause } => {
                 let url = url.as_deref().unwrap_or("");
                 let pattern = pattern.as_deref().unwrap_or("");
                 if url.is_empty() {
@@ -471,11 +491,31 @@ impl Tool for WebSearchTool {
                         message: "Pattern is required for find_in_page".to_string(),
                     });
                 }
-                match find_pattern_in_page(url, pattern, *headless) {
-                    Ok(found) => (
-                        true,
-                        format!("Pattern '{pattern}' search results in {url}:\n{found}"),
-                    ),
+                // Rule: pause: true auto-implies headless: false
+                let effective_headless = if *pause { false } else { *headless };
+                match find_pattern_in_page(url, pattern, effective_headless) {
+                    Ok(found) => {
+                        // If pause is requested, call pause_for_user
+                        if *pause {
+                            use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
+                            let response = pause_for_user(PauseRequest {
+                                kind: PauseKind::Continue,
+                                tool_name: "WebSearch".to_string(),
+                                message: format!("Pattern search complete on: {url}"),
+                                details: None,
+                            });
+                            if response == PauseResponse::Interrupted {
+                                return Err(ToolError::Execution {
+                                    tool: "web_search",
+                                    message: "Operation interrupted by user".to_string(),
+                                });
+                            }
+                        }
+                        (
+                            true,
+                            format!("Pattern '{pattern}' search results in {url}:\n{found}"),
+                        )
+                    }
                     Err(e) => return Err(e.into()),
                 }
             }
@@ -484,6 +524,7 @@ impl Tool for WebSearchTool {
                 output_path,
                 full_page,
                 headless,
+                pause,
             } => {
                 let url = url.as_deref().unwrap_or("");
                 if url.is_empty() {
@@ -493,7 +534,28 @@ impl Tool for WebSearchTool {
                     });
                 }
                 let full_page = full_page.unwrap_or(false);
-                match capture_page_screenshot(url, output_path.clone(), full_page, *headless) {
+                // Rule: pause: true auto-implies headless: false
+                let effective_headless = if *pause { false } else { *headless };
+                
+                // If pause is requested, we need to pause BEFORE taking screenshot
+                // so user can interact with the page first
+                if *pause {
+                    use crate::tool_pause::{pause_for_user, PauseKind, PauseRequest, PauseResponse};
+                    let response = pause_for_user(PauseRequest {
+                        kind: PauseKind::Continue,
+                        tool_name: "WebSearch".to_string(),
+                        message: format!("Page loaded at {url}. Interact with the page, then press Enter to capture screenshot."),
+                        details: None,
+                    });
+                    if response == PauseResponse::Interrupted {
+                        return Err(ToolError::Execution {
+                            tool: "web_search",
+                            message: "Operation interrupted by user".to_string(),
+                        });
+                    }
+                }
+                
+                match capture_page_screenshot(url, output_path.clone(), full_page, effective_headless) {
                     Ok(file_path) => (true, format!("Screenshot saved to: {file_path}")),
                     Err(e) => return Err(e.into()),
                 }

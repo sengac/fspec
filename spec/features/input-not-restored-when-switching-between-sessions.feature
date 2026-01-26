@@ -41,5 +41,5 @@ Feature: Input not restored when switching between sessions
     And the user has typed "Goodbye" in Session B's AgentView input area
     When the user presses Shift+Right to switch to Session B
     Then Session B's AgentView input area should display "Goodbye"
-    And the user presses Shift+Left to return to Session A
-    And Session A's AgentView input area should display "Hello world"
+    When the user presses Shift+Left to return to Session A
+    Then Session A's AgentView input area should display "Hello world"

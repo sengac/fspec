@@ -154,6 +154,7 @@ Tags that categorize features by functional area.
 | `@operations` | General operations |
 | `@orchestration` | Command orchestration features that coordinate multiple operations |
 | `@parent-child` | Parent-child work unit relationships |
+| `@pause-integration` | Tool pause mechanism integration with sessions and TUI |
 | `@prediction` | Prediction operations |
 | `@prefix-epic` | Prefix and epic management |
 | `@prefixes` | Work unit ID prefix management |
@@ -812,7 +813,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-22T23:45:13.736Z_
+_Last updated: 2026-01-26T06:40:05.907Z_
 
 **Update Command**: `fspec tag-stats`
 

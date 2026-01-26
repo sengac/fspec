@@ -12,6 +12,7 @@ use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
 };
 use codelet_tools::{clear_bash_abort, request_bash_abort};
+use codelet_tools::tool_pause::{PauseKind, PauseResponse, PauseState};
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use std::collections::HashMap;
@@ -40,6 +41,8 @@ pub enum SessionStatus {
     Idle = 0,
     Running = 1,
     Interrupted = 2,
+    /// PAUSE-001: Session is paused waiting for user input (Enter/Y/N/Esc)
+    Paused = 3,
 }
 
 /// Role authority level for watcher sessions (WATCH-004)
@@ -642,6 +645,7 @@ impl From<u8> for SessionStatus {
             0 => SessionStatus::Idle,
             1 => SessionStatus::Running,
             2 => SessionStatus::Interrupted,
+            3 => SessionStatus::Paused,
             _ => SessionStatus::Idle,
         }
     }
@@ -654,6 +658,7 @@ impl SessionStatus {
             SessionStatus::Idle => "idle",
             SessionStatus::Running => "running",
             SessionStatus::Interrupted => "interrupted",
+            SessionStatus::Paused => "paused",
         }
     }
 }
@@ -691,6 +696,34 @@ pub struct SessionTokens {
     pub input_tokens: u32,
     /// Output tokens
     pub output_tokens: u32,
+}
+
+/// PAUSE-001: Pause state returned to TypeScript via NAPI
+#[napi(object)]
+#[derive(Clone)]
+pub struct NapiPauseState {
+    /// "continue" or "confirm"
+    pub kind: String,
+    /// Tool name that initiated the pause (e.g., "WebSearch")
+    pub tool_name: String,
+    /// Human-readable message (e.g., "Page loaded at https://...")
+    pub message: String,
+    /// Optional additional details (e.g., command text for confirm)
+    pub details: Option<String>,
+}
+
+impl From<PauseState> for NapiPauseState {
+    fn from(state: PauseState) -> Self {
+        Self {
+            kind: match state.kind {
+                PauseKind::Continue => "continue".to_string(),
+                PauseKind::Confirm => "confirm".to_string(),
+            },
+            tool_name: state.tool_name,
+            message: state.message,
+            details: state.details,
+        }
+    }
 }
 
 /// Background session that runs agent in a tokio task.
@@ -763,6 +796,13 @@ pub struct BackgroundSession {
     /// of the parent chunks that triggered the evaluation. handle_output then
     /// tags output chunks with these IDs until cleared.
     pending_observed_correlation_ids: RwLock<Vec<String>>,
+
+    /// PAUSE-001: Current pause state (None when not paused)
+    pause_state: RwLock<Option<PauseState>>,
+
+    /// PAUSE-001: Channel to send pause response from TypeScript back to the blocking tool
+    pause_response_tx: std::sync::mpsc::Sender<PauseResponse>,
+    pause_response_rx: std::sync::Mutex<std::sync::mpsc::Receiver<PauseResponse>>,
 }
 
 impl BackgroundSession {
@@ -778,6 +818,9 @@ impl BackgroundSession {
     ) -> Self {
         // Create watcher input channel (WATCH-006)
         let (watcher_input_tx, watcher_input_rx) = mpsc::channel::<WatcherInput>(16);
+
+        // PAUSE-001: Create pause response channel (std::sync for blocking receive)
+        let (pause_response_tx, pause_response_rx) = std::sync::mpsc::channel::<PauseResponse>();
 
         Self {
             id,
@@ -803,6 +846,9 @@ impl BackgroundSession {
             watcher_input_rx: Mutex::new(watcher_input_rx),
             correlation_counter: AtomicU64::new(0),
             pending_observed_correlation_ids: RwLock::new(Vec::new()),
+            pause_state: RwLock::new(None),
+            pause_response_tx,
+            pause_response_rx: std::sync::Mutex::new(pause_response_rx),
         }
     }
 
@@ -949,6 +995,68 @@ impl BackgroundSession {
     /// Returns the session to a regular (non-watcher) state.
     pub fn clear_role(&self) {
         *self.role.write().expect("role lock poisoned") = None;
+    }
+
+    // =========================================================================
+    // PAUSE-001: Pause state methods
+    // =========================================================================
+
+    /// Get the current pause state (PAUSE-001)
+    ///
+    /// Returns None if session is not paused, Some(PauseState) if paused.
+    pub fn get_pause_state(&self) -> Option<PauseState> {
+        self.pause_state.read().expect("pause_state lock poisoned").clone()
+    }
+
+    /// Set the pause state (PAUSE-001)
+    ///
+    /// Called by the pause handler when a tool requests a pause.
+    /// Also sets status to Paused.
+    pub fn set_pause_state(&self, state: Option<PauseState>) {
+        let is_paused = state.is_some();
+        *self.pause_state.write().expect("pause_state lock poisoned") = state;
+        if is_paused {
+            self.set_status(SessionStatus::Paused);
+        }
+    }
+
+    /// Clear pause state (PAUSE-001)
+    ///
+    /// Called when resuming from pause. Sets status back to Running.
+    pub fn clear_pause_state(&self) {
+        *self.pause_state.write().expect("pause_state lock poisoned") = None;
+        self.set_status(SessionStatus::Running);
+    }
+
+    /// Wait for pause response (PAUSE-001) - BLOCKS until TypeScript sends response
+    ///
+    /// Called by the pause handler to block until the UI sends a response.
+    pub fn wait_for_pause_response(&self) -> PauseResponse {
+        let rx = self.pause_response_rx.lock().expect("pause_response_rx lock poisoned");
+        // Block until we receive a response
+        rx.recv().unwrap_or(PauseResponse::Interrupted)
+    }
+
+    /// Send pause response (PAUSE-001)
+    ///
+    /// Called by NAPI functions (sessionPauseResume, sessionPauseConfirm) when
+    /// TypeScript sends the user's response.
+    ///
+    /// Order is critical: Send response FIRST to unblock the waiting tool,
+    /// THEN clear pause state. This prevents a race condition where TypeScript
+    /// might poll status and see "running" before the tool has received its response.
+    pub fn send_pause_response(&self, response: PauseResponse) {
+        // Send response first to unblock the waiting tool
+        let _ = self.pause_response_tx.send(response);
+        // Then clear pause state (tool is already unblocked and will continue)
+        self.clear_pause_state();
+    }
+
+    /// Get pause response sender clone (PAUSE-001)
+    ///
+    /// Used by stream loop to create pause handler with session context.
+    pub fn get_pause_response_tx(&self) -> std::sync::mpsc::Sender<PauseResponse> {
+        self.pause_response_tx.clone()
     }
 
     /// Set pending observed correlation IDs (WATCH-011)
@@ -3801,6 +3909,45 @@ pub fn session_get_status(session_id: String) -> Result<String> {
     let session = SessionManager::instance().get_session(&session_id)?;
     let status = session.get_status();
     Ok(status.as_str().to_string())
+}
+
+// === PAUSE-001: Session pause NAPI functions ===
+
+/// Get pause state for a session (PAUSE-001)
+///
+/// Returns the current pause state if the session is paused, null otherwise.
+/// TypeScript uses this to display pause UI (tool name, message, kind).
+#[napi]
+pub fn session_get_pause_state(session_id: String) -> Result<Option<NapiPauseState>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    Ok(session.get_pause_state().map(|s| s.into()))
+}
+
+/// Resume a paused session (PAUSE-001)
+///
+/// Called when user presses Enter during a Continue pause.
+/// Sends Resumed response to unblock the waiting tool.
+#[napi]
+pub fn session_pause_resume(session_id: String) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.send_pause_response(PauseResponse::Resumed);
+    Ok(())
+}
+
+/// Confirm or deny a paused session (PAUSE-001)
+///
+/// Called when user presses Y (approved=true) or N (approved=false) during a Confirm pause.
+/// Sends Approved or Denied response to unblock the waiting tool.
+#[napi]
+pub fn session_pause_confirm(session_id: String, approved: bool) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let response = if approved {
+        PauseResponse::Approved
+    } else {
+        PauseResponse::Denied
+    };
+    session.send_pause_response(response);
+    Ok(())
 }
 
 // === VIEWNV-001: Session navigation NAPI functions ===

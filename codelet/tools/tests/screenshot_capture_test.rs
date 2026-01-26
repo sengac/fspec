@@ -202,6 +202,7 @@ fn test_web_search_action_capture_screenshot_variant() {
         output_path: None,
         full_page: Some(true),
         headless: true,
+        pause: false,
     };
 
     // @step Then the action should serialize correctly

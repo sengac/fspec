@@ -11,6 +11,10 @@
 import React from 'react';
 import { Box, Text } from 'ink';
 import { InputTransition } from './InputTransition';
+import type { PauseInfo } from '../types/pause';
+
+// Re-export for convenience
+export type { PauseInfo } from '../types/pause';
 
 export interface ConversationInputAreaProps {
   /** Current input value */
@@ -41,6 +45,10 @@ export interface ConversationInputAreaProps {
   promptChar?: string;
   /** Prompt color (default: "green") */
   promptColor?: string;
+  /** PAUSE-001: Whether the session is currently paused */
+  isPaused?: boolean;
+  /** PAUSE-001: Information about the current pause state */
+  pauseInfo?: PauseInfo;
 }
 
 /**
@@ -65,6 +73,8 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
   maxVisibleLines = 5,
   promptChar = '> ',
   promptColor = 'green',
+  isPaused = false,
+  pauseInfo,
 }) => {
   return (
     <Box
@@ -90,6 +100,8 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
           maxVisibleLines={maxVisibleLines}
           isActive={isActive}
           skipAnimation={skipAnimation}
+          isPaused={isPaused}
+          pauseInfo={pauseInfo}
         />
       </Box>
     </Box>

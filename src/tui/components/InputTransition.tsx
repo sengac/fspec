@@ -20,8 +20,12 @@ import { Text, useInput } from 'ink';
 import { useThinkingText } from './ThinkingIndicator';
 import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
 import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants';
+import type { PauseInfo } from '../types/pause';
 
-type AnimationPhase = 'loading' | 'hiding' | 'showing' | 'complete';
+// Re-export PauseInfo for backwards compatibility with existing imports
+export type { PauseInfo } from '../types/pause';
+
+type AnimationPhase = 'loading' | 'paused' | 'hiding' | 'showing' | 'complete';
 
 export interface InputTransitionProps extends MultiLineInputProps {
   /**
@@ -46,6 +50,18 @@ export interface InputTransitionProps extends MultiLineInputProps {
    * Useful when switching sessions where animation would be jarring
    */
   skipAnimation?: boolean;
+
+  /**
+   * Whether the session is currently paused (tool pause feature)
+   * When true, shows pause indicator instead of thinking spinner
+   */
+  isPaused?: boolean;
+
+  /**
+   * Information about the current pause state
+   * Only used when isPaused is true
+   */
+  pauseInfo?: PauseInfo;
 }
 
 /**
@@ -76,6 +92,8 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   maxVisibleLines = 5,
   isActive = true,
   skipAnimation = false,
+  isPaused = false,
+  pauseInfo,
 }) => {
   // All useState hooks grouped together
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>(
@@ -209,6 +227,44 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   }, [animationPhase, visibleChars, placeholder.length]);
 
   // Render based on current state
+  
+  // PAUSE-001: Show pause indicator when paused
+  if (isPaused && pauseInfo && isLoading) {
+    if (pauseInfo.kind === 'confirm') {
+      // Confirm pause: show warning with Y/N options
+      return (
+        <Text>
+          <Text color="yellow">⏸ {pauseInfo.toolName}</Text>
+          <Text>: </Text>
+          <Text color="yellow">{pauseInfo.message}</Text>
+          {pauseInfo.details && (
+            <Text>
+              {'\n'}
+              <Text dimColor>  {pauseInfo.details}</Text>
+            </Text>
+          )}
+          <Text>
+            {'\n'}
+            <Text color="green">[Y] Approve</Text>
+            <Text> </Text>
+            <Text color="red">[N] Deny</Text>
+            <Text dimColor> (Esc to cancel)</Text>
+          </Text>
+        </Text>
+      );
+    } else {
+      // Continue pause: show pause indicator with Enter hint
+      return (
+        <Text>
+          <Text color="cyan">⏸ {pauseInfo.toolName}</Text>
+          <Text>: </Text>
+          <Text>{pauseInfo.message}</Text>
+          <Text dimColor> (Press Enter to continue)</Text>
+        </Text>
+      );
+    }
+  }
+  
   if (animationPhase === 'loading') {
     // Show the live thinking text (stays in sync with the hook)
     return <Text dimColor>{currentThinkingText}</Text>;
