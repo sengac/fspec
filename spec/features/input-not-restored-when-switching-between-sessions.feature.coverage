@@ -1,0 +1,117 @@
+{
+  "scenarios": [
+    {
+      "name": "Pending input is preserved when switching between sessions with Shift+Right/Left",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/session-switching-input-persistence.test.ts",
+          "lines": "33-78",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4041,
+                4042,
+                4043,
+                4044,
+                4045,
+                4046,
+                4047,
+                4048,
+                4049,
+                4050,
+                4051,
+                4052,
+                4053,
+                4054,
+                4055,
+                4056,
+                4057,
+                4058,
+                4059,
+                4060,
+                4061,
+                4062
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Empty input is correctly set when switching to session with no pending input",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/session-switching-input-persistence.test.ts",
+          "lines": "83-119",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4020,
+                4021,
+                4022,
+                4023,
+                4024,
+                4025,
+                4026,
+                4027,
+                4028
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Different pending inputs are preserved for each session",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/session-switching-input-persistence.test.ts",
+          "lines": "124-170",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4041,
+                4042,
+                4043,
+                4044,
+                4045,
+                4046,
+                4047,
+                4048,
+                4049,
+                4050,
+                4051,
+                4052,
+                4053,
+                4054,
+                4055,
+                4056,
+                4057,
+                4058,
+                4059,
+                4060,
+                4061,
+                4062
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/session-switching-input-persistence.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 183
+  }
+}

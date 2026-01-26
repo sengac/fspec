@@ -1579,6 +1579,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     }
   }, [settingsFilter]);
 
+  // TUI-051: Sync input to Rust on every change (real-time persistence)
+  useEffect(() => {
+    if (currentSessionId && inputValue !== undefined) {
+      try {
+        sessionSetPendingInput(currentSessionId, inputValue);
+      } catch {
+        // Session may not exist, ignore
+        logger.debug(`TUI-051: Failed to save pending input for session ${currentSessionId}`);
+      }
+    }
+  }, [currentSessionId, inputValue]);
+
   // Enable mouse tracking for model selector and settings tab scrolling
   useEffect(() => {
     if (showModelSelector || showSettingsTab || isResumeMode) {
@@ -4005,6 +4017,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // Update session state (atomic transition via store)
       activateSession(sessionId);
 
+      // TUI-052: Restore pending input if available
+      try {
+        const pendingInput = sessionGetPendingInput(sessionId);
+        // Always restore input (even if empty) to avoid showing wrong session's input
+        setInputValue(pendingInput || '');
+      } catch (err) {
+        // Session may not have pending input, ignore
+        logger.debug(`TUI-052: No pending input to restore for session ${sessionId}`);
+      }
+
       return true;
     } catch (err) {
       logger.error(`SESS-001: Failed to resume session: ${err instanceof Error ? err.message : String(err)}`);
@@ -4018,8 +4040,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const sessionNavigation = useSessionNavigation({
     onNavigate: async (targetSessionId: string) => {
       // Switch to the target session using existing resumeSessionById
-      // Save pending input to current session before switching
-      if (currentSessionId && inputValue) {
+      // TUI-053: ALWAYS save pending input before switching (even if empty)
+      // This prevents showing wrong session's input after switching
+      if (currentSessionId) {
         try {
           sessionSetPendingInput(currentSessionId, inputValue);
         } catch {

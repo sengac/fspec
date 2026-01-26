@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-25T00:07:28.033Z"
+    "lastUpdated": "2026-01-26T01:27:52.387Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -66838,6 +66838,171 @@
           "timestamp": "2026-01-25T00:17:54.266Z"
         }
       ]
+    },
+    "TUI-051": {
+      "id": "TUI-051",
+      "title": "Input state not restored when navigating from BoardView to AgentView",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-01-26T00:31:30.059Z",
+      "updatedAt": "2026-01-26T01:05:43.731Z",
+      "children": [],
+      "description": "When navigating from BoardView to AgentView using Shift+Right, the saved input message content stored in Rust (via sessionSetPendingInput) is not restored back into the input area. Additionally, the input state in Rust should update on every keypress, not just when switching between screens.",
+      "userStory": {
+        "role": "user navigating between BoardView and AgentView",
+        "action": "switch from BoardView to AgentView using Shift+Right",
+        "benefit": "my pending input is preserved and restored when I return to the session"
+      },
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-26T00:31:45.999Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-26T00:35:23.195Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-26T00:43:30.140Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-26T00:44:01.463Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-26T00:44:20.446Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-26T01:01:23.056Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-26T01:04:29.817Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-26T01:05:43.731Z"
+        }
+      ],
+      "rules": [
+        {
+          "id": 0,
+          "text": "When navigating from BoardView to AgentView using Shift+Right, the AgentView must restore any pending input stored in Rust via sessionGetPendingInput",
+          "deleted": false,
+          "createdAt": "2026-01-26T00:31:49.424Z"
+        },
+        {
+          "id": 1,
+          "text": "The input state in Rust should be updated on every keypress via sessionSetPendingInput, not just when switching between screens",
+          "deleted": false,
+          "createdAt": "2026-01-26T00:31:51.573Z"
+        }
+      ],
+      "nextRuleId": 2,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types 'Hello world' in AgentView, presses Shift+Left to go to BoardView, then presses Shift+Right to return to AgentView, and the input still shows 'Hello world'",
+          "deleted": false,
+          "createdAt": "2026-01-26T00:31:54.357Z"
+        },
+        {
+          "id": 1,
+          "text": "User types 'Testing 1 2 3' character by character in AgentView, and the input state is synced to Rust after each keystroke via sessionSetPendingInput",
+          "deleted": false,
+          "createdAt": "2026-01-26T00:31:56.896Z"
+        }
+      ],
+      "nextExampleId": 2,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2026-01-26T01:05:43.731Z"
+    },
+    "TUI-053": {
+      "id": "TUI-053",
+      "title": "Input not restored when switching between sessions",
+      "type": "bug",
+      "status": "done",
+      "createdAt": "2026-01-26T01:08:20.235Z",
+      "updatedAt": "2026-01-26T01:27:52.418Z",
+      "children": [],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-26T01:08:27.746Z"
+        },
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-26T01:10:56.387Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-26T01:13:31.869Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-26T01:17:00.068Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-26T01:20:22.969Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-26T01:27:52.418Z"
+        }
+      ],
+      "userStory": {
+        "role": "user switching between AgentView sessions",
+        "action": "navigate between sessions with Shift+Right/Left",
+        "benefit": "pending input is preserved and restored for each session"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "When navigating between sessions with Shift+Right/Left, the resumeSessionById function must restore the correct pending input for each session",
+          "deleted": false,
+          "createdAt": "2026-01-26T01:08:36.971Z"
+        },
+        {
+          "id": 1,
+          "text": "The resumeSessionById function must always call setInputValue with the pending input (or empty string) even if no pending input exists for a session",
+          "deleted": false,
+          "createdAt": "2026-01-26T01:08:40.028Z"
+        },
+        {
+          "id": 2,
+          "text": "The sessionNavigation onNavigate callback must save pending input before switching, even if the input is empty",
+          "deleted": false,
+          "createdAt": "2026-01-26T01:12:05.634Z"
+        },
+        {
+          "id": 3,
+          "text": "The sessionNavigation onNavigate callback must perform operations in this order: 1) save pending input to current session, 2) detach from current session, 3) resume target session which will restore its pending input",
+          "deleted": false,
+          "createdAt": "2026-01-26T01:12:09.332Z"
+        }
+      ],
+      "nextRuleId": 4,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types \"Hello world\" in Session A, presses Shift+Right to switch to Session B, then presses Shift+Left to return to Session A, and Session A's input still shows \"Hello world\"",
+          "deleted": false,
+          "createdAt": "2026-01-26T01:08:50.361Z"
+        }
+      ],
+      "nextExampleId": 1,
+      "questions": [],
+      "architectureNotes": [],
+      "nextQuestionId": 0,
+      "nextNoteId": 0,
+      "updated": "2026-01-26T01:27:52.418Z"
     }
   },
   "states": {
@@ -66918,6 +67083,8 @@
     ],
     "validating": [],
     "done": [
+      "TUI-053",
+      "TUI-051",
       "VIEWNV-001",
       "WATCH-023",
       "LOG-003",
@@ -67413,7 +67580,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 50,
+    "TUI": 53,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

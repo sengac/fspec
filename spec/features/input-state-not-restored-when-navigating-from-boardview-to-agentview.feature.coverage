@@ -1,0 +1,95 @@
+{
+  "scenarios": [
+    {
+      "name": "Pending input is restored when returning from BoardView to AgentView",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/agentview-input-state-persistence.test.ts",
+          "lines": "29-50",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4020,
+                4021,
+                4022,
+                4023,
+                4024,
+                4025,
+                4026,
+                4027,
+                4028,
+                4029
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Input state is synced to Rust on every keypress",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/agentview-input-state-persistence.test.ts",
+          "lines": "52-75",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                1582,
+                1583,
+                1584,
+                1585,
+                1586,
+                1587,
+                1588,
+                1589,
+                1590,
+                1591,
+                1592
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pending input is preserved when switching between sessions with Shift+Right/Left",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/agentview-input-state-persistence.test.ts",
+          "lines": "92-116",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                4020,
+                4021,
+                4022,
+                4023,
+                4024,
+                4025,
+                4026,
+                4027,
+                4028,
+                4029
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/agentview-input-state-persistence.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 102
+  }
+}
