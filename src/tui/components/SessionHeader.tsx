@@ -76,6 +76,8 @@ export interface SessionHeaderProps {
   watcherInfo?: WatcherHeaderInfo;
   /** Session number (1-based index in session list) - helps identify session when switching */
   sessionNumber?: number;
+  /** Work unit ID attached to this session (e.g., "TEST-001") */
+  workUnitId?: string;
 }
 
 /**
@@ -114,6 +116,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   compactionReduction = null,
   watcherInfo,
   sessionNumber,
+  workUnitId,
 }) => {
   const { inputTokens, outputTokens } = getMaxTokens(tokenUsage, rustTokens);
 
@@ -144,7 +147,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
           )}
           {/* Agent label and model - show session number if available */}
           <Text color="cyan" bold>
-            Agent{sessionNumber !== undefined ? ` #${sessionNumber}` : ''}: {modelId}
+            Agent{sessionNumber !== undefined ? ` #${sessionNumber}` : ''}{workUnitId ? ` (${workUnitId})` : ''}: {modelId}
           </Text>
           {/* Reasoning badge - magenta */}
           {hasReasoning && <Text color="magenta"> [R]</Text>}
