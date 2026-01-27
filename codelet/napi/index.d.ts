@@ -527,13 +527,15 @@ export interface GlobResult {
  * # Arguments
  * * `pattern` - Glob pattern like "src/*.ts" or "**\/component*"
  * * `path` - Optional directory to search in (defaults to current directory)
+ * * `case_insensitive` - Optional case-insensitive matching (defaults to false)
  *
  * # Returns
  * GlobResult with matching file paths or error message
  */
 export declare function globSearch(
   pattern: string,
-  path?: string | undefined | null
+  path?: string | undefined | null,
+  caseInsensitive?: boolean | undefined | null
 ): Promise<GlobResult>;
 
 /**

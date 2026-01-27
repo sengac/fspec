@@ -497,7 +497,7 @@ impl Tool for SearchToolFacadeWrapper {
             }
             InternalSearchParams::Glob { pattern, path } => {
                 use crate::glob::GlobArgs;
-                let glob_args = GlobArgs { pattern, path };
+                let glob_args = GlobArgs { pattern, path, case_insensitive: None };
                 match self.glob_tool.call(glob_args).await {
                     Ok(output) => Ok(SearchOperationResult {
                         success: true,
