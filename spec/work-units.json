@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-27T07:18:26.117Z"
+    "lastUpdated": "2026-01-27T09:54:19.027Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -67731,9 +67731,9 @@
       "id": "TUI-055",
       "title": "File Search Popup Modal for @ Symbol Input",
       "type": "story",
-      "status": "implementing",
+      "status": "done",
       "createdAt": "2026-01-27T06:59:25.068Z",
-      "updatedAt": "2026-01-27T07:26:13.036Z",
+      "updatedAt": "2026-01-27T09:54:19.061Z",
       "description": "Add a popup modal similar to OpenCode's @ file reference system that appears when @ symbol is entered in MultiLineInput.tsx, allowing users to search and select project files with fuzzy matching",
       "children": [],
       "attachments": [
@@ -67777,6 +67777,14 @@
         {
           "state": "implementing",
           "timestamp": "2026-01-27T07:26:13.036Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-27T09:48:46.722Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-27T09:54:19.061Z"
         }
       ],
       "userStory": {
@@ -67834,43 +67842,43 @@
       "nextQuestionId": 5,
       "rules": [
         {
-          "id": null,
+          "id": 0,
           "text": "Use immediate trigger like OpenCode - popup appears the moment @ is typed and updates in real-time as user types more characters",
           "deleted": false,
           "createdAt": "2026-01-27T07:03:46.585Z"
         },
         {
-          "id": 0,
+          "id": 1,
           "text": "Keep same as OpenCode - insert @filepath format (e.g., @src/components/Button.tsx) when file is selected",
           "deleted": false,
           "createdAt": "2026-01-27T07:05:10.083Z"
         },
         {
-          "id": 1,
+          "id": 2,
           "text": "Yes, existing ripgrep code is already wired up to Blob tool - reuse this existing file search infrastructure",
           "deleted": false,
           "createdAt": "2026-01-27T07:06:27.026Z"
         },
         {
-          "id": 2,
+          "id": 3,
           "text": "Yes, use the existing Glob tool for file pattern matching - this is the ripgrep integration already available in my context",
           "deleted": false,
           "createdAt": "2026-01-27T07:09:38.906Z"
         },
         {
-          "id": 3,
+          "id": 4,
           "text": "Center screen popup like slash command palette - copy its styling for consistency with existing UI patterns",
           "deleted": false,
           "createdAt": "2026-01-27T07:11:33.503Z"
         },
         {
-          "id": 4,
+          "id": 5,
           "text": "Yes, exact same keyboard navigation as slash command palette - Up/Down to highlight, Enter to select, Escape to close, continue typing to filter",
           "deleted": false,
           "createdAt": "2026-01-27T07:12:51.753Z"
         }
       ],
-      "nextRuleId": 5,
+      "nextRuleId": 6,
       "examples": [
         {
           "id": 0,
@@ -67916,7 +67924,8 @@
         }
       ],
       "nextExampleId": 7,
-      "estimate": 5
+      "estimate": 5,
+      "updated": "2026-01-27T09:54:19.061Z"
     }
   },
   "states": {
@@ -67991,11 +68000,10 @@
       "WATCH-001"
     ],
     "testing": [],
-    "implementing": [
-      "TUI-055"
-    ],
+    "implementing": [],
     "validating": [],
     "done": [
+      "TUI-055",
       "TUI-054",
       "TUI-050",
       "NAPI-009",
