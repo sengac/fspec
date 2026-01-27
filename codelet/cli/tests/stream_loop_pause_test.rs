@@ -23,17 +23,14 @@ const STATUS_PAUSED: u8 = 3;
 
 /// Mock session for testing pause handler integration
 struct MockSession {
-    #[allow(dead_code)]
-    id: String,
     status: AtomicU8,
     pause_state: RwLock<Option<PauseState>>,
     pause_response: Arc<(Mutex<Option<PauseResponse>>, Condvar)>,
 }
 
 impl MockSession {
-    fn new(id: &str) -> Self {
+    fn new() -> Self {
         Self {
-            id: id.to_string(),
             status: AtomicU8::new(STATUS_IDLE),
             pause_state: RwLock::new(None),
             pause_response: Arc::new((Mutex::new(None), Condvar::new())),
@@ -119,7 +116,7 @@ fn test_handler_invoked_with_request_returns_response() {
 #[test]
 fn test_handler_sets_session_pause_state() {
     with_clean_handler(|| {
-        let session = Arc::new(MockSession::new("test-session"));
+        let session = Arc::new(MockSession::new());
         let session_clone = session.clone();
 
         // Create handler that captures session context (like real implementation)
@@ -165,7 +162,7 @@ fn test_handler_sets_session_pause_state() {
 #[test]
 fn test_handler_blocks_until_response() {
     with_clean_handler(|| {
-        let session = Arc::new(MockSession::new("test-session"));
+        let session = Arc::new(MockSession::new());
         let session_for_handler = session.clone();
         let session_for_signaler = session.clone();
 

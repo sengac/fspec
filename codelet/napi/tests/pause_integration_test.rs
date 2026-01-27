@@ -22,7 +22,6 @@ use std::sync::{Arc, Condvar, Mutex, RwLock};
 
 const STATUS_IDLE: u8 = 0;
 const STATUS_RUNNING: u8 = 1;
-const STATUS_INTERRUPTED: u8 = 2;
 const STATUS_PAUSED: u8 = 3;
 
 /// Simulated BackgroundSession for testing the pause pattern
@@ -198,6 +197,9 @@ fn test_handler_is_scoped() {
 fn test_full_pause_flow_with_blocking() {
     with_clean_handler(|| {
         let session = Arc::new(SimulatedSession::new());
+        // Set initial status to running
+        session.set_status(STATUS_RUNNING);
+        
         let response_signal: Arc<(Mutex<Option<PauseResponse>>, Condvar)> =
             Arc::new((Mutex::new(None), Condvar::new()));
 
@@ -257,6 +259,9 @@ fn test_full_pause_flow_with_blocking() {
         assert_eq!(response, PauseResponse::Resumed);
         assert!(session.get_pause_state().is_none()); // Cleared after resume
         assert_eq!(session.get_status(), STATUS_RUNNING);
+        
+        // Clean up
+        set_pause_handler(None);
     });
 }
 
@@ -284,8 +289,14 @@ fn test_handler_returns_approved() {
 #[test]
 fn test_handler_returns_denied() {
     with_clean_handler(|| {
+        // Ensure no handler first
+        assert!(!has_pause_handler());
+        
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
         set_pause_handler(Some(handler));
+        
+        // Verify handler is set
+        assert!(has_pause_handler());
 
         let response = pause_for_user(PauseRequest {
             kind: PauseKind::Confirm,
@@ -295,6 +306,10 @@ fn test_handler_returns_denied() {
         });
 
         assert_eq!(response, PauseResponse::Denied);
+        
+        // Clean up explicitly
+        set_pause_handler(None);
+        assert!(!has_pause_handler());
     });
 }
 

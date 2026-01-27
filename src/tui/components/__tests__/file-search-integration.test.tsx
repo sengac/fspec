@@ -1,20 +1,16 @@
 /**
  * File Search Integration Test
- *
- * Tests the complete file search functionality working end-to-end
- * with real Rust Glob integration via NAPI.
- *
- * Work Unit: TUI-055
+ * 
+ * Tests end-to-end file search functionality with NAPI Glob integration.
  */
 
 import React, { useState } from 'react';
 import { render } from 'ink-testing-library';
 import { Text } from 'ink';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { useFileSearchInput } from '../../hooks/useFileSearchInput';
 import { FileSearchPopup } from '../FileSearchPopup';
 
-// Mock the tool integration
 vi.mock('../../../utils/toolIntegration', () => ({
   callGlobTool: vi.fn().mockResolvedValue({
     success: true,
@@ -22,7 +18,6 @@ vi.mock('../../../utils/toolIntegration', () => ({
   }),
 }));
 
-// Simple test component
 function TestFileSearchComponent() {
   const [input, setInput] = useState('');
   
@@ -49,17 +44,10 @@ function TestFileSearchComponent() {
 
 describe('File Search Integration Test', () => {
   it('should work end-to-end with real glob search', async () => {
-    const { lastFrame, rerender } = render(<TestFileSearchComponent />);
+    const { lastFrame } = render(<TestFileSearchComponent />);
     
-    // Initially, should not be visible
     expect(lastFrame()).toContain('Visible: NO');
-    console.log('Frame output:', lastFrame());
 
-    // Simulate typing @src to trigger file search
-    const component = <TestFileSearchComponent />;
-    const { lastFrame: frameWithFilter } = render(component);
-    
-    // Manually trigger the input change to @src
     const testComponent = React.createElement(() => {
       const [input, setInput] = useState('@src');
       
@@ -70,7 +58,6 @@ describe('File Search Integration Test', () => {
         disabled: false,
       });
 
-      // Trigger the input change manually
       React.useEffect(() => {
         fileSearch.handleInputChange('@src');
       }, []);
@@ -90,9 +77,7 @@ describe('File Search Integration Test', () => {
     });
 
     const { lastFrame: finalFrame } = render(testComponent);
-    console.log('Frame with filter:', finalFrame());
     
-    // Should show the popup
     expect(finalFrame()).toContain('Input: @src');
   });
 });

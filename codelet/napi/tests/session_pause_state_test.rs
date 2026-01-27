@@ -28,19 +28,17 @@ enum PauseKind {
 /// Simulated session status values
 const STATUS_IDLE: u8 = 0;
 const STATUS_RUNNING: u8 = 1;
-const STATUS_PAUSED: u8 = 2;
+const STATUS_PAUSED: u8 = 3;
 
 /// Simulated BackgroundSession with pause state (mirrors Architecture Note [1])
 struct SimulatedSession {
-    id: String,
     status: AtomicU8,
     pause_state: RwLock<Option<PauseState>>,
 }
 
 impl SimulatedSession {
-    fn new(id: &str) -> Self {
+    fn new() -> Self {
         Self {
-            id: id.to_string(),
             status: AtomicU8::new(STATUS_IDLE),
             pause_state: RwLock::new(None),
         }
@@ -87,8 +85,8 @@ impl SimulatedSession {
 #[test]
 fn test_pause_state_is_per_session() {
     // @step Given two sessions exist
-    let session_a = Arc::new(SimulatedSession::new("session-a"));
-    let session_b = Arc::new(SimulatedSession::new("session-b"));
+    let session_a = Arc::new(SimulatedSession::new());
+    let session_b = Arc::new(SimulatedSession::new());
 
     // Both start running
     session_a.set_status(STATUS_RUNNING);
@@ -145,8 +143,8 @@ fn test_pause_state_is_per_session() {
 #[test]
 fn test_multiple_sessions_paused_independently() {
     // @step Given two sessions, both start running
-    let session_a = Arc::new(SimulatedSession::new("session-a"));
-    let session_b = Arc::new(SimulatedSession::new("session-b"));
+    let session_a = Arc::new(SimulatedSession::new());
+    let session_b = Arc::new(SimulatedSession::new());
 
     session_a.set_status(STATUS_RUNNING);
     session_b.set_status(STATUS_RUNNING);
@@ -190,8 +188,8 @@ fn test_multiple_sessions_paused_independently() {
 #[test]
 fn test_resuming_session_is_isolated() {
     // @step Given two paused sessions
-    let session_a = Arc::new(SimulatedSession::new("session-a"));
-    let session_b = Arc::new(SimulatedSession::new("session-b"));
+    let session_a = Arc::new(SimulatedSession::new());
+    let session_b = Arc::new(SimulatedSession::new());
 
     session_a.set_pause_state(Some(PauseState {
         tool_name: "WebSearch".to_string(),
@@ -235,7 +233,7 @@ fn test_resuming_session_is_isolated() {
 fn test_concurrent_pause_state_access() {
     use std::thread;
 
-    let session = Arc::new(SimulatedSession::new("session-concurrent"));
+    let session = Arc::new(SimulatedSession::new());
 
     // Set initial pause state
     session.set_pause_state(Some(PauseState {

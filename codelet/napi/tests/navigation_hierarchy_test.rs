@@ -13,17 +13,11 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 /// Mock BackgroundSession for testing (minimal struct)
-struct MockBackgroundSession {
-    id: Uuid,
-    name: String,
-}
+struct MockBackgroundSession;
 
 impl MockBackgroundSession {
-    fn new(id: Uuid, name: &str) -> Self {
-        Self {
-            id,
-            name: name.to_string(),
-        }
+    fn new() -> Self {
+        Self
     }
 }
 
@@ -51,14 +45,6 @@ impl MockWatchGraph {
 
     fn get_parent(&self, watcher_id: Uuid) -> Option<Uuid> {
         self.watcher_to_parent.get(&watcher_id).copied()
-    }
-
-    fn get_watchers(&self, parent_id: Uuid) -> Vec<Uuid> {
-        self.watcher_to_parent
-            .iter()
-            .filter(|(_, &p)| p == parent_id)
-            .map(|(&w, _)| w)
-            .collect()
     }
 }
 
@@ -155,9 +141,9 @@ fn test_build_nav_list_no_watchers() {
     let b = Uuid::new_v4();
     let c = Uuid::new_v4();
 
-    sessions.insert(a, Arc::new(MockBackgroundSession::new(a, "A")));
-    sessions.insert(b, Arc::new(MockBackgroundSession::new(b, "B")));
-    sessions.insert(c, Arc::new(MockBackgroundSession::new(c, "C")));
+    sessions.insert(a, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(b, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(c, Arc::new(MockBackgroundSession::new()));
 
     let watch_graph = MockWatchGraph::new();
     let nav_list = build_navigation_list(&sessions, &watch_graph);
@@ -179,10 +165,10 @@ fn test_build_nav_list_with_watchers() {
     let b = Uuid::new_v4();
 
     // Insert in order: A, W1, W2, B
-    sessions.insert(a, Arc::new(MockBackgroundSession::new(a, "A")));
-    sessions.insert(w1, Arc::new(MockBackgroundSession::new(w1, "W1")));
-    sessions.insert(w2, Arc::new(MockBackgroundSession::new(w2, "W2")));
-    sessions.insert(b, Arc::new(MockBackgroundSession::new(b, "B")));
+    sessions.insert(a, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(b, Arc::new(MockBackgroundSession::new()));
 
     let mut watch_graph = MockWatchGraph::new();
     watch_graph.add_watcher(a, w1);
@@ -209,11 +195,11 @@ fn test_build_nav_list_multiple_parents_with_watchers() {
     let c = Uuid::new_v4();
 
     // Insert in order: A, W1, B, W2, C
-    sessions.insert(a, Arc::new(MockBackgroundSession::new(a, "A")));
-    sessions.insert(w1, Arc::new(MockBackgroundSession::new(w1, "W1")));
-    sessions.insert(b, Arc::new(MockBackgroundSession::new(b, "B")));
-    sessions.insert(w2, Arc::new(MockBackgroundSession::new(w2, "W2")));
-    sessions.insert(c, Arc::new(MockBackgroundSession::new(c, "C")));
+    sessions.insert(a, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(b, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(c, Arc::new(MockBackgroundSession::new()));
 
     let mut watch_graph = MockWatchGraph::new();
     watch_graph.add_watcher(a, w1);
@@ -240,10 +226,10 @@ fn test_full_shift_right_navigation_with_watchers() {
     let w2 = Uuid::new_v4();
     let b = Uuid::new_v4();
 
-    sessions.insert(a, Arc::new(MockBackgroundSession::new(a, "A")));
-    sessions.insert(w1, Arc::new(MockBackgroundSession::new(w1, "W1")));
-    sessions.insert(w2, Arc::new(MockBackgroundSession::new(w2, "W2")));
-    sessions.insert(b, Arc::new(MockBackgroundSession::new(b, "B")));
+    sessions.insert(a, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(b, Arc::new(MockBackgroundSession::new()));
 
     let mut watch_graph = MockWatchGraph::new();
     watch_graph.add_watcher(a, w1);
@@ -294,10 +280,10 @@ fn test_full_shift_left_navigation_with_watchers() {
     let w2 = Uuid::new_v4();
     let b = Uuid::new_v4();
 
-    sessions.insert(a, Arc::new(MockBackgroundSession::new(a, "A")));
-    sessions.insert(w1, Arc::new(MockBackgroundSession::new(w1, "W1")));
-    sessions.insert(w2, Arc::new(MockBackgroundSession::new(w2, "W2")));
-    sessions.insert(b, Arc::new(MockBackgroundSession::new(b, "B")));
+    sessions.insert(a, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(b, Arc::new(MockBackgroundSession::new()));
 
     let mut watch_graph = MockWatchGraph::new();
     watch_graph.add_watcher(a, w1);
@@ -343,9 +329,9 @@ fn test_shift_right_from_last_watcher_goes_to_next_session() {
     let w1 = Uuid::new_v4();
     let b = Uuid::new_v4();
 
-    sessions.insert(a, Arc::new(MockBackgroundSession::new(a, "A")));
-    sessions.insert(w1, Arc::new(MockBackgroundSession::new(w1, "W1")));
-    sessions.insert(b, Arc::new(MockBackgroundSession::new(b, "B")));
+    sessions.insert(a, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(b, Arc::new(MockBackgroundSession::new()));
 
     let mut watch_graph = MockWatchGraph::new();
     watch_graph.add_watcher(a, w1);
@@ -372,9 +358,9 @@ fn test_shift_left_from_first_watcher_goes_to_parent() {
     let w1 = Uuid::new_v4();
     let w2 = Uuid::new_v4();
 
-    sessions.insert(a, Arc::new(MockBackgroundSession::new(a, "A")));
-    sessions.insert(w1, Arc::new(MockBackgroundSession::new(w1, "W1")));
-    sessions.insert(w2, Arc::new(MockBackgroundSession::new(w2, "W2")));
+    sessions.insert(a, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
 
     let mut watch_graph = MockWatchGraph::new();
     watch_graph.add_watcher(a, w1);
@@ -402,9 +388,9 @@ fn test_shift_right_from_last_watcher_of_last_session_shows_create_dialog() {
     let w1 = Uuid::new_v4();
     let w2 = Uuid::new_v4();
 
-    sessions.insert(a, Arc::new(MockBackgroundSession::new(a, "A")));
-    sessions.insert(w1, Arc::new(MockBackgroundSession::new(w1, "W1")));
-    sessions.insert(w2, Arc::new(MockBackgroundSession::new(w2, "W2")));
+    sessions.insert(a, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w1, Arc::new(MockBackgroundSession::new()));
+    sessions.insert(w2, Arc::new(MockBackgroundSession::new()));
 
     let mut watch_graph = MockWatchGraph::new();
     watch_graph.add_watcher(a, w1);

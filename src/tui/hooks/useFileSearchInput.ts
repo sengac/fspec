@@ -1,33 +1,16 @@
 /**
- * useFileSearchInput Hook
+ * File Search Input Hook
  *
- * Complete file search popup management following the EXACT same architecture as useSlashCommandInput:
- * - Visibility and filter state
- * - File searching with Glob tool integration
- * - Keyboard navigation
- * - Input handling with @ symbol detection
- *
- * This hook matches useSlashCommandInput interface for consistency.
- *
- * Work Unit: TUI-055
+ * Manages file search popup functionality with @ symbol detection,
+ * async file searching via Glob tool, and keyboard navigation.
  */
 
 import { useState, useCallback, useMemo } from 'react';
 import type { Key } from 'ink';
 import { callGlobTool } from '../../utils/toolIntegration';
-
-export interface FileSearchResult {
-  /** File path relative to project root */
-  path: string;
-  /** Display name (can be truncated path) */
-  displayName?: string;
-}
-
-/** Maximum width for the dialog */
-const MAX_DIALOG_WIDTH = 70;
-
-/** Minimum width for the dialog */
-const MIN_DIALOG_WIDTH = 100;
+import { logger } from '../../utils/logger';
+import { DIALOG_WIDTH } from '../constants/dialogSizes';
+import type { FileSearchResult } from '../types/fileSearch';
 
 export interface UseFileSearchInputOptions {
   /**
@@ -103,16 +86,10 @@ export function useFileSearchInput(
 
   // Calculate consistent dialog width based on terminal width (50% with min/max bounds)
   const dialogWidth = useMemo(() => {
-    const minWidth = 60; // Minimum width for readability
-    const maxWidth = 120; // Maximum width to prevent too wide on large screens
-
-    // Use 50% of terminal width as base
-    const baseWidth = Math.floor(terminalWidth * 0.5);
-
-    // Apply min/max bounds
-    const finalWidth = Math.max(minWidth, Math.min(baseWidth, maxWidth));
-
-    return finalWidth;
+    const baseWidth = Math.floor(
+      terminalWidth * DIALOG_WIDTH.VIEWPORT_PERCENTAGE
+    );
+    return Math.max(DIALOG_WIDTH.MIN, Math.min(baseWidth, DIALOG_WIDTH.MAX));
   }, [terminalWidth]);
 
   // Auto-hide when disabled
@@ -154,14 +131,13 @@ export function useFileSearchInput(
         const filePaths = result.data.split('\n').filter(Boolean);
         const fileResults: FileSearchResult[] = filePaths.map(path => ({
           path,
-          displayName: path.split('/').pop() || path,
         }));
         setFiles(fileResults);
       } else {
         setFiles([]);
       }
     } catch (error) {
-      console.error('File search error:', error);
+      logger.debug('File search error:', error);
       setFiles([]);
     }
   }, []);

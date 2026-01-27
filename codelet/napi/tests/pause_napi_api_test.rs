@@ -17,7 +17,6 @@ use std::sync::{Arc, Condvar, Mutex, RwLock};
 // Session status constants matching session_manager.rs
 const STATUS_IDLE: u8 = 0;
 const STATUS_RUNNING: u8 = 1;
-const STATUS_INTERRUPTED: u8 = 2;
 const STATUS_PAUSED: u8 = 3;
 
 /// NapiPauseState for TypeScript (mirrors what NAPI should expose)
@@ -46,7 +45,6 @@ impl From<PauseState> for NapiPauseState {
 /// Simulated BackgroundSession with pause_state field
 /// This is the pattern BackgroundSession SHOULD follow
 struct MockBackgroundSession {
-    id: String,
     status: AtomicU8,
     pause_state: RwLock<Option<NapiPauseState>>,
     // For blocking/resuming during pause
@@ -54,9 +52,8 @@ struct MockBackgroundSession {
 }
 
 impl MockBackgroundSession {
-    fn new(id: &str) -> Self {
+    fn new() -> Self {
         Self {
-            id: id.to_string(),
             status: AtomicU8::new(STATUS_IDLE),
             pause_state: RwLock::new(None),
             pause_response: Arc::new((Mutex::new(None), Condvar::new())),
@@ -127,7 +124,7 @@ impl MockBackgroundSession {
 /// @step: Then it should return None
 #[test]
 fn test_get_pause_state_returns_none_when_not_paused() {
-    let session = MockBackgroundSession::new("test-session");
+    let session = MockBackgroundSession::new();
     session.set_status(STATUS_RUNNING);
     
     let pause_state = session.get_pause_state();
@@ -140,7 +137,7 @@ fn test_get_pause_state_returns_none_when_not_paused() {
 /// @step: Then it should return the pause details
 #[test]
 fn test_get_pause_state_returns_state_when_paused() {
-    let session = MockBackgroundSession::new("test-session");
+    let session = MockBackgroundSession::new();
     session.set_status(STATUS_RUNNING);
     
     // Pause with Continue
@@ -168,7 +165,7 @@ fn test_get_pause_state_returns_state_when_paused() {
 /// @step: And the status should be "running"
 #[test]
 fn test_pause_resume_clears_state() {
-    let session = MockBackgroundSession::new("test-session");
+    let session = MockBackgroundSession::new();
     
     // Set up pause
     session.set_pause_state(Some(NapiPauseState {
@@ -195,7 +192,7 @@ fn test_pause_resume_clears_state() {
 /// @step: And the status should be "running"
 #[test]
 fn test_pause_confirm_approved() {
-    let session = MockBackgroundSession::new("test-session");
+    let session = MockBackgroundSession::new();
     
     // Set up confirm pause
     session.set_pause_state(Some(NapiPauseState {
@@ -221,7 +218,7 @@ fn test_pause_confirm_approved() {
 /// @step: And the status should be "running"
 #[test]
 fn test_pause_confirm_denied() {
-    let session = MockBackgroundSession::new("test-session");
+    let session = MockBackgroundSession::new();
     
     // Set up confirm pause
     session.set_pause_state(Some(NapiPauseState {
@@ -248,7 +245,7 @@ fn test_pause_handler_blocks_until_resume() {
     use std::thread;
     use std::time::Duration;
     
-    let session = Arc::new(MockBackgroundSession::new("test-session"));
+    let session = Arc::new(MockBackgroundSession::new());
     let session_clone = Arc::clone(&session);
     
     // Spawn thread simulating the pause handler
@@ -290,8 +287,8 @@ fn test_pause_handler_blocks_until_resume() {
 /// @step: And session B should still be paused
 #[test]
 fn test_multiple_sessions_independent_pause() {
-    let session_a = MockBackgroundSession::new("session-a");
-    let session_b = MockBackgroundSession::new("session-b");
+    let session_a = MockBackgroundSession::new();
+    let session_b = MockBackgroundSession::new();
     
     // Both pause
     session_a.set_pause_state(Some(NapiPauseState {
