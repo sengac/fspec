@@ -118,6 +118,19 @@ describe('Feature: Interactive Kanban board CLI', () => {
       stdin.write('\x1B'); // ESC key
       await new Promise(resolve => setTimeout(resolve, 50));
 
+      // VIEWNV-001: Session is auto-created on Enter, so ESC now shows exit dialog
+      // Navigate to "Close Session" button (middle button) and press Enter
+      const exitDialogFrame = frames[frames.length - 1];
+      expect(exitDialogFrame).toContain('Exit Session?');
+
+      // Navigate right to "Close Session" button
+      stdin.write('\x1B[C'); // Right arrow
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Press Enter to close the session
+      stdin.write('\r');
+      await new Promise(resolve => setTimeout(resolve, 50));
+
       // @step Then the agent view should close
       // @step And the board view should be displayed
       const boardFrame = frames[frames.length - 1];

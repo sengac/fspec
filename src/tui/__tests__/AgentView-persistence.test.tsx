@@ -779,6 +779,9 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
 
   // ============================================================================
   // @deferred-session-creation - Session not persisted until first message
+  // VIEWNV-001: By default, sessions are created on first message (deferred creation).
+  // Immediate creation only happens when user confirms "Start New Agent?" dialog,
+  // which sets shouldAutoCreateSession=true in the store.
   // ============================================================================
 
   describe('Scenario: Session not persisted until first message is sent', () => {
@@ -796,7 +799,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       await waitForFrame(150); // Allow time for async initSession
 
       // @step Then NO session should be created in persistence
-      // @step Because no message has been sent yet
+      // @step Because no message has been sent yet (and no dialog was confirmed)
       expect(vi.mocked(persistenceCreateSessionWithProvider)).not.toHaveBeenCalled();
 
       unmount();
@@ -826,7 +829,7 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step Then a session should be created
       expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledTimes(1);
 
-      // @step And the session name should be the first message content (truncated to 50 chars)
+      // @step And the session name should be the first message content
       expect(vi.mocked(persistenceCreateSessionWithProvider)).toHaveBeenCalledWith(
         'Help me implement authentication',
         expect.any(String), // project path

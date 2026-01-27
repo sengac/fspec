@@ -891,7 +891,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
   });
 
   describe('Scenario: Empty session shows nothing to compact', () => {
-    it('should show nothing to compact message when session has no messages', async () => {
+    it('should show error when trying to compact without a session', async () => {
       // @step Given I am in AgentView with no messages in the conversation
       // NAPI-009: With deferred session creation, /compact before first message shows error
       resetMockSession();

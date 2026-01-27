@@ -117,7 +117,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 
   // VIEWNV-001: Session navigation hook
   const showCreateSessionDialog = useShowCreateSessionDialog();
-  const { closeCreateSessionDialog, prepareForNewSession } = useSessionActions();
+  const { closeCreateSessionDialog, prepareForNewSession, requestAutoCreateSession } = useSessionActions();
   const sessionNavigation = useSessionNavigation({
     onNavigate,
     onNavigateToBoard,
@@ -551,6 +551,8 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
           onConfirm={() => {
             // Prepare for new session (atomic transition via store)
             prepareForNewSession();
+            // VIEWNV-001: Request immediate session creation so /thinking works
+            requestAutoCreateSession();
           }}
           onCancel={() => {
             closeCreateSessionDialog();

@@ -7,12 +7,12 @@
  * SOLID: Single Responsibility - only header rendering
  * DRY: Shared between AgentView and SplitSessionView
  *
- * Normal mode:
- *   Agent: claude-sonnet-4 [R] [V] [200k]           1234↓ 567↑ [45%]
+ * Normal mode (with session number):
+ *   Agent #1: claude-sonnet-4 [R] [V] [200k]           1234↓ 567↑ [45%]
  *   ─────────────────────────────────────────────────────────────────
  *
  * Watcher mode:
- *   Watcher: security-reviewer #1 | Agent: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
+ *   Watcher: security-reviewer #1 | Agent #2: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
  *   ──────────────────────────────────────────────────────────────────────────────────────────
  *
  * Badge Colors:
@@ -74,6 +74,8 @@ export interface SessionHeaderProps {
   compactionReduction?: number | null;
   /** Watcher info - if present, shows watcher prefix */
   watcherInfo?: WatcherHeaderInfo;
+  /** Session number (1-based index in session list) - helps identify session when switching */
+  sessionNumber?: number;
 }
 
 /**
@@ -111,6 +113,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   contextFillPercentage = 0,
   compactionReduction = null,
   watcherInfo,
+  sessionNumber,
 }) => {
   const { inputTokens, outputTokens } = getMaxTokens(tokenUsage, rustTokens);
 
@@ -139,9 +142,9 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
               <Text> | </Text>
             </>
           )}
-          {/* Agent label and model */}
+          {/* Agent label and model - show session number if available */}
           <Text color="cyan" bold>
-            Agent: {modelId}
+            Agent{sessionNumber !== undefined ? ` #${sessionNumber}` : ''}: {modelId}
           </Text>
           {/* Reasoning badge - magenta */}
           {hasReasoning && <Text color="magenta"> [R]</Text>}

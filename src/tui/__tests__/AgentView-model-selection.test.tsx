@@ -839,6 +839,7 @@ describe('Feature: Agent Modal Model Selection', () => {
   describe('Scenario: Session stores full model path in persistence', () => {
     it('should persist full model path when sending first message', async () => {
       // @step Given I have selected "anthropic/claude-sonnet-4"
+      // NAPI-009: Session is created on first message with full model path
       const mockCreateSession = vi.fn(() => ({
         id: 'new-session-id',
         name: 'Test Message',

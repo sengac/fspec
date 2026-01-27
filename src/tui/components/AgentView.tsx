@@ -152,6 +152,7 @@ import {
   useSessionStore,
   useCurrentSessionId,
   useIsReadyForNewSession,
+  useShouldAutoCreateSession,
   useShowCreateSessionDialog,
   useSessionActions,
 } from '../store/sessionStore';
@@ -163,6 +164,7 @@ import {
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
+import { createSession } from '../services/sessionService';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -1144,10 +1146,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // VIEWNV-001: Session state from Zustand store (atomic state machine transitions)
   const currentSessionId = useCurrentSessionId();
   const isReadyForNewSession = useIsReadyForNewSession();
+  const shouldAutoCreateSession = useShouldAutoCreateSession();
   const showCreateSessionDialog = useShowCreateSessionDialog();
   const {
     activateSession,
     prepareForNewSession,
+    clearAutoCreateRequest,
     closeCreateSessionDialog,
   } = useSessionActions();
   // Ref to track current session ID for use in callbacks without stale closures
@@ -1333,6 +1337,26 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     hasVision: displayHasVision,
     contextWindow: displayContextWindow,
   } = rustModelInfo;
+
+  // VIEWNV-001: Calculate session number (1-based index of current session in list of parent sessions)
+  // This helps users identify which session they're in when switching with Shift+Left/Right
+  const sessionNumber = useMemo(() => {
+    if (!currentSessionId) {
+      return undefined;
+    }
+
+    // Get all sessions and filter to parent sessions only (exclude watchers)
+    const allSessions = sessionManagerList();
+    const parentSessions = allSessions.filter(session => {
+      // A session is a parent if it has no parent itself
+      const parent = sessionGetParent(session.id);
+      return !parent;
+    });
+
+    // Find current session's position (1-based)
+    const index = parentSessions.findIndex(s => s.id === currentSessionId);
+    return index >= 0 ? index + 1 : undefined;
+  }, [currentSessionId]);
 
   // Extract remaining display state from Rust snapshot
   const displayIsLoading = rustSnapshot.isLoading;
@@ -2555,6 +2579,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       }
     } else {
       logger.debug('No activeSessionId - history will not be saved');
+    }
+
+    // VIEWNV-001: Rename auto-created session on first message
+    // If session was auto-created with generic name, rename it to use first message
+    if (activeSessionId && sessionNeedsRenameRef.current) {
+      sessionNeedsRenameRef.current = false;
+      try {
+        const sessionName = userMessage.slice(0, 500) + (userMessage.length > 500 ? '...' : '');
+        persistenceRenameSession(activeSessionId, sessionName);
+        logger.debug(`VIEWNV-001: Renamed session ${activeSessionId} to: ${sessionName.slice(0, 50)}...`);
+      } catch (err) {
+        logger.error('Failed to rename session:', err);
+      }
     }
 
     // Add user message to conversation
@@ -4382,6 +4419,51 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     }
   }, [handleStreamChunk, currentProvider, providerSections, activateSession]);
 
+  // VIEWNV-001: Handle create session dialog confirmation
+  // Creates session immediately so /thinking and other commands work right away
+  const handleCreateSessionConfirm = useCallback(async () => {
+    // Detach from current session if any
+    if (currentSessionId) {
+      try {
+        sessionDetach(currentSessionId);
+      } catch {
+        // Silently ignore detach errors
+      }
+    }
+
+    try {
+      const project = currentProjectRef.current;
+      const modelPath = currentModel
+        ? `${currentModel.providerId}/${currentModel.modelId}`
+        : currentProvider;
+
+      // Use the service to create the session
+      const result = await createSession({
+        modelPath,
+        project,
+      });
+
+      // Activate the session in the store
+      activateSession(result.sessionId);
+
+      // Clear conversation and input for the new session
+      setConversation([]);
+      setInputValue('');
+
+      // Close the dialog
+      closeCreateSessionDialog();
+
+      logger.debug(`VIEWNV-001: Created new session ${result.sessionId}`);
+    } catch (err) {
+      logger.error('Failed to create new session:', err);
+      // Fall back to old behavior if creation fails
+      prepareForNewSession();
+      setConversation([]);
+      setInputValue('');
+      closeCreateSessionDialog();
+    }
+  }, [currentSessionId, currentModel, currentProvider, activateSession, closeCreateSessionDialog, prepareForNewSession]);
+
   // VIEWNV-001: Unified session navigation hook for Shift+Arrow navigation
   // This provides the navigation logic that determines targets based on the session tree
   // Note: Hook gets currentSessionId from store and uses store action for create dialog
@@ -4449,6 +4531,44 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
     void resumeSessionById(sessionIdToResume);
   }, [resumeSessionById]);
+
+  // VIEWNV-001: Auto-create session when user confirms "Start New Agent?" dialog
+  // This is triggered by shouldAutoCreateSession being set to true
+  // The session is created immediately so /thinking and other commands work right away
+  // Track if session needs renaming on first message (auto-created with generic name)
+  const sessionNeedsRenameRef = useRef(false);
+  useEffect(() => {
+    // Only auto-create if explicitly requested via dialog confirmation
+    if (!shouldAutoCreateSession || currentSessionId) {
+      return;
+    }
+
+    // Clear the request immediately to prevent double-creation
+    clearAutoCreateRequest();
+
+    const autoCreateSession = async () => {
+      try {
+        const project = currentProjectRef.current;
+        const modelPath = currentModel
+          ? `${currentModel.providerId}/${currentModel.modelId}`
+          : currentProvider;
+
+        const result = await createSession({
+          modelPath,
+          project,
+        });
+
+        activateSession(result.sessionId);
+        // Mark that this session needs renaming on first message
+        sessionNeedsRenameRef.current = true;
+        logger.debug(`VIEWNV-001: Auto-created session ${result.sessionId} on AgentView mount`);
+      } catch (err) {
+        logger.error('Failed to auto-create session:', err);
+      }
+    };
+
+    void autoCreateSession();
+  }, [shouldAutoCreateSession, currentSessionId, currentModel, currentProvider, activateSession, clearAutoCreateRequest]);
 
   // NAPI-003 + TUI-047: Enter resume mode (show session selection overlay)
   // Now queries both persistence and background sessions, merging results
@@ -6957,6 +7077,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         rustTokens={rustTokens}
         contextFillPercentage={contextFillPercentage}
         compactionReduction={compactionReduction}
+        sessionNumber={sessionNumber}
       />
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
@@ -7172,24 +7293,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       {/* VIEWNV-001: Create session dialog (shown when navigating past right edge) */}
       {showCreateSessionDialog && (
         <CreateSessionDialog
-          onConfirm={() => {
-            // Detach from current session if any
-            if (currentSessionId) {
-              try {
-                sessionDetach(currentSessionId);
-              } catch {
-                // Silently ignore detach errors
-              }
-            }
-            // Prepare for new session (atomic transition via store)
-            // This clears currentSessionId, sets isReadyForNewSession=true, and closes dialog
-            prepareForNewSession();
-            setConversation([]);
-            setInputValue('');
-          }}
-          onCancel={() => {
-            closeCreateSessionDialog();
-          }}
+          onConfirm={handleCreateSessionConfirm}
+          onCancel={closeCreateSessionDialog}
         />
       )}
 
