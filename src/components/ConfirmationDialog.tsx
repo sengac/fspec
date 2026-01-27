@@ -18,11 +18,11 @@
  */
 
 import React, { useState } from 'react';
-import { Text } from 'ink';
+import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
 import { useInputCompat, InputPriority } from '../tui/input/index.js';
 
-type ConfirmMode = 'yesno' | 'typed' | 'keypress';
+type ConfirmMode = 'yesno' | 'typed' | 'keypress' | 'visual';
 type RiskLevel = 'low' | 'medium' | 'high';
 
 export interface ConfirmationDialogProps {
@@ -48,6 +48,7 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   description,
 }) => {
   const [inputValue, setInputValue] = useState('');
+  const [selectedButton, setSelectedButton] = useState<'yes' | 'no'>('yes'); // Default to 'yes'
 
   // Map riskLevel to borderColor for Dialog
   const getBorderColor = (): string | undefined => {
@@ -81,6 +82,22 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
           onCancel();
           return true;
         }
+      } else if (confirmMode === 'visual') {
+        // Visual button mode (like CreateSessionDialog)
+        if (key.leftArrow) {
+          setSelectedButton('yes');
+          return true;
+        } else if (key.rightArrow) {
+          setSelectedButton('no');
+          return true;
+        } else if (key.return) {
+          if (selectedButton === 'yes') {
+            onConfirm();
+          } else {
+            onCancel();
+          }
+          return true;
+        }
       } else if (confirmMode === 'typed') {
         // Typed phrase mode (case-insensitive)
         if (key.return) {
@@ -112,6 +129,34 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 
       {confirmMode === 'yesno' && (
         <Text dimColor>Press Y to confirm, N to cancel, ESC to cancel</Text>
+      )}
+
+      {confirmMode === 'visual' && (
+        <>
+          <Box marginTop={1} justifyContent="center">
+            <Box marginX={1}>
+              <Text
+                backgroundColor={selectedButton === 'yes' ? 'blue' : undefined}
+                color={selectedButton === 'yes' ? 'white' : 'gray'}
+                bold={selectedButton === 'yes'}
+              >
+                {' '}Yes{' '}
+              </Text>
+            </Box>
+            <Box marginX={1}>
+              <Text
+                backgroundColor={selectedButton === 'no' ? 'blue' : undefined}
+                color={selectedButton === 'no' ? 'white' : 'gray'}
+                bold={selectedButton === 'no'}
+              >
+                {' '}No{' '}
+              </Text>
+            </Box>
+          </Box>
+          <Box marginTop={1} justifyContent="center">
+            <Text dimColor>← → Navigate | Enter Select | Esc Cancel</Text>
+          </Box>
+        </>
       )}
 
       {confirmMode === 'typed' && (
