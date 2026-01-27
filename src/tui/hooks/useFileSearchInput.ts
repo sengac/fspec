@@ -27,7 +27,7 @@ export interface FileSearchResult {
 const MAX_DIALOG_WIDTH = 70;
 
 /** Minimum width for the dialog */
-const MIN_DIALOG_WIDTH = 45;
+const MIN_DIALOG_WIDTH = 100;
 
 export interface UseFileSearchInputOptions {
   /**
@@ -39,6 +39,11 @@ export interface UseFileSearchInputOptions {
    * Callback to update the input value
    */
   onInputChange: (value: string) => void;
+
+  /**
+   * Terminal width for consistent dialog sizing
+   */
+  terminalWidth: number;
 
   /**
    * When true, the popup is disabled and will auto-hide
@@ -83,7 +88,12 @@ export interface UseFileSearchInputResult {
 export function useFileSearchInput(
   options: UseFileSearchInputOptions
 ): UseFileSearchInputResult {
-  const { inputValue, onInputChange, disabled = false } = options;
+  const {
+    inputValue,
+    onInputChange,
+    terminalWidth,
+    disabled = false,
+  } = options;
 
   // Internal state
   const [isVisible, setIsVisible] = useState(false);
@@ -91,23 +101,19 @@ export function useFileSearchInput(
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [files, setFiles] = useState<FileSearchResult[]>([]);
 
-  // Calculate fixed dialog width based on file paths
+  // Calculate consistent dialog width based on terminal width (50% with min/max bounds)
   const dialogWidth = useMemo(() => {
-    if (files.length === 0) {
-      return MIN_DIALOG_WIDTH;
-    }
+    const minWidth = 60; // Minimum width for readability
+    const maxWidth = 120; // Maximum width to prevent too wide on large screens
 
-    const maxPathWidth = Math.max(...files.map(f => f.path.length), 20);
-    const contentWidth = 4 + maxPathWidth; // "🔍 " + path + padding
-    const footerWidth = 43; // "↑↓ Navigate │ Enter Select │ Esc Close"
+    // Use 50% of terminal width as base
+    const baseWidth = Math.floor(terminalWidth * 0.5);
 
-    const calculatedWidth = Math.max(
-      contentWidth,
-      footerWidth,
-      MIN_DIALOG_WIDTH
-    );
-    return Math.min(calculatedWidth, MAX_DIALOG_WIDTH);
-  }, [files]);
+    // Apply min/max bounds
+    const finalWidth = Math.max(minWidth, Math.min(baseWidth, maxWidth));
+
+    return finalWidth;
+  }, [terminalWidth]);
 
   // Auto-hide when disabled
   const effectiveIsVisible = isVisible && !disabled;
@@ -140,9 +146,9 @@ export function useFileSearchInput(
     }
 
     try {
-      // Use Glob tool to search for files
+      // Use Glob tool to search for files with case-insensitive matching
       const pattern = `**/*${newFilter}*`;
-      const result = await callGlobTool(pattern);
+      const result = await callGlobTool(pattern, undefined, true); // Enable case-insensitive
 
       if (result.success && result.data) {
         const filePaths = result.data.split('\n').filter(Boolean);
@@ -230,14 +236,19 @@ export function useFileSearchInput(
   // Handle keyboard input - returns true if handled
   const handleInput = useCallback(
     (input: string, key: Key): boolean => {
-      // Don't handle if disabled or not visible or no files to select
-      if (disabled || !effectiveIsVisible || files.length === 0) {
+      // Don't handle if disabled or not visible
+      if (disabled || !effectiveIsVisible) {
         return false;
       }
 
       if (key.escape) {
         hide();
         return true;
+      }
+
+      // Don't handle navigation if no files to select
+      if (files.length === 0) {
+        return false;
       }
 
       if (key.upArrow) {

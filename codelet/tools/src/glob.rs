@@ -51,6 +51,9 @@ pub struct GlobArgs {
     /// Directory to search in (optional, defaults to current directory)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<String>,
+    /// Whether to perform case-insensitive matching (optional, defaults to false)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub case_insensitive: Option<bool>,
 }
 
 impl rig::tool::Tool for GlobTool {
@@ -78,9 +81,16 @@ impl rig::tool::Tool for GlobTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        // Build glob matcher
-        let matcher = GlobBuilder::new(&args.pattern)
-            .literal_separator(false)
+        // Build glob matcher with optional case insensitivity
+        let mut builder = GlobBuilder::new(&args.pattern);
+        builder.literal_separator(false);
+        
+        // Apply case insensitive option if specified
+        if args.case_insensitive.unwrap_or(false) {
+            builder.case_insensitive(true);
+        }
+        
+        let matcher = builder
             .build()
             .map(|g| g.compile_matcher())
             .map_err(|e| ToolError::Pattern {

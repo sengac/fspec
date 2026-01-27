@@ -1231,14 +1231,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog,
   });
 
-  // TUI-055: File search popup following the EXACT same architecture as slash commands
-  const fileSearch = useFileSearchInput({
-    inputValue,
-    onInputChange: setInputValue,
-    // Disable popup when other overlays/modes are active
-    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog,
-  });
-
   // TUI-048: Space+ESC detection for immediate detach
   // Space is detected as a regular character, so we use a timeout to track if ESC comes shortly after Space
   const spaceHeldRef = useRef<boolean>(false);
@@ -1410,6 +1402,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // Get terminal dimensions for full-screen layout
   const terminalWidth = stdout?.columns ?? 80;
   const terminalHeight = stdout?.rows ?? 24;
+
+  // TUI-055: File search popup following the EXACT same architecture as slash commands
+  const fileSearch = useFileSearchInput({
+    inputValue,
+    onInputChange: setInputValue,
+    terminalWidth,
+    // Disable popup when other overlays/modes are active
+    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog,
+  });
 
   // Model selector scrolling: build flat list and manage scroll offset
   const flatModelItems = useMemo(

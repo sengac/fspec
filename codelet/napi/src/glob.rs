@@ -25,13 +25,14 @@ pub struct GlobResult {
 /// # Arguments
 /// * `pattern` - Glob pattern like "src/*.ts" or "**\/component*" 
 /// * `path` - Optional directory to search in (defaults to current directory)
+/// * `case_insensitive` - Optional case-insensitive matching (defaults to false)
 ///
 /// # Returns
 /// GlobResult with matching file paths or error message
 #[napi]
-pub async fn glob_search(pattern: String, path: Option<String>) -> napi::Result<GlobResult> {
+pub async fn glob_search(pattern: String, path: Option<String>, case_insensitive: Option<bool>) -> napi::Result<GlobResult> {
     let tool = GlobTool::new();
-    let args = GlobArgs { pattern, path };
+    let args = GlobArgs { pattern, path, case_insensitive };
 
     match tool.call(args).await {
         Ok(output) => Ok(GlobResult {

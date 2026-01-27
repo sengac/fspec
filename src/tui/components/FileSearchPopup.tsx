@@ -43,13 +43,6 @@ export const FileSearchPopup: React.FC<FileSearchPopupProps> = ({
   maxVisibleItems = 8,
   isLoading = false,
 }) => {
-  // Calculate max path width for alignment
-  const maxPathWidth = useMemo(() => {
-    return files && files.length > 0
-      ? Math.max(...files.map((f) => (f.displayName || f.path).length), 8)
-      : 8;
-  }, [files]);
-
   if (!isVisible) {
     return null;
   }
@@ -73,6 +66,9 @@ export const FileSearchPopup: React.FC<FileSearchPopupProps> = ({
     scrollOffset + maxVisibleItems
   );
 
+  // Get the currently selected file for preview
+  const selectedFile = files && files.length > 0 ? files[safeSelectedIndex] : null;
+
   return (
     // Full-screen overlay for centering (matches SlashCommandPalette pattern)
     <Box
@@ -87,60 +83,108 @@ export const FileSearchPopup: React.FC<FileSearchPopupProps> = ({
       <Box
         flexDirection="column"
         borderStyle="round"
-        borderColor="green"
+        borderColor="cyan"
         paddingX={1}
         backgroundColor="black"
         width={dialogWidth + 4} // +4 for border and padding
       >
         {/* Header */}
         <Box>
-          <Text bold color="green">
-            🔍 File Search
+          <Text bold color="cyan">
+            File Search
           </Text>
           {filter && (
             <Text dimColor>
               {' '}
-              for "{filter}"
+              (filter: {filter})
             </Text>
           )}
         </Box>
 
+        {/* Separator - use dialog width for consistency */}
+        <Box>
+          <Text dimColor>{'─'.repeat(dialogWidth)}</Text>
+        </Box>
+
         {/* File list */}
         {isLoading ? (
-          <Text dimColor italic>
-            Searching files...
-          </Text>
+          <Box>
+            <Text dimColor italic>
+              Searching files...
+            </Text>
+          </Box>
         ) : (files?.length || 0) === 0 ? (
-          <Text dimColor italic>
-            No files found
-          </Text>
+          <Box>
+            <Text dimColor italic>
+              No files found
+            </Text>
+          </Box>
         ) : (
           visibleFiles.map((file, idx) => {
             const actualIndex = scrollOffset + idx;
             const isSelected = actualIndex === safeSelectedIndex;
-            const displayName = file.displayName || file.path;
+
+            // Just show filename (no path preview in list)
+            const fileName = file.path.split('/').pop() || file.path;
 
             return (
               <Box key={file.path}>
                 {/* Selection indicator */}
-                <Text color={isSelected ? 'green' : undefined}>
+                <Text color={isSelected ? 'cyan' : undefined}>
                   {isSelected ? '▸ ' : '  '}
                 </Text>
 
-                {/* File path */}
+                {/* File name only */}
                 <Text
                   bold={isSelected}
                   color={isSelected ? 'white' : 'green'}
+                  backgroundColor={isSelected ? 'blue' : undefined}
                 >
-                  {displayName}
+                  {fileName}
                 </Text>
               </Box>
             );
           })
         )}
 
+        {/* Preview section for currently selected file */}
+        {selectedFile && (
+          <>
+            {/* Separator before preview */}
+            <Box>
+              <Text dimColor>{'─'.repeat(dialogWidth)}</Text>
+            </Box>
+
+            {/* Selected file full path */}
+            <Box>
+              <Text dimColor>
+                {selectedFile.path.length > dialogWidth - 2
+                  ? selectedFile.path.slice(0, dialogWidth - 3) + '…'
+                  : selectedFile.path
+                }
+              </Text>
+            </Box>
+          </>
+        )}
+
         {/* Footer with keyboard hints */}
-        <Text dimColor>↑↓ Navigate │ Enter Select │ Esc Close</Text>
+        <Box>
+          <Text dimColor>{'─'.repeat(dialogWidth)}</Text>
+        </Box>
+        <Box>
+          <Text dimColor>↑↓ Navigate │ Tab/Enter Select │ Esc Close</Text>
+        </Box>
+
+        {/* Scroll indicator if needed */}
+        {(files?.length || 0) > maxVisibleItems && (
+          <Box>
+            <Text dimColor>
+              ({scrollOffset + 1}-
+              {Math.min(scrollOffset + maxVisibleItems, files?.length || 0)} of{' '}
+              {files?.length || 0})
+            </Text>
+          </Box>
+        )}
       </Box>
     </Box>
   );

@@ -18,11 +18,17 @@ export interface GlobResult {
 /**
  * Call the Glob tool to search for files matching a pattern
  * @param pattern Glob pattern to search for (e.g., "**\/src*")
+ * @param path Optional directory to search in (defaults to current directory)
+ * @param caseInsensitive Optional case-insensitive matching (defaults to false)
  * @returns Promise with file results
  */
-export async function callGlobTool(pattern: string): Promise<GlobResult> {
+export async function callGlobTool(
+  pattern: string,
+  path?: string,
+  caseInsensitive?: boolean
+): Promise<GlobResult> {
   try {
-    return await globSearch(pattern);
+    return await globSearch(pattern, path, caseInsensitive);
   } catch (error) {
     console.error('callGlobTool error:', error);
     return {
