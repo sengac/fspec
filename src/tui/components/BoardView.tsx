@@ -77,6 +77,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     clearNavigationTarget,
     closeCreateSessionDialog,
     prepareForNewSession,
+    navigateToNewSession,
   } = useSessionActions();
 
   // VIEWNV-001: Session navigation hook for Shift+Arrow navigation
@@ -513,6 +514,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
             if (currentColumn.units.length > 0) {
               const workUnit = currentColumn.units[selectedWorkUnitIndex];
               setSelectedWorkUnit(workUnit);
+              // VIEWNV-001: Use unified navigateToNewSession to ensure session is auto-created
+              // This allows /thinking and other commands to work immediately
+              // Note: If workUnit has an attached session, AgentView will auto-resume it instead
+              navigateToNewSession();
               setViewMode('agent');
             }
           }
@@ -570,10 +575,9 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       {showCreateSessionDialog && (
         <CreateSessionDialog
           onConfirm={() => {
-            // Prepare for new session and navigate to agent view
-            prepareForNewSession();
+            // VIEWNV-001: Use unified navigateToNewSession action
+            navigateToNewSession();
             setSelectedWorkUnit(null);
-            clearNavigationTarget();
             setViewMode('agent');
           }}
           onCancel={() => {
