@@ -32,6 +32,7 @@ import { TurnContentModal } from './TurnContentModal';
 import { WatcherCreateView } from './WatcherCreateView';
 import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
+import { FileSearchPopup } from './FileSearchPopup';
 import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/conversationUtils';
 import {
   extractTokenStateFromChunks,
@@ -40,6 +41,7 @@ import {
 } from '../utils/tokenStateUtils';
 import { calculatePaneWidth } from '../utils/textWrap';
 import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
+import { useFileSearchInput } from '../hooks/useFileSearchInput';
 import { useInputCompat, InputPriority } from '../input/index.js';
 import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelection';
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
@@ -1226,6 +1228,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     onInputChange: setInputValue,
     onExecuteCommand: (cmd) => executeSlashCommandRef.current?.(cmd),
     // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog)
+    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog,
+  });
+
+  // TUI-055: File search popup following the EXACT same architecture as slash commands
+  const fileSearch = useFileSearchInput({
+    inputValue,
+    onInputChange: setInputValue,
+    // Disable popup when other overlays/modes are active
     disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog,
   });
 
@@ -3997,9 +4007,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     }
   }, [historyEntries, historyIndex, savedInput]);
 
-  // TUI-050: Use slashCommand.handleInputChange from the hook
-  // The hook manages all slash command state and input detection internally
-  const handleInputChange = slashCommand.handleInputChange;
+  // TUI-050/TUI-055: Combined input change handler for both slash commands and file search
+  const handleInputChange = useCallback(
+    (newValue: string) => {
+      // Both hooks handle their respective detection logic and call setInputValue
+      slashCommand.handleInputChange(newValue);
+      fileSearch.handleInputChange(newValue);
+    },
+    [slashCommand.handleInputChange, fileSearch.handleInputChange]
+  );
 
   // NAPI-006: Enter search mode (Ctrl+R)
   const handleSearchMode = useCallback(() => {
@@ -5528,6 +5544,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         return true;
       }
       
+      // TUI-055: File search popup keyboard handling (exact same architecture as slash commands)
+      if (fileSearch.handleInput(input, key)) {
+        return true;
+      }
+      
       // TUI-050: Handle Enter for slash commands even if palette wasn't shown yet
       // (e.g., user types "/debug" and presses Enter before palette could render)
       // IMPORTANT: Only do this when NOT in another mode (resume, watcher, etc.)
@@ -5537,6 +5558,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         void handleSubmitWithCommand(inputValue.trim());
         return true;
       }
+
+      // TUI-055: Handle @ symbol for file search - simple detection like slash commands
 
       // NAPI-003: Resume mode keyboard handling
       if (isResumeMode) {
@@ -7234,7 +7257,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             maxVisibleLines={5}
             skipAnimation={skipInputAnimation}
             isActive={!showCreateSessionDialog}
-            suppressEnter={slashCommand.isVisible}
+            suppressEnter={slashCommand.isVisible || fileSearch.isVisible}
           />
         </Box>
       </Box>
@@ -7248,6 +7271,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           selectedIndex={slashCommand.selectedIndex}
           dialogWidth={slashCommand.dialogWidth}
           maxVisibleItems={8}
+        />
+      )}
+
+      {/* TUI-055: File search popup (exact same architecture as slash commands) */}
+      {fileSearch.isVisible && (
+        <FileSearchPopup
+          isVisible={fileSearch.isVisible}
+          filter={fileSearch.filter}
+          files={fileSearch.files}
+          selectedIndex={fileSearch.selectedIndex}
+          dialogWidth={fileSearch.dialogWidth}
         />
       )}
 

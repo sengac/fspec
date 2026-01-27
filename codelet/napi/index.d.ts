@@ -509,6 +509,33 @@ export declare function getThinkingConfig(
   level: JsThinkingLevel
 ): string;
 
+/** Result of a Glob tool search */
+export interface GlobResult {
+  /** Whether the search was successful */
+  success: boolean;
+  /** Matching file paths (one per line) */
+  data?: string;
+  /** Error message if search failed */
+  error?: string;
+}
+
+/**
+ * Search for files matching a glob pattern
+ *
+ * Uses the codelet Glob tool for gitignore-aware file pattern matching.
+ *
+ * # Arguments
+ * * `pattern` - Glob pattern like "src/*.ts" or "**\/component*"
+ * * `path` - Optional directory to search in (defaults to current directory)
+ *
+ * # Returns
+ * GlobResult with matching file paths or error message
+ */
+export declare function globSearch(
+  pattern: string,
+  path?: string | undefined | null
+): Promise<GlobResult>;
+
 /**
  * Check if a response part contains thinking content.
  *

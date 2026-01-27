@@ -1718,12 +1718,32 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Set thinking level directly with argument",
+      "testMappings": []
+    },
+    {
+      "name": "Arguments are case insensitive",
+      "testMappings": []
+    },
+    {
+      "name": "Invalid argument shows error",
+      "testMappings": []
+    },
+    {
+      "name": "Command requires active session",
+      "testMappings": []
+    },
+    {
+      "name": "SessionHeader hides badge when level is Off",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 11,
+    "totalScenarios": 16,
     "coveredScenarios": 11,
-    "coveragePercent": 100,
+    "coveragePercent": 69,
     "testFiles": [
       "src/tui/components/__tests__/ThinkingLevelDialog.test.tsx"
     ],

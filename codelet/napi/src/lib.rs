@@ -13,6 +13,8 @@ extern crate napi_derive;
 #[cfg(not(feature = "noop"))]
 mod astgrep;
 #[cfg(not(feature = "noop"))]
+mod glob;
+#[cfg(not(feature = "noop"))]
 mod models;
 #[cfg(not(feature = "noop"))]
 mod output;
@@ -34,6 +36,8 @@ pub use persistence::*;
 
 #[cfg(not(feature = "noop"))]
 pub use astgrep::*;
+#[cfg(not(feature = "noop"))]
+pub use glob::*;
 #[cfg(not(feature = "noop"))]
 pub use models::*;
 #[cfg(not(feature = "noop"))]

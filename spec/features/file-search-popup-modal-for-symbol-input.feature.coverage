@@ -1,0 +1,84 @@
+{
+  "scenarios": [
+    {
+      "name": "Immediate popup trigger with real-time file filtering",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/file-search-popup-modal.test.tsx",
+          "lines": "44-82",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "File selection and @filepath insertion",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/file-search-popup-modal.test.tsx",
+          "lines": "84-114",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Fuzzy file matching with partial queries",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/file-search-popup-modal.test.tsx",
+          "lines": "116-155",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Backend file search integration using Glob tool",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/file-search-popup-modal.test.tsx",
+          "lines": "157-187",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Center screen popup appearance like slash command palette",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/file-search-popup-modal.test.tsx",
+          "lines": "189-227",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Keyboard navigation identical to slash command palette",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/file-search-popup-modal.test.tsx",
+          "lines": "229-271",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "No results found with escape handling",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/file-search-popup-modal.test.tsx",
+          "lines": "273-319",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/file-search-popup-modal.test.tsx"
+    ],
+    "implFiles": [],
+    "totalLinesCovered": 270
+  }
+}
