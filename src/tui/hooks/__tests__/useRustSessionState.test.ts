@@ -36,6 +36,7 @@ interface MockState {
   model: { providerId: string; modelId: string } | null;
   tokens: { inputTokens: number; outputTokens: number };
   debugEnabled: boolean;
+  baseThinkingLevel: number; // TUI-054
 }
 
 function createMockStateSource(initialState: MockState): {
@@ -68,6 +69,12 @@ function createMockStateSource(initialState: MockState): {
     getDebugEnabled: () => {
       callCounts.debug++;
       return state.debugEnabled;
+    },
+    getPauseState: () => null,
+    // TUI-054: Base thinking level methods
+    getBaseThinkingLevel: () => state.baseThinkingLevel,
+    setBaseThinkingLevel: (_sessionId: string, level: number) => {
+      state.baseThinkingLevel = level;
     },
   };
 
@@ -113,6 +120,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -177,6 +185,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -213,6 +222,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -265,6 +275,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -287,6 +298,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -319,6 +331,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 100, outputTokens: 50 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -348,6 +361,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -374,6 +388,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -410,6 +425,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -447,6 +463,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -511,6 +528,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -534,6 +552,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -574,6 +593,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 
@@ -603,6 +623,7 @@ describe('Feature: Rust session state subscription with proper caching', () => {
         model: null,
         tokens: { inputTokens: 0, outputTokens: 0 },
         debugEnabled: false,
+        baseThinkingLevel: 0,
       });
       setRustStateSource(mock.source);
 

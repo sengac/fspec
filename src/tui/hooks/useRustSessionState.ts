@@ -64,6 +64,8 @@ export interface RustSessionSnapshot {
   model: SessionModel | null;
   tokens: SessionTokens;
   isDebugEnabled: boolean;
+  /** TUI-054: Base thinking level (0=Off, 1=Low, 2=Medium, 3=High) */
+  baseThinkingLevel: number;
   version: number;
 }
 
@@ -79,6 +81,7 @@ const EMPTY_SNAPSHOT: RustSessionSnapshot = Object.freeze({
   model: null,
   tokens: DEFAULT_TOKENS,
   isDebugEnabled: false,
+  baseThinkingLevel: 0, // TUI-054: Default to Off
   version: 0,
 });
 
@@ -108,6 +111,7 @@ function snapshotsAreEqual(
     a.status === b.status &&
     a.isDebugEnabled === b.isDebugEnabled &&
     a.isPaused === b.isPaused &&
+    a.baseThinkingLevel === b.baseThinkingLevel && // TUI-054
     pauseInfoEqual(a.pauseInfo, b.pauseInfo) &&
     tokensEqual(a.tokens, b.tokens) &&
     modelEqual(a.model, b.model)
@@ -136,6 +140,7 @@ function fetchFreshSnapshot(
     model: source.getModel(sessionId),
     tokens: source.getTokens(sessionId),
     isDebugEnabled: source.getDebugEnabled(sessionId),
+    baseThinkingLevel: source.getBaseThinkingLevel(sessionId), // TUI-054
     version,
   };
 }

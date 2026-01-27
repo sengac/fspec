@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-26T08:14:11.338Z"
+    "lastUpdated": "2026-01-27T03:24:42.887Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -67443,6 +67443,289 @@
         "spec/features/session-pause-state-isolation.feature"
       ],
       "updated": "2026-01-26T06:40:34.760Z"
+    },
+    "TUI-054": {
+      "id": "TUI-054",
+      "title": "ThinkingLevelDialog for /thinking command",
+      "type": "story",
+      "status": "done",
+      "createdAt": "2026-01-27T01:56:59.676Z",
+      "updatedAt": "2026-01-27T03:24:42.920Z",
+      "description": "Create a new ThinkingLevelDialog modal that allows users to select a thinking level (Off, Low, Medium, High) using the /thinking command. The dialog should be navigable with up/down arrows and Enter to select. The selected level becomes the base thinking level for all requests, unless overridden by a higher level detected in the prompt text (e.g., ultrathink).",
+      "children": [],
+      "attachments": [
+        "spec/attachments/TUI-054/thinking-level-dialog-design.md",
+        "spec/attachments/TUI-054/ast-research-integration-points.md"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-27T02:24:02.701Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-27T02:43:01.747Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-27T02:50:11.739Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-27T03:24:13.299Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-27T03:24:42.920Z"
+        }
+      ],
+      "userStory": {
+        "role": "developer using the AI chat TUI",
+        "action": "select a thinking level using the /thinking command",
+        "benefit": "I can control how much thinking time the AI uses for my requests without typing keywords like ultrathink"
+      },
+      "rules": [
+        {
+          "id": 0,
+          "text": "ThinkingLevelDialog must display 4 options: Off (0), Low (1), Medium (2), High (3)",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:23.376Z"
+        },
+        {
+          "id": 1,
+          "text": "Navigation must use up/down arrow keys to move selection",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:24.064Z"
+        },
+        {
+          "id": 2,
+          "text": "Enter key must confirm selection and close dialog, updating base thinking level",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:24.792Z"
+        },
+        {
+          "id": 3,
+          "text": "Escape key must close dialog without changing the thinking level",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:25.376Z"
+        },
+        {
+          "id": 4,
+          "text": "The selected base level persists for all subsequent requests in the session",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:26.263Z"
+        },
+        {
+          "id": 5,
+          "text": "Effective thinking level is max(baseLevel, detectedLevelFromText) - text keywords can only INCREASE the level",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:27.288Z"
+        },
+        {
+          "id": 6,
+          "text": "Disable keywords (quickly, briefly, short, fast, rapid) always force level to Off regardless of base level",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:28.057Z"
+        },
+        {
+          "id": 7,
+          "text": "Dialog must use CRITICAL input priority via useInputCompat to capture all keyboard input",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:29.088Z"
+        },
+        {
+          "id": 8,
+          "text": "Slash command palette must be hidden/disabled when ThinkingLevelDialog is open",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:29.739Z"
+        },
+        {
+          "id": 9,
+          "text": "Current thinking level must be visually indicated (highlighted/selected) when dialog opens",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:30.580Z"
+        },
+        {
+          "id": 10,
+          "text": "Base thinking level stored in Rust BackgroundSession as AtomicU8, synced via useRustSessionState hook",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:34:54.734Z"
+        },
+        {
+          "id": 11,
+          "text": "SessionHeader always shows base thinking level badge when not Off, shows effective level (max of base and detected) during loading",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:34:58.849Z"
+        }
+      ],
+      "nextRuleId": 12,
+      "examples": [
+        {
+          "id": 0,
+          "text": "User types /thinking at start of input, ThinkingLevelDialog appears with current level highlighted",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:34.787Z"
+        },
+        {
+          "id": 1,
+          "text": "Dialog shows Off first, user presses down twice to reach Medium, presses Enter - base level is now Medium",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:35.960Z"
+        },
+        {
+          "id": 2,
+          "text": "User presses up arrow on Off - selection wraps to High (last option)",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:36.959Z"
+        },
+        {
+          "id": 3,
+          "text": "User presses Escape while dialog is open - dialog closes, base level remains unchanged",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:37.669Z"
+        },
+        {
+          "id": 4,
+          "text": "Base level is High, user types 'explain this code' with no keywords - effective level is High",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:38.751Z"
+        },
+        {
+          "id": 5,
+          "text": "Base level is Medium, user types 'ultrathink about architecture' - effective level is High (ultrathink > Medium)",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:39.727Z"
+        },
+        {
+          "id": 6,
+          "text": "Base level is High, user types 'quickly list files' - effective level is Off (disable keywords override base)",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:40.589Z"
+        },
+        {
+          "id": 7,
+          "text": "User opens /thinking dialog while typing '/thi' - slash command palette closes, ThinkingLevelDialog opens",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:41.715Z"
+        },
+        {
+          "id": 8,
+          "text": "ThinkingLevelDialog renders with accessible labels: Off (no thinking), Low (~4K tokens), Medium (~10K), High (~32K)",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:43.314Z"
+        },
+        {
+          "id": 9,
+          "text": "Base level is Off (default), SessionHeader shows no thinking badge",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:35:02.831Z"
+        },
+        {
+          "id": 10,
+          "text": "User sets base level to Medium via /thinking, SessionHeader shows [T:Med] badge even when idle",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:35:07.455Z"
+        }
+      ],
+      "nextExampleId": 11,
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: Should the dialog show the current base level when opened, or always start at Off?",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:49.183Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Show current level when opened. State stored in Rust BackgroundSession as AtomicU8, synced via useRustSessionState hook. Follow pause_state pattern: add base_thinking_level field, getter/setter methods, NAPI functions (session_get_base_thinking_level, session_set_base_thinking_level), extend RustStateSource/RustSessionSnapshot."
+        },
+        {
+          "id": 1,
+          "text": "@human: Should arrow key navigation wrap around (High→Off and Off→High), or stop at boundaries?",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:50.235Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes, wrap around. Down on High wraps to Off, Up on Off wraps to High."
+        },
+        {
+          "id": 2,
+          "text": "@human: Should the current base thinking level be displayed in the SessionHeader, similar to how API key status is shown?",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:51.119Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Yes. Extend SessionHeader to show base level always (not just during loading). During loading, show effective level (max of base and detected). Base level stored in Rust BackgroundSession as AtomicU8, synced via useRustSessionState. Add baseThinkingLevel to RustSessionSnapshot."
+        },
+        {
+          "id": 3,
+          "text": "@human: Should the /thinking command be available at any point in the input, or only at the start (like other slash commands)?",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:24:52.178Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Only at start of input, like other slash commands. Follow existing slash command pattern - detected when input starts with '/' and matched against SLASH_COMMANDS registry."
+        }
+      ],
+      "nextQuestionId": 4,
+      "estimate": 8,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Rust: Add base_thinking_level AtomicU8 field to BackgroundSession struct in session_manager.rs, following pause_state pattern",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:07.446Z"
+        },
+        {
+          "id": 1,
+          "text": "NAPI: Add session_get_base_thinking_level and session_set_base_thinking_level functions in session_manager.rs",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:11.604Z"
+        },
+        {
+          "id": 2,
+          "text": "TypeScript: Extend RustStateSource interface with getBaseThinkingLevel/setBaseThinkingLevel methods in rustStateSource.ts",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:15.827Z"
+        },
+        {
+          "id": 3,
+          "text": "TypeScript: Add baseThinkingLevel field to RustSessionSnapshot interface in useRustSessionState.ts",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:19.735Z"
+        },
+        {
+          "id": 4,
+          "text": "Component: Create ThinkingLevelDialog.tsx using CRITICAL input priority via useInputCompat, pattern from AttachmentDialog.tsx",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:24.680Z"
+        },
+        {
+          "id": 5,
+          "text": "Integration: Add /thinking to SLASH_COMMANDS registry in slashCommands.ts",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:28.742Z"
+        },
+        {
+          "id": 6,
+          "text": "Integration: Handle /thinking command in AgentView handleSubmitWithCommand, opens ThinkingLevelDialog",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:33.113Z"
+        },
+        {
+          "id": 7,
+          "text": "Integration: Modify SessionHeader to show base level badge always (not just during loading), show effective level during streaming",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:37.515Z"
+        },
+        {
+          "id": 8,
+          "text": "Logic: computeEffectiveThinkingLevel utility - returns max(baseLevel, detectedLevel) unless disable keywords detected, then returns Off",
+          "deleted": false,
+          "createdAt": "2026-01-27T02:41:42.151Z"
+        }
+      ],
+      "nextNoteId": 9,
+      "updated": "2026-01-27T03:24:42.920Z"
     }
   },
   "states": {
@@ -67520,6 +67803,7 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "TUI-054",
       "TUI-050",
       "NAPI-009",
       "PAUSE-001",
@@ -68020,7 +68304,7 @@
     "BUG": 93,
     "DISC": 2,
     "COV": 55,
-    "TUI": 53,
+    "TUI": 54,
     "REFAC": 6,
     "VIEW": 2,
     "DOC": 17,

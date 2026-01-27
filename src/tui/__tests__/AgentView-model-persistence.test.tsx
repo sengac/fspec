@@ -227,6 +227,9 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
+  // TUI-054: Base thinking level
+  sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
+  sessionSetBaseThinkingLevel: vi.fn(),
 }));
 
 // Mock Dialog to render children without position="absolute" which breaks ink-testing-library

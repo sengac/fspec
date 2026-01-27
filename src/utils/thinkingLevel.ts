@@ -133,3 +133,48 @@ export function getThinkingLevelLabel(level: JsThinkingLevel): string | null {
       return null;
   }
 }
+
+/**
+ * TUI-054: Check if disable keywords were detected in prompt.
+ *
+ * This is used to determine if the effective level should be forced to Off
+ * regardless of the base level.
+ *
+ * @param prompt - The user's prompt text
+ * @returns true if disable keywords were found
+ */
+export function hasDisableKeywords(prompt: string): boolean {
+  const lower = prompt.toLowerCase();
+  return DISABLE_KEYWORDS.some(kw => lower.includes(kw));
+}
+
+/**
+ * TUI-054: Compute effective thinking level from base level and detected level.
+ *
+ * Rules:
+ * 1. If disable keywords detected (forceOff=true), always return Off
+ * 2. Otherwise, return max(baseLevel, detectedLevel)
+ *
+ * This allows text keywords to INCREASE the level (e.g., base=Medium + ultrathink → High)
+ * but not DECREASE it (e.g., base=High + think about → High, not Low).
+ *
+ * Exception: Disable keywords (quickly, briefly) ALWAYS force Off regardless of base.
+ *
+ * @param baseLevel - The base thinking level set via /thinking dialog
+ * @param detectedLevel - The level detected from prompt keywords
+ * @param forceOff - If true, disable keywords were detected (force Off)
+ * @returns The effective thinking level to use
+ */
+export function computeEffectiveThinkingLevel(
+  baseLevel: JsThinkingLevel,
+  detectedLevel: JsThinkingLevel,
+  forceOff: boolean = false
+): JsThinkingLevel {
+  // Disable keywords always force Off
+  if (forceOff) {
+    return JsThinkingLevel.Off;
+  }
+
+  // Return the higher of base and detected levels
+  return Math.max(baseLevel, detectedLevel) as JsThinkingLevel;
+}

@@ -111,12 +111,12 @@ describe('Feature: Slash Command Autocomplete Palette', () => {
       expect(selectedCommand).toBeDefined();
 
       // @step When I press the Tab key
-      // Simulate Tab behavior: set input to command with trailing space, hide palette
-      let input = `/${selectedCommand!.name} `;
+      // Simulate Tab behavior: set input to command (no trailing space), hide palette
+      let input = `/${selectedCommand!.name}`;
       paletteVisible = false;
 
-      // @step Then the input should update to "/model "
-      expect(input).toBe('/model ');
+      // @step Then the input should update to "/model"
+      expect(input).toBe('/model');
 
       // @step And the palette should close
       expect(paletteVisible).toBe(false);

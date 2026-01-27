@@ -42,6 +42,9 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   // Mode cycling
   { name: 'mode', description: 'Cycle through Edit/Plan/Agent modes' },
 
+  // Thinking level (TUI-054)
+  { name: 'thinking', description: 'Set base thinking level' },
+
   // Session operations
   { name: 'resume', description: 'Resume a previous session' },
   {
