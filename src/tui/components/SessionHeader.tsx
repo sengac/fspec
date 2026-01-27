@@ -58,6 +58,8 @@ export interface SessionHeaderProps {
   isSelectMode?: boolean;
   /** Current thinking level (shown while streaming) */
   thinkingLevel?: JsThinkingLevel | null;
+  /** TUI-054: Base thinking level from /thinking dialog (shown when idle) */
+  baseThinkingLevel?: JsThinkingLevel;
   /** Whether AI is currently processing */
   isLoading?: boolean;
   /** Tokens per second (shown while streaming) */
@@ -76,11 +78,12 @@ export interface SessionHeaderProps {
 
 /**
  * Get thinking level display label
+ * TUI-054: Returns null for Off (no badge shown), label for other levels
  */
-const getThinkingLevelLabel = (level: JsThinkingLevel): string => {
+const getThinkingLevelLabel = (level: JsThinkingLevel): string | null => {
   switch (level) {
     case JsThinkingLevel.Off:
-      return '';
+      return null;
     case JsThinkingLevel.Low:
       return '[T:Low]';
     case JsThinkingLevel.Medium:
@@ -88,7 +91,7 @@ const getThinkingLevelLabel = (level: JsThinkingLevel): string => {
     case JsThinkingLevel.High:
       return '[T:High]';
     default:
-      return '';
+      return null;
   }
 };
 
@@ -100,6 +103,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   isDebugEnabled = false,
   isSelectMode = false,
   thinkingLevel = null,
+  baseThinkingLevel = JsThinkingLevel.Off,
   isLoading = false,
   tokensPerSecond = null,
   tokenUsage = { inputTokens: 0, outputTokens: 0 },
@@ -115,11 +119,11 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
       ? `[${contextFillPercentage}%: COMPACTED -${compactionReduction}%]`
       : `[${contextFillPercentage}%]`;
 
-  // Get thinking label if applicable
-  const thinkingLabel =
-    isLoading && thinkingLevel !== null && thinkingLevel !== JsThinkingLevel.Off
-      ? getThinkingLevelLabel(thinkingLevel)
-      : '';
+  // TUI-054: Show thinking level badge only when level > Off
+  // During loading: show the effective level (already computed in AgentView)
+  // When idle: show base level (if set)
+  const displayLevel = isLoading && thinkingLevel !== null ? thinkingLevel : baseThinkingLevel;
+  const thinkingLabel = getThinkingLevelLabel(displayLevel);
 
   return (
     <Box flexDirection="column" width="100%">
@@ -156,7 +160,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
           )}
           {/* Select mode badge - cyan */}
           {isSelectMode && <Text color="cyan"> [SELECT]</Text>}
-          {/* Thinking level badge - yellow */}
+          {/* TUI-054: Thinking level badge - yellow, only shown when level > Off */}
           {thinkingLabel && <Text color="yellow"> {thinkingLabel}</Text>}
         </Box>
 

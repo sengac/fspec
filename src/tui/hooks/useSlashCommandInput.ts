@@ -236,8 +236,8 @@ export function useSlashCommandInput(
       if (key.tab) {
         const selected = getSelectedCommand();
         if (selected) {
-          // Fill in command name with trailing space
-          onInputChange(`/${selected.name} `);
+          // Fill in command name (no trailing space)
+          onInputChange(`/${selected.name}`);
           hide();
         }
         return true;

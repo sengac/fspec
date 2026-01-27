@@ -229,14 +229,14 @@ describe('useSlashCommandInput', () => {
   });
 
   describe('Tab completion side effects', () => {
-    it('should call onInputChange with command name + space on Tab', async () => {
+    it('should call onInputChange with command name (no trailing space) on Tab', async () => {
       render(<TestComponent showPalette={true} />);
       await new Promise(r => setTimeout(r, 10));
       
       const firstCommand = hookState?.filteredCommands[0]?.name;
       hookState?.handleInput('', createKey({ tab: true }));
       
-      expect(lastOnInputChange).toHaveBeenCalledWith(`/${firstCommand} `);
+      expect(lastOnInputChange).toHaveBeenCalledWith(`/${firstCommand}`);
     });
   });
 

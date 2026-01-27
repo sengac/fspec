@@ -189,6 +189,9 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
+  // TUI-054: Base thinking level
+  sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
+  sessionSetBaseThinkingLevel: vi.fn(),
   // AGENT-021: Debug enabled state from Rust
   sessionGetDebugEnabled: vi.fn().mockReturnValue(false),
   // VIEWNV-001: Navigation functions for session/watcher navigation

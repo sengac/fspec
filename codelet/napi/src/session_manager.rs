@@ -803,6 +803,11 @@ pub struct BackgroundSession {
     /// PAUSE-001: Channel to send pause response from TypeScript back to the blocking tool
     pause_response_tx: std::sync::mpsc::Sender<PauseResponse>,
     pause_response_rx: std::sync::Mutex<std::sync::mpsc::Receiver<PauseResponse>>,
+
+    /// TUI-054: Base thinking level for session (0=Off, 1=Low, 2=Medium, 3=High)
+    /// This is the level set via /thinking command, persists for the session.
+    /// Effective level = max(base_thinking_level, detected_level_from_text)
+    base_thinking_level: AtomicU8,
 }
 
 impl BackgroundSession {
@@ -849,6 +854,7 @@ impl BackgroundSession {
             pause_state: RwLock::new(None),
             pause_response_tx,
             pause_response_rx: std::sync::Mutex::new(pause_response_rx),
+            base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
         }
     }
 
@@ -1068,6 +1074,26 @@ impl BackgroundSession {
     /// Used by stream loop to create pause handler with session context.
     pub fn get_pause_response_tx(&self) -> std::sync::mpsc::Sender<PauseResponse> {
         self.pause_response_tx.clone()
+    }
+
+    // =========================================================================
+    // TUI-054: Base thinking level methods
+    // =========================================================================
+
+    /// Get the base thinking level (TUI-054)
+    ///
+    /// Returns 0=Off, 1=Low, 2=Medium, 3=High
+    pub fn get_base_thinking_level(&self) -> u8 {
+        self.base_thinking_level.load(Ordering::Acquire)
+    }
+
+    /// Set the base thinking level (TUI-054)
+    ///
+    /// Values: 0=Off, 1=Low, 2=Medium, 3=High
+    /// Values > 3 are clamped to 3 (High)
+    pub fn set_base_thinking_level(&self, level: u8) {
+        let clamped = level.min(3);
+        self.base_thinking_level.store(clamped, Ordering::Release);
     }
 
     /// Set pending observed correlation IDs (WATCH-011)
@@ -3999,6 +4025,30 @@ pub fn session_pause_confirm(session_id: String, approved: bool) -> Result<()> {
         PauseResponse::Denied
     };
     session.send_pause_response(response);
+    Ok(())
+}
+
+// === TUI-054: Base thinking level NAPI functions ===
+
+/// Get the base thinking level for a session (TUI-054)
+///
+/// Returns the base thinking level: 0=Off, 1=Low, 2=Medium, 3=High
+/// This is the level set via /thinking command dialog.
+#[napi]
+pub fn session_get_base_thinking_level(session_id: String) -> Result<u8> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    Ok(session.get_base_thinking_level())
+}
+
+/// Set the base thinking level for a session (TUI-054)
+///
+/// Sets the base thinking level: 0=Off, 1=Low, 2=Medium, 3=High
+/// Values > 3 are clamped to 3.
+/// This is called when user selects a level in the /thinking dialog.
+#[napi]
+pub fn session_set_base_thinking_level(session_id: String, level: u8) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.set_base_thinking_level(level);
     Ok(())
 }
 

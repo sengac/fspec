@@ -114,6 +114,9 @@ import {
 import {
   detectThinkingLevel,
   getThinkingLevelLabel,
+  JsThinkingLevel,
+  computeEffectiveThinkingLevel,
+  hasDisableKeywords,
 } from '../../utils/thinkingLevel';
 import {
   saveCredential,
@@ -142,6 +145,7 @@ import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
 import { NotificationDialog } from '../../components/NotificationDialog';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
+import { ThinkingLevelDialog } from './ThinkingLevelDialog';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import { useFspecStore } from '../store/fspecStore';
 import {
@@ -157,6 +161,7 @@ import {
   manualDetach,
   getSessionChunks,
 } from '../hooks/useRustSessionState';
+import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
 
 // TUI-034: Model selection types
@@ -1203,14 +1208,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
+  // TUI-054: Thinking level dialog state
+  const [showThinkingLevelDialog, setShowThinkingLevelDialog] = useState(false);
+
   // TUI-050: Slash command palette with clean input handling
   // Hook is called here after all state that affects its `disabled` prop is defined
   const slashCommand = useSlashCommandInput({
     inputValue,
     onInputChange: setInputValue,
     onExecuteCommand: (cmd) => executeSlashCommandRef.current?.(cmd),
-    // Disable palette when other overlays/modes are active
-    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab,
+    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog)
+    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog,
   });
 
   // TUI-048: Space+ESC detection for immediate detach
@@ -1889,9 +1897,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const handleSubmit = useCallback(async () => {
     const userMessage = inputValue.trim();
     
-    // TUI-050: Slash commands are now handled by handleSubmitWithCommand via the keyboard handler.
-    // Skip them here to avoid duplicate execution (both useInput hooks receive key events).
+    // TUI-050: Slash commands should be executed via handleSubmitWithCommand.
+    // This handles the case where user types a command and presses Enter without
+    // the palette being visible (e.g., after Tab completion closes the palette).
     if (userMessage.startsWith('/') && userMessage.length > 1) {
+      executeSlashCommandRef.current?.(userMessage);
       return;
     }
     
@@ -2583,16 +2593,22 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
     try {
       // TOOL-010: Detect thinking level from prompt keywords
-      const thinkingLevel = detectThinkingLevel(userMessage);
-      setDetectedThinkingLevel(thinkingLevel);
+      const detectedLevel = detectThinkingLevel(userMessage);
+      
+      // TUI-054: Compute effective thinking level from base level and detected level
+      // Base level comes from /thinking dialog, detected level from prompt keywords
+      const baseLevel = rustSnapshot.baseThinkingLevel as JsThinkingLevel;
+      const forceOff = hasDisableKeywords(userMessage);
+      const effectiveLevel = computeEffectiveThinkingLevel(baseLevel, detectedLevel, forceOff);
+      setDetectedThinkingLevel(effectiveLevel);
 
       // Get thinking config JSON if level is not Off
       let thinkingConfig: string | null = null;
-      if (thinkingLevel !== JsThinkingLevel.Off) {
-        thinkingConfig = getThinkingConfig(currentProvider, thinkingLevel);
-        const label = getThinkingLevelLabel(thinkingLevel);
+      if (effectiveLevel !== JsThinkingLevel.Off) {
+        thinkingConfig = getThinkingConfig(currentProvider, effectiveLevel);
+        const label = getThinkingLevelLabel(effectiveLevel);
         if (label) {
-          logger.debug(`Thinking level detected: ${label}`);
+          logger.debug(`Thinking level: ${label} (base=${baseLevel}, detected=${detectedLevel}, forceOff=${forceOff})`);
         }
       }
 
@@ -3553,6 +3569,58 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         ...prev,
         { type: 'status', content: 'Mode cycling not yet implemented.' },
       ]);
+      return;
+    }
+    
+    // TUI-054: Handle /thinking command - set base thinking level
+    // Accepts: /thinking (opens dialog) or /thinking <level> (sets directly)
+    // Levels: off, low, med/medium, high (case insensitive)
+    if (userMessage === '/thinking' || userMessage.startsWith('/thinking ')) {
+      setInputValue('');
+      
+      // Require an active session
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'Start a session first to set the thinking level.' },
+        ]);
+        return;
+      }
+      
+      // Parse optional argument
+      const arg = userMessage.slice('/thinking'.length).trim().toLowerCase();
+      
+      if (!arg) {
+        // No argument - open the dialog
+        setShowThinkingLevelDialog(true);
+        return;
+      }
+      
+      // Parse level argument
+      let level: JsThinkingLevel | null = null;
+      if (arg === 'off') {
+        level = JsThinkingLevel.Off;
+      } else if (arg === 'low') {
+        level = JsThinkingLevel.Low;
+      } else if (arg === 'med' || arg === 'medium') {
+        level = JsThinkingLevel.Medium;
+      } else if (arg === 'high') {
+        level = JsThinkingLevel.High;
+      }
+      
+      if (level !== null) {
+        getRustStateSource().setBaseThinkingLevel(currentSessionId, level);
+        const levelNames = ['Off', 'Low', 'Medium', 'High'];
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: `Thinking level set to ${levelNames[level]}.` },
+        ]);
+      } else {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: `Invalid thinking level "${arg}". Use: off, low, med, medium, or high.` },
+        ]);
+      }
       return;
     }
     
@@ -6882,6 +6950,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         isDebugEnabled={displayIsDebugEnabled}
         isSelectMode={isTurnSelectMode}
         thinkingLevel={detectedThinkingLevel}
+        baseThinkingLevel={rustSnapshot.baseThinkingLevel as JsThinkingLevel}
         isLoading={displayIsLoading}
         tokensPerSecond={displayedTokPerSec}
         tokenUsage={tokenUsage}
@@ -7139,6 +7208,21 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         <ErrorDialog
           message={watcherError}
           onClose={() => setWatcherError(null)}
+        />
+      )}
+
+      {/* TUI-054: Thinking level dialog */}
+      {showThinkingLevelDialog && currentSessionId && (
+        <ThinkingLevelDialog
+          currentLevel={rustSnapshot.baseThinkingLevel as JsThinkingLevel}
+          onSelect={(level) => {
+            // Update base thinking level in Rust
+            getRustStateSource().setBaseThinkingLevel(currentSessionId, level);
+            // Refresh snapshot to pick up the change
+            refreshRustState();
+            setShowThinkingLevelDialog(false);
+          }}
+          onClose={() => setShowThinkingLevelDialog(false)}
         />
       )}
 

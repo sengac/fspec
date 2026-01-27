@@ -1068,6 +1068,14 @@ export declare function sessionCreateWatcher(
 /** Detach from a session (session continues running) */
 export declare function sessionDetach(sessionId: string): void;
 
+/**
+ * Get the base thinking level for a session (TUI-054)
+ *
+ * Returns the base thinking level: 0=Off, 1=Low, 2=Medium, 3=High
+ * This is the level set via /thinking command dialog.
+ */
+export declare function sessionGetBaseThinkingLevel(sessionId: string): number;
+
 /** Get buffered output from a session */
 export declare function sessionGetBufferedOutput(
   sessionId: string,
@@ -1284,6 +1292,18 @@ export declare function sessionSendInput(
  * VIEWNV-001: This allows TypeScript to explicitly control the navigation state.
  */
 export declare function sessionSetActive(sessionId: string): void;
+
+/**
+ * Set the base thinking level for a session (TUI-054)
+ *
+ * Sets the base thinking level: 0=Off, 1=Low, 2=Medium, 3=High
+ * Values > 3 are clamped to 3.
+ * This is called when user selects a level in the /thinking dialog.
+ */
+export declare function sessionSetBaseThinkingLevel(
+  sessionId: string,
+  level: number
+): void;
 
 /** Set debug enabled state for a background session (without toggling global state) */
 export declare function sessionSetDebugEnabled(

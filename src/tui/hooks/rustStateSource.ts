@@ -15,6 +15,8 @@ import {
   sessionGetTokens,
   sessionGetDebugEnabled,
   sessionGetPauseState,
+  sessionGetBaseThinkingLevel,
+  sessionSetBaseThinkingLevel,
   type SessionModel,
   type SessionTokens,
 } from '@sengac/codelet-napi';
@@ -41,6 +43,10 @@ export interface RustStateSource {
   getTokens(sessionId: string): SessionTokens;
   getDebugEnabled(sessionId: string): boolean;
   getPauseState(sessionId: string): PauseInfo | null;
+  /** TUI-054: Get the base thinking level (0=Off, 1=Low, 2=Medium, 3=High) */
+  getBaseThinkingLevel(sessionId: string): number;
+  /** TUI-054: Set the base thinking level (0=Off, 1=Low, 2=Medium, 3=High) */
+  setBaseThinkingLevel(sessionId: string, level: number): void;
 }
 
 /**
@@ -86,6 +92,24 @@ export const defaultRustStateSource: RustStateSource = {
       return parsePauseInfo(state);
     } catch {
       return null;
+    }
+  },
+
+  /** TUI-054: Get the base thinking level (0=Off, 1=Low, 2=Medium, 3=High) */
+  getBaseThinkingLevel(sessionId: string): number {
+    try {
+      return sessionGetBaseThinkingLevel(sessionId);
+    } catch {
+      return 0; // Default to Off
+    }
+  },
+
+  /** TUI-054: Set the base thinking level (0=Off, 1=Low, 2=Medium, 3=High) */
+  setBaseThinkingLevel(sessionId: string, level: number): void {
+    try {
+      sessionSetBaseThinkingLevel(sessionId, level);
+    } catch {
+      // Silently fail - state will be stale but won't crash
     }
   },
 };
