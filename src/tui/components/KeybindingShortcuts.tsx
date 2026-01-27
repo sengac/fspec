@@ -11,7 +11,7 @@ export const KeybindingShortcuts: React.FC = () => {
       borderRight={false}
       borderStyle="single"
     >
-      <Text>C View Checkpoints ◆ F View Changed Files ◆ D View FOUNDATION.md</Text>
+      <Text>C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent</Text>
     </Box>
   );
 };

@@ -37,9 +37,9 @@ describe('Feature: Fix stale tests and changed files watcher after ITF-006', () 
     });
   });
 
-  describe('Scenario: Update tests expecting "S View Stashes" keybinding to expect "C View Checkpoints"', () => {
-    it('should verify keybinding text displays "C View Checkpoints"', async () => {
-      // Given ITF-006 changed keybindings from "S View Stashes" to "C View Checkpoints"
+  describe('Scenario: Update tests expecting "S View Stashes" keybinding to expect "C Checkpoints"', () => {
+    it('should verify keybinding text displays "C Checkpoints"', async () => {
+      // Given ITF-006 changed keybindings from "S View Stashes" to "C Checkpoints"
 
       // When I render the BoardView
       const store = useFspecStore.getState();
@@ -49,9 +49,9 @@ describe('Feature: Fix stale tests and changed files watcher after ITF-006', () 
       // Wait for component to render
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Then the output should display "C View Checkpoints"
+      // Then the output should display "C Checkpoints"
       const output = frames[frames.length - 1];
-      expect(output).toContain('C View Checkpoints');
+      expect(output).toContain('C Checkpoints');
 
       // And it should NOT display old "S View Stashes" text
       expect(output).not.toContain('S View Stashes');
