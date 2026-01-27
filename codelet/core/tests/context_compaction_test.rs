@@ -330,7 +330,7 @@ async fn test_retry_llm_summary_generation_with_exponential_backoff() -> Result<
     // (This will be implemented with mock LLM provider)
 
     // @step When retry logic executes
-    let retry_strategy = RetryStrategy::new(3); // 3 retry attempts
+    let retry_strategy = RetryStrategy::new(); // Exponential backoff retry strategy
 
     // @step Then retry attempt 1 waits 0ms
     assert_eq!(
@@ -626,13 +626,11 @@ struct ValidationResult {
 }
 
 /// Retry strategy with exponential backoff
-struct RetryStrategy {
-    max_attempts: usize,
-}
+struct RetryStrategy;
 
 impl RetryStrategy {
-    fn new(max_attempts: usize) -> Self {
-        Self { max_attempts }
+    fn new() -> Self {
+        Self
     }
 
     fn backoff_delay(&self, attempt: usize) -> u64 {

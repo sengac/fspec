@@ -1,10 +1,7 @@
 /**
  * Tool Integration Utilities
  *
- * Wrapper functions for calling tools from TUI components.
- * This provides a clean interface for file search and other tool operations.
- *
- * Work Unit: TUI-055
+ * Wrapper functions for calling Rust tools from TUI components.
  */
 
 import { globSearch } from '@sengac/codelet-napi';
@@ -17,10 +14,6 @@ export interface GlobResult {
 
 /**
  * Call the Glob tool to search for files matching a pattern
- * @param pattern Glob pattern to search for (e.g., "**\/src*")
- * @param path Optional directory to search in (defaults to current directory)
- * @param caseInsensitive Optional case-insensitive matching (defaults to false)
- * @returns Promise with file results
  */
 export async function callGlobTool(
   pattern: string,
@@ -30,7 +23,6 @@ export async function callGlobTool(
   try {
     return await globSearch(pattern, path, caseInsensitive);
   } catch (error) {
-    console.error('callGlobTool error:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

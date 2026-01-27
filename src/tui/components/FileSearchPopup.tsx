@@ -1,21 +1,12 @@
 /**
- * FileSearchPopup Component
- *
- * A floating popup that appears when "@" is typed,
- * showing matching files with fuzzy search capabilities.
- *
- * Work Unit: TUI-055
+ * File Search Popup Component
+ * 
+ * Floating popup that displays file search results with keyboard navigation.
  */
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Box, Text } from 'ink';
-
-export interface FileSearchResult {
-  /** File path relative to project root */
-  path: string;
-  /** Display name (can be truncated path) */
-  displayName?: string;
-}
+import type { FileSearchResult } from '../types/fileSearch';
 
 export interface FileSearchPopupProps {
   /** Whether the popup is visible */

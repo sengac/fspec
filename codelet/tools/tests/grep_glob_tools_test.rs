@@ -167,6 +167,7 @@ async fn test_glob_returns_matching_file_paths() {
         .call(GlobArgs {
             pattern: "*.rs".to_string(),
             path: Some(temp_dir.path().to_string_lossy().to_string()),
+            case_insensitive: None,
         })
         .await
         .unwrap();
@@ -200,6 +201,7 @@ async fn test_glob_recursive_pattern_finds_nested_files() {
         .call(GlobArgs {
             pattern: "**/*.rs".to_string(),
             path: Some(temp_dir.path().to_string_lossy().to_string()),
+            case_insensitive: None,
         })
         .await
         .unwrap();
@@ -237,6 +239,7 @@ async fn test_glob_respects_gitignore() {
         .call(GlobArgs {
             pattern: "**/*.ts".to_string(),
             path: Some(temp_dir.path().to_string_lossy().to_string()),
+            case_insensitive: None,
         })
         .await
         .unwrap();
@@ -262,6 +265,7 @@ async fn test_glob_no_matches() {
         .call(GlobArgs {
             pattern: "*.xyz".to_string(),
             path: Some(temp_dir.path().to_string_lossy().to_string()),
+            case_insensitive: None,
         })
         .await
         .unwrap();

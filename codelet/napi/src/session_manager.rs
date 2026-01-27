@@ -3830,12 +3830,6 @@ impl WatcherOutput {
     fn get_turn_text(&self) -> String {
         self.turn_text.lock().unwrap().clone()
     }
-    
-    /// Clear the turn text buffer (for reuse)
-    #[allow(dead_code)]
-    fn clear_turn_text(&self) {
-        self.turn_text.lock().unwrap().clear();
-    }
 }
 
 impl codelet_cli::interactive::StreamOutput for WatcherOutput {
