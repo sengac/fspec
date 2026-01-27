@@ -4,7 +4,7 @@
   <img alt="fspec" src="fspec-logo-light.svg" width="248">
 </picture>
 
-**Stop micromanaging AI. Start shipping tested, reliable code.**
+**The complete multi-agent AI coding platform with integrated spec-driven development.**
 
 [![Website](https://img.shields.io/badge/Website-fspec.dev-blue)](https://fspec.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -18,11 +18,22 @@ AI agents lack the infrastructure that professional developers take for granted.
 
 ## What
 
-fspec is the holy grail: a complete spec-driven system that shepherds AI through professional Gherkin scenarios, auto-generates tests from Given/When/Then criteria, enforces TDD discipline, and links every line of code back to the business rule it implements. A productivity goldmine that transforms AI agents into autonomous builders of your dreams.
+fspec is a **comprehensive multi-agent AI coding platform** that unifies development workflows through disciplined spec-driven development. It combines:
+
+- **🤖 Integrated AI Agent**: Full Rust-based coding agent built directly into the terminal interface
+- **📋 Interactive Kanban**: Live project boards with real-time updates and dependency tracking  
+- **🎯 ACDD Workflow**: Acceptance Criteria Driven Development enforcing test-first discipline
+- **📝 Gherkin Management**: Complete BDD specification system with 430+ feature coverage
+- **🔄 Git Checkpoints**: Automatic and manual checkpointing with conflict-aware restoration
+- **📊 Coverage Tracking**: Full traceability from requirements to code implementation
+- **🎨 Rich Terminal UI**: Split-pane conversations, file diffs, attachment viewers, diagram rendering
+- **🔍 AST Code Analysis**: Deep codebase understanding across 16+ programming languages
+- **🌐 Web Integration**: Chrome automation, PDF processing, research tools
+- **⚡ Background Sessions**: Multiple concurrent AI conversations with session management
 
 ## How
 
-Follow the [Quick Start](#quick-start) below and start talking naturally with your AI agent. Don't know what to do next? Just ask your agent—it knows fspec inside and out and will suggest the best ways to use it for your workflow.
+fspec transforms the entire development lifecycle into a unified, AI-native experience where specifications drive development and AI agents work within professional guardrails.
 
 ---
 
@@ -46,145 +57,197 @@ Follow the [Quick Start](#quick-start) below and start talking naturally with yo
    fspec init
    ```
 
-4. **Run your AI agent** (e.g., Claude Code, Codex)
-
-5. **Bootstrap fspec context**
-   - Use a bootstrapping command: `/fspec` (Claude Code) or `/prompts:fspec` (Codex)
-   - Or tell your agent: "Run fspec bootstrap"
-
-6. **Talk naturally with fspec**
-
-   ```
-   "I want to create a bug to fix this issue"
-   "Create a checkpoint for this work"
-   "Show me the kanban board"
-   "Generate scenarios from the example map"
-   ```
-
-7. **Launch the interactive kanban**
+4. **Launch the interactive platform**
 
    ```bash
    fspec
    ```
 
-   Watch live changes, view work unit details, manage checkpoints, and navigate your kanban board with an intuitive TUI.
+   This opens the **full interactive experience** with:
+   - Live Kanban board for work unit management
+   - Integrated AI agent conversations
+   - File diff viewer and attachment system  
+   - Checkpoint management interface
+   - Real-time spec validation
 
    ![Interactive Kanban](interactive-kanban.png)
 
-8. **When your AI goes off track (and it will)**
+5. **Start a conversation with your AI agent**
+   - Press **Enter** on any work unit to start an AI conversation
+   - The agent is automatically contextualized with the work unit details
+   - Use **Shift+←/→** to switch between multiple concurrent sessions
+   - Press **ESC** to detach sessions and run them in the background
 
-   AI agents sometimes rush ahead, skip Example Mapping, or write code before tests. **That's okay—fspec has your back.**
-
-   **Auto checkpoints** are created automatically before every state transition, so you can always roll back:
-
-   ```
-   "You skipped Example Mapping. Move back to specifying status and let's do discovery properly."
-   "You wrote code before tests. Restore from the auto checkpoint and follow ACDD this time."
-   "List the auto checkpoints so I can see what you saved."
-   ```
-
-   **Recovery is simple:**
-   - Tell your agent to move the work unit backward (e.g., from `testing` back to `specifying`)
-   - Have it restore from the most recent auto checkpoint: `fspec restore-checkpoint <id> <checkpoint-name>`
-   - Checkpoints can be restored multiple times—experiment fearlessly
-
-   The workflow enforcer prevents disasters, and checkpoints provide instant recovery. No work is ever lost.
-
-9. **Keep context fresh**
-   - Over time, your agent's context gets cluttered
-   - Clear your agent's context and bootstrap fspec again
-   - Repeat as needed to maintain clean workflow
-
-10. **Ask your agent how to use fspec**
-
-    Your agent knows everything about fspec, so just ask it how to use it, or visit [fspec.dev](https://fspec.dev).
+6. **Alternative: Use with external AI agents** (e.g., Claude Code, Cursor, Codex)
+   - Bootstrap fspec context with `/fspec` or tell your agent: "Run fspec bootstrap"
+   - Talk naturally: *"Create a story for user authentication"* or *"Show me the kanban board"*
 
 ---
 
-## Integrated Coding Agent
+## Core Platform Features
 
-fspec includes a built-in AI coding agent directly in the TUI. Press Enter on any work unit (story, bug, or task) to open an agent conversation session that's automatically linked to that work unit.
+### 🤖 **Integrated AI Agent**
 
-**Session-to-Story Linking:**
-- Sessions auto-attach to work units when you start a conversation
-- Work units with attached sessions display a 🟢 indicator on the board
-- Return to a work unit later and your conversation resumes exactly where you left off
-- Use `/detach` to start fresh or `/resume` to attach a different session
+Built-in Rust-powered AI agent with advanced capabilities:
+- **Multiple Providers**: OpenAI, Anthropic, Groq, Ollama, and 15+ more
+- **AST Code Search**: Understanding code structure across languages
+- **Web Research**: Chrome automation for gathering requirements
+- **PDF Processing**: Extract and analyze documentation
+- **Tool Integration**: File operations, Git management, test execution
+- **Session Management**: Background execution with context preservation
 
-**Multiple Concurrent Sessions:**
-- Run multiple AI agent sessions simultaneously in the background
-- **Shift+Right/Left arrows** instantly switch between active sessions
-- Detached sessions continue executing while you work on something else
-- Switch back anytime to see buffered output and continue the conversation
-- Similar to tmux/screen for terminal sessions—but for AI agents
+### 📋 **Interactive Project Management**
 
-**Background Execution:**
-- Press ESC and select "Detach" to leave a session running in the background
-- Space+ESC returns to the board while keeping the session attached and running
-- View all background sessions with `/resume` and reattach to any of them
-- Agent tasks complete even when you're not watching
+Professional Kanban workflow with AI integration:
+- **Live Board Updates**: Real-time synchronization across all interfaces
+- **Work Unit Types**: Stories, tasks, bugs with full lifecycle tracking
+- **Dependency Management**: Visualize and manage work dependencies
+- **Epic Organization**: Group related work with progress tracking
+- **Estimation & Metrics**: Story points, velocity, accuracy tracking
 
-**Why it matters:** No more context switching or waiting. Start multiple AI tasks across different stories, switch between them instantly, and never lose track of what was discussed for each feature or bug fix.
+### 🎯 **Spec-Driven Development (ACDD)**
+
+Disciplined workflow ensuring quality:
+- **Acceptance Criteria Driven Development**: Test-first enforcement
+- **Gherkin Specifications**: Full BDD with Given/When/Then scenarios
+- **Example Mapping**: Collaborative discovery with rules/examples/questions
+- **Event Storming**: Domain modeling for complex business contexts
+- **Coverage Tracking**: Link every line of code to business requirements
+
+### 🔄 **Git Checkpoint System**
+
+Experiment fearlessly with professional backup:
+- **Auto Checkpoints**: Created before every workflow transition
+- **Manual Checkpoints**: Save experimental states
+- **Conflict Resolution**: Smart restoration with merge handling
+- **Cleanup Management**: Automatic pruning of old checkpoints
+
+### 🎨 **Rich Terminal Interface**
+
+Professional development environment in your terminal:
+- **Split Sessions**: Parent/watcher conversation views
+- **File Diff Viewer**: Visual code changes with syntax highlighting
+- **Attachment System**: Markdown documents with Mermaid diagram rendering
+- **Virtual Scrolling**: Handle large conversations efficiently
+- **Keyboard Navigation**: Vim-like keybindings for power users
+
+### 🔍 **Enterprise Analytics**
+
+Deep insights into development workflow:
+- **Bottleneck Analysis**: Identify workflow constraints
+- **Estimation Accuracy**: Track and improve story point accuracy  
+- **Coverage Reports**: Requirement-to-code traceability
+- **Quality Metrics**: Test coverage, specification alignment
+- **Dependency Statistics**: Understand work interdependencies
 
 ---
 
-## Checkpoints
+## Session Management
 
-Experiment fearlessly with built-in Git checkpoints. Tell your agent to **"create a checkpoint"** to save your current state, then view and restore checkpoints from the interactive kanban by pressing the **C** key.
+fspec provides unprecedented flexibility in AI conversation management:
+
+**🔗 Session-to-Story Linking:**
+- AI conversations automatically link to work units
+- Work units with conversations show a 🟢 indicator
+- Resume exact conversations when returning to work units
+- Use `/detach` to start fresh or `/resume` to switch contexts
+
+**⚡ Multiple Concurrent Sessions:**
+- Run multiple AI agents simultaneously in background
+- **Shift+←/→** instantly switch between active sessions
+- Detached sessions continue executing while you work elsewhere
+- Background task completion with buffered output
+
+**📱 Background Execution:**
+- Press **ESC → Detach** to leave sessions running in background
+- **Space+ESC** returns to board while keeping sessions attached
+- View all background sessions with `/resume`
+- Like tmux/screen but for AI agent conversations
+
+---
+
+## Advanced Capabilities
+
+### 🌐 **Web Integration**
+- Automated web research for requirement gathering
+- Chrome DevTools integration for testing
+- Screenshot capture for documentation
+- Link validation and content extraction
+
+### 📊 **Coverage Analysis**
+- Link Gherkin scenarios to test files to implementation
+- Requirement traceability matrices
+- Orphaned code detection
+- Business rule compliance tracking
+
+### 🔧 **Hook System**
+- Pre/post workflow hooks for automation
+- Custom validation and quality gates
+- Integration with CI/CD pipelines
+- Conditional execution based on tags/estimates
+
+### 🎨 **Attachment Viewer**
+Comprehensive documentation system:
+- **Markdown Rendering**: Full GitHub-flavored markdown support
+- **Mermaid Diagrams**: Interactive diagram viewing
+- **Research Integration**: AI agents can create and attach documentation
+- **Version History**: Track document changes over time
+
+![Attachment Viewer - Dialog](attachment1.png)
+![Attachment Viewer - Diagram](attachment2.png)
+
+---
+
+## Checkpoint Management
+
+Professional backup and experimentation system:
 
 ![Checkpoint View](checkpoints.png)
 
----
-
-## Attachment Viewer
-
-Attach markdown documents with mermaid diagrams to work units for rich documentation **before** starting Example Mapping. Perfect for researching complex topics and creating visual designs.
-
-**Example workflow:**
-
-```
-"Create a story about adding Event Storming. I want you to research this
-topic on the web and create a markdown document with mermaid diagrams
-and attach it to this story using fspec."
-```
-
-View attachments in the interactive kanban by pressing the **A** key, with full markdown and mermaid diagram rendering.
-
-![Attachment Viewer - Dialog](attachment1.png)
-
-![Attachment Viewer - Diagram](attachment2.png)
+- **Automatic Checkpointing**: Before every workflow state transition
+- **Manual Snapshots**: Save experimental work states  
+- **Branching Strategies**: Multiple checkpoint branches per work unit
+- **Conflict Resolution**: Smart merging when restoring checkpoints
+- **Cleanup Automation**: Configurable retention policies
 
 ---
 
 ## 🦴 DOGFOODING 🍖
 
-**We practice what we preach.** fspec was built entirely using fspec. The result? **257 feature files** with complete Gherkin specifications, full test coverage, and end-to-end traceability.
+**We practice what we preach.** fspec was built entirely using fspec itself, resulting in **432 comprehensive feature files** with complete Gherkin specifications, full test coverage, and end-to-end traceability.
 
-How long would that normally take? A traditional QA and business analyst team would need **9-12 months** to produce that level of documentation. We did it in weeks with AI agents following ACDD discipline.
+**Traditional approach:** A dedicated QA and business analyst team would need **9-12 months** to produce this level of documentation and specification coverage.
 
-**See for yourself:** Browse the [complete feature file collection](https://github.com/sengac/fspec/tree/main/spec/features) and witness what AI-driven, test-first development actually looks like at scale.
+**fspec approach:** We achieved this in **weeks** using AI agents working within ACDD discipline, with the platform enforcing quality and traceability at every step.
+
+**See for yourself:** Browse the [complete feature file collection](https://github.com/sengac/fspec/tree/main/spec/features) and witness what AI-driven, spec-first development looks like at scale.
 
 ---
 
 ## Bug Reporting & Support
 
-Found a bug? Just tell your AI agent:
+**With integrated AI agent:**
+Just tell your agent: *"Report a bug to GitHub"* - it knows how to use `fspec report-bug-to-github` to gather context and create issues.
 
-```
-"Report a bug to GitHub"
-```
-
-Your agent knows how to use `fspec report-bug-to-github` to automatically gather context and create the issue.
+**With external AI agents:**
+Tell your agent: *"Report a bug to GitHub using fspec"*
 
 **Manual reporting:** [Create an issue](https://github.com/sengac/fspec/issues/new)
 
 ---
 
-## Need Your Legacy Code Rewritten?
+## Professional Services
 
-**Your codebase is costing you millions.** Untested. Undocumented. Impossible to maintain. SENGAC specializes in transforming legacy nightmares into modern, AI-tested, fully-specified systems using tools like fspec. We don't just migrate—we rebuild with complete test coverage, living documentation, and end-to-end traceability.
+**Your codebase is costing you millions.** Untested. Undocumented. Impossible to maintain. SENGAC specializes in transforming legacy systems into modern, AI-tested, fully-specified platforms using fspec.
 
-**Stop throwing money at technical debt.** [Reach out to SENGAC](https://sengac.com) and let's modernize your infrastructure.
+We don't just migrate—we rebuild with:
+- ✅ Complete test coverage
+- ✅ Living documentation  
+- ✅ End-to-end traceability
+- ✅ AI agent integration
+- ✅ Professional workflow discipline
+
+**Stop throwing money at technical debt.** [Contact SENGAC](https://sengac.com) to modernize your development infrastructure.
 
 ---
 
