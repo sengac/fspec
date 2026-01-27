@@ -29,6 +29,7 @@ import { SessionHeader } from './SessionHeader.js';
 import { useTerminalSize } from '../hooks/useTerminalSize.js';
 import { useTurnSelection } from '../hooks/useTurnSelection.js';
 import { useWatcherHeaderInfo } from '../hooks/useWatcherHeaderInfo.js';
+import { useFspecStore } from '../store/fspecStore.js';
 import {
   getSelectionSeparatorType,
   getFirstContentOfTurn,
@@ -114,6 +115,10 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
 
   // Get watcher header info (slug, instance number) from session ID
   const watcherHeaderInfo = useWatcherHeaderInfo(sessionId);
+
+  // Get work unit ID attached to this session
+  const getWorkUnitBySession = useFspecStore(state => state.getWorkUnitBySession);
+  const workUnitId = getWorkUnitBySession(sessionId);
 
   // VIEWNV-001: Session navigation hook
   const showCreateSessionDialog = useShowCreateSessionDialog();
@@ -423,6 +428,7 @@ export const SplitSessionView: React.FC<SplitSessionViewProps> = ({
         tokenUsage={tokenUsage}
         rustTokens={rustTokens}
         contextFillPercentage={contextFillPercentage}
+        workUnitId={workUnitId}
         watcherInfo={watcherHeaderInfo ? {
           slug: watcherHeaderInfo.slug,
           instanceNumber: watcherHeaderInfo.instanceNumber,

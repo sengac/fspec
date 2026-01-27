@@ -98,6 +98,7 @@ interface FspecState {
   getAttachedSession: (workUnitId: string) => string | undefined;
   hasAttachedSession: (workUnitId: string) => boolean;
   getCurrentWorkUnitId: () => string | null;
+  getWorkUnitBySession: (sessionId: string) => string | undefined;
 }
 
 export const useFspecStore = create<FspecState>()(
@@ -406,6 +407,16 @@ export const useFspecStore = create<FspecState>()(
 
     getCurrentWorkUnitId: () => {
       return get().currentWorkUnitId;
+    },
+
+    getWorkUnitBySession: (sessionId: string) => {
+      const attachments = get().sessionAttachments;
+      for (const [workUnitId, attachedSessionId] of attachments.entries()) {
+        if (attachedSessionId === sessionId) {
+          return workUnitId;
+        }
+      }
+      return undefined;
     },
   }))
 );

@@ -1136,6 +1136,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const detachSessionFromWorkUnit = useFspecStore(state => state.detachSession);
   const getAttachedSession = useFspecStore(state => state.getAttachedSession);
   const setCurrentWorkUnitId = useFspecStore(state => state.setCurrentWorkUnitId);
+  const getWorkUnitBySession = useFspecStore(state => state.getWorkUnitBySession);
 
   // NAPI-006: History navigation state
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
@@ -1363,6 +1364,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     const index = parentSessions.findIndex(s => s.id === currentSessionId);
     return index >= 0 ? index + 1 : undefined;
   }, [currentSessionId]);
+
+  // Calculate work unit ID attached to current session
+  const attachedWorkUnitId = useMemo(() => {
+    if (!currentSessionId) {
+      return undefined;
+    }
+    return getWorkUnitBySession(currentSessionId);
+  }, [currentSessionId, getWorkUnitBySession]);
 
   // Extract remaining display state from Rust snapshot
   const displayIsLoading = rustSnapshot.isLoading;
@@ -4431,6 +4440,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // VIEWNV-001: Handle create session dialog confirmation
   // Creates session immediately so /thinking and other commands work right away
   const handleCreateSessionConfirm = useCallback(async () => {
+    // Save reference to current session before detaching (to detect navigation context)
+    const wasInSession = !!currentSessionId;
+    
     // Detach from current session if any
     if (currentSessionId) {
       try {
@@ -4456,6 +4468,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // Activate the session in the store
       activateSession(result.sessionId);
 
+      // SESS-001: Only auto-attach session to work unit when creating from board context
+      // If we were in a session, we're creating via navigation (Shift+Right) and shouldn't auto-attach
+      if (workUnitId && !wasInSession) {
+        attachSessionToWorkUnit(workUnitId, result.sessionId);
+        logger.debug(`SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`);
+      } else if (workUnitId && wasInSession) {
+        logger.debug(`SESS-001: Skipped auto-attach for navigation-created session ${result.sessionId} (created via Shift+Right)`);
+      }
+
       // Clear conversation and input for the new session
       setConversation([]);
       setInputValue('');
@@ -4472,7 +4493,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setInputValue('');
       closeCreateSessionDialog();
     }
-  }, [currentSessionId, currentModel, currentProvider, activateSession, closeCreateSessionDialog, prepareForNewSession]);
+  }, [currentSessionId, currentModel, currentProvider, activateSession, closeCreateSessionDialog, prepareForNewSession, workUnitId, attachSessionToWorkUnit]);
 
   // VIEWNV-001: Unified session navigation hook for Shift+Arrow navigation
   // This provides the navigation logic that determines targets based on the session tree
@@ -4556,6 +4577,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       return;
     }
 
+    // SESS-001: Don't auto-create if there's an attached session that should be resumed
+    if (workUnitId) {
+      const attachedSessionId = getAttachedSession(workUnitId);
+      if (attachedSessionId) {
+        logger.debug(`SESS-001: Skipping auto-create because work unit ${workUnitId} has attached session ${attachedSessionId} that will be resumed`);
+        clearAutoCreateRequest();
+        return;
+      }
+    }
+
     // Clear the request immediately to prevent double-creation
     clearAutoCreateRequest();
 
@@ -4572,6 +4603,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         });
 
         activateSession(result.sessionId);
+        
+        // SESS-001: Auto-attach session to work unit when auto-creating
+        if (workUnitId) {
+          attachSessionToWorkUnit(workUnitId, result.sessionId);
+          logger.debug(`SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`);
+        }
+
         // Mark that this session needs renaming on first message
         sessionNeedsRenameRef.current = true;
         logger.debug(`VIEWNV-001: Auto-created session ${result.sessionId} on AgentView mount`);
@@ -4581,7 +4619,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     };
 
     void autoCreateSession();
-  }, [shouldAutoCreateSession, currentSessionId, currentModel, currentProvider, activateSession, clearAutoCreateRequest]);
+  }, [shouldAutoCreateSession, currentSessionId, currentModel, currentProvider, activateSession, clearAutoCreateRequest, workUnitId, attachSessionToWorkUnit, getAttachedSession]);
 
   // NAPI-003 + TUI-047: Enter resume mode (show session selection overlay)
   // Now queries both persistence and background sessions, merging results
@@ -7088,6 +7126,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         contextFillPercentage={contextFillPercentage}
         compactionReduction={compactionReduction}
         sessionNumber={sessionNumber}
+        workUnitId={attachedWorkUnitId}
       />
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}
