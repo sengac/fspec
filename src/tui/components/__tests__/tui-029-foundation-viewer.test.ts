@@ -46,14 +46,14 @@ describe('Feature: View FOUNDATION.md in TUI with attachment viewer', () => {
     });
   });
 
-  describe('Scenario: Keybinding help line displays D View FOUNDATION.md', () => {
-    it('should display keybinding help with diamond separator and D View FOUNDATION.md', async () => {
+  describe('Scenario: Keybinding help line displays D FOUNDATION.md', () => {
+    it('should display keybinding help with diamond separator and D FOUNDATION.md', async () => {
       // @step Given I am viewing the main TUI board
       // @step When I look at the keybinding help line
-      // @step Then I should see "F View Changed Files" on the help line
+      // @step Then I should see "F Changed Files" on the help line
       // @step And I should see a diamond separator "◆" after it
-      // @step And I should see "D View FOUNDATION.md" to the right of the separator
-      // @step And the help line should read "◆ F View Changed Files ◆ D View FOUNDATION.md"
+      // @step And I should see "D FOUNDATION.md" to the right of the separator
+      // @step And the help line should read "◆ F Changed Files ◆ D FOUNDATION.md"
 
       const keybindingShortcutsPath = join(
         process.cwd(),
@@ -64,18 +64,18 @@ describe('Feature: View FOUNDATION.md in TUI with attachment viewer', () => {
         'utf-8'
       );
 
-      // Should have "F View Changed Files" text
-      expect(keybindingContent).toMatch(/F View Changed Files/);
+      // Should have "F Changed Files" text
+      expect(keybindingContent).toMatch(/F Changed Files/);
 
       // Should have diamond separator
       expect(keybindingContent).toMatch(/◆/);
 
-      // Should have "D View FOUNDATION.md" text
-      expect(keybindingContent).toMatch(/D View FOUNDATION\.md/);
+      // Should have "D FOUNDATION.md" text
+      expect(keybindingContent).toMatch(/D FOUNDATION\.md/);
 
       // Diamond should appear between F and D commands
       const helpLineMatch = keybindingContent.match(
-        /F View Changed Files.*◆.*D View FOUNDATION\.md/
+        /F Changed Files.*◆.*D FOUNDATION\.md/
       );
       expect(helpLineMatch).toBeTruthy();
     });
@@ -151,9 +151,9 @@ describe('Feature: View FOUNDATION.md in TUI with attachment viewer', () => {
     it('should position diamond separator correctly in help line', async () => {
       // @step Given I am viewing the main TUI board
       // @step When I examine the keybinding help line
-      // @step Then "F View Changed Files" should appear first
+      // @step Then "F Changed Files" should appear first
       // @step And a diamond separator "◆" should appear immediately after it
-      // @step And "D View FOUNDATION.md" should appear immediately after the separator
+      // @step And "D FOUNDATION.md" should appear immediately after the separator
       // @step And no other text should appear between these elements
 
       const keybindingShortcutsPath = join(
@@ -166,13 +166,11 @@ describe('Feature: View FOUNDATION.md in TUI with attachment viewer', () => {
       );
 
       // Extract help line pattern
-      const helpLinePattern =
-        /F View Changed Files\s*◆\s*D View FOUNDATION\.md/;
+      const helpLinePattern = /F Changed Files\s*◆\s*D FOUNDATION\.md/;
       expect(keybindingContent).toMatch(helpLinePattern);
 
       // Ensure no extra text between elements
-      const cleanPattern =
-        /F View Changed Files\s*◆\s*D View FOUNDATION\.md(?!\w)/;
+      const cleanPattern = /F Changed Files\s*◆\s*D FOUNDATION\.md(?!\w)/;
       expect(keybindingContent).toMatch(cleanPattern);
     });
   });

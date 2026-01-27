@@ -21,7 +21,7 @@ describe('Feature: Replace Git Stashes with Checkpoint Component - Integration',
     await store.loadData();
   });
 
-  describe('Scenario: Keybinding text displays "C View Checkpoints" and "F View Changed Files"', () => {
+  describe('Scenario: Keybinding text displays "C Checkpoints" and "F Changed Files"', () => {
     it('should display updated keybinding text in the header', async () => {
       // Given the TUI is running with the checkpoint component integrated
       const { frames } = render(<BoardView />);
@@ -33,13 +33,13 @@ describe('Feature: Replace Git Stashes with Checkpoint Component - Integration',
       // Get the last frame that's not an escape sequence - search for any checkpoint-related content
       const output = frames.find(frame => frame.length > 100 && (frame.includes('Checkpoints') || frame.includes('Changed Files') || frame.includes('Backlog'))) || frames[frames.length - 1];
 
-      // Then it should display "C View Checkpoints ◆ F View Changed Files"
-      expect(output).toContain('C View Checkpoints');
-      expect(output).toContain('F View Changed Files');
+      // Then it should display "C Checkpoints ◆ F Changed Files"
+      expect(output).toContain('C Checkpoints');
+      expect(output).toContain('F Changed Files');
 
       // And it should NOT display the old keybinding text
       expect(output).not.toContain('S View Stashes');
-      // Note: "C View Changed Files" should not appear (it's now "F View Changed Files")
+      // Note: "C Changed Files" should not appear (it's now "F Changed Files")
     });
   });
 

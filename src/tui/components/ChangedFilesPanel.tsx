@@ -12,7 +12,7 @@ import { Box, Text } from 'ink';
 export const ChangedFilesPanel: React.FC = () => {
   return (
     <Box flexDirection="column">
-      <Text>C View Checkpoints ◆ F View Changed Files</Text>
+      <Text>C Checkpoints ◆ F Changed Files</Text>
     </Box>
   );
 };

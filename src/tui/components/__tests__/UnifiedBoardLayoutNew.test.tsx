@@ -55,8 +55,8 @@ describe('Feature: Refactor header and details to component-based flexbox', () =
       expect(lastFrame()).toContain('Checkpoints');
 
       // @step And I should see the keybinding shortcuts
-      expect(lastFrame()).toContain('C View Checkpoints');
-      expect(lastFrame()).toContain('F View Changed Files');
+      expect(lastFrame()).toContain('C Checkpoints');
+      expect(lastFrame()).toContain('F Changed Files');
 
       // @step And I should see the work unit details section
       expect(lastFrame()).toContain('TEST-001');

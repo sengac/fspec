@@ -360,6 +360,12 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         return true;
       }
 
+      // '/' key to navigate to first session or show create dialog (same as Shift+Right)
+      if (input === '/') {
+        handleShiftRight();
+        return true;
+      }
+
       return false;
     },
   });
