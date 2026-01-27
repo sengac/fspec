@@ -8,22 +8,57 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { tool as jiraTool } from '../jira';
 import https from 'https';
 
+// Use vi.hoisted to define mocks that will be available during module mocking
+const { mockHomedir, mockExistsSync, mockReadFileSync, mockHttpsRequest } =
+  vi.hoisted(() => ({
+    mockHomedir: vi.fn(),
+    mockExistsSync: vi.fn(),
+    mockReadFileSync: vi.fn(),
+    mockHttpsRequest: vi.fn(),
+  }));
+
 // Mock https module
-vi.mock('https');
-vi.mock('fs');
-vi.mock('os');
+vi.mock('https', async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    request: mockHttpsRequest,
+    default: {
+      request: mockHttpsRequest,
+    },
+  };
+});
+vi.mock('fs', async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    existsSync: mockExistsSync,
+    readFileSync: mockReadFileSync,
+    default: {
+      existsSync: mockExistsSync,
+      readFileSync: mockReadFileSync,
+    },
+  };
+});
+vi.mock('os', async importOriginal => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    homedir: mockHomedir,
+    default: {
+      homedir: mockHomedir,
+    },
+  };
+});
 
 describe('Feature: JIRA research tool outputs [object Object] in markdown format for description field', () => {
   beforeEach(async () => {
     vi.resetAllMocks();
 
     // Mock config file existence and content
-    const fsMock = await import('fs');
-    const osMock = await import('os');
-
-    vi.mocked(osMock.homedir).mockReturnValue('/mock/home');
-    vi.mocked(fsMock.existsSync).mockReturnValue(true);
-    vi.mocked(fsMock.readFileSync).mockReturnValue(
+    mockHomedir.mockReturnValue('/mock/home');
+    mockExistsSync.mockReturnValue(true);
+    mockReadFileSync.mockReturnValue(
       JSON.stringify({
         research: {
           jira: {
@@ -84,7 +119,7 @@ describe('Feature: JIRA research tool outputs [object Object] in markdown format
         }),
       };
 
-      vi.mocked(https.request).mockImplementation((_options, callback) => {
+      mockHttpsRequest.mockImplementation((_options, callback) => {
         callback(mockResponse as any);
         return mockRequest as any;
       });
@@ -149,7 +184,7 @@ describe('Feature: JIRA research tool outputs [object Object] in markdown format
         }),
       };
 
-      vi.mocked(https.request).mockImplementation((_options, callback) => {
+      mockHttpsRequest.mockImplementation((_options, callback) => {
         callback(mockResponse as any);
         return mockRequest as any;
       });
@@ -198,7 +233,7 @@ describe('Feature: JIRA research tool outputs [object Object] in markdown format
         }),
       };
 
-      vi.mocked(https.request).mockImplementation((_options, callback) => {
+      mockHttpsRequest.mockImplementation((_options, callback) => {
         callback(mockResponse as any);
         return mockRequest as any;
       });

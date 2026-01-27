@@ -236,7 +236,7 @@ describe('Feature: Refactor header and details to component-based flexbox', () =
       // @step Then I should see the footer with keyboard shortcuts
       expect(lastFrame()).toContain('← → Columns');
       expect(lastFrame()).toContain('↑↓ Work Units');
-      expect(lastFrame()).toContain('↵ Details');
+      expect(lastFrame()).toContain('↵ Work Agent');
       expect(lastFrame()).toContain('ESC Back');
     });
   });

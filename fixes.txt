@@ -1,0 +1,292 @@
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/commands/__tests__/stable-indices.test.ts [ src/commands/__tests__/stable-indices.test.ts ]
+Error: [vitest] No "default" export is defined on the "fs/promises" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("fs/promises"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ src/utils/project-root-detection.ts:1:37
+      1| import { access, mkdir, stat } from 'fs/promises';
+       |                                     ^
+      2| import { join, dirname } from 'path';
+      3| import { constants } from 'fs';
+ ❯ src/utils/ensure-files.ts:5:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/12]⎯
+
+ FAIL  src/commands/__tests__/type-specific-commands.test.ts [ src/commands/__tests__/type-specific-commands.test.ts ]
+Error: Failed to resolve import "../create-work-unit" from "src/commands/__tests__/type-specific-commands.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /Users/rquast/projects/fspec/src/commands/__tests__/type-specific-commands.test.ts:275:21
+  188 |        let importError = false;
+  189 |        try {
+  190 |          await import("../create-work-unit");
+      |                       ^
+  191 |        } catch (error) {
+  192 |          importError = true;
+ ❯ TransformPluginContext._formatLog node_modules/vite/dist/node/chunks/config.js:29618:43
+ ❯ TransformPluginContext.error node_modules/vite/dist/node/chunks/config.js:29615:14
+ ❯ normalizeUrl node_modules/vite/dist/node/chunks/config.js:27738:18
+ ❯ node_modules/vite/dist/node/chunks/config.js:27796:32
+ ❯ TransformPluginContext.transform node_modules/vite/dist/node/chunks/config.js:27764:4
+ ❯ EnvironmentPluginContainer.transform node_modules/vite/dist/node/chunks/config.js:29416:14
+ ❯ loadAndTransform node_modules/vite/dist/node/chunks/config.js:23287:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/12]⎯
+
+ FAIL  src/tui/components/__tests__/watcher-templates.test.tsx [ src/tui/components/__tests__/watcher-templates.test.tsx ]
+Error: [vitest] No "default" export is defined on the "fs" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("fs"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ src/tui/utils/watcherTemplateStorage.ts:11:42
+      9|
+     10| import { join } from 'path';
+     11| import { mkdirSync, writeFileSync } from 'fs';
+       |                                          ^
+     12| import { readFile } from 'fs/promises';
+     13| import { randomUUID } from 'crypto';
+ ❯ src/tui/components/__tests__/watcher-templates.test.tsx:61:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/12]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/commands/__tests__/stable-indices-bug-fixes.test.ts > Feature: Stable Indices Critical Bug Fixes > Scenario: Prevent ID collision after compaction (line 32) > should use correct nextNoteId field after compaction to prevent ID collisions
+Error: [vitest] No "default" export is defined on the "fs/promises" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("fs/promises"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ src/utils/project-root-detection.ts:1:37
+      1| import { access, mkdir, stat } from 'fs/promises';
+       |                                     ^
+      2| import { join, dirname } from 'path';
+      3| import { constants } from 'fs';
+ ❯ src/utils/ensure-files.ts:5:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/12]⎯
+
+ FAIL  src/commands/__tests__/stable-indices-bug-fixes.test.ts > Feature: Stable Indices Critical Bug Fixes > Scenario: Preserve state sorting through auto-compact (line 49) > should preserve state sorting when auto-compact is triggered during status transition
+Error: [vitest] No "default" export is defined on the "fs/promises" mock. Did you forget to return it from "vi.mock"?
+If you need to partially mock a module, you can use "importOriginal" helper inside:
+
+vi.mock(import("fs/promises"), async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    // your mocked methods
+  }
+})
+
+ ❯ src/utils/config.ts:1:59
+      1| import { readFile, writeFile as fsWriteFile, mkdir } from 'fs/promises';
+       |                                                           ^
+      2| import { join } from 'path';
+      3| import { homedir } from 'os';
+ ❯ src/utils/logger.ts:23:1
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/12]⎯
+
+ FAIL  src/research-tools/__tests__/jira-markdown-adf-parsing.test.ts > Feature: JIRA research tool outputs [object Object] in markdown format for description field > Scenario: Parse ADF description and display as markdown text > should parse ADF description and not show [object Object]
+ FAIL  src/research-tools/__tests__/jira-markdown-adf-parsing.test.ts > Feature: JIRA research tool outputs [object Object] in markdown format for description field > Scenario: Display specific issue description correctly > should display the actual description text in human-readable format
+ FAIL  src/research-tools/__tests__/jira-markdown-adf-parsing.test.ts > Feature: JIRA research tool outputs [object Object] in markdown format for description field > Scenario: Handle empty or missing description gracefully > should show "No description provided" instead of [object Object]
+TypeError: __vite_ssr_import_0__.vi.mocked(...).mockReturnValue is not a function
+ ❯ src/research-tools/__tests__/jira-markdown-adf-parsing.test.ts:24:31
+     22|     const osMock = await import('os');
+     23|
+     24|     vi.mocked(osMock.homedir).mockReturnValue('/mock/home');
+       |                               ^
+     25|     vi.mocked(fsMock.existsSync).mockReturnValue(true);
+     26|     vi.mocked(fsMock.readFileSync).mockReturnValue(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/12]⎯
+
+ FAIL  src/tui/__tests__/BoardView-git-context-work-unit-details.test.tsx > Feature: Consolidate Git info and add work unit details panel > Scenario: Work Unit Details panel shows selected work unit metadata > should display selected work unit with icon, title, truncated description, and metadata
+AssertionError: expected '┌────────────────────────────────────…' to match /↵.*Details/
+
+- Expected:
+/↵.*Details/
+
++ Received:
+"┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: None                                                                    │
+│ ┣ ┗┓┃┃┣ ┃                                                                                        │
+│ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────────────────────────── │
+│             C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent                      │
+├──────────────────────────────────────────────────────────────────────────────────────────────────┤
+│BOARD-001: Test Feature                                                                           │
+│This is a longer description that spans multiple lines and needs to be truncated for display.     │
+│Line 2 of the description. Line 3 of the description. Line 4 of the description. Line 5 of th…    │
+│Attachments: none                                                                                 │
+│Epic: test-epic | Estimate: 5pts | Status: implementing                                           │
+├──────────────┬─────────────┬─────────────┬─────────────┬─────────────┬─────────────┬─────────────┤
+│BACKLOG       │SPECIFYING   │TESTING      │IMPLEMENTING │VALIDATING   │DONE         │BLOCKED      │
+├──────────────┼─────────────┼─────────────┼─────────────┼─────────────┼─────────────┼─────────────┤
+│              │             │             │⏩ BOARD-001 │             │             │             │
+│              │             │             │             │             │             │             │
+│              │             │             │             │             │             │             │
+│              │             │             │             │             │             │             │
+│              │             │             │             │             │             │             │
+│              │             │             │             │             │             │             │
+├──────────────┴─────────────┴─────────────┴─────────────┴─────────────┴─────────────┴─────────────┤
+│     ← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆ ESC Back      │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘"
+
+ ❯ src/tui/__tests__/BoardView-git-context-work-unit-details.test.tsx:160:21
+    158|       expect(frame).toContain('BOARD-001');
+    159|       expect(frame).toContain('Test Feature');
+    160|       expect(frame).toMatch(/↵.*Details/); // Keyboard hint in footer
+       |                     ^
+    161|       // Note: Dependencies are not currently displayed in Work Unit Details panel
+    162|       // This would be a future enhancement (showing dependencies)
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/12]⎯
+
+ FAIL  src/tui/__tests__/BoardView-interactive-kanban.test.tsx > Feature: Interactive Kanban board CLI > Scenario: Close agent view with ESC key > should return to board view when ESC is pressed in agent view
+AssertionError: expected '┌────────────────────────────────────…' to contain 'Exit Session?'
+
+- Expected
++ Received
+
+- Exit Session?
++ ┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
++ │ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: 10 Manual, 35 Auto                                                      │
++ │ ┣ ┗┓┃┃┣ ┃                                                                                        │
++ │ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────────────────────────── │
++ │             C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent                      │
++ ├──────────────────────────────────────────────────────────────────────────────────────────────────┤
++ │LANG-001: Internationalization and localization support for multiple languages                    │
++ │Add i18n framework to fspec to support multiple languages for all user-facing text including CLI  │
++ │ output, error messages, help text, and system-reminders                                          │
++ │Attachments: none                                                                                 │
++ │Status: specifying                                                                                │
++ ├──────────────┬─────────────┬─────────────┬─────────────┬─────────────┬─────────────┬─────────────┤
++ │BACKLOG       │SPECIFYING   │TESTING      │IMPLEMENTING │VALIDATING   │DONE         │BLOCKED      │
++ ├──────────────┼─────────────┼─────────────┼─────────────┼─────────────┼─────────────┼─────────────┤
++ │AGENT-002     │🟢 LANG-001  │             │             │             │⏩ TUI-055 [5│QUERY-001    │
++ │AGENT-003     │EXMAP-004 [5]│             │             │             │TUI-054 [8]  │             │
++ │AGENT-004     │AGENT-001 [5]│             │             │             │TUI-050 [5]  │             │
++ │AGENT-005     │BROWSE-001   │             │             │             │NAPI-009 [8] │             │
++ │AGENT-006     │BOARD-020    │             │             │             │PAUSE-001 [8]│             │
++ │↓             │↓            │             │             │             │↓            │             │
++ ├──────────────┴─────────────┴─────────────┴─────────────┴─────────────┴─────────────┴─────────────┤
++ │     ← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆ ESC Back      │
++ └──────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+ ❯ src/tui/__tests__/BoardView-interactive-kanban.test.tsx:124:31
+    122|       // Navigate to "Close Session" button (middle button) and press Enter
+    123|       const exitDialogFrame = frames[frames.length - 1];
+    124|       expect(exitDialogFrame).toContain('Exit Session?');
+       |                               ^
+    125|
+    126|       // Navigate right to "Close Session" button
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/12]⎯
+
+ FAIL  src/tui/__tests__/BoardView-interactive-kanban.test.tsx > Feature: Interactive Kanban board CLI > Scenario: Display footer with keyboard shortcuts > should display keyboard shortcuts in footer
+AssertionError: expected '┌────────────────────────────────────…' to match /Details/
+
+- Expected:
+/Details/
+
++ Received:
+"┌──────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: 10 Manual, 35 Auto                                                      │
+│ ┣ ┗┓┃┃┣ ┃                                                                                        │
+│ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────────────────────────── │
+│             C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent                      │
+├──────────────────────────────────────────────────────────────────────────────────────────────────┤
+│AGENT-002: Test Cline agent compatibility                                                         │
+│Verify fspec init --agent=cline works correctly: creates .cline/commands/fspec.md, creates        │
+│spec/CLINE.md, shows correct activation instructions, and supports full ACDD workflow             │
+│Attachments (use the \"A\" key to view): ast-research-napi-session.json                             │
+│Epic: agent-testing | Status: backlog                                                             │
+├──────────────┬─────────────┬─────────────┬─────────────┬─────────────┬─────────────┬─────────────┤
+│BACKLOG       │SPECIFYING   │TESTING      │IMPLEMENTING │VALIDATING   │DONE         │BLOCKED      │
+├──────────────┼─────────────┼─────────────┼─────────────┼─────────────┼─────────────┼─────────────┤
+│AGENT-002     │🟢 LANG-001  │             │             │             │⏩ TUI-055 [5│QUERY-001    │
+│AGENT-003     │EXMAP-004 [5]│             │             │             │TUI-054 [8]  │             │
+│AGENT-004     │AGENT-001 [5]│             │             │             │TUI-050 [5]  │             │
+│AGENT-005     │BROWSE-001   │             │             │             │NAPI-009 [8] │             │
+│AGENT-006     │BOARD-020    │             │             │             │PAUSE-001 [8]│             │
+│↓             │↓            │             │             │             │↓            │             │
+├──────────────┴─────────────┴─────────────┴─────────────┴─────────────┴─────────────┴─────────────┤
+│     ← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆ ESC Back      │
+└──────────────────────────────────────────────────────────────────────────────────────────────────┘"
+
+ ❯ src/tui/__tests__/BoardView-interactive-kanban.test.tsx:240:21
+    238|       expect(frame).toMatch(/←.*→.*Columns/);
+    239|       expect(frame).toMatch(/↑.*↓.*Work Units/);
+    240|       expect(frame).toMatch(/Details/);
+       |                     ^
+    241|       expect(frame).toMatch(/ESC.*Back/);
+    242|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/12]⎯
+
+ FAIL  src/tui/components/__tests__/UnifiedBoardLayoutNew.test.tsx > Feature: Refactor header and details to component-based flexbox > Scenario: Footer displays keyboard shortcuts > should show navigation hints at the bottom
+AssertionError: expected '┌────────────────────────────────────…' to contain '↵ Details'
+
+- Expected
++ Received
+
+- ↵ Details
++ ┌──────────────────────────────────────────────────────────────────────────────┐
++ │ ┏┓┏┓┏┓┏┓┏┓  Checkpoints: None                                                                    │
++ │ ┣ ┗┓┃┃┣ ┃                                                                                        │
++ │ ┻ ┗┛┣┛┗┛┗┛  ──────────────────────────────────────────────────────────────────────────────────── │
++ │             C Checkpoints ◆ F Changed Files ◆ D FOUNDATION.md ◆ / New Agent                      │
++ ├──────────────────────────────────────────────────────────────────────────────┤
++ │                                                                                                  │
++ │                                                                                                  │
++ │                                      No work unit selected                                       │
++ │                                                                                                  │
++ │                                                                                                  │
++ ├───────────┬───────────┬──────────┬──────────┬──────────┬──────────┬──────────┤
++ │BACKLOG    │SPECIFYING │TESTING   │IMPLEMENTI│VALIDATING│DONE      │BLOCKED   │
++ ├───────────┼───────────┼──────────┼──────────┼──────────┼──────────┼──────────┤
++ │⏩ TEST-001│           │          │TEST-002  │          │          │          │
++ │           │           │          │          │          │          │          │
++ │           │           │          │          │          │          │          │
++ │           │           │          │          │          │          │          │
++ │           │           │          │          │          │          │          │
++ │           │           │          │          │          │          │          │
++ ├───────────┴───────────┴──────────┴──────────┴──────────┴──────────┴──────────┤
++ │     ← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆ ESC Back      │
++ └──────────────────────────────────────────────────────────────────────────────┘
+
+ ❯ src/tui/components/__tests__/UnifiedBoardLayoutNew.test.tsx:239:27
+    237|       expect(lastFrame()).toContain('← → Columns');
+    238|       expect(lastFrame()).toContain('↑↓ Work Units');
+    239|       expect(lastFrame()).toContain('↵ Details');
+       |                           ^
+    240|       expect(lastFrame()).toContain('ESC Back');
+    241|     });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/12]⎯
+
+
+ Test Files  8 failed | 413 passed (421)
+      Tests  9 failed | 3098 passed | 12 skipped (3119)
