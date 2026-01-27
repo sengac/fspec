@@ -28,6 +28,7 @@ import { logger } from '../../utils/logger.js';
 import { openInBrowser } from '../../utils/openBrowser.js';
 import { startAttachmentServer, stopAttachmentServer, getServerPort } from '../../server/attachment-server.js';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog.js';
+import { ConfirmationDialog } from '../../components/ConfirmationDialog.js';
 import { useSessionNavigation } from '../hooks/useSessionNavigation.js';
 import { clearActiveSession } from '../utils/sessionNavigation.js';
 import {
@@ -67,6 +68,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
   const [selectedWorkUnit, setSelectedWorkUnit] = useState<any>(null);
   const [focusedPanel, setFocusedPanel] = useState<'board' | 'stash' | 'files'>(initialFocusedPanel);
   const [showAttachmentDialog, setShowAttachmentDialog] = useState(false);
+  const [showExitConfirmation, setShowExitConfirmation] = useState(false);
   const [attachmentServerPort, setAttachmentServerPort] = useState<number | null>(null);
   
   // VIEWNV-001: Session state from Zustand store (shared with AgentView)
@@ -292,7 +294,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     id: 'board-view-main',
     priority: InputPriority.LOW,
     description: 'Board view main keyboard navigation',
-    isActive: viewMode === 'board' && !showAttachmentDialog && !showCreateSessionDialog,
+    isActive: viewMode === 'board' && !showAttachmentDialog && !showCreateSessionDialog && !showExitConfirmation,
     handler: (input, key) => {
       if (key.escape) {
         if (viewMode === 'checkpoint-viewer' || viewMode === 'changed-files-viewer') {
@@ -300,7 +302,8 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           setSelectedWorkUnit(null);
           return true;
         }
-        onExit?.();
+        // Show exit confirmation dialog instead of exiting directly
+        setShowExitConfirmation(true);
         return true;
       }
 
@@ -421,9 +424,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         id: 'board-view-loading',
         priority: InputPriority.LOW,
         description: 'Board view loading state escape handler',
+        isActive: !showExitConfirmation,
         handler: (input, key) => {
           if (key.escape) {
-            onExit?.();
+            setShowExitConfirmation(true);
             return true;
           }
           return false;
@@ -441,6 +445,21 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     return (
       <FullScreenWrapper>
         <LoadingView />
+        {/* Exit confirmation dialog */}
+        {showExitConfirmation && (
+          <ConfirmationDialog
+            message="Exit fspec?"
+            description="Are you sure you want to exit fspec?"
+            confirmMode="yesno"
+            riskLevel="medium"
+            onConfirm={() => {
+              onExit?.();
+            }}
+            onCancel={() => {
+              setShowExitConfirmation(false);
+            }}
+          />
+        )}
       </FullScreenWrapper>
     );
   }
@@ -453,9 +472,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         id: 'board-view-error',
         priority: InputPriority.LOW,
         description: 'Board view error state escape handler',
+        isActive: !showExitConfirmation,
         handler: (input, key) => {
           if (key.escape) {
-            onExit?.();
+            setShowExitConfirmation(true);
             return true;
           }
           return false;
@@ -474,6 +494,21 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     return (
       <FullScreenWrapper>
         <ErrorView />
+        {/* Exit confirmation dialog */}
+        {showExitConfirmation && (
+          <ConfirmationDialog
+            message="Exit fspec?"
+            description="Are you sure you want to exit fspec?"
+            confirmMode="yesno"
+            riskLevel="medium"
+            onConfirm={() => {
+              onExit?.();
+            }}
+            onCancel={() => {
+              setShowExitConfirmation(false);
+            }}
+          />
+        )}
       </FullScreenWrapper>
     );
   }
@@ -492,7 +527,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         // This prevents arrow keys from navigating the board while user
         // is interacting with a dialog (e.g., Yes/No button selection).
         // Add new dialog states here with || when adding new modals.
-        isDialogOpen={showAttachmentDialog || showCreateSessionDialog}
+        isDialogOpen={showAttachmentDialog || showCreateSessionDialog || showExitConfirmation}
         onColumnChange={(delta) => {
           setFocusedColumnIndex(prev => {
             const newIndex = prev + delta;
@@ -588,6 +623,22 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
           }}
           onCancel={() => {
             closeCreateSessionDialog();
+          }}
+        />
+      )}
+
+      {/* Exit confirmation dialog */}
+      {showExitConfirmation && (
+        <ConfirmationDialog
+          message="Exit fspec?"
+          description="Are you sure you want to exit fspec?"
+          confirmMode="visual"
+          riskLevel="medium"
+          onConfirm={() => {
+            onExit?.();
+          }}
+          onCancel={() => {
+            setShowExitConfirmation(false);
           }}
         />
       )}

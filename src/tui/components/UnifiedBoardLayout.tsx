@@ -515,7 +515,7 @@ export const UnifiedBoardLayout: React.FC<UnifiedBoardLayoutProps> = ({
       <Box flexDirection="row" height={1}>
         <Text>│</Text>
         <Box flexGrow={1} justifyContent="center">
-          <Text>← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Details ◆ ESC Back</Text>
+          <Text>← → Columns ◆ ↑↓ Work Units ◆ [ Priority Up ◆ ] Priority Down ◆ ↵ Work Agent ◆ ESC Back</Text>
         </Box>
         <Text>│</Text>
       </Box>
