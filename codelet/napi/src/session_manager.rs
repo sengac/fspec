@@ -3090,6 +3090,9 @@ impl SessionManager {
             }
             if sessions.contains_key(&uuid) {
                 // Already registered - this is fine, session exists
+                // VIEWNV-001: Set as active session for navigation purposes
+                drop(sessions); // Release read lock before setting active
+                self.set_active_session(uuid);
                 return Ok(());
             }
         }
@@ -3146,6 +3149,10 @@ impl SessionManager {
         
         // Store session
         self.sessions.write().expect("sessions lock poisoned").insert(uuid, session);
+        
+        // VIEWNV-001: Set newly created session as active for navigation purposes
+        // This ensures Shift+Left/Right navigation works immediately after session creation
+        self.set_active_session(uuid);
         
         Ok(())
     }
