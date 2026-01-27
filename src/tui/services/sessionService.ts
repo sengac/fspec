@@ -114,6 +114,18 @@ export interface RestoreSessionOptions {
   fallbackProject: string;
   /** Callback for stream chunks (for attaching) */
   onStreamChunk?: (chunk: StreamChunk) => void;
+  /** Optional session data (if already available, avoids persistence lookup) */
+  sessionData?: {
+    name?: string;
+    provider?: string;
+    tokenUsage?: {
+      currentContextTokens: number;
+      cumulativeBilledOutput: number;
+      cacheReadTokens?: number;
+      cacheCreationTokens?: number;
+      cumulativeBilledInput?: number;
+    };
+  };
 }
 
 /**
@@ -133,8 +145,13 @@ export interface RestoreSessionOptions {
 export async function restoreSession(
   options: RestoreSessionOptions
 ): Promise<RestoreSessionResult> {
-  const { sessionId, fallbackModelPath, fallbackProject, onStreamChunk } =
-    options;
+  const {
+    sessionId,
+    fallbackModelPath,
+    fallbackProject,
+    onStreamChunk,
+    sessionData,
+  } = options;
 
   // Check if this is already a background session
   const backgroundSessions = sessionManagerList();
@@ -164,7 +181,7 @@ export async function restoreSession(
 
   logger.debug(`[SessionService] Restoring persisted session ${sessionId}`);
 
-  // Load session manifest from persistence
+  // Load session manifest from persistence (if not provided)
   let sessionManifest: {
     provider: string;
     name: string;
@@ -177,12 +194,23 @@ export async function restoreSession(
     };
   } | null = null;
 
-  try {
-    sessionManifest = persistenceLoadSession(sessionId);
-  } catch {
-    logger.debug(
-      `[SessionService] Could not load session manifest for ${sessionId}`
-    );
+  if (sessionData) {
+    // Use provided session data if available
+    sessionManifest = {
+      provider: sessionData.provider || fallbackModelPath,
+      name: sessionData.name || 'Restored Session',
+      tokenUsage: sessionData.tokenUsage,
+    };
+  } else {
+    // Fall back to loading from persistence
+    try {
+      sessionManifest = persistenceLoadSession(sessionId);
+    } catch (err) {
+      logger.error(
+        `[SessionService] Could not load session manifest for ${sessionId}:`,
+        err
+      );
+    }
   }
 
   const modelPath = sessionManifest?.provider || fallbackModelPath;
@@ -196,8 +224,12 @@ export async function restoreSession(
       fallbackProject,
       sessionName
     );
-  } catch {
-    // Session may already exist - continue
+  } catch (err) {
+    // Session may already exist - this is actually OK, but log for debugging
+    logger.debug(
+      `[SessionService] Session ${sessionId} may already exist in background:`,
+      err
+    );
   }
 
   // Restore messages from persistence

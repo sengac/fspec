@@ -164,7 +164,7 @@ import {
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
-import { createSession } from '../services/sessionService';
+import { createSession, restoreSession } from '../services/sessionService';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -631,7 +631,9 @@ const processChunksToConversation = (
       try {
         parsedInput = JSON.parse(toolCall.input) as Record<string, unknown>;
         argsDisplay = extractToolArgsDisplay(toolCall.name, parsedInput);
-      } catch {
+      } catch (err) {
+        // Failed to parse tool call input JSON - this indicates malformed data from backend
+        logger.error('Failed to parse tool call input as JSON:', err);
         argsDisplay = toolCall.input;
       }
       
@@ -1041,7 +1043,9 @@ const calculateStartLine = (
     }
     
     return 1;
-  } catch {
+  } catch (err) {
+    // Failed to read file or calculate line number - this indicates file system issues
+    logger.error(`Failed to calculate start line for file ${filePath}:`, err);
     return 1;
   }
 };
@@ -1643,8 +1647,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     if (currentSessionId && inputValue !== undefined) {
       try {
         sessionSetPendingInput(currentSessionId, inputValue);
-      } catch {
-        // Session may not exist, ignore
+      } catch (err) {
+        // Session may not exist or may have been detached - this indicates session management issues
+        logger.error('Failed to set pending input:', err);
       }
     }
   }, [currentSessionId, inputValue]);
@@ -1689,8 +1694,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           persistenceSetDataDirectory(fspecDir);
           // TUI-034: Set up model cache directory
           modelsSetCacheDirectory(`${fspecDir}/cache`);
-        } catch {
-          // Ignore if already set
+        } catch (err) {
+          // Failed to set up persistence directory or model cache - this is a critical error
+          logger.error('Failed to set up persistence directory or model cache:', err);
         }
 
         // TUI-034: Load models and build provider sections
@@ -2520,8 +2526,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // NAPI-009: Register session with SessionManager for background execution
         // This enables ESC + Detach and /resume to work properly
         // CRITICAL: This must succeed for sessionAttach to work
-        // Note: Must await - the function is async because it uses tokio::spawn internally
-        await sessionManagerCreateWithId(activeSessionId, modelPath, project, sessionName);
+        // Note: Using sessionManagerCreateWithId directly here because session is already created in persistence
+        // and we only need the Rust background session (createSession service would duplicate persistence)
+        try {
+          await sessionManagerCreateWithId(activeSessionId, modelPath, project, sessionName);
+        } catch (err) {
+          logger.error('Failed to register session with SessionManager:', err);
+          throw new Error(`Session registration failed: ${err instanceof Error ? err.message : String(err)}`);
+        }
 
         // If debug was enabled before session was created, sync debug state to session
         if (isDebugEnabled) {
@@ -2617,8 +2629,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
         // Note: Session naming now happens at creation time (deferred session creation above)
         // so we don't need to rename here
-      } catch {
-        // User message persistence failed - continue
+      } catch (err) {
+        // User message persistence failed - this is critical as messages won't be saved
+        logger.error('Failed to store user message envelope to persistence:', err);
       }
     }
 
@@ -2756,7 +2769,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             let parsedInput: unknown;
             try {
               parsedInput = JSON.parse(toolCall.input);
-            } catch {
+            } catch (err) {
+              // Failed to parse tool call input as JSON - indicates malformed data from backend
+              logger.error('Failed to parse tool call input as JSON:', err);
               parsedInput = toolCall.input;
             }
             assistantContentBlocks.push({
@@ -2896,8 +2911,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
                 );
                 // Clear for continuation after tool_result
                 assistantContentBlocks.length = 0;
-              } catch {
-                // Persistence failed - continue
+              } catch (err) {
+                // Assistant message persistence failed - this is critical as messages won't be saved
+                logger.error('Failed to store assistant message envelope to persistence:', err);
               }
             }
 
@@ -2925,8 +2941,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
                   activeSessionId,
                   JSON.stringify(toolResultEnvelope)
                 );
-              } catch {
-                // Persistence failed - continue
+              } catch (err) {
+                // Tool result persistence failed - this is critical as messages won't be saved  
+                logger.error('Failed to store tool result envelope to persistence:', err);
               }
             }
 
@@ -3307,8 +3324,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               sessionSetObservedCorrelationIds(activeSessionId, correlationIds);
             }
           }
-        } catch {
-          // Failed to get parent - continue without correlation IDs
+        } catch (err) {
+          // Failed to get parent session or set correlation IDs - indicates session hierarchy issues
+          logger.error('Failed to process watcher session parent relationship:', err);
         }
       }
       
@@ -3330,8 +3348,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       if (isWatcherSession && activeSessionId) {
         try {
           sessionClearObservedCorrelationIds(activeSessionId);
-        } catch {
-          // Failed to clear - continue
+        } catch (err) {
+          // Failed to clear observed correlation IDs - indicates session management issues
+          logger.error('Failed to clear observed correlation IDs:', err);
         }
       }
 
@@ -3357,8 +3376,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             persistenceStoreMessageEnvelope(activeSessionId, assistantJson);
           }
           // Note: Tool results are stored immediately in ToolResult handler (NAPI-008)
-        } catch {
-          // Message persistence failed - continue
+        } catch (err) {
+          // Final message persistence failed - this is critical as messages won't be saved
+          logger.error('Failed to store final assistant message envelope to persistence:', err);
         }
       }
 
@@ -3692,7 +3712,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         } else {
           statuses[providerId] = { hasKey: false };
         }
-      } catch {
+      } catch (err) {
+        // Failed to get provider configuration - indicates config issues or file system problems
+        logger.error(`Failed to get provider config for ${providerId}:`, err);
         statuses[providerId] = { hasKey: false };
       }
     }
@@ -3726,8 +3748,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           let allModels: NapiProviderModels[] = [];
           try {
             allModels = await modelsListAll();
-          } catch {
-            // Ignore
+          } catch (err) {
+            // Failed to list all models after refreshing cache - indicates models system issues
+            logger.error('Failed to list all models after cache refresh:', err);
           }
 
           // CONFIG-004: Use TypeScript-side credential check for all 19 providers
@@ -4017,8 +4040,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       );
       setSearchResults(entries);
       setSearchResultIndex(0);
-    } catch {
-      // Search is optional - continue without it
+    } catch (err) {
+      // Failed to search persistence history - indicates persistence system issues
+      logger.error('Failed to search persistence history:', err);
     }
   }, []);
 
@@ -4125,7 +4149,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             }
           }
         }
-      } catch {
+      } catch (err) {
+        // Failed to parse tool call input JSON for display - indicates malformed data from backend
+        logger.error('Failed to parse tool call input JSON for display:', err);
         argsDisplay = toolCall.input;
       }
       const toolContent = formatToolHeader(toolCall.name, argsDisplay);
@@ -4295,82 +4321,48 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // NOTE: Defined before sessionNavigation to avoid closure issues with callback references
   const resumeSessionById = useCallback(async (sessionId: string): Promise<boolean> => {
     try {
-      // Check if this is a background session
-      const backgroundSessions = sessionManagerList();
-      const bgSession = backgroundSessions.find(bg => bg.id === sessionId);
+      // Use the session service to handle restoration
+      const result = await restoreSession({
+        sessionId,
+        fallbackModelPath: currentProvider,
+        fallbackProject: currentProjectRef.current,
+        // Note: We don't pass onStreamChunk here because we need to do UI setup first
+      });
 
-      // For persisted-only sessions, create background session first
-      if (!bgSession) {
-        logger.debug(`SESS-001: Creating background session for persisted session ${sessionId}`);
+      logger.debug(
+        `SESS-001: ${result.wasBackgroundSession ? 'Resumed existing background' : 'Restored persisted'} session ${sessionId}`
+      );
 
-        // Load session manifest to get provider and token info
-        let sessionManifest: { provider: string; name: string; tokenUsage?: { currentContextTokens: number; cumulativeBilledOutput: number; cacheReadTokens?: number; cacheCreationTokens?: number; cumulativeBilledInput?: number } } | null = null;
-        try {
-          sessionManifest = persistenceLoadSession(sessionId);
-        } catch {
-          // Session may not exist in persistence - continue with defaults
-          logger.debug(`SESS-001: Could not load session manifest for ${sessionId}`);
-        }
+      // Update token state from service result if available
+      if (result.tokenUsage) {
+        setTokenUsage({
+          inputTokens: result.tokenUsage.currentContextTokens,
+          outputTokens: result.tokenUsage.cumulativeBilledOutput,
+          cacheReadInputTokens: result.tokenUsage.cacheReadTokens,
+          cacheCreationInputTokens: result.tokenUsage.cacheCreationTokens,
+        });
+      }
 
-        const modelPath = sessionManifest?.provider || currentProvider;
-        const project = currentProjectRef.current;
-        const sessionName = sessionManifest?.name || 'Restored Session';
-
-        // Create background session
-        try {
-          await sessionManagerCreateWithId(sessionId, modelPath, project, sessionName);
-        } catch {
-          // Session may already exist - continue
-        }
-
-        // Get envelopes from persistence and restore to background session
-        const envelopes: string[] = persistenceGetSessionMessageEnvelopes(sessionId);
-        await sessionRestoreMessages(sessionId, envelopes);
-
-        // Restore token state if available
-        if (sessionManifest?.tokenUsage) {
-          await sessionRestoreTokenState(
-            sessionId,
-            sessionManifest.tokenUsage.currentContextTokens,
-            sessionManifest.tokenUsage.cumulativeBilledOutput,
-            sessionManifest.tokenUsage.cacheReadTokens ?? 0,
-            sessionManifest.tokenUsage.cacheCreationTokens ?? 0,
-            sessionManifest.tokenUsage.cumulativeBilledInput ?? 0,
-            sessionManifest.tokenUsage.cumulativeBilledOutput
-          );
-
-          // Update UI token state from manifest
-          setTokenUsage({
-            inputTokens: sessionManifest.tokenUsage.currentContextTokens,
-            outputTokens: sessionManifest.tokenUsage.cumulativeBilledOutput,
-            cacheReadInputTokens: sessionManifest.tokenUsage.cacheReadTokens,
-            cacheCreationInputTokens: sessionManifest.tokenUsage.cacheCreationTokens,
+      // Update provider state if available
+      if (result.provider?.includes('/')) {
+        const [providerId, modelId] = result.provider.split('/');
+        const internalName = mapProviderIdToInternal(providerId);
+        setCurrentProvider(internalName);
+        // Find matching model info from provider sections
+        const section = providerSections.find(s => s.providerId === providerId);
+        const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+        if (model && section) {
+          setCurrentModel({
+            providerId,
+            modelId,
+            apiModelId: model.id,
+            displayName: model.name,
+            reasoning: model.reasoning,
+            hasVision: model.hasVision,
+            contextWindow: model.contextWindow,
+            maxOutput: model.maxOutput,
           });
         }
-
-        // Update provider state if available
-        if (sessionManifest?.provider?.includes('/')) {
-          const [providerId, modelId] = sessionManifest.provider.split('/');
-          const internalName = mapProviderIdToInternal(providerId);
-          setCurrentProvider(internalName);
-          // Find matching model info from provider sections
-          const section = providerSections.find(s => s.providerId === providerId);
-          const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
-          if (model && section) {
-            setCurrentModel({
-              providerId,
-              modelId,
-              apiModelId: model.id,
-              displayName: model.name,
-              reasoning: model.reasoning,
-              hasVision: model.hasVision,
-              contextWindow: model.contextWindow,
-              maxOutput: model.maxOutput,
-            });
-          }
-        }
-      } else {
-        logger.debug(`SESS-001: Resuming existing background session ${sessionId}`);
       }
 
       // UNIFIED: Get merged output and convert to conversation messages
@@ -4383,7 +4375,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setConversation(restoredMessages);
 
       // For background sessions, extract token state from chunks
-      if (bgSession) {
+      if (result.wasBackgroundSession) {
         const extractedState = extractTokenStateFromChunks(mergedChunks);
         if (extractedState.tokenUsage) {
           setTokenUsage(extractedState.tokenUsage);
@@ -4426,8 +4418,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     if (currentSessionId) {
       try {
         sessionDetach(currentSessionId);
-      } catch {
-        // Silently ignore detach errors
+      } catch (err) {
+        // Session detach failure could indicate backend issues, connection problems, etc.
+        logger.error('Failed to detach from current session:', err);
       }
     }
 
@@ -4475,8 +4468,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       if (currentSessionId) {
         try {
           sessionSetPendingInput(currentSessionId, inputValue);
-        } catch {
-          // Session may not exist in manager, ignore
+        } catch (err) {
+          // Failed to set pending input before switching - indicates session management issues
+          logger.error('Failed to set pending input before session switch:', err);
         }
       }
 
@@ -4484,8 +4478,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       if (currentSessionId) {
         try {
           sessionDetach(currentSessionId);
-        } catch {
-          // Silently ignore detach errors
+        } catch (err) {
+          // Session detach failure could indicate backend issues, connection problems, etc.
+          logger.error('Failed to detach from current session:', err);
         }
       }
 
@@ -4497,8 +4492,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       if (currentSessionId) {
         try {
           sessionDetach(currentSessionId);
-        } catch {
-          // Silently ignore detach errors
+        } catch (err) {
+          // Session detach failure could indicate backend issues, connection problems, etc.
+          logger.error('Failed to detach from session:', err);
         }
       }
       onExit();
@@ -4914,8 +4910,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       for (const instance of templateToDelete.instances) {
         try {
           sessionManagerDestroy(instance.sessionId);
-        } catch {
-          // Instance may already be dead - continue
+        } catch (err) {
+          // Failed to destroy session manager instance - indicates backend issues
+          logger.error(`Failed to destroy session manager instance ${instance.sessionId}:`, err);
         }
       }
 
@@ -5025,62 +5022,46 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     const selectedSession = availableSessions[resumeSessionIndex];
 
     try {
-      // For persisted-only sessions, create background session first
-      if (!selectedSession.isBackgroundSession) {
-        // TUI-034: Use full model path if available, fallback to provider
-        const modelPath = selectedSession.provider || currentProvider;
-        const project = currentProjectRef.current;
+      // Use the session service to handle restoration
+      const result = await restoreSession({
+        sessionId: selectedSession.id,
+        fallbackModelPath: currentProvider,
+        fallbackProject: currentProjectRef.current,
+        // Pass the session data to avoid unnecessary persistence lookup
+        sessionData: {
+          name: selectedSession.name,
+          provider: selectedSession.provider,
+          tokenUsage: selectedSession.tokenUsage,
+        },
+        // Note: We don't pass onStreamChunk here because we need to do UI setup first
+      });
 
-        // Create background session for this restored session
-        try {
-          await sessionManagerCreateWithId(selectedSession.id, modelPath, project, selectedSession.name);
-        } catch {
-          // Session may already exist - continue
+      logger.debug(
+        `NAPI-003: ${result.wasBackgroundSession ? 'Resumed existing background' : 'Restored persisted'} session ${selectedSession.id}`
+      );
+
+      // Update provider/model state from service result
+      if (result.provider?.includes('/')) {
+        const [providerId, modelId] = result.provider.split('/');
+        const internalName = mapProviderIdToInternal(providerId);
+        setCurrentProvider(internalName);
+        // Find matching model info from provider sections
+        const section = providerSections.find(s => s.providerId === providerId);
+        const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+        if (model && section) {
+          setCurrentModel({
+            providerId,
+            modelId,
+            apiModelId: model.id,
+            displayName: model.name,
+            reasoning: model.reasoning,
+            hasVision: model.hasVision,
+            contextWindow: model.contextWindow,
+            maxOutput: model.maxOutput,
+          });
         }
-
-        // Get envelopes from persistence and restore to background session
-        const envelopes: string[] = persistenceGetSessionMessageEnvelopes(selectedSession.id);
-        await sessionRestoreMessages(selectedSession.id, envelopes);
-
-        // Restore token state to background session for accurate context fill calculations
-        if (selectedSession.tokenUsage) {
-          await sessionRestoreTokenState(
-            selectedSession.id,
-            selectedSession.tokenUsage.currentContextTokens,
-            selectedSession.tokenUsage.cumulativeBilledOutput,
-            selectedSession.tokenUsage.cacheReadTokens ?? 0,
-            selectedSession.tokenUsage.cacheCreationTokens ?? 0,
-            selectedSession.tokenUsage.cumulativeBilledInput ?? 0,
-            selectedSession.tokenUsage.cumulativeBilledOutput
-          );
-        }
-
-        // Update provider/model state from stored provider
-        if (selectedSession.provider) {
-          const storedProvider = selectedSession.provider;
-          if (storedProvider.includes('/')) {
-            const [providerId, modelId] = storedProvider.split('/');
-            const internalName = mapProviderIdToInternal(providerId);
-            setCurrentProvider(internalName);
-            // Find matching model info from provider sections
-            const section = providerSections.find(s => s.providerId === providerId);
-            const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
-            if (model && section) {
-              setCurrentModel({
-                providerId,
-                modelId,
-                apiModelId: model.id,
-                displayName: model.name,
-                reasoning: model.reasoning,
-                hasVision: model.hasVision,
-                contextWindow: model.contextWindow,
-                maxOutput: model.maxOutput,
-              });
-            }
-          } else {
-            setCurrentProvider(storedProvider);
-          }
-        }
+      } else if (result.provider) {
+        setCurrentProvider(result.provider);
       }
 
       // UNIFIED: Get merged output and convert to conversation messages
@@ -5095,8 +5076,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setConversation(restoredMessages);
 
       // Extract token state from chunks (for background sessions)
-      // For persisted sessions, prefer manifest data which has accurate cumulative values
-      if (selectedSession.isBackgroundSession) {
+      // For persisted sessions, prefer service result data which has accurate cumulative values
+      if (result.wasBackgroundSession) {
         const extractedState = extractTokenStateFromChunks(mergedChunks);
         if (extractedState.tokenUsage) {
           setTokenUsage(extractedState.tokenUsage);
@@ -5104,23 +5085,23 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         if (extractedState.contextFillPercentage !== null) {
           setContextFillPercentage(extractedState.contextFillPercentage);
         }
-      } else if (selectedSession.tokenUsage) {
-        // Use manifest token data for persisted sessions
+      } else if (result.tokenUsage) {
+        // Use service result token data for persisted sessions
         setTokenUsage({
-          inputTokens: selectedSession.tokenUsage.currentContextTokens,
-          outputTokens: selectedSession.tokenUsage.cumulativeBilledOutput,
-          cacheReadInputTokens: selectedSession.tokenUsage.cacheReadTokens,
-          cacheCreationInputTokens: selectedSession.tokenUsage.cacheCreationTokens,
+          inputTokens: result.tokenUsage.currentContextTokens,
+          outputTokens: result.tokenUsage.cumulativeBilledOutput,
+          cacheReadInputTokens: result.tokenUsage.cacheReadTokens,
+          cacheCreationInputTokens: result.tokenUsage.cacheCreationTokens,
         });
 
         // Calculate context fill percentage from model info
-        if (selectedSession.provider?.includes('/')) {
-          const [providerId, modelId] = selectedSession.provider.split('/');
+        if (result.provider?.includes('/')) {
+          const [providerId, modelId] = result.provider.split('/');
           const section = providerSections.find(s => s.providerId === providerId);
           const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
           if (model) {
             const fillPercentage = calculateContextFillPercentage(
-              selectedSession.tokenUsage.currentContextTokens,
+              result.tokenUsage.currentContextTokens,
               model.contextWindow,
               model.maxOutput
             );
@@ -6100,8 +6081,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         if (currentSessionId) {
           try {
             sessionDetach(currentSessionId);
-          } catch {
-            // Silently ignore detach errors
+          } catch (err) {
+            // Session detach failure could indicate backend issues, connection problems, etc.
+            logger.error('Failed to detach from session:', err);
           }
         }
         onExit();
@@ -6136,8 +6118,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           try {
             sessionInterrupt(currentSessionId);
             refreshRustState(currentSessionId);
-          } catch {
-            // Ignore interrupt errors
+          } catch (err) {
+            // Failed to interrupt session - indicates backend issues or connection problems
+            logger.error('Failed to interrupt loading session:', err);
           }
           return true;
         }
@@ -7012,16 +6995,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             if (currentSessionId && inputValue) {
               try {
                 sessionSetPendingInput(currentSessionId, inputValue);
-              } catch {
-                // Session may not exist in manager, ignore
+              } catch (err) {
+                // Failed to set pending input before switching - indicates session management issues
+                logger.error('Failed to set pending input before session switch:', err);
               }
             }
             // Detach from current session
             if (currentSessionId) {
               try {
                 sessionDetach(currentSessionId);
-              } catch {
-                // Silently ignore detach errors
+              } catch (err) {
+                // Session detach failure could indicate backend issues, connection problems, etc.
+                logger.error('Failed to detach from session:', err);
               }
             }
             // Resume the target session
@@ -7032,8 +7017,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             if (currentSessionId) {
               try {
                 sessionDetach(currentSessionId);
-              } catch {
-                // Silently ignore detach errors
+              } catch (err) {
+                // Session detach failure could indicate backend issues, connection problems, etc.
+                logger.error('Failed to detach from session:', err);
               }
             }
             onExit();
