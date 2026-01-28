@@ -13,6 +13,8 @@ extern crate napi_derive;
 #[cfg(not(feature = "noop"))]
 mod astgrep;
 #[cfg(not(feature = "noop"))]
+mod fspec;
+#[cfg(not(feature = "noop"))]
 mod glob;
 #[cfg(not(feature = "noop"))]
 mod models;
@@ -28,6 +30,8 @@ pub mod session_manager;
 mod thinking_config;
 #[cfg(not(feature = "noop"))]
 mod types;
+#[cfg(not(feature = "noop"))]
+mod simple_test;
 
 // Persistence module works in both modes (pure Rust with optional NAPI bindings)
 pub mod persistence;
@@ -36,6 +40,8 @@ pub use persistence::*;
 
 #[cfg(not(feature = "noop"))]
 pub use astgrep::*;
+#[cfg(not(feature = "noop"))]
+pub use fspec::*;
 #[cfg(not(feature = "noop"))]
 pub use glob::*;
 #[cfg(not(feature = "noop"))]
@@ -50,6 +56,8 @@ pub use thinking_config::{
 };
 #[cfg(not(feature = "noop"))]
 pub use types::*;
+#[cfg(not(feature = "noop"))]
+pub use simple_test::*;
 
 // Logging callback infrastructure for routing Rust tracing logs to TypeScript
 #[cfg(not(feature = "noop"))]

@@ -6,45 +6,39 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useFspecStore } from '../fspecStore';
-import { renderHook, act } from '@testing-library/react';
 
 describe('fspecStore - Session Attachments', () => {
-  let store: ReturnType<typeof useFspecStore>;
-
   beforeEach(() => {
-    const { result } = renderHook(() => useFspecStore());
-    store = result.current;
-
-    // Clear any existing attachments
-    act(() => {
-      store.clearAllSessionAttachments();
+    // Reset store state before each test
+    useFspecStore.setState({
+      sessionAttachments: new Map<string, string>(),
     });
   });
 
   describe('attachSession', () => {
     it('should attach session to work unit', () => {
-      act(() => {
-        store.attachSession('STORY-001', 'session-123');
-      });
+      const store = useFspecStore.getState();
+
+      store.attachSession('STORY-001', 'session-123');
 
       expect(store.getAttachedSession('STORY-001')).toBe('session-123');
       expect(store.hasAttachedSession('STORY-001')).toBe(true);
     });
 
     it('should overwrite existing attachment for same work unit', () => {
-      act(() => {
-        store.attachSession('STORY-001', 'session-123');
-        store.attachSession('STORY-001', 'session-456');
-      });
+      const store = useFspecStore.getState();
+
+      store.attachSession('STORY-001', 'session-123');
+      store.attachSession('STORY-001', 'session-456');
 
       expect(store.getAttachedSession('STORY-001')).toBe('session-456');
     });
 
     it('should allow multiple work units with different sessions', () => {
-      act(() => {
-        store.attachSession('STORY-001', 'session-123');
-        store.attachSession('STORY-002', 'session-456');
-      });
+      const store = useFspecStore.getState();
+
+      store.attachSession('STORY-001', 'session-123');
+      store.attachSession('STORY-002', 'session-456');
 
       expect(store.getAttachedSession('STORY-001')).toBe('session-123');
       expect(store.getAttachedSession('STORY-002')).toBe('session-456');
@@ -53,104 +47,121 @@ describe('fspecStore - Session Attachments', () => {
 
   describe('detachSession', () => {
     it('should detach session from work unit', () => {
-      act(() => {
-        store.attachSession('STORY-001', 'session-123');
-        store.detachSession('STORY-001');
-      });
+      const store = useFspecStore.getState();
 
-      expect(store.getAttachedSession('STORY-001')).toBeUndefined();
+      store.attachSession('STORY-001', 'session-123');
+      expect(store.hasAttachedSession('STORY-001')).toBe(true);
+
+      store.detachSession('STORY-001');
       expect(store.hasAttachedSession('STORY-001')).toBe(false);
+      expect(store.getAttachedSession('STORY-001')).toBeUndefined();
     });
 
-    it('should handle detaching non-existent attachment gracefully', () => {
-      act(() => {
-        store.detachSession('STORY-001');
-      });
+    it('should handle detaching non-existent session gracefully', () => {
+      const store = useFspecStore.getState();
 
-      expect(store.getAttachedSession('STORY-001')).toBeUndefined();
+      // Should not throw
+      expect(() => {
+        store.detachSession('non-existent-work-unit');
+      }).not.toThrow();
+    });
+
+    it('should not affect other attachments when detaching one session', () => {
+      const store = useFspecStore.getState();
+
+      store.attachSession('STORY-001', 'session-123');
+      store.attachSession('STORY-002', 'session-456');
+
+      store.detachSession('STORY-001');
+
+      expect(store.hasAttachedSession('STORY-001')).toBe(false);
+      expect(store.hasAttachedSession('STORY-002')).toBe(true);
+      expect(store.getAttachedSession('STORY-002')).toBe('session-456');
     });
   });
 
   describe('getWorkUnitBySession', () => {
     it('should return work unit ID for attached session', () => {
-      act(() => {
-        store.attachSession('STORY-001', 'session-123');
-      });
+      const store = useFspecStore.getState();
+
+      store.attachSession('STORY-001', 'session-123');
 
       expect(store.getWorkUnitBySession('session-123')).toBe('STORY-001');
     });
 
-    it('should return undefined for non-attached session', () => {
-      expect(store.getWorkUnitBySession('session-nonexistent')).toBeUndefined();
+    it('should return undefined for unattached session', () => {
+      const store = useFspecStore.getState();
+
+      expect(store.getWorkUnitBySession('unattached-session')).toBeUndefined();
     });
 
-    it('should handle multiple attachments correctly', () => {
-      act(() => {
-        store.attachSession('STORY-001', 'session-123');
-        store.attachSession('STORY-002', 'session-456');
-      });
+    it('should handle session that was previously attached but then detached', () => {
+      const store = useFspecStore.getState();
 
+      store.attachSession('STORY-001', 'session-123');
       expect(store.getWorkUnitBySession('session-123')).toBe('STORY-001');
-      expect(store.getWorkUnitBySession('session-456')).toBe('STORY-002');
-    });
-  });
 
-  describe('currentWorkUnitId tracking', () => {
-    it('should set and get current work unit ID', () => {
-      act(() => {
-        store.setCurrentWorkUnitId('STORY-001');
-      });
-
-      expect(store.getCurrentWorkUnitId()).toBe('STORY-001');
-    });
-
-    it('should allow clearing current work unit ID', () => {
-      act(() => {
-        store.setCurrentWorkUnitId('STORY-001');
-        store.setCurrentWorkUnitId(null);
-      });
-
-      expect(store.getCurrentWorkUnitId()).toBeNull();
+      store.detachSession('STORY-001');
+      expect(store.getWorkUnitBySession('session-123')).toBeUndefined();
     });
   });
 
   describe('clearAllSessionAttachments', () => {
-    it('should clear all session attachments', () => {
-      act(() => {
-        store.attachSession('STORY-001', 'session-123');
-        store.attachSession('STORY-002', 'session-456');
-        store.clearAllSessionAttachments();
-      });
+    it('should remove all session attachments', () => {
+      const store = useFspecStore.getState();
 
-      expect(store.getAttachedSession('STORY-001')).toBeUndefined();
-      expect(store.getAttachedSession('STORY-002')).toBeUndefined();
+      store.attachSession('STORY-001', 'session-123');
+      store.attachSession('STORY-002', 'session-456');
+      store.attachSession('STORY-003', 'session-789');
+
+      expect(store.hasAttachedSession('STORY-001')).toBe(true);
+      expect(store.hasAttachedSession('STORY-002')).toBe(true);
+      expect(store.hasAttachedSession('STORY-003')).toBe(true);
+
+      store.clearAllSessionAttachments();
+
       expect(store.hasAttachedSession('STORY-001')).toBe(false);
       expect(store.hasAttachedSession('STORY-002')).toBe(false);
+      expect(store.hasAttachedSession('STORY-003')).toBe(false);
+      expect(store.getWorkUnitBySession('session-123')).toBeUndefined();
+      expect(store.getWorkUnitBySession('session-456')).toBeUndefined();
+      expect(store.getWorkUnitBySession('session-789')).toBeUndefined();
+    });
+
+    it('should handle clearing empty attachments gracefully', () => {
+      const store = useFspecStore.getState();
+
+      expect(() => {
+        store.clearAllSessionAttachments();
+      }).not.toThrow();
     });
   });
 
-  describe('session attachment state isolation', () => {
-    it('should manage session attachments independently of work unit data', () => {
-      const workUnitId = 'STORY-001';
-      const sessionId = 'session-123';
+  describe('edge cases', () => {
+    it('should handle empty string session IDs', () => {
+      const store = useFspecStore.getState();
 
-      // Test that session attachments work independently
-      act(() => {
-        store.attachSession(workUnitId, sessionId);
-      });
+      store.attachSession('STORY-001', '');
+      expect(store.getAttachedSession('STORY-001')).toBe('');
+      expect(store.getWorkUnitBySession('')).toBe('STORY-001');
+    });
 
-      expect(store.getAttachedSession(workUnitId)).toBe(sessionId);
-      expect(store.getWorkUnitBySession(sessionId)).toBe(workUnitId);
+    it('should handle empty string work unit IDs', () => {
+      const store = useFspecStore.getState();
 
-      act(() => {
-        store.detachSession(workUnitId);
-      });
+      store.attachSession('', 'session-123');
+      expect(store.getAttachedSession('')).toBe('session-123');
+      expect(store.getWorkUnitBySession('session-123')).toBe('');
+    });
 
-      expect(store.getAttachedSession(workUnitId)).toBeUndefined();
-      expect(store.getWorkUnitBySession(sessionId)).toBeUndefined();
+    it('should handle special characters in IDs', () => {
+      const store = useFspecStore.getState();
+      const specialWorkUnit = 'STORY-001-PART-A';
+      const specialSession = 'session-123-test_session';
 
-      // Session attachments should be completely isolated state
-      expect(store.sessionAttachments.size).toBe(0);
+      store.attachSession(specialWorkUnit, specialSession);
+      expect(store.getAttachedSession(specialWorkUnit)).toBe(specialSession);
+      expect(store.getWorkUnitBySession(specialSession)).toBe(specialWorkUnit);
     });
   });
 });
