@@ -11,18 +11,44 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { join } from 'path';
 
-// Mock fs modules BEFORE importing the module under test
-vi.mock('fs', () => ({
-  mkdirSync: vi.fn(),
-  writeFileSync: vi.fn(),
-  existsSync: vi.fn(),
+// Use vi.hoisted to define mocks that will be available during module mocking
+const { mockMkdirSync, mockWriteFileSync, mockExistsSync, mockReadFile } = vi.hoisted(() => ({
+  mockMkdirSync: vi.fn(),
+  mockWriteFileSync: vi.fn(),
+  mockExistsSync: vi.fn(),
+  mockReadFile: vi.fn(),
 }));
 
-vi.mock('fs/promises', () => ({
-  readFile: vi.fn(),
-  writeFile: vi.fn(),
-  mkdir: vi.fn(),
-}));
+// Mock fs modules BEFORE importing the module under test
+vi.mock('fs', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    mkdirSync: mockMkdirSync,
+    writeFileSync: mockWriteFileSync,
+    existsSync: mockExistsSync,
+    default: {
+      mkdirSync: mockMkdirSync,
+      writeFileSync: mockWriteFileSync,
+      existsSync: mockExistsSync,
+    },
+  };
+});
+
+vi.mock('fs/promises', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    readFile: mockReadFile,
+    writeFile: vi.fn(),
+    mkdir: vi.fn(),
+    default: {
+      readFile: mockReadFile,
+      writeFile: vi.fn(),
+      mkdir: vi.fn(),
+    },
+  };
+});
 
 // Mock config module
 vi.mock('../../../utils/config', () => ({
@@ -53,9 +79,9 @@ vi.mock('@sengac/codelet-napi', () => ({
 }));
 
 // Import mocked modules for assertions
-import { mkdirSync, writeFileSync } from 'fs';
-import { readFile } from 'fs/promises';
-import { getFspecUserDir } from '../../../utils/config';
+const { mkdirSync, writeFileSync } = await import('fs');
+const { readFile } = await import('fs/promises');
+const { getFspecUserDir } = await import('../../../utils/config');
 
 // Import REAL implementations from source (now that mocks are set up)
 import {
@@ -154,23 +180,23 @@ describe('Feature: Watcher Templates and Improved Creation UX', () => {
     ];
 
     it('should load templates from storage', async () => {
-      vi.mocked(readFile).mockResolvedValue(JSON.stringify(mockTemplates));
+      mockReadFile.mockResolvedValue(JSON.stringify(mockTemplates));
       const templates = await loadWatcherTemplates();
       expect(getFspecUserDir).toHaveBeenCalled();
-      expect(readFile).toHaveBeenCalledWith(join('/mock/home/.fspec', 'watcher-templates.json'), 'utf-8');
+      expect(mockReadFile).toHaveBeenCalledWith(join('/mock/home/.fspec', 'watcher-templates.json'), 'utf-8');
       expect(templates).toEqual(mockTemplates);
     });
 
     it('should return empty array when file does not exist', async () => {
-      vi.mocked(readFile).mockRejectedValue({ code: 'ENOENT' });
+      mockReadFile.mockRejectedValue({ code: 'ENOENT' });
       const templates = await loadWatcherTemplates();
       expect(templates).toEqual([]);
     });
 
     it('should save templates to storage', () => {
       saveWatcherTemplates(mockTemplates);
-      expect(mkdirSync).toHaveBeenCalledWith('/mock/home/.fspec', { recursive: true });
-      expect(writeFileSync).toHaveBeenCalledWith(
+      expect(mockMkdirSync).toHaveBeenCalledWith('/mock/home/.fspec', { recursive: true });
+      expect(mockWriteFileSync).toHaveBeenCalledWith(
         join('/mock/home/.fspec', 'watcher-templates.json'),
         JSON.stringify(mockTemplates, null, 2)
       );

@@ -8,9 +8,6 @@ export default defineConfig({
       FORCE_COLOR: '0', // Disable colors to ensure consistent test behavior regardless of TTY
     },
 
-    // Setup file for React Testing Library
-    setupFiles: ['./src/__tests__/setup.ts'],
-
     // 🔥 Safest settings to prevent system crashes and memory leaks
     pool: 'forks', // Use fork pool instead of threads for better stability
     poolOptions: {

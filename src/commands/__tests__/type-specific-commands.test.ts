@@ -270,11 +270,17 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
 
       // This test verifies the module doesn't export create-work-unit
       let importError = false;
+      let errorMessage = '';
+
       try {
-        // Attempt dynamic import
-        await import('../create-work-unit');
+        // Use dynamic import with a variable to prevent Vite static analysis
+        const moduleName = '../create-work-unit';
+        const createWorkUnit = await import(moduleName);
+        // If the import succeeds, the function should not be accessible
+        expect(createWorkUnit.default).toBeUndefined();
       } catch (error) {
         importError = true;
+        errorMessage = (error as Error).message;
       }
 
       // @step Then the command should fail with 'unknown command' error
@@ -284,6 +290,9 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
       // For now, this test documents the expectation
       // Implementation will make this pass by deleting the file
       expect(importError).toBe(true);
+      expect(errorMessage).toMatch(
+        /Failed to resolve|Cannot resolve|Does the file exist|Cannot find module/
+      );
 
       // @step And the error should suggest using create-story, create-bug, or create-task
       // This will be validated when the CLI integration is complete

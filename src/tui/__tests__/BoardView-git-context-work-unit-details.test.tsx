@@ -157,7 +157,7 @@ describe('Feature: Consolidate Git info and add work unit details panel', () => 
       // BOARD-008: Story icon emoji removed
       expect(frame).toContain('BOARD-001');
       expect(frame).toContain('Test Feature');
-      expect(frame).toMatch(/↵.*Details/); // Keyboard hint in footer
+      expect(frame).toMatch(/↵.*Work Agent/); // Keyboard hint in footer
       // Note: Dependencies are not currently displayed in Work Unit Details panel
       // This would be a future enhancement (showing dependencies)
       expect(frame).toContain('test-epic');

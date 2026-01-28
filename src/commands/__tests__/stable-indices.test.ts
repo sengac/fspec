@@ -38,14 +38,24 @@ interface LockOptions {
 }
 
 // Mock fs modules with memfs
-vi.mock('fs/promises', async () => {
+vi.mock('fs/promises', async importOriginal => {
   const memfs = await vi.importActual<MemfsModule>('memfs');
-  return memfs.fs.promises;
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    ...memfs.fs.promises,
+    default: memfs.fs.promises,
+  };
 });
 
-vi.mock('fs', async () => {
+vi.mock('fs', async importOriginal => {
   const memfs = await vi.importActual<MemfsModule>('memfs');
-  return memfs.fs;
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    ...memfs.fs,
+    default: memfs.fs,
+  };
 });
 
 // Mock proper-lockfile to use memfs
