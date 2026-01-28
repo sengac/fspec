@@ -57,6 +57,9 @@ impl ProviderToolRegistry {
             gemini_web_screenshot,
         );
 
+        // Note: FspecTool is handled separately via FspecToolFacadeWrapper
+        // It's not registered here because it doesn't use web search patterns
+        
         Self { facades }
     }
 
@@ -120,6 +123,26 @@ mod tests {
         for tool in &tools {
             assert_eq!(tool.provider(), "gemini");
         }
+    }
+
+    #[test]
+    fn test_fspec_tool_wrappers_created_separately() {
+        use super::super::fspec_registration::{
+            claude_fspec_tool, gemini_fspec_tool, openai_fspec_tool, zai_fspec_tool,
+        };
+
+        // Test that FspecToolFacadeWrapper can be created for all providers
+        let claude_wrapper = claude_fspec_tool();
+        assert_eq!(claude_wrapper.provider(), "claude");
+
+        let gemini_wrapper = gemini_fspec_tool();
+        assert_eq!(gemini_wrapper.provider(), "gemini");
+
+        let openai_wrapper = openai_fspec_tool();
+        assert_eq!(openai_wrapper.provider(), "openai");
+
+        let zai_wrapper = zai_fspec_tool();
+        assert_eq!(zai_wrapper.provider(), "zai");
     }
 
     #[test]

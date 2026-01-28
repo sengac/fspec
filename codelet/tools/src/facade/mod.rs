@@ -30,6 +30,8 @@
 
 mod bash;
 mod file_ops;
+mod fspec_facade;
+mod fspec_registration;
 mod gemini_history;
 mod ls;
 mod registry;
@@ -43,6 +45,12 @@ mod zai;
 
 pub use bash::GeminiRunShellCommandFacade;
 pub use file_ops::{GeminiReadFileFacade, GeminiReplaceFacade, GeminiWriteFileFacade};
+pub use fspec_facade::{
+    ClaudeFspecFacade, GeminiFspecFacade, InternalFspecParams, OpenAIFspecFacade, ZAIFspecFacade,
+};
+pub use fspec_registration::{
+    claude_fspec_tool, fspec_tool_for_provider, gemini_fspec_tool, openai_fspec_tool, zai_fspec_tool,
+};
 pub use ls::GeminiListDirectoryFacade;
 pub use zai::{
     ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade, ZAIListDirFacade,
@@ -67,15 +75,16 @@ pub use gemini_history::{
 };
 pub use traits::{
     BashToolFacade, BoxedBashToolFacade, BoxedFileToolFacade, BoxedLsToolFacade,
-    BoxedSearchToolFacade, BoxedToolFacade, FileToolFacade, InternalBashParams, InternalFileParams,
-    InternalLsParams, InternalSearchParams, InternalWebSearchParams, LsToolFacade,
-    SearchToolFacade, ToolDefinition, ToolFacade,
+    BoxedSearchToolFacade, BoxedToolFacade, BoxedFspecToolFacade, FileToolFacade, 
+    FspecToolFacade, InternalBashParams, InternalFileParams, InternalLsParams, 
+    InternalSearchParams, InternalWebSearchParams, LsToolFacade, SearchToolFacade, 
+    ToolDefinition, ToolFacade,
 };
 pub use web_search::{
     ClaudeWebSearchFacade, GeminiGoogleWebSearchFacade, GeminiWebFetchFacade,
     GeminiWebScreenshotFacade,
 };
 pub use wrapper::{
-    BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper, LsToolFacadeWrapper,
-    SearchToolFacadeWrapper,
+    BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper, FspecToolFacadeWrapper,
+    LsToolFacadeWrapper, SearchToolFacadeWrapper,
 };

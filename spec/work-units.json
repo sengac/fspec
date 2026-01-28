@@ -68950,13 +68950,19 @@
       "id": "CODE-007",
       "title": "AgentView Integration Testing",
       "type": "story",
-      "status": "backlog",
+      "status": "specifying",
       "createdAt": "2026-01-28T02:40:22.545Z",
-      "updatedAt": "2026-01-28T02:40:43.335Z",
+      "updatedAt": "2026-01-28T12:38:29.376Z",
       "description": "Test FspecTool integration with AgentView.tsx and SplitSessionView.tsx components",
       "parent": "CODE-002",
       "dependsOn": [
         "CODE-006"
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-28T12:38:29.376Z"
+        }
       ]
     },
     "CODE-008": {
@@ -69115,6 +69121,78 @@
       "createdAt": "2026-01-28T12:17:18.096Z",
       "updatedAt": "2026-01-28T12:17:18.096Z",
       "children": []
+    },
+    "TEST-027": {
+      "id": "TEST-027",
+      "title": "Test Story",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-28T12:34:45.333Z",
+      "updatedAt": "2026-01-28T12:34:45.333Z",
+      "children": []
+    },
+    "TEST-028": {
+      "id": "TEST-028",
+      "title": "Test Story",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-28T12:34:45.415Z",
+      "updatedAt": "2026-01-28T12:34:45.415Z",
+      "children": []
+    },
+    "TEST-029": {
+      "id": "TEST-029",
+      "title": "Test Story For XML Tags",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-28T12:34:45.446Z",
+      "updatedAt": "2026-01-28T12:34:45.446Z",
+      "children": []
+    },
+    "TEST-030": {
+      "id": "TEST-030",
+      "title": "Multi Reminder Test",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-28T12:34:45.474Z",
+      "updatedAt": "2026-01-28T12:34:45.474Z",
+      "children": []
+    },
+    "TEST-031": {
+      "id": "TEST-031",
+      "title": "Test Story",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-28T12:57:59.398Z",
+      "updatedAt": "2026-01-28T12:57:59.398Z",
+      "children": []
+    },
+    "TEST-032": {
+      "id": "TEST-032",
+      "title": "Test Story",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-28T12:57:59.482Z",
+      "updatedAt": "2026-01-28T12:57:59.482Z",
+      "children": []
+    },
+    "TEST-033": {
+      "id": "TEST-033",
+      "title": "Test Story For XML Tags",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-28T12:57:59.564Z",
+      "updatedAt": "2026-01-28T12:57:59.564Z",
+      "children": []
+    },
+    "TEST-034": {
+      "id": "TEST-034",
+      "title": "Multi Reminder Test",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-28T12:57:59.647Z",
+      "updatedAt": "2026-01-28T12:57:59.647Z",
+      "children": []
     }
   },
   "states": {
@@ -69175,7 +69253,6 @@
       "RLM-001",
       "WATCH-022",
       "CACHE-001",
-      "CODE-007",
       "CODE-008",
       "TEST-011",
       "TEST-012",
@@ -69192,7 +69269,15 @@
       "TEST-023",
       "TEST-024",
       "TEST-025",
-      "TEST-026"
+      "TEST-026",
+      "TEST-027",
+      "TEST-028",
+      "TEST-029",
+      "TEST-030",
+      "TEST-031",
+      "TEST-032",
+      "TEST-033",
+      "TEST-034"
     ],
     "specifying": [
       "LANG-001",
@@ -69204,7 +69289,8 @@
       "MODEL-001",
       "PROV-003",
       "CMPCT-001",
-      "WATCH-001"
+      "WATCH-001",
+      "CODE-007"
     ],
     "testing": [
       "CODE-002"
@@ -69736,7 +69822,7 @@
     "VID": 2,
     "RES": 21,
     "BROWSE": 2,
-    "TEST": 26,
+    "TEST": 34,
     "HOOK": 12,
     "REVIEW": 1,
     "DEP": 3,
