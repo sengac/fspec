@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-28T07:54:46.457Z"
+    "lastUpdated": "2026-01-28T09:36:10.320Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -68324,9 +68324,9 @@
       "id": "CODE-004",
       "title": "Core FspecTool Implementation",
       "type": "story",
-      "status": "validating",
+      "status": "done",
       "createdAt": "2026-01-28T02:40:10.457Z",
-      "updatedAt": "2026-01-28T08:27:52.578Z",
+      "updatedAt": "2026-01-28T09:36:10.353Z",
       "description": "Implement FspecTool struct with rig::tool::Tool trait in codelet/tools/src/fspec.rs",
       "parent": "CODE-002",
       "dependsOn": [
@@ -68400,6 +68400,10 @@
         {
           "state": "validating",
           "timestamp": "2026-01-28T08:27:52.578Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-28T09:36:10.353Z"
         }
       ],
       "userStory": {
@@ -68410,16 +68414,6 @@
       "questions": [
         {
           "id": 0,
-          "text": "@human: What specific fspec commands need to be supported through the Tool interface?",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:18:32.300Z",
-          "selected": true,
-          "answered": true,
-          "answer": "The Tool trait call() method should use the NAPI callFspecCommand function, providing its own callback that maps command names to the real imported fspec command functions from src/commands/",
-          "deletedAt": "2026-01-28T08:01:11.640Z"
-        },
-        {
-          "id": 1,
           "text": "@human: Should FspecTool support all fspec commands or just a subset needed for AI workflow orchestration?",
           "deleted": false,
           "createdAt": "2026-01-28T03:18:36.713Z",
@@ -68428,7 +68422,7 @@
           "answer": "FspecTool should support ALL fspec commands for complete ACDD workflow functionality EXCEPT bootstrap and init commands. Bootstrap is for other AI agents and isn't needed since codelet has fspec context in the system prompt. Init is for project setup which happens outside the FspecTool context."
         },
         {
-          "id": 2,
+          "id": 1,
           "text": "@human: How should the Tool handle errors from fspec commands - return ToolError or pass through fspec's error format?",
           "deleted": false,
           "createdAt": "2026-01-28T03:18:41.114Z",
@@ -68437,7 +68431,7 @@
           "answer": "FspecTool should parse <system-reminder> tags from console/stderr output during TypeScript function execution and include them in the tool response. These provide timely workflow orchestration context that tells the LLM what needs to be done next, chaining the entire ACDD process together."
         },
         {
-          "id": 3,
+          "id": 2,
           "text": "@human: How should FspecTool call fspec TypeScript functions directly? Should it import and call them or use a different mechanism?",
           "deleted": false,
           "createdAt": "2026-01-28T03:20:05.299Z",
@@ -68446,7 +68440,7 @@
           "answer": "Convert TypeScript function errors to ToolError for consistency with other codelet tools, but MUST preserve the original fspec domain error messages and context within the ToolError. This maintains uniform error handling while keeping fspec's rich error information."
         },
         {
-          "id": 4,
+          "id": 3,
           "text": "@human: How exactly should the Rust FspecTool call TypeScript functions? Should it use NAPI to import and execute the actual TypeScript modules, or call them via some other mechanism?",
           "deleted": false,
           "createdAt": "2026-01-28T03:52:18.591Z",
@@ -68455,7 +68449,7 @@
           "answer": "No specific performance measurements required. The goal is simply to eliminate CLI process spawning overhead completely. As long as FspecTool calls TypeScript functions directly via NAPI without spawning processes, the performance improvement is sufficient."
         },
         {
-          "id": 5,
+          "id": 4,
           "text": "@human: Which specific fspec TypeScript functions need to be called? Should this integrate with the existing commands in src/commands/ like list-work-units.ts, create-story.ts, etc.?",
           "deleted": false,
           "createdAt": "2026-01-28T03:52:23.291Z",
@@ -68464,7 +68458,7 @@
           "answer": "Yes, FspecTool should follow exactly the same architectural patterns as other tools in codelet/tools/src/ for uniformity. Use the same Tool trait implementation pattern, error handling, and code organization as WebSearchTool, BashTool, etc."
         },
         {
-          "id": 6,
+          "id": 5,
           "text": "@human: How are system reminders captured from TypeScript function calls? Do the TypeScript functions return them directly, or do they need to be extracted from stderr/output like in CLI?",
           "deleted": false,
           "createdAt": "2026-01-28T03:52:29.175Z",
@@ -68473,7 +68467,7 @@
           "answer": "Use NAPI to directly import the TypeScript modules and call the exported functions. Everything should be as direct as possible - no wrapper layers or adapters. FspecTool should directly import and call listWorkUnits(), createStory(), etc. from src/commands/ modules."
         },
         {
-          "id": 7,
+          "id": 6,
           "text": "@human: How should errors from TypeScript function calls be handled? Should they be converted to ToolError, or passed through in their original format?",
           "deleted": false,
           "createdAt": "2026-01-28T03:52:33.435Z",
@@ -68482,7 +68476,7 @@
           "answer": "TypeScript function errors should be converted to ToolError for consistency with other codelet tools. However, structured error responses (like validation failures) should preserve their original message format while wrapping them in ToolError::Execution."
         },
         {
-          "id": 8,
+          "id": 7,
           "text": "@human: What is the exact technical architecture for how FspecTool should call TypeScript functions? Should it use the existing NAPI bindings from CODE-003, or a different mechanism?",
           "deleted": false,
           "createdAt": "2026-01-28T03:59:13.220Z",
@@ -68491,7 +68485,7 @@
           "answer": "Use the existing NAPI bridge architecture: FspecTool in Rust should call actual TypeScript functions from src/commands/ directly via the NAPI bindings that were set up in CODE-003. Replace the simulation functions with real function imports and calls."
         },
         {
-          "id": 9,
+          "id": 8,
           "text": "@human: Which specific fspec commands must be supported through FspecTool? Should it support ALL fspec commands, or just a subset needed for AI workflow orchestration (like work unit management, scenario generation, etc.)?",
           "deleted": false,
           "createdAt": "2026-01-28T03:59:18.334Z",
@@ -68500,7 +68494,7 @@
           "answer": "FspecTool should support ALL fspec commands for complete ACDD workflow functionality EXCEPT bootstrap and init commands. Bootstrap is for other AI agents and isn't needed since codelet has fspec context in the system prompt. Init is for project setup which happens outside the FspecTool context."
         },
         {
-          "id": 10,
+          "id": 9,
           "text": "@human: How exactly should system reminders be captured and returned? The TypeScript functions output them to console/stderr wrapped in <system-reminder> tags - should FspecTool parse these during execution and include them in the response?",
           "deleted": false,
           "createdAt": "2026-01-28T03:59:23.098Z",
@@ -68509,7 +68503,7 @@
           "answer": "FspecTool should parse <system-reminder> tags from console/stderr output during TypeScript function execution and include them in the tool response. These provide timely workflow orchestration context that tells the LLM what needs to be done next, chaining the entire ACDD process together."
         },
         {
-          "id": 11,
+          "id": 10,
           "text": "@human: How should errors from TypeScript function calls be handled? Should they be converted to ToolError for consistency with other codelet tools, or returned in the original TypeScript error format?",
           "deleted": false,
           "createdAt": "2026-01-28T03:59:27.572Z",
@@ -68518,7 +68512,7 @@
           "answer": "Convert TypeScript function errors to ToolError for consistency with other codelet tools, but MUST preserve the original fspec domain error messages and context within the ToolError. This maintains uniform error handling while keeping fspec's rich error information."
         },
         {
-          "id": 12,
+          "id": 11,
           "text": "@human: What are the specific performance requirements? You mentioned eliminating 100-500ms CLI process spawning delays - what should the target execution time be for individual fspec commands?",
           "deleted": false,
           "createdAt": "2026-01-28T03:59:31.059Z",
@@ -68527,7 +68521,7 @@
           "answer": "No specific performance measurements required. The goal is simply to eliminate CLI process spawning overhead completely. As long as FspecTool calls TypeScript functions directly via NAPI without spawning processes, the performance improvement is sufficient."
         },
         {
-          "id": 13,
+          "id": 12,
           "text": "@human: How should FspecTool integrate with the existing codelet tools architecture? Should it follow the same patterns as other tools in codelet/tools/src/ (like WebSearchTool, etc.)?",
           "deleted": false,
           "createdAt": "2026-01-28T03:59:35.022Z",
@@ -68536,7 +68530,7 @@
           "answer": "Yes, FspecTool should follow exactly the same architectural patterns as other tools in codelet/tools/src/ for uniformity. Use the same Tool trait implementation pattern, error handling, and code organization as WebSearchTool, BashTool, etc."
         },
         {
-          "id": 14,
+          "id": 13,
           "text": "@human: The TypeScript commands export functions like 'listWorkUnits()' - how should the Rust FspecTool import and call these functions? Should it use NAPI to directly import the TypeScript modules, or call wrapper functions in the NAPI bridge?",
           "deleted": false,
           "createdAt": "2026-01-28T04:00:58.871Z",
@@ -68545,7 +68539,7 @@
           "answer": "Use NAPI to directly import the TypeScript modules and call the exported functions. Everything should be as direct as possible - no wrapper layers or adapters. FspecTool should directly import and call listWorkUnits(), createStory(), etc. from src/commands/ modules."
         },
         {
-          "id": 15,
+          "id": 14,
           "text": "@human: What specific methods and types does the rig::tool::Tool trait require that are not already implemented in FspecTool?",
           "deleted": false,
           "createdAt": "2026-01-28T07:54:52.410Z",
@@ -68554,7 +68548,7 @@
           "answer": "The Tool trait requires: const NAME, type Error/Args/Output, async fn definition() returning ToolDefinition, and async fn call() taking Args and returning Result. The current FspecTool has none of these - only execute_via_callback."
         },
         {
-          "id": 16,
+          "id": 15,
           "text": "@human: The current FspecTool already has execute_via_callback - should the Tool trait call() method use this existing functionality, or does it need something different?",
           "deleted": false,
           "createdAt": "2026-01-28T07:54:57.643Z",
@@ -68563,7 +68557,7 @@
           "answer": "The Tool trait call() method should use callFspecCommand from NAPI, providing its own callback function that imports and executes the real fspec command modules from src/commands/. This avoids needing external callbacks."
         },
         {
-          "id": 17,
+          "id": 16,
           "text": "@human: Looking at other tools like BashTool, they have Args structs (like BashArgs). What should FspecArgs contain - just command, or also args and projectRoot parameters?",
           "deleted": false,
           "createdAt": "2026-01-28T07:55:02.805Z",
@@ -68572,7 +68566,7 @@
           "answer": "FspecArgs should contain all three fields: command (String), args (String), and project_root (String) to match the callFspecCommand NAPI signature and give users full control over structured fspec command execution"
         },
         {
-          "id": 18,
+          "id": 17,
           "text": "@human: Does FspecTool need to be integrated into the NAPI bindings so it's available to TypeScript, or is this just for Rust-side agent usage?",
           "deleted": false,
           "createdAt": "2026-01-28T07:55:09.328Z",
@@ -68581,203 +68575,62 @@
           "answer": "FspecTool should be Rust-only for agent usage. TypeScript already has direct access to fspec functions via imports and doesn't need the Tool trait interface. The Tool trait is specifically for Rust agents to eliminate CLI spawning."
         }
       ],
-      "nextQuestionId": 19,
+      "nextQuestionId": 18,
       "rules": [
         {
           "id": 0,
-          "text": "FspecTool must call actual TypeScript command functions (like listWorkUnits, createStory) directly via NAPI, not simulation functions with hardcoded data",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:55:35.287Z",
-          "deletedAt": "2026-01-28T07:53:41.846Z"
-        },
-        {
-          "id": 1,
-          "text": "System reminders must be captured from TypeScript command execution (stderr output) and returned to the LLM for workflow orchestration",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:55:41.782Z",
-          "deletedAt": "2026-01-28T07:53:37.616Z"
-        },
-        {
-          "id": 2,
-          "text": "CLI process spawning (Command::new('fspec')) must be completely eliminated - no fallback to CLI for supported commands",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:55:47.682Z",
-          "deletedAt": "2026-01-28T07:53:33.459Z"
-        },
-        {
-          "id": 3,
-          "text": "FspecTool must integrate with existing TypeScript command modules in src/commands/ directory (list-work-units.ts, create-story.ts, etc.)",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:55:52.255Z",
-          "deletedAt": "2026-01-28T07:53:30.325Z"
-        },
-        {
-          "id": 4,
-          "text": "FspecTool must eliminate Command::new('fspec') completely - no CLI process spawning for supported commands",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:03.927Z",
-          "deletedAt": "2026-01-28T07:53:26.197Z"
-        },
-        {
-          "id": 5,
-          "text": "FspecTool must call actual TypeScript command functions (listWorkUnits, createStory, etc.) from src/commands/, not simulation functions",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:08.284Z",
-          "deletedAt": "2026-01-28T07:53:22.954Z"
-        },
-        {
-          "id": 6,
-          "text": "System reminders must be captured from TypeScript function execution and included in the response for LLM workflow orchestration",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:12.093Z",
-          "deletedAt": "2026-01-28T07:53:19.090Z"
-        },
-        {
-          "id": 7,
-          "text": "Errors from TypeScript functions must be converted to ToolError for consistency with other codelet tools",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:15.761Z",
-          "deletedAt": "2026-01-28T07:53:15.919Z"
-        },
-        {
-          "id": 8,
-          "text": "FspecTool must provide significant performance improvement over CLI spawning (target: sub-50ms execution time for basic commands)",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:19.947Z",
-          "deletedAt": "2026-01-28T07:53:12.484Z"
-        },
-        {
-          "id": 9,
-          "text": "FspecTool must support ALL ACDD fspec commands EXCEPT bootstrap and init commands (bootstrap is for other AI agents, init is for project setup outside FspecTool context)",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:10:19.515Z",
-          "deletedAt": "2026-01-28T07:53:08.846Z"
-        },
-        {
-          "id": 10,
-          "text": "System reminders parsed from <system-reminder> tags are critical for ACDD workflow orchestration - they provide timely guidance that chains the entire development process together",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:13:29.069Z",
-          "deletedAt": "2026-01-28T07:53:05.366Z"
-        },
-        {
-          "id": 11,
-          "text": "FspecTool must use the most direct approach possible - directly import TypeScript modules via NAPI and call exported functions with no wrapper layers or adapters",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:18:53.647Z",
-          "deletedAt": "2026-01-28T07:53:00.876Z"
-        },
-        {
-          "id": 12,
           "text": "FspecTool must implement rig::tool::Tool trait with NAME, Error, Args, and Output associated types",
           "deleted": false,
           "createdAt": "2026-01-28T07:55:55.013Z"
         },
         {
-          "id": 13,
+          "id": 1,
           "text": "FspecArgs struct must derive Debug, Deserialize, Serialize, and JsonSchema traits for tool parameter validation",
           "deleted": false,
           "createdAt": "2026-01-28T07:55:59.615Z"
         },
         {
-          "id": 14,
+          "id": 2,
           "text": "Tool trait requires async definition() method that returns ToolDefinition and async call() method that executes the command",
           "deleted": false,
           "createdAt": "2026-01-28T07:56:04.376Z"
         },
         {
-          "id": 15,
+          "id": 3,
           "text": "Existing execute_via_callback functionality must be preserved and used by the Tool trait implementation",
           "deleted": false,
           "createdAt": "2026-01-28T07:56:08.484Z"
         }
       ],
-      "nextRuleId": 16,
+      "nextRuleId": 4,
       "examples": [
         {
           "id": 0,
-          "text": "When developer calls FspecTool.call(command='list-work-units'), it imports and executes listWorkUnits() from src/commands/list-work-units.ts and returns real project data, not hardcoded strings",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:55:58.538Z",
-          "deletedAt": "2026-01-28T07:54:15.756Z"
-        },
-        {
-          "id": 1,
-          "text": "When developer executes FspecTool with command='create-story', they receive both the command output AND system reminders for next steps (like 'Add Example Mapping') captured from TypeScript execution",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:56:05.586Z",
-          "deletedAt": "2026-01-28T07:54:08.396Z"
-        },
-        {
-          "id": 2,
-          "text": "When developer executes multiple fspec commands rapidly, each command completes in under 50ms instead of 100-500ms because no CLI processes are spawned",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:56:10.339Z",
-          "deletedAt": "2026-01-28T07:54:01.475Z"
-        },
-        {
-          "id": 3,
-          "text": "When calling FspecTool.call(command='list-work-units'), it imports listWorkUnits() from src/commands/list-work-units.ts and returns actual project work units, not hardcoded simulation data",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:24.822Z",
-          "deletedAt": "2026-01-28T07:53:57.816Z"
-        },
-        {
-          "id": 4,
-          "text": "When developer uses FspecTool to list work units, they receive real project data instantly without waiting for CLI process startup delays",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:32.800Z",
-          "deletedAt": "2026-01-28T07:53:54.486Z"
-        },
-        {
-          "id": 5,
-          "text": "When developer creates a story using FspecTool, they receive both the creation confirmation AND system reminders about next steps (like Example Mapping)",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:37.473Z",
-          "deletedAt": "2026-01-28T07:53:51.231Z"
-        },
-        {
-          "id": 6,
-          "text": "When developer executes multiple fspec commands rapidly through FspecTool, each command completes quickly with no noticeable delay between commands",
-          "deleted": true,
-          "createdAt": "2026-01-28T04:01:41.140Z",
-          "deletedAt": "2026-01-28T07:53:47.188Z"
-        },
-        {
-          "id": 7,
           "text": "Developer can use FspecTool.call(FspecArgs { command: 'list-work-units', args: '{}', project_root: '.' }) alongside BashTool.call() in the same agent session",
           "deleted": false,
           "createdAt": "2026-01-28T07:56:14.509Z"
         },
         {
-          "id": 8,
+          "id": 1,
           "text": "When agent system initializes tools, FspecTool.definition() returns name 'Fspec' and description explaining fspec command capabilities",
           "deleted": false,
           "createdAt": "2026-01-28T07:56:20.257Z"
         },
         {
-          "id": 9,
+          "id": 2,
           "text": "When fspec command fails, developer receives consistent ToolError format like other tools instead of custom error formats",
           "deleted": false,
           "createdAt": "2026-01-28T07:56:29.471Z"
         }
       ],
-      "nextExampleId": 10,
-      "architectureNotes": [
-        {
-          "id": 0,
-          "text": "Replace Command::new(\"fspec\") in FspecTool::execute_fspec_command() with direct calls to fspec TypeScript functions to eliminate CLI process spawning",
-          "deleted": true,
-          "createdAt": "2026-01-28T03:20:10.003Z",
-          "deletedAt": "2026-01-28T07:54:19.634Z"
-        }
-      ],
-      "nextNoteId": 1,
+      "nextExampleId": 3,
+      "architectureNotes": [],
+      "nextNoteId": 0,
       "estimate": 5,
       "attachments": [
         "spec/attachments/CODE-004/ast-research-tool-patterns.md"
       ],
-      "updated": "2026-01-28T04:30:32.203Z"
+      "updated": "2026-01-28T09:36:10.353Z"
     },
     "CODE-005": {
       "id": "CODE-005",
@@ -68911,10 +68764,9 @@
       "CODE-002"
     ],
     "implementing": [],
-    "validating": [
-      "CODE-004"
-    ],
+    "validating": [],
     "done": [
+      "CODE-004",
       "CODE-003",
       "TUI-055",
       "TUI-054",
