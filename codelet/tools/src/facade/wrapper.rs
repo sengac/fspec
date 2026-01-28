@@ -317,7 +317,9 @@ impl Tool for FileToolFacadeWrapper {
 // BashToolFacadeWrapper - Adapts BashToolFacade implementations to rig::tool::Tool
 // ============================================================================
 
+use super::fspec_facade::BoxedFspecToolFacade;
 use super::traits::{BoxedBashToolFacade, InternalBashParams};
+use crate::fspec::{FspecArgs, FspecTool};
 use crate::bash::BashArgs;
 use crate::BashTool;
 
@@ -329,7 +331,69 @@ pub struct BashOperationResult {
     pub error: Option<String>,
 }
 
-/// Wrapper that adapts a BashToolFacade to rig's Tool trait.
+/// Wrapper that adapts a FspecToolFacade to rig's Tool trait.
+///
+/// This enables provider-specific fspec facades to be used with rig's agent builder
+/// while maintaining the facade's custom tool name, schema, and parameter mapping.
+pub struct FspecToolFacadeWrapper {
+    /// The underlying facade providing name, schema, and param mapping
+    facade: BoxedFspecToolFacade,
+    /// The base tool for actual execution
+    fspec_tool: FspecTool,
+}
+
+impl FspecToolFacadeWrapper {
+    /// Create a new wrapper for the given fspec facade
+    pub fn new(facade: BoxedFspecToolFacade) -> Self {
+        Self {
+            facade,
+            fspec_tool: FspecTool::new(),
+        }
+    }
+
+    /// Get the facade's provider name
+    pub fn provider(&self) -> &'static str {
+        self.facade.provider()
+    }
+}
+
+impl Tool for FspecToolFacadeWrapper {
+    const NAME: &'static str = "fspec_facade_wrapper";
+
+    type Error = ToolError;
+    type Args = FacadeArgs;
+    type Output = String;
+
+    /// Override to return the facade's tool name (e.g., "fspec_command" for Gemini)
+    fn name(&self) -> String {
+        self.facade.tool_name().to_string()
+    }
+
+    /// Override to return the facade's definition (provider-specific schema)
+    async fn definition(&self, _prompt: String) -> rig::completion::ToolDefinition {
+        let def = self.facade.definition();
+        rig::completion::ToolDefinition {
+            name: def.name,
+            description: def.description,
+            parameters: def.parameters,
+        }
+    }
+
+    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Map provider-specific args to internal params via the facade
+        let internal_params = self.facade.map_params(args.0)?;
+
+        // Convert internal params to FspecArgs
+        let fspec_args = FspecArgs {
+            command: internal_params.command,
+            args: internal_params.args,
+            project_root: internal_params.project_root,
+        };
+
+        // Execute via the actual FspecTool
+        self.fspec_tool.call(fspec_args).await
+    }
+}
 ///
 /// This enables provider-specific bash facades to be used with rig's agent builder
 /// while maintaining the facade's custom tool name, schema, and parameter mapping.

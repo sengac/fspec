@@ -1,5 +1,6 @@
 //! Core traits and types for the tool facade pattern.
 
+use super::fspec_facade::InternalFspecParams;
 use crate::ToolError;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -157,6 +158,27 @@ pub enum InternalSearchParams {
         path: Option<String>,
     },
 }
+
+/// Provider-specific tool facade trait for fspec operations.
+///
+/// Each facade adapts the fspec tool's interface for a specific LLM provider,
+/// handling differences in tool naming, parameter schemas, and parameter formats.
+pub trait FspecToolFacade: Send + Sync {
+    /// Returns the provider this facade is for (e.g., "claude", "gemini", "openai")
+    fn provider(&self) -> &'static str;
+
+    /// Returns the tool name as the provider expects it
+    fn tool_name(&self) -> &'static str;
+
+    /// Returns the tool definition with provider-specific schema
+    fn definition(&self) -> ToolDefinition;
+
+    /// Maps provider-specific parameters to internal parameters
+    fn map_params(&self, input: Value) -> Result<InternalFspecParams, ToolError>;
+}
+
+/// Type alias for a boxed FspecToolFacade
+pub type BoxedFspecToolFacade = Arc<dyn FspecToolFacade>;
 
 /// Provider-specific tool facade trait for search operations.
 ///

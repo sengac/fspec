@@ -120,13 +120,14 @@ impl OpenAIProvider {
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
+        use codelet_tools::facade::openai_fspec_tool;
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
             ReadTool, WebSearchTool, WriteTool,
         };
         use rig::client::CompletionClient;
 
-        // Build agent with all 10 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
+        // Build agent with all 11 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -140,6 +141,7 @@ impl OpenAIProvider {
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
+            .tool(openai_fspec_tool()) // FspecTool for ACDD workflow management
             .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
 
         // Set preamble if provided

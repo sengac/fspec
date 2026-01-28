@@ -319,7 +319,7 @@ impl ClaudeProvider {
     ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
         // TOOL-008: Use facade for system prompt formatting
         use codelet_tools::facade::{
-            select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,
+            claude_fspec_tool, select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,
         };
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
@@ -328,7 +328,7 @@ impl ClaudeProvider {
         use rig::client::CompletionClient;
         use std::sync::Arc;
 
-        // Build agent with all 10 tools using rig's builder pattern (TOOL-007: Uses FacadeToolWrapper for web search)
+        // Build agent with all 11 tools using rig's builder pattern (TOOL-007: Uses FacadeToolWrapper for web search)
         // MODEL-001: Use stored model name instead of DEFAULT_MODEL
         let mut agent_builder = self
             .rig_client
@@ -343,6 +343,7 @@ impl ClaudeProvider {
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
+            .tool(claude_fspec_tool()) // FspecTool for ACDD workflow management
             .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade))); // TOOL-007: Use facade for consistent tool interfaces
 
         // PROV-006, TOOL-008: Apply cache_control to system prompt using facade
