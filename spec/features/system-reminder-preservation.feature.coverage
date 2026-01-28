@@ -1,0 +1,149 @@
+{
+  "scenarios": [
+    {
+      "name": "Capture system reminder from console.error during command execution",
+      "testMappings": [
+        {
+          "file": "src/test/system-reminder-preservation.test.ts",
+          "lines": "16-52",
+          "implMappings": [
+            {
+              "file": "src/utils/fspec-callback.ts",
+              "lines": [
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse result.systemReminder property from command response",
+      "testMappings": [
+        {
+          "file": "src/test/system-reminder-preservation.test.ts",
+          "lines": "54-86",
+          "implMappings": [
+            {
+              "file": "src/utils/fspec-callback.ts",
+              "lines": [
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parse raw <system-reminder> tags from console.error output",
+      "testMappings": [
+        {
+          "file": "src/test/system-reminder-preservation.test.ts",
+          "lines": "88-133",
+          "implMappings": [
+            {
+              "file": "src/utils/fspec-callback.ts",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Combine multiple system reminders in tool response",
+      "testMappings": [
+        {
+          "file": "src/test/system-reminder-preservation.test.ts",
+          "lines": "135-174",
+          "implMappings": [
+            {
+              "file": "src/utils/fspec-callback.ts",
+              "lines": [
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/test/system-reminder-preservation.test.ts"
+    ],
+    "implFiles": [
+      "src/utils/fspec-callback.ts"
+    ],
+    "totalLinesCovered": 225
+  }
+}

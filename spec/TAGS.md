@@ -36,6 +36,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@providers` | Provider integration and LLM provider implementations |
 | `@session` | Session management and state tracking |
 | `@templates` | Template generation and transformation system |
+| `@tool-integration` | Tool integration and callback handling |
 | `@tools` | Tool system components and tool implementations |
 | `@tui` | Terminal User Interface components and infrastructure |
 | `@tui-component` | Terminal User Interface components |
@@ -813,7 +814,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-26T06:40:05.907Z_
+_Last updated: 2026-01-28T11:17:56.801Z_
 
 **Update Command**: `fspec tag-stats`
 

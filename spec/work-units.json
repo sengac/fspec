@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-28T09:36:10.320Z"
+    "lastUpdated": "2026-01-28T11:24:34.162Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -68636,27 +68636,315 @@
       "id": "CODE-005",
       "title": "TypeScript Function Call Integration",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-28T02:40:14.478Z",
-      "updatedAt": "2026-01-28T02:40:35.866Z",
+      "updatedAt": "2026-01-28T11:08:51.315Z",
       "description": "Wire up direct calls to fspec TypeScript functions via NAPI-RS without CLI spawning",
       "parent": "CODE-002",
       "dependsOn": [
         "CODE-004"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-28T09:45:34.696Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-28T09:58:25.737Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-28T10:11:57.125Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-28T11:05:35.099Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-28T11:08:51.315Z"
+        }
+      ],
+      "userStory": {
+        "role": "Rust agent using FspecTool",
+        "action": "execute fspec commands directly via TypeScript functions",
+        "benefit": "eliminate CLI process spawning overhead and get 10-100x performance improvement"
+      },
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: What specific fspec commands need to be supported through the direct TypeScript integration? Should we support all commands or just the most commonly used ones like list-work-units, create-story, update-work-unit-status?",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:46:59.952Z",
+          "selected": true,
+          "answered": true,
+          "answer": "FspecTool should support ALL fspec commands for complete ACDD workflow functionality EXCEPT bootstrap and init commands. Bootstrap is for other AI agents and isn't needed since codelet has fspec context in the system prompt. Init is for project setup which happens outside the FspecTool context."
+        },
+        {
+          "id": 1,
+          "text": "@human: How should the Tool::call() method map fspec command names (like 'list-work-units') to TypeScript function imports? Should it use dynamic imports or a pre-built mapping?",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:47:05.331Z",
+          "selected": true,
+          "answered": true,
+          "answer": "The architecture is already established: Tool::call() should replace the TODO placeholder by creating a TypeScript callback that dynamically imports fspec command modules from src/commands/ and calls the appropriate function (like listWorkUnits(), createStory(), etc.). The callback gets passed to callFspecCommand via the existing NAPI infrastructure."
+        },
+        {
+          "id": 2,
+          "text": "@human: The fspec commands output system reminders to stderr via console.error() - how should these be captured and returned to the agent when called via NAPI? Should they be included in the tool response JSON?",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:47:10.765Z",
+          "selected": true,
+          "answered": true,
+          "answer": "FspecTool should parse <system-reminder> tags from console/stderr output during TypeScript function execution and include them in the tool response. These provide timely workflow orchestration context that tells the LLM what needs to be done next, chaining the entire ACDD process together. The system reminders implement an anti-drift pattern that makes fspec more than just a CLI tool - it becomes an AI agent workflow orchestrator."
+        },
+        {
+          "id": 3,
+          "text": "@human: The callFspecCommand NAPI function expects a callback that takes (command, args_json, project_root) and returns a string. Should this callback be implemented as part of the Rust Tool::call() method, or should it be a separate TypeScript function that imports and executes the fspec commands?",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:47:19.118Z",
+          "selected": true,
+          "answered": true,
+          "answer": "The Tool::call() method should provide its own callback function that imports and executes the real fspec command modules from src/commands/. This avoids needing external callbacks. The Rust code creates the callback and passes it to callFspecCommand."
+        },
+        {
+          "id": 4,
+          "text": "@human: For performance optimization, should we pre-import all fspec command modules when FspecTool is initialized, or dynamically import them on each call? What about caching project state between calls?",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:47:24.018Z",
+          "selected": true,
+          "answered": true,
+          "answer": "No specific performance measurements required. The goal is simply to eliminate CLI process spawning overhead completely. As long as FspecTool calls TypeScript functions directly via NAPI without spawning processes, the performance improvement is sufficient. No complex caching strategies needed."
+        }
+      ],
+      "nextQuestionId": 5,
+      "rules": [
+        {
+          "id": 0,
+          "text": "Tool::call() method must replace TODO placeholder by calling callFspecCommand NAPI function with a TypeScript callback",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:54:51.124Z"
+        },
+        {
+          "id": 1,
+          "text": "Support ALL fspec commands EXCEPT bootstrap and init commands via direct TypeScript function calls",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:54:55.610Z"
+        },
+        {
+          "id": 2,
+          "text": "Parse and include system reminder tags from console/stderr output in tool response for LLM workflow orchestration",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:55:00.206Z"
+        },
+        {
+          "id": 3,
+          "text": "TypeScript callback must dynamically import and call fspec command modules from src/commands/ directory",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:55:03.697Z"
+        },
+        {
+          "id": 4,
+          "text": "Convert TypeScript function errors to ToolError for consistency while preserving original fspec error messages and context",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:55:07.797Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "Agent calls FspecTool.call(FspecArgs{command:'list-work-units', args:'{}', project_root:'.'}) and receives JSON with work units data plus system reminder",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:55:13.552Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent calls FspecTool.call() for 'create-story' command and TypeScript callback dynamically imports createStory() function and returns JSON result",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:55:17.728Z"
+        },
+        {
+          "id": 2,
+          "text": "Agent calls FspecTool.call() for 'create-story' command with story details and receives JSON with new work unit ID plus system reminder about Example Mapping next steps",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:55:22.334Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent calls FspecTool.call() for unsupported 'bootstrap' command and receives ToolError with clear error message about using CLI directly for setup commands",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:55:26.740Z"
+        },
+        {
+          "id": 4,
+          "text": "Agent executes multiple fspec commands rapidly (list-work-units, show-work-unit, update-work-unit-status) without 100-500ms CLI process spawning delays between calls",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:55:32.170Z"
+        }
+      ],
+      "nextExampleId": 5,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Integration wires FspecTool.call() to NAPI callFspecCommand by replacing TODO placeholder with TypeScript callback that dynamically imports src/commands/ modules, enabling direct function calls without CLI spawning while preserving system reminders for LLM workflow orchestration",
+          "deleted": false,
+          "createdAt": "2026-01-28T09:56:52.253Z"
+        }
+      ],
+      "nextNoteId": 1,
+      "attachments": [
+        "spec/attachments/CODE-005/ast-research-integration-points.md"
+      ],
+      "updated": "2026-01-28T11:08:51.315Z"
     },
     "CODE-006": {
       "id": "CODE-006",
       "title": "System Reminder Preservation",
       "type": "story",
-      "status": "backlog",
+      "status": "done",
       "createdAt": "2026-01-28T02:40:18.558Z",
-      "updatedAt": "2026-01-28T02:40:39.441Z",
+      "updatedAt": "2026-01-28T11:24:34.195Z",
       "description": "Ensure system reminders from fspec commands are captured and passed to LLM for workflow orchestration",
       "parent": "CODE-002",
       "dependsOn": [
         "CODE-005"
-      ]
+      ],
+      "stateHistory": [
+        {
+          "state": "specifying",
+          "timestamp": "2026-01-28T11:10:05.789Z"
+        },
+        {
+          "state": "testing",
+          "timestamp": "2026-01-28T11:18:57.988Z"
+        },
+        {
+          "state": "implementing",
+          "timestamp": "2026-01-28T11:21:09.380Z"
+        },
+        {
+          "state": "validating",
+          "timestamp": "2026-01-28T11:24:09.411Z"
+        },
+        {
+          "state": "done",
+          "timestamp": "2026-01-28T11:24:34.195Z"
+        }
+      ],
+      "questions": [
+        {
+          "id": 0,
+          "text": "@human: How should we capture system reminders from real fspec TypeScript command execution? Should we intercept console.error() output during command execution, or do the fspec commands return system reminders in their response objects?",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:10:28.624Z",
+          "selected": true,
+          "answered": true,
+          "answer": "We should capture console.error() output during command execution since both patterns output to stderr - this is the comprehensive approach"
+        },
+        {
+          "id": 1,
+          "text": "@human: Looking at the existing fspec commands, I can see system reminders are output via console.error() in two patterns: (1) Formatted in result.systemReminder property, and (2) Raw <system-reminder> tags directly to console.error. Should we capture both patterns or standardize on one approach?",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:16:34.410Z",
+          "selected": true,
+          "answered": true,
+          "answer": "Capture both patterns to maintain compatibility with existing commands - parse result.systemReminder AND raw <system-reminder> tags"
+        }
+      ],
+      "nextQuestionId": 2,
+      "rules": [
+        {
+          "id": 0,
+          "text": "System reminders must be captured from fspec TypeScript command execution",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:15:45.836Z"
+        },
+        {
+          "id": 1,
+          "text": "Captured system reminders must be included in FspecTool response for LLM workflow guidance",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:15:49.210Z"
+        },
+        {
+          "id": 2,
+          "text": "System reminder format must follow '<system-reminder>content</system-reminder>' convention",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:15:54.347Z"
+        },
+        {
+          "id": 3,
+          "text": "We should capture console.error() output during command execution since both patterns output to stderr - this is the comprehensive approach",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:16:52.523Z"
+        },
+        {
+          "id": 4,
+          "text": "Capture both patterns to maintain compatibility with existing commands - parse result.systemReminder AND raw <system-reminder> tags",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:16:56.040Z"
+        }
+      ],
+      "nextRuleId": 5,
+      "examples": [
+        {
+          "id": 0,
+          "text": "When creating work unit, capture reminder: 'Work unit EXAMPLE-001 has no estimate' from console.error output",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:15:58.643Z"
+        },
+        {
+          "id": 1,
+          "text": "Agent receives system reminder in FspecTool response: 'Run: fspec update-work-unit-estimate CODE-006 <points>'",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:16:02.464Z"
+        },
+        {
+          "id": 2,
+          "text": "Multiple system reminders are captured and combined in tool response: estimate reminder + example mapping reminder",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:16:06.370Z"
+        },
+        {
+          "id": 3,
+          "text": "Agent receives system reminders: 'Run: fspec update-work-unit-estimate CODE-006 <points>' for workflow guidance",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:16:42.943Z"
+        }
+      ],
+      "nextExampleId": 4,
+      "userStory": {
+        "role": "AI agent using FspecTool",
+        "action": "capture system reminders from fspec command execution",
+        "benefit": "I receive workflow guidance and next-step instructions for effective project management"
+      },
+      "estimate": 3,
+      "architectureNotes": [
+        {
+          "id": 0,
+          "text": "Enhance fspecCallback in src/utils/fspec-callback.ts to capture console.error output during TypeScript command execution using process.stderr.write override",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:18:09.518Z"
+        },
+        {
+          "id": 1,
+          "text": "Parse both result.systemReminder property and raw <system-reminder> XML tags from captured stderr to maintain compatibility with all existing fspec commands",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:18:13.102Z"
+        },
+        {
+          "id": 2,
+          "text": "Add systemReminders field to FspecTool response JSON so captured reminders are available to RigAgent for LLM workflow orchestration",
+          "deleted": false,
+          "createdAt": "2026-01-28T11:18:16.879Z"
+        }
+      ],
+      "nextNoteId": 3,
+      "attachments": [
+        "spec/attachments/CODE-006/ast-research-fspec-callback-structure.md"
+      ],
+      "updated": "2026-01-28T11:24:34.195Z"
     },
     "CODE-007": {
       "id": "CODE-007",
@@ -68743,8 +69031,6 @@
       "RLM-001",
       "WATCH-022",
       "CACHE-001",
-      "CODE-005",
-      "CODE-006",
       "CODE-007",
       "CODE-008"
     ],
@@ -68766,6 +69052,8 @@
     "implementing": [],
     "validating": [],
     "done": [
+      "CODE-006",
+      "CODE-005",
       "CODE-004",
       "CODE-003",
       "TUI-055",

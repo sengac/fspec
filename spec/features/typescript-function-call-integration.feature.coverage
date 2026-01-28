@@ -1,0 +1,183 @@
+{
+  "scenarios": [
+    {
+      "name": "Execute list-work-units command via direct TypeScript function call",
+      "testMappings": [
+        {
+          "file": "src/test/typescript-function-call-integration.test.ts",
+          "lines": "11-62",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/fspec.rs",
+              "lines": [
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Execute create-story command with system reminder workflow guidance",
+      "testMappings": [
+        {
+          "file": "src/test/typescript-function-call-integration.test.ts",
+          "lines": "64-124",
+          "implMappings": [
+            {
+              "file": "src/utils/fspec-callback.ts",
+              "lines": [
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle unsupported bootstrap command with clear error",
+      "testMappings": [
+        {
+          "file": "src/test/typescript-function-call-integration.test.ts",
+          "lines": "126-167",
+          "implMappings": [
+            {
+              "file": "src/utils/fspec-callback.ts",
+              "lines": [
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Execute multiple commands rapidly without CLI spawning delays",
+      "testMappings": [
+        {
+          "file": "src/test/typescript-function-call-integration.test.ts",
+          "lines": "169-233",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/fspec.rs",
+              "lines": [
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle TypeScript function errors with consistent error format",
+      "testMappings": [
+        {
+          "file": "src/test/typescript-function-call-integration.test.ts",
+          "lines": "235-291",
+          "implMappings": [
+            {
+              "file": "src/utils/fspec-callback.ts",
+              "lines": [
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/test/typescript-function-call-integration.test.ts"
+    ],
+    "implFiles": [
+      "codelet/tools/src/fspec.rs",
+      "src/utils/fspec-callback.ts",
+      "codelet/napi/src/fspec.rs"
+    ],
+    "totalLinesCovered": 362
+  }
+}
