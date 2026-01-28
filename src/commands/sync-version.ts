@@ -123,7 +123,7 @@ export async function syncVersion(
       if (detection && !detection.fromConfig) {
         // Agent detected from filesystem but not in config - write config
         const { writeAgentConfig } = await import(
-          '../utils/agentRuntimeConfig.js'
+          '../utils/agentRuntimeConfig'
         );
         writeAgentConfig(cwd, detection.agentId);
       }

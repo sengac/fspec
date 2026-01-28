@@ -33,7 +33,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       writeFileSync(configPath, JSON.stringify({ agent: 'claude' }, null, 2));
 
       // When fspec checks for test command during validating phase
-      const { checkTestCommand } = await import('../configure-tools.js');
+      const { checkTestCommand } = await import('../configure-tools');
       const result = await checkTestCommand(testDir);
 
       // Then fspec should emit system-reminder
@@ -57,7 +57,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       writeFileSync(configPath, JSON.stringify({ agent: 'claude' }, null, 2));
 
       // When AI runs: fspec configure-tools --test-command '<detected-command>'
-      const { configureTools } = await import('../configure-tools.js');
+      const { configureTools } = await import('../configure-tools');
       await configureTools({ testCommand: 'npm test', cwd: testDir });
 
       // Then fspec should write to spec/fspec-config.json
@@ -86,7 +86,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       );
 
       // When fspec checks for test command during validating phase
-      const { checkTestCommand } = await import('../configure-tools.js');
+      const { checkTestCommand } = await import('../configure-tools');
       const result = await checkTestCommand(testDir);
 
       // Then fspec should emit system-reminder: 'Run tests: <command>'
@@ -105,7 +105,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       writeFileSync(configPath, JSON.stringify({ agent: 'claude' }, null, 2));
 
       // When AI runs: fspec configure-tools --test-command '<framework1> && <framework2>'
-      const { configureTools } = await import('../configure-tools.js');
+      const { configureTools } = await import('../configure-tools');
       await configureTools({
         testCommand: 'vitest && jest',
         cwd: testDir,
@@ -116,7 +116,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       expect(config.tools?.test?.command).toBe('vitest && jest');
 
       // And next validation should emit: 'Run tests: <framework1> && <framework2>'
-      const { checkTestCommand } = await import('../configure-tools.js');
+      const { checkTestCommand } = await import('../configure-tools');
       const result = await checkTestCommand(testDir);
       expect(result.message).toContain('Run tests: vitest && jest');
     });
@@ -129,7 +129,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       writeFileSync(configPath, JSON.stringify({ agent: 'claude' }, null, 2));
 
       // When fspec emits system-reminder for tool configuration
-      const { checkTestCommand } = await import('../configure-tools.js');
+      const { checkTestCommand } = await import('../configure-tools');
       const result = await checkTestCommand(testDir);
 
       // Then system-reminder should include search query: 'best <platform> testing tools'
@@ -148,7 +148,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       writeFileSync(configPath, JSON.stringify({ agent: 'claude' }, null, 2));
 
       // When AI runs: fspec configure-tools --quality-commands '<tool1>' '<tool2>' '<tool3>'
-      const { configureTools } = await import('../configure-tools.js');
+      const { configureTools } = await import('../configure-tools');
       await configureTools({
         qualityCommands: ['eslint .', 'tsc --noEmit', 'prettier --check .'],
         cwd: testDir,
@@ -163,7 +163,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       ]);
 
       // And next validation should emit chained command: '<tool1> && <tool2> && <tool3>'
-      const { checkQualityCommands } = await import('../configure-tools.js');
+      const { checkQualityCommands } = await import('../configure-tools');
       const result = await checkQualityCommands(testDir);
       expect(result.message).toContain(
         'eslint . && tsc --noEmit && prettier --check .'
@@ -188,7 +188,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       );
 
       // When AI runs: fspec configure-tools --reconfigure
-      const { configureTools } = await import('../configure-tools.js');
+      const { configureTools } = await import('../configure-tools');
       const result = await configureTools({
         reconfigure: true,
         cwd: testDir,
@@ -253,7 +253,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       writeFileSync(configPath, JSON.stringify({ agent: 'cursor' }, null, 2));
 
       // When user runs 'fspec configure-tools --test-command "npm test"'
-      const { configureTools } = await import('../configure-tools.js');
+      const { configureTools } = await import('../configure-tools');
       await configureTools({ testCommand: 'npm test', cwd: testDir });
 
       // Then spec/fspec-config.json should be updated with tools.test.command = "npm test"
@@ -272,7 +272,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       writeFileSync(configPath, JSON.stringify({ agent: 'claude' }, null, 2));
 
       // When user runs 'fspec configure-tools --quality-commands "npm run lint" "npm run typecheck"'
-      const { configureTools } = await import('../configure-tools.js');
+      const { configureTools } = await import('../configure-tools');
       await configureTools({
         qualityCommands: ['npm run lint', 'npm run typecheck'],
         cwd: testDir,
@@ -307,7 +307,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
       );
 
       // When AI runs 'fspec configure-tools --test-command "npm test"'
-      const { configureTools } = await import('../configure-tools.js');
+      const { configureTools } = await import('../configure-tools');
       await configureTools({ testCommand: 'npm test', cwd: testDir });
 
       // Then config should be updated with tools.test.command = "npm test"
@@ -367,7 +367,7 @@ describe('Feature: Conversational Test and Quality Check Tool Detection', () => 
 
       try {
         // When AI runs 'fspec configure-tools --test-command "npm test"'
-        const { configureTools } = await import('../configure-tools.js');
+        const { configureTools } = await import('../configure-tools');
         await configureTools({ testCommand: 'npm test', cwd: testDir });
       } finally {
         console.log = originalLog;

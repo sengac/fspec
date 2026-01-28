@@ -17,7 +17,7 @@
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
-import { useInputCompat, InputPriority } from '../tui/input/index.js';
+import { useInputCompat, InputPriority } from '../tui/input/index';
 
 export interface CreateSessionDialogProps {
   /** Callback when user confirms - starts new agent conversation */

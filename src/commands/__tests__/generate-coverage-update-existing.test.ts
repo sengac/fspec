@@ -80,7 +80,7 @@ Feature: Test Feature
       await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
 
       // When I run generate-coverage
-      const { generateCoverage } = await import('../generate-coverage.js');
+      const { generateCoverage } = await import('../generate-coverage');
       await generateCoverage({ cwd: tempDir });
 
       // Then the coverage file should now have 3 scenarios
@@ -152,7 +152,7 @@ Feature: Another Test
       await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
 
       // When I run generate-coverage
-      const { generateCoverage } = await import('../generate-coverage.js');
+      const { generateCoverage } = await import('../generate-coverage');
       await generateCoverage({ cwd: tempDir });
 
       // Then the existing test mapping should be preserved

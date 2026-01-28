@@ -19,7 +19,7 @@ let detectConflicts: (cwd: string, targetOid: string) => Promise<ConflictInfo>;
 
 try {
   // This will fail until we export detectConflicts
-  const gitCheckpoint = await import('../git-checkpoint.js');
+  const gitCheckpoint = await import('../git-checkpoint');
   detectConflicts = (gitCheckpoint as any).detectConflicts;
 } catch {
   // Function not exported yet - tests will fail (red phase)

@@ -14,7 +14,7 @@
  */
 
 import React, { type ReactNode } from 'react';
-import { InputManager } from '../input/InputManager.js';
+import { InputManager } from '../input/InputManager';
 
 interface InputProviderProps {
   /** Child components */

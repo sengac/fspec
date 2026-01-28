@@ -27,8 +27,8 @@
 
 import { useEffect, useRef, useCallback } from 'react';
 import { useInput, type Key } from 'ink';
-import { useOptionalInputManager } from './InputContext.js';
-import type { InputHandlerConfig, InputHandlerFn } from './types.js';
+import { useOptionalInputManager } from './InputContext';
+import type { InputHandlerConfig, InputHandlerFn } from './types';
 
 /**
  * Options for useInputCompat hook.

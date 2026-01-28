@@ -42,7 +42,7 @@ import {
 import { calculatePaneWidth } from '../utils/textWrap';
 import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
 import { useFileSearchInput } from '../hooks/useFileSearchInput';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import { useInputCompat, InputPriority } from '../input/index';
 import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelection';
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';

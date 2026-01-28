@@ -23,7 +23,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { Box, Text } from 'ink';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import { useInputCompat, InputPriority } from '../input/index';
 
 // Focus field type for cycling - WATCH-021: Added 'autoInject'
 type FocusField = 'name' | 'authority' | 'model' | 'brief' | 'autoInject' | 'create';

@@ -11,32 +11,32 @@
 
 import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
-import { useFspecStore } from '../store/fspecStore.js';
+import { useFspecStore } from '../store/fspecStore';
 import fs from 'fs';
 import path from 'path';
 import chokidar from 'chokidar';
-import { UnifiedBoardLayout } from './UnifiedBoardLayout.js';
-import { FullScreenWrapper } from './FullScreenWrapper.js';
-import { CheckpointViewer } from './CheckpointViewer.js';
-import { ChangedFilesViewer } from './ChangedFilesViewer.js';
-import { AttachmentDialog } from './AttachmentDialog.js';
-import { AgentView } from './AgentView.js';
-import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc.js';
+import { UnifiedBoardLayout } from './UnifiedBoardLayout';
+import { FullScreenWrapper } from './FullScreenWrapper';
+import { CheckpointViewer } from './CheckpointViewer';
+import { ChangedFilesViewer } from './ChangedFilesViewer';
+import { AttachmentDialog } from './AttachmentDialog';
+import { AgentView } from './AgentView';
+import { createIPCServer, cleanupIPCServer, getIPCPath } from '../../utils/ipc';
 import type { Server } from 'net';
 import type { Server as HttpServer } from 'http';
-import { logger } from '../../utils/logger.js';
-import { openInBrowser } from '../../utils/openBrowser.js';
-import { startAttachmentServer, stopAttachmentServer, getServerPort } from '../../server/attachment-server.js';
-import { CreateSessionDialog } from '../../components/CreateSessionDialog.js';
-import { ConfirmationDialog } from '../../components/ConfirmationDialog.js';
-import { useSessionNavigation } from '../hooks/useSessionNavigation.js';
-import { clearActiveSession } from '../utils/sessionNavigation.js';
+import { logger } from '../../utils/logger';
+import { openInBrowser } from '../../utils/openBrowser';
+import { startAttachmentServer, stopAttachmentServer, getServerPort } from '../../server/attachment-server';
+import { CreateSessionDialog } from '../../components/CreateSessionDialog';
+import { ConfirmationDialog } from '../../components/ConfirmationDialog';
+import { useSessionNavigation } from '../hooks/useSessionNavigation';
+import { clearActiveSession } from '../utils/sessionNavigation';
 import {
   useShowCreateSessionDialog,
   useNavigationTargetSessionId,
   useSessionActions,
-} from '../store/sessionStore.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+} from '../store/sessionStore';
+import { useInputCompat, InputPriority } from '../input/index';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -449,7 +449,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         {showExitConfirmation && (
           <ConfirmationDialog
             message="Exit fspec?"
-            description="Are you sure you want to exit fspec?"
+            description="Are you sure you want to exit?"
             confirmMode="yesno"
             riskLevel="medium"
             onConfirm={() => {
@@ -498,7 +498,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
         {showExitConfirmation && (
           <ConfirmationDialog
             message="Exit fspec?"
-            description="Are you sure you want to exit fspec?"
+            description="Are you sure you want to exit?"
             confirmMode="yesno"
             riskLevel="medium"
             onConfirm={() => {
@@ -631,7 +631,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       {showExitConfirmation && (
         <ConfirmationDialog
           message="Exit fspec?"
-          description="Are you sure you want to exit fspec?"
+          description="Are you sure you want to exit?"
           confirmMode="visual"
           riskLevel="medium"
           onConfirm={() => {

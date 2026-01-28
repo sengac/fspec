@@ -111,7 +111,7 @@ describe('Feature: Work Unit Dependency Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // When I run "fspec query bottlenecks --output=json"
-      const { queryBottlenecks } = await import('../query-bottlenecks.js');
+      const { queryBottlenecks } = await import('../query-bottlenecks');
       const result = await queryBottlenecks({ cwd: tempDir, output: 'json' });
 
       // Then the output should list work units ranked by bottleneck score

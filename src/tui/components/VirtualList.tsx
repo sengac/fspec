@@ -9,8 +9,8 @@ import React, {
   useId,
 } from 'react';
 import { Box, Text, measureElement, type DOMElement } from 'ink';
-import { useTerminalSize } from '../hooks/useTerminalSize.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import { useTerminalSize } from '../hooks/useTerminalSize';
+import { useInputCompat, InputPriority } from '../input/index';
 
 // Unicode characters for scrollbar
 const SCROLLBAR_CHARS = {

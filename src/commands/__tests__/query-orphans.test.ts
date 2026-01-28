@@ -81,7 +81,7 @@ describe('Feature: Work Unit Dependency Management', () => {
       await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // When I run "fspec query orphans --output=json"
-      const { queryOrphans } = await import('../query-orphans.js');
+      const { queryOrphans } = await import('../query-orphans');
       const result = await queryOrphans({ cwd: tempDir, output: 'json' });
 
       // Then the output should list "ORPHAN-1" and "ORPHAN-2" as orphaned

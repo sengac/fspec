@@ -178,8 +178,8 @@ Use Read/Glob tools to detect test frameworks and quality check tools, then run:
   // CONFIG-003: Regenerate agent templates silently after updating config
   // This ensures AI has up-to-date documentation without cluttering output
   if (config.agent) {
-    const { getAgentById } = await import('../utils/agentRegistry.js');
-    const { installAgentFiles } = await import('./init.js');
+    const { getAgentById } = await import('../utils/agentRegistry');
+    const { installAgentFiles } = await import('./init');
 
     const agent = getAgentById(config.agent);
     if (agent) {

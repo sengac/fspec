@@ -11,8 +11,8 @@
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
 import { basename } from 'path';
-import { Dialog } from '../../components/Dialog.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import { Dialog } from '../../components/Dialog';
+import { useInputCompat, InputPriority } from '../input/index';
 
 // Configuration: Maximum attachments visible in viewport before scrolling
 const DEFAULT_VIEWPORT_HEIGHT = 10;

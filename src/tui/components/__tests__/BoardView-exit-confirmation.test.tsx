@@ -74,7 +74,7 @@ describe('Feature: Exit confirmation dialog for fspec', () => {
 
       // @step Then the exit confirmation dialog should appear
       expect(lastFrame()).toContain('Exit fspec?');
-      expect(lastFrame()).toContain('Are you sure you want to exit fspec?');
+      expect(lastFrame()).toContain('Are you sure you want to exit?');
 
       // @step And the onExit should not be called yet
       expect(onExit).not.toHaveBeenCalled();

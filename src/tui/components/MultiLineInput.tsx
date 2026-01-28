@@ -15,8 +15,8 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Box, Text } from 'ink';
-import { useMultiLineInput } from '../hooks/useMultiLineInput.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import { useMultiLineInput } from '../hooks/useMultiLineInput';
+import { useInputCompat, InputPriority } from '../input/index';
 
 export interface MultiLineInputProps {
   value: string;

@@ -445,7 +445,7 @@ export async function detectConflicts(
   let testCommand = 'your configured test command';
   try {
     // Dynamic import to avoid circular dependencies
-    const { loadConfig } = await import('./config.js');
+    const { loadConfig } = await import('./config');
     const config = await loadConfig(cwd);
     if (config?.tools?.test?.command) {
       testCommand = config.tools.test.command;
@@ -768,7 +768,7 @@ export async function getCheckpointChangedFiles(
   checkpointOid: string
 ): Promise<string[]> {
   // Dynamic import to avoid circular dependencies
-  const { logger } = await import('./logger.js');
+  const { logger } = await import('./logger');
 
   try {
     // Read the checkpoint commit to get its parents
@@ -841,7 +841,7 @@ export async function getCheckpointFilesChangedFromHead(
   checkpointOid: string
 ): Promise<string[]> {
   // Dynamic import to avoid circular dependencies
-  const { logger } = await import('./logger.js');
+  const { logger } = await import('./logger');
 
   try {
     // Get current HEAD OID

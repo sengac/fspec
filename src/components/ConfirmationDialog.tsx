@@ -20,7 +20,7 @@
 import React, { useState } from 'react';
 import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
-import { useInputCompat, InputPriority } from '../tui/input/index.js';
+import { useInputCompat, InputPriority } from '../tui/input/index';
 
 type ConfirmMode = 'yesno' | 'typed' | 'keypress' | 'visual';
 type RiskLevel = 'low' | 'medium' | 'high';

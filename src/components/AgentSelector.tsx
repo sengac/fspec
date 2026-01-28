@@ -10,7 +10,7 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useApp } from 'ink';
 import type { AgentConfig } from '../utils/agentRegistry';
-import { useInputCompat, InputPriority } from '../tui/input/index.js';
+import { useInputCompat, InputPriority } from '../tui/input/index';
 
 interface AgentSelectorProps {
   agents: AgentConfig[];

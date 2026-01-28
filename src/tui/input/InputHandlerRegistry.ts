@@ -12,7 +12,7 @@ import type {
   InputHandlerConfig,
   RegisteredHandler,
   InputManagerAPI,
-} from './types.js';
+} from './types';
 
 /**
  * Creates a new input handler registry.

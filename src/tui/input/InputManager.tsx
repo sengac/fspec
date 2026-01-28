@@ -20,9 +20,9 @@
 
 import React, { useMemo, useRef, type ReactNode } from 'react';
 import { useInput } from 'ink';
-import { InputContext } from './InputContext.js';
-import { createInputHandlerRegistry, type InputHandlerRegistry } from './InputHandlerRegistry.js';
-import type { InputManagerAPI } from './types.js';
+import { InputContext } from './InputContext';
+import { createInputHandlerRegistry, type InputHandlerRegistry } from './InputHandlerRegistry';
+import type { InputManagerAPI } from './types';
 
 interface InputManagerProps {
   /** Child components */
