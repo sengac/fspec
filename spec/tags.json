@@ -102,6 +102,10 @@
           "description": "Template generation and transformation system"
         },
         {
+          "name": "@tool-integration",
+          "description": "Tool integration and callback handling"
+        },
+        {
           "name": "@tools",
           "description": "Tool system components and tool implementations"
         },
@@ -2286,7 +2290,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-26T06:40:05.907Z",
+    "lastUpdated": "2026-01-28T11:17:56.801Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
