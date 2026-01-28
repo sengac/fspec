@@ -366,6 +366,20 @@ export const useFspecStore = create<FspecState>()(
     // Session attachment actions (SESS-001)
     attachSession: (workUnitId: string, sessionId: string) => {
       set(state => {
+        // First, remove any existing attachment for this sessionId (session migration)
+        for (const [
+          existingWorkUnitId,
+          existingSessionId,
+        ] of state.sessionAttachments.entries()) {
+          if (
+            existingSessionId === sessionId &&
+            existingWorkUnitId !== workUnitId
+          ) {
+            state.sessionAttachments.delete(existingWorkUnitId);
+            break;
+          }
+        }
+        // Then set the new attachment
         state.sessionAttachments.set(workUnitId, sessionId);
       });
     },

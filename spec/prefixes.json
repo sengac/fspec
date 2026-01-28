@@ -329,6 +329,11 @@
       "prefix": "PAUSE",
       "description": "Tool pause and debugging features",
       "createdAt": "2026-01-26T04:48:43.172Z"
+    },
+    "CODE": {
+      "prefix": "CODE",
+      "description": "Fspec-Codelet integration and native tool development",
+      "createdAt": "2026-01-28T02:33:14.815Z"
     }
   }
 }

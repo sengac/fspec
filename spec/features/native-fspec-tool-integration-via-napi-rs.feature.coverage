@@ -1,0 +1,24 @@
+{
+  "scenarios": [
+    {
+      "name": "AI agent receives structured data and workflow guidance",
+      "testMappings": []
+    },
+    {
+      "name": "AI agent executes multiple commands without spawning delays",
+      "testMappings": []
+    },
+    {
+      "name": "AI agent uses Fspec tool alongside other codelet tools",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

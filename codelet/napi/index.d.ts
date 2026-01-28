@@ -405,6 +405,19 @@ export interface AstGrepTransform {
   convert?: AstGrepConvertTransform;
 }
 
+/**
+ * Call fspec command via NAPI callback pattern
+ *
+ * The callback receives (command, args_json, project_root) and returns JSON result.
+ * This enables TypeScript to import and execute actual fspec command modules.
+ */
+export declare function callFspecCommand(
+  command: string,
+  argsJson: string,
+  projectRoot: string,
+  callback: (arg0: string, arg1: string, arg2: string) => string
+): string;
+
 /** Stream chunk types for streaming responses (TOOL-010) */
 export declare const enum ChunkType {
   Text = 'Text',
@@ -1485,6 +1498,12 @@ export interface StreamChunk {
   /** Pending injection from watcher when auto_inject=false (WATCH-020) */
   watcherPendingInjection?: WatcherPendingInjectionInfo;
 }
+
+/** Simple test function to verify callback pattern works from TypeScript */
+export declare function testCallback(
+  input: string,
+  callback: (arg0: string) => string
+): string;
 
 /**
  * Toggle debug capture mode without requiring a session.
