@@ -6,7 +6,7 @@
  */
 
 import { createContext, useContext } from 'react';
-import type { InputManagerAPI } from './types.js';
+import type { InputManagerAPI } from './types';
 
 /**
  * Context for the input manager.

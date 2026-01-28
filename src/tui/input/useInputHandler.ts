@@ -22,8 +22,8 @@
  */
 
 import { useEffect, useRef, useCallback } from 'react';
-import { useInputManager, useOptionalInputManager } from './InputContext.js';
-import type { InputHandlerConfig, InputHandlerFn } from './types.js';
+import { useInputManager, useOptionalInputManager } from './InputContext';
+import type { InputHandlerConfig, InputHandlerFn } from './types';
 
 /**
  * Options for useInputHandler hook.

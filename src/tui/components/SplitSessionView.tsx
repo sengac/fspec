@@ -22,29 +22,29 @@
 
 import React, { useCallback, useMemo } from 'react';
 import { Box, Text } from 'ink';
-import { VirtualList } from './VirtualList.js';
-import { ConversationInputArea } from './ConversationInputArea.js';
-import { SelectionSeparatorBar } from './SelectionSeparatorBar.js';
-import { SessionHeader } from './SessionHeader.js';
-import { useTerminalSize } from '../hooks/useTerminalSize.js';
-import { useTurnSelection } from '../hooks/useTurnSelection.js';
-import { useWatcherHeaderInfo } from '../hooks/useWatcherHeaderInfo.js';
-import { useFspecStore } from '../store/fspecStore.js';
+import { VirtualList } from './VirtualList';
+import { ConversationInputArea } from './ConversationInputArea';
+import { SelectionSeparatorBar } from './SelectionSeparatorBar';
+import { SessionHeader } from './SessionHeader';
+import { useTerminalSize } from '../hooks/useTerminalSize';
+import { useTurnSelection } from '../hooks/useTurnSelection';
+import { useWatcherHeaderInfo } from '../hooks/useWatcherHeaderInfo';
+import { useFspecStore } from '../store/fspecStore';
 import {
   getSelectionSeparatorType,
   getFirstContentOfTurn,
   generateDiscussSelectedPrefill,
   getContentLineCount,
-} from '../utils/turnSelection.js';
-import { buildCorrelationMaps } from '../utils/correlationMapping.js';
-import { useSessionNavigation } from '../hooks/useSessionNavigation.js';
-import { CreateSessionDialog } from '../../components/CreateSessionDialog.js';
-import { useShowCreateSessionDialog, useSessionActions } from '../store/sessionStore.js';
-import { SlashCommandPalette } from './SlashCommandPalette.js';
-import { useSlashCommandInput } from '../hooks/useSlashCommandInput.js';
-import type { ConversationLine } from '../types/conversation.js';
-import type { TokenTracker } from '../utils/sessionHeaderUtils.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+} from '../utils/turnSelection';
+import { buildCorrelationMaps } from '../utils/correlationMapping';
+import { useSessionNavigation } from '../hooks/useSessionNavigation';
+import { CreateSessionDialog } from '../../components/CreateSessionDialog';
+import { useShowCreateSessionDialog, useSessionActions } from '../store/sessionStore';
+import { SlashCommandPalette } from './SlashCommandPalette';
+import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
+import type { ConversationLine } from '../types/conversation';
+import type { TokenTracker } from '../utils/sessionHeaderUtils';
+import { useInputCompat, InputPriority } from '../input/index';
 
 interface SplitSessionViewProps {
   /** Current watcher session ID - used to compute watcher header info */

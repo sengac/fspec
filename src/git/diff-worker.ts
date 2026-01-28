@@ -9,7 +9,7 @@
  */
 
 import { parentPort } from 'worker_threads';
-import { getFileDiff, getCheckpointFileDiff } from './diff.js';
+import { getFileDiff, getCheckpointFileDiff } from './diff';
 
 interface DiffRequest {
   id: string;

@@ -12,7 +12,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
-import { useInputCompat, InputPriority } from '../tui/input/index.js';
+import { useInputCompat, InputPriority } from '../tui/input/index';
 
 export interface StatusDialogProps {
   /** Current item being processed */

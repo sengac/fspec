@@ -10,10 +10,10 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Text } from 'ink';
-import { FileDiffViewer, FileItem } from './FileDiffViewer.js';
-import { logger } from '../../utils/logger.js';
-import { useFspecStore } from '../store/fspecStore.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import { FileDiffViewer, FileItem } from './FileDiffViewer';
+import { logger } from '../../utils/logger';
+import { useFspecStore } from '../store/fspecStore';
+import { useInputCompat, InputPriority } from '../input/index';
 
 interface ChangedFilesViewerProps {
   onExit: () => void;

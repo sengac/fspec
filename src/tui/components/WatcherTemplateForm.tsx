@@ -17,8 +17,8 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Box, Text } from 'ink';
-import type { WatcherTemplate } from '../types/watcherTemplate.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import type { WatcherTemplate } from '../types/watcherTemplate';
+import { useInputCompat, InputPriority } from '../input/index';
 
 type FocusField = 'name' | 'model' | 'authority' | 'brief' | 'autoInject';
 const FOCUS_ORDER: FocusField[] = ['name', 'model', 'authority', 'brief', 'autoInject'];

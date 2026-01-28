@@ -44,32 +44,29 @@ export {
   type InputHandlerConfig,
   type RegisteredHandler,
   type InputManagerAPI,
-} from './types.js';
+} from './types';
 
 // Registry (for advanced use cases)
 export {
   createInputHandlerRegistry,
   type InputHandlerRegistry,
-} from './InputHandlerRegistry.js';
+} from './InputHandlerRegistry';
 
 // Context
 export {
   InputContext,
   useInputManager,
   useOptionalInputManager,
-} from './InputContext.js';
+} from './InputContext';
 
 // Components
-export { InputManager } from './InputManager.js';
-export { InputProvider } from '../components/InputProvider.js';
+export { InputManager } from './InputManager';
+export { InputProvider } from '../components/InputProvider';
 
 // Hooks
 export {
   useInputHandler,
   type UseInputHandlerOptions,
-} from './useInputHandler.js';
+} from './useInputHandler';
 
-export {
-  useInputCompat,
-  type UseInputCompatOptions,
-} from './useInputCompat.js';
+export { useInputCompat, type UseInputCompatOptions } from './useInputCompat';

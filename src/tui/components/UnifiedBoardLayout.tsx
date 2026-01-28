@@ -10,11 +10,11 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Box, Text, useStdout, useStdin } from 'ink';
 import chalk from 'chalk';
-import { Logo } from './Logo.js';
-import { getVisualWidth, fitToWidth } from '../utils/stringWidth.js';
-import { CheckpointStatus } from './CheckpointStatus.js';
-import { KeybindingShortcuts } from './KeybindingShortcuts.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import { Logo } from './Logo';
+import { getVisualWidth, fitToWidth } from '../utils/stringWidth';
+import { CheckpointStatus } from './CheckpointStatus';
+import { KeybindingShortcuts } from './KeybindingShortcuts';
+import { useInputCompat, InputPriority } from '../input/index';
 import { WorkUnitTitle } from './WorkUnitTitle';
 import { WorkUnitDescription } from './WorkUnitDescription';
 import { WorkUnitMetadata } from './WorkUnitMetadata';

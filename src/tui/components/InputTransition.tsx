@@ -18,12 +18,12 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Text } from 'ink';
-import { useThinkingText } from './ThinkingIndicator.js';
-import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput.js';
-import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants.js';
-import type { PauseInfo } from '../types/pause.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
-import { logger } from '../../utils/logger.js';
+import { useThinkingText } from './ThinkingIndicator';
+import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
+import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants';
+import type { PauseInfo } from '../types/pause';
+import { useInputCompat, InputPriority } from '../input/index';
+import { logger } from '../../utils/logger';
 
 // Re-export PauseInfo for backwards compatibility with existing imports
 export type { PauseInfo } from '../types/pause';

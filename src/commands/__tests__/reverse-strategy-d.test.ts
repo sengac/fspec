@@ -87,7 +87,7 @@ describe('Feature: Strategy D processes existing feature files instead of scanni
       const featureFiles = ['spec/features/cli-command-interface.feature'];
 
       // @step When AI runs 'fspec reverse --strategy=D'
-      const { hasFeatureFile } = await import('../reverse.js');
+      const { hasFeatureFile } = await import('../reverse');
       const hasFeature = hasFeatureFile(
         'src/components/MusicPlayer.tsx',
         featureFiles
@@ -116,14 +116,14 @@ describe('Feature: Strategy D processes existing feature files instead of scanni
       // @step When the function converts PascalCase to kebab-case
       // NOTE: This tests the internal deriveFeatureName() function
       // which will be implemented in reverse.ts
-      const { deriveFeatureName } = await import('../reverse.js');
+      const { deriveFeatureName } = await import('../reverse');
 
       // @step Then it should return 'music-player'
       const result = deriveFeatureName(implPath);
       expect(result).toBe('music-player');
 
       // @step Then hasFeatureFile() should check for 'spec/features/music-player.feature'
-      const { hasFeatureFile } = await import('../reverse.js');
+      const { hasFeatureFile } = await import('../reverse');
       const featureFiles = ['spec/features/music-player.feature'];
       const hasFeature = hasFeatureFile(implPath, featureFiles);
       expect(hasFeature).toBe(true);

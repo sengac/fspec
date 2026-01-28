@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useApp } from 'ink';
-import { useInputCompat, InputPriority } from '../tui/input/index.js';
+import { useInputCompat, InputPriority } from '../tui/input/index';
 
 interface ConfirmPromptProps {
   message: string;

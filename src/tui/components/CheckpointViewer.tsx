@@ -9,23 +9,23 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Box, Text } from 'ink';
-import { VirtualList } from './VirtualList.js';
-import type { FileItem } from './FileDiffViewer.js';
+import { VirtualList } from './VirtualList';
+import type { FileItem } from './FileDiffViewer';
 import { Worker } from 'worker_threads';
-import { parseDiff, DiffLine } from '../../git/diff-parser.js';
-import { getWorkerPath } from '../../git/worker-path.js';
-import { useFspecStore } from '../store/fspecStore.js';
+import { parseDiff, DiffLine } from '../../git/diff-parser';
+import { getWorkerPath } from '../../git/worker-path';
+import { useFspecStore } from '../store/fspecStore';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import { join } from 'path';
-import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint.js';
+import type { Checkpoint as GitCheckpoint } from '../../utils/git-checkpoint';
 import {
   getCheckpointFilesChangedFromHead,
   deleteCheckpoint,
   deleteAllCheckpoints,
   restoreCheckpointFile,
   restoreCheckpoint,
-} from '../../utils/git-checkpoint.js';
+} from '../../utils/git-checkpoint';
 import {
   checkpointIndexDirExists,
   listCheckpointIndexFiles,
@@ -33,11 +33,11 @@ import {
   readCheckpointIndexFile,
   isAutomaticCheckpoint,
   parseAutomaticCheckpointName,
-} from '../../utils/checkpoint-index.js';
-import { ConfirmationDialog } from '../../components/ConfirmationDialog.js';
-import { StatusDialog } from '../../components/StatusDialog.js';
-import { sendIPCMessage } from '../../utils/ipc.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+} from '../../utils/checkpoint-index';
+import { ConfirmationDialog } from '../../components/ConfirmationDialog';
+import { StatusDialog } from '../../components/StatusDialog';
+import { sendIPCMessage } from '../../utils/ipc';
+import { useInputCompat, InputPriority } from '../input/index';
 
 export interface Checkpoint {
   name: string;

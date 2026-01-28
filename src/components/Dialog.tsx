@@ -20,7 +20,7 @@
 
 import React, { ReactNode } from 'react';
 import { Box } from 'ink';
-import { useInputCompat, InputPriority } from '../tui/input/index.js';
+import { useInputCompat, InputPriority } from '../tui/input/index';
 
 export interface DialogProps {
   children: ReactNode;

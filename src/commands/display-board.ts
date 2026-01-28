@@ -103,9 +103,7 @@ export function registerBoardCommand(program: Command): void {
           const limit = parseInt(options.limit || '25', 10);
           const { render } = await import('ink');
           const React = await import('react');
-          const { BoardDisplay } = await import(
-            '../components/BoardDisplay.js'
-          );
+          const { BoardDisplay } = await import('../components/BoardDisplay');
 
           render(
             React.createElement(BoardDisplay, {

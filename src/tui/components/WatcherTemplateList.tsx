@@ -17,9 +17,9 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { Box, Text } from 'ink';
-import type { WatcherTemplate, WatcherInstance, WatcherListItem } from '../types/watcherTemplate.js';
-import { buildFlatWatcherList, filterTemplates, formatTemplateDisplay } from '../utils/watcherTemplateStorage.js';
-import { useInputCompat, InputPriority } from '../input/index.js';
+import type { WatcherTemplate, WatcherInstance, WatcherListItem } from '../types/watcherTemplate';
+import { buildFlatWatcherList, filterTemplates, formatTemplateDisplay } from '../utils/watcherTemplateStorage';
+import { useInputCompat, InputPriority } from '../input/index';
 
 interface WatcherTemplateListProps {
   templates: WatcherTemplate[];

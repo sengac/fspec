@@ -18,7 +18,7 @@ describe('Feature: Wire up checkpoint CLI commands', () => {
   describe('Scenario: Register checkpoint command', () => {
     it('should register checkpoint command with proper arguments and action', async () => {
       // Given: the checkpoint.ts file exports a registerCheckpointCommand function
-      const { registerCheckpointCommand } = await import('../checkpoint.js');
+      const { registerCheckpointCommand } = await import('../checkpoint');
       expect(registerCheckpointCommand).toBeDefined();
       expect(typeof registerCheckpointCommand).toBe('function');
 
