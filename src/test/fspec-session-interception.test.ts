@@ -8,18 +8,30 @@
  * CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
  */
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { testFspecJsControlledInvocation } from '../utils/fspec-init';
-import fs from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import {
+  createTempTestDir,
+  removeTempTestDir,
+} from '../test-helpers/temp-directory';
+import { createWorkUnitTestEnvironment } from '../test-helpers/work-unit-test-fixtures';
 
 describe('FspecTool Session-Level Interception', () => {
-  beforeAll(async () => {
-    // Ensure the test directory structure exists
-    const testSpecDir = join(process.cwd(), 'spec');
-    if (!fs.existsSync(testSpecDir)) {
-      fs.mkdirSync(testSpecDir, { recursive: true });
-    }
+  let testDir: string;
+
+  beforeEach(async () => {
+    // Create isolated temp directory for each test
+    testDir = await createTempTestDir('fspec-session-interception');
+
+    // Set up work unit test environment
+    await createWorkUnitTestEnvironment(testDir);
+  });
+
+  afterEach(async () => {
+    // Clean up temp directory
+    await removeTempTestDir(testDir);
   });
 
   it('should test basic JS-controlled invocation pattern', async () => {
@@ -27,7 +39,7 @@ describe('FspecTool Session-Level Interception', () => {
     // Test that our TypeScript callback implementation works
 
     expect(async () => {
-      await testFspecJsControlledInvocation('.');
+      await testFspecJsControlledInvocation(testDir); // Use temp directory
     }).not.toThrow();
   });
 
@@ -35,23 +47,26 @@ describe('FspecTool Session-Level Interception', () => {
     // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
     // Test that the synchronous implementation creates the file structure
 
-    // Remove work units file if it exists
-    const workUnitsPath = join(process.cwd(), 'spec', 'work-units.json');
-    if (fs.existsSync(workUnitsPath)) {
-      fs.unlinkSync(workUnitsPath);
+    // Create a separate temp directory without pre-existing work-units.json
+    const freshTestDir = await createTempTestDir('fresh-session-test');
+
+    try {
+      // Test the JS-controlled invocation - should create the file
+      await testFspecJsControlledInvocation(freshTestDir);
+
+      // Verify the file was created
+      const workUnitsPath = join(freshTestDir, 'spec', 'work-units.json');
+      expect(existsSync(workUnitsPath)).toBe(true);
+
+      // Verify the file has the correct structure
+      const content = readFileSync(workUnitsPath, 'utf-8');
+      const data = JSON.parse(content);
+      expect(data).toHaveProperty('workUnits');
+      expect(typeof data.workUnits).toBe('object');
+    } finally {
+      // Clean up the fresh test directory
+      await removeTempTestDir(freshTestDir);
     }
-
-    // Test the JS-controlled invocation - should create the file
-    await testFspecJsControlledInvocation('.');
-
-    // Verify the file was created
-    expect(fs.existsSync(workUnitsPath)).toBe(true);
-
-    // Verify the file has the correct structure
-    const content = fs.readFileSync(workUnitsPath, 'utf-8');
-    const data = JSON.parse(content);
-    expect(data).toHaveProperty('workUnits');
-    expect(typeof data.workUnits).toBe('object');
   });
 
   it('should simulate the error message parsing used by session manager', () => {
