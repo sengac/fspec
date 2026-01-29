@@ -6,32 +6,34 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 import { checkFoundationExists } from '../foundation-check';
 
 describe('Feature: Foundation existence check in commands', () => {
-  let tmpDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(tmpDir, 'spec'), { recursive: true });
+    setup = await setupTestDirectory('foundation-check');
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Run board command without foundation.json', () => {
     it('should return error with system reminder to retry original command', async () => {
       // Given I am in a project directory
       // And the file "spec/foundation.json" does not exist
-      const foundationPath = join(tmpDir, 'spec', 'foundation.json');
+      const foundationPath = join(setup.testDir, 'spec', 'foundation.json');
       // File does not exist (not created)
 
       // When I check foundation existence with command 'fspec board'
-      const result = checkFoundationExists(tmpDir, 'fspec board');
+      const result = checkFoundationExists(setup.testDir, 'fspec board');
 
       // Then the result should indicate an error
       expect(result.exists).toBe(false);
@@ -51,12 +53,12 @@ describe('Feature: Foundation existence check in commands', () => {
     it('should return error with system reminder including original command with arguments', async () => {
       // Given I am in a project directory
       // And the file "spec/foundation.json" does not exist
-      const foundationPath = join(tmpDir, 'spec', 'foundation.json');
+      const foundationPath = join(setup.testDir, 'spec', 'foundation.json');
       // File does not exist (not created)
 
       // When I check foundation existence with command 'fspec create-story AUTH "Login"'
       const originalCommand = 'fspec create-story AUTH "Login"';
-      const result = checkFoundationExists(tmpDir, originalCommand);
+      const result = checkFoundationExists(setup.testDir, originalCommand);
 
       // Then the result should indicate an error
       expect(result.exists).toBe(false);
@@ -76,7 +78,7 @@ describe('Feature: Foundation existence check in commands', () => {
     it('should return success with no error when foundation.json exists', async () => {
       // Given I am in a project directory
       // And the file "spec/foundation.json" exists
-      const foundationPath = join(tmpDir, 'spec', 'foundation.json');
+      const foundationPath = join(setup.testDir, 'spec', 'foundation.json');
       await writeFile(
         foundationPath,
         JSON.stringify({
@@ -99,7 +101,7 @@ describe('Feature: Foundation existence check in commands', () => {
       );
 
       // When I check foundation existence with command 'fspec board'
-      const result = checkFoundationExists(tmpDir, 'fspec board');
+      const result = checkFoundationExists(setup.testDir, 'fspec board');
 
       // Then the command should execute normally
       expect(result.exists).toBe(true);
@@ -124,15 +126,14 @@ describe('Feature: Foundation existence check in commands', () => {
  * Bug: FOUND-009
  */
 describe('Feature: Foundation missing error message is not imperative enough', () => {
-  let tmpDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(tmpDir, 'spec'), { recursive: true });
+    setup = await setupTestDirectory('foundation-check-bug');
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Error forbids manual foundation.json creation', () => {
@@ -142,7 +143,7 @@ describe('Feature: Foundation missing error message is not imperative enough', (
 
       // When AI agent attempts to create a work unit
       const result = checkFoundationExists(
-        tmpDir,
+        setup.testDir,
         'fspec create-story AUTH "Login"'
       );
 
@@ -160,7 +161,7 @@ describe('Feature: Foundation missing error message is not imperative enough', (
       // (tmpDir has no foundation.json)
 
       // When AI agent receives foundation missing error
-      const result = checkFoundationExists(tmpDir, 'fspec board');
+      const result = checkFoundationExists(setup.testDir, 'fspec board');
 
       // Then error must show "Step 1: fspec discover-foundation (creates draft)"
       expect(result.error).toContain('Step 1: fspec discover-foundation');

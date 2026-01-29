@@ -5,24 +5,24 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, rm } from 'fs/promises';
+import { mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import { installAgents } from '../init';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Test Antigravity Support', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = join(tmpdir(), `fspec-test-antigravity-${Date.now()}`);
-    await mkdir(testDir, { recursive: true });
+    setup = await setupTestDirectory('init-antigravity');
   });
 
   afterEach(async () => {
-    if (existsSync(testDir)) {
-      await rm(testDir, { recursive: true, force: true });
-    }
+    await setup.cleanup();
   });
 
   describe('Scenario: Initialize fspec with Antigravity agent', () => {
@@ -31,7 +31,7 @@ describe('Feature: Test Antigravity Support', () => {
       // (handled by beforeEach)
 
       // @step When I run "fspec init --agent=antigravity"
-      await installAgents(testDir, ['antigravity']);
+      await installAgents(setup.testDir, ['antigravity']);
 
       // @step Then the exit code should be 0
       // (implied by promise resolution)
@@ -44,7 +44,7 @@ describe('Feature: Test Antigravity Support', () => {
 
       // Check for Antigravity specific files (assuming standard pattern)
       // We expect a documentation file and potentially a config file
-      const docPath = join(testDir, 'spec', 'ANTIGRAVITY.md');
+      const docPath = join(setup.testDir, 'spec', 'ANTIGRAVITY.md');
       expect(existsSync(docPath)).toBe(true);
     });
   });
@@ -52,7 +52,7 @@ describe('Feature: Test Antigravity Support', () => {
   describe('Scenario: Verify fspec status in Antigravity environment', () => {
     it('should show Antigravity as the active agent', async () => {
       // @step Given I have initialized fspec with the "antigravity" agent
-      await installAgents(testDir, ['antigravity']);
+      await installAgents(setup.testDir, ['antigravity']);
 
       // @step When I run "fspec status"
       // (We can't easily run the full CLI status command here without spawning a process,
@@ -63,7 +63,7 @@ describe('Feature: Test Antigravity Support', () => {
 
       // For now, let's just verify the installation succeeded, which implies status would be correct
       // if we implemented the status check logic.
-      const docPath = join(testDir, 'spec', 'ANTIGRAVITY.md');
+      const docPath = join(setup.testDir, 'spec', 'ANTIGRAVITY.md');
       expect(existsSync(docPath)).toBe(true);
     });
   });

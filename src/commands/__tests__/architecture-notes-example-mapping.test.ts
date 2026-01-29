@@ -13,25 +13,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, readFile, mkdir } from 'fs/promises';
+import { writeFile, readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import { addArchitectureNote } from '../add-architecture-note';
 import { removeArchitectureNote } from '../remove-architecture-note';
 import { generateScenarios } from '../generate-scenarios';
 import type { WorkUnitsData } from '../../types';
 
 describe('Feature: Architecture notes in Example Mapping', () => {
-  let tmpDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(tmpDir, 'spec', 'features'), { recursive: true });
-    await writeFile(join(tmpDir, 'spec', 'features', '.gitkeep'), '');
+    setup = await setupWorkUnitTest('architecture-notes-example-mapping');
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Add architecture note during Example Mapping', () => {
@@ -83,7 +85,7 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       };
 
       await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -91,12 +93,12 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       await addArchitectureNote({
         workUnitId: 'WORK-001',
         note: 'Uses @cucumber/gherkin parser',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then the architecture note should be added to the work unit
       const updatedData = JSON.parse(
-        await readFile(join(tmpDir, 'spec', 'work-units.json'), 'utf-8')
+        await readFile(join(setup.testDir, 'spec', 'work-units.json'), 'utf-8')
       );
 
       // And when I run "fspec show-work-unit WORK-001"
@@ -170,14 +172,14 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       };
 
       await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When I run "fspec generate-scenarios WORK-001"
       const result = await generateScenarios({
         workUnitId: 'WORK-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       const content = await readFile(result.featureFile, 'utf-8');
@@ -241,7 +243,7 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       };
 
       await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -249,7 +251,7 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       const { showWorkUnit } = await import('../show-work-unit');
       const result = await showWorkUnit({
         workUnitId: 'WORK-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then I should see an "Architecture Notes:" section
@@ -329,7 +331,7 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       };
 
       await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -337,12 +339,12 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       await removeArchitectureNote({
         workUnitId: 'WORK-001',
         index: 1,
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then the architecture note at index 1 should be removed
       const updatedData = JSON.parse(
-        await readFile(join(tmpDir, 'spec', 'work-units.json'), 'utf-8')
+        await readFile(join(setup.testDir, 'spec', 'work-units.json'), 'utf-8')
       );
 
       // And when I run "fspec show-work-unit WORK-001"
@@ -420,14 +422,14 @@ describe('Feature: Architecture notes in Example Mapping', () => {
       };
 
       await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When I run "fspec generate-scenarios WORK-001"
       const result = await generateScenarios({
         workUnitId: 'WORK-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       const content = await readFile(result.featureFile, 'utf-8');

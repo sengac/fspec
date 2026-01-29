@@ -8,21 +8,23 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { research } from '../research';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Unconfigured research tool visibility and discovery', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let configPath: string;
   let consoleLogSpy: any;
   let consoleErrorSpy: any;
 
-  beforeEach(() => {
-    // Create temporary test directory
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fspec-test-'));
-    configPath = path.join(testDir, 'spec', 'fspec-config.json');
+  beforeEach(async () => {
+    setup = await setupTestDirectory('research-listing');
+    configPath = path.join(setup.testDir, 'spec', 'fspec-config.json');
 
     // Ensure spec directory exists
-    fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+    fs.mkdirSync(path.join(setup.testDir, 'spec'), { recursive: true });
 
     // Clear environment variables that might affect tool configuration
     delete process.env.PERPLEXITY_API_KEY;
@@ -39,14 +41,9 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
-  afterEach(() => {
-    // Cleanup
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
-
-    consoleLogSpy.mockRestore();
-    consoleErrorSpy.mockRestore();
+  afterEach(async () => {
+    consoleLogSpy?.mockRestore();
+    consoleErrorSpy?.mockRestore();
   });
 
   describe('Scenario: Discovery message when listing configured tools', () => {
@@ -56,7 +53,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       fs.writeFileSync(configPath, JSON.stringify({}), 'utf-8');
 
       // @step When I run 'fspec research'
-      await research([], { cwd: testDir });
+      await research([], { cwd: setup.testDir });
 
       const output = consoleLogSpy.mock.calls
         .map((call: any) => call[0])
@@ -82,7 +79,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
 
       // @step When I run 'fspec research --all'
       await research([], {
-        cwd: testDir,
+        cwd: setup.testDir,
         all: true,
         userConfigPath: '/nonexistent/user-config.json',
       });
@@ -126,7 +123,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       };
       fs.writeFileSync(configPath, JSON.stringify(config), 'utf-8');
 
-      await research([], { cwd: testDir });
+      await research([], { cwd: setup.testDir });
 
       const output = consoleLogSpy.mock.calls
         .map((call: any) => call[0])
@@ -146,7 +143,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
     it('should list only configured tools by default (no --all flag)', async () => {
       fs.writeFileSync(configPath, JSON.stringify({}), 'utf-8');
 
-      await research([], { cwd: testDir });
+      await research([], { cwd: setup.testDir });
 
       const output = consoleLogSpy.mock.calls
         .map((call: any) => call[0])

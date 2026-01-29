@@ -8,39 +8,43 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, readFile, access } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, readFile, access } from 'fs/promises';
 import { join } from 'path';
 import {
   ensureWorkUnitsFile,
   ensurePrefixesFile,
   ensureEpicsFile,
 } from '../ensure-files';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Automatic JSON File Initialization', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('ensure-files');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: ensureWorkUnitsFile creates file with proper structure', () => {
     it('should create work-units.json with all Kanban states when missing', async () => {
       // Given I have a fresh project with spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And spec/work-units.json does not exist
       // (file doesn't exist yet)
 
       // When ensureWorkUnitsFile is called
-      const result = await ensureWorkUnitsFile(testDir);
+      const result = await ensureWorkUnitsFile(setup.testDir);
 
       // Then spec/work-units.json should be created
-      const filePath = join(testDir, 'spec/work-units.json');
+      const filePath = join(setup.testDir, 'spec/work-units.json');
       await access(filePath); // Throws if file doesn't exist
 
       // And the file should contain proper structure
@@ -62,7 +66,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
     it('should return existing data when file already exists', async () => {
       // Given I have spec/work-units.json with existing work unit
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
       const existingData = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         workUnits: {
@@ -85,14 +89,11 @@ describe('Feature: Automatic JSON File Initialization', () => {
           blocked: [],
         },
       };
-      await mkdir(join(testDir, 'spec'), { recursive: true });
-      const filePath = join(testDir, 'spec/work-units.json');
-      await mkdir(join(testDir, 'spec'), { recursive: true });
-      const fs = await import('fs/promises');
-      await fs.writeFile(filePath, JSON.stringify(existingData, null, 2));
+      const filePath = join(setup.testDir, 'spec/work-units.json');
+      await writeJsonTestFile(filePath, existingData);
 
       // When ensureWorkUnitsFile is called
-      const result = await ensureWorkUnitsFile(testDir);
+      const result = await ensureWorkUnitsFile(setup.testDir);
 
       // Then it should return the existing data
       expect(result.workUnits['AUTH-001']).toBeDefined();
@@ -109,13 +110,13 @@ describe('Feature: Automatic JSON File Initialization', () => {
   describe('Scenario: ensurePrefixesFile creates file with proper structure', () => {
     it('should create prefixes.json with empty prefixes object when missing', async () => {
       // Given I have a fresh project with spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // When ensurePrefixesFile is called
-      const result = await ensurePrefixesFile(testDir);
+      const result = await ensurePrefixesFile(setup.testDir);
 
       // Then spec/prefixes.json should be created
-      const filePath = join(testDir, 'spec/prefixes.json');
+      const filePath = join(setup.testDir, 'spec/prefixes.json');
       await access(filePath);
 
       // And the file should contain empty prefixes object
@@ -127,13 +128,13 @@ describe('Feature: Automatic JSON File Initialization', () => {
   describe('Scenario: ensureEpicsFile creates file with proper structure', () => {
     it('should create epics.json with empty epics object when missing', async () => {
       // Given I have a fresh project with spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // When ensureEpicsFile is called
-      const result = await ensureEpicsFile(testDir);
+      const result = await ensureEpicsFile(setup.testDir);
 
       // Then spec/epics.json should be created
-      const filePath = join(testDir, 'spec/epics.json');
+      const filePath = join(setup.testDir, 'spec/epics.json');
       await access(filePath);
 
       // And the file should contain empty epics object
@@ -145,8 +146,8 @@ describe('Feature: Automatic JSON File Initialization', () => {
   describe('Scenario: Ensure utilities validate JSON structure', () => {
     it('should throw a helpful error when JSON is corrupted', async () => {
       // Given I have corrupted spec/work-units.json
-      await mkdir(join(testDir, 'spec'), { recursive: true });
-      const filePath = join(testDir, 'spec/work-units.json');
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
+      const filePath = join(setup.testDir, 'spec/work-units.json');
       const fs = await import('fs/promises');
 
       // Write corrupted JSON (trailing comma, missing closing brace)
@@ -154,11 +155,11 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
       // When ensureWorkUnitsFile is called
       // Then it should throw a helpful error
-      await expect(ensureWorkUnitsFile(testDir)).rejects.toThrow();
+      await expect(ensureWorkUnitsFile(setup.testDir)).rejects.toThrow();
 
       // And should indicate the file is invalid JSON
       try {
-        await ensureWorkUnitsFile(testDir);
+        await ensureWorkUnitsFile(setup.testDir);
       } catch (error: any) {
         expect(error.message).toContain('work-units.json');
         expect(error.message.toLowerCase()).toMatch(/json|parse|invalid/);
@@ -167,8 +168,8 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
     it('should provide helpful error message with file path', async () => {
       // Given I have corrupted spec/work-units.json
-      await mkdir(join(testDir, 'spec'), { recursive: true });
-      const filePath = join(testDir, 'spec/work-units.json');
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
+      const filePath = join(setup.testDir, 'spec/work-units.json');
       const fs = await import('fs/promises');
 
       // Write invalid JSON
@@ -176,7 +177,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
       // When ensureWorkUnitsFile is called
       // Then error should mention the file path
-      await expect(ensureWorkUnitsFile(testDir)).rejects.toThrow(
+      await expect(ensureWorkUnitsFile(setup.testDir)).rejects.toThrow(
         /work-units\.json/
       );
     });
@@ -192,13 +193,13 @@ describe('Feature: Automatic JSON File Initialization', () => {
       // @step And no backup files should be created
       it('should create work-units.json with root-level version field', async () => {
         // @step Given I am in a new project without spec/work-units.json
-        await mkdir(join(testDir, 'spec'), { recursive: true });
+        await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
         // @step When I run the first fspec command
-        const result = await ensureWorkUnitsFile(testDir);
+        const result = await ensureWorkUnitsFile(setup.testDir);
 
         // @step Then spec/work-units.json should be created
-        const filePath = join(testDir, 'spec/work-units.json');
+        const filePath = join(setup.testDir, 'spec/work-units.json');
         await access(filePath);
 
         // @step And the file should have version field set to '0.7.1'
@@ -209,7 +210,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
         // @step And no backup files should be created
         const fs = await import('fs/promises');
-        const specContents = await fs.readdir(join(testDir, 'spec'));
+        const specContents = await fs.readdir(join(setup.testDir, 'spec'));
         const backupFiles = specContents.filter(f => f.includes('backup'));
         expect(backupFiles).toHaveLength(0);
       });
@@ -225,18 +226,18 @@ describe('Feature: Automatic JSON File Initialization', () => {
       // @step And no backup files should be created
       it('should recreate work-units.json with version field after deletion', async () => {
         // @step Given I have an existing fspec project
-        await mkdir(join(testDir, 'spec'), { recursive: true });
+        await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
         // Create initial file
-        await ensureWorkUnitsFile(testDir);
+        await ensureWorkUnitsFile(setup.testDir);
 
         // @step And spec/work-units.json has been deleted
-        const filePath = join(testDir, 'spec/work-units.json');
+        const filePath = join(setup.testDir, 'spec/work-units.json');
         const fs = await import('fs/promises');
         await fs.unlink(filePath);
 
         // @step When I run any fspec command
-        const result = await ensureWorkUnitsFile(testDir);
+        const result = await ensureWorkUnitsFile(setup.testDir);
 
         // @step Then spec/work-units.json should be recreated
         await access(filePath);
@@ -248,7 +249,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
         expect(result.migrationHistory).toBeUndefined();
 
         // @step And no backup files should be created
-        const specContents = await fs.readdir(join(testDir, 'spec'));
+        const specContents = await fs.readdir(join(setup.testDir, 'spec'));
         const backupFiles = specContents.filter(f => f.includes('backup'));
         expect(backupFiles).toHaveLength(0);
       });
@@ -266,8 +267,8 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
         // @step When the version is updated to '0.8.0' in the shared constant
         // We verify by checking that the version used matches the current version
-        await mkdir(join(testDir, 'spec'), { recursive: true });
-        const result = await ensureWorkUnitsFile(testDir);
+        await mkdir(join(setup.testDir, 'spec'), { recursive: true });
+        const result = await ensureWorkUnitsFile(setup.testDir);
 
         // @step Then ensure-files.ts should use version '0.8.0' when creating work-units.json
         // @step And migrations should recognize '0.8.0' as the current version
@@ -276,7 +277,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
         // @step And no version string should be hardcoded in multiple files
         // Verify that version comes from shared constant by checking it exists
-        const filePath = join(testDir, 'spec/work-units.json');
+        const filePath = join(setup.testDir, 'spec/work-units.json');
         const fileContent = await readFile(filePath, 'utf-8');
         const fileData = JSON.parse(fileContent);
         expect(fileData.version).toBe('0.7.1');

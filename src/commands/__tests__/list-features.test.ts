@@ -1,24 +1,27 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 import { listFeatures } from '../list-features';
 
 describe('Feature: List Feature Files', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('list-features');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: List all feature files', () => {
     it('should list all feature files with names and scenario counts', async () => {
       // Given I have feature files in "spec/features/"
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -51,7 +54,7 @@ Feature: Create Feature File
       );
 
       // When I run `fspec list-features`
-      const result = await listFeatures({ cwd: testDir });
+      const result = await listFeatures({ cwd: setup.testDir });
 
       // Then the command should list all feature files
       expect(result.features).toHaveLength(2);
@@ -68,7 +71,7 @@ Feature: Create Feature File
   describe('Scenario: List features with scenario counts', () => {
     it('should display scenario count for each feature', async () => {
       // Given I have a feature file with 5 scenarios
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -103,7 +106,7 @@ Feature: Create Feature File
       );
 
       // When I run `fspec list-features`
-      const result = await listFeatures({ cwd: testDir });
+      const result = await listFeatures({ cwd: setup.testDir });
 
       // Then the output should contain scenario count
       expect(result.features).toHaveLength(1);
@@ -115,11 +118,11 @@ Feature: Create Feature File
   describe('Scenario: Handle empty spec/features directory', () => {
     it('should return empty array for empty directory', async () => {
       // Given I have an empty "spec/features/" directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec list-features`
-      const result = await listFeatures({ cwd: testDir });
+      const result = await listFeatures({ cwd: setup.testDir });
 
       // Then the result should be empty
       expect(result.features).toHaveLength(0);
@@ -131,7 +134,7 @@ Feature: Create Feature File
       // Given no "spec/features/" directory exists
       // When I run `fspec list-features`
       // Then it should throw an error
-      await expect(listFeatures({ cwd: testDir })).rejects.toThrow(
+      await expect(listFeatures({ cwd: setup.testDir })).rejects.toThrow(
         'Directory not found'
       );
     });
@@ -140,7 +143,7 @@ Feature: Create Feature File
   describe('Scenario: Filter features by single tag', () => {
     it('should filter features by tag', async () => {
       // Given I have feature files with different tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -180,7 +183,10 @@ Feature: Validation
       );
 
       // When I run `fspec list-features --tag=@critical`
-      const result = await listFeatures({ cwd: testDir, tag: '@critical' });
+      const result = await listFeatures({
+        cwd: setup.testDir,
+        tag: '@critical',
+      });
 
       // Then it should list only phase1 features
       expect(result.features).toHaveLength(2);
@@ -193,7 +199,7 @@ Feature: Validation
   describe('Scenario: Show feature tags in output', () => {
     it('should include tags in feature metadata', async () => {
       // Given I have a feature file with tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -209,7 +215,7 @@ Feature: User Login
       );
 
       // When I run `fspec list-features`
-      const result = await listFeatures({ cwd: testDir });
+      const result = await listFeatures({ cwd: setup.testDir });
 
       // Then the result should include tags
       expect(result.features[0].tags).toContain('@critical');
@@ -221,7 +227,7 @@ Feature: User Login
   describe('Scenario: List features in alphabetical order', () => {
     it('should sort features alphabetically by filename', async () => {
       // Given I have feature files
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -240,7 +246,7 @@ Feature: User Login
       );
 
       // When I run `fspec list-features`
-      const result = await listFeatures({ cwd: testDir });
+      const result = await listFeatures({ cwd: setup.testDir });
 
       // Then features should be in alphabetical order
       expect(result.features[0].file).toBe('spec/features/alpha.feature');
@@ -252,7 +258,7 @@ Feature: User Login
   describe('Scenario: Filter features by multiple tags (AND logic)', () => {
     it('should filter features requiring all specified tags', async () => {
       // Given I have feature files with tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -294,10 +300,10 @@ Feature: Validation
       // When I run `fspec list-features --tag=@critical --tag=@cli`
       // Note: Current implementation only supports single tag, this documents desired behavior
       const resultPhase1 = await listFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         tag: '@critical',
       });
-      const resultCli = await listFeatures({ cwd: testDir, tag: '@cli' });
+      const resultCli = await listFeatures({ cwd: setup.testDir, tag: '@cli' });
 
       // Then features with @critical should include all three
       expect(resultPhase1.features).toHaveLength(3);
@@ -315,7 +321,7 @@ Feature: Validation
   describe('Scenario: Handle no matches for tag filter', () => {
     it('should return empty array when no features match tag', async () => {
       // Given I have feature files with tags @critical and @high
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -329,7 +335,7 @@ Feature: Validation
       );
 
       // When I run `fspec list-features --tag=@medium`
-      const result = await listFeatures({ cwd: testDir, tag: '@medium' });
+      const result = await listFeatures({ cwd: setup.testDir, tag: '@medium' });
 
       // Then the result should be empty
       expect(result.features).toHaveLength(0);
@@ -339,7 +345,7 @@ Feature: Validation
   describe('Scenario: AI agent discovery workflow', () => {
     it('should help AI determine if new feature would be duplicate', async () => {
       // Given I am an AI agent working on a new feature
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -380,7 +386,7 @@ Feature: API Endpoints
 
       // When I run `fspec list-features --tag=@authentication`
       const result = await listFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         tag: '@authentication',
       });
 

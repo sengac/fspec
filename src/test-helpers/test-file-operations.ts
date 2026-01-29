@@ -19,6 +19,16 @@ export async function writeJsonTestFile(
 }
 
 /**
+ * Write text content to a file.
+ */
+export async function writeTextFile(
+  filePath: string,
+  content: string
+): Promise<void> {
+  await writeFile(filePath, content);
+}
+
+/**
  * Read and parse JSON from a test file.
  */
 export async function readJsonTestFile<T = unknown>(

@@ -12,31 +12,32 @@ import { displayBoard } from '../display-board';
 import { createStory } from '../create-story';
 import { validateCommand } from '../validate';
 import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Foundation existence check in commands', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('foundation-check');
+    setup = await setupTestDirectory('foundation-check');
 
     // Initialize work-units.json
-    await writeFile(
-      join(testDir, 'spec', 'work-units.json'),
-      JSON.stringify({ workUnits: {}, states: {} })
-    );
+    await writeJsonTestFile(join(setup.testDir, 'spec/work-units.json'), {
+      workUnits: {},
+      states: {},
+    });
 
     // Initialize tags.json
     await writeFile(
-      join(testDir, 'spec', 'tags.json'),
+      join(setup.testDir, 'spec', 'tags.json'),
       JSON.stringify({ tags: [] })
     );
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    // Cleanup is automatic with setupTestDirectory
   });
 
   describe('Scenario: Run board command without foundation.json', () => {
@@ -49,7 +50,7 @@ describe('Feature: Foundation existence check in commands', () => {
       let error: Error | null = null;
       let result: any = null;
       try {
-        result = await displayBoard({ cwd: testDir });
+        result = await displayBoard({ cwd: setup.testDir });
       } catch (err) {
         error = err as Error;
       }
@@ -80,7 +81,7 @@ describe('Feature: Foundation existence check in commands', () => {
         result = await createStory({
           prefix: 'AUTH',
           title: 'Login',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (err) {
         error = err as Error;
@@ -101,7 +102,7 @@ describe('Feature: Foundation existence check in commands', () => {
       // Given I am in a project directory
       // And the file "spec/foundation.json" exists
       await writeFile(
-        join(testDir, 'spec', 'foundation.json'),
+        join(setup.testDir, 'spec', 'foundation.json'),
         JSON.stringify({
           version: '2.0.0',
           project: {
@@ -122,7 +123,7 @@ describe('Feature: Foundation existence check in commands', () => {
       );
 
       // When I run 'fspec board'
-      const result = await displayBoard({ cwd: testDir });
+      const result = await displayBoard({ cwd: setup.testDir });
 
       // Then the command should execute normally (no error thrown)
       // The result should have board data
@@ -138,9 +139,9 @@ describe('Feature: Foundation existence check in commands', () => {
       // (foundation.json not created)
 
       // Create a valid feature file to validate
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'features', 'test.feature'),
+        join(setup.testDir, 'spec', 'features', 'test.feature'),
         `Feature: Test
   Scenario: Test scenario
     Given a precondition
@@ -153,7 +154,7 @@ describe('Feature: Foundation existence check in commands', () => {
       let error: Error | null = null;
       let result: any = null;
       try {
-        result = await validateCommand({ cwd: testDir });
+        result = await validateCommand({ cwd: setup.testDir });
       } catch (err) {
         error = err as Error;
       }

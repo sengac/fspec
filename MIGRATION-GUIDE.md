@@ -239,7 +239,7 @@ import { setupFullTest } from '../../test-helpers/universal-test-setup';
 
 ## Migration Status
 
-### ✅ COMPLETED (143 tests):
+### ✅ COMPLETED (315 tests):
 - ✅ `src/test/system-reminder-preservation.test.ts` (5 tests)
 - ✅ `src/test/fspec-session-interception.test.ts` (3 tests)  
 - ✅ `src/commands/__tests__/work-unit.test.ts` (27 tests)
@@ -265,6 +265,41 @@ import { setupFullTest } from '../../test-helpers/universal-test-setup';
 - ✅ `src/commands/__tests__/board.test.ts` (3 tests)
 - ✅ `src/commands/__tests__/impact-analysis.test.ts` (1 test)
 - ✅ `src/commands/__tests__/attachment-support.test.ts` (9 tests)
+- ✅ `src/migrations/__tests__/migration-system.test.ts` (10 tests)
+- ✅ `src/tui/components/__tests__/BoardView-exit-confirmation.test.tsx` (4 tests)
+- ✅ `src/utils/__tests__/search-scenarios-bug-059.test.ts` (5 tests)
+- ✅ `src/utils/__tests__/enhanced-research-tool-reminders.test.ts` (7 tests)
+- ✅ `src/utils/__tests__/foundation-check.test.ts` (6 tests)
+- ✅ `src/utils/__tests__/config-resolution.test.ts` (5 tests)
+- ✅ `src/utils/__tests__/git-checkpoint-deleted-files.test.ts` (4 tests)
+- ✅ `src/utils/__tests__/coverage-file-synchronization.test.ts` (6 tests)
+- ✅ `src/utils/__tests__/system-reminder-research-tools.test.ts` (2 tests)
+- ✅ `src/utils/__tests__/ensure-files.test.ts` (9 tests)
+- ✅ `src/commands/__tests__/validate.test.ts` (16 tests)
+- ✅ `src/commands/__tests__/list-features.test.ts` (10 tests)
+- ✅ `src/commands/__tests__/create-feature.test.ts` (9 tests)
+- ✅ `src/commands/__tests__/list-prefixes.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/format.test.ts` (17 tests)
+- ✅ `src/commands/__tests__/query-orphans.test.ts` (1 test)
+- ✅ `src/commands/__tests__/init-bundling.test.ts` (9 tests)
+- ✅ `src/commands/__tests__/prevent-starting-blocked-work.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/hotspot-question-transformation.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/research-tool-visibility.integration.test.ts` (5 tests)
+- ✅ `src/commands/__tests__/add-attachment-mermaid-validation.test.ts` (4 tests)
+- ✅ `src/commands/__tests__/acdd-workflow-integration.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/architecture-notes-example-mapping.test.ts` (5 tests)
+- ✅ `src/commands/__tests__/research-listing.test.ts` (4 tests)
+- ✅ `src/commands/__tests__/dependency-bidirectional.test.ts` (2 tests)
+- ✅ `src/commands/__tests__/virtual-hooks-reminders.test.ts` (5 tests)
+- ✅ `src/commands/__tests__/validate.test.ts` (16 tests)
+- ✅ `src/commands/__tests__/list-features.test.ts` (10 tests)
+- ✅ `src/commands/__tests__/create-feature.test.ts` (9 tests)
+- ✅ `src/commands/__tests__/list-prefixes.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/format.test.ts` (17 tests)
+- ✅ `src/commands/__tests__/query-orphans.test.ts` (1 test)
+- ✅ `src/commands/__tests__/init-bundling.test.ts` (9 tests)
+- ✅ `src/commands/__tests__/prevent-starting-blocked-work.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/hotspot-question-transformation.test.ts` (3 tests)
 
 ### 🔄 STILL NEEDS MIGRATION (~84 files with ~160+ tests):
 

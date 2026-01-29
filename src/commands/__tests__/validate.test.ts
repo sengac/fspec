@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 // Mock the validate command to access the internal validateFile function
 vi.mock('../validate', async () => {
@@ -100,24 +103,24 @@ function getSuggestion(errorMessage: string): string | undefined {
 }
 
 describe('Feature: Gherkin Syntax Validation', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('validate');
     originalCwd = process.cwd();
-    process.chdir(testDir);
+    process.chdir(setup.testDir);
   });
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Validate a syntactically correct feature file', () => {
     it('should pass validation for valid Gherkin', async () => {
       // Given I have a feature file with valid Gherkin syntax
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `Feature: User Login
@@ -141,7 +144,7 @@ describe('Feature: Gherkin Syntax Validation', () => {
   describe('Scenario: Detect missing Feature keyword', () => {
     it('should report error when Feature keyword is missing', async () => {
       // Given I have a file without Feature keyword
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const brokenContent = `@critical
@@ -168,7 +171,7 @@ User Login
   describe('Scenario: Detect invalid step keyword', () => {
     it('should report error for invalid step keywords', async () => {
       // Given I have a file with invalid step keyword "While"
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const brokenContent = `Feature: User Login
@@ -195,7 +198,7 @@ User Login
   describe('Scenario: Detect missing indentation', () => {
     it('should accept valid Gherkin regardless of indentation style', async () => {
       // Given I have a file with non-standard but valid indentation
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // Note: Gherkin parser is actually quite permissive with indentation
@@ -219,7 +222,7 @@ Then I should be logged in`;
   describe('Scenario: Detect unclosed doc string', () => {
     it('should accept doc string that spans to end of file', async () => {
       // Given I have a file with a doc string
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // Note: Gherkin treats unclosed doc string as extending to EOF
@@ -245,7 +248,7 @@ Then I should be logged in`;
   describe('Scenario: Validate feature file with doc strings', () => {
     it('should accept properly formatted doc strings', async () => {
       // Given I have a feature file with doc strings
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `Feature: Documentation
@@ -275,7 +278,7 @@ Then I should be logged in`;
   describe('Scenario: Validate feature file with data tables', () => {
     it('should accept properly formatted data tables', async () => {
       // Given I have a feature file with data tables
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `Feature: Data Tables
@@ -301,7 +304,7 @@ Then I should be logged in`;
   describe('Scenario: Validate feature file with feature-level tags', () => {
     it('should accept tags at feature level', async () => {
       // Given I have a feature file with tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `@critical @critical
@@ -326,7 +329,7 @@ Feature: Tagged Feature
   describe('Scenario: Validate feature file with scenario-level tags', () => {
     it('should accept tags at scenario level', async () => {
       // Given I have a feature file with scenario-level tags only
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `Feature: User Login
@@ -358,7 +361,7 @@ Feature: Tagged Feature
   describe('Scenario: Validate feature file with both feature-level and scenario-level tags', () => {
     it('should accept tags at both feature and scenario levels', async () => {
       // Given I have a feature file with tags at both levels
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `@critical
@@ -392,7 +395,7 @@ Feature: User Login
   describe('Scenario: Validate scenario-level tags with proper indentation', () => {
     it('should validate scenario tag indentation', async () => {
       // Given I have a feature file with scenario tags at proper indentation (2 spaces)
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `Feature: Testing
@@ -437,7 +440,7 @@ Feature: User Login
   describe('Scenario: Validate multiple files and report first error', () => {
     it('should validate multiple files and report all results', async () => {
       // Given I have multiple feature files
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -478,7 +481,7 @@ Feature: User Login
   describe('Scenario: Validate all feature files in the project', () => {
     it('should validate all files when no specific file provided', async () => {
       // Given I have multiple feature files
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -499,7 +502,7 @@ Feature: User Login
       // When I validate all files
       const { glob } = await import('tinyglobby');
       const files = await glob(['spec/features/**/*.feature'], {
-        cwd: testDir,
+        cwd: setup.testDir,
         absolute: false,
       });
 
@@ -514,7 +517,7 @@ Feature: User Login
   describe('Scenario: Validate with verbose output', () => {
     it('should provide detailed parsing information', async () => {
       // Given I have a valid feature file
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `Feature: User Login
@@ -538,7 +541,7 @@ Feature: User Login
   describe('Scenario: AI agent self-correction workflow', () => {
     it('should support iterative correction workflow', async () => {
       // Given I am an AI agent that created a file with invalid syntax
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const invalidContent = `Feature: My Feature

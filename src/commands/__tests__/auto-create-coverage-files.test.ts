@@ -6,33 +6,34 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile, access } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, mkdir, writeFile, access } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 import { createFeature } from '../create-feature';
 import { createCoverageFile } from '../../utils/coverage-file';
 
 describe('Feature: Auto-create Coverage Files', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-coverage-test-'));
+    setup = await setupTestDirectory('auto-create-coverage');
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Create feature file with coverage file', () => {
     it('should create feature file AND coverage file automatically', async () => {
       // Given I am in a project with spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run "fspec create-feature User Login"
-      await createFeature('User Login', testDir);
+      await createFeature('User Login', setup.testDir);
 
       // Then a file "spec/features/user-login.feature" should be created
       const featureFile = join(featuresDir, 'user-login.feature');
@@ -50,7 +51,7 @@ describe('Feature: Auto-create Coverage Files', () => {
   describe('Scenario: Coverage file contains valid JSON schema', () => {
     it('should generate coverage file with correct JSON structure', async () => {
       // Given I have created a feature file "spec/features/user-login.feature" with 1 scenario named "Login with valid credentials"
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // Create a feature file with known scenario name
@@ -106,7 +107,7 @@ Feature: User Login
   describe('Scenario: Coverage file tracks multiple scenarios', () => {
     it('should create coverage entries for all scenarios', async () => {
       // Given I have created a feature file with 3 scenarios
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureContent = `@critical
@@ -154,11 +155,11 @@ Feature: Test Feature
   describe('Scenario: Skip coverage creation if valid coverage file exists', () => {
     it('should preserve existing valid coverage file', async () => {
       // Given I have a feature file "spec/features/user-login.feature"
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureFile = join(
-        testDir,
+        setup.testDir,
         'spec',
         'features',
         'user-login.feature'
@@ -212,7 +213,7 @@ Feature: Test Feature
   describe('Scenario: Overwrite coverage file if invalid JSON exists', () => {
     it('should recreate coverage file when existing file is corrupted', async () => {
       // Given I have a feature file "spec/features/user-login.feature"
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureContent =
@@ -242,7 +243,7 @@ Feature: Test Feature
   describe('Scenario: Scenario names preserve exact case and whitespace', () => {
     it('should maintain exact scenario name formatting', async () => {
       // Given I create a feature file with scenario "Login With Valid Credentials"
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureContent = `@critical
@@ -282,7 +283,7 @@ Feature: Test
   describe('Scenario: Coverage file creation does not fail feature creation', () => {
     it('should complete feature creation even if coverage fails', async () => {
       // Given I am creating a feature file "spec/features/test.feature"
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // And coverage file creation encounters an error
@@ -290,7 +291,7 @@ Feature: Test
       // TODO: Mock coverage creation failure
 
       // When the feature file creation completes
-      await createFeature('Test', testDir);
+      await createFeature('Test', setup.testDir);
 
       // Then the feature file "spec/features/test.feature" should exist
       const featureFile = join(featuresDir, 'test.feature');

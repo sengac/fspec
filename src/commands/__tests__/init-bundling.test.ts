@@ -7,8 +7,7 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
-import { mkdtemp, rm, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile } from 'fs/promises';
 import { installAgents } from '../init';
 import { getSlashCommandTemplate } from '../../utils/slashCommandTemplate';
 import {
@@ -92,24 +91,18 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
   describe('Scenario: Embedded templates work independently', () => {
     it('should work in any directory using embedded templates', async () => {
-      const emptyDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+      // When: I call getSlashCommandTemplate() in any directory
+      const template = getSlashCommandTemplate();
 
-      try {
-        // When: I call getSlashCommandTemplate() in any directory
-        const template = getSlashCommandTemplate();
+      // Then: Template is minimal (header + two commands only)
+      expect(template.length).toBeLessThan(700);
+      expect(template).toContain('fspec --sync-version');
+      expect(template).toContain('fspec bootstrap');
 
-        // Then: Template is minimal (header + two commands only)
-        expect(template.length).toBeLessThan(700); // Minimal template with clear instructions
-        expect(template).toContain('fspec --sync-version');
-        expect(template).toContain('fspec bootstrap');
-
-        // And: fspec init works
-        await expect(
-          installAgents(emptyDir, ['claude'])
-        ).resolves.not.toThrow();
-      } finally {
-        await rm(emptyDir, { recursive: true, force: true });
-      }
+      // And: fspec init works
+      await expect(
+        installAgents(setup.testDir, ['claude'])
+      ).resolves.not.toThrow();
     });
 
     it('should return complete embedded template', async () => {

@@ -4,27 +4,31 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { addDependency } from '../add-dependency';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('circular-dependency-detection');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Circular dependency detection prevents A→B→A loops', () => {
     it('should prevent creating circular dependencies', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And work unit "AUTH-001" blocks "API-001"
       const workUnitsData: WorkUnitsData = {
@@ -63,9 +67,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnitsData
       );
 
       // When I run "fspec add-dependency API-001 --blocks=AUTH-001"
@@ -74,7 +78,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         addDependency({
           workUnitId: 'API-001',
           blocks: 'AUTH-001',
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow();
 
@@ -83,7 +87,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         await addDependency({
           workUnitId: 'API-001',
           blocks: 'AUTH-001',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         // Should not reach here
         expect(true).toBe(false);
@@ -95,7 +99,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       // And no circular dependency should be created
       const finalContent = await readFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         'utf-8'
       );
       const finalData: WorkUnitsData = JSON.parse(finalContent);

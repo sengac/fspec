@@ -8,39 +8,40 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
 import { resolveConfig, validateConfig } from '../config-resolution';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Configuration Management with TUI Integration', () => {
-  let tempDir: string;
+  let setup: TestDirectorySetup;
   let originalEnv: Record<string, string | undefined>;
   let userConfigPath: string;
   let projectConfigPath: string;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Save original environment
     originalEnv = { ...process.env };
 
-    // Create temp directory for test configs
-    tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fspec-config-test-'));
+    // Setup test directory
+    setup = await setupTestDirectory('config-resolution');
 
     // Set up config paths
-    userConfigPath = path.join(tempDir, '.fspec', 'fspec-config.json');
-    projectConfigPath = path.join(tempDir, 'spec', 'fspec-config.json');
+    userConfigPath = path.join(setup.testDir, '.fspec', 'fspec-config.json');
+    projectConfigPath = path.join(setup.testDir, 'spec', 'fspec-config.json');
 
     // Create directories
     fs.mkdirSync(path.dirname(userConfigPath), { recursive: true });
     fs.mkdirSync(path.dirname(projectConfigPath), { recursive: true });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     // Restore environment
     process.env = originalEnv;
 
-    // Clean up temp directory
-    if (fs.existsSync(tempDir)) {
-      fs.rmSync(tempDir, { recursive: true, force: true });
-    }
+    // Clean up test directory
+    await setup.cleanup();
   });
 
   describe('Scenario: Environment variable overrides user config file', () => {
@@ -114,7 +115,7 @@ describe('Feature: Configuration Management with TUI Integration', () => {
   describe('Scenario: .env file loads environment variables with precedence over config files', () => {
     it('should load .env file and use it with ENV priority', () => {
       // @step Given I have a .env file in project root with PERPLEXITY_API_KEY=pplx-abc123
-      const envPath = path.join(tempDir, '.env');
+      const envPath = path.join(setup.testDir, '.env');
       fs.writeFileSync(envPath, 'PERPLEXITY_API_KEY=pplx-abc123\n');
 
       // @step And I have Perplexity API key "user-key" in ~/.fspec/fspec-config.json

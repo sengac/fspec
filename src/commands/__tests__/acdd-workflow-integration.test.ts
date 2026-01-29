@@ -6,61 +6,47 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 
 describe('Feature: ACDD Workflow Integration', () => {
-  let testDir: string;
-  let specDir: string;
-  let featuresDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    featuresDir = join(specDir, 'features');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    // Create spec directory structure
-    await mkdir(featuresDir, { recursive: true });
+    setup = await setupWorkUnitTest('acdd-workflow-integration');
 
     // Create work-units.json with AUTH-001
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {
-            'AUTH-001': {
-              id: 'AUTH-001',
-              title: 'User Authentication',
-              status: 'validating',
-              linkedFeatures: ['user-login'],
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          },
-          states: {
-            backlog: [],
-            specifying: [],
-            testing: [],
-            implementing: [],
-            validating: ['AUTH-001'],
-            done: [],
-            blocked: [],
-          },
+    await writeJsonTestFile(setup.workUnitsFile, {
+      workUnits: {
+        'AUTH-001': {
+          id: 'AUTH-001',
+          title: 'User Authentication',
+          status: 'validating',
+          linkedFeatures: ['user-login'],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         },
-        null,
-        2
-      )
-    );
+      },
+      states: {
+        backlog: [],
+        specifying: [],
+        testing: [],
+        implementing: [],
+        validating: ['AUTH-001'],
+        done: [],
+        blocked: [],
+      },
+    });
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Allow status update to done when all scenarios are covered', () => {
@@ -69,7 +55,10 @@ describe('Feature: ACDD Workflow Integration', () => {
       // (Already created in beforeEach)
 
       // And the coverage file shows all 5 scenarios have testMappings
-      const coverageFile = join(featuresDir, 'user-login.feature.coverage');
+      const coverageFile = join(
+        setup.featuresDir,
+        'user-login.feature.coverage'
+      );
       await writeFile(
         coverageFile,
         JSON.stringify({
@@ -103,7 +92,7 @@ describe('Feature: ACDD Workflow Integration', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed with exit code 0
@@ -121,7 +110,10 @@ describe('Feature: ACDD Workflow Integration', () => {
       // (Already created in beforeEach)
 
       // And the coverage file shows 2 out of 5 scenarios have empty testMappings
-      const coverageFile = join(featuresDir, 'user-login.feature.coverage');
+      const coverageFile = join(
+        setup.featuresDir,
+        'user-login.feature.coverage'
+      );
       await writeFile(
         coverageFile,
         JSON.stringify({
@@ -149,7 +141,7 @@ describe('Feature: ACDD Workflow Integration', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should fail with exit code 1
@@ -178,7 +170,7 @@ describe('Feature: ACDD Workflow Integration', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed with exit code 0
