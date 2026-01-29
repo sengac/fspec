@@ -116,7 +116,7 @@ export async function cleanupVirtualHookScript(
     await unlink(scriptPath);
   } catch (error: unknown) {
     // Ignore if file doesn't exist
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+    if ((error as { code?: string }).code !== 'ENOENT') {
       throw error;
     }
   }

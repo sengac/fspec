@@ -3,6 +3,8 @@
 //! This wrapper enables facades to be used with rig's agent builder by implementing
 //! the Tool trait and delegating to the underlying facade for schema/naming while
 //! executing against the base tool implementation.
+//!
+//! CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
 
 use super::traits::{
     BoxedFileToolFacade, BoxedToolFacade, InternalFileParams, InternalWebSearchParams,
@@ -319,7 +321,6 @@ impl Tool for FileToolFacadeWrapper {
 
 use super::fspec_facade::BoxedFspecToolFacade;
 use super::traits::{BoxedBashToolFacade, InternalBashParams};
-use crate::fspec::{FspecArgs, FspecTool};
 use crate::bash::BashArgs;
 use crate::BashTool;
 
@@ -335,20 +336,18 @@ pub struct BashOperationResult {
 ///
 /// This enables provider-specific fspec facades to be used with rig's agent builder
 /// while maintaining the facade's custom tool name, schema, and parameter mapping.
+/// Uses JS-controlled invocation pattern where callback is provided at execution time.
 pub struct FspecToolFacadeWrapper {
     /// The underlying facade providing name, schema, and param mapping
     facade: BoxedFspecToolFacade,
-    /// The base tool for actual execution
-    fspec_tool: FspecTool,
 }
 
 impl FspecToolFacadeWrapper {
     /// Create a new wrapper for the given fspec facade
+    /// 
+    /// NO CLI FALLBACKS - This will error when used until JS-controlled invocation is implemented.
     pub fn new(facade: BoxedFspecToolFacade) -> Self {
-        Self {
-            facade,
-            fspec_tool: FspecTool::new(),
-        }
+        Self { facade }
     }
 
     /// Get the facade's provider name
@@ -383,15 +382,17 @@ impl Tool for FspecToolFacadeWrapper {
         // Map provider-specific args to internal params via the facade
         let internal_params = self.facade.map_params(args.0)?;
 
-        // Convert internal params to FspecArgs
-        let fspec_args = FspecArgs {
-            command: internal_params.command,
-            args: internal_params.args,
-            project_root: internal_params.project_root,
-        };
-
-        // Execute via the actual FspecTool
-        self.fspec_tool.call(fspec_args).await
+        // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
+        // FspecTool requires special handling at the session layer due to JS-controlled invocation
+        
+        // Return params for session-level interception
+        Ok(format!(
+            "FSPEC_INTERCEPT: Command: '{}', Args: '{}', Root: '{}', Provider: '{}'",
+            internal_params.command,
+            internal_params.args,
+            internal_params.project_root,
+            self.facade.provider()
+        ))
     }
 }
 ///

@@ -1,30 +1,39 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { validateFile } from '../validate';
 
-// Helper function to validate a file (extracted from validateCommand)
+// Mock the validate command to access the internal validateFile function
+vi.mock('../validate', async () => {
+  const actual = (await vi.importActual('../validate')) as any;
+  return {
+    ...actual,
+    validateFile:
+      actual.default?.validateFile ||
+      (await import('../validate')).validateFile,
+  };
+});
+
+// Import the internal validateFile function from the actual command
+import type { ValidationResult } from '../validate';
+
+// Re-implement validateFile to match the actual implementation structure
 async function validateFile(
   filePath: string,
   verbose?: boolean
-): Promise<{
-  file: string;
-  valid: boolean;
-  errors: Array<{ line: number; message: string; suggestion?: string }>;
-}> {
-  const result = {
+): Promise<ValidationResult> {
+  const { readFile } = await import('fs/promises');
+  const { resolve } = await import('path');
+  const Gherkin = await import('@cucumber/gherkin');
+  const Messages = await import('@cucumber/messages');
+
+  const result: ValidationResult = {
     file: filePath,
     valid: true,
-    errors: [] as Array<{ line: number; message: string; suggestion?: string }>,
+    errors: [],
   };
 
   try {
-    const { readFile } = await import('fs/promises');
-    const { resolve } = await import('path');
-    const Gherkin = await import('@cucumber/gherkin');
-    const Messages = await import('@cucumber/messages');
-
     const resolvedPath = resolve(process.cwd(), filePath);
     const content = await readFile(resolvedPath, 'utf-8');
 

@@ -25,7 +25,7 @@ export async function removePersona(cwd: string, name: string): Promise<void> {
     const content = await fs.readFile(targetPath, 'utf-8');
     foundation = JSON.parse(content);
   } catch (error: unknown) {
-    const err = error as NodeJS.ErrnoException;
+    const err = error as { code?: string; message: string };
     if (err.code === 'ENOENT') {
       console.error(chalk.red('✗ foundation.json not found'));
       console.error(

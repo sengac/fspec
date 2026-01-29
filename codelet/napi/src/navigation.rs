@@ -14,7 +14,6 @@
  * - Shift+Left from watcher → prev sibling, or parent if first sibling
  * - Shift+Left from first session → board
  */
-
 use indexmap::IndexMap;
 use std::sync::Arc;
 use uuid::Uuid;
