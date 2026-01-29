@@ -125,47 +125,50 @@ export async function fspecCallback(
       try {
         const args = JSON.parse(argsJson);
 
+        // CRITICAL: Add projectRoot as cwd to all command arguments
+        const argsWithCwd = { ...args, cwd: projectRoot };
+
         // Switch statement to dynamically import and call the REAL fspec command functions
         switch (command) {
           case 'list-work-units': {
             const { listWorkUnits } = await import(
               '../commands/list-work-units'
             );
-            return await listWorkUnits(args);
+            return await listWorkUnits(argsWithCwd);
           }
 
           case 'create-story': {
             const { createStory } = await import('../commands/create-story');
-            return await createStory(args);
+            return await createStory(argsWithCwd);
           }
 
           case 'show-work-unit': {
             const { showWorkUnit } = await import('../commands/show-work-unit');
-            return await showWorkUnit(args);
+            return await showWorkUnit(argsWithCwd);
           }
 
           case 'update-work-unit-status': {
             const { updateWorkUnitStatus } = await import(
               '../commands/update-work-unit-status'
             );
-            return await updateWorkUnitStatus(args);
+            return await updateWorkUnitStatus(argsWithCwd);
           }
 
           case 'add-rule': {
             const { addRule } = await import('../commands/add-rule');
-            return await addRule(args);
+            return await addRule(argsWithCwd);
           }
 
           case 'add-example': {
             const { addExample } = await import('../commands/add-example');
-            return await addExample(args);
+            return await addExample(argsWithCwd);
           }
 
           case 'generate-scenarios': {
             const { generateScenarios } = await import(
               '../commands/generate-scenarios'
             );
-            return await generateScenarios(args);
+            return await generateScenarios(argsWithCwd);
           }
 
           // Handle unsupported commands

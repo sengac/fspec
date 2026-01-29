@@ -5,13 +5,33 @@
 
 import { fspecCallback } from '../utils/fspec-callback';
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
+import {
+  setupFullTest,
+  type FullTestSetup,
+} from '../test-helpers/universal-test-setup';
+import { registerCommonTestPrefixes } from '../test-helpers/universal-test-setup';
 
 describe('System Reminder Preservation', () => {
   let originalStderrWrite: typeof process.stderr.write;
+  let setup: FullTestSetup;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Save original stderr.write for restoration
     originalStderrWrite = process.stderr.write;
+
+    // Create isolated temp directory for each test with full setup (foundation + work units)
+    setup = await setupFullTest('system-reminder-preservation');
+
+    // Register common test prefixes
+    await registerCommonTestPrefixes(setup.testDir);
+  });
+
+  afterEach(async () => {
+    // Restore original stderr.write
+    process.stderr.write = originalStderrWrite;
+
+    // Clean up temp directory
+    await setup.cleanup();
   });
 
   describe('Scenario: Commands without system reminders should not have systemReminders field', () => {
@@ -19,17 +39,19 @@ describe('System Reminder Preservation', () => {
       // @step Given a fspec command that does NOT output system reminders
       const mockCommand = 'list-work-units'; // This command doesn't emit system reminders
       const mockArgs = JSON.stringify({});
-      const mockProjectRoot = '/test/path';
 
       // @step When the TypeScript callback executes the command within fspecCallback
       const result = await fspecCallback(
         mockCommand,
         mockArgs,
-        mockProjectRoot
+        setup.testDir // Use temp directory instead of hardcoded path
       );
 
       // @step Then the result should not have systemReminders field (or it should be empty)
       const parsedResult = JSON.parse(result);
+
+      // Debug: log the result to understand what's being returned
+      console.log('List work units result:', parsedResult);
 
       // Either no systemReminders field, or empty array
       if (parsedResult.systemReminders) {
@@ -40,15 +62,10 @@ describe('System Reminder Preservation', () => {
         expect(parsedResult).not.toHaveProperty('systemReminders');
       }
 
-      // Should still have the actual command result
+      // Should have successful result for list-work-units
       expect(parsedResult).toHaveProperty('workUnits');
       expect(parsedResult.workUnits).toBeInstanceOf(Array);
     });
-  });
-
-  afterEach(() => {
-    // Restore original stderr.write
-    process.stderr.write = originalStderrWrite;
   });
 
   describe('Scenario: Capture system reminder from console.error during command execution', () => {
@@ -56,21 +73,29 @@ describe('System Reminder Preservation', () => {
       // @step Given a fspec command outputs system reminders to console.error during execution
       const mockCommand = 'create-story'; // Use a command that DOES emit system reminders
       const mockArgs = JSON.stringify({ prefix: 'TEST', title: 'Test Story' });
-      const mockProjectRoot = '/test/path';
 
       // @step When the TypeScript callback executes the command within fspecCallback
       const result = await fspecCallback(
         mockCommand,
         mockArgs,
-        mockProjectRoot
+        setup.testDir // Use temp directory
       );
+
+      // Debug: log the result to understand what's happening
+      console.log('Create story result:', result);
+      const parsedResult = JSON.parse(result);
+      console.log('Parsed create story result:', parsedResult);
+
+      // Check if the command succeeded first
+      if (parsedResult.success === false) {
+        console.error('Command failed:', parsedResult.error);
+        throw new Error(`Command failed: ${parsedResult.error}`);
+      }
 
       // @step Then the console.error output should be captured
       // (Note: stderr is captured internally by fspecCallback, not by our test spy)
 
       // @step And the system reminder should be parsed from the captured stderr
-      const parsedResult = JSON.parse(result);
-
       // @step And the system reminder should be included in the FspecTool response
       expect(parsedResult).toHaveProperty('systemReminders');
       expect(parsedResult.systemReminders).toBeInstanceOf(Array);
@@ -86,7 +111,6 @@ describe('System Reminder Preservation', () => {
       // @step Given a fspec command returns a result with systemReminder property
       const mockCommand = 'create-story';
       const mockArgs = JSON.stringify({ prefix: 'TEST', title: 'Test Story' });
-      const mockProjectRoot = '/test/path';
 
       // Mock a command that would return systemReminder
       const originalConsoleError = console.error;
@@ -99,11 +123,20 @@ describe('System Reminder Preservation', () => {
       const result = await fspecCallback(
         mockCommand,
         mockArgs,
-        mockProjectRoot
+        setup.testDir // Use temp directory
       );
 
       // @step Then the result.systemReminder content should be extracted
       const parsedResult = JSON.parse(result);
+
+      // Debug logging
+      console.log('System reminder test result:', parsedResult);
+
+      // Check if command succeeded
+      if (parsedResult.success === false) {
+        console.error('Command failed:', parsedResult.error);
+        throw new Error(`Command failed: ${parsedResult.error}`);
+      }
 
       // @step And the system reminder should be included in the FspecTool response for LLM guidance
       expect(parsedResult).toHaveProperty('systemReminders');
@@ -128,17 +161,25 @@ describe('System Reminder Preservation', () => {
         prefix: 'TEST',
         title: 'Test Story For XML Tags',
       });
-      const mockProjectRoot = '/test/path';
 
       // @step When the TypeScript callback captures the stderr output during execution
       const result = await fspecCallback(
         mockCommand,
         mockArgs,
-        mockProjectRoot
+        setup.testDir // Use temp directory
       );
 
       // @step Then the <system-reminder> tags should be parsed and extracted
       const parsedResult = JSON.parse(result);
+
+      // Debug logging
+      console.log('XML tags test result:', parsedResult);
+
+      // Check if command succeeded
+      if (parsedResult.success === false) {
+        console.error('Command failed:', parsedResult.error);
+        throw new Error(`Command failed: ${parsedResult.error}`);
+      }
 
       // @step And the system reminder content should be included in the FspecTool response
       expect(parsedResult).toHaveProperty('systemReminders');
@@ -159,17 +200,25 @@ describe('System Reminder Preservation', () => {
         prefix: 'TEST',
         title: 'Multi Reminder Test',
       });
-      const mockProjectRoot = '/test/path';
 
       // @step When the TypeScript callback processes the command execution
       const result = await fspecCallback(
         mockCommand,
         mockArgs,
-        mockProjectRoot
+        setup.testDir // Use temp directory
       );
 
       // @step Then both system reminder patterns should be captured
       const parsedResult = JSON.parse(result);
+
+      // Debug logging
+      console.log('Multi reminder test result:', parsedResult);
+
+      // Check if command succeeded
+      if (parsedResult.success === false) {
+        console.error('Command failed:', parsedResult.error);
+        throw new Error(`Command failed: ${parsedResult.error}`);
+      }
 
       // @step And the system reminders should be combined in the FspecTool response
       expect(parsedResult).toHaveProperty('systemReminders');
