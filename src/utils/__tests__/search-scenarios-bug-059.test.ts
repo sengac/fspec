@@ -6,51 +6,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { searchScenarios } from '../../commands/search-scenarios';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  readJsonTestFile,
+  writeJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: search-scenarios returns no results when it should find matching scenarios', () => {
-  let testDir: string;
-  let specDir: string;
-  let featuresDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // @step Given I am setting up a test environment
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    featuresDir = join(specDir, 'features');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    await mkdir(featuresDir, { recursive: true });
-
-    // Initialize work units file
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {},
-          states: {
-            backlog: [],
-            specifying: [],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: [],
-          },
-        },
-        null,
-        2
-      )
-    );
+    setup = await setupWorkUnitTest('search-scenarios-bug');
   });
 
   afterEach(async () => {
-    // Clean up test environment
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Search by feature file name (kebab-case)', () => {
@@ -70,14 +46,17 @@ describe('Feature: search-scenarios returns no results when it should find match
     Then it is tracked
 `;
       await writeFile(
-        join(featuresDir, 'report-bug-to-github-with-ai-assistance.feature'),
+        join(
+          setup.featuresDir,
+          'report-bug-to-github-with-ai-assistance.feature'
+        ),
         featureContent
       );
 
       // @step When I run "fspec search-scenarios --query=report-bug"
       const result = await searchScenarios({
         query: 'report-bug',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then I should see scenarios from "report-bug-to-github-with-ai-assistance.feature"
@@ -106,14 +85,14 @@ describe('Feature: search-scenarios returns no results when it should find match
     Then I am authenticated
 `;
       await writeFile(
-        join(featuresDir, 'user-authentication.feature'),
+        join(setup.featuresDir, 'user-authentication.feature'),
         featureContent
       );
 
       // @step When I run "fspec search-scenarios --query=authentication"
       const result = await searchScenarios({
         query: 'authentication',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then I should see all scenarios from the "User Authentication" feature
@@ -146,14 +125,14 @@ describe('Feature: search-scenarios returns no results when it should find match
     Then syntax errors are detected
 `;
       await writeFile(
-        join(featuresDir, 'diagram-validation.feature'),
+        join(setup.featuresDir, 'diagram-validation.feature'),
         featureContent
       );
 
       // @step When I run "fspec search-scenarios --query=mermaid"
       const result = await searchScenarios({
         query: 'mermaid',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then I should see all scenarios from features mentioning "mermaid" in description
@@ -166,7 +145,7 @@ describe('Feature: search-scenarios returns no results when it should find match
   describe('Scenario: Search by work unit title', () => {
     it('should find scenarios by searching work unit title', async () => {
       // @step Given a work unit "BUG-059" with title "search-scenarios returns no results"
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['BUG-059'] = {
         id: 'BUG-059',
         title: 'search-scenarios returns no results',
@@ -175,7 +154,7 @@ describe('Feature: search-scenarios returns no results when it should find match
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // @step And a feature file tagged with "@BUG-059"
       const featureContent = `@BUG-059
@@ -191,12 +170,15 @@ Feature: Search Scenarios Bug
     When I run search
     Then results are returned
 `;
-      await writeFile(join(featuresDir, 'search-bug.feature'), featureContent);
+      await writeFile(
+        join(setup.featuresDir, 'search-bug.feature'),
+        featureContent
+      );
 
       // @step When I run "fspec search-scenarios --query=returns no results"
       const result = await searchScenarios({
         query: 'returns no results',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then I should see scenarios from the feature tagged with "@BUG-059"
@@ -221,12 +203,15 @@ Feature: Search Scenarios Bug
     When I login
     Then I am logged in
 `;
-      await writeFile(join(featuresDir, 'user-login.feature'), featureContent);
+      await writeFile(
+        join(setup.featuresDir, 'user-login.feature'),
+        featureContent
+      );
 
       // @step When I run "fspec search-scenarios --query=login"
       const result = await searchScenarios({
         query: 'login',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then I should see the scenario "Login with valid credentials"
@@ -238,9 +223,3 @@ Feature: Search Scenarios Bug
     });
   });
 });
-
-// Helper function to read files
-async function readFile(path: string, encoding: string): Promise<string> {
-  const { readFile: fsReadFile } = await import('fs/promises');
-  return fsReadFile(path, encoding);
-}

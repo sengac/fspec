@@ -4,27 +4,25 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync } from 'fs';
-import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdir, writeFile } from 'fs/promises';
+import { mkdir } from 'fs/promises';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import type { WorkUnit } from '../../types/work-unit';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let tempDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
     // Given I have a project with spec directory
-    tempDir = mkdtempSync(join(tmpdir(), 'fspec-test-'));
-    specDir = join(tempDir, 'spec');
-    await mkdir(specDir, { recursive: true });
-    workUnitsFile = join(specDir, 'work-units.json');
+    setup = await setupWorkUnitTest('query-orphans');
   });
 
-  afterEach(() => {
-    rmSync(tempDir, { recursive: true, force: true });
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: Detect orphaned work units with no epic or dependencies', () => {
@@ -78,11 +76,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec query orphans --output=json"
       const { queryOrphans } = await import('../query-orphans');
-      const result = await queryOrphans({ cwd: tempDir, output: 'json' });
+      const result = await queryOrphans({ cwd: setup.testDir, output: 'json' });
 
       // Then the output should list "ORPHAN-1" and "ORPHAN-2" as orphaned
       expect(result.orphans).toBeDefined();

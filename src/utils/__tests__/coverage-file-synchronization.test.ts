@@ -7,29 +7,39 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { promises as fs } from 'fs';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import { deleteScenario } from '../../commands/delete-scenario';
 import { deleteScenariosByTag } from '../../commands/delete-scenarios-by-tag';
 import { updateCoverageFile, CoverageScenario } from '../coverage-file';
 import { updateScenario } from '../../commands/update-scenario';
 import { checkFeatureCoverage } from '../../commands/update-work-unit-status';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Coverage File Synchronization', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await fs.mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await fs.mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('coverage-sync');
+    await fs.mkdir(join(setup.testDir, 'spec', 'features'), {
+      recursive: true,
+    });
   });
 
   afterEach(async () => {
-    await fs.rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Delete scenario removes coverage entry', () => {
     it('should remove coverage entry and recalculate stats when scenario is deleted', async () => {
       // @step Given a feature file test.feature with scenarios A, B, and C
-      const featurePath = join(testDir, 'spec', 'features', 'test.feature');
+      const featurePath = join(
+        setup.testDir,
+        'spec',
+        'features',
+        'test.feature'
+      );
       const featureContent = `Feature: Test Feature
 
 Scenario: Scenario A
@@ -73,7 +83,7 @@ Scenario: Scenario C
       const result = await deleteScenario({
         feature: 'test',
         scenario: 'Scenario B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
       if (!result.success) {
         console.log('Delete failed:', result.error);
@@ -105,7 +115,7 @@ Scenario: Scenario C
     it('should remove all coverage entries for deleted scenarios when bulk deleting by tag', async () => {
       // @step Given multiple feature files with scenarios tagged @deprecated
       const feature1Path = join(
-        testDir,
+        setup.testDir,
         'spec',
         'features',
         'feature1.feature'
@@ -126,7 +136,7 @@ Scenario: Current Feature B
       await fs.writeFile(feature1Path, feature1Content, 'utf-8');
 
       const feature2Path = join(
-        testDir,
+        setup.testDir,
         'spec',
         'features',
         'feature2.feature'
@@ -176,7 +186,7 @@ Scenario: Current Feature D
       );
 
       // @step When I run 'fspec delete-scenarios --tag @deprecated'
-      await deleteScenariosByTag({ tags: ['@deprecated'], cwd: testDir });
+      await deleteScenariosByTag({ tags: ['@deprecated'], cwd: setup.testDir });
 
       // @step Then all @deprecated scenarios should be removed from feature files
       const updatedFeature1 = await fs.readFile(feature1Path, 'utf-8');
@@ -209,7 +219,12 @@ Scenario: Current Feature D
   describe('Scenario: Coverage validation detects stale scenarios', () => {
     it('should fail validation when coverage file contains stale scenarios', async () => {
       // @step Given a feature file with scenarios A and B
-      const featurePath = join(testDir, 'spec', 'features', 'test.feature');
+      const featurePath = join(
+        setup.testDir,
+        'spec',
+        'features',
+        'test.feature'
+      );
       const featureContent = `Feature: Test Feature
 
 Scenario: Scenario A
@@ -255,7 +270,11 @@ Scenario: Scenario B
       );
 
       // @step When I run 'fspec update-work-unit-status WORK-001 validating'
-      const result = await checkFeatureCoverage('test', featurePath, testDir);
+      const result = await checkFeatureCoverage(
+        'test',
+        featurePath,
+        setup.testDir
+      );
 
       // @step Then the command should fail with an error
       expect(result.complete).toBe(false);
@@ -272,7 +291,12 @@ Scenario: Scenario B
   describe('Scenario: Generate coverage syncs deleted scenarios', () => {
     it('should remove stale scenarios from coverage when generate-coverage is run', async () => {
       // @step Given a feature file with scenarios A and B
-      const featurePath = join(testDir, 'spec', 'features', 'test.feature');
+      const featurePath = join(
+        setup.testDir,
+        'spec',
+        'features',
+        'test.feature'
+      );
       const featureContent = `Feature: Test Feature
 
 Scenario: Scenario A
@@ -334,7 +358,12 @@ Scenario: Scenario B
   describe('Scenario: Deleted scenario no longer causes uncovered error', () => {
     it('should not report uncovered error for deleted scenarios after coverage sync', async () => {
       // @step Given a coverage file with uncovered scenario X
-      const featurePath = join(testDir, 'spec', 'features', 'test.feature');
+      const featurePath = join(
+        setup.testDir,
+        'spec',
+        'features',
+        'test.feature'
+      );
       const featureContent = `Feature: Test Feature
 
 Scenario: Scenario A
@@ -369,7 +398,11 @@ Scenario: Scenario A
       );
 
       // @step When I run 'fspec update-work-unit-status WORK-001 validating'
-      const result = await checkFeatureCoverage('test', featurePath, testDir);
+      const result = await checkFeatureCoverage(
+        'test',
+        featurePath,
+        setup.testDir
+      );
 
       // @step Then the command should succeed
       expect(result.complete).toBe(true);
@@ -386,7 +419,7 @@ Scenario: Scenario A
     it('should preserve test mappings when scenario is renamed', async () => {
       // @step Given a scenario 'User logs in' with test mappings
       const featurePath = join(
-        testDir,
+        setup.testDir,
         'spec',
         'features',
         'user-login.feature'
@@ -433,7 +466,7 @@ Scenario: User logs in
         feature: 'user-login',
         oldName: 'User logs in',
         newName: 'User authenticates',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
       if (!result.success) {
         console.log('Update failed:', result.error);

@@ -6,60 +6,47 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
+import { readFile, mkdir, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
-import { tmpdir } from 'os';
 import { join } from 'path';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import { generateScenarios } from '../generate-scenarios';
 
 describe('Feature: Duplicate scenario detection in generate-scenarios command', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
-  let featuresDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    featuresDir = join(specDir, 'features');
-
-    // Create spec directory structure
-    await mkdir(specDir, { recursive: true });
-    await mkdir(featuresDir, { recursive: true });
+    setup = await setupWorkUnitTest('generate-scenarios-duplicate-detection');
 
     // Initialize work units file
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {},
-          states: {
-            backlog: [],
-            specifying: [],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: [],
-          },
-        },
-        null,
-        2
-      )
-    );
+    await writeJsonTestFile(setup.workUnitsFile, {
+      workUnits: {},
+      states: {
+        backlog: [],
+        specifying: [],
+        testing: [],
+        implementing: [],
+        validating: [],
+        done: [],
+        blocked: [],
+      },
+    });
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Detect duplicate scenarios above threshold and display system-reminder', () => {
     it('should detect duplicates and emit system-reminder with clear next steps', async () => {
       // Given I have a work unit "WORK-001" with example mapping data
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'User Login',
@@ -77,7 +64,7 @@ describe('Feature: Duplicate scenario detection in generate-scenarios command', 
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // And existing feature files contain similar scenarios above the similarity threshold
       const existingFeature = `@AUTH-001
@@ -94,14 +81,14 @@ Feature: User Authentication
     Then I should be logged in
 `;
       await writeFile(
-        join(featuresDir, 'user-authentication.feature'),
+        join(setup.featuresDir, 'user-authentication.feature'),
         existingFeature
       );
 
       // When I run "fspec generate-scenarios WORK-001"
       let caughtError: Error | null = null;
       try {
-        await generateScenarios({ workUnitId: 'WORK-001', cwd: testDir });
+        await generateScenarios({ workUnitId: 'WORK-001', cwd: setup.testDir });
       } catch (error) {
         caughtError = error as Error;
       }
@@ -129,7 +116,9 @@ Feature: User Authentication
       // Given I have reviewed the duplicate scenarios warning
       // And I have investigated the suggested feature files
       // And I have determined the matches are false positives
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'User Login',
@@ -147,7 +136,7 @@ Feature: User Authentication
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // Existing feature with similar scenario
       const existingFeature = `@AUTH-001
@@ -159,14 +148,14 @@ Feature: User Authentication
     Then I should be redirected to the dashboard
 `;
       await writeFile(
-        join(featuresDir, 'user-authentication.feature'),
+        join(setup.featuresDir, 'user-authentication.feature'),
         existingFeature
       );
 
       // When I run "fspec generate-scenarios WORK-001 --ignore-possible-duplicates"
       const result = await generateScenarios({
         workUnitId: 'WORK-001',
-        cwd: testDir,
+        cwd: setup.testDir,
         ignorePossibleDuplicates: true,
       });
 
@@ -186,7 +175,9 @@ Feature: User Authentication
   describe('Scenario: Generate scenarios normally when no duplicates found', () => {
     it('should generate scenarios without warnings when no duplicates exist', async () => {
       // Given I have a work unit "WORK-001" with example mapping data
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'User Login',
@@ -202,7 +193,7 @@ Feature: User Authentication
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // And no existing feature files contain similar scenarios
       // (no existing features created)
@@ -210,7 +201,7 @@ Feature: User Authentication
       // When I run "fspec generate-scenarios WORK-001"
       const result = await generateScenarios({
         workUnitId: 'WORK-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the duplicate check should complete

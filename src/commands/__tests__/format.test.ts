@@ -6,7 +6,6 @@ import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import { writeTextFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Format Feature Files with Custom AST Formatter', () => {
   let setup: TestDirectorySetup;

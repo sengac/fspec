@@ -6,31 +6,26 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import { listPrefixes } from '../list-prefixes';
 
 describe('Feature: List Prefixes Command', () => {
-  let testDir: string;
-  let specDir: string;
-  let prefixesFile: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
     // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    prefixesFile = join(specDir, 'prefixes.json');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    // Create spec directory
-    await mkdir(specDir, { recursive: true });
+    setup = await setupWorkUnitTest('list-prefixes');
   });
 
   afterEach(async () => {
     // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: List all prefixes with descriptions', () => {
@@ -55,10 +50,10 @@ describe('Feature: List Prefixes Command', () => {
           },
         },
       };
-      await writeFile(prefixesFile, JSON.stringify(prefixesData, null, 2));
+      await writeJsonTestFile(setup.prefixesFile, prefixesData);
 
       // When I run "fspec list-prefixes"
-      const result = await listPrefixes({ cwd: testDir });
+      const result = await listPrefixes({ cwd: setup.testDir });
 
       // Then the command should display all prefixes
       expect(result.prefixes).toHaveLength(3);
@@ -91,7 +86,7 @@ describe('Feature: List Prefixes Command', () => {
           },
         },
       };
-      await writeFile(prefixesFile, JSON.stringify(prefixesData, null, 2));
+      await writeJsonTestFile(setup.prefixesFile, prefixesData);
 
       // And I have work units with IDs like "SAFE-001", "CLI-002"
       // And some work units are in "done" status
@@ -129,10 +124,10 @@ describe('Feature: List Prefixes Command', () => {
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec list-prefixes"
-      const result = await listPrefixes({ cwd: testDir });
+      const result = await listPrefixes({ cwd: setup.testDir });
 
       // Then each prefix should show work unit count
       const safePrefix = result.prefixes.find(p => p.prefix === 'SAFE');
@@ -154,10 +149,10 @@ describe('Feature: List Prefixes Command', () => {
   describe('Scenario: Handle missing prefixes file gracefully', () => {
     it('should return empty list when prefixes.json does not exist', async () => {
       // Given I have a project with no spec/prefixes.json file
-      // (prefixesFile not created)
+      // (setup.prefixesFile not created)
 
       // When I run "fspec list-prefixes"
-      const result = await listPrefixes({ cwd: testDir });
+      const result = await listPrefixes({ cwd: setup.testDir });
 
       // Then the command should return empty list
       expect(result.prefixes).toEqual([]);

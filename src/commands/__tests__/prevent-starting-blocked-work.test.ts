@@ -4,27 +4,31 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import type { WorkUnitsData } from '../../types';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('prevent-starting-blocked-work');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Prevent starting work that is blocked', () => {
     it('should prevent moving blocked work unit to active state when blockers are incomplete', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And work unit "UI-001" is blocked by "AUTH-001"
       // And "AUTH-001" status is "implementing" (not done)
@@ -65,10 +69,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec update-work-unit-status UI-001 implementing"
       // Then the command should fail
@@ -76,7 +77,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         updateWorkUnitStatus({
           workUnitId: 'UI-001',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow();
 
@@ -85,7 +86,7 @@ describe('Feature: Work Unit Dependency Management', () => {
         await updateWorkUnitStatus({
           workUnitId: 'UI-001',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         // Should not reach here
         expect(true).toBe(false);
@@ -99,7 +100,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
     it('should allow moving work unit to active state when all blockers are done', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And work unit "UI-001" is blocked by "AUTH-001"
       // And "AUTH-001" status is "done"
@@ -142,17 +143,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // Create linked feature files and coverage files for both work units
-      await mkdir(join(testDir, 'spec/features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec/features'), { recursive: true });
 
       // User authentication feature with full coverage
       await writeFile(
-        join(testDir, 'spec/features/user-authentication.feature'),
+        join(setup.testDir, 'spec/features/user-authentication.feature'),
         `@AUTH-001
 Feature: User Authentication
 
@@ -163,9 +161,12 @@ Feature: User Authentication
 `
       );
 
-      await writeFile(
-        join(testDir, 'spec/features/user-authentication.feature.coverage'),
-        JSON.stringify({
+      await writeJsonTestFile(
+        join(
+          setup.testDir,
+          'spec/features/user-authentication.feature.coverage'
+        ),
+        {
           scenarios: [
             {
               name: 'User Login',
@@ -183,12 +184,12 @@ Feature: User Authentication
               ],
             },
           ],
-        })
+        }
       );
 
       // UI components feature with full coverage
       await writeFile(
-        join(testDir, 'spec/features/ui-components.feature'),
+        join(setup.testDir, 'spec/features/ui-components.feature'),
         `@UI-001
 Feature: UI Components
 
@@ -199,9 +200,9 @@ Feature: UI Components
 `
       );
 
-      await writeFile(
-        join(testDir, 'spec/features/ui-components.feature.coverage'),
-        JSON.stringify({
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/features/ui-components.feature.coverage'),
+        {
           scenarios: [
             {
               name: 'Display Login Form',
@@ -219,13 +220,13 @@ Feature: UI Components
               ],
             },
           ],
-        })
+        }
       );
 
       // Create the test files referenced in coverage
-      await mkdir(join(testDir, 'src/__tests__'), { recursive: true });
+      await mkdir(join(setup.testDir, 'src/__tests__'), { recursive: true });
       await writeFile(
-        join(testDir, 'src/__tests__/auth.test.ts'),
+        join(setup.testDir, 'src/__tests__/auth.test.ts'),
         `// @step Given  a user exists
 // @step When  they log in
 // @step Then  they are authenticated
@@ -237,7 +238,7 @@ describe('User Login', () => {
 `
       );
       await writeFile(
-        join(testDir, 'src/__tests__/ui.test.ts'),
+        join(setup.testDir, 'src/__tests__/ui.test.ts'),
         `// @step Given  a user visits the login page
 // @step When  the page loads
 // @step Then  the login form is displayed
@@ -253,7 +254,7 @@ describe('Display Login Form', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'UI-001',
         status: 'implementing',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
@@ -261,7 +262,7 @@ describe('Display Login Form', () => {
 
       // And UI-001 status should be "implementing"
       const updatedContent = await readFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         'utf-8'
       );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);
@@ -272,7 +273,7 @@ describe('Display Login Form', () => {
 
     it('should prevent starting work when multiple blockers are incomplete', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And work unit "FEAT-001" is blocked by "AUTH-001" and "API-001"
       // And both blockers are not done
@@ -322,10 +323,7 @@ describe('Display Login Form', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec update-work-unit-status FEAT-001 implementing"
       // Then the command should fail
@@ -333,7 +331,7 @@ describe('Display Login Form', () => {
         await updateWorkUnitStatus({
           workUnitId: 'FEAT-001',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         // Should not reach here
         expect(true).toBe(false);

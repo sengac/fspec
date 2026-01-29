@@ -8,22 +8,23 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Unconfigured research tool visibility and discovery', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let configPath: string;
 
-  beforeEach(() => {
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fspec-test-'));
-    configPath = path.join(testDir, 'spec', 'fspec-config.json');
-    fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+  beforeEach(async () => {
+    setup = await setupTestDirectory('research-tool-visibility');
+    configPath = path.join(setup.testDir, 'spec', 'fspec-config.json');
+    fs.mkdirSync(path.join(setup.testDir, 'spec'), { recursive: true });
   });
 
-  afterEach(() => {
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: List tools with no tools configured', () => {

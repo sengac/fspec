@@ -4,28 +4,32 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import { addDependency } from '../add-dependency';
 import { removeDependency } from '../remove-dependency';
 import type { WorkUnitsData } from '../../types';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('dependency-bidirectional');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Add blocks relationship creates bidirectional link', () => {
     it('should create both blocks and blockedBy relationships', async () => {
       // Given I have two work units
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       const workUnitsData: WorkUnitsData = {
         meta: {
@@ -62,7 +66,7 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -70,14 +74,14 @@ describe('Feature: Work Unit Dependency Management', () => {
       const result = await addDependency({
         workUnitId: 'AUTH-001',
         blocks: 'AUTH-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       // Then AUTH-001 should have blocks: ['AUTH-002']
       const fileContent = await readFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         'utf-8'
       );
       const data: WorkUnitsData = JSON.parse(fileContent);
@@ -97,7 +101,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Remove dependency cleans up both sides of relationship', () => {
     it('should remove both blocks and blockedBy when removing dependency', async () => {
       // Given I have two work units with a blocks relationship
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       const workUnitsData: WorkUnitsData = {
         meta: {
@@ -136,7 +140,7 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -144,14 +148,14 @@ describe('Feature: Work Unit Dependency Management', () => {
       const result = await removeDependency({
         workUnitId: 'AUTH-001',
         blocks: 'AUTH-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       // Then AUTH-001 should no longer have AUTH-002 in blocks
       const fileContent = await readFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         'utf-8'
       );
       const data: WorkUnitsData = JSON.parse(fileContent);

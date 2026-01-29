@@ -11,23 +11,25 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, readFile, mkdir } from 'fs/promises';
+import { writeFile, readFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import { generateScenarios } from '../generate-scenarios';
 import type { WorkUnitsData } from '../../types';
 
 describe('Feature: generate-scenarios include architecture docstring', () => {
-  let tmpDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(tmpDir, 'spec', 'features'), { recursive: true });
-    await writeFile(join(tmpDir, 'spec', 'features', '.gitkeep'), '');
+    setup = await setupWorkUnitTest('generate-scenarios-docstring');
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Generated feature file includes architecture docstring', () => {
@@ -67,15 +69,12 @@ describe('Feature: generate-scenarios include architecture docstring', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec generate-scenarios <work-unit-id>"
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then a feature file should be created
@@ -123,14 +122,11 @@ describe('Feature: generate-scenarios include architecture docstring', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // When I examine the generated feature file
@@ -200,14 +196,11 @@ describe('Feature: generate-scenarios include architecture docstring', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       const content = await readFile(result.featureFile, 'utf-8');

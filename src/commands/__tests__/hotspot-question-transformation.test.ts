@@ -6,27 +6,25 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 import { generateExampleMappingFromEventStorm } from '../generate-example-mapping-from-event-storm';
 import type { WorkUnitsData } from '../../types';
 
 describe('Feature: Malformed question text when transforming Event Storm hotspots to Example Mapping', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    await mkdir(specDir, { recursive: true });
+    setup = await setupWorkUnitTest('hotspot-question-transformation');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Transform question-format concern without modification', () => {
@@ -77,12 +75,12 @@ describe('Feature: Malformed question text when transforming Event Storm hotspot
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I transform Event Storm to Example Mapping
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
@@ -90,7 +88,7 @@ describe('Feature: Malformed question text when transforming Event Storm hotspot
       // Read updated data
       const { readFile } = await import('fs/promises');
       const updatedData: WorkUnitsData = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       const questions = updatedData.workUnits['TEST-001'].questions;
 
@@ -155,12 +153,12 @@ describe('Feature: Malformed question text when transforming Event Storm hotspot
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I transform Event Storm to Example Mapping
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
@@ -168,7 +166,7 @@ describe('Feature: Malformed question text when transforming Event Storm hotspot
       // Read updated data
       const { readFile } = await import('fs/promises');
       const updatedData: WorkUnitsData = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       const questions = updatedData.workUnits['TEST-002'].questions;
 
@@ -236,12 +234,12 @@ describe('Feature: Malformed question text when transforming Event Storm hotspot
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I transform Event Storm to Example Mapping
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-003',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
@@ -249,7 +247,7 @@ describe('Feature: Malformed question text when transforming Event Storm hotspot
       // Read updated data
       const { readFile } = await import('fs/promises');
       const updatedData: WorkUnitsData = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       const questions = updatedData.workUnits['TEST-003'].questions;
 

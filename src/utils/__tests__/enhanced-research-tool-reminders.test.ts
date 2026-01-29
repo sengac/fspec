@@ -8,19 +8,20 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { workUnitCreatedReminder } from '../system-reminder';
 import { writeConfig } from '../config';
-import { mkdtemp, rm } from 'fs/promises';
-import { join } from 'path';
-import { tmpdir } from 'os';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Enhanced research tool guidance in system reminders', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('research-tool-reminders');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Creation reminder for code-related task emphasizes AST', () => {
@@ -37,7 +38,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
         workUnitId,
         type,
         title,
-        testDir
+        setup.testDir
       );
 
       // @step Then the system reminder should contain "CODE-RELATED task"
@@ -71,7 +72,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
         workUnitId,
         type,
         title,
-        testDir
+        setup.testDir
       );
 
       // @step Then the system reminder should contain "RESEARCH-HEAVY story"
@@ -119,7 +120,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
             },
           },
         },
-        testDir
+        setup.testDir
       );
 
       // @step When I move the work unit to specifying state
@@ -127,7 +128,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
       const reminder = await specifyingStateReminder(
         workUnitId,
         workUnit,
-        testDir
+        setup.testDir
       );
 
       // @step Then the system reminder should list all 5 tools
@@ -155,7 +156,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
   describe('Scenario: Unconfigured tool shows JSON configuration example', () => {
     it('should show JSON config example for unconfigured Perplexity', async () => {
       // @step Given Perplexity is not configured
-      await writeConfig('project', {}, testDir);
+      await writeConfig('project', {}, setup.testDir);
 
       // @step When a system reminder is displayed
       const { specifyingStateReminder } = await import('../system-reminder');
@@ -170,7 +171,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
       const reminder = await specifyingStateReminder(
         'WU-001',
         workUnit,
-        testDir
+        setup.testDir
       );
 
       // @step Then the reminder should show "✗ perplexity (not configured)"
@@ -189,7 +190,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
   describe('Scenario: AST tool always shows as configured', () => {
     it('should show AST as configured with no config required reason', async () => {
       // @step Given no research tools are configured except AST
-      await writeConfig('project', {}, testDir);
+      await writeConfig('project', {}, setup.testDir);
 
       // @step When a system reminder is displayed
       const { specifyingStateReminder } = await import('../system-reminder');
@@ -204,7 +205,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
       const reminder = await specifyingStateReminder(
         'WU-001',
         workUnit,
-        testDir
+        setup.testDir
       );
 
       // @step Then AST should show as "✓ ast (configured)"
@@ -229,7 +230,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
         workUnitId,
         type,
         title,
-        testDir
+        setup.testDir
       );
 
       // @step Then the reminder should emphasize using Perplexity for solution research
@@ -265,7 +266,7 @@ describe('Feature: Enhanced research tool guidance in system reminders', () => {
         'WU-001',
         'specifying',
         workUnit,
-        testDir
+        setup.testDir
       );
 
       // @step Then it should use async/await to call RES-018's getToolConfigurationStatus

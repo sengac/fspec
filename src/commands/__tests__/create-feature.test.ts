@@ -1,32 +1,35 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile, access } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, mkdir, writeFile, access } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 import { createFeature } from '../create-feature';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
 describe('Feature: Create Feature File with Template', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
     // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('create-feature');
   });
 
   afterEach(async () => {
     // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Create feature file with valid name', () => {
     it('should create a valid Gherkin feature file', async () => {
       // Given I am in a project with a spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "User Authentication"`
-      await createFeature('User Authentication', testDir);
+      await createFeature('User Authentication', setup.testDir);
 
       // Then a file "spec/features/user-authentication.feature" should be created
       const featureFile = join(featuresDir, 'user-authentication.feature');
@@ -78,11 +81,11 @@ describe('Feature: Create Feature File with Template', () => {
   describe('Scenario: Convert feature name to kebab-case', () => {
     it('should convert name to kebab-case for filename', async () => {
       // Given I am in a project with a spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "Real Time Event Monitoring"`
-      await createFeature('Real Time Event Monitoring', testDir);
+      await createFeature('Real Time Event Monitoring', setup.testDir);
 
       // Then a file "spec/features/real-time-event-monitoring.feature" should be created
       const featureFile = join(
@@ -101,10 +104,10 @@ describe('Feature: Create Feature File with Template', () => {
     it('should create directory structure automatically', async () => {
       // Given I am in a project without a spec/features/ directory
       // When I run `fspec create-feature "New Feature"`
-      await createFeature('New Feature', testDir);
+      await createFeature('New Feature', setup.testDir);
 
       // Then the directory "spec/features/" should be created
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await access(featuresDir);
 
       // And a file "spec/features/new-feature.feature" should be created
@@ -116,7 +119,7 @@ describe('Feature: Create Feature File with Template', () => {
   describe('Scenario: Prevent overwriting existing file', () => {
     it('should error if file already exists', async () => {
       // Given I have an existing file "spec/features/user-login.feature"
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
       const existingFile = join(featuresDir, 'user-login.feature');
       const originalContent = 'existing content';
@@ -124,7 +127,7 @@ describe('Feature: Create Feature File with Template', () => {
 
       // When I run `fspec create-feature "User Login"`
       // Then the command should exit with code 1
-      await expect(createFeature('User Login', testDir)).rejects.toThrow(
+      await expect(createFeature('User Login', setup.testDir)).rejects.toThrow(
         'already exists'
       );
 
@@ -137,11 +140,11 @@ describe('Feature: Create Feature File with Template', () => {
   describe('Scenario: Handle special characters in feature name', () => {
     it('should sanitize special characters for filename', async () => {
       // Given I am in a project with a spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "API/REST Endpoints"`
-      await createFeature('API/REST Endpoints', testDir);
+      await createFeature('API/REST Endpoints', setup.testDir);
 
       // Then a file "spec/features/api-rest-endpoints.feature" should be created
       const featureFile = join(featuresDir, 'api-rest-endpoints.feature');
@@ -156,11 +159,11 @@ describe('Feature: Create Feature File with Template', () => {
   describe('Scenario: Create feature with minimal name', () => {
     it('should create feature file with single word name', async () => {
       // Given I am in a project with a spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "Login"`
-      await createFeature('Login', testDir);
+      await createFeature('Login', setup.testDir);
 
       // Then a file "spec/features/login.feature" should be created
       const featureFile = join(featuresDir, 'login.feature');
@@ -175,11 +178,11 @@ describe('Feature: Create Feature File with Template', () => {
   describe('Scenario: Show success message with file path', () => {
     it('should return file path for verification', async () => {
       // Given I am in a project with a spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "User Permissions"`
-      const result = await createFeature('User Permissions', testDir);
+      const result = await createFeature('User Permissions', setup.testDir);
 
       // Then the command should return the file path
       expect(result.filePath).toContain(
@@ -195,11 +198,11 @@ describe('Feature: Create Feature File with Template', () => {
   describe('Scenario: Created file has proper template structure', () => {
     it('should include all required template sections', async () => {
       // Given I am in a project with a spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "Data Export"`
-      await createFeature('Data Export', testDir);
+      await createFeature('Data Export', setup.testDir);
 
       // Then the file should have proper Gherkin structure
       const featureFile = join(featuresDir, 'data-export.feature');
@@ -231,11 +234,11 @@ describe('Feature: Create Feature File with Template', () => {
   describe('Scenario: AI agent workflow - create and validate', () => {
     it('should create file that passes validation immediately', async () => {
       // Given I am an AI agent creating a new specification
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec create-feature "Shopping Cart"`
-      const result = await createFeature('Shopping Cart', testDir);
+      const result = await createFeature('Shopping Cart', setup.testDir);
 
       // Then a file should be created
       expect(result.filePath).toContain('spec/features/shopping-cart.feature');

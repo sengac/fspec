@@ -14,19 +14,19 @@ import { writeAgentConfig } from '../../utils/agentRuntimeConfig';
 import { getActivationMessage } from '../../utils/activationMessage';
 import { getAgentById } from '../../utils/agentRegistry';
 import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: INIT-008 and BUG-030 implementation integration', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('init-integration');
+    setup = await setupTestDirectory('init-integration');
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: fspec init calls writeAgentConfig() to create runtime config file', () => {
@@ -35,11 +35,11 @@ describe('Feature: INIT-008 and BUG-030 implementation integration', () => {
       // (already created in beforeEach)
 
       // When fspec init completes with --agent claude flag
-      await installAgents(testDir, ['claude']);
-      writeAgentConfig(testDir, 'claude');
+      await installAgents(setup.testDir, ['claude']);
+      writeAgentConfig(setup.testDir, 'claude');
 
       // Then spec/fspec-config.json should be created
-      const configPath = join(testDir, 'spec', 'fspec-config.json');
+      const configPath = join(setup.testDir, 'spec', 'fspec-config.json');
       const configExists = existsSync(configPath);
 
       expect(configExists).toBe(true);
@@ -82,10 +82,15 @@ describe('Feature: INIT-008 and BUG-030 implementation integration', () => {
   describe('Scenario: Init creates proper agent files', () => {
     it('should create .claude/commands/fspec.md for Claude agent', async () => {
       // When fspec init with claude agent
-      await installAgents(testDir, ['claude']);
+      await installAgents(setup.testDir, ['claude']);
 
       // Then the command file should exist
-      const fspecMdPath = join(testDir, '.claude', 'commands', 'fspec.md');
+      const fspecMdPath = join(
+        setup.testDir,
+        '.claude',
+        'commands',
+        'fspec.md'
+      );
       expect(existsSync(fspecMdPath)).toBe(true);
 
       // And it should contain fspec command content
@@ -95,10 +100,15 @@ describe('Feature: INIT-008 and BUG-030 implementation integration', () => {
 
     it('should create .cursor/commands/fspec.md for Cursor agent', async () => {
       // When fspec init with cursor agent
-      await installAgents(testDir, ['cursor']);
+      await installAgents(setup.testDir, ['cursor']);
 
       // Then the command file should exist
-      const fspecMdPath = join(testDir, '.cursor', 'commands', 'fspec.md');
+      const fspecMdPath = join(
+        setup.testDir,
+        '.cursor',
+        'commands',
+        'fspec.md'
+      );
       expect(existsSync(fspecMdPath)).toBe(true);
 
       // And it should contain fspec command content

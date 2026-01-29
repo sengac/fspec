@@ -6,31 +6,28 @@
  */
 
 import React from 'react';
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'ink-testing-library';
-import { mkdtemp, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import { setupFullTest, type FullTestSetup } from '../../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../../test-helpers/test-file-operations';
 
 // Import the component
 import { BoardView } from '../BoardView';
 
 describe('Feature: Exit confirmation dialog for fspec', () => {
-  let testDir: string;
+  let setup: FullTestSetup;
 
   beforeEach(async () => {
-    // Create temporary directory with fspec setup
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-exit-test-'));
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    setup = await setupFullTest('exit-confirmation');
 
-    // Create minimal foundation.json
-    await writeFile(join(testDir, 'spec', 'foundation.json'), JSON.stringify({
+    // Create minimal foundation.json (override default)
+    await writeJsonTestFile(setup.foundationFile, {
       projectName: "Exit Test",
       description: "Testing exit confirmation"
-    }, null, 2));
+    });
 
-    // Create work-units.json
-    await writeFile(join(testDir, 'spec', 'work-units.json'), JSON.stringify({
+    // Create work-units.json (override default)
+    await writeJsonTestFile(setup.workUnitsFile, {
       workUnits: {
         "TEST-001": {
           id: "TEST-001",
@@ -49,7 +46,11 @@ describe('Feature: Exit confirmation dialog for fspec', () => {
         done: [],
         blocked: []
       }
-    }, null, 2));
+    });
+  });
+
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: ESC key shows exit confirmation dialog', () => {
@@ -57,7 +58,7 @@ describe('Feature: Exit confirmation dialog for fspec', () => {
       const onExit = vi.fn();
 
       const { lastFrame, stdin } = render(
-        <BoardView onExit={onExit} cwd={testDir} />
+        <BoardView onExit={onExit} cwd={setup.testDir} />
       );
 
       // Wait for component to load
@@ -84,7 +85,7 @@ describe('Feature: Exit confirmation dialog for fspec', () => {
       const onExit = vi.fn();
 
       const { lastFrame, stdin } = render(
-        <BoardView onExit={onExit} cwd={testDir} />
+        <BoardView onExit={onExit} cwd={setup.testDir} />
       );
 
       // Wait for component to load
@@ -110,7 +111,7 @@ describe('Feature: Exit confirmation dialog for fspec', () => {
       const onExit = vi.fn();
 
       const { lastFrame, stdin } = render(
-        <BoardView onExit={onExit} cwd={testDir} />
+        <BoardView onExit={onExit} cwd={setup.testDir} />
       );
 
       // Wait for component to load
@@ -140,7 +141,7 @@ describe('Feature: Exit confirmation dialog for fspec', () => {
       const onExit = vi.fn();
 
       const { lastFrame, stdin } = render(
-        <BoardView onExit={onExit} cwd={testDir} />
+        <BoardView onExit={onExit} cwd={setup.testDir} />
       );
 
       // Wait for component to load

@@ -8,26 +8,27 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { specifyingStateReminder } from '../system-reminder';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Unconfigured research tool visibility and discovery', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let configPath: string;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // Create temporary test directory
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fspec-test-'));
-    configPath = path.join(testDir, 'spec', 'fspec-config.json');
+    setup = await setupTestDirectory('system-reminder-research');
+    configPath = path.join(setup.testDir, 'spec', 'fspec-config.json');
 
     // Ensure spec directory exists
-    fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+    fs.mkdirSync(path.join(setup.testDir, 'spec'), { recursive: true });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     // Cleanup test directory
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
+    await setup.cleanup();
   });
 
   describe('Scenario: System-reminder shows all tools to AI agents', () => {
@@ -64,7 +65,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       const reminder = await specifyingStateReminder(
         'TEST-001',
         workUnit,
-        testDir
+        setup.testDir
       );
 
       // @step Then I should see all 5 tools with configuration status
@@ -112,7 +113,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       const reminder = await specifyingStateReminder(
         'TEST-002',
         workUnit,
-        testDir
+        setup.testDir
       );
 
       // System-reminder should be concise (AI can run --help for full details)
