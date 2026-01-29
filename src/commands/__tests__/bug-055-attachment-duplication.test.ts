@@ -7,22 +7,26 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, access, readFile } from 'fs/promises';
+import { mkdir, writeFile, access, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
 import { addAttachment } from '../add-attachment';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Attachment files duplicated in spec/attachments/ and spec/attachments/[ID]/', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('bug-055-attachment-duplication');
 
-    // Initialize spec directory structure
-    await mkdir(join(testDir, 'spec'), { recursive: true });
-    await mkdir(join(testDir, 'spec', 'attachments'), { recursive: true });
+    // Initialize attachments directory structure
+    await mkdir(join(setup.specDir, 'attachments'), { recursive: true });
 
     // Create work-units.json
     const workUnitsData: WorkUnitsData = {
@@ -61,21 +65,23 @@ describe('Feature: Attachment files duplicated in spec/attachments/ and spec/att
       },
     };
 
-    await writeFile(
-      join(testDir, 'spec', 'work-units.json'),
-      JSON.stringify(workUnitsData, null, 2)
-    );
+    await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Prevent duplication when adding file from spec/attachments/ root', () => {
     it('should move file from root to work unit directory and delete original', async () => {
       // Given I have a work unit "TEST-001"
       // And I have a file "spec/attachments/analysis.md" in the root attachments directory
-      const rootFile = join(testDir, 'spec', 'attachments', 'analysis.md');
+      const rootFile = join(
+        setup.testDir,
+        'spec',
+        'attachments',
+        'analysis.md'
+      );
       await writeFile(rootFile, '# Analysis Document');
 
       // Verify file exists in root before attachment
@@ -85,12 +91,12 @@ describe('Feature: Attachment files duplicated in spec/attachments/ and spec/att
       await addAttachment({
         workUnitId: 'TEST-001',
         filePath: rootFile,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the file should be moved to "spec/attachments/TEST-001/analysis.md"
       const workUnitFile = join(
-        testDir,
+        setup.testDir,
         'spec',
         'attachments',
         'TEST-001',
@@ -103,7 +109,7 @@ describe('Feature: Attachment files duplicated in spec/attachments/ and spec/att
 
       // And the work unit should track "spec/attachments/TEST-001/analysis.md" as an attachment
       const workUnitsContent = await readFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         'utf-8'
       );
       const workUnits: WorkUnitsData = JSON.parse(workUnitsContent);
@@ -124,19 +130,24 @@ describe('Feature: Attachment files duplicated in spec/attachments/ and spec/att
       await addAttachment({
         workUnitId: 'TEST-002',
         filePath: externalFile,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the file should be copied to "spec/attachments/TEST-002/diagram.png"
       const workUnitFile = join(
-        testDir,
+        setup.testDir,
         'spec',
         'attachments',
         'TEST-002',
         `diagram-${Date.now()}.png`
       );
       // Note: Using basename comparison since actual filename will be diagram-<timestamp>.png
-      const workUnitDir = join(testDir, 'spec', 'attachments', 'TEST-002');
+      const workUnitDir = join(
+        setup.testDir,
+        'spec',
+        'attachments',
+        'TEST-002'
+      );
       await expect(access(workUnitDir)).resolves.not.toThrow();
 
       // And the original file "/tmp/diagram.png" should still exist
@@ -151,19 +162,24 @@ describe('Feature: Attachment files duplicated in spec/attachments/ and spec/att
     it('should ensure only one copy exists in work unit directory', async () => {
       // Given I have a work unit "TEST-003"
       // And I have a file "spec/attachments/document.pdf" in the root attachments directory
-      const rootFile = join(testDir, 'spec', 'attachments', 'document.pdf');
+      const rootFile = join(
+        setup.testDir,
+        'spec',
+        'attachments',
+        'document.pdf'
+      );
       await writeFile(rootFile, 'PDF content');
 
       // When I run "fspec add-attachment TEST-003 spec/attachments/document.pdf"
       await addAttachment({
         workUnitId: 'TEST-003',
         filePath: rootFile,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then there should be exactly one copy of the file in "spec/attachments/TEST-003/document.pdf"
       const workUnitFile = join(
-        testDir,
+        setup.testDir,
         'spec',
         'attachments',
         'TEST-003',

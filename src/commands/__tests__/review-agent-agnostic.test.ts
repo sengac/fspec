@@ -7,19 +7,19 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { review } from '../review';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import { writeFile } from 'fs/promises';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Add agent-agnostic ultrathink to review command', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-review-test-'));
-
-    // Create spec directory structure
-    await mkdir(join(testDir, 'spec'), { recursive: true });
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupWorkUnitTest('review-agent-agnostic');
 
     // Create minimal work units file
     const workUnitsData = {
@@ -36,10 +36,7 @@ describe('Feature: Add agent-agnostic ultrathink to review command', () => {
       },
       nextIds: { AUTH: 2 },
     };
-    await writeFile(
-      join(testDir, 'spec', 'work-units.json'),
-      JSON.stringify(workUnitsData, null, 2)
-    );
+    await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
     // Create minimal feature file
     const featureContent = `@AUTH-001
@@ -56,15 +53,13 @@ Feature: User Login
     Then I should be logged in
 `;
     await writeFile(
-      join(testDir, 'spec', 'features', 'user-login.feature'),
+      join(setup.featuresDir, 'user-login.feature'),
       featureContent
     );
   });
 
   afterEach(async () => {
-    if (testDir) {
-      await rm(testDir, { recursive: true, force: true });
-    }
+    await setup.cleanup();
   });
 
   describe('Scenario: Review command outputs agent-specific formatting for Claude Code', () => {
@@ -72,13 +67,13 @@ Feature: User Login
       // Given I am using Claude Code as my AI agent
       // And spec/fspec-config.json contains agent: 'claude'
       const configData = { agent: 'claude' };
-      await writeFile(
-        join(testDir, 'spec', 'fspec-config.json'),
-        JSON.stringify(configData, null, 2)
+      await writeJsonTestFile(
+        join(setup.specDir, 'fspec-config.json'),
+        configData
       );
 
       // When I run 'fspec review AUTH-001'
-      const result = await review('AUTH-001', { cwd: testDir });
+      const result = await review('AUTH-001', { cwd: setup.testDir });
 
       // Then the output should contain <system-reminder> tags
       expect(result.output).toContain('<system-reminder>');
@@ -95,13 +90,13 @@ Feature: User Login
       // Given I am using Cursor IDE as my AI agent
       // And spec/fspec-config.json contains agent: 'cursor'
       const configData = { agent: 'cursor' };
-      await writeFile(
-        join(testDir, 'spec', 'fspec-config.json'),
-        JSON.stringify(configData, null, 2)
+      await writeJsonTestFile(
+        join(setup.specDir, 'fspec-config.json'),
+        configData
       );
 
       // When I run 'fspec review API-005' (using AUTH-001 for test)
-      const result = await review('AUTH-001', { cwd: testDir });
+      const result = await review('AUTH-001', { cwd: setup.testDir });
 
       // Then the output should contain **⚠️ IMPORTANT:** prefix
       expect(result.output).toContain('**⚠️ IMPORTANT:**');
@@ -116,13 +111,13 @@ Feature: User Login
       // Given I am using Aider CLI as my AI agent
       // And spec/fspec-config.json contains agent: 'aider'
       const configData = { agent: 'aider' };
-      await writeFile(
-        join(testDir, 'spec', 'fspec-config.json'),
-        JSON.stringify(configData, null, 2)
+      await writeJsonTestFile(
+        join(setup.specDir, 'fspec-config.json'),
+        configData
       );
 
       // When I run 'fspec review DASH-003' (using AUTH-001 for test)
-      const result = await review('AUTH-001', { cwd: testDir });
+      const result = await review('AUTH-001', { cwd: setup.testDir });
 
       // Then the output should contain **IMPORTANT:** prefix
       expect(result.output).toContain('**IMPORTANT:**');
@@ -141,7 +136,7 @@ Feature: User Login
       delete process.env.FSPEC_AGENT;
 
       // When I run 'fspec review TEST-001' (using AUTH-001 for test)
-      const result = await review('AUTH-001', { cwd: testDir });
+      const result = await review('AUTH-001', { cwd: setup.testDir });
 
       // Then the output should use safe default formatting
       expect(result.success).toBe(true);

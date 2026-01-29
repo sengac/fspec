@@ -6,48 +6,42 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import { showEpic } from '../show-epic';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Fix show-epic command returning undefined', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-
-    // Create spec directory
-    const specDir = join(testDir, 'spec');
-    await mkdir(specDir, { recursive: true });
+    setup = await setupWorkUnitTest('show-epic');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Show error when epic does not exist', () => {
     it('should throw error with epic ID when epic not found', async () => {
       // Given I have a project with epics configured
-      const epicsFile = join(testDir, 'spec', 'epics.json');
-      await writeFile(
-        epicsFile,
-        JSON.stringify({
-          epics: {
-            'user-management': {
-              id: 'user-management',
-              title: 'User Management',
-            },
+      await writeJsonTestFile(setup.epicsFile, {
+        epics: {
+          'user-management': {
+            id: 'user-management',
+            title: 'User Management',
           },
-        })
-      );
+        },
+      });
 
       // And the epic "invalid-epic" does not exist
       // When I run "fspec show-epic invalid-epic"
       // Then the command should exit with code 1
       // And the output should contain "Epic 'invalid-epic' not found"
       await expect(
-        showEpic({ epicId: 'invalid-epic', cwd: testDir })
+        showEpic({ epicId: 'invalid-epic', cwd: setup.testDir })
       ).rejects.toThrow('Epic invalid-epic not found');
     });
 
@@ -56,7 +50,7 @@ describe('Feature: Fix show-epic command returning undefined', () => {
       // When I run "fspec show-epic any-epic"
       // Then the command should throw error
       await expect(
-        showEpic({ epicId: 'any-epic', cwd: testDir })
+        showEpic({ epicId: 'any-epic', cwd: setup.testDir })
       ).rejects.toThrow('Epic any-epic not found');
     });
   });
@@ -64,25 +58,22 @@ describe('Feature: Fix show-epic command returning undefined', () => {
   describe('Scenario: Show epic details when epic exists', () => {
     it('should return epic details without undefined values', async () => {
       // Given I have a project with epics configured
-      const epicsFile = join(testDir, 'spec', 'epics.json');
-      await writeFile(
-        epicsFile,
-        JSON.stringify({
-          epics: {
-            'user-management': {
-              id: 'user-management',
-              title: 'User Management Features',
-              description: 'Authentication and user sessions',
-            },
+      const epicsFile = setup.epicsFile;
+      await writeJsonTestFile(setup.epicsFile, {
+        epics: {
+          'user-management': {
+            id: 'user-management',
+            title: 'User Management Features',
+            description: 'Authentication and user sessions',
           },
-        })
-      );
+        },
+      });
 
       // And an epic "user-management" exists with title "User Management Features"
       // When I run "fspec show-epic user-management"
       const result = await showEpic({
         epicId: 'user-management',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0

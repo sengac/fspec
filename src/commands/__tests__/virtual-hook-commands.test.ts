@@ -6,21 +6,24 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, readFile, mkdir } from 'fs/promises';
+import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import { addVirtualHook } from '../add-virtual-hook';
 import { listVirtualHooks } from '../list-virtual-hooks';
 import { removeVirtualHook } from '../remove-virtual-hook';
 import { copyVirtualHooks } from '../copy-virtual-hooks';
 import { clearVirtualHooks } from '../clear-virtual-hooks';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-virtual-hooks-test-'));
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    setup = await setupWorkUnitTest('virtual-hook-commands');
 
     // Create minimal work-units.json
     const workUnitsData = {
@@ -43,14 +46,11 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       epics: {},
     };
 
-    await writeFile(
-      join(testDir, 'spec', 'work-units.json'),
-      JSON.stringify(workUnitsData, null, 2)
-    );
+    await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: AI prompts for virtual hooks at end of specifying phase', () => {
@@ -84,7 +84,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
         event: 'post-implementing',
         command: 'eslint src/',
         blocking: true,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: Virtual hook should be added successfully
@@ -92,10 +92,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       expect(result.hookCount).toBe(1);
 
       // Verify virtualHooks array was added to work-units.json
-      const workUnitsContent = await readFile(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
-      );
+      const workUnitsContent = await readFile(setup.workUnitsFile, 'utf-8');
       const workUnitsData = JSON.parse(workUnitsContent);
 
       expect(workUnitsData.workUnits['AUTH-001'].virtualHooks).toBeDefined();
@@ -117,16 +114,13 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
         command: 'eslint',
         blocking: true,
         gitContext: true,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: Virtual hook should be added with gitContext flag
       expect(result.success).toBe(true);
 
-      const workUnitsContent = await readFile(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
-      );
+      const workUnitsContent = await readFile(setup.workUnitsFile, 'utf-8');
       const workUnitsData = JSON.parse(workUnitsContent);
 
       expect(workUnitsData.workUnits['AUTH-001'].virtualHooks).toHaveLength(1);
@@ -175,14 +169,14 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        setup.workUnitsFile,
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When: User runs 'fspec list-virtual-hooks HOOK-011'
       const result = await listVirtualHooks({
         workUnitId: 'HOOK-011',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: Should return all virtual hooks grouped by event
@@ -225,7 +219,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        setup.workUnitsFile,
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -233,7 +227,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       const result = await removeVirtualHook({
         workUnitId: 'AUTH-001',
         hookName: 'eslint',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: Hook should be removed successfully
@@ -241,10 +235,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       expect(result.remainingCount).toBe(1);
 
       // And: Only prettier hook should remain
-      const updatedContent = await readFile(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
-      );
+      const updatedContent = await readFile(setup.workUnitsFile, 'utf-8');
       const updatedData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-001'].virtualHooks).toHaveLength(1);
@@ -295,7 +286,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        setup.workUnitsFile,
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -303,7 +294,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       const result = await copyVirtualHooks({
         from: 'AUTH-001',
         to: 'HOOK-011',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: Hooks should be copied successfully
@@ -311,10 +302,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       expect(result.copiedCount).toBe(2);
 
       // And: HOOK-011 should have same virtual hooks as AUTH-001
-      const updatedContent = await readFile(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
-      );
+      const updatedContent = await readFile(setup.workUnitsFile, 'utf-8');
       const updatedData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['HOOK-011'].virtualHooks).toBeDefined();
@@ -364,7 +352,7 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        setup.workUnitsFile,
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -373,17 +361,14 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
         from: 'AUTH-001',
         to: 'HOOK-011',
         hookName: 'eslint',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: Only eslint hook should be copied
       expect(result.success).toBe(true);
       expect(result.copiedCount).toBe(1);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
-      );
+      const updatedContent = await readFile(setup.workUnitsFile, 'utf-8');
       const updatedData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['HOOK-011'].virtualHooks).toHaveLength(1);
@@ -440,24 +425,21 @@ describe('Feature: Work unit-scoped hooks for dynamic validation', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        setup.workUnitsFile,
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When: Clear virtual hooks command is run
       const result = await clearVirtualHooks({
         workUnitId: 'AUTH-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: All virtual hooks should be removed
       expect(result.success).toBe(true);
       expect(result.clearedCount).toBe(2);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec', 'work-units.json'),
-        'utf-8'
-      );
+      const updatedContent = await readFile(setup.workUnitsFile, 'utf-8');
       const updatedData = JSON.parse(updatedContent);
 
       expect(updatedData.workUnits['AUTH-001'].virtualHooks).toHaveLength(0);

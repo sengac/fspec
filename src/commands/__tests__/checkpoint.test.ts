@@ -6,8 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
@@ -16,32 +15,34 @@ import { restoreCheckpoint } from '../restore-checkpoint';
 import { listCheckpoints } from '../list-checkpoints';
 import { cleanupCheckpoints } from '../cleanup-checkpoints';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Intelligent checkpoint system for workflow transitions', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-checkpoint-test-'));
+    setup = await setupWorkUnitTest('checkpoint');
 
     // Initialize git repository
-    await git.init({ fs, dir: testDir, defaultBranch: 'main' });
+    await git.init({ fs, dir: setup.testDir, defaultBranch: 'main' });
 
     // Configure git
     await git.setConfig({
       fs,
-      dir: testDir,
+      dir: setup.testDir,
       path: 'user.name',
       value: 'Test User',
     });
     await git.setConfig({
       fs,
-      dir: testDir,
+      dir: setup.testDir,
       path: 'user.email',
       value: 'test@example.com',
     });
-
-    // Create initial directory structure
-    await mkdir(join(testDir, 'spec'), { recursive: true });
 
     // Create work-units.json with GIT-002 fixture
     const workUnitsData = {
@@ -90,18 +91,15 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       },
     };
 
-    await writeFile(
-      join(testDir, 'spec/work-units.json'),
-      JSON.stringify(workUnitsData, null, 2)
-    );
+    await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
     // Create initial commit so HEAD exists
-    await writeFile(join(testDir, 'README.md'), '# Test Project');
-    await git.add({ fs, dir: testDir, filepath: 'README.md' });
-    await git.add({ fs, dir: testDir, filepath: 'spec/work-units.json' });
+    await writeFile(join(setup.testDir, 'README.md'), '# Test Project');
+    await git.add({ fs, dir: setup.testDir, filepath: 'README.md' });
+    await git.add({ fs, dir: setup.testDir, filepath: 'spec/work-units.json' });
     await git.commit({
       fs,
-      dir: testDir,
+      dir: setup.testDir,
       message: 'Initial commit',
       author: {
         name: 'Test User',
@@ -111,7 +109,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Automatic checkpoint created on workflow state transition', () => {
@@ -119,7 +117,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       // Given: I have a work unit "GIT-002" in "testing" status
       // And: I have uncommitted changes in my working directory
       await writeFile(
-        join(testDir, 'test-file.txt'),
+        join(setup.testDir, 'test-file.txt'),
         'Some uncommitted changes'
       );
 
@@ -127,7 +125,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       const result = await updateWorkUnitStatus({
         workUnitId: 'GIT-002',
         status: 'implementing',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -147,13 +145,16 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
     it('should create named checkpoint manually', async () => {
       // Given: I have a work unit "GIT-002" in "implementing" status
       // And: I have uncommitted changes in my working directory
-      await writeFile(join(testDir, 'experiment.txt'), 'Experimental code');
+      await writeFile(
+        join(setup.testDir, 'experiment.txt'),
+        'Experimental code'
+      );
 
       // When: I run "fspec checkpoint GIT-002 before-refactor"
       const result = await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'before-refactor',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: a checkpoint "before-refactor" should be created
@@ -173,18 +174,18 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
   describe('Scenario: Multiple experiments from same baseline checkpoint', () => {
     it('should support multiple restorations from same checkpoint', async () => {
       // Given: I have created a checkpoint "baseline" for work unit "GIT-002"
-      await writeFile(join(testDir, 'baseline.txt'), 'Baseline code');
+      await writeFile(join(setup.testDir, 'baseline.txt'), 'Baseline code');
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Commit to clean working directory (checkpoint created uncommitted files)
-      await git.add({ fs, dir: testDir, filepath: '.' });
+      await git.add({ fs, dir: setup.testDir, filepath: '.' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'After baseline checkpoint',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -193,7 +194,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       const restore1 = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And: I implement approach A which fails
@@ -201,7 +202,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       const restore2 = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And: I implement approach B which succeeds
@@ -213,7 +214,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       // And: the "baseline" checkpoint should still exist for future experiments
       const result = await listCheckpoints({
         workUnitId: 'GIT-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
       const baselineCheckpoint = result.checkpoints.find(
         c => c.name === 'baseline'
@@ -225,18 +226,21 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
   describe('Scenario: AI-assisted conflict resolution during checkpoint restoration', () => {
     it('should emit system-reminder for AI when conflicts occur', async () => {
       // Given: I have a checkpoint "previous-state" for work unit "GIT-002"
-      await writeFile(join(testDir, 'conflict-file.txt'), 'Original content');
+      await writeFile(
+        join(setup.testDir, 'conflict-file.txt'),
+        'Original content'
+      );
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'previous-state',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Commit to clean working directory
-      await git.add({ fs, dir: testDir, filepath: '.' });
+      await git.add({ fs, dir: setup.testDir, filepath: '.' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'After previous-state checkpoint',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -248,7 +252,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       const result = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'previous-state',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: restoration should succeed (no actual conflicts in test)
@@ -268,24 +272,24 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       // (Created by status transitions)
 
       // And: I have manual checkpoints "baseline" and "before-refactor"
-      await writeFile(join(testDir, 'file1.txt'), 'Content 1');
+      await writeFile(join(setup.testDir, 'file1.txt'), 'Content 1');
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
-      await writeFile(join(testDir, 'file2.txt'), 'Content 2');
+      await writeFile(join(setup.testDir, 'file2.txt'), 'Content 2');
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'before-refactor',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // When: I run "fspec list-checkpoints GIT-002"
       const result = await listCheckpoints({
         workUnitId: 'GIT-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: I should see all checkpoints with clear visual indicators
@@ -310,11 +314,11 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
     it('should delete old checkpoints while preserving recent ones', async () => {
       // Given: I have 10 checkpoints for work unit "GIT-002"
       for (let i = 0; i < 10; i++) {
-        await writeFile(join(testDir, `file-${i}.txt`), `Content ${i}`);
+        await writeFile(join(setup.testDir, `file-${i}.txt`), `Content ${i}`);
         await checkpoint({
           workUnitId: 'GIT-002',
           checkpointName: `checkpoint-${i}`,
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         // Small delay to ensure different timestamps
         await new Promise(resolve => setTimeout(resolve, 10));
@@ -324,7 +328,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       const result = await cleanupCheckpoints({
         workUnitId: 'GIT-002',
         keepLast: 5,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: the 5 oldest checkpoints should be deleted
@@ -343,21 +347,21 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
   describe('Scenario: Interactive prompt when restoring with dirty working directory', () => {
     it('should prompt user with options when working directory is dirty', async () => {
       // Given: I have a checkpoint "safe-state" for work unit "GIT-002"
-      await writeFile(join(testDir, 'safe.txt'), 'Safe state');
+      await writeFile(join(setup.testDir, 'safe.txt'), 'Safe state');
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'safe-state',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And: I have uncommitted changes in my working directory
-      await writeFile(join(testDir, 'dirty.txt'), 'Uncommitted changes');
+      await writeFile(join(setup.testDir, 'dirty.txt'), 'Uncommitted changes');
 
       // When: I run "fspec restore-checkpoint GIT-002 safe-state"
       const result = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'safe-state',
-        cwd: testDir,
+        cwd: setup.testDir,
         workingDirectoryDirty: true,
       });
 
@@ -396,13 +400,13 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
   describe('BUG-027: Checkpoint creation with git.stash({ op: "create" })', () => {
     it('should stage and capture modified tracked files', async () => {
       // Given: I have modified tracked file "README.md"
-      await writeFile(join(testDir, 'README.md'), '# Modified Content');
+      await writeFile(join(setup.testDir, 'README.md'), '# Modified Content');
 
       // When: I run checkpoint
       const result = await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'test-checkpoint',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: file should be staged and captured
@@ -411,7 +415,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
       // And: working directory should remain unchanged
       const content = await fs.promises.readFile(
-        join(testDir, 'README.md'),
+        join(setup.testDir, 'README.md'),
         'utf-8'
       );
       expect(content).toBe('# Modified Content');
@@ -419,7 +423,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       // And: checkpoint ref should exist in custom namespace
       const checkpointOid = await git.resolveRef({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         ref: 'refs/fspec-checkpoints/GIT-002/test-checkpoint',
       });
       expect(checkpointOid).toBeDefined();
@@ -427,13 +431,16 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
     it('should stage and capture new untracked files', async () => {
       // Given: I have created new untracked file
-      await writeFile(join(testDir, 'new-file.ts'), 'console.log("new");');
+      await writeFile(
+        join(setup.testDir, 'new-file.ts'),
+        'console.log("new");'
+      );
 
       // When: I run checkpoint
       const result = await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'untracked-test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: untracked file should be captured
@@ -442,7 +449,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
       // And: working directory should remain unchanged
       const exists = await fs.promises
-        .access(join(testDir, 'new-file.ts'))
+        .access(join(setup.testDir, 'new-file.ts'))
         .then(() => true)
         .catch(() => false);
       expect(exists).toBe(true);
@@ -450,17 +457,17 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
     it('should reset index after checkpoint creation', async () => {
       // Given: I have modified a file
-      await writeFile(join(testDir, 'test.ts'), 'const x = 1;');
+      await writeFile(join(setup.testDir, 'test.ts'), 'const x = 1;');
 
       // When: I create checkpoint
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'index-reset-test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: index should be clean (no staged files)
-      const status = await git.statusMatrix({ fs, dir: testDir });
+      const status = await git.statusMatrix({ fs, dir: setup.testDir });
       const stagedFiles = status.filter(row => {
         const [, headStatus, workdirStatus, stageStatus] = row;
         return stageStatus === 2; // 2 = staged
@@ -472,28 +479,34 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
   describe('BUG-027: Checkpoint restoration with manual file operations', () => {
     it('should restore files by reading from checkpoint commit', async () => {
       // Given: I have created a checkpoint with file
-      await writeFile(join(testDir, 'restore-test.ts'), 'const original = 1;');
+      await writeFile(
+        join(setup.testDir, 'restore-test.ts'),
+        'const original = 1;'
+      );
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'restore-baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And: I modify the file
-      await writeFile(join(testDir, 'restore-test.ts'), 'const modified = 2;');
+      await writeFile(
+        join(setup.testDir, 'restore-test.ts'),
+        'const modified = 2;'
+      );
 
       // When: I restore checkpoint (force mode to overwrite dirty files)
       const result = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'restore-baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
         force: true,
       });
 
       // Then: file should be restored to original content
       expect(result.success).toBe(true);
       const content = await fs.promises.readFile(
-        join(testDir, 'restore-test.ts'),
+        join(setup.testDir, 'restore-test.ts'),
         'utf-8'
       );
       expect(content).toBe('const original = 1;');
@@ -501,21 +514,21 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
     it('should detect conflicts when file modified since checkpoint', async () => {
       // Given: I have created checkpoint with file v1
-      await writeFile(join(testDir, 'conflict.ts'), 'version 1');
+      await writeFile(join(setup.testDir, 'conflict.ts'), 'version 1');
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'conflict-test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And: I modify file to v2
-      await writeFile(join(testDir, 'conflict.ts'), 'version 2');
+      await writeFile(join(setup.testDir, 'conflict.ts'), 'version 2');
 
       // When: I try to restore checkpoint
       const result = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'conflict-test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: conflict should be detected
@@ -528,7 +541,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
       // And: file should NOT be overwritten (stays v2)
       const content = await fs.promises.readFile(
-        join(testDir, 'conflict.ts'),
+        join(setup.testDir, 'conflict.ts'),
         'utf-8'
       );
       expect(content).toBe('version 2');
@@ -536,32 +549,33 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
     it('should recreate deleted files from checkpoint', async () => {
       // Given: I have created checkpoint with file
-      await writeFile(join(testDir, 'deletable.ts'), 'will be deleted');
+      await writeFile(join(setup.testDir, 'deletable.ts'), 'will be deleted');
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'deletion-test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And: I delete the file
-      await fs.promises.unlink(join(testDir, 'deletable.ts'));
+      await fs.promises.unlink(join(setup.testDir, 'deletable.ts'));
 
       // When: I restore checkpoint
       const result = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'deletion-test',
-        cwd: testDir,
+        cwd: setup.testDir,
+        force: true, // Force restoration despite dirty working directory
       });
 
       // Then: file should be recreated
       expect(result.success).toBe(true);
       const exists = await fs.promises
-        .access(join(testDir, 'deletable.ts'))
+        .access(join(setup.testDir, 'deletable.ts'))
         .then(() => true)
         .catch(() => false);
       expect(exists).toBe(true);
       const content = await fs.promises.readFile(
-        join(testDir, 'deletable.ts'),
+        join(setup.testDir, 'deletable.ts'),
         'utf-8'
       );
       expect(content).toBe('will be deleted');
@@ -569,33 +583,33 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
 
     it('should ignore files not in checkpoint', async () => {
       // Given: I have created checkpoint with file A
-      await writeFile(join(testDir, 'fileA.ts'), 'file A');
+      await writeFile(join(setup.testDir, 'fileA.ts'), 'file A');
       await checkpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'ignore-test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And: I add new file B (not in checkpoint)
-      await writeFile(join(testDir, 'fileB.ts'), 'file B');
+      await writeFile(join(setup.testDir, 'fileB.ts'), 'file B');
 
       // When: I restore checkpoint (force mode to skip prompt)
       const result = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'ignore-test',
-        cwd: testDir,
+        cwd: setup.testDir,
         force: true,
       });
 
       // Then: file B should be left untouched
       expect(result.success).toBe(true);
       const exists = await fs.promises
-        .access(join(testDir, 'fileB.ts'))
+        .access(join(setup.testDir, 'fileB.ts'))
         .then(() => true)
         .catch(() => false);
       expect(exists).toBe(true);
       const content = await fs.promises.readFile(
-        join(testDir, 'fileB.ts'),
+        join(setup.testDir, 'fileB.ts'),
         'utf-8'
       );
       expect(content).toBe('file B');
@@ -608,7 +622,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       const result = await restoreCheckpoint({
         workUnitId: 'GIT-002',
         checkpointName: 'does-not-exist',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: should fail with appropriate error

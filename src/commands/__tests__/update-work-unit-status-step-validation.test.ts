@@ -6,59 +6,51 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Missing validation for test file @step docstring completeness', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
-  let featuresDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
     // @step Given I am setting up a test environment
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    featuresDir = join(specDir, 'features');
+    setup = await setupWorkUnitTest('update-work-unit-status-step-validation');
 
-    await mkdir(specDir, { recursive: true });
-    await mkdir(featuresDir, { recursive: true });
-    await mkdir(join(testDir, 'src/__tests__'), { recursive: true });
+    await mkdir(join(setup.testDir, 'src/__tests__'), { recursive: true });
 
     // @step And I have initialized work units file
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {},
-          states: {
-            backlog: [],
-            specifying: [],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: [],
-          },
-        },
-        null,
-        2
-      )
-    );
+    const workUnitsData = {
+      workUnits: {},
+      states: {
+        backlog: [],
+        specifying: [],
+        testing: [],
+        implementing: [],
+        validating: [],
+        done: [],
+        blocked: [],
+      },
+    };
+    await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
   });
 
   afterEach(async () => {
     // @step Then I clean up the test environment
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Allow transition to implementing when test file has complete step docstrings', () => {
     it('should succeed when test file has Given, When, and Then @step docstrings', async () => {
       // @step Given a work unit with type "story" is in "testing" status
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['TEST-001'] = {
         id: 'TEST-001',
         title: 'Test Story',
@@ -77,7 +69,7 @@ describe('Feature: Missing validation for test file @step docstring completeness
         updatedAt: '2025-01-01T11:00:00.000Z',
       };
       workUnits.states.testing.push('TEST-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // @step And the work unit has a linked feature file with scenarios tagged with the work unit ID
       const featureContent = `@TEST-001
@@ -94,7 +86,7 @@ Feature: Test Feature
     Then I should see a result
 `;
       await writeFile(
-        join(featuresDir, 'test-feature.feature'),
+        join(setup.featuresDir, 'test-feature.feature'),
         featureContent
       );
 
@@ -118,7 +110,7 @@ describe('Feature: Test Feature', () => {
 });
 `;
       await writeFile(
-        join(testDir, 'src/__tests__/test-feature.test.ts'),
+        join(setup.testDir, 'src/__tests__/test-feature.test.ts'),
         testContent
       );
 
@@ -143,7 +135,7 @@ describe('Feature: Test Feature', () => {
         },
       };
       await writeFile(
-        join(featuresDir, 'test-feature.feature.coverage'),
+        join(setup.featuresDir, 'test-feature.feature.coverage'),
         JSON.stringify(coverageContent, null, 2)
       );
 
@@ -151,7 +143,7 @@ describe('Feature: Test Feature', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'implementing',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -160,7 +152,7 @@ describe('Feature: Test Feature', () => {
 
       // @step And the work unit status should be updated to "implementing"
       const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       expect(updatedWorkUnits.workUnits['TEST-001'].status).toBe(
         'implementing'
@@ -177,7 +169,9 @@ describe('Feature: Test Feature', () => {
   describe('Scenario: Block transition to implementing when test file has no step docstrings', () => {
     it('should fail when test file has no @step docstrings', async () => {
       // @step Given a work unit with type "story" is in "testing" status
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['TEST-002'] = {
         id: 'TEST-002',
         title: 'Test Story 2',
@@ -196,7 +190,7 @@ describe('Feature: Test Feature', () => {
         updatedAt: '2025-01-01T11:00:00.000Z',
       };
       workUnits.states.testing.push('TEST-002');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // @step And the work unit has a linked feature file with scenarios tagged with the work unit ID
       const featureContent = `@TEST-002
@@ -213,7 +207,7 @@ Feature: Test Feature 2
     Then I should see a result
 `;
       await writeFile(
-        join(featuresDir, 'test-feature-2.feature'),
+        join(setup.featuresDir, 'test-feature-2.feature'),
         featureContent
       );
 
@@ -232,7 +226,7 @@ describe('Feature: Test Feature 2', () => {
 });
 `;
       await writeFile(
-        join(testDir, 'src/__tests__/test-feature-2.test.ts'),
+        join(setup.testDir, 'src/__tests__/test-feature-2.test.ts'),
         testContent
       );
 
@@ -257,7 +251,7 @@ describe('Feature: Test Feature 2', () => {
         },
       };
       await writeFile(
-        join(featuresDir, 'test-feature-2.feature.coverage'),
+        join(setup.featuresDir, 'test-feature-2.feature.coverage'),
         JSON.stringify(coverageContent, null, 2)
       );
 
@@ -269,14 +263,14 @@ describe('Feature: Test Feature 2', () => {
         updateWorkUnitStatus({
           workUnitId: 'TEST-002',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/missing required step comments/i);
 
       // @step And the work unit status should remain "testing"
       const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       expect(updatedWorkUnits.workUnits['TEST-002'].status).toBe('testing');
     });
@@ -285,7 +279,9 @@ describe('Feature: Test Feature 2', () => {
   describe('Scenario: Block transition to validating when test file has incomplete step docstrings', () => {
     it('should fail when test file is missing Then @step docstrings', async () => {
       // @step Given a work unit with type "story" is in "implementing" status
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['TEST-003'] = {
         id: 'TEST-003',
         title: 'Test Story 3',
@@ -305,7 +301,7 @@ describe('Feature: Test Feature 2', () => {
         updatedAt: '2025-01-01T12:00:00.000Z',
       };
       workUnits.states.implementing.push('TEST-003');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // @step And the work unit has a linked feature file with scenarios tagged with the work unit ID
       const featureContent = `@TEST-003
@@ -322,7 +318,7 @@ Feature: Test Feature 3
     Then I should see a result
 `;
       await writeFile(
-        join(featuresDir, 'test-feature-3.feature'),
+        join(setup.featuresDir, 'test-feature-3.feature'),
         featureContent
       );
 
@@ -346,7 +342,7 @@ describe('Feature: Test Feature 3', () => {
 });
 `;
       await writeFile(
-        join(testDir, 'src/__tests__/test-feature-3.test.ts'),
+        join(setup.testDir, 'src/__tests__/test-feature-3.test.ts'),
         testContent
       );
 
@@ -371,7 +367,7 @@ describe('Feature: Test Feature 3', () => {
         },
       };
       await writeFile(
-        join(featuresDir, 'test-feature-3.feature.coverage'),
+        join(setup.featuresDir, 'test-feature-3.feature.coverage'),
         JSON.stringify(coverageContent, null, 2)
       );
 
@@ -382,14 +378,14 @@ describe('Feature: Test Feature 3', () => {
         updateWorkUnitStatus({
           workUnitId: 'TEST-003',
           status: 'validating',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/Then.*I should see a result/);
 
       // @step And the work unit status should remain "implementing"
       const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       expect(updatedWorkUnits.workUnits['TEST-003'].status).toBe(
         'implementing'
@@ -400,7 +396,9 @@ describe('Feature: Test Feature 3', () => {
   describe('Scenario: Exempt task work units from step validation', () => {
     it('should allow tasks to skip testing phase without step validation', async () => {
       // @step Given a work unit with type "task" is in "specifying" status
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['TASK-001'] = {
         id: 'TASK-001',
         title: 'Test Task',
@@ -418,7 +416,7 @@ describe('Feature: Test Feature 3', () => {
         updatedAt: '2025-01-01T10:00:00.000Z',
       };
       workUnits.states.specifying.push('TASK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // @step And the work unit has a linked feature file
       const featureContent = `@TASK-001
@@ -434,7 +432,10 @@ Feature: Test Task Feature
     When I update the configuration
     Then the system should use new settings
 `;
-      await writeFile(join(featuresDir, 'test-task.feature'), featureContent);
+      await writeFile(
+        join(setup.featuresDir, 'test-task.feature'),
+        featureContent
+      );
 
       // @step And no test file exists for the work unit
       // (No test file created - tasks don't require tests)
@@ -443,7 +444,7 @@ Feature: Test Task Feature
       const result = await updateWorkUnitStatus({
         workUnitId: 'TASK-001',
         status: 'implementing',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -452,7 +453,7 @@ Feature: Test Task Feature
 
       // @step And the work unit status should be updated to "implementing"
       const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       expect(updatedWorkUnits.workUnits['TASK-001'].status).toBe(
         'implementing'

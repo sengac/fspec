@@ -4,27 +4,31 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { queryDependencyChain } from '../dependencies';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('dependency-chain-depth');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Show dependency chain depth', () => {
     it('should calculate the depth of dependency chain from a work unit', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And a chain of dependencies exists: AUTH-001 → UI-001 → FEAT-001 → SERVICE-001
       const workUnitsData: WorkUnitsData = {
@@ -91,14 +95,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnitsData
       );
 
       // When I run "fspec query-dependency-chain AUTH-001"
       const result = await queryDependencyChain('AUTH-001', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show the chain: "AUTH-001 → UI-001 → FEAT-001 → SERVICE-001"
@@ -114,7 +118,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
     it('should show depth of 1 for work unit with no dependencies', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And a work unit with no dependencies
       const workUnitsData: WorkUnitsData = {
@@ -143,14 +147,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnitsData
       );
 
       // When I run "fspec query-dependency-chain SOLO-001"
       const result = await queryDependencyChain('SOLO-001', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show "Chain depth: 1"

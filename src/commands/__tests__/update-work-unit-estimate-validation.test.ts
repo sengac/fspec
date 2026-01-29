@@ -6,50 +6,45 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitEstimate } from '../update-work-unit-estimate';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Prevent story point estimation before feature file completion', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-
-    // Create spec directory
-    const specDir = join(testDir, 'spec');
-    await mkdir(specDir, { recursive: true });
-    const featuresDir = join(specDir, 'features');
-    await mkdir(featuresDir, { recursive: true });
+    setup = await setupWorkUnitTest('update-work-unit-estimate-validation');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Block estimation for story work unit without feature file', () => {
     it('should throw error when estimating story work unit without feature file', async () => {
       // Given I have a story work unit "AUTH-001" in "backlog" state
       // And the work unit has no linked feature file
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
-      await writeFile(
-        workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'AUTH-001': {
-              id: 'AUTH-001',
-              title: 'User Authentication',
-              type: 'story',
-              status: 'backlog',
-              createdAt: '2025-01-15T10:00:00.000Z',
-            },
+      const workUnitsFile = setup.workUnitsFile;
+      await writeJsonTestFile(workUnitsFile, {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'User Authentication',
+            type: 'story',
+            status: 'backlog',
+            createdAt: '2025-01-15T10:00:00.000Z',
           },
-          states: {
-            backlog: ['AUTH-001'],
-          },
-        })
-      );
+        },
+        states: {
+          backlog: ['AUTH-001'],
+        },
+      });
 
       // When I run "fspec update-work-unit-estimate AUTH-001 5"
       // Then the command should exit with code 1
@@ -58,7 +53,7 @@ describe('Feature: Prevent story point estimation before feature file completion
         updateWorkUnitEstimate({
           workUnitId: 'AUTH-001',
           estimate: 5,
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow(/ACDD requires feature file/);
     });
@@ -69,28 +64,25 @@ describe('Feature: Prevent story point estimation before feature file completion
       // Given I have a story work unit "AUTH-001" in "testing" state
       // And the work unit has a linked feature file with complete scenarios
       // And the feature file has no prefill placeholders
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
-      await writeFile(
-        workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'AUTH-001': {
-              id: 'AUTH-001',
-              title: 'User Authentication',
-              type: 'story',
-              status: 'testing',
-              createdAt: '2025-01-15T10:00:00.000Z',
-            },
+      const workUnitsFile = setup.workUnitsFile;
+      await writeJsonTestFile(workUnitsFile, {
+        workUnits: {
+          'AUTH-001': {
+            id: 'AUTH-001',
+            title: 'User Authentication',
+            type: 'story',
+            status: 'testing',
+            createdAt: '2025-01-15T10:00:00.000Z',
           },
-          states: {
-            testing: ['AUTH-001'],
-          },
-        })
-      );
+        },
+        states: {
+          testing: ['AUTH-001'],
+        },
+      });
 
       // Create feature file with complete content (no prefill)
       const featureFile = join(
-        testDir,
+        setup.testDir,
         'spec',
         'features',
         'user-authentication.feature'
@@ -116,7 +108,7 @@ Feature: User Authentication
       const result = await updateWorkUnitEstimate({
         workUnitId: 'AUTH-001',
         estimate: 5,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -129,30 +121,27 @@ Feature: User Authentication
     it('should allow estimation for task work units without feature file', async () => {
       // Given I have a task work unit "TASK-001" in "backlog" state
       // And the work unit has no linked feature file
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
-      await writeFile(
-        workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'TASK-001': {
-              id: 'TASK-001',
-              title: 'Setup CI/CD Pipeline',
-              type: 'task',
-              status: 'backlog',
-              createdAt: '2025-01-15T10:00:00.000Z',
-            },
+      const workUnitsFile = setup.workUnitsFile;
+      await writeJsonTestFile(workUnitsFile, {
+        workUnits: {
+          'TASK-001': {
+            id: 'TASK-001',
+            title: 'Setup CI/CD Pipeline',
+            type: 'task',
+            status: 'backlog',
+            createdAt: '2025-01-15T10:00:00.000Z',
           },
-          states: {
-            backlog: ['TASK-001'],
-          },
-        })
-      );
+        },
+        states: {
+          backlog: ['TASK-001'],
+        },
+      });
 
       // When I run "fspec update-work-unit-estimate TASK-001 3"
       const result = await updateWorkUnitEstimate({
         workUnitId: 'TASK-001',
         estimate: 3,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -165,28 +154,25 @@ Feature: User Authentication
     it('should throw error when feature file has prefill placeholders', async () => {
       // Given I have a bug work unit "BUG-001" in "specifying" state
       // And the work unit has a linked feature file with prefill placeholders
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
-      await writeFile(
-        workUnitsFile,
-        JSON.stringify({
-          workUnits: {
-            'BUG-001': {
-              id: 'BUG-001',
-              title: 'Fix login bug',
-              type: 'bug',
-              status: 'specifying',
-              createdAt: '2025-01-15T10:00:00.000Z',
-            },
+      const workUnitsFile = setup.workUnitsFile;
+      await writeJsonTestFile(workUnitsFile, {
+        workUnits: {
+          'BUG-001': {
+            id: 'BUG-001',
+            title: 'Fix login bug',
+            type: 'bug',
+            status: 'specifying',
+            createdAt: '2025-01-15T10:00:00.000Z',
           },
-          states: {
-            specifying: ['BUG-001'],
-          },
-        })
-      );
+        },
+        states: {
+          specifying: ['BUG-001'],
+        },
+      });
 
       // Create feature file with prefill placeholders
       const featureFile = join(
-        testDir,
+        setup.testDir,
         'spec',
         'features',
         'fix-login-bug.feature'
@@ -215,7 +201,7 @@ Feature: Fix login bug
         updateWorkUnitEstimate({
           workUnitId: 'BUG-001',
           estimate: 2,
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow(/prefill placeholders must be removed/);
     });

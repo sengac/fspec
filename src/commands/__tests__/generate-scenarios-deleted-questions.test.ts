@@ -6,61 +6,52 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { generateScenarios } from '../generate-scenarios';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: generate-scenarios counts deleted questions as unanswered', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
-  let featuresDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
     // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    featuresDir = join(specDir, 'features');
-
-    // Create spec directory structure
-    await mkdir(specDir, { recursive: true });
-    await mkdir(featuresDir, { recursive: true });
+    setup = await setupWorkUnitTest('generate-scenarios-deleted-questions');
 
     // Initialize work units file
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {},
-          states: {
-            backlog: [],
-            specifying: [],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: [],
-          },
-        },
-        null,
-        2
-      )
-    );
+    const workUnitsData = {
+      workUnits: {},
+      states: {
+        backlog: [],
+        specifying: [],
+        testing: [],
+        implementing: [],
+        validating: [],
+        done: [],
+        blocked: [],
+      },
+    };
+    await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
   });
 
   afterEach(async () => {
     // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Deleted questions should not be counted as unanswered', () => {
     it('should not count deleted questions as unanswered and allow generation', async () => {
       // Given a work unit has 3 deleted questions with deleted=true and selected=false
       // And the work unit has 5 answered questions with deleted=false and selected=true
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['TEST-001'] = {
         id: 'TEST-001',
         title: 'Test Work Unit',
@@ -146,12 +137,12 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('TEST-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // When I run "fspec generate-scenarios TEST-001"
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: testDir,
+        cwd: setup.testDir,
         ignorePossibleDuplicates: true,
       });
 
@@ -168,7 +159,7 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
   describe('Scenario: Unanswered non-deleted questions should block generation', () => {
     it('should count unanswered non-deleted questions and fail with error', async () => {
       // Given a work unit has 2 unanswered questions with deleted=false and selected=false
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['TEST-002'] = {
         id: 'TEST-002',
         title: 'Test Work Unit 2',
@@ -200,7 +191,7 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('TEST-002');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // When I run "fspec generate-scenarios TEST-002"
       // Then the validation should count 2 unanswered questions
@@ -208,7 +199,7 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
       await expect(
         generateScenarios({
           workUnitId: 'TEST-002',
-          cwd: testDir,
+          cwd: setup.testDir,
           ignorePossibleDuplicates: true,
         })
       ).rejects.toThrow('2 unanswered questions found');
@@ -221,7 +212,7 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
   describe('Scenario: Work unit with no questions should allow generation', () => {
     it('should allow generation when work unit has no questions', async () => {
       // Given a work unit has no questions
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['TEST-003'] = {
         id: 'TEST-003',
         title: 'Test Work Unit 3',
@@ -238,12 +229,12 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('TEST-003');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // When I run "fspec generate-scenarios TEST-003"
       const result = await generateScenarios({
         workUnitId: 'TEST-003',
-        cwd: testDir,
+        cwd: setup.testDir,
         ignorePossibleDuplicates: true,
       });
 
@@ -258,7 +249,7 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
     it('should not count deleted questions and allow status transition', async () => {
       // @step Given a work unit in "specifying" status has 3 deleted questions with deleted=true and selected=false
       // @step And the work unit has 5 answered questions with deleted=false and selected=true
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['TEST-004'] = {
         id: 'TEST-004',
         title: 'Test Work Unit 4',
@@ -347,7 +338,7 @@ describe('Feature: generate-scenarios counts deleted questions as unanswered', (
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('TEST-004');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // Create minimal feature file for TEST-004
       const featureContent = `@TEST-004
@@ -364,7 +355,7 @@ Feature: Test Feature 4
     Then a result
 `;
       await writeFile(
-        join(featuresDir, 'test-feature-4.feature'),
+        join(setup.featuresDir, 'test-feature-4.feature'),
         featureContent
       );
 
@@ -372,7 +363,7 @@ Feature: Test Feature 4
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-004',
         status: 'testing',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -381,9 +372,7 @@ Feature: Test Feature 4
       expect(result.success).toBe(true);
 
       // @step And the command should not throw "unanswered questions" error
-      const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
-      );
+      const updatedWorkUnits = await readJsonTestFile(setup.workUnitsFile);
       expect(updatedWorkUnits.workUnits['TEST-004'].status).toBe('testing');
     });
   });
@@ -391,7 +380,7 @@ Feature: Test Feature 4
   describe('Scenario: Unanswered non-deleted questions should block status transition', () => {
     it('should count unanswered non-deleted questions and block transition', async () => {
       // @step Given a work unit in "specifying" status has 2 unanswered questions with deleted=false and selected=false
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['TEST-005'] = {
         id: 'TEST-005',
         title: 'Test Work Unit 5',
@@ -431,7 +420,7 @@ Feature: Test Feature 4
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('TEST-005');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // Create minimal feature file for TEST-005
       const featureContent = `@TEST-005
@@ -448,7 +437,7 @@ Feature: Test Feature 5
     Then a result
 `;
       await writeFile(
-        join(featuresDir, 'test-feature-5.feature'),
+        join(setup.featuresDir, 'test-feature-5.feature'),
         featureContent
       );
 
@@ -458,7 +447,7 @@ Feature: Test Feature 5
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-005',
         status: 'testing',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -468,9 +457,7 @@ Feature: Test Feature 5
       );
 
       // @step And the status should remain "specifying"
-      const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
-      );
+      const updatedWorkUnits = await readJsonTestFile(setup.workUnitsFile);
       expect(updatedWorkUnits.workUnits['TEST-005'].status).toBe('specifying');
     });
   });

@@ -4,31 +4,36 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, access } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import { access } from 'fs/promises';
 import { updateWorkUnit } from '../update-work-unit';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Automatic JSON File Initialization', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('update-work-unit-ensure');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Update work unit command uses ensureWorkUnitsFile instead of direct readFile', () => {
     it('should create work-units.json if missing and update work unit', async () => {
       // Given I have a fresh project with spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // Already created by setupWorkUnitTest
 
       // And spec/work-units.json does not exist initially
       // But I have created a work unit "AUTH-001" (via ensureWorkUnitsFile in the command)
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
 
       // First, create the work unit
       const initialData: WorkUnitsData = {
@@ -56,25 +61,25 @@ describe('Feature: Automatic JSON File Initialization', () => {
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, initialData);
 
       // When I run "fspec update-work-unit AUTH-001 --title='New Title'"
       const result = await updateWorkUnit({
         workUnitId: 'AUTH-001',
         title: 'New Title',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
       expect(result.success).toBe(true);
 
       // And spec/work-units.json should exist
-      await access(workUnitsFile);
+      await access(setup.workUnitsFile);
 
       // And the work unit "AUTH-001" title should be "New Title"
-      const fs = await import('fs/promises');
-      const fileContent = await fs.readFile(workUnitsFile, 'utf-8');
-      const data: WorkUnitsData = JSON.parse(fileContent);
+      // Using readJsonTestFile instead of manual fs operations
+      // Read updated data
+      const data: WorkUnitsData = await readJsonTestFile(setup.workUnitsFile);
 
       expect(data.workUnits['AUTH-001'].title).toBe('New Title');
 

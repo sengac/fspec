@@ -6,22 +6,23 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { generateCoverageCommand } from '../generate-coverage';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Add system-reminder to generate-coverage command', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let consoleLogSpy: ReturnType<typeof vi.spyOn>;
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
   let processExitSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(
-      join(tmpdir(), 'fspec-generate-coverage-reminder-test-')
-    );
+    setup = await setupTestDirectory('generate-coverage-system-reminder');
 
     // Spy on console and process.exit
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -33,7 +34,7 @@ describe('Feature: Add system-reminder to generate-coverage command', () => {
       });
 
     // Change to test directory
-    process.chdir(testDir);
+    process.chdir(setup.testDir);
   });
 
   afterEach(async () => {
@@ -42,14 +43,13 @@ describe('Feature: Add system-reminder to generate-coverage command', () => {
     consoleErrorSpy.mockRestore();
     processExitSpy.mockRestore();
 
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Display reminder after generate-coverage with no arguments', () => {
     it('should display system-reminder explaining manual linking is required', async () => {
       // Given I have feature files in spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureContent = `@critical
@@ -115,7 +115,7 @@ Feature: Test Feature
   describe('Scenario: Display reminder after generate-coverage --dry-run', () => {
     it('should display system-reminder explaining ACDD workflow', async () => {
       // Given I have feature files in spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureContent = `@critical
@@ -161,7 +161,7 @@ Feature: Test Feature
   describe('Scenario: Reminder explains difference between generate-coverage and link-coverage', () => {
     it('should clearly state that generate creates empty files and link populates them', async () => {
       // Given I have feature files in spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureContent = `@critical
@@ -207,7 +207,7 @@ Feature: Test Feature
   describe('Scenario: Reminder shows complete ACDD workflow with coverage commands', () => {
     it('should include complete workflow from specs to verification', async () => {
       // Given I have feature files in spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureContent = `@critical

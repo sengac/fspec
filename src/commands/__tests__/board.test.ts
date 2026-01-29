@@ -4,44 +4,44 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { displayBoard } from '../display-board';
+import {
+  setupFullTest,
+  type FullTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Kanban Workflow State Management', () => {
-  let testDir: string;
+  let setup: FullTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupFullTest('board');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Display Kanban board showing all states', () => {
     it('should display columns for all states with work units', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // spec directory already created by setupFullTest
 
       // And foundation.json exists
-      await writeFile(
-        join(testDir, 'spec', 'foundation.json'),
-        JSON.stringify({
-          version: '2.0.0',
-          project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
-          problemSpace: {
-            primaryProblem: {
-              title: 'Test',
-              description: 'Test',
-              impact: 'high',
-            },
+      await writeJsonTestFile(setup.foundationFile, {
+        version: '2.0.0',
+        project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test',
+            description: 'Test',
+            impact: 'high',
           },
-          solutionSpace: { overview: 'Test', capabilities: [] },
-          personas: [],
-        })
-      );
+        },
+        solutionSpace: { overview: 'Test', capabilities: [] },
+        personas: [],
+      });
 
       // And work units exist
       const workUnitsData = {
@@ -110,13 +110,10 @@ describe('Feature: Kanban Workflow State Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec board"
-      const result = await displayBoard({ cwd: testDir });
+      const result = await displayBoard({ cwd: setup.testDir });
 
       // Then the output should display columns for all states
       expect(result.board).toBeDefined();
@@ -162,25 +159,22 @@ describe('Feature: Kanban Workflow State Management', () => {
   describe('Scenario: Limit displayed work units per column with --limit option', () => {
     it('should limit displayed work units and show overflow indicator', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // spec directory already created by setupFullTest
 
       // And foundation.json exists
-      await writeFile(
-        join(testDir, 'spec', 'foundation.json'),
-        JSON.stringify({
-          version: '2.0.0',
-          project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
-          problemSpace: {
-            primaryProblem: {
-              title: 'Test',
-              description: 'Test',
-              impact: 'high',
-            },
+      await writeJsonTestFile(setup.foundationFile, {
+        version: '2.0.0',
+        project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test',
+            description: 'Test',
+            impact: 'high',
           },
-          solutionSpace: { overview: 'Test', capabilities: [] },
-          personas: [],
-        })
-      );
+        },
+        solutionSpace: { overview: 'Test', capabilities: [] },
+        personas: [],
+      });
 
       // And work units exist in backlog
       const workUnitsData = {
@@ -241,13 +235,10 @@ describe('Feature: Kanban Workflow State Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec board --limit=2" (NOTE: limit is handled by BoardDisplay component, not displayBoard function)
-      const result = await displayBoard({ cwd: testDir });
+      const result = await displayBoard({ cwd: setup.testDir });
 
       // Then the backlog column should have all 5 work units (displayBoard returns all data)
       expect(result.columns?.backlog).toHaveLength(5);
@@ -273,25 +264,22 @@ describe('Feature: Kanban Workflow State Management', () => {
   describe('Scenario: Export Kanban board as JSON for programmatic access', () => {
     it('should export board data as valid JSON', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // spec directory already created by setupFullTest
 
       // And foundation.json exists
-      await writeFile(
-        join(testDir, 'spec', 'foundation.json'),
-        JSON.stringify({
-          version: '2.0.0',
-          project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
-          problemSpace: {
-            primaryProblem: {
-              title: 'Test',
-              description: 'Test',
-              impact: 'high',
-            },
+      await writeJsonTestFile(setup.foundationFile, {
+        version: '2.0.0',
+        project: { name: 'Test', vision: 'Test', projectType: 'cli-tool' },
+        problemSpace: {
+          primaryProblem: {
+            title: 'Test',
+            description: 'Test',
+            impact: 'high',
           },
-          solutionSpace: { overview: 'Test', capabilities: [] },
-          personas: [],
-        })
-      );
+        },
+        solutionSpace: { overview: 'Test', capabilities: [] },
+        personas: [],
+      });
 
       // And work units exist
       const workUnitsData = {
@@ -336,13 +324,10 @@ describe('Feature: Kanban Workflow State Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec board --format=json"
-      const result = await displayBoard({ cwd: testDir });
+      const result = await displayBoard({ cwd: setup.testDir });
 
       // Then the output should be valid JSON (result is already a JSON object)
       expect(result).toBeDefined();

@@ -4,27 +4,30 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { analyzeImpact } from '../dependencies';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('impact-analysis');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Show impact analysis when completing work unit', () => {
     it('should show directly and transitively affected work units', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // spec directory already created by setupWorkUnitTest
 
       // And work unit "AUTH-001" has dependencies forming a chain
       // AUTH-001 blocks UI-001
@@ -91,14 +94,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec analyze-impact AUTH-001"
       const result = await analyzeImpact('AUTH-001', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show "Directly affected: UI-001"

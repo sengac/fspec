@@ -50,6 +50,7 @@ describe('Feature: Some Test', () => {
 ```typescript
 import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 import { readJsonTestFile, writeJsonTestFile } from '../../test-helpers/test-file-operations';
+import { registerTestPrefix } from '../../test-helpers/work-unit-test-fixtures';
 
 describe('Feature: Some Test', () => {
   let setup: WorkUnitTestSetup;
@@ -102,9 +103,9 @@ const setup = await setupFoundationTest('test-name');
 // Provides: setup.testDir, setup.foundationFile, setup.specDir, setup.cleanup()
 ```
 
-### 4. Full Environment
+### 4. Full Environment (Recommended for most tests)
 ```typescript
-import { setupFullTest } from '../../test-helpers/universal-test-setup';
+import { setupFullTest, type FullTestSetup } from '../../test-helpers/universal-test-setup';
 
 // For tests that need both foundation and work units
 const setup = await setupFullTest('test-name');
@@ -120,9 +121,13 @@ import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
-// Add these:
+// Add these (choose based on your needs):
+import { setupFullTest, type FullTestSetup } from '../../test-helpers/universal-test-setup';
+// OR
 import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+
 import { readJsonTestFile, writeJsonTestFile } from '../../test-helpers/test-file-operations';
+import { registerTestPrefix } from '../../test-helpers/work-unit-test-fixtures';
 ```
 
 ### Step 2: Replace Variables
@@ -134,7 +139,7 @@ let workUnitsFile: string;
 let prefixesFile: string;
 
 // With this:
-let setup: WorkUnitTestSetup;
+let setup: FullTestSetup; // or WorkUnitTestSetup
 ```
 
 ### Step 3: Update beforeEach/afterEach
@@ -151,7 +156,7 @@ afterEach(async () => {
 
 // With this:
 beforeEach(async () => {
-  setup = await setupWorkUnitTest('test-name');
+  setup = await setupFullTest('test-name'); // Use descriptive test name
 });
 
 afterEach(async () => {
@@ -165,12 +170,15 @@ afterEach(async () => {
 testDir        → setup.testDir
 workUnitsFile  → setup.workUnitsFile
 prefixesFile   → setup.prefixesFile
+epicsFile      → setup.epicsFile
 specDir        → setup.specDir
+foundationFile → setup.foundationFile
 
 // Replace file operations:
-await readFile(file, 'utf-8') → await readJsonTestFile(file)
+await readFile(file, 'utf-8') → await readTextFile(file)
 JSON.parse(await readFile(...)) → await readJsonTestFile(...)
 await writeFile(file, JSON.stringify(...)) → await writeJsonTestFile(file, data)
+await writeFile(file, content) → await writeTextFile(file, content)
 ```
 
 ### Step 5: Update Prefix Registration
@@ -181,48 +189,103 @@ prefixes.prefixes.AUTH = { description: 'Authentication features' };
 await writeFile(prefixesFile, JSON.stringify(prefixes, null, 2));
 
 // With this:
+import { registerTestPrefix } from '../../test-helpers/work-unit-test-fixtures';
 await registerTestPrefix(setup.testDir, 'AUTH', 'Authentication features');
 ```
 
-## Files to Migrate (Priority Order)
+## Common Migration Issues & Solutions
 
-### High Priority (Core functionality):
-- ✅ /src/test/system-reminder-preservation.test.ts (DONE)
-- ✅ /src/test/fspec-session-interception.test.ts (DONE)  
-- ✅ /src/commands/__tests__/work-unit.test.ts (PARTIALLY DONE)
-- ✅ /src/commands/__tests__/kanban-workflow.test.ts (PARTIALLY DONE)
-- ⏳ /src/commands/__tests__/update-work-unit-status-done-sorting.test.ts
-- ⏳ /src/commands/__tests__/validate.test.ts
+### Issue 1: "setup is not defined" Error
+**Problem**: Mixed old/new variable references
+```typescript
+// Wrong:
+await someCommand({ cwd: testDir }); // testDir undefined
 
-### Medium Priority (Command tests):
-All other files in /src/commands/__tests__/ that use mkdtemp
+// Right:
+await someCommand({ cwd: setup.testDir });
+```
 
-### Lower Priority (Utility tests):
-Files in /src/utils/__tests__/, /src/hooks/__tests__/, etc.
+### Issue 2: Missing Imports
+**Problem**: Forgot to import required utilities
+```typescript
+// Add missing imports:
+import { join } from 'path'; // If you still use join()
+import { registerTestPrefix } from '../../test-helpers/work-unit-test-fixtures';
+```
 
-## Automation Script
+### Issue 3: File Operation Errors
+**Problem**: Using old file operation patterns
+```typescript
+// Wrong:
+const data = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
 
-You can use this pattern to create a migration script:
+// Right:
+const data = await readJsonTestFile(setup.workUnitsFile);
+```
 
+### Issue 4: Import Path Errors
+```typescript
+// Adjust relative paths based on file location:
+
+// For files in src/commands/__tests__/:
+import { setupFullTest } from '../../test-helpers/universal-test-setup';
+
+// For files in src/test/:
+import { setupFullTest } from '../test-helpers/universal-test-setup';
+
+// For files in src/tui/__tests__/:
+import { setupFullTest } from '../../test-helpers/universal-test-setup';
+```
+
+## Migration Status
+
+### ✅ COMPLETED (143 tests):
+- ✅ `src/test/system-reminder-preservation.test.ts` (5 tests)
+- ✅ `src/test/fspec-session-interception.test.ts` (3 tests)  
+- ✅ `src/commands/__tests__/work-unit.test.ts` (27 tests)
+- ✅ `src/commands/__tests__/kanban-workflow.test.ts` (30 tests)
+- ✅ `src/commands/__tests__/update-work-unit-status-done-sorting.test.ts` (6 tests)
+- ✅ `src/commands/__tests__/list-tags-ensure.test.ts` (1 test)
+- ✅ `src/commands/__tests__/event-storm-duplicate-detection.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/answer-question-preserves-text.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/query-work-units-advanced.test.ts` (4 tests)
+- ✅ `src/commands/__tests__/update-work-unit-ensure.test.ts` (1 test)
+- ✅ `src/commands/__tests__/generate-coverage-update-existing.test.ts` (2 tests)
+- ✅ `src/commands/__tests__/query-dependency-stats.test.ts` (1 test)
+- ✅ `src/commands/__tests__/show-event-storm.test.ts` (4 tests)
+- ✅ `src/commands/__tests__/event-storm-skip-example-generation.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/show-epic.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/research-auto-attachment.test.ts` (5 tests)
+- ✅ `src/commands/__tests__/conversational-review-prompt-before-done.test.ts` (5 tests)
+- ✅ `src/commands/__tests__/review-agent-agnostic.test.ts` (4 tests)
+- ✅ `src/commands/__tests__/update-work-unit-status-step-validation.test.ts` (4 tests)
+- ✅ `src/commands/__tests__/virtual-hook-commands.test.ts` (9 tests)
+- ✅ `src/commands/__tests__/add-foundation-bounded-context.test.ts` (4 tests)
+- ✅ `src/commands/__tests__/generate-scenarios-naming.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/board.test.ts` (3 tests)
+- ✅ `src/commands/__tests__/impact-analysis.test.ts` (1 test)
+- ✅ `src/commands/__tests__/attachment-support.test.ts` (9 tests)
+
+### 🔄 STILL NEEDS MIGRATION (~84 files with ~160+ tests):
+
+**High Priority (Command tests):**
+- `src/commands/__tests__/validate.test.ts`
+- `src/commands/__tests__/create-story.test.ts`
+- `src/commands/__tests__/update-work-unit-status.test.ts`
+- All other files in `/src/commands/__tests__/` that use `mkdtemp`
+
+**Medium Priority:**
+- Files in `/src/utils/__tests__/`
+- Files in `/src/hooks/__tests__/`
+- Files in `/src/tui/__tests__/` (some may already be migrated)
+
+**To Find Remaining Files:**
 ```bash
-#!/bin/bash
-# migrate-test-file.sh
+# Find all test files still using legacy pattern:
+grep -r "mkdtemp" src --include="*.test.ts" --include="*.test.tsx"
 
-file="$1"
-if [ -z "$file" ]; then
-  echo "Usage: $0 <test-file.ts>"
-  exit 1
-fi
-
-# Backup original
-cp "$file" "$file.backup"
-
-# Basic replacements
-sed -i.tmp 's/mkdtemp, rm, readFile, mkdir, writeFile/readFile/g' "$file"
-sed -i.tmp 's/tmpdir/setupWorkUnitTest, type WorkUnitTestSetup/g' "$file"
-# ... more replacements
-
-echo "Migrated $file (backup saved as $file.backup)"
+# Count remaining files:
+grep -r "mkdtemp" src --include="*.test.ts" --include="*.test.tsx" | wc -l
 ```
 
 ## Testing Migration
@@ -230,9 +293,10 @@ echo "Migrated $file (backup saved as $file.backup)"
 After migrating a test file:
 
 1. **Run the specific test**: `npm test -- path/to/test.test.ts`
-2. **Check it uses temp directories**: Look for paths starting with OS temp dir
+2. **Check it uses temp directories**: Look for paths starting with OS temp dir  
 3. **Verify cleanup**: No temp files should remain after test completion
 4. **Check test logic**: All assertions should still pass
+5. **Look for migration markers**: Tests should show temp directory creation in output
 
 ## Benefits After Migration
 
@@ -241,4 +305,6 @@ After migrating a test file:
 3. **Proper cleanup** - no leftover temp files
 4. **Type safety** - setup objects provide typed file paths
 5. **DRY principle** - no code duplication across test files
-6. **Easy to extend** - add new file types to setup utilities as needed
+6. **Fast test execution** - isolated temp directories per test
+7. **Easy to extend** - add new file types to setup utilities as needed
+8. **Better debugging** - clearer separation between test setup and logic

@@ -7,19 +7,18 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { fileManager } from '../../utils/file-manager';
 import type { WorkUnitsData, EventStormItem } from '../../types';
 import { showEventStorm } from '../show-event-storm';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Show Event Storm data as JSON', () => {
-  let testDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
     // Create isolated temp directory
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(testDir, 'spec'), { recursive: true });
-    workUnitsFile = join(testDir, 'spec/work-units.json');
+    setup = await setupWorkUnitTest('show-event-storm');
 
     // Create initial work-units.json in temp directory
     const initialData: WorkUnitsData = {
@@ -27,12 +26,12 @@ describe('Feature: Show Event Storm data as JSON', () => {
       workUnits: {},
       states: {},
     };
-    await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
+    await writeJsonTestFile(setup.workUnitsFile, initialData);
   });
 
   afterEach(async () => {
     // Clean up temp directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Output Event Storm events as JSON array', () => {
@@ -67,7 +66,7 @@ describe('Feature: Show Event Storm data as JSON', () => {
 
       // @step And the events are not deleted
       await fileManager.transaction<WorkUnitsData>(
-        workUnitsFile,
+        setup.workUnitsFile,
         async data => {
           data.workUnits['TEST-001'] = {
             id: 'TEST-001',
@@ -87,7 +86,7 @@ describe('Feature: Show Event Storm data as JSON', () => {
       // @step When I run "fspec show-event-storm TEST-001"
       const result = await showEventStorm({
         workUnitId: 'TEST-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the output should be valid JSON
@@ -124,7 +123,7 @@ describe('Feature: Show Event Storm data as JSON', () => {
 
       // @step And the bounded context is not deleted
       await fileManager.transaction<WorkUnitsData>(
-        workUnitsFile,
+        setup.workUnitsFile,
         async data => {
           data.workUnits['DOMAIN-001'] = {
             id: 'DOMAIN-001',
@@ -144,7 +143,7 @@ describe('Feature: Show Event Storm data as JSON', () => {
       // @step When I run "fspec show-event-storm DOMAIN-001"
       const result = await showEventStorm({
         workUnitId: 'DOMAIN-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the output should be valid JSON
@@ -167,7 +166,7 @@ describe('Feature: Show Event Storm data as JSON', () => {
     it('should return error for work unit without Event Storm data', async () => {
       // @step Given work unit "EMPTY-001" has no Event Storm items
       await fileManager.transaction<WorkUnitsData>(
-        workUnitsFile,
+        setup.workUnitsFile,
         async data => {
           data.workUnits['EMPTY-001'] = {
             id: 'EMPTY-001',
@@ -183,7 +182,7 @@ describe('Feature: Show Event Storm data as JSON', () => {
       // @step When I run "fspec show-event-storm EMPTY-001"
       const result = await showEventStorm({
         workUnitId: 'EMPTY-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the command should exit with error
@@ -245,7 +244,7 @@ describe('Feature: Show Event Storm data as JSON', () => {
       // @step And 2 items have "deleted" set to true
       // @step And 3 items have "deleted" set to false
       await fileManager.transaction<WorkUnitsData>(
-        workUnitsFile,
+        setup.workUnitsFile,
         async data => {
           data.workUnits['MIX-001'] = {
             id: 'MIX-001',
@@ -265,7 +264,7 @@ describe('Feature: Show Event Storm data as JSON', () => {
       // @step When I run "fspec show-event-storm MIX-001"
       const result = await showEventStorm({
         workUnitId: 'MIX-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the output should be valid JSON

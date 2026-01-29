@@ -6,19 +6,18 @@ import { addFoundationBoundedContext } from '../add-foundation-bounded-context';
 import { showFoundationEventStorm } from '../show-foundation-event-storm';
 import type { GenericFoundation } from '../../types/generic-foundation';
 import type { EventStormItem } from '../../types';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
+import {
+  setupFoundationTest,
+  type FoundationTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Big Picture Event Storm in foundation.json', () => {
-  let testDir: string;
-  let foundationFile: string;
+  let setup: FoundationTestSetup;
 
   beforeEach(async () => {
     // Create isolated temp directory
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(testDir, 'spec'), { recursive: true });
-    foundationFile = join(testDir, 'spec/foundation.json');
+    setup = await setupFoundationTest('add-foundation-bounded-context');
 
     // Create initial foundation.json in temp directory
     const initialFoundation: GenericFoundation = {
@@ -40,12 +39,12 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
         capabilities: [],
       },
     };
-    await writeFile(foundationFile, JSON.stringify(initialFoundation, null, 2));
+    await writeJsonTestFile(setup.foundationFile, initialFoundation);
   });
 
   afterEach(async () => {
     // Clean up temp directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Add bounded context to foundation with no existing Event Storm', () => {
@@ -53,7 +52,7 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
       // @step Given foundation.json has no eventStorm section
       // Ensure foundation has NO eventStorm section
       await fileManager.transaction<GenericFoundation>(
-        foundationFile,
+        setup.foundationFile,
         async data => {
           delete data.eventStorm;
         }
@@ -61,13 +60,13 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
 
       // @step When I run "fspec add-foundation-bounded-context 'User Management'"
       const result = await addFoundationBoundedContext('User Management', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       const updated = await fileManager.readJSON<GenericFoundation>(
-        foundationFile,
+        setup.foundationFile,
         {} as GenericFoundation
       );
 
@@ -97,7 +96,7 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
     it('should return only bounded contexts excluding deleted items', async () => {
       // @step Given foundation.json has Event Storm with 2 bounded contexts and 1 aggregate
       await fileManager.transaction<GenericFoundation>(
-        foundationFile,
+        setup.foundationFile,
         async data => {
           data.eventStorm = {
             level: 'big_picture',
@@ -134,7 +133,7 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
 
       // @step And all items have deleted=false
       const foundation = await fileManager.readJSON<GenericFoundation>(
-        foundationFile,
+        setup.foundationFile,
         {} as GenericFoundation
       );
       const allItems = foundation.eventStorm!.items;
@@ -143,7 +142,7 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
       // @step When I run "fspec show-foundation-event-storm --type=bounded_context"
       const result = await showFoundationEventStorm({
         type: 'bounded_context',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
@@ -173,7 +172,7 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
     it('should initialize eventStorm with big_picture level and add bounded context', async () => {
       // @step Given foundation.json exists without eventStorm section
       await fileManager.transaction<GenericFoundation>(
-        foundationFile,
+        setup.foundationFile,
         async data => {
           delete data.eventStorm;
         }
@@ -181,13 +180,13 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
 
       // @step When I add a bounded context using add-foundation-bounded-context
       const result = await addFoundationBoundedContext('Payment Processing', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       const updated = await fileManager.readJSON<GenericFoundation>(
-        foundationFile,
+        setup.foundationFile,
         {} as GenericFoundation
       );
 
@@ -217,7 +216,7 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
     it('should return only non-deleted items', async () => {
       // @step Given foundation Event Storm has 3 items total
       await fileManager.transaction<GenericFoundation>(
-        foundationFile,
+        setup.foundationFile,
         async data => {
           data.eventStorm = {
             level: 'big_picture',
@@ -254,7 +253,7 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
       );
 
       const foundation = await fileManager.readJSON<GenericFoundation>(
-        foundationFile,
+        setup.foundationFile,
         {} as GenericFoundation
       );
       expect(foundation.eventStorm!.items).toHaveLength(3);
@@ -272,7 +271,7 @@ describe('Feature: Big Picture Event Storm in foundation.json', () => {
       expect(activeItems).toHaveLength(2);
 
       // @step When I run "fspec show-foundation-event-storm"
-      const result = await showFoundationEventStorm({ cwd: testDir });
+      const result = await showFoundationEventStorm({ cwd: setup.testDir });
 
       expect(result.success).toBe(true);
 

@@ -4,27 +4,29 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import { queryDependencyStats } from '../query-dependency-stats';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('query-dependency-stats');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Query dependency stats shows metrics across all work units', () => {
     it('should calculate dependency statistics correctly', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // spec directory already created by setupWorkUnitTest
 
       // And multiple work units exist with various dependencies
       // And 5 work units have blockers (blockedBy)
@@ -237,14 +239,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec query dependency-stats --output=json"
       const result = await queryDependencyStats({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show "work units with blockers: 5"

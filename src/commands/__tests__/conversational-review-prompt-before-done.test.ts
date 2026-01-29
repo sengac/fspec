@@ -6,28 +6,30 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Conversational Review Prompt Before Done', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-review-prompt-'));
+    setup = await setupWorkUnitTest('conversational-review-prompt-before-done');
 
     // Configure agent as 'claude' to get system-reminder tags
-    await mkdir(join(testDir, 'spec'), { recursive: true });
     const configData = { agent: 'claude' };
-    await writeFile(
-      join(testDir, 'spec', 'fspec-config.json'),
-      JSON.stringify(configData, null, 2)
+    await writeJsonTestFile(
+      join(setup.specDir, 'fspec-config.json'),
+      configData
     );
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Story work unit transitioning to done shows review prompt', () => {
@@ -66,16 +68,13 @@ describe('Feature: Conversational Review Prompt Before Done', () => {
         nextIds: { AUTH: 2 },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I run "fspec update-work-unit-status AUTH-001 done"
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the command should emit a system-reminder
@@ -136,16 +135,13 @@ describe('Feature: Conversational Review Prompt Before Done', () => {
         nextIds: { BUG: 2 },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I run "fspec update-work-unit-status BUG-001 done"
       const result = await updateWorkUnitStatus({
         workUnitId: 'BUG-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the command should emit a system-reminder
@@ -201,16 +197,13 @@ describe('Feature: Conversational Review Prompt Before Done', () => {
         nextIds: { TASK: 2 },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I run "fspec update-work-unit-status TASK-001 done"
       const result = await updateWorkUnitStatus({
         workUnitId: 'TASK-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the command should NOT emit a review prompt system-reminder
@@ -262,17 +255,14 @@ describe('Feature: Conversational Review Prompt Before Done', () => {
         nextIds: { API: 2 },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step And the AI is moving the work unit to done
       // @step When the system-reminder prompts the AI to ask about review
       const result = await updateWorkUnitStatus({
         workUnitId: 'API-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step And the user responds "yes, please run the review"
@@ -328,17 +318,14 @@ describe('Feature: Conversational Review Prompt Before Done', () => {
         nextIds: { UI: 2 },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step And the AI is moving the work unit to done
       // @step When the system-reminder prompts the AI to ask about review
       const result = await updateWorkUnitStatus({
         workUnitId: 'UI-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step And the user responds "no, just mark it done"

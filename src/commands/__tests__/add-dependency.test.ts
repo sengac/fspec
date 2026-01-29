@@ -6,33 +6,36 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, access, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, access, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { addDependency } from '../add-dependency';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Automatic JSON File Initialization', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('add-dependency');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Dependency commands auto-create work-units.json', () => {
     it('should auto-create work-units.json when file is missing', async () => {
       // Given I have a fresh project with only spec/features/ directory
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
 
       // And spec/work-units.json does not exist
       // (file doesn't exist yet)
 
       // Create initial work units to test dependency between them
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -72,7 +75,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
       const result = await addDependency({
         workUnitId: 'WORK-001',
         dependsOn: 'WORK-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should auto-create spec/work-units.json
@@ -92,10 +95,10 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
     it('should auto-create work-units.json from scratch if completely missing', async () => {
       // Given I have a fresh project with only spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And spec/work-units.json does not exist
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
 
       // When add-dependency is called (will fail because work units don't exist)
       // But the file should still be created by ensureWorkUnitsFile
@@ -103,7 +106,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
         await addDependency({
           workUnitId: 'NONEXISTENT-001',
           dependsOn: 'NONEXISTENT-002',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error) {
         // Expected to fail - work units don't exist

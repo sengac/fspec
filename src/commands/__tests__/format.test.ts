@@ -1,24 +1,28 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 import { formatFeatures } from '../format';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeTextFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Format Feature Files with Custom AST Formatter', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('format');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Format a single feature file', () => {
     it('should format file with consistent indentation', async () => {
       // Given I have a feature file with inconsistent formatting
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const unformattedContent = `@critical
@@ -33,7 +37,7 @@ Then I should be logged in`;
 
       // When I run `fspec format spec/features/login.feature`
       const result = await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/login.feature',
       });
 
@@ -50,7 +54,7 @@ Then I should be logged in`;
   describe('Scenario: Apply consistent indentation', () => {
     it('should apply 2-space indentation for scenarios and 4-space for steps', async () => {
       // Given I have a feature file with mixed indentation
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const mixedIndentation = `Feature: Mixed Indentation
@@ -69,7 +73,7 @@ Scenario: Another scenario
 
       // When I run `fspec format spec/features/mixed.feature`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/mixed.feature',
       });
 
@@ -91,7 +95,7 @@ Scenario: Another scenario
   describe('Scenario: Format all feature files', () => {
     it('should format all files in spec/features/', async () => {
       // Given I have multiple feature files with inconsistent formatting
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const unformatted = `Feature: Test\nScenario: Test\nGiven test\n`;
@@ -101,7 +105,7 @@ Scenario: Another scenario
       await writeFile(join(featuresDir, 'data.feature'), unformatted);
 
       // When I run `fspec format`
-      const result = await formatFeatures({ cwd: testDir });
+      const result = await formatFeatures({ cwd: setup.testDir });
 
       // Then all files should be formatted
       expect(result.formattedCount).toBe(3);
@@ -119,7 +123,7 @@ Scenario: Another scenario
   describe('Scenario: Handle already-formatted file', () => {
     it('should preserve already-formatted content structure', async () => {
       // Given I have a properly formatted feature file
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const wellFormatted = `Feature: Good Format
@@ -135,7 +139,7 @@ Scenario: Another scenario
 
       // When I run `fspec format spec/features/good.feature`
       const result = await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/good.feature',
       });
 
@@ -154,11 +158,11 @@ Scenario: Another scenario
   describe('Scenario: Handle empty spec/features directory', () => {
     it('should return zero formatted count for empty directory', async () => {
       // Given I have an empty "spec/features/" directory
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run `fspec format`
-      const result = await formatFeatures({ cwd: testDir });
+      const result = await formatFeatures({ cwd: setup.testDir });
 
       // Then no files should be formatted
       expect(result.formattedCount).toBe(0);
@@ -171,7 +175,10 @@ Scenario: Another scenario
       // When I run `fspec format spec/features/missing.feature`
       // Then it should throw
       await expect(
-        formatFeatures({ cwd: testDir, file: 'spec/features/missing.feature' })
+        formatFeatures({
+          cwd: setup.testDir,
+          file: 'spec/features/missing.feature',
+        })
       ).rejects.toThrow();
     });
   });
@@ -179,7 +186,7 @@ Scenario: Another scenario
   describe('Scenario: Preserve data tables', () => {
     it('should maintain data table structure and content', async () => {
       // Given I have a feature file with data tables
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const withDataTable = `Feature: Data Tables
@@ -196,7 +203,7 @@ Then all users should be imported`;
 
       // When I run `fspec format`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/data-table.feature',
       });
 
@@ -217,7 +224,7 @@ Then all users should be imported`;
   describe('Scenario: Preserve doc strings', () => {
     it('should maintain doc string content exactly', async () => {
       // Given I have a feature file with doc strings
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const withDocString = `Feature: Documentation
@@ -242,7 +249,7 @@ Then all users should be imported`;
 
       // When I run `fspec format spec/features/docs.feature`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/docs.feature',
       });
 
@@ -260,7 +267,7 @@ Then all users should be imported`;
   describe('Scenario: Show formatted files in output', () => {
     it('should return count of formatted files', async () => {
       // Given I have 3 feature files
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const unformatted = `Feature: Test\nScenario: Test\nGiven test\n`;
@@ -270,7 +277,7 @@ Then all users should be imported`;
       await writeFile(join(featuresDir, 'file3.feature'), unformatted);
 
       // When I run `fspec format`
-      const result = await formatFeatures({ cwd: testDir });
+      const result = await formatFeatures({ cwd: setup.testDir });
 
       // Then the output should show summary count
       expect(result.formattedCount).toBe(3);
@@ -280,7 +287,7 @@ Then all users should be imported`;
   describe('Scenario: AI agent workflow - create, format, validate', () => {
     it('should support complete workflow from creation to validation', async () => {
       // Given I am an AI agent creating a new specification
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I create a feature file
@@ -297,7 +304,7 @@ Then file is created`;
       // And I edit the file to add scenarios (simulated above)
       // And I run `fspec format`
       const formatResult = await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/data-export.feature',
       });
 
@@ -316,7 +323,7 @@ Then file is created`;
   describe('Scenario: Format Scenario Outline with Examples', () => {
     it('should format Scenario Outline, Examples, and data tables correctly', async () => {
       // Given I have a feature file with Scenario Outline and Examples table
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const scenarioOutlineContent = `Feature: Login
@@ -334,7 +341,7 @@ Examples:
 
       // When I run `fspec format`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/outline.feature',
       });
 
@@ -360,7 +367,7 @@ Examples:
   describe('Scenario: Format Rule keyword', () => {
     it('should format Rule with nested Background and Scenarios', async () => {
       // Given I have a feature file with Rule containing nested Background and Scenarios
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const ruleContent = `Feature: Account Management
@@ -376,7 +383,7 @@ Then the balance should be 50`;
 
       // When I run `fspec format`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/rules.feature',
       });
 
@@ -399,7 +406,7 @@ Then the balance should be 50`;
   describe('Scenario: Format DocStrings with content types', () => {
     it('should preserve DocString delimiters and content types', async () => {
       // Given I have a feature file with DocStrings marked as """ json
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const withDocStrings = `Feature: JSON API
@@ -416,7 +423,7 @@ Then it should succeed`;
 
       // When I run `fspec format`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/docstrings.feature',
       });
 
@@ -432,7 +439,7 @@ Then it should succeed`;
   describe('Scenario: Format multiple tags', () => {
     it('should format each tag on its own line with zero indentation', async () => {
       // Given I have a feature with tags @critical @cli @formatter
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const withTags = `@critical @cli @formatter
@@ -445,7 +452,7 @@ Given a step`;
 
       // When I run `fspec format`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/tags.feature',
       });
 
@@ -460,7 +467,7 @@ Given a step`;
   describe('Scenario: Format And/But step keywords', () => {
     it('should format And and But steps with consistent indentation', async () => {
       // Given I have a feature file with And and But steps
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const withAndBut = `Feature: And/But Steps
@@ -476,7 +483,7 @@ Then I should see an error`;
 
       // When I run `fspec format`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/steps.feature',
       });
 
@@ -497,7 +504,7 @@ Then I should see an error`;
   describe('Scenario: Format wildcard step keyword', () => {
     it('should format * steps with consistent indentation', async () => {
       // Given I have a feature file with * step keyword
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const withWildcard = `Feature: Wildcard Steps
@@ -511,7 +518,7 @@ Then result`;
 
       // When I run `fspec format`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/wildcard.feature',
       });
 
@@ -528,7 +535,7 @@ Then result`;
   describe('Scenario: Limit excessive blank lines', () => {
     it('should limit consecutive blank lines to maximum 2', async () => {
       // Given I have a feature file with 6 consecutive blank lines in description
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const withExcessiveBlankLines = `Feature: Excessive Blanks
@@ -552,7 +559,7 @@ Then result`;
 
       // When I run `fspec format`
       await formatFeatures({
-        cwd: testDir,
+        cwd: setup.testDir,
         file: 'spec/features/excessive.feature',
       });
 

@@ -4,32 +4,38 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, access } from 'fs/promises';
-import { tmpdir } from 'os';
+import { access } from 'fs/promises';
 import { join } from 'path';
 import { listTags } from '../list-tags';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Automatic JSON File Initialization', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('list-tags-ensure');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: List tags command auto-creates spec/tags.json instead of throwing error', () => {
     it('should not throw error and auto-create tags.json when missing', async () => {
       // Given I have a fresh project with spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      const specDir = join(setup.testDir, 'spec');
+      await import('fs/promises').then(fs =>
+        fs.mkdir(specDir, { recursive: true })
+      );
 
       // Given spec/tags.json does not exist
-      const tagsFile = join(testDir, 'spec/tags.json');
+      const tagsFile = join(setup.testDir, 'spec/tags.json');
 
       // When I run "fspec list-tags"
-      const result = await listTags({ cwd: testDir });
+      const result = await listTags({ cwd: setup.testDir });
 
       // Then the command should not throw "tags.json not found" error
       // (no exception thrown)

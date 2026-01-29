@@ -6,9 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import fs from 'fs/promises';
 import path from 'path';
-import os from 'os';
 import {
   executeResearchWithPrompt,
   analyzeResearchOutput,
@@ -17,23 +15,26 @@ import {
   extractRules,
   confirmAndAddRule,
 } from '../research-integration';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Smart Research Integration and Auto-Attachment', () => {
-  let tempDir: string;
+  let setup: TestDirectorySetup;
   let attachmentsDir: string;
 
   beforeEach(async () => {
     // Create temp directory for test
-    tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'fspec-research-test-'));
-    attachmentsDir = path.join(tempDir, 'spec', 'attachments');
-    await fs.mkdir(attachmentsDir, { recursive: true });
+    setup = await setupTestDirectory('research-auto-attachment');
+    attachmentsDir = path.join(setup.testDir, 'spec', 'attachments');
+    await ensureTestDirectory(attachmentsDir);
   });
 
   afterEach(async () => {
     // Clean up temp directory
-    if (tempDir) {
-      await fs.rm(tempDir, { recursive: true, force: true });
-    }
+    await setup.cleanup();
   });
 
   describe('Scenario: Prompt to save research results as attachment after research tool execution', () => {
@@ -105,7 +106,7 @@ describe('Feature: Smart Research Integration and Auto-Attachment', () => {
         workUnitId,
         aiSuggestions,
         rawOutput,
-        tempDir
+        setup.testDir
       );
 
       // @step Then the rules and examples should be added to AUTH-001 Example Map
@@ -147,7 +148,7 @@ describe('Feature: Smart Research Integration and Auto-Attachment', () => {
         'ast',
         'authentication patterns',
         workUnitId,
-        tempDir
+        setup.testDir
       );
 
       // @step Then the research results should be automatically saved without prompts

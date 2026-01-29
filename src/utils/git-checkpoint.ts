@@ -342,7 +342,8 @@ export async function restoreCheckpoint(options: RestoreOptions): Promise<{
         conflicts.push(filepath);
       }
     } catch (error) {
-      // File doesn't exist - no conflict
+      // File doesn't exist - this is fine, we'll restore it from checkpoint
+      // Only files that exist AND differ from checkpoint are conflicts
     }
   }
 

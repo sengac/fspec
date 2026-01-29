@@ -6,27 +6,26 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import { generateExampleMappingFromEventStorm } from '../generate-example-mapping-from-event-storm';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Generic and unhelpful examples auto-generated from Event Storm domain events', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    await mkdir(specDir, { recursive: true });
+    setup = await setupWorkUnitTest('event-storm-skip-example-generation');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Transform Event Storm without generating examples from domain events', () => {
@@ -76,20 +75,20 @@ describe('Feature: Generic and unhelpful examples auto-generated from Event Stor
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I transform Event Storm to Example Mapping
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       // Read updated data
-      const { readFile } = await import('fs/promises');
-      const updatedData: WorkUnitsData = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+      // Use readJsonTestFile instead
+      const updatedData: WorkUnitsData = await readJsonTestFile(
+        setup.workUnitsFile
       );
 
       // @step Then 0 examples should be added
@@ -168,20 +167,20 @@ describe('Feature: Generic and unhelpful examples auto-generated from Event Stor
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I transform Event Storm to Example Mapping
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       // Read updated data
-      const { readFile } = await import('fs/promises');
-      const updatedData: WorkUnitsData = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+      // Use readJsonTestFile instead
+      const updatedData: WorkUnitsData = await readJsonTestFile(
+        setup.workUnitsFile
       );
       const workUnit = updatedData.workUnits['TEST-002'];
 
@@ -251,12 +250,12 @@ describe('Feature: Generic and unhelpful examples auto-generated from Event Stor
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I transform Event Storm to Example Mapping
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-003',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
@@ -265,9 +264,9 @@ describe('Feature: Generic and unhelpful examples auto-generated from Event Stor
       expect(result.examplesAdded).toBe(0);
 
       // @step And the work unit should have an empty examples array
-      const { readFile } = await import('fs/promises');
-      const updatedData: WorkUnitsData = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+      // Use readJsonTestFile instead
+      const updatedData: WorkUnitsData = await readJsonTestFile(
+        setup.workUnitsFile
       );
       const workUnit = updatedData.workUnits['TEST-003'];
       expect(workUnit.examples).toBeDefined();
