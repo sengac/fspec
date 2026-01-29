@@ -11,27 +11,31 @@ import { mkdtemp, rm, readFile } from 'fs/promises';
 import { tmpdir } from 'os';
 import { installAgents } from '../init';
 import { getSlashCommandTemplate } from '../../utils/slashCommandTemplate';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Wire up multi-agent support to fspec init command', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-init-test-'));
+    setup = await setupTestDirectory('init-bundling');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Works after global npm install', () => {
     it('should execute successfully without requiring local template files', async () => {
       // Given: I have installed fspec globally (simulated by running from dist/)
       // When: I run "fspec init" in a fresh project directory
-      await installAgents(testDir, ['claude']);
+      await installAgents(setup.testDir, ['claude']);
 
       // Then: The command should execute successfully
       // And: spec/CLAUDE.md should be created with correct content
-      const specClaudeMdPath = join(testDir, 'spec', 'CLAUDE.md');
+      const specClaudeMdPath = join(setup.testDir, 'spec', 'CLAUDE.md');
       const claudeMdContent = await readFile(specClaudeMdPath, 'utf-8');
 
       expect(claudeMdContent).toContain(
@@ -45,7 +49,7 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
     it('should execute using embedded templates', async () => {
       // When: I run fspec init
-      const result = installAgents(testDir, ['claude']);
+      const result = installAgents(setup.testDir, ['claude']);
 
       // Then: Templates are loaded from embedded TypeScript modules
       await expect(result).resolves.not.toThrow();
@@ -55,11 +59,11 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
   describe('Scenario: Agent-specific customization', () => {
     it('should generate Cursor-specific content when --agent=cursor is used', async () => {
       // Given: I run "fspec init --agent=cursor"
-      await installAgents(testDir, ['cursor']);
+      await installAgents(setup.testDir, ['cursor']);
 
       // When: The installation completes
       // Then: spec/CURSOR.md should contain comprehensive Project Management Guidelines
-      const specCursorPath = join(testDir, 'spec', 'CURSOR.md');
+      const specCursorPath = join(setup.testDir, 'spec', 'CURSOR.md');
       const specCursorContent = await readFile(specCursorPath, 'utf-8');
 
       const lineCount = specCursorContent.split('\n').length;
@@ -71,11 +75,11 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
     it('should generate Claude-specific content when --agent=claude is used', async () => {
       // Given: I run "fspec init --agent=claude"
-      await installAgents(testDir, ['claude']);
+      await installAgents(setup.testDir, ['claude']);
 
       // When: The installation completes
       // Then: spec/CLAUDE.md should contain comprehensive Project Management Guidelines
-      const specClaudePath = join(testDir, 'spec', 'CLAUDE.md');
+      const specClaudePath = join(setup.testDir, 'spec', 'CLAUDE.md');
       const specClaudeContent = await readFile(specClaudePath, 'utf-8');
 
       const lineCount = specClaudeContent.split('\n').length;
@@ -119,10 +123,20 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
     it('should generate consistent templates for all agents', async () => {
       // When: I run fspec init for multiple agents
-      await installAgents(testDir, ['claude', 'cursor']);
+      await installAgents(setup.testDir, ['claude', 'cursor']);
 
-      const claudeSlashCmd = join(testDir, '.claude', 'commands', 'fspec.md');
-      const cursorSlashCmd = join(testDir, '.cursor', 'commands', 'fspec.md');
+      const claudeSlashCmd = join(
+        setup.testDir,
+        '.claude',
+        'commands',
+        'fspec.md'
+      );
+      const cursorSlashCmd = join(
+        setup.testDir,
+        '.cursor',
+        'commands',
+        'fspec.md'
+      );
 
       const claudeCmdContent = await readFile(claudeSlashCmd, 'utf-8');
       const cursorCmdContent = await readFile(cursorSlashCmd, 'utf-8');
@@ -139,10 +153,15 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
   describe('Scenario: Slash command files use correct format without YAML frontmatter', () => {
     it('should generate markdown files without YAML frontmatter', async () => {
       // Given: I run "fspec init --agent=claude"
-      await installAgents(testDir, ['claude']);
+      await installAgents(setup.testDir, ['claude']);
 
       // When: The slash command file is generated
-      const slashCmdPath = join(testDir, '.claude', 'commands', 'fspec.md');
+      const slashCmdPath = join(
+        setup.testDir,
+        '.claude',
+        'commands',
+        'fspec.md'
+      );
       const slashCmdContent = await readFile(slashCmdPath, 'utf-8');
 
       // Then: The markdown file should NOT contain YAML frontmatter (---)
@@ -159,10 +178,15 @@ describe('Feature: Wire up multi-agent support to fspec init command', () => {
 
     it('should generate TOML files with [command] section metadata', async () => {
       // Given: I run "fspec init --agent=gemini"
-      await installAgents(testDir, ['gemini']);
+      await installAgents(setup.testDir, ['gemini']);
 
       // When: The slash command file is generated
-      const slashCmdPath = join(testDir, '.gemini', 'commands', 'fspec.toml');
+      const slashCmdPath = join(
+        setup.testDir,
+        '.gemini',
+        'commands',
+        'fspec.toml'
+      );
       const slashCmdContent = await readFile(slashCmdPath, 'utf-8');
 
       // Then: TOML files (Gemini, Qwen) should have [command] section with metadata

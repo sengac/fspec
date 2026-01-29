@@ -334,6 +334,11 @@
       "prefix": "CODE",
       "description": "Fspec-Codelet integration and native tool development",
       "createdAt": "2026-01-28T02:33:14.815Z"
+    },
+    "LINK": {
+      "prefix": "LINK",
+      "description": "Link and URL handling features",
+      "createdAt": "2026-01-29T04:32:43.847Z"
     }
   }
 }

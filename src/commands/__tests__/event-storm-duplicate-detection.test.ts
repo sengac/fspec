@@ -6,104 +6,99 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import { addDomainEvent } from '../add-domain-event';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Event Storm commands allow duplicate entries without validation', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
+    setup = await setupWorkUnitTest('event-storm-duplicate-detection');
 
-    await mkdir(specDir, { recursive: true });
-
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {
-            'TEST-001': {
-              id: 'TEST-001',
-              type: 'story',
-              title: 'Test Story',
-              status: 'specifying',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              stateHistory: [
-                {
-                  state: 'specifying',
-                  timestamp: new Date().toISOString(),
-                },
-              ],
-              eventStorm: {
-                level: 'process_modeling',
-                items: [],
-                nextItemId: 0,
-              },
+    // Initialize with work units that have event storm capabilities
+    const workUnitsData = {
+      workUnits: {
+        'TEST-001': {
+          id: 'TEST-001',
+          type: 'story',
+          title: 'Test Story',
+          status: 'specifying',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          stateHistory: [
+            {
+              state: 'specifying',
+              timestamp: new Date().toISOString(),
             },
-            'TEST-002': {
-              id: 'TEST-002',
-              type: 'story',
-              title: 'Test Story 2',
-              status: 'specifying',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              stateHistory: [
-                {
-                  state: 'specifying',
-                  timestamp: new Date().toISOString(),
-                },
-              ],
-              eventStorm: {
-                level: 'process_modeling',
-                items: [],
-                nextItemId: 0,
-              },
-            },
-            'TEST-003': {
-              id: 'TEST-003',
-              type: 'story',
-              title: 'Test Story 3',
-              status: 'specifying',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              stateHistory: [
-                {
-                  state: 'specifying',
-                  timestamp: new Date().toISOString(),
-                },
-              ],
-              eventStorm: {
-                level: 'process_modeling',
-                items: [],
-                nextItemId: 0,
-              },
-            },
-          },
-          states: {
-            backlog: [],
-            specifying: ['TEST-001', 'TEST-002', 'TEST-003'],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: [],
+          ],
+          eventStorm: {
+            level: 'process_modeling',
+            items: [],
+            nextItemId: 0,
           },
         },
-        null,
-        2
-      )
-    );
+        'TEST-002': {
+          id: 'TEST-002',
+          type: 'story',
+          title: 'Test Story 2',
+          status: 'specifying',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          stateHistory: [
+            {
+              state: 'specifying',
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          eventStorm: {
+            level: 'process_modeling',
+            items: [],
+            nextItemId: 0,
+          },
+        },
+        'TEST-003': {
+          id: 'TEST-003',
+          type: 'story',
+          title: 'Test Story 3',
+          status: 'specifying',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          stateHistory: [
+            {
+              state: 'specifying',
+              timestamp: new Date().toISOString(),
+            },
+          ],
+          eventStorm: {
+            level: 'process_modeling',
+            items: [],
+            nextItemId: 0,
+          },
+        },
+      },
+      states: {
+        backlog: [],
+        specifying: ['TEST-001', 'TEST-002', 'TEST-003'],
+        testing: [],
+        implementing: [],
+        validating: [],
+        done: [],
+        blocked: [],
+      },
+    };
+
+    await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Prevent duplicate domain event', () => {
@@ -115,14 +110,14 @@ describe('Feature: Event Storm commands allow duplicate entries without validati
       await addDomainEvent({
         workUnitId: 'TEST-001',
         text: 'EventA',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step When I try to add domain event "EventA" again
       const result = await addDomainEvent({
         workUnitId: 'TEST-001',
         text: 'EventA',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then an error should be thrown
@@ -141,14 +136,14 @@ describe('Feature: Event Storm commands allow duplicate entries without validati
       await addDomainEvent({
         workUnitId: 'TEST-002',
         text: 'EventA',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step When I try to add domain event "eventa" (lowercase)
       const result = await addDomainEvent({
         workUnitId: 'TEST-002',
         text: 'eventa',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then an error should be thrown
@@ -167,20 +162,19 @@ describe('Feature: Event Storm commands allow duplicate entries without validati
       await addDomainEvent({
         workUnitId: 'TEST-003',
         text: 'EventA',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step And I delete the event
-      const { readFile } = await import('fs/promises');
-      const workUnitsData = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnitsData = await readJsonTestFile(setup.workUnitsFile);
       workUnitsData.workUnits['TEST-003'].eventStorm.items[0].deleted = true;
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I try to add domain event "EventA" again
       const result = await addDomainEvent({
         workUnitId: 'TEST-003',
         text: 'EventA',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the command should succeed
@@ -189,7 +183,7 @@ describe('Feature: Event Storm commands allow duplicate entries without validati
       expect(result.eventId).toBeDefined();
 
       // Verify a new event was created
-      const updatedData = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updatedData = await readJsonTestFile(setup.workUnitsFile);
       const events = updatedData.workUnits['TEST-003'].eventStorm.items;
       expect(events.length).toBe(2);
       expect(events[0].deleted).toBe(true);

@@ -11,72 +11,68 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile, mkdtemp } from 'fs/promises';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import type { WorkUnitsData, PrefixesData } from '../../types';
 import { createBug } from '../create-bug';
 import { createStory } from '../create-story';
 import { createTask } from '../create-task';
 import { deleteWorkUnit } from '../delete-work-unit';
 import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
-
-/**
- * Helper: Create temporary spec directory structure
- */
-async function createTempSpec(): Promise<string> {
-  const tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-  const specDir = join(tmpDir, 'spec');
-  await mkdir(specDir, { recursive: true });
-  return tmpDir;
-}
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 
 /**
  * Helper: Write work-units.json
  */
 async function writeWorkUnits(
-  tmpDir: string,
+  setup: WorkUnitTestSetup,
   data: WorkUnitsData
 ): Promise<void> {
-  const workUnitsPath = join(tmpDir, 'spec', 'work-units.json');
-  await writeFile(workUnitsPath, JSON.stringify(data, null, 2), 'utf-8');
+  await writeJsonTestFile(setup.workUnitsFile, data);
 }
 
 /**
  * Helper: Read work-units.json
  */
-async function readWorkUnits(tmpDir: string): Promise<WorkUnitsData> {
-  const workUnitsPath = join(tmpDir, 'spec', 'work-units.json');
-  const content = await readFile(workUnitsPath, 'utf-8');
-  return JSON.parse(content);
+async function readWorkUnits(setup: WorkUnitTestSetup): Promise<WorkUnitsData> {
+  return await readJsonTestFile<WorkUnitsData>(setup.workUnitsFile);
 }
 
 /**
  * Helper: Write prefixes.json
  */
 async function writePrefixes(
-  tmpDir: string,
+  setup: WorkUnitTestSetup,
   data: PrefixesData
 ): Promise<void> {
-  const prefixesPath = join(tmpDir, 'spec', 'prefixes.json');
-  await writeFile(prefixesPath, JSON.stringify(data, null, 2), 'utf-8');
+  const prefixesPath = join(setup.specDir, 'prefixes.json');
+  await writeJsonTestFile(prefixesPath, data);
 }
 
 describe('Feature: Work unit ID generation with prefix counters', () => {
   describe('Scenario: Work unit ID preserved after deletion', () => {
-    let tmpDir: string;
+    let setup: WorkUnitTestSetup;
 
     beforeEach(async () => {
-      tmpDir = await createTempSpec();
+      setup = await setupWorkUnitTest(
+        'work-unit-id-generation-prefix-counters-1'
+      );
     });
 
     afterEach(async () => {
-      await rm(tmpDir, { recursive: true, force: true });
+      await setup.cleanup();
     });
 
     it('should generate BUG-004 after deleting BUG-003', async () => {
       // @step Given I have a project with work-units.json
-      await createMinimalFoundation(tmpDir);
+      await createMinimalFoundation(setup.testDir);
 
       // @step And work units "BUG-001", "BUG-002", and "BUG-003" exist
       // @step And the prefixCounters.BUG is 3
@@ -119,7 +115,7 @@ describe('Feature: Work unit ID generation with prefix counters', () => {
           blocked: [],
         },
       };
-      await writeWorkUnits(tmpDir, workUnitsData);
+      await writeWorkUnits(setup, workUnitsData);
 
       // Setup prefixes.json
       const prefixes: PrefixesData = {
@@ -132,19 +128,19 @@ describe('Feature: Work unit ID generation with prefix counters', () => {
           },
         },
       };
-      await writePrefixes(tmpDir, prefixes);
+      await writePrefixes(setup, prefixes);
 
       // @step When I delete work unit "BUG-003"
       const deleteResult = await deleteWorkUnit({
         workUnitId: 'BUG-003',
         skipConfirmation: true,
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
       expect(deleteResult.success).toBe(true);
 
       // @step And I create a new bug with title "New bug"
       const createResult = await createBug({
-        cwd: tmpDir,
+        cwd: setup.testDir,
         prefix: 'BUG',
         title: 'New bug',
         description: 'Test bug',
@@ -157,7 +153,7 @@ describe('Feature: Work unit ID generation with prefix counters', () => {
       expect(createResult.workUnitId).toBe('BUG-004');
 
       // @step And the prefixCounters.BUG should be 4
-      const updatedData = await readWorkUnits(tmpDir);
+      const updatedData = await readWorkUnits(setup);
       expect(updatedData.prefixCounters?.BUG).toBe(4);
 
       // @step And the work unit "BUG-003" should not exist

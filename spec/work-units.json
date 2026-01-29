@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0.0",
-    "lastUpdated": "2026-01-28T11:24:34.162Z"
+    "lastUpdated": "2026-01-29T04:33:03.093Z"
   },
   "workUnits": {
     "EXMAP-001": {
@@ -69193,6 +69193,20 @@
       "createdAt": "2026-01-28T12:57:59.647Z",
       "updatedAt": "2026-01-28T12:57:59.647Z",
       "children": []
+    },
+    "LINK-001": {
+      "id": "LINK-001",
+      "title": "Implement Clickable File Links and URL Opening in Conversation Views",
+      "type": "story",
+      "status": "backlog",
+      "createdAt": "2026-01-29T04:32:47.511Z",
+      "updatedAt": "2026-01-29T04:33:03.093Z",
+      "description": "Add clickable file links and URL opening functionality to fspec's conversation display in both AgentView and SplitSessionView components, with VS Code integration and cross-platform support.",
+      "children": [],
+      "attachments": [
+        "spec/attachments/LINK-001/vscode-integration-comparison.md",
+        "spec/attachments/LINK-001/clickable-links-implementation-plan.md"
+      ]
     }
   },
   "states": {
@@ -69277,7 +69291,8 @@
       "TEST-031",
       "TEST-032",
       "TEST-033",
-      "TEST-034"
+      "TEST-034",
+      "LINK-001"
     ],
     "specifying": [
       "LANG-001",
@@ -69849,6 +69864,7 @@
     "LOG": 3,
     "VIEWNV": 1,
     "PAUSE": 1,
-    "CODE": 8
+    "CODE": 8,
+    "LINK": 1
   }
 }

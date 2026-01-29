@@ -4,28 +4,32 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
 import { queryWorkUnits } from '../query-work-units';
 import { generateSummaryReport } from '../generate-summary-report';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Work Unit Query and Reporting', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('query-work-units-advanced');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Query by status and prefix', () => {
     it('should filter work units by both status and prefix', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // Already created by setupWorkUnitTest
 
       // And work units exist with various statuses and prefixes
       const workUnitsData: WorkUnitsData = {
@@ -78,16 +82,13 @@ describe('Feature: Work Unit Query and Reporting', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run query with both status and prefix filters
       const result = await queryWorkUnits({
         status: 'implementing',
         prefix: 'AUTH',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should contain only work units matching both criteria
@@ -110,7 +111,7 @@ describe('Feature: Work Unit Query and Reporting', () => {
   describe('Scenario: Query with sorting by updated date', () => {
     it('should sort work units by updatedAt in descending order', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // spec directory already created by setupWorkUnitTest
 
       // And work units with different update times
       const workUnitsData: WorkUnitsData = {
@@ -155,16 +156,13 @@ describe('Feature: Work Unit Query and Reporting', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run query with sort by updatedAt descending
       const result = await queryWorkUnits({
         sort: 'updatedAt',
         order: 'desc',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should list work units in descending order by updatedAt
@@ -185,7 +183,7 @@ describe('Feature: Work Unit Query and Reporting', () => {
   describe('Scenario: Export filtered results to CSV', () => {
     it('should export filtered work units to CSV format', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // spec directory already created by setupWorkUnitTest
 
       // And work units exist with status "implementing"
       const workUnitsData: WorkUnitsData = {
@@ -230,17 +228,14 @@ describe('Feature: Work Unit Query and Reporting', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run query with CSV format
       const result = await queryWorkUnits({
         status: 'implementing',
         format: 'csv',
-        output: join(testDir, 'implementing.csv'),
-        cwd: testDir,
+        output: join(setup.testDir, 'implementing.csv'),
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
@@ -248,7 +243,7 @@ describe('Feature: Work Unit Query and Reporting', () => {
 
       // And the file should be created
       const csvContent = await readFile(
-        join(testDir, 'implementing.csv'),
+        join(setup.testDir, 'implementing.csv'),
         'utf-8'
       );
 
@@ -269,7 +264,7 @@ describe('Feature: Work Unit Query and Reporting', () => {
   describe('Scenario: Generate summary report with statistics', () => {
     it('should generate report showing total work units and breakdown by status', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      // spec directory already created by setupWorkUnitTest
 
       // And work units exist across all Kanban states
       // And 3 work units are in "backlog"
@@ -375,14 +370,11 @@ describe('Feature: Work Unit Query and Reporting', () => {
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
-      );
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // When I run "fspec report summary"
       const result = await generateSummaryReport({
-        cwd: testDir,
+        cwd: setup.testDir,
         format: 'markdown',
       });
 
@@ -409,7 +401,7 @@ describe('Feature: Work Unit Query and Reporting', () => {
       // Verify report file was created
       expect(result.outputFile).toBeDefined();
       const reportContent = await readFile(
-        join(testDir, result.outputFile),
+        join(setup.testDir, result.outputFile),
         'utf-8'
       );
       expect(reportContent).toContain('Total Work Units');

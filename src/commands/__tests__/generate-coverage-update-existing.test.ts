@@ -4,24 +4,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync } from 'fs';
-import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdir, writeFile, readFile } from 'fs/promises';
+import { writeFile, readFile } from 'fs/promises';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory } from '../../test-helpers/test-file-operations';
 
 describe('Feature: generate-coverage updates existing .coverage files', () => {
-  let tempDir: string;
+  let setup: TestDirectorySetup;
   let featuresDir: string;
 
   beforeEach(async () => {
     // Given I have a project with spec/features directory
-    tempDir = mkdtempSync(join(tmpdir(), 'fspec-test-'));
-    featuresDir = join(tempDir, 'spec', 'features');
-    await mkdir(featuresDir, { recursive: true });
+    setup = await setupTestDirectory('generate-coverage-update-existing');
+    featuresDir = join(setup.testDir, 'spec', 'features');
+    await ensureTestDirectory(featuresDir);
   });
 
-  afterEach(() => {
-    rmSync(tempDir, { recursive: true, force: true });
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: Add new scenarios to existing .coverage file', () => {
@@ -81,7 +84,7 @@ Feature: Test Feature
 
       // When I run generate-coverage
       const { generateCoverage } = await import('../generate-coverage');
-      await generateCoverage({ cwd: tempDir });
+      await generateCoverage({ cwd: setup.testDir });
 
       // Then the coverage file should now have 3 scenarios
       const updatedCoverage = JSON.parse(await readFile(coverageFile, 'utf-8'));
@@ -153,7 +156,7 @@ Feature: Another Test
 
       // When I run generate-coverage
       const { generateCoverage } = await import('../generate-coverage');
-      await generateCoverage({ cwd: tempDir });
+      await generateCoverage({ cwd: setup.testDir });
 
       // Then the existing test mapping should be preserved
       const updatedCoverage = JSON.parse(await readFile(coverageFile, 'utf-8'));

@@ -6,28 +6,29 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
+import { readFile } from 'fs/promises';
 import { answerQuestion } from '../answer-question';
 import { generateScenarios } from '../generate-scenarios';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Answered questions display as true instead of actual answer text', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    await mkdir(specDir, { recursive: true });
+    setup = await setupWorkUnitTest('answer-question-preserves-text');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Store answer text in question.answer field', () => {
@@ -70,21 +71,21 @@ describe('Feature: Answered questions display as true instead of actual answer t
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I answer the question with "Cache for 24 hours with file-based persistence"
       const result = await answerQuestion({
         workUnitId: 'TEST-001',
         index: 0,
         answer: 'Cache for 24 hours with file-based persistence',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       // Read updated data
-      const updatedData: WorkUnitsData = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+      const updatedData: WorkUnitsData = await readJsonTestFile(
+        setup.workUnitsFile
       );
       const question = updatedData.workUnits['TEST-001'].questions[0];
 
@@ -165,19 +166,18 @@ describe('Feature: Answered questions display as true instead of actual answer t
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
-      await mkdir(join(specDir, 'features'), { recursive: true });
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I generate scenarios
       const result = await generateScenarios({
         workUnitId: 'TEST-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       // Read generated feature file
-      const featureFile = join(specDir, 'features', 'test-story-2.feature');
+      const featureFile = join(setup.featuresDir, 'test-story-2.feature');
       const featureContent = await readFile(featureFile, 'utf-8');
 
       // @step Then the feature file should contain "A: Data should be cached immediately on first access"
@@ -250,7 +250,7 @@ describe('Feature: Answered questions display as true instead of actual answer t
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnitsData);
 
       // @step When I answer with multiline text:
       const multilineAnswer = `Caching strategy:
@@ -262,14 +262,14 @@ describe('Feature: Answered questions display as true instead of actual answer t
         workUnitId: 'TEST-003',
         index: 0,
         answer: multilineAnswer,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       // Read updated data
-      const updatedData: WorkUnitsData = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+      const updatedData: WorkUnitsData = await readJsonTestFile(
+        setup.workUnitsFile
       );
       const question = updatedData.workUnits['TEST-003'].questions[0];
 
@@ -282,13 +282,12 @@ describe('Feature: Answered questions display as true instead of actual answer t
 
       // @step And feature file comments should show all lines of the answer
       // Generate scenarios to verify feature file generation
-      await mkdir(join(specDir, 'features'), { recursive: true });
       await generateScenarios({
         workUnitId: 'TEST-003',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
-      const featureFile = join(specDir, 'features', 'test-story-3.feature');
+      const featureFile = join(setup.featuresDir, 'test-story-3.feature');
       const featureContent = await readFile(featureFile, 'utf-8');
 
       // Verify all lines appear in feature file
