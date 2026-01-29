@@ -6,7 +6,7 @@ import type { Command } from 'commander';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 
-interface ValidationResult {
+export interface ValidationResult {
   file: string;
   valid: boolean;
   errors: Array<{
@@ -76,7 +76,7 @@ export async function validateCommand(
   }
 }
 
-async function validateFile(
+export async function validateFile(
   filePath: string,
   verbose?: boolean
 ): Promise<ValidationResult> {

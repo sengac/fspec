@@ -47,6 +47,8 @@ import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelect
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
+// Initialize FspecTool callbacks before importing CodeletSession
+import { ensureFspecCallbacksInitialized } from '../../utils/fspec-init';
 import {
   CodeletSession,
   persistenceStoreMessageEnvelope,
@@ -3851,6 +3853,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       message: 'Testing...',
     });
     try {
+      // Ensure FspecTool callbacks are initialized before creating session
+      await ensureFspecCallbacksInitialized();
+      
       // Get the internal name for the provider
       const internalName = mapProviderIdToInternal(providerId);
 
@@ -7297,7 +7302,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             maxVisibleLines={5}
             skipAnimation={skipInputAnimation}
             isActive={!showCreateSessionDialog}
-            suppressEnter={slashCommand.isVisible || fileSearch.isVisible}
+            suppressEnter={slashCommand.isVisible || fileSearch.isVisible || isTurnSelectMode}
           />
         </Box>
       </Box>

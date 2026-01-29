@@ -8,26 +8,36 @@ use super::wrapper::FspecToolFacadeWrapper;
 use std::sync::Arc;
 
 /// Create an FspecTool wrapper for Claude provider
+/// 
+/// NO CLI FALLBACKS - This will throw an error if callback system is not working.
 pub fn claude_fspec_tool() -> FspecToolFacadeWrapper {
     FspecToolFacadeWrapper::new(Arc::new(ClaudeFspecFacade))
 }
 
 /// Create an FspecTool wrapper for Gemini provider
+/// 
+/// NO CLI FALLBACKS - This will throw an error if callback system is not working.
 pub fn gemini_fspec_tool() -> FspecToolFacadeWrapper {
     FspecToolFacadeWrapper::new(Arc::new(GeminiFspecFacade))
 }
 
 /// Create an FspecTool wrapper for OpenAI provider
+/// 
+/// NO CLI FALLBACKS - This will throw an error if callback system is not working.
 pub fn openai_fspec_tool() -> FspecToolFacadeWrapper {
     FspecToolFacadeWrapper::new(Arc::new(OpenAIFspecFacade))
 }
 
 /// Create an FspecTool wrapper for Z.AI provider
+/// 
+/// NO CLI FALLBACKS - This will throw an error if callback system is not working.
 pub fn zai_fspec_tool() -> FspecToolFacadeWrapper {
     FspecToolFacadeWrapper::new(Arc::new(ZAIFspecFacade))
 }
 
 /// Create an FspecTool wrapper for the specified provider
+/// 
+/// NO CLI FALLBACKS - This will throw an error if callback system is not working.
 pub fn fspec_tool_for_provider(provider: &str) -> Option<FspecToolFacadeWrapper> {
     match provider {
         "claude" => Some(claude_fspec_tool()),

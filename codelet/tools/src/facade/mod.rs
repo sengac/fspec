@@ -40,7 +40,7 @@ mod system_prompt;
 mod thinking_config;
 mod traits;
 mod web_search;
-mod wrapper;
+pub mod wrapper;
 mod zai;
 
 pub use bash::GeminiRunShellCommandFacade;

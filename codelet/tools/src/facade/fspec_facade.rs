@@ -70,7 +70,7 @@ impl FspecToolFacade for ClaudeFspecFacade {
         let fspec_args: FspecArgs = serde_json::from_value(input).map_err(|e| {
             ToolError::Validation {
                 tool: "fspec",
-                message: format!("Invalid arguments: {}", e),
+                message: format!("Invalid arguments: {e}"),
             }
         })?;
 
@@ -186,7 +186,7 @@ impl FspecToolFacade for OpenAIFspecFacade {
         let fspec_args: FspecArgs = serde_json::from_value(input).map_err(|e| {
             ToolError::Validation {
                 tool: "fspec",
-                message: format!("Invalid arguments: {}", e),
+                message: format!("Invalid arguments: {e}"),
             }
         })?;
 

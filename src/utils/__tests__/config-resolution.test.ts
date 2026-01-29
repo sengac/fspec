@@ -13,7 +13,7 @@ import { resolveConfig, validateConfig } from '../config-resolution';
 
 describe('Feature: Configuration Management with TUI Integration', () => {
   let tempDir: string;
-  let originalEnv: NodeJS.ProcessEnv;
+  let originalEnv: Record<string, string | undefined>;
   let userConfigPath: string;
   let projectConfigPath: string;
 

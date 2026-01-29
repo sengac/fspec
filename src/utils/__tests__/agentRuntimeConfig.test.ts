@@ -12,6 +12,7 @@ import {
   writeFileSync,
   unlinkSync,
   rmdirSync,
+  readFileSync,
 } from 'fs';
 import { join } from 'path';
 import {
@@ -97,9 +98,7 @@ describe('Feature: Agent runtime detection for context-aware CLI output', () => 
       expect(existsSync(configPath)).toBe(true);
 
       // And it should contain {"agent": "claude"}
-      const config = JSON.parse(
-        require('fs').readFileSync(configPath, 'utf-8')
-      );
+      const config = JSON.parse(readFileSync(configPath, 'utf-8'));
       expect(config.agent).toBe('claude');
 
       // And subsequent commands should read this config for output formatting

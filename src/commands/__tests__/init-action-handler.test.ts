@@ -198,7 +198,10 @@ describe('Feature: Agent switching prompt in fspec init - Action Handler', () =>
 
       // Track config writes using a mock
       const configWrites: string[] = [];
-      const originalWriteFile = (global as any).writeAgentConfigMock;
+
+      const _originalWriteFile = (
+        globalThis as unknown as { writeAgentConfigMock?: unknown }
+      ).writeAgentConfigMock;
 
       // When I run 'fspec init --agent=claude'
       const result = await executeInit({

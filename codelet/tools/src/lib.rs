@@ -2,6 +2,8 @@
 //!
 //! File operations, code search, bash execution.
 //! All tools implement rig::tool::Tool trait for use with RigAgent.
+//!
+//! CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
 
 pub mod astgrep;
 pub mod astgrep_refactor;
@@ -12,6 +14,7 @@ pub mod error;
 pub mod facade;
 pub mod file_type;
 pub mod fspec;
+pub mod napi_bridge;
 pub mod glob;
 pub mod grep;
 pub mod limits;

@@ -406,10 +406,21 @@ export interface AstGrepTransform {
 }
 
 /**
- * Call fspec command via NAPI callback pattern
+ * Call fspec command via JS-controlled invocation pattern
  *
- * The callback receives (command, args_json, project_root) and returns JSON result.
- * This enables TypeScript to import and execute actual fspec command modules.
+ * CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
+ * Following rust-controlled.md pattern: JS explicitly passes the callback function
+ * to Rust, which calls it immediately and returns the result.
+ *
+ * TypeScript signature:
+ * ```typescript
+ * function callFspecCommand(
+ *   command: string,
+ *   argsJson: string,
+ *   projectRoot: string,
+ *   callback: (cmd: string, args: string, root: string) => string
+ * ): string
+ * ```
  */
 export declare function callFspecCommand(
   command: string,
