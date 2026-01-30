@@ -1,22 +1,22 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { addScenario } from '../add-scenario';
 
-import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+import { 
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
 describe('Feature: Add Scenario to Existing Feature File', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('add-scenario');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('add-scenario');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Add scenario to feature file with template', () => {
@@ -35,8 +35,8 @@ Feature: User Login
     When I enter credentials
     Then I should be logged in
 `;
-      await writeFile(
-        join(testDir, 'spec/features/login.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/login.feature'),
         featureContent
       );
 
@@ -45,7 +45,7 @@ Feature: User Login
         'login',
         'Successful login with valid credentials',
         {
-          cwd: testDir,
+          cwd: setup.testDir,
         }
       );
 
@@ -53,8 +53,8 @@ Feature: User Login
       expect(result.success).toBe(true);
 
       // And the file should contain a new scenario named "Successful login with valid credentials"
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/login.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/login.feature'),
         'utf-8'
       );
       expect(updatedContent).toContain(
@@ -79,22 +79,22 @@ Feature: User Login
   Scenario: Login
     Given test
 `;
-      await writeFile(
-        join(testDir, 'spec/features/user-auth.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/user-auth.feature'),
         featureContent
       );
 
       // When I run `fspec add-scenario user-auth "Password reset"`
       const result = await addScenario('user-auth', 'Password reset', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the file should contain a new scenario named "Password reset"
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/user-auth.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/user-auth.feature'),
         'utf-8'
       );
       expect(updatedContent).toContain('Scenario: Password reset');
@@ -109,8 +109,8 @@ Feature: User Login
   Scenario: View cart
     Given test
 `;
-      await writeFile(
-        join(testDir, 'spec/features/shopping-cart.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/shopping-cart.feature'),
         featureContent
       );
 
@@ -118,15 +118,15 @@ Feature: User Login
       const result = await addScenario(
         'spec/features/shopping-cart.feature',
         'Add item to cart',
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the file should contain a new scenario named "Add item to cart"
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/shopping-cart.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/shopping-cart.feature'),
         'utf-8'
       );
       expect(updatedContent).toContain('Scenario: Add item to cart');
@@ -141,19 +141,19 @@ Feature: User Login
   Scenario: Cash payment
     Given test
 `;
-      await writeFile(
-        join(testDir, 'spec/features/payment.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/payment.feature'),
         featureContent
       );
 
       // When I run `fspec add-scenario payment "Credit card payment"`
-      await addScenario('payment', 'Credit card payment', { cwd: testDir });
+      await addScenario('payment', 'Credit card payment', { cwd: setup.testDir });
 
       // And I run `fspec add-scenario payment "PayPal payment"`
-      await addScenario('payment', 'PayPal payment', { cwd: testDir });
+      await addScenario('payment', 'PayPal payment', { cwd: setup.testDir });
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/payment.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/payment.feature'),
         'utf-8'
       );
 
@@ -172,7 +172,7 @@ Feature: User Login
 
       // And the file should remain valid Gherkin syntax
       const result = await addScenario('payment', 'Test', {
-        cwd: testDir,
+        cwd: setup.testDir,
         dryRun: true,
       });
       expect(result.valid).toBe(true);
@@ -191,16 +191,16 @@ Feature: My Feature
   Scenario: First scenario
     Given test
 `;
-      await writeFile(
-        join(testDir, 'spec/features/my-feature.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/my-feature.feature'),
         featureContent
       );
 
       // When I run `fspec add-scenario my-feature "New scenario"`
-      await addScenario('my-feature', 'New scenario', { cwd: testDir });
+      await addScenario('my-feature', 'New scenario', { cwd: setup.testDir });
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/my-feature.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/my-feature.feature'),
         'utf-8'
       );
 
@@ -241,16 +241,16 @@ Feature: My Feature
       | param |
       | value |
 `;
-      await writeFile(
-        join(testDir, 'spec/features/my-feature.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/my-feature.feature'),
         featureContent
       );
 
       // When I run `fspec add-scenario my-feature "New scenario"`
-      await addScenario('my-feature', 'New scenario', { cwd: testDir });
+      await addScenario('my-feature', 'New scenario', { cwd: setup.testDir });
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/my-feature.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/my-feature.feature'),
         'utf-8'
       );
 
@@ -267,7 +267,7 @@ Feature: My Feature
 
       // And the file should remain valid Gherkin syntax
       const result = await addScenario('my-feature', 'Test', {
-        cwd: testDir,
+        cwd: setup.testDir,
         dryRun: true,
       });
       expect(result.valid).toBe(true);
@@ -281,7 +281,7 @@ Feature: My Feature
 
       // When I run `fspec add-scenario missing "New scenario"`
       const result = await addScenario('missing', 'New scenario', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -299,14 +299,14 @@ Feature: My Feature
     it('should show error and not modify file', async () => {
       // Given I have a feature file "spec/features/broken.feature" with invalid syntax
       const invalidContent = 'This is not valid Gherkin syntax';
-      await writeFile(
-        join(testDir, 'spec/features/broken.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/broken.feature'),
         invalidContent
       );
 
       // When I run `fspec add-scenario broken "New scenario"`
       const result = await addScenario('broken', 'New scenario', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -319,8 +319,8 @@ Feature: My Feature
       expect(result.suggestion).toContain('validate');
 
       // And the file should not be modified
-      const fileContent = await readFile(
-        join(testDir, 'spec/features/broken.feature'),
+      const fileContent = await readTextFile(
+        join(setup.testDir, 'spec/features/broken.feature'),
         'utf-8'
       );
       expect(fileContent).toBe(invalidContent);
@@ -335,14 +335,14 @@ Feature: My Feature
   Scenario: Login with email
     Given test
 `;
-      await writeFile(
-        join(testDir, 'spec/features/my-feature.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/my-feature.feature'),
         featureContent
       );
 
       // When I run `fspec add-scenario my-feature "Login with email"`
       const result = await addScenario('my-feature', 'Login with email', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -352,8 +352,8 @@ Feature: My Feature
       expect(result.warning).toMatch(/duplicate|exists/);
 
       // And the new scenario should still be added
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/my-feature.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/my-feature.feature'),
         'utf-8'
       );
       const scenarioMatches = updatedContent.match(
@@ -373,16 +373,16 @@ Feature: My Feature
     When step two
     Then step three
 `;
-      await writeFile(
-        join(testDir, 'spec/features/my-feature.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/my-feature.feature'),
         featureContent
       );
 
       // When I run `fspec add-scenario my-feature "New scenario"`
-      await addScenario('my-feature', 'New scenario', { cwd: testDir });
+      await addScenario('my-feature', 'New scenario', { cwd: setup.testDir });
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/my-feature.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/my-feature.feature'),
         'utf-8'
       );
 
@@ -412,16 +412,16 @@ Feature: My Feature
   Scenario: Existing
     Given test
 `;
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         featureContent
       );
 
       // When I run `fspec add-scenario test "Test scenario"`
-      await addScenario('test', 'Test scenario', { cwd: testDir });
+      await addScenario('test', 'Test scenario', { cwd: setup.testDir });
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/test.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         'utf-8'
       );
 

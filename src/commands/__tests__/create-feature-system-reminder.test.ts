@@ -4,32 +4,31 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { createFeature } from '../create-feature';
 import { generateScenarios } from '../generate-scenarios';
 import type { WorkUnitsData } from '../../types';
-import { writeFile } from 'fs/promises';
+import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('create-feature-system-reminder');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: System-reminder appears after create-feature with prefill', () => {
     it('should include system-reminder in result when feature has prefill', async () => {
       // Given I run fspec create-feature command
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
 
       // When I create a feature
-      const result = await createFeature('Test Feature with Prefill', testDir);
+      const result = await createFeature('Test Feature with Prefill', setup.testDir);
 
       // Then the feature file should be created
       expect(result.filePath).toContain('test-feature-with-prefill.feature');
@@ -56,7 +55,7 @@ describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
   describe('Scenario: System-reminder appears after generate-scenarios with prefill', () => {
     it('should include system-reminder when generated scenarios have placeholder steps', async () => {
       // Given I run fspec generate-scenarios command
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
 
       const workUnitsData: WorkUnitsData = {
         meta: {
@@ -89,20 +88,20 @@ describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       const result = await generateScenarios({
         workUnitId: 'TEST-005',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
 
       // When the generated scenarios contain placeholder steps
       const featureContent = await readFile(
-        join(testDir, 'spec/features/test-scenario-generation.feature'),
+        join(setup.testDir, 'spec/features/test-scenario-generation.feature'),
         'utf-8'
       );
 

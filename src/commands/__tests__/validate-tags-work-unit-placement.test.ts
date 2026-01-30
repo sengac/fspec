@@ -6,32 +6,22 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { validateTags } from '../validate-tags';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
-  let testDir: string;
-  let specDir: string;
-  let featuresDir: string;
-  let workUnitsFile: string;
-  let tagsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    featuresDir = join(specDir, 'features');
-    workUnitsFile = join(specDir, 'work-units.json');
-    tagsFile = join(specDir, 'tags.json');
+    setup = await setupWorkUnitTest('validate-tags-work-unit-placement');
 
-    // Create spec directory structure
-    await mkdir(featuresDir, { recursive: true });
+    // Create spec directory structure already handled by setupWorkUnitTest
 
     // Create work-units.json
     await writeFile(
-      workUnitsFile,
+      setup.workUnitsFile,
       JSON.stringify(
         {
           workUnits: {
@@ -60,7 +50,7 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
 
     // Create tags.json with required tags
     await writeFile(
-      tagsFile,
+      join(setup.specDir, "tags.json"),
       JSON.stringify(
         {
           categories: [
@@ -87,8 +77,7 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Validation rejects scenario-level work unit ID tags', () => {
@@ -97,7 +86,7 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
       // (The rule is always enabled in validate-tags.ts)
 
       // And I have a feature file with scenario-level work unit ID tag @AUTH-001
-      const featureFile = join(featuresDir, 'test.feature');
+      const featureFile = join(setup.featuresDir, 'test.feature');
       await writeFile(
         featureFile,
         `@critical
@@ -122,7 +111,7 @@ Feature: Test Feature
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/test.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the validation should fail
@@ -147,7 +136,7 @@ Feature: Test Feature
 
     it('should pass validation when work unit ID tag is at feature level only', async () => {
       // Given I have a feature file with work unit ID tag at feature level
-      const featureFile = join(featuresDir, 'test.feature');
+      const featureFile = join(setup.featuresDir, 'test.feature');
       await writeFile(
         featureFile,
         `@critical
@@ -171,7 +160,7 @@ Feature: Test Feature
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/test.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the validation should pass

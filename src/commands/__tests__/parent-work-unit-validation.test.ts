@@ -6,36 +6,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    // Create spec directory structure
-    await mkdir(specDir, { recursive: true });
+    setup = await setupWorkUnitTest('parent-work-unit-validation');
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Parent work unit moves to testing without scenarios', () => {
     it('should allow parent work unit to move to testing without scenario validation', async () => {
       // Given I have a parent work unit with children
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -95,7 +86,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'PARENT-001',
         status: 'testing',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
@@ -109,7 +100,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
     it('should fail when leaf work unit has no scenarios', async () => {
       // Given I have a leaf work unit (no children)
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -153,7 +144,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
         updateWorkUnitStatus({
           workUnitId: 'LEAF-001',
           status: 'testing',
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow(/No Gherkin scenarios found/);
     });
@@ -163,7 +154,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
     it('should allow parent to move to done when all children are done', async () => {
       // Given I have a parent work unit with all children done
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -211,7 +202,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'PARENT-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
@@ -225,7 +216,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
     it('should fail when trying to mark parent done with incomplete children', async () => {
       // Given I have a parent work unit with incomplete children
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -275,7 +266,7 @@ describe('Feature: Parent Work Unit Validation (BUG-006)', () => {
         updateWorkUnitStatus({
           workUnitId: 'PARENT-001',
           status: 'done',
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow(
         /Cannot mark parent as done while children are incomplete/

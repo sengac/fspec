@@ -1,22 +1,22 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm } from 'fs/promises';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { join } from 'path';
 import { check } from '../check';
 
 import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  writeTextFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Run All Validations', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('check');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
-  });
-
-  afterEach(async () => {
-    await removeTempTestDir(testDir);
+    setup = await setupTestDirectory('check');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   describe('Scenario: All validation checks pass', () => {
@@ -42,9 +42,9 @@ describe('Feature: Run All Validations', () => {
         ],
       };
 
-      await writeFile(
-        join(testDir, 'spec/tags.json'),
-        JSON.stringify(tagsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/tags.json'),
+        tagsData
       );
 
       const feature1 = `@critical
@@ -74,22 +74,22 @@ Feature: Feature 3
     Given step
 `;
 
-      await writeFile(
-        join(testDir, 'spec/features/feature1.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/feature1.feature'),
         feature1
       );
-      await writeFile(
-        join(testDir, 'spec/features/feature2.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/feature2.feature'),
         feature2
       );
-      await writeFile(
-        join(testDir, 'spec/features/feature3.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/feature3.feature'),
         feature3
       );
 
       // When I run `fspec check`
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -117,14 +117,14 @@ Feature: Broken
   Scenario: Test
     Given step`;
 
-      await writeFile(
-        join(testDir, 'spec/features/broken.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/broken.feature'),
         invalidFeature
       );
 
       // When I run `fspec check`
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -151,9 +151,9 @@ Feature: Broken
         ],
       };
 
-      await writeFile(
-        join(testDir, 'spec/tags.json'),
-        JSON.stringify(tagsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/tags.json'),
+        tagsData
       );
 
       const feature = `@unknown-tag
@@ -161,11 +161,11 @@ Feature: Test Feature
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/test.feature'), feature);
+      await writeTextFile(join(setup.testDir, 'spec/features/test.feature'), feature);
 
       // When I run `fspec check`
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -187,14 +187,14 @@ Feature: Test Feature
 Scenario: Test
 Given step`;
 
-      await writeFile(
-        join(testDir, 'spec/features/unformatted.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/unformatted.feature'),
         unformatted
       );
 
       // When I run `fspec check`
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -216,8 +216,8 @@ Feature: Broken
   Scenario: Test
     Given step`;
 
-      await writeFile(
-        join(testDir, 'spec/features/broken.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/broken.feature'),
         invalidGherkin
       );
 
@@ -231,9 +231,9 @@ Feature: Broken
         ],
       };
 
-      await writeFile(
-        join(testDir, 'spec/tags.json'),
-        JSON.stringify(tagsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/tags.json'),
+        tagsData
       );
 
       const badTag = `@bad-tag
@@ -241,21 +241,21 @@ Feature: Bad Tag
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/badtag.feature'), badTag);
+      await writeTextFile(join(setup.testDir, 'spec/features/badtag.feature'), badTag);
 
       // And I have a feature file with incorrect formatting
       const unformatted = `Feature: Unformatted
 Scenario: Test
 Given step`;
 
-      await writeFile(
-        join(testDir, 'spec/features/unformatted.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/unformatted.feature'),
         unformatted
       );
 
       // When I run `fspec check`
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -281,7 +281,7 @@ Given step`;
       // Given I have no feature files
       // When I run `fspec check`
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -315,9 +315,9 @@ Given step`;
         ],
       };
 
-      await writeFile(
-        join(testDir, 'spec/tags.json'),
-        JSON.stringify(tagsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/tags.json'),
+        tagsData
       );
 
       for (let i = 1; i <= 10; i++) {
@@ -329,15 +329,15 @@ Feature: Feature ${i}
   Scenario: Test
     Given step
 `;
-        await writeFile(
-          join(testDir, `spec/features/feature${i}.feature`),
+        await writeTextFile(
+          join(setup.testDir, `spec/features/feature${i}.feature`),
           feature
         );
       }
 
       // When I run `fspec check`
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -356,8 +356,8 @@ Feature: Feature ${i}
         const feature = `Feature: Feature ${i}
   Scenario: Test
     Given step`;
-        await writeFile(
-          join(testDir, `spec/features/feature${i}.feature`),
+        await writeTextFile(
+          join(setup.testDir, `spec/features/feature${i}.feature`),
           feature
         );
       }
@@ -366,14 +366,14 @@ Feature: Feature ${i}
 Feature: Feature 5
   Scenario: Test
     Given step`;
-      await writeFile(
-        join(testDir, 'spec/features/feature5.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/feature5.feature'),
         invalidFeature
       );
 
       // When I run `fspec check`
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -408,9 +408,9 @@ Feature: Feature 5
         ],
       };
 
-      await writeFile(
-        join(testDir, 'spec/tags.json'),
-        JSON.stringify(tagsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/tags.json'),
+        tagsData
       );
 
       for (let i = 1; i <= 3; i++) {
@@ -422,8 +422,8 @@ Feature: Feature ${i}
   Scenario: Test
     Given step
 `;
-        await writeFile(
-          join(testDir, `spec/features/feature${i}.feature`),
+        await writeTextFile(
+          join(setup.testDir, `spec/features/feature${i}.feature`),
           feature
         );
       }
@@ -431,7 +431,7 @@ Feature: Feature ${i}
       // When I run `fspec check --verbose`
       const result = await check({
         verbose: true,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -465,9 +465,9 @@ Feature: Feature ${i}
         ],
       };
 
-      await writeFile(
-        join(testDir, 'spec/tags.json'),
-        JSON.stringify(tagsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/tags.json'),
+        tagsData
       );
 
       for (let i = 1; i <= 100; i++) {
@@ -479,8 +479,8 @@ Feature: Feature ${i}
   Scenario: Test
     Given step
 `;
-        await writeFile(
-          join(testDir, `spec/features/feature${i}.feature`),
+        await writeTextFile(
+          join(setup.testDir, `spec/features/feature${i}.feature`),
           feature
         );
       }
@@ -488,7 +488,7 @@ Feature: Feature ${i}
       // When I run `fspec check`
       const startTime = Date.now();
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
       const duration = Date.now() - startTime;
 
@@ -508,14 +508,14 @@ Feature: Broken
   Scenario: Test
     Given step`;
 
-      await writeFile(
-        join(testDir, 'spec/features/broken.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/broken.feature'),
         invalidFeature
       );
 
       // When I run `fspec check` in a CI environment
       const result = await check({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1

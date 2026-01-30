@@ -5,12 +5,16 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile, access } from 'fs/promises';
+import { readFile, mkdir, writeFile, access, rm } from 'fs/promises';
 import { constants } from 'fs';
 import os from 'os';
 import path from 'path';
 import { installAgentFiles } from '../../commands/init';
 import { getAgentById } from '../../utils/agentRegistry';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 function pathWithinProject(projectRoot: string, relativePath: string): string {
   return path.join(projectRoot, relativePath);
@@ -32,26 +36,27 @@ describe('Feature: Codex init writes fspec prompt to user home directory', () =>
     throw new Error('codex-cli agent configuration not found in registry');
   }
 
-  let projectRoot: string;
+  let setup: TestDirectorySetup;
   let originalCwd: string;
 
   beforeEach(async () => {
-    projectRoot = await mkdtemp(path.join(os.tmpdir(), 'fspec-project-'));
+    setup = await setupTestDirectory('init-codex');
     originalCwd = process.cwd();
-    process.chdir(projectRoot);
+    process.chdir(setup.testDir);
   });
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await rm(projectRoot, { recursive: true, force: true });
+    await setup.cleanup();
     vi.restoreAllMocks();
   });
 
   it('writes the Codex prompt to ~/.codex/prompts on Unix-like systems', async () => {
-    const homeDir = await mkdtemp(path.join(os.tmpdir(), 'fspec-home-'));
+    const homeSetup = await setupTestDirectory('init-codex-home');
+    const homeDir = homeSetup.testDir;
     const homedirSpy = vi.spyOn(os, 'homedir').mockReturnValue(homeDir);
 
-    await installAgentFiles(projectRoot, codexAgent);
+    await installAgentFiles(setup.testDir, codexAgent);
 
     const expectedPromptPath = path.join(
       homeDir,
@@ -63,21 +68,21 @@ describe('Feature: Codex init writes fspec prompt to user home directory', () =>
     expect(promptContent.length).toBeGreaterThan(0);
 
     const projectPromptPath = pathWithinProject(
-      projectRoot,
+      setup.testDir,
       path.join('.codex', 'prompts', 'fspec.md')
     );
 
     expect(await fileExists(projectPromptPath)).toBe(false);
 
     homedirSpy.mockRestore();
-    await rm(homeDir, { recursive: true, force: true });
+    await homeSetup.cleanup();
   });
 
   it('resolves the Codex prompt path using os.homedir on Windows-style paths', async () => {
     const windowsHome = 'C:\\Users\\Riley';
     const homedirSpy = vi.spyOn(os, 'homedir').mockReturnValue(windowsHome);
 
-    await installAgentFiles(projectRoot, codexAgent);
+    await installAgentFiles(setup.testDir, codexAgent);
 
     const expectedRelative = path.join(
       windowsHome,
@@ -85,7 +90,7 @@ describe('Feature: Codex init writes fspec prompt to user home directory', () =>
       'prompts',
       'fspec.md'
     );
-    const resolvedPath = pathWithinProject(projectRoot, expectedRelative);
+    const resolvedPath = pathWithinProject(setup.testDir, expectedRelative);
     const promptContent = await readFile(resolvedPath, 'utf-8');
     expect(promptContent.length).toBeGreaterThan(0);
 
@@ -93,18 +98,19 @@ describe('Feature: Codex init writes fspec prompt to user home directory', () =>
   });
 
   it('re-running fspec init keeps project-level prompt intact', async () => {
-    const homeDir = await mkdtemp(path.join(os.tmpdir(), 'fspec-home-'));
+    const homeSetup = await setupTestDirectory('init-codex-home');
+    const homeDir = homeSetup.testDir;
     const homedirSpy = vi.spyOn(os, 'homedir').mockReturnValue(homeDir);
 
     const projectPromptsDir = pathWithinProject(
-      projectRoot,
+      setup.testDir,
       path.join('.codex', 'prompts')
     );
     await mkdir(projectPromptsDir, { recursive: true });
     const projectPromptPath = path.join(projectPromptsDir, 'fspec.md');
     await writeFile(projectPromptPath, 'project-level prompt', 'utf-8');
 
-    await installAgentFiles(projectRoot, codexAgent);
+    await installAgentFiles(setup.testDir, codexAgent);
 
     const homePromptPath = path.join(homeDir, '.codex', 'prompts', 'fspec.md');
     const homeContent = await readFile(homePromptPath, 'utf-8');
@@ -114,6 +120,6 @@ describe('Feature: Codex init writes fspec prompt to user home directory', () =>
     expect(projectContent).toBe('project-level prompt');
 
     homedirSpy.mockRestore();
-    await rm(homeDir, { recursive: true, force: true });
+    await homeSetup.cleanup();
   });
 });

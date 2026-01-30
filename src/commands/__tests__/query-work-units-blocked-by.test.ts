@@ -4,27 +4,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { listDependencies } from '../dependencies';
 import type { WorkUnitsData } from '../../types';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('query-work-units-blocked-by');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Show all work units blocked by specific work unit', () => {
     it('should show all work units that are blocked by a specific blocker', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And work unit "AUTH-001" blocks 3 other work units
       const workUnitsData: WorkUnitsData = {
@@ -98,13 +98,13 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When I run "fspec list-dependencies AUTH-001 --type=blocks"
       const result = await listDependencies('AUTH-001', {
-        cwd: testDir,
+        cwd: setup.testDir,
         type: 'blocks',
       });
 

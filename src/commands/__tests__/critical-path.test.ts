@@ -4,27 +4,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { calculateCriticalPath } from '../dependencies';
 import type { WorkUnitsData } from '../../types';
+import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('critical-path');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Calculate critical path through dependencies', () => {
     it('should find the longest dependency path through the work units', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And multiple dependency paths exist
       // Path 1: FEAT-001 → UI-001 → AUTH-001 (depth 3)
@@ -119,13 +119,13 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When I run "fspec calculate-critical-path"
       const result = await calculateCriticalPath({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show a critical path of length 4
@@ -148,7 +148,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
     it('should handle work units with no dependencies', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And work units have no dependency relationships
       const workUnitsData: WorkUnitsData = {
@@ -188,13 +188,13 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When I run "fspec calculate-critical-path"
       const result = await calculateCriticalPath({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the critical path should have length 1

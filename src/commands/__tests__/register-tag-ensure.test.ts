@@ -4,36 +4,42 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, access } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { registerTag } from '../register-tag';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Automatic JSON File Initialization', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('register-tag-ensure');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Register tag command auto-creates spec/tags.json when missing', () => {
     it('should create tags.json with valid structure when missing', async () => {
       // Given I have a fresh project with spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await ensureTestDirectory(join(setup.testDir, 'spec'));
 
       // Given spec/tags.json does not exist
-      const tagsFile = join(testDir, 'spec/tags.json');
+      const tagsFile = join(setup.testDir, 'spec/tags.json');
 
       // When I run "fspec register-tag @my-tag 'Phase Tags' 'My custom tag'"
       const result = await registerTag(
         '@my-tag',
         'Phase Tags',
         'My custom tag',
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the command should succeed
@@ -43,8 +49,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
       await access(tagsFile);
 
       // And the file should contain valid Tags JSON structure with default categories
-      const fs = await import('fs/promises');
-      const fileContent = await fs.readFile(tagsFile, 'utf-8');
+      const fileContent = await readFile(tagsFile, 'utf-8');
       const data = JSON.parse(fileContent);
 
       expect(data.categories).toBeDefined();

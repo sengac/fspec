@@ -2,34 +2,27 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
-import {
-  mkdtempSync,
-  mkdirSync,
-  rmSync,
-  writeFileSync,
-  readFileSync,
-} from 'fs';
-import { tmpdir } from 'os';
+import { readFileSync } from 'fs';
+import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile, ensureTestDirectory } from '../../test-helpers/test-file-operations';
 import type { WorkUnitsData } from '../../types';
 import { generateExampleMappingFromEventStorm } from '../generate-example-mapping-from-event-storm';
 
 describe('Feature: Generate Example Mapping from Event Storm', () => {
-  let tmpDir: string;
+  let setup: TestDirectorySetup;
 
-  beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'fspec-test-'));
+  beforeEach(async () => {
+    setup = await setupTestDirectory('generate-example-mapping-from-event-storm');
   });
 
-  afterEach(() => {
-    if (tmpDir) {
-      rmSync(tmpDir, { recursive: true, force: true });
-    }
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: Generate business rule from Event Storm policy', () => {
     it('should derive rule from policy when/then fields', async () => {
       // @step Given work unit "AUTH-001" has Event Storm with policy item
-      const workUnitsFile = join(tmpDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const workUnitsData: WorkUnitsData = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -72,8 +65,8 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
           },
         },
       };
-      mkdirSync(join(tmpDir, 'spec'), { recursive: true });
-      writeFileSync(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      ensureTestDirectory(join(setup.testDir, 'spec'), { recursive: true });
+      writeJsonTestFile(workUnitsFile, workUnitsData, null, 2);
 
       // @step And the policy has when="UserRegistered" and then="SendWelcomeEmail"
       const policy = workUnitsData.workUnits['AUTH-001'].eventStorm?.items[0];
@@ -87,7 +80,7 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
       // @step When I run "fspec generate-example-mapping-from-event-storm AUTH-001"
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'AUTH-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step Then a new rule should be added to AUTH-001 Example Mapping
@@ -110,7 +103,7 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
   describe('Scenario: Generate scenario example from domain event', () => {
     it('should derive example from event text', async () => {
       // @step Given work unit "AUTH-001" has Event Storm with event item
-      const workUnitsFile = join(tmpDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const workUnitsData: WorkUnitsData = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -151,8 +144,8 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
           },
         },
       };
-      mkdirSync(join(tmpDir, 'spec'), { recursive: true });
-      writeFileSync(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      ensureTestDirectory(join(setup.testDir, 'spec'), { recursive: true });
+      writeJsonTestFile(workUnitsFile, workUnitsData, null, 2);
 
       // @step And the event text is "UserAuthenticated"
       const event = workUnitsData.workUnits['AUTH-001'].eventStorm?.items[0];
@@ -163,7 +156,7 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
       // @step When I run "fspec generate-example-mapping-from-event-storm AUTH-001"
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'AUTH-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step Then NO examples should be added to AUTH-001 Example Mapping (BUG-089 fix)
@@ -184,7 +177,7 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
   describe('Scenario: Generate question from Event Storm hotspot', () => {
     it('should derive question from hotspot concern', async () => {
       // @step Given work unit "AUTH-001" has Event Storm with hotspot item
-      const workUnitsFile = join(tmpDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const workUnitsData: WorkUnitsData = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -226,8 +219,8 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
           },
         },
       };
-      mkdirSync(join(tmpDir, 'spec'), { recursive: true });
-      writeFileSync(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      ensureTestDirectory(join(setup.testDir, 'spec'), { recursive: true });
+      writeJsonTestFile(workUnitsFile, workUnitsData, null, 2);
 
       // @step And the hotspot concern is "Unclear password reset timeout"
       const hotspot = workUnitsData.workUnits['AUTH-001'].eventStorm?.items[0];
@@ -240,7 +233,7 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
       // @step When I run "fspec generate-example-mapping-from-event-storm AUTH-001"
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'AUTH-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step Then a new question should be added to AUTH-001 Example Mapping

@@ -6,20 +6,20 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { linkCoverage } from '../link-coverage';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: AI agents skip docstring step validation by using --skip-step-validation flag', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-skip-validation-'));
+    setup = await setupWorkUnitTest('skip-step-validation-enforcement');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Attempt to skip step validation for story work unit fails with strict error', () => {
@@ -35,13 +35,13 @@ describe('Feature: AI agents skip docstring step validation by using --skip-step
 
     it('should reject --skip-step-validation for story work units with strict error', async () => {
       // Setup: Create story work unit with feature file
-      const featuresDir = join(testDir, 'spec', 'features');
-      const testsDir = join(testDir, 'src', '__tests__');
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      const testsDir = join(setup.testDir, 'src', '__tests__');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
 
       await mkdir(featuresDir, { recursive: true });
       await mkdir(testsDir, { recursive: true });
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // Create work units file with story work unit
       const workUnitsData = {
@@ -106,7 +106,7 @@ Feature: User Login
           testFile: 'src/__tests__/auth.test.ts',
           testLines: '10-20',
           skipStepValidation: true,
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow();
 
@@ -116,7 +116,7 @@ Feature: User Login
           testFile: 'src/__tests__/auth.test.ts',
           testLines: '10-20',
           skipStepValidation: true,
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: any) {
         const errorMessage = error.message;
@@ -151,13 +151,13 @@ Feature: User Login
 
     it('should reject --skip-step-validation for bug work units with strict error', async () => {
       // Setup: Create bug work unit with feature file
-      const featuresDir = join(testDir, 'spec', 'features');
-      const testsDir = join(testDir, 'src', '__tests__');
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      const testsDir = join(setup.testDir, 'src', '__tests__');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
 
       await mkdir(featuresDir, { recursive: true });
       await mkdir(testsDir, { recursive: true });
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // Create work units file with bug work unit
       const workUnitsData = {
@@ -224,7 +224,7 @@ Feature: Fix validation bypass
           testFile: 'src/__tests__/validation.test.ts',
           testLines: '5-15',
           skipStepValidation: true,
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         throw new Error('Should have thrown error');
       } catch (error: any) {
@@ -252,13 +252,13 @@ Feature: Fix validation bypass
 
     it('should allow --skip-step-validation for task work units', async () => {
       // Setup: Create task work unit with feature file
-      const featuresDir = join(testDir, 'spec', 'features');
-      const testsDir = join(testDir, 'src', '__tests__');
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      const testsDir = join(setup.testDir, 'src', '__tests__');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
 
       await mkdir(featuresDir, { recursive: true });
       await mkdir(testsDir, { recursive: true });
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // Create work units file with task work unit
       const workUnitsData = {
@@ -322,7 +322,7 @@ Feature: Infrastructure Setup
         testFile: 'src/__tests__/setup.test.ts',
         testLines: '5-15',
         skipStepValidation: true,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Verify success
@@ -352,13 +352,13 @@ Feature: Infrastructure Setup
 
     it('should show strict system-reminder for story work units without skip option', async () => {
       // Setup
-      const featuresDir = join(testDir, 'spec', 'features');
-      const testsDir = join(testDir, 'src', '__tests__');
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      const testsDir = join(setup.testDir, 'src', '__tests__');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
 
       await mkdir(featuresDir, { recursive: true });
       await mkdir(testsDir, { recursive: true });
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // Create work units file with story work unit
       const workUnitsData = {
@@ -420,7 +420,7 @@ Feature: Password Reset
           scenario: 'Password reset flow',
           testFile: 'src/__tests__/password-reset.test.ts',
           testLines: '20-35',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         throw new Error('Should have thrown error');
       } catch (error: any) {
@@ -465,13 +465,13 @@ Feature: Password Reset
 
     it('should show strict system-reminder for bug work units without skip option', async () => {
       // Setup
-      const featuresDir = join(testDir, 'spec', 'features');
-      const testsDir = join(testDir, 'src', '__tests__');
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      const testsDir = join(setup.testDir, 'src', '__tests__');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
 
       await mkdir(featuresDir, { recursive: true });
       await mkdir(testsDir, { recursive: true });
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // Create work units file with bug work unit
       const workUnitsData = {
@@ -533,7 +533,7 @@ Feature: Fix Login Timeout
           scenario: 'Fix login timeout',
           testFile: 'src/__tests__/login-timeout.test.ts',
           testLines: '10-25',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         throw new Error('Should have thrown error');
       } catch (error: any) {

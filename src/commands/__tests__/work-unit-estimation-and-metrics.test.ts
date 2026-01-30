@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitEstimate } from '../update-work-unit-estimate';
 import { recordIteration } from '../record-iteration';
@@ -7,26 +6,27 @@ import { queryMetrics } from '../query-metrics';
 import { queryEstimateAccuracy } from '../query-estimate-accuracy';
 import { queryEstimationGuide } from '../query-estimation-guide';
 
-import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+import { 
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory, writeTextFile, readTextFile, writeJsonTestFile, readJsonTestFile } from '../../test-helpers/test-file-operations';
 describe('Feature: Work Unit Estimation and Metrics', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('work-unit-estimation-and-metrics');
+    setup = await setupTestDirectory('work-unit-estimation-and-metrics');
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Assign story points to work unit', () => {
     it('should set story point estimate', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -40,20 +40,20 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           backlog: ['AUTH-001'],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run update-work-unit with estimate
       const result = await updateWorkUnitEstimate({
         workUnitId: 'AUTH-001',
         estimate: 5,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
       expect(result.success).toBe(true);
 
       // And the work unit should have estimate of 5 story points
-      const content = await readFile(workUnitsFile, 'utf-8');
+      const content = await readTextFile(workUnitsFile, 'utf-8');
       const updatedData = JSON.parse(content);
       expect(updatedData.workUnits['AUTH-001'].estimate).toBe(5);
     });
@@ -63,7 +63,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     it('should accept Fibonacci numbers for estimates', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -77,20 +77,20 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           backlog: ['AUTH-001'],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run update-work-unit with Fibonacci estimate
       const result = await updateWorkUnitEstimate({
         workUnitId: 'AUTH-001',
         estimate: 8,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
       expect(result.success).toBe(true);
 
       // And the estimate should be valid Fibonacci number
-      const content = await readFile(workUnitsFile, 'utf-8');
+      const content = await readTextFile(workUnitsFile, 'utf-8');
       const updatedData = JSON.parse(content);
       expect(updatedData.workUnits['AUTH-001'].estimate).toBe(8);
     });
@@ -100,7 +100,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     it('should reject non-Fibonacci estimates', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -113,7 +113,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           backlog: ['AUTH-001'],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run update-work-unit with non-Fibonacci estimate
       // Then the command should fail
@@ -121,7 +121,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         updateWorkUnitEstimate({
           workUnitId: 'AUTH-001',
           estimate: 7,
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow('Invalid estimate');
 
@@ -130,7 +130,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
         updateWorkUnitEstimate({
           workUnitId: 'AUTH-001',
           estimate: 7,
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow('1,2,3,5,8,13,21');
     });
@@ -140,7 +140,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     it('should increment iteration counter', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with iterations 2
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -154,19 +154,19 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           implementing: ['AUTH-001'],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run record-iteration
       const result = await recordIteration({
         workUnitId: 'AUTH-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
       expect(result.success).toBe(true);
 
       // And the work unit should have iterations of 3
-      const content = await readFile(workUnitsFile, 'utf-8');
+      const content = await readTextFile(workUnitsFile, 'utf-8');
       const updatedData = JSON.parse(content);
       expect(updatedData.workUnits['AUTH-001'].iterations).toBe(3);
     });
@@ -176,7 +176,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     it('should calculate time from todo to done', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" has stateHistory
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -197,12 +197,12 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           done: ['AUTH-001'],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run query metrics
       const result = await queryMetrics({
         workUnitId: 'AUTH-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show cycle time: "8 hours"
@@ -222,7 +222,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     it('should compare estimated vs actual effort', async () => {
       // Given I have a project with spec directory
       // And a completed work unit "AUTH-001" has estimate and actuals
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -237,12 +237,12 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           done: ['AUTH-001'],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run query estimate-accuracy
       const result = await queryEstimateAccuracy({
         workUnitId: 'AUTH-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show estimated points
@@ -260,7 +260,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     it('should calculate accuracy metrics across all work', async () => {
       // Given I have a project with spec directory
       // And completed work units
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -298,11 +298,11 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           done: ['AUTH-001', 'AUTH-002', 'AUTH-003', 'AUTH-004', 'AUTH-005'],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run query estimate-accuracy with output=json
       const result = await queryEstimateAccuracy({
-        cwd: testDir,
+        cwd: setup.testDir,
         output: 'json',
       });
 
@@ -318,7 +318,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     it('should calculate accuracy per prefix', async () => {
       // Given I have a project with spec directory
       // And completed work units with different prefixes
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -346,11 +346,11 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           done: ['AUTH-001', 'AUTH-002', 'SEC-001', 'SEC-002'],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run query estimate-accuracy --by-prefix
       const result = await queryEstimateAccuracy({
-        cwd: testDir,
+        cwd: setup.testDir,
         byPrefix: true,
         output: 'json',
       });
@@ -366,7 +366,7 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
     it('should suggest estimates based on historical data', async () => {
       // Given I have a project with spec directory
       // And completed work units with established patterns
-      const workUnitsFile = join(testDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const data = {
         workUnits: {
           'AUTH-001': {
@@ -417,11 +417,11 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
           ],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(data, null, 2));
+      await writeTextFile(workUnitsFile, JSON.stringify(data, null, 2));
 
       // When I run query estimation-guide
       const result = await queryEstimationGuide({
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show recommended patterns (without token estimates)

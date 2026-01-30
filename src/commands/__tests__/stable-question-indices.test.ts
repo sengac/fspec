@@ -9,34 +9,23 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { addQuestion } from '../example-mapping';
 import { answerQuestion } from '../answer-question';
 import { showWorkUnit } from '../work-unit';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Stable Question Indices for Concurrent Answers', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
-  let featuresDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    featuresDir = join(specDir, 'features');
+    setup = await setupWorkUnitTest('stable-question-indices');
 
-    // Create spec directory structure
-    await mkdir(specDir, { recursive: true });
-    await mkdir(featuresDir, { recursive: true });
-
-    // Initialize work units file
+    // Initialize work units file with test data
     await writeFile(
-      workUnitsFile,
+      setup.workUnitsFile,
       JSON.stringify(
         {
           workUnits: {},
@@ -57,14 +46,13 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Add questions as objects with selected flag', () => {
     it('should add question as object with selected: false', async () => {
       // Given I have a work unit in specifying status
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -74,16 +62,16 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run `fspec add-question WORK-001 "@human: Should we use option A?"`
       await addQuestion('WORK-001', '@human: Should we use option A?', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the question should be added as {text: "@human: Should we use option A?", selected: false}
       const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       expect(updatedWorkUnits.workUnits['WORK-001'].questions).toHaveLength(1);
 
@@ -100,7 +88,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
     it('should mark question as selected and preserve all indices', async () => {
       // Given I have a work unit with 3 questions at indices 0, 1, 2
       // And all questions have selected: false
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -115,7 +103,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run `fspec answer-question WORK-001 1 --answer "Use option B" --add-to rule`
       await answerQuestion({
@@ -123,12 +111,12 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         index: 1,
         answer: 'Use option B',
         addTo: 'rule',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then question at index 1 should have selected: true
       const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       expect(updatedWorkUnits.workUnits['WORK-001'].questions[1].selected).toBe(
         true
@@ -156,7 +144,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
     it('should handle parallel answers without data loss', async () => {
       // Given I have a work unit with 3 questions at indices 0, 1, 2
       // And all questions have selected: false
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -171,7 +159,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run 3 answer-question commands in parallel
       await Promise.all([
@@ -180,27 +168,27 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
           index: 0,
           answer: 'Answer 0',
           addTo: 'rule',
-          cwd: testDir,
+          cwd: setup.testDir,
         }),
         answerQuestion({
           workUnitId: 'WORK-001',
           index: 1,
           answer: 'Answer 1',
           addTo: 'rule',
-          cwd: testDir,
+          cwd: setup.testDir,
         }),
         answerQuestion({
           workUnitId: 'WORK-001',
           index: 2,
           answer: 'Answer 2',
           addTo: 'rule',
-          cwd: testDir,
+          cwd: setup.testDir,
         }),
       ]);
 
       // Then all 3 questions should have selected: true
       const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].selected).toBe(
         true
@@ -250,7 +238,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
     it('should show only questions with selected: false', async () => {
       // Given I have a work unit with 5 questions
       // And questions at indices 1 and 3 have selected: true
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -266,10 +254,10 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run `fspec show-work-unit WORK-001`
-      const output = await showWorkUnit('WORK-001', { cwd: testDir });
+      const output = await showWorkUnit('WORK-001', { cwd: setup.testDir });
 
       // Then the output should display only questions at indices 0, 2, and 4
       expect(output).toContain('Question 0?');
@@ -288,7 +276,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
       // And the work unit has 3 questions
       // And question at index 1 has selected: true
       // And questions at indices 0 and 2 have selected: false
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -309,14 +297,14 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         attachments: ['spec/attachments/WORK-001/ast-research.json'],
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run `fspec update-work-unit-status WORK-001 testing`
       // Then the command should fail with error about unanswered questions
       const result = await updateWorkUnitStatus({
         workUnitId: 'WORK-001',
         status: 'testing',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(false);
@@ -334,7 +322,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
     it('should allow re-answering with last write wins', async () => {
       // Given I have a work unit with a question at index 0
       // And question 0 has selected: false
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -345,7 +333,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('WORK-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run `fspec answer-question WORK-001 0 --answer "Answer A" --add-to rule`
       await answerQuestion({
@@ -353,7 +341,7 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         index: 0,
         answer: 'Answer A',
         addTo: 'rule',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And I run `fspec answer-question WORK-001 0 --answer "Answer B" --add-to rule`
@@ -362,12 +350,12 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
         index: 0,
         answer: 'Answer B',
         addTo: 'rule',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then question 0 should have selected: true
       const updatedWorkUnits = JSON.parse(
-        await readFile(workUnitsFile, 'utf-8')
+        await readFile(setup.workUnitsFile, 'utf-8')
       );
       expect(updatedWorkUnits.workUnits['WORK-001'].questions[0].selected).toBe(
         true

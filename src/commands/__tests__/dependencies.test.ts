@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
 import {
   addDependency,
@@ -16,47 +15,29 @@ import {
 } from '../dependencies';
 import { validateWorkUnits, repairWorkUnits } from '../work-unit';
 import { queryWorkUnit } from '../work-unit';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  readJsonTestFile,
+  writeJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    await mkdir(specDir, { recursive: true });
-
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {},
-          states: {
-            backlog: [],
-            specifying: [],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: [],
-          },
-        },
-        null,
-        2
-      )
-    );
+    setup = await setupWorkUnitTest('dependencies');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Add blocks relationship between work units', () => {
     it('should create bidirectional blocks/blockedBy relationship', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         title: 'Build API endpoint',
@@ -73,11 +54,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: testDir });
+      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: setup.testDir });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
         'API-001'
       );
@@ -89,7 +70,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Add blockedBy relationship (inverse of blocks)', () => {
     it('should create bidirectional relationship from blockedBy', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         status: 'backlog',
@@ -104,11 +85,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('UI-001', { blockedBy: 'API-001' }, { cwd: testDir });
+      await addDependency('UI-001', { blockedBy: 'API-001' }, { cwd: setup.testDir });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].relationships.blockedBy).toContain(
         'API-001'
       );
@@ -120,7 +101,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Add dependsOn relationship for soft dependency', () => {
     it('should create one-way dependsOn relationship', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['DASH-001'] = {
         id: 'DASH-001',
         title: 'User dashboard',
@@ -137,15 +118,15 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await addDependency(
         'DASH-001',
         { dependsOn: 'AUTH-001' },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['DASH-001'].relationships.dependsOn).toContain(
         'AUTH-001'
       );
@@ -157,7 +138,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Add relatesTo relationship for informational linking', () => {
     it('should create informational relationship', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -173,15 +154,15 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await addDependency(
         'AUTH-001',
         { relatesTo: 'SEC-001' },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001'].relationships.relatesTo).toContain(
         'SEC-001'
       );
@@ -190,7 +171,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Detect direct circular dependency', () => {
     it('should prevent A→B→A cycle', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['A'] = {
         id: 'A',
         status: 'backlog',
@@ -205,21 +186,21 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await expect(
-        addDependency('B', { blocks: 'A' }, { cwd: testDir })
+        addDependency('B', { blocks: 'A' }, { cwd: setup.testDir })
       ).rejects.toThrow('Circular dependency detected');
 
       await expect(
-        addDependency('B', { blocks: 'A' }, { cwd: testDir })
+        addDependency('B', { blocks: 'A' }, { cwd: setup.testDir })
       ).rejects.toThrow('A → B → A');
     });
   });
 
   describe('Scenario: Detect transitive circular dependency', () => {
     it('should prevent A→B→C→A cycle', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['A'] = {
         id: 'A',
         status: 'backlog',
@@ -241,21 +222,21 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await expect(
-        addDependency('C', { blocks: 'A' }, { cwd: testDir })
+        addDependency('C', { blocks: 'A' }, { cwd: setup.testDir })
       ).rejects.toThrow('Circular dependency detected');
 
       await expect(
-        addDependency('C', { blocks: 'A' }, { cwd: testDir })
+        addDependency('C', { blocks: 'A' }, { cwd: setup.testDir })
       ).rejects.toThrow('A → B → C → A');
     });
   });
 
   describe('Scenario: Attempt to add dependency to non-existent work unit', () => {
     it('should fail with not found error', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -263,17 +244,17 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await expect(
-        addDependency('AUTH-001', { blocks: 'API-999' }, { cwd: testDir })
+        addDependency('AUTH-001', { blocks: 'API-999' }, { cwd: setup.testDir })
       ).rejects.toThrow("Work unit 'API-999' does not exist");
     });
   });
 
   describe('Scenario: Attempt to add self as dependency', () => {
     it('should prevent self-dependency', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -281,17 +262,17 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await expect(
-        addDependency('AUTH-001', { blocks: 'AUTH-001' }, { cwd: testDir })
+        addDependency('AUTH-001', { blocks: 'AUTH-001' }, { cwd: setup.testDir })
       ).rejects.toThrow('Cannot create dependency to self');
     });
   });
 
   describe('Scenario: Attempt to add duplicate dependency', () => {
     it('should prevent duplicate relationships', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -306,17 +287,17 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await expect(
-        addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: testDir })
+        addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: setup.testDir })
       ).rejects.toThrow('Dependency already exists');
     });
   });
 
   describe('Scenario: Auto-transition to blocked state when blockedBy exists', () => {
     it('should automatically block work unit', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         status: 'backlog',
@@ -333,11 +314,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       workUnits.states.backlog.push('UI-001');
       workUnits.states.implementing.push('API-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('UI-001', { blockedBy: 'API-001' }, { cwd: testDir });
+      await addDependency('UI-001', { blockedBy: 'API-001' }, { cwd: setup.testDir });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('blocked');
       expect(updated.workUnits['UI-001'].blockedReason).toContain(
         'Blocked by API-001'
@@ -347,7 +328,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Remove blocks relationship', () => {
     it('should remove bidirectional relationship', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -362,15 +343,15 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await removeDependency(
         'AUTH-001',
         { blocks: 'API-001' },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001'].relationships.blocks).not.toContain(
         'API-001'
       );
@@ -382,7 +363,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Show work unit with all dependencies', () => {
     it('should display all dependency types', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth',
@@ -395,10 +376,10 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       const { showWorkUnit } = await import('../work-unit');
-      const output = await showWorkUnit('AUTH-001', { cwd: testDir });
+      const output = await showWorkUnit('AUTH-001', { cwd: setup.testDir });
 
       expect(output).toContain('Blocks: API-001, UI-001');
       expect(output).toContain('Depends On: DB-001');
@@ -408,7 +389,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Display dependency graph for work unit', () => {
     it('should show dependency tree visualization', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001', 'UI-001'] },
@@ -433,12 +414,12 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       const output = await showDependencies(
         'AUTH-001',
         { graph: true },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       expect(output).toContain('AUTH-001');
@@ -452,16 +433,16 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Show impact analysis when completing work unit', () => {
     it('should list all blocked work units', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         relationships: { blocks: ['UI-001', 'DASH-001', 'MOBILE-001'] },
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      const output = await queryImpact('API-001', { cwd: testDir });
+      const output = await queryImpact('API-001', { cwd: setup.testDir });
 
       expect(output).toContain('Completing API-001 will unblock:');
       expect(output).toContain('UI-001');
@@ -473,7 +454,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Show dependency chain depth', () => {
     it('should calculate chain length', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001'] },
@@ -498,9 +479,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      const output = await queryDependencyChain('AUTH-001', { cwd: testDir });
+      const output = await queryDependencyChain('AUTH-001', { cwd: setup.testDir });
 
       expect(output).toContain('AUTH-001 → API-001 → UI-001 → MOBILE-001');
       expect(output).toContain('Chain depth: 4');
@@ -509,7 +490,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Calculate critical path through dependencies', () => {
     it('should find longest path with estimates', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         estimate: 8,
@@ -545,11 +526,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       const output = await queryCriticalPath(
         { from: 'AUTH-001', to: 'DEPLOY-1' },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       expect(output).toContain('AUTH-001 → API-001 → UI-001 → DEPLOY-1');
@@ -559,7 +540,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Validate dependency data structure', () => {
     it('should check bidirectional consistency', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001'] },
@@ -572,9 +553,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      const result = await validateWorkUnits({ cwd: testDir });
+      const result = await validateWorkUnits({ cwd: setup.testDir });
 
       expect(result.valid).toBe(true);
       expect(result.checks).toContain(
@@ -586,7 +567,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Repair broken bidirectional dependencies', () => {
     it('should fix inconsistent relationships', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001'] },
@@ -599,14 +580,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      const result = await repairWorkUnits({ cwd: testDir });
+      const result = await repairWorkUnits({ cwd: setup.testDir });
 
       expect(result.success).toBe(true);
       expect(result.message).toContain('Repaired 1 bidirectional dependency');
 
-      const repaired = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const repaired = await readJsonTestFile(setup.workUnitsFile);
       expect(repaired.workUnits['API-001'].relationships.blockedBy).toContain(
         'AUTH-001'
       );
@@ -615,7 +596,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Generate Mermaid diagram of dependencies', () => {
     it('should export valid Mermaid syntax', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001'] },
@@ -640,12 +621,12 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      const outputPath = join(testDir, 'deps.mmd');
+      const outputPath = join(setup.testDir, 'deps.mmd');
       await exportDependencies(
         { format: 'mermaid', output: outputPath },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       const mermaidContent = await readFile(outputPath, 'utf-8');
@@ -660,7 +641,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Add multiple relationships of same type', () => {
     it('should allow adding multiple blocks', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -682,12 +663,12 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: testDir });
-      await addDependency('AUTH-001', { blocks: 'UI-001' }, { cwd: testDir });
+      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: setup.testDir });
+      await addDependency('AUTH-001', { blocks: 'UI-001' }, { cwd: setup.testDir });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
         'API-001'
       );
@@ -702,7 +683,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Add multiple relationship types to same work unit', () => {
     it('should allow blocks, dependsOn, and relatesTo on one work unit', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -731,21 +712,21 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: testDir });
+      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: setup.testDir });
       await addDependency(
         'AUTH-001',
         { dependsOn: 'DB-001' },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
       await addDependency(
         'AUTH-001',
         { relatesTo: 'SEC-001' },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
         'API-001'
       );
@@ -760,7 +741,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Remove dependsOn relationship', () => {
     it('should remove one-way dependency', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['DASH-001'] = {
         id: 'DASH-001',
         status: 'backlog',
@@ -775,15 +756,15 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await removeDependency(
         'DASH-001',
         { dependsOn: 'AUTH-001' },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(
         updated.workUnits['DASH-001'].relationships.dependsOn || []
       ).not.toContain('AUTH-001');
@@ -792,7 +773,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Detect complex circular dependency chain', () => {
     it('should prevent A→B→C→D→A cycle', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['A'] = {
         id: 'A',
         status: 'backlog',
@@ -821,14 +802,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await expect(
-        addDependency('D', { blocks: 'A' }, { cwd: testDir })
+        addDependency('D', { blocks: 'A' }, { cwd: setup.testDir })
       ).rejects.toThrow('Circular dependency detected');
 
       await expect(
-        addDependency('D', { blocks: 'A' }, { cwd: testDir })
+        addDependency('D', { blocks: 'A' }, { cwd: setup.testDir })
       ).rejects.toThrow('A → B → C → D → A');
     });
   });
@@ -836,7 +817,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Auto-unblock when blocker completes', () => {
     it('should automatically unblock when dependency is done', async () => {
       const { updateWorkUnit } = await import('../work-unit');
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         title: 'UI work',
@@ -856,11 +837,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       workUnits.states.blocked.push('UI-001');
       workUnits.states.validating.push('API-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await updateWorkUnit('API-001', { status: 'done' }, { cwd: testDir });
+      await updateWorkUnit('API-001', { status: 'done' }, { cwd: setup.testDir });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('backlog');
       expect(updated.workUnits['UI-001'].blockedReason).toBeUndefined();
     });
@@ -869,7 +850,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Manual unblock after blocker completes', () => {
     it('should allow manually unblocking work unit', async () => {
       const { updateWorkUnit } = await import('../work-unit');
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         title: 'UI work',
@@ -880,11 +861,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.blocked.push('UI-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await updateWorkUnit('UI-001', { status: 'backlog' }, { cwd: testDir });
+      await updateWorkUnit('UI-001', { status: 'backlog' }, { cwd: setup.testDir });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('backlog');
       expect(updated.workUnits['UI-001'].blockedReason).toBeUndefined();
     });
@@ -892,7 +873,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Show all work units blocked by specific work unit', () => {
     it('should list all units with blockedBy reference', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         relationships: { blocks: ['UI-001', 'MOBILE-001'] },
@@ -911,9 +892,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      const output = await queryImpact('API-001', { cwd: testDir });
+      const output = await queryImpact('API-001', { cwd: setup.testDir });
 
       expect(output).toContain('UI-001');
       expect(output).toContain('MOBILE-001');
@@ -922,7 +903,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Find all currently blocked work units', () => {
     it('should query work units with blocked status', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         title: 'UI work',
@@ -949,11 +930,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       workUnits.states.blocked.push('UI-001', 'MOBILE-001');
       workUnits.states.implementing.push('API-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       const output = await queryWorkUnit(null, {
         status: 'blocked',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(output).toContain('UI-001');
@@ -965,7 +946,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Prevent starting work that is blocked', () => {
     it('should reject state transition from blocked to specifying', async () => {
       const { updateWorkUnit } = await import('../work-unit');
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         title: 'UI work',
@@ -976,13 +957,13 @@ describe('Feature: Work Unit Dependency Management', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.blocked.push('UI-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // Blocked can only transition to backlog/specifying/testing/implementing/validating
       // Should be able to move to backlog first
-      await updateWorkUnit('UI-001', { status: 'backlog' }, { cwd: testDir });
+      await updateWorkUnit('UI-001', { status: 'backlog' }, { cwd: setup.testDir });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('backlog');
     });
   });
@@ -990,7 +971,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Prevent deleting work unit that blocks others', () => {
     it('should reject deletion when blocks relationships exist', async () => {
       const { deleteWorkUnit } = await import('../work-unit');
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth',
@@ -1008,10 +989,10 @@ describe('Feature: Work Unit Dependency Management', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'API-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await expect(
-        deleteWorkUnit('AUTH-001', { cwd: testDir })
+        deleteWorkUnit('AUTH-001', { cwd: setup.testDir })
       ).rejects.toThrow('blocks other work');
     });
   });
@@ -1019,7 +1000,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Cascade delete dependencies when removing work unit', () => {
     it('should remove dependencies with --cascade-dependencies flag', async () => {
       const { deleteWorkUnit } = await import('../work-unit');
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth',
@@ -1037,14 +1018,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.backlog.push('AUTH-001', 'API-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await deleteWorkUnit('AUTH-001', {
-        cwd: testDir,
+        cwd: setup.testDir,
         cascadeDependencies: true,
       });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001']).toBeUndefined();
       expect(
         updated.workUnits['API-001'].relationships.blockedBy || []
@@ -1054,7 +1035,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Add multiple dependencies in one command', () => {
     it('should bulk add dependencies', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -1076,15 +1057,15 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await addDependencies(
         'AUTH-001',
         [{ blocks: 'API-001' }, { blocks: 'UI-001' }],
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
         'API-001'
       );
@@ -1096,7 +1077,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Remove all dependencies from work unit', () => {
     it('should clear all relationship types', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -1115,11 +1096,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await clearDependencies('AUTH-001', { cwd: testDir });
+      await clearDependencies('AUTH-001', { cwd: setup.testDir });
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(
         updated.workUnits['AUTH-001'].relationships.blocks || []
       ).toHaveLength(0);
@@ -1137,7 +1118,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
   describe('Scenario: Show dependency statistics', () => {
     it('should calculate aggregate statistics', async () => {
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         relationships: { blocks: ['API-001', 'UI-001'] },
@@ -1162,9 +1143,9 @@ describe('Feature: Work Unit Dependency Management', () => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      const output = await queryDependencyStats({ cwd: testDir });
+      const output = await queryDependencyStats({ cwd: setup.testDir });
 
       expect(output).toContain('Total work units: 4');
       expect(output).toContain('blocks: 2');
@@ -1176,7 +1157,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Warn when starting work with incomplete dependencies', () => {
     it('should check dependencies before moving to implementing', async () => {
       const { updateWorkUnit } = await import('../work-unit');
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = await readJsonTestFile(setup.workUnitsFile);
       workUnits.workUnits['UI-001'] = {
         id: 'UI-001',
         title: 'UI work',
@@ -1200,16 +1181,16 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       workUnits.states.testing.push('UI-001');
       workUnits.states.implementing.push('AUTH-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // Should succeed (warnings are optional implementation detail)
       const result = await updateWorkUnit(
         'UI-001',
         { status: 'implementing' },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
-      const updated = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('implementing');
       // Test passes as long as status transition is allowed
       // Warnings about incomplete dependencies are optional
@@ -1232,7 +1213,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Feature: Fix dependencies command error with work unit ID argument (BUG-024)', () => {
     describe('Scenario: Command accepts work unit ID without throwing Invalid action error', () => {
       it('should not throw Invalid action error when querying RES-001 dependencies', async () => {
-        const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+        const workUnits = await readJsonTestFile(setup.workUnitsFile);
         workUnits.workUnits['MCP-002'] = {
           id: 'MCP-002',
           title: 'MCP tool integration framework',
@@ -1251,13 +1232,13 @@ describe('Feature: Work Unit Dependency Management', () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+        await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
         // This should NOT throw "Invalid action: RES-001"
         const output = await showDependencies(
           'RES-001',
           { graph: false },
-          { cwd: testDir }
+          { cwd: setup.testDir }
         );
 
         expect(output).toContain('Dependencies for RES-001:');
@@ -1267,7 +1248,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
     describe('Scenario: Command displays all relationship types correctly', () => {
       it('should show all relationship types for work unit with multiple dependencies', async () => {
-        const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+        const workUnits = await readJsonTestFile(setup.workUnitsFile);
         workUnits.workUnits['MCP-002'] = {
           id: 'MCP-002',
           status: 'backlog',
@@ -1300,12 +1281,12 @@ describe('Feature: Work Unit Dependency Management', () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+        await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
         const output = await showDependencies(
           'RES-001',
           { graph: false },
-          { cwd: testDir }
+          { cwd: setup.testDir }
         );
 
         expect(output).toContain('Dependencies for RES-001:');
@@ -1319,7 +1300,7 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Feature: Dependencies command CLI interface (BUG-019)', () => {
     describe('Scenario: Query dependencies for work unit with no dependencies', () => {
       it('should show empty dependency list for work unit with no relationships', async () => {
-        const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+        const workUnits = await readJsonTestFile(setup.workUnitsFile);
         workUnits.workUnits['MCP-001'] = {
           id: 'MCP-001',
           title: 'Example work unit',
@@ -1328,12 +1309,12 @@ describe('Feature: Work Unit Dependency Management', () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+        await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
         const output = await showDependencies(
           'MCP-001',
           { graph: false },
-          { cwd: testDir }
+          { cwd: setup.testDir }
         );
 
         expect(output).toContain('Dependencies for MCP-001:');
@@ -1346,7 +1327,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
     describe('Scenario: Query dependencies for work unit with dependsOn relationships', () => {
       it('should display dependsOn relationships', async () => {
-        const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+        const workUnits = await readJsonTestFile(setup.workUnitsFile);
         workUnits.workUnits['MCP-001'] = {
           id: 'MCP-001',
           status: 'backlog',
@@ -1370,12 +1351,12 @@ describe('Feature: Work Unit Dependency Management', () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+        await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
         const output = await showDependencies(
           'MCP-004',
           { graph: false },
-          { cwd: testDir }
+          { cwd: setup.testDir }
         );
 
         expect(output).toContain('Dependencies for MCP-004:');
@@ -1386,7 +1367,7 @@ describe('Feature: Work Unit Dependency Management', () => {
     describe('Scenario: Query dependencies for non-existent work unit', () => {
       it('should throw error with work unit not found message', async () => {
         await expect(
-          showDependencies('INVALID-999', { graph: false }, { cwd: testDir })
+          showDependencies('INVALID-999', { graph: false }, { cwd: setup.testDir })
         ).rejects.toThrow("Work unit 'INVALID-999' does not exist");
       });
     });

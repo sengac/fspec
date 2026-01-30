@@ -4,27 +4,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 import { addDependency } from '../add-dependency';
 import type { WorkUnitsData } from '../../types';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('add-dependency-auto-block');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Adding blockedBy dependency auto-sets work unit to blocked state', () => {
     it('should auto-transition work unit to blocked when adding blockedBy dependency', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      
 
       // And work unit "UI-001" exists with status "backlog"
       // And work unit "API-001" exists with status "implementing"
@@ -63,7 +63,7 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -71,7 +71,7 @@ describe('Feature: Work Unit Dependency Management', () => {
       const result = await addDependency({
         workUnitId: 'UI-001',
         blockedBy: 'API-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
@@ -79,7 +79,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       // Read the updated work units file
       const updatedContent = await readFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         'utf-8'
       );
       const updatedData: WorkUnitsData = JSON.parse(updatedContent);

@@ -1,24 +1,24 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { updateStep } from '../update-step';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
-import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+import { 
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
 describe('Feature: Update Step in Scenario', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('update-step');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('update-step');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Update step text only', () => {
@@ -31,8 +31,8 @@ describe('Feature: Update Step in Scenario', () => {
     When I click button
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/login.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/login.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step login "Login test" "Given I am logged in" --text="Given I am authenticated"`
       const result = await updateStep({
@@ -40,13 +40,13 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Login test',
         currentStep: 'Given I am logged in',
         text: 'Given I am authenticated',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the step should be "Given I am authenticated"
       expect(updatedContent).toContain('Given I am authenticated');
@@ -80,8 +80,8 @@ describe('Feature: Update Step in Scenario', () => {
     Given I am on the page
     Then I see content
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step test "Test scenario" "Given I am on the page" --keyword="When"`
       const result = await updateStep({
@@ -89,13 +89,13 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Test scenario',
         currentStep: 'Given I am on the page',
         keyword: 'When',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the step should be "When I am on the page"
       expect(updatedContent).toContain('When I am on the page');
@@ -114,8 +114,8 @@ describe('Feature: Update Step in Scenario', () => {
     Given I click the button
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step test "Test scenario" "Given I click the button" --keyword="When" --text="When I submit the form"`
       const result = await updateStep({
@@ -124,13 +124,13 @@ describe('Feature: Update Step in Scenario', () => {
         currentStep: 'Given I click the button',
         keyword: 'When',
         text: 'When I submit the form',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the step should be "When I submit the form"
       expect(updatedContent).toContain('When I submit the form');
@@ -154,8 +154,8 @@ describe('Feature: Update Step in Scenario', () => {
     Given I am logged in
     When I do other thing
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step test "First" "Given I am logged in" --text="Given I have authenticated"`
       const result = await updateStep({
@@ -163,13 +163,13 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'First',
         currentStep: 'Given I am logged in',
         text: 'Given I have authenticated',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the step in "First" scenario should be updated
       const firstScenarioSection = updatedContent.split('Scenario: Second')[0];
@@ -191,8 +191,8 @@ describe('Feature: Update Step in Scenario', () => {
     When B
     Then C
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step test "Test scenario" "When B" --text="When B updated"`
       const result = await updateStep({
@@ -200,13 +200,13 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Test scenario',
         currentStep: 'When B',
         text: 'When B updated',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the steps should remain in order: "Given A", "When B updated", "Then C"
       const lines = updatedContent.split('\n');
@@ -226,8 +226,8 @@ describe('Feature: Update Step in Scenario', () => {
     Given I can login
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step test "Test scenario" "Given I can login" --text="Given I can't login with @invalid credentials"`
       const result = await updateStep({
@@ -235,13 +235,13 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Test scenario',
         currentStep: 'Given I can login',
         text: "Given I can't login with @invalid credentials",
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the step should contain apostrophe and special characters
       expect(updatedContent).toContain(
@@ -267,8 +267,8 @@ describe('Feature: Update Step in Scenario', () => {
     When I click button
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec update-step test "Test scenario" "Given non-existent step" --text="New text"`
@@ -277,7 +277,7 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Test scenario',
         currentStep: 'Given non-existent step',
         text: 'New text',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -288,7 +288,7 @@ describe('Feature: Update Step in Scenario', () => {
       expect(result.error).toContain('Given non-existent step');
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -303,8 +303,8 @@ describe('Feature: Update Step in Scenario', () => {
     And I enter password
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step test "Test scenario" "And I enter password" --keyword="Given"`
       const result = await updateStep({
@@ -312,13 +312,13 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Test scenario',
         currentStep: 'And I enter password',
         keyword: 'Given',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the step should be "Given I enter password"
       expect(updatedContent).toContain('Given I enter password');
@@ -336,8 +336,8 @@ describe('Feature: Update Step in Scenario', () => {
     When I click button
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step test "Test scenario" "Given I am on page" --text="Given I am on the login page"`
       const result = await updateStep({
@@ -345,13 +345,13 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Test scenario',
         currentStep: 'Given I am on page',
         text: 'Given I am on the login page',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the updated step should maintain proper indentation
       expect(updatedContent).toContain('    Given I am on the login page');
@@ -366,8 +366,8 @@ describe('Feature: Update Step in Scenario', () => {
   Scenario: Existing scenario
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec update-step test "Non-existent scenario" "Given test" --text="New text"`
@@ -376,7 +376,7 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Non-existent scenario',
         currentStep: 'Given test',
         text: 'New text',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -387,7 +387,7 @@ describe('Feature: Update Step in Scenario', () => {
       expect(result.error).toContain('Non-existent scenario');
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -400,15 +400,15 @@ describe('Feature: Update Step in Scenario', () => {
   Scenario: Test scenario
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-step test "Test scenario" "Given test"` without --text or --keyword
       const result = await updateStep({
         feature: 'test',
         scenario: 'Test scenario',
         currentStep: 'Given test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -428,8 +428,8 @@ describe('Feature: Update Step in Scenario', () => {
   Scenario: Some scenario
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/broken.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/broken.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec update-step broken "Some scenario" "Given test" --text="New text"`
@@ -438,7 +438,7 @@ describe('Feature: Update Step in Scenario', () => {
         scenario: 'Some scenario',
         currentStep: 'Given test',
         text: 'New text',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -448,7 +448,7 @@ describe('Feature: Update Step in Scenario', () => {
       expect(result.error).toMatch(/invalid.*syntax/i);
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).toBe(originalContent);
     });
   });

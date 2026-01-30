@@ -6,57 +6,28 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import { createCheckpoint } from '../../utils/git-checkpoint';
 import { existsSync } from 'fs';
+import { setupGitTest, type GitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done', () => {
-  let testDir: string;
+  let setup: GitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-auto-checkpoint-cleanup-'));
-
-    // Initialize git repository
-    await git.init({ fs, dir: testDir, defaultBranch: 'main' });
-
-    // Configure git
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
+    setup = await setupGitTest('auto-checkpoint-cleanup');
+    await setup.initGit();
 
     // Create initial directory structure
-    await mkdir(join(testDir, 'spec'), { recursive: true });
-
-    // Create initial commit so HEAD exists
-    await writeFile(join(testDir, 'README.md'), '# Test Project');
-    await git.add({ fs, dir: testDir, filepath: 'README.md' });
-    await git.commit({
-      fs,
-      dir: testDir,
-      message: 'Initial commit',
-      author: {
-        name: 'Test User',
-        email: 'test@example.com',
-      },
-    });
+    await mkdir(join(setup.testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   // @step Given a work unit "AUTH-001" exists with status "implementing"
@@ -120,52 +91,52 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // Create test file for commit
-      await writeFile(join(testDir, 'test.txt'), 'test content');
-      await git.add({ fs, dir: testDir, filepath: 'test.txt' });
+      await writeFile(join(setup.testDir, 'test.txt'), 'test content');
+      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Test commit',
         author: { name: 'Test User', email: 'test@example.com' },
       });
 
       // And "AUTH-001" has automatic checkpoint "AUTH-001-auto-specifying"
-      await writeFile(join(testDir, 'auto-spec.txt'), 'auto spec checkpoint');
+      await writeFile(join(setup.testDir, 'auto-spec.txt'), 'auto spec checkpoint');
       await createCheckpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'AUTH-001-auto-specifying',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
 
       // And "AUTH-001" has automatic checkpoint "AUTH-001-auto-testing"
-      await writeFile(join(testDir, 'auto-test.txt'), 'auto test checkpoint');
+      await writeFile(join(setup.testDir, 'auto-test.txt'), 'auto test checkpoint');
       await createCheckpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'AUTH-001-auto-testing',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
 
       // And "AUTH-001" has manual checkpoint "before-major-refactor"
-      await writeFile(join(testDir, 'manual.txt'), 'manual checkpoint');
+      await writeFile(join(setup.testDir, 'manual.txt'), 'manual checkpoint');
       await createCheckpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'before-major-refactor',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
 
       // Commit everything so working directory is clean
-      await git.add({ fs, dir: testDir, filepath: '.' });
+      await git.add({ fs, dir: setup.testDir, filepath: '.' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Clean state',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -174,7 +145,7 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       const result = await updateWorkUnitStatus({
         workUnitId: 'AUTH-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -183,21 +154,21 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
 
       // And checkpoint "AUTH-001-auto-specifying" should be deleted
       const autoSpecRefPath = join(
-        testDir,
+        setup.testDir,
         '.git/refs/fspec-checkpoints/AUTH-001/AUTH-001-auto-specifying'
       );
       expect(existsSync(autoSpecRefPath)).toBe(false);
 
       // And checkpoint "AUTH-001-auto-testing" should be deleted
       const autoTestRefPath = join(
-        testDir,
+        setup.testDir,
         '.git/refs/fspec-checkpoints/AUTH-001/AUTH-001-auto-testing'
       );
       expect(existsSync(autoTestRefPath)).toBe(false);
 
       // And checkpoint "before-major-refactor" should exist
       const manualRefPath = join(
-        testDir,
+        setup.testDir,
         '.git/refs/fspec-checkpoints/AUTH-001/before-major-refactor'
       );
       expect(existsSync(manualRefPath)).toBe(true);
@@ -206,7 +177,7 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       // And the index file should not contain "AUTH-001-auto-testing"
       // And the index file should contain "before-major-refactor"
       const indexPath = join(
-        testDir,
+        setup.testDir,
         '.git/fspec-checkpoints-index/AUTH-001.json'
       );
       const indexContent = await readFile(indexPath, 'utf-8');
@@ -282,43 +253,43 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // Create test file for commit
-      await writeFile(join(testDir, 'test.txt'), 'test content');
-      await git.add({ fs, dir: testDir, filepath: 'test.txt' });
+      await writeFile(join(setup.testDir, 'test.txt'), 'test content');
+      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Test commit',
         author: { name: 'Test User', email: 'test@example.com' },
       });
 
       // And "BUG-027" has manual checkpoint "before-fix"
-      await writeFile(join(testDir, 'before-fix.txt'), 'before fix');
+      await writeFile(join(setup.testDir, 'before-fix.txt'), 'before fix');
       await createCheckpoint({
         workUnitId: 'BUG-027',
         checkpointName: 'before-fix',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
 
       // And "BUG-027" has manual checkpoint "after-tests"
-      await writeFile(join(testDir, 'after-tests.txt'), 'after tests');
+      await writeFile(join(setup.testDir, 'after-tests.txt'), 'after tests');
       await createCheckpoint({
         workUnitId: 'BUG-027',
         checkpointName: 'after-tests',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
 
       // Commit everything
-      await git.add({ fs, dir: testDir, filepath: '.' });
+      await git.add({ fs, dir: setup.testDir, filepath: '.' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Clean state',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -327,7 +298,7 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       const result = await updateWorkUnitStatus({
         workUnitId: 'BUG-027',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -336,21 +307,21 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
 
       // And checkpoint "before-fix" should exist
       const beforeFixRefPath = join(
-        testDir,
+        setup.testDir,
         '.git/refs/fspec-checkpoints/BUG-027/before-fix'
       );
       expect(existsSync(beforeFixRefPath)).toBe(true);
 
       // And checkpoint "after-tests" should exist
       const afterTestsRefPath = join(
-        testDir,
+        setup.testDir,
         '.git/refs/fspec-checkpoints/BUG-027/after-tests'
       );
       expect(existsSync(afterTestsRefPath)).toBe(true);
 
       // And no checkpoints should be deleted (verify index still has both)
       const indexPath = join(
-        testDir,
+        setup.testDir,
         '.git/fspec-checkpoints-index/BUG-027.json'
       );
       const indexContent = await readFile(indexPath, 'utf-8');
@@ -422,43 +393,43 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // Create test file for commit
-      await writeFile(join(testDir, 'test.txt'), 'test content');
-      await git.add({ fs, dir: testDir, filepath: 'test.txt' });
+      await writeFile(join(setup.testDir, 'test.txt'), 'test content');
+      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Test commit',
         author: { name: 'Test User', email: 'test@example.com' },
       });
 
       // And "FEAT-010" has automatic checkpoint "FEAT-010-auto-backlog"
-      await writeFile(join(testDir, 'auto-backlog.txt'), 'auto backlog');
+      await writeFile(join(setup.testDir, 'auto-backlog.txt'), 'auto backlog');
       await createCheckpoint({
         workUnitId: 'FEAT-010',
         checkpointName: 'FEAT-010-auto-backlog',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
 
       // And "FEAT-010" has automatic checkpoint "FEAT-010-auto-specifying"
-      await writeFile(join(testDir, 'auto-spec.txt'), 'auto specifying');
+      await writeFile(join(setup.testDir, 'auto-spec.txt'), 'auto specifying');
       await createCheckpoint({
         workUnitId: 'FEAT-010',
         checkpointName: 'FEAT-010-auto-specifying',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
 
       // Commit everything
-      await git.add({ fs, dir: testDir, filepath: '.' });
+      await git.add({ fs, dir: setup.testDir, filepath: '.' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Clean state',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -467,7 +438,7 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       const result = await updateWorkUnitStatus({
         workUnitId: 'FEAT-010',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -476,21 +447,21 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
 
       // And checkpoint "FEAT-010-auto-backlog" should be deleted
       const autoBacklogRefPath = join(
-        testDir,
+        setup.testDir,
         '.git/refs/fspec-checkpoints/FEAT-010/FEAT-010-auto-backlog'
       );
       expect(existsSync(autoBacklogRefPath)).toBe(false);
 
       // And checkpoint "FEAT-010-auto-specifying" should be deleted
       const autoSpecRefPath = join(
-        testDir,
+        setup.testDir,
         '.git/refs/fspec-checkpoints/FEAT-010/FEAT-010-auto-specifying'
       );
       expect(existsSync(autoSpecRefPath)).toBe(false);
 
       // And all checkpoints for "FEAT-010" should be deleted
       const indexPath = join(
-        testDir,
+        setup.testDir,
         '.git/fspec-checkpoints-index/FEAT-010.json'
       );
       const indexContent = await readFile(indexPath, 'utf-8');
@@ -552,16 +523,16 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // Create test file for commit (clean working directory)
-      await writeFile(join(testDir, 'test.txt'), 'test content');
-      await git.add({ fs, dir: testDir, filepath: '.' });
+      await writeFile(join(setup.testDir, 'test.txt'), 'test content');
+      await git.add({ fs, dir: setup.testDir, filepath: '.' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Clean state',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -572,7 +543,7 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       const result = await updateWorkUnitStatus({
         workUnitId: 'TASK-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -582,7 +553,7 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       // And no errors should occur (already verified by success)
       // And no checkpoints should be deleted (verify no index file exists)
       const indexPath = join(
-        testDir,
+        setup.testDir,
         '.git/fspec-checkpoints-index/TASK-001.json'
       );
       expect(existsSync(indexPath)).toBe(false);

@@ -7,23 +7,22 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, readFile, rm, stat } from 'fs/promises';
+import { mkdir, writeFile, readFile, stat } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
-import { mkdtemp } from 'fs/promises';
 import { discoverFoundation } from '../discover-foundation';
 import type { GenericFoundation } from '../../types/generic-foundation';
+import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Implement draft-driven discovery workflow with AI chaining', () => {
-  let tmpDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(tmpDir, 'spec'), { recursive: true });
+    setup = await setupTestDirectory('draft-driven-discovery-feedback-loop');
+    await mkdir(join(setup.testDir, 'spec'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Initial draft creation with ULTRATHINK guidance', () => {
@@ -31,8 +30,8 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // Given human runs "fspec discover-foundation"
       // When command creates foundation.json.draft
       const result = await discoverFoundation({
-        draftPath: join(tmpDir, 'spec', 'foundation.json.draft'),
-        cwd: tmpDir,
+        draftPath: join(setup.testDir, 'spec', 'foundation.json.draft'),
+        cwd: setup.testDir,
         force: true,
       });
 
@@ -67,8 +66,8 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       process.env.FSPEC_AGENT = 'claude';
       // When command creates draft
       const result = await discoverFoundation({
-        draftPath: join(tmpDir, 'spec', 'foundation.json.draft'),
-        cwd: tmpDir,
+        draftPath: join(setup.testDir, 'spec', 'foundation.json.draft'),
+        cwd: setup.testDir,
         force: true,
       });
       delete process.env.FSPEC_AGENT;
@@ -90,7 +89,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
   describe('Scenario: Fill project.name field via feedback loop', () => {
     it('should emit system-reminder for project.name with exact command to run', async () => {
       // Given foundation.json.draft exists with [QUESTION: What is the project name?]
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -136,7 +135,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
     it('should detect draft update and automatically re-scan for next unfilled field', async () => {
       // Given draft has project.name filled
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -179,7 +178,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       process.env.FSPEC_AGENT = 'claude';
       // Given draft has project.name filled
       // And draft has [QUESTION: What is the one-sentence vision?] for project.vision
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -227,7 +226,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
     it('should chain to next unfilled field after vision is updated', async () => {
       // Given draft has project.vision filled
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -265,7 +264,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
   describe('Scenario: Verify DETECTED project type with human', () => {
     it('should emit system-reminder to verify detected value with all projectType options', async () => {
       // Given draft has [DETECTED: cli-tool] for project.projectType
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -310,7 +309,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
     it('should accept verified value and chain to problemSpace fields', async () => {
       // Given AI confirms projectType with human
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -349,7 +348,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
   describe('Scenario: Fill problemSpace from USER perspective', () => {
     it('should emit system-reminder emphasizing USER perspective and WHO/WHAT/WHY', async () => {
       // Given draft has [QUESTION: What problem does this solve?]
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -396,7 +395,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
     it('should chain to solutionSpace after problemSpace is filled', async () => {
       // Given AI fills primaryProblem fields
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -438,7 +437,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
   describe('Scenario: Fill solutionSpace.capabilities with WHAT not HOW focus', () => {
     it('should emit system-reminder emphasizing WHAT not HOW with examples', async () => {
       // Given draft has [QUESTION: What can users DO?] for capabilities
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -486,7 +485,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
     it('should chain to personas after capabilities are filled', async () => {
       // Given AI fills capabilities
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -532,7 +531,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
   describe('Scenario: Fill personas from user interaction analysis', () => {
     it('should emit system-reminder instructing to identify ALL user types from interactions', async () => {
       // Given draft has [QUESTION: Who uses this?] for personas
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -583,7 +582,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
     it('should recognize personas as last required field', async () => {
       // Given AI fills persona
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent: GenericFoundation = {
         version: '2.0.0',
         project: {
@@ -635,7 +634,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
   describe('Scenario: Complete discovery with auto-generation', () => {
     it('should validate draft, create foundation.json, delete draft, and auto-generate FOUNDATION.md', async () => {
       // Given AI has filled all required fields
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const completeDraft: GenericFoundation = {
         version: '2.0.0',
         project: {
@@ -677,9 +676,9 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // When command re-scans draft
       const result = await discoverFoundation({
         draftPath,
-        cwd: tmpDir,
+        cwd: setup.testDir,
         finalize: true,
-        outputPath: join(tmpDir, 'spec', 'foundation.json'),
+        outputPath: join(setup.testDir, 'spec', 'foundation.json'),
         autoGenerateMd: true,
       });
 
@@ -695,7 +694,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // Then command should create spec/foundation.json from draft
       expect(result.finalCreated).toBe(true);
       const foundationExists = await stat(
-        join(tmpDir, 'spec', 'foundation.json')
+        join(setup.testDir, 'spec', 'foundation.json')
       )
         .then(() => true)
         .catch(() => false);
@@ -721,7 +720,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
   describe('Scenario: Detect and reject manual editing', () => {
     it('should detect draft mtime changed outside fspec and emit ERROR system-reminder', async () => {
       // Given foundation.json.draft exists with unfilled fields
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const draftContent = {
         version: '2.0.0',
         project: {
@@ -795,7 +794,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
     it('should emit schema validation error with missing field details and keep draft', async () => {
       // Given AI has filled all required fields
       // When command validates draft against schema
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const invalidDraft = {
         version: '2.0.0',
         project: {
@@ -836,9 +835,9 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // When command validates draft
       const result = await discoverFoundation({
         draftPath,
-        cwd: tmpDir,
+        cwd: setup.testDir,
         finalize: true,
-        outputPath: join(tmpDir, 'spec', 'foundation.json'),
+        outputPath: join(setup.testDir, 'spec', 'foundation.json'),
       });
 
       // Then validation should FAIL with missing field: problemSpace.primaryProblem.description
@@ -864,7 +863,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // And foundation.json should NOT be created
       expect(result.finalCreated).toBeUndefined();
       const foundationExists = await stat(
-        join(tmpDir, 'spec', 'foundation.json')
+        join(setup.testDir, 'spec', 'foundation.json')
       )
         .then(() => true)
         .catch(() => false);
@@ -873,7 +872,7 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
 
     it('should validate again and succeed after missing field is fixed', async () => {
       // Given AI fixes missing field
-      const draftPath = join(tmpDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const fixedDraft: GenericFoundation = {
         version: '2.0.0',
         project: {
@@ -911,9 +910,9 @@ describe('Feature: Implement draft-driven discovery workflow with AI chaining', 
       // When AI re-runs discover-foundation
       const result = await discoverFoundation({
         draftPath,
-        cwd: tmpDir,
+        cwd: setup.testDir,
         finalize: true,
-        outputPath: join(tmpDir, 'spec', 'foundation.json'),
+        outputPath: join(setup.testDir, 'spec', 'foundation.json'),
       });
 
       // Then command should validate again and succeed

@@ -1,51 +1,51 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile, access } from 'fs/promises';
 import { join } from 'path';
 import { addDiagram } from '../add-diagram';
 import { createMinimalFoundation } from '../../test-helpers/foundation-fixtures';
 import type { DiagramSection } from '../../types/foundation';
 
 import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+  fileExists,
+} from '../../test-helpers/test-file-operations';
+import { readFile, writeFile, access } from 'fs/promises';
 describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('add-diagram');
+    setup = await setupTestDirectory('add-diagram');
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Add new diagram to existing section', () => {
     it('should add diagram to existing section', async () => {
       // Given I have a foundation.json with existing data
-      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
       const minimalFoundation = createMinimalFoundation();
 
-      await writeFile(
-        foundationJsonPath,
-        JSON.stringify(minimalFoundation, null, 2)
-      );
+      await writeJsonTestFile(foundationJsonPath, minimalFoundation);
 
       // When I run `fspec add-diagram Architecture "Component Diagram" "graph TD\n  A-->B"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Component Diagram',
         code: 'graph TD\n  A-->B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the foundation.json should contain the new diagram
-      const updatedJson = JSON.parse(
-        await readFile(foundationJsonPath, 'utf-8')
-      );
+      const updatedJson = await readJsonTestFile(foundationJsonPath);
       const diagram = updatedJson.architectureDiagrams.find(
         (d: DiagramSection) => d.title === 'Component Diagram'
       );
@@ -54,7 +54,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And FOUNDATION.md should be regenerated with the diagram
       const updatedContent = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec', 'FOUNDATION.md'),
         'utf-8'
       );
       expect(updatedContent).toContain('Component Diagram');
@@ -67,29 +67,24 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Add diagram to new section', () => {
     it('should add diagram to architectureDiagrams array', async () => {
       // Given I have a foundation.json with existing data
-      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
       const minimalFoundation = createMinimalFoundation();
 
-      await writeFile(
-        foundationJsonPath,
-        JSON.stringify(minimalFoundation, null, 2)
-      );
+      await writeJsonTestFile(foundationJsonPath, minimalFoundation);
 
       // When I run `fspec add-diagram "Data Flow" "User Login Flow" "sequenceDiagram\n  User->>Server: Login"`
       const result = await addDiagram({
         section: 'Data Flow',
         title: 'User Login Flow',
         code: 'sequenceDiagram\n  User->>Server: Login',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the foundation.json should contain the new diagram
-      const updatedJson = JSON.parse(
-        await readFile(foundationJsonPath, 'utf-8')
-      );
+      const updatedJson = await readJsonTestFile(foundationJsonPath);
       const diagram = updatedJson.architectureDiagrams.find(
         (d: DiagramSection) => d.title === 'User Login Flow'
       );
@@ -100,7 +95,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And FOUNDATION.md should be regenerated with the diagram
       const updatedContent = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
       expect(updatedContent).toContain('User Login Flow');
@@ -111,29 +106,24 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Replace existing diagram with same title', () => {
     it('should replace existing diagram', async () => {
       // Given I have a foundation.json with an existing diagram
-      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
       const minimalFoundation = createMinimalFoundation();
 
-      await writeFile(
-        foundationJsonPath,
-        JSON.stringify(minimalFoundation, null, 2)
-      );
+      await writeJsonTestFile(foundationJsonPath, minimalFoundation);
 
       // When I run `fspec add-diagram Architecture "System Overview" "graph LR\n  New-->Diagram"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'System Overview',
         code: 'graph LR\n  New-->Diagram',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the foundation.json should have the updated diagram
-      const updatedJson = JSON.parse(
-        await readFile(foundationJsonPath, 'utf-8')
-      );
+      const updatedJson = await readJsonTestFile(foundationJsonPath);
       const diagram = updatedJson.architectureDiagrams.find(
         (d: DiagramSection) => d.title === 'System Overview'
       );
@@ -142,7 +132,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And FOUNDATION.md should be regenerated with new content
       const updatedContent = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
       expect(updatedContent).toContain('New-->Diagram');
@@ -153,7 +143,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Add multiple diagrams to same section', () => {
     it('should add multiple diagrams', async () => {
       // Given I have a foundation.json with an existing diagram
-      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
       const foundationWithDiagram = createMinimalFoundation({
         architectureDiagrams: [
           {
@@ -163,9 +153,9 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         ],
       });
 
-      await writeFile(
+      await writeJsonTestFile(
         foundationJsonPath,
-        JSON.stringify(foundationWithDiagram, null, 2)
+        foundationWithDiagram
       );
 
       // When I run `fspec add-diagram Architecture "Diagram 2" "graph TD\n  C-->D"`
@@ -173,16 +163,14 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         section: 'Architecture',
         title: 'Diagram 2',
         code: 'graph TD\n  C-->D',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the foundation.json should contain both diagrams
-      const updatedJson = JSON.parse(
-        await readFile(foundationJsonPath, 'utf-8')
-      );
+      const updatedJson = await readJsonTestFile(foundationJsonPath);
       expect(updatedJson.architectureDiagrams.length).toBe(2);
 
       const diagram1 = updatedJson.architectureDiagrams.find(
@@ -199,7 +187,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And FOUNDATION.md should be regenerated with both diagrams
       const updatedContent = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
       expect(updatedContent).toContain('Diagram 1');
@@ -217,7 +205,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         section: 'Architecture',
         title: 'Initial Diagram',
         code: 'graph TD\n  Start-->End',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -225,11 +213,11 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And a FOUNDATION.md file should be created
       await expect(
-        access(join(testDir, 'spec/FOUNDATION.md'))
+        access(join(setup.testDir, 'spec/FOUNDATION.md'))
       ).resolves.toBeUndefined();
 
       const content = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
 
@@ -242,12 +230,12 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Preserve existing FOUNDATION.md sections', () => {
     it('should preserve foundation.json data and add new diagram', async () => {
       // Given I have a foundation.json with existing content
-      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
       const minimalFoundation = createMinimalFoundation();
 
-      await writeFile(
+      await writeJsonTestFile(
         foundationJsonPath,
-        JSON.stringify(minimalFoundation, null, 2)
+        minimalFoundation
       );
 
       // When I run `fspec add-diagram Architecture "Diagram" "graph TD\n  A-->B"`
@@ -255,7 +243,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         section: 'Architecture',
         title: 'Diagram',
         code: 'graph TD\n  A-->B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -263,7 +251,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And the foundation.json should preserve existing data and add the new diagram
       const updatedJson = JSON.parse(
-        await readFile(foundationJsonPath, 'utf-8')
+        await readFile(foundationJsonPath)
       );
       expect(updatedJson.solutionSpace.overview).toBe('Test solution overview');
       expect(updatedJson.problemSpace.primaryProblem.description).toBe(
@@ -277,7 +265,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And FOUNDATION.md should be regenerated with all sections
       const updatedContent = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
       expect(updatedContent).toContain('## Solution Space');
@@ -292,21 +280,21 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Support different Mermaid diagram types', () => {
     it('should support sequenceDiagram', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
 
       // When I run `fspec add-diagram Flows "Sequence Diagram" "sequenceDiagram\n  A->>B: Message"`
       const result = await addDiagram({
         section: 'Flows',
         title: 'Sequence Diagram',
         code: 'sequenceDiagram\n  A->>B: Message',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       const content = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
 
@@ -318,21 +306,21 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Add class diagram', () => {
     it('should support classDiagram', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
 
       // When I run `fspec add-diagram "Class Structure" "Domain Model" "classDiagram\n  Class01 <|-- Class02"`
       const result = await addDiagram({
         section: 'Class Structure',
         title: 'Domain Model',
         code: 'classDiagram\n  Class01 <|-- Class02',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       const content = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
 
@@ -344,14 +332,14 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Reject empty diagram code', () => {
     it('should reject empty code', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
 
       // When I run `fspec add-diagram Architecture "Empty" ""`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Empty',
         code: '',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -365,14 +353,15 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Reject empty diagram title', () => {
     it('should reject empty title', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "" "graph TD\n  A-->B"`
       const result = await addDiagram({
         section: 'Architecture',
         title: '',
         code: 'graph TD\n  A-->B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -386,14 +375,15 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Reject empty section name', () => {
     it('should reject empty section', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram "" "Title" "graph TD\n  A-->B"`
       const result = await addDiagram({
         section: '',
         title: 'Title',
         code: 'graph TD\n  A-->B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -407,21 +397,22 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Format diagram with proper markdown', () => {
     it('should format diagram correctly', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "Flow" "graph TD\n  A-->B"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Flow',
         code: 'graph TD\n  A-->B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       const content = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
 
@@ -435,21 +426,22 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Handle multi-line diagram code', () => {
     it('should preserve all diagram lines', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "Complex" "graph TD\n  A-->B\n  B-->C\n  C-->D"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Complex',
         code: 'graph TD\n  A-->B\n  B-->C\n  C-->D',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       const content = await readFile(
-        join(testDir, 'spec/FOUNDATION.md'),
+        join(setup.testDir, 'spec/FOUNDATION.md'),
         'utf-8'
       );
 
@@ -463,7 +455,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: JSON-backed workflow - modify JSON and regenerate MD', () => {
     it('should update foundation.json and regenerate FOUNDATION.md', async () => {
       // Given I have a valid foundation.json file with an existing diagram
-      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
       const foundationWithDiagram = createMinimalFoundation({
         architectureDiagrams: [
           {
@@ -473,9 +465,9 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         ],
       });
 
-      await writeFile(
+      await writeJsonTestFile(
         foundationJsonPath,
-        JSON.stringify(foundationWithDiagram, null, 2)
+        foundationWithDiagram
       );
 
       // When I run `fspec add-diagram "Architecture Diagrams" "New System Diagram" "graph TD\n  A-->B"`
@@ -483,12 +475,12 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
         section: 'Architecture Diagrams',
         title: 'New System Diagram',
         code: 'graph TD\n  A-->B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the foundation.json file should be updated with the new diagram
       const updatedFoundationJson = JSON.parse(
-        await readFile(foundationJsonPath, 'utf-8')
+        await readFile(foundationJsonPath)
       );
 
       // And the foundation.json should validate against foundation.schema.json
@@ -512,7 +504,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
       // And FOUNDATION.md should be regenerated from foundation.json
       const foundationContent = await readFile(
-        join(testDir, 'spec', 'FOUNDATION.md'),
+        join(setup.testDir, 'spec', 'FOUNDATION.md'),
         'utf-8'
       );
 
@@ -537,14 +529,15 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Reject invalid Mermaid syntax', () => {
     it('should reject diagram with syntax errors', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "Bad Diagram" "graph TD\n  A--"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Bad Diagram',
         code: 'graph TD\n  A--',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -562,14 +555,15 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Reject diagram with invalid diagram type', () => {
     it('should reject unknown diagram type', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "Invalid Type" "invalidDiagram\n  A-->B"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Invalid Type',
         code: 'invalidDiagram\n  A-->B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -583,23 +577,24 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Accept valid flowchart diagram', () => {
     it('should accept valid flowchart', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "Valid Flow" "flowchart TD\n  A-->B\n  B-->C"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Valid Flow',
         code: 'flowchart TD\n  A-->B\n  B-->C',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the diagram should be added successfully
-      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
       const foundationJson = JSON.parse(
-        await readFile(foundationJsonPath, 'utf-8')
+        await readFile(foundationJsonPath)
       );
       const diagram = foundationJson.architectureDiagrams.find(
         (d: DiagramSection) => d.title === 'Valid Flow'
@@ -612,23 +607,24 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Accept valid sequence diagram', () => {
     it('should accept valid sequence diagram', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "Valid Sequence" "sequenceDiagram\n  Alice->>Bob: Hello\n  Bob-->>Alice: Hi"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Valid Sequence',
         code: 'sequenceDiagram\n  Alice->>Bob: Hello\n  Bob-->>Alice: Hi',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the diagram should be added successfully
-      const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+      const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
       const foundationJson = JSON.parse(
-        await readFile(foundationJsonPath, 'utf-8')
+        await readFile(foundationJsonPath)
       );
       const diagram = foundationJson.architectureDiagrams.find(
         (d: DiagramSection) => d.title === 'Valid Sequence'
@@ -640,14 +636,15 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Reject malformed graph syntax', () => {
     it('should reject malformed syntax', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "Malformed" "graph TD\n  A->->B"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Malformed',
         code: 'graph TD\n  A->->B',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -661,14 +658,15 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
   describe('Scenario: Provide helpful error message for syntax errors', () => {
     it('should provide error details', async () => {
       // Given I have a FOUNDATION.md
-      await writeFile(join(testDir, 'spec/FOUNDATION.md'), '# Foundation\n');
+      await writeFile(join(setup.testDir, 'spec/FOUNDATION.md'), '# Foundation
+');
 
       // When I run `fspec add-diagram Architecture "Error Test" "graph TD\n  A[Missing bracket"`
       const result = await addDiagram({
         section: 'Architecture',
         title: 'Error Test',
         code: 'graph TD\n  A[Missing bracket',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -690,11 +688,11 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
     describe('Scenario: Add C4Context diagram with complex example', () => {
       it('should add C4Context diagram without screen error', async () => {
         // @step Given I have a project with foundation.json
-        const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+        const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
         const minimalFoundation = createMinimalFoundation();
-        await writeFile(
+        await writeJsonTestFile(
           foundationJsonPath,
-          JSON.stringify(minimalFoundation, null, 2)
+          minimalFoundation
         );
 
         // @step When I run add-diagram with a C4Context diagram containing Person, System, System_Ext, and Rel elements
@@ -710,7 +708,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
           section: 'Architecture',
           title: 'Internet Banking Context',
           code: c4Code,
-          cwd: testDir,
+          cwd: setup.testDir,
         });
 
         // @step Then the command should exit with code 0
@@ -718,7 +716,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
         // @step And the diagram should be added to foundation.json
         const updatedJson = JSON.parse(
-          await readFile(foundationJsonPath, 'utf-8')
+          await readFile(foundationJsonPath)
         );
         const diagram = updatedJson.architectureDiagrams.find(
           (d: DiagramSection) => d.title === 'Internet Banking Context'
@@ -736,11 +734,11 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
     describe('Scenario: Add C4Context diagram from reported issue', () => {
       it('should accept C4Context from GitHub issue #5', async () => {
         // @step Given I have a project with foundation.json
-        const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+        const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
         const minimalFoundation = createMinimalFoundation();
-        await writeFile(
+        await writeJsonTestFile(
           foundationJsonPath,
-          JSON.stringify(minimalFoundation, null, 2)
+          minimalFoundation
         );
 
         // @step When I run add-diagram with the exact C4Context code from GitHub issue #5
@@ -759,7 +757,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
           section: 'Architecture',
           title: 'Banking System Context',
           code: c4CodeFromIssue,
-          cwd: testDir,
+          cwd: setup.testDir,
         });
 
         // @step Then the command should exit with code 0
@@ -767,7 +765,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
         // @step And the diagram should be added to foundation.json
         const updatedJson = JSON.parse(
-          await readFile(foundationJsonPath, 'utf-8')
+          await readFile(foundationJsonPath)
         );
         const diagram = updatedJson.architectureDiagrams.find(
           (d: DiagramSection) => d.title === 'Banking System Context'
@@ -782,11 +780,11 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
     describe('Scenario: Add simple C4Context diagram', () => {
       it('should add simple C4Context with one Person and one System', async () => {
         // @step Given I have a project with foundation.json
-        const foundationJsonPath = join(testDir, 'spec', 'foundation.json');
+        const foundationJsonPath = join(setup.testDir, 'spec', 'foundation.json');
         const minimalFoundation = createMinimalFoundation();
-        await writeFile(
+        await writeJsonTestFile(
           foundationJsonPath,
-          JSON.stringify(minimalFoundation, null, 2)
+          minimalFoundation
         );
 
         // @step When I run add-diagram with a simple C4Context diagram with one Person and one System
@@ -800,7 +798,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
           section: 'Architecture',
           title: 'Simple Context',
           code: simpleC4,
-          cwd: testDir,
+          cwd: setup.testDir,
         });
 
         // @step Then the command should exit with code 0
@@ -808,7 +806,7 @@ describe('Feature: Add Mermaid Diagram to FOUNDATION.md', () => {
 
         // @step And the diagram should be added to foundation.json architectureDiagrams array
         const updatedJson = JSON.parse(
-          await readFile(foundationJsonPath, 'utf-8')
+          await readFile(foundationJsonPath)
         );
         expect(updatedJson.architectureDiagrams).toBeDefined();
         const diagram = updatedJson.architectureDiagrams.find(

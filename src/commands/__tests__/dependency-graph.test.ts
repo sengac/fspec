@@ -4,27 +4,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { getDependencyGraph, showDependencies } from '../dependencies';
 import type { WorkUnitsData } from '../../types';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('dependency-graph');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Display dependency graph for work unit', () => {
     it('should display dependency graph in JSON format', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And multiple work units with various dependencies
       const workUnitsData: WorkUnitsData = {
@@ -89,13 +89,13 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When I run "fspec get-dependency-graph --format=json"
       const result = await getDependencyGraph({
-        cwd: testDir,
+        cwd: setup.testDir,
         format: 'json',
       });
 
@@ -124,7 +124,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
     it('should display dependency graph in Mermaid format', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And multiple work units with dependencies
       const workUnitsData: WorkUnitsData = {
@@ -168,13 +168,13 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When I run "fspec get-dependency-graph --format=mermaid"
       const result = await getDependencyGraph({
-        cwd: testDir,
+        cwd: setup.testDir,
         format: 'mermaid',
       });
 
@@ -189,7 +189,7 @@ describe('Feature: Work Unit Dependency Management', () => {
 
     it('should show dependencies for a specific work unit with graph visualization', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And a work unit with multiple dependency types
       const workUnitsData: WorkUnitsData = {
@@ -265,7 +265,7 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -273,7 +273,7 @@ describe('Feature: Work Unit Dependency Management', () => {
       const result = await showDependencies(
         'AUTH-001',
         { graph: true },
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the output should contain AUTH-001

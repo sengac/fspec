@@ -8,50 +8,21 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: VAL-005 1:1 validation checks across entire work unit instead of per-feature', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
-  let featuresDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-bug-093-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    featuresDir = join(specDir, 'features');
-
-    await mkdir(specDir, { recursive: true });
-    await mkdir(featuresDir, { recursive: true });
-    await mkdir(join(testDir, 'src/__tests__'), { recursive: true });
-
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {},
-          states: {
-            backlog: [],
-            specifying: [],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: [],
-          },
-        },
-        null,
-        2
-      )
-    );
+    setup = await setupWorkUnitTest('update-work-unit-status-val-005-per-feature');
+    await mkdir(join(setup.testDir, 'src/__tests__'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Single feature with single test file passes validation', () => {
@@ -65,7 +36,7 @@ Feature: Test Feature One
     When an action
     Then a result
 `;
-      await writeFile(join(featuresDir, 'feature-one.feature'), featureContent);
+      await writeFile(join(setup.featuresDir, 'feature-one.feature'), featureContent);
 
       const coverageContent = {
         scenarios: [
@@ -78,7 +49,7 @@ Feature: Test Feature One
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-one.feature.coverage'),
+        join(setup.featuresDir, 'feature-one.feature.coverage'),
         JSON.stringify(coverageContent, null, 2)
       );
 
@@ -92,12 +63,12 @@ describe('Test scenario', () => {
 });
 `;
       await writeFile(
-        join(testDir, 'src/__tests__/feature-one.test.ts'),
+        join(setup.testDir, 'src/__tests__/feature-one.test.ts'),
         testContent
       );
 
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -137,7 +108,7 @@ describe('Test scenario', () => {
         updateWorkUnitStatus({
           workUnitId: 'VTEST-001',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).resolves.not.toThrow();
@@ -160,7 +131,7 @@ Feature: Test Feature Two
     When action B
     Then result B
 `;
-      await writeFile(join(featuresDir, 'feature-two.feature'), featureContent);
+      await writeFile(join(setup.featuresDir, 'feature-two.feature'), featureContent);
 
       const coverageContent = {
         scenarios: [
@@ -179,7 +150,7 @@ Feature: Test Feature Two
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-two.feature.coverage'),
+        join(setup.featuresDir, 'feature-two.feature.coverage'),
         JSON.stringify(coverageContent, null, 2)
       );
 
@@ -193,7 +164,7 @@ describe('Scenario A', () => {
 });
 `;
       await writeFile(
-        join(testDir, 'src/__tests__/test-a.test.ts'),
+        join(setup.testDir, 'src/__tests__/test-a.test.ts'),
         testContentA
       );
 
@@ -207,12 +178,12 @@ describe('Scenario B', () => {
 });
 `;
       await writeFile(
-        join(testDir, 'src/__tests__/test-b.test.ts'),
+        join(setup.testDir, 'src/__tests__/test-b.test.ts'),
         testContentB
       );
 
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -252,7 +223,7 @@ describe('Scenario B', () => {
         updateWorkUnitStatus({
           workUnitId: 'VTEST-002',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/Multiple test files detected/);
@@ -272,7 +243,7 @@ Feature: Feature Alpha
     When alpha action
     Then alpha result
 `;
-      await writeFile(join(featuresDir, 'feature-alpha.feature'), feature1);
+      await writeFile(join(setup.featuresDir, 'feature-alpha.feature'), feature1);
 
       const coverage1 = {
         scenarios: [
@@ -285,7 +256,7 @@ Feature: Feature Alpha
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-alpha.feature.coverage'),
+        join(setup.featuresDir, 'feature-alpha.feature.coverage'),
         JSON.stringify(coverage1, null, 2)
       );
 
@@ -298,7 +269,7 @@ describe('Alpha scenario', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/alpha.test.ts'), test1);
+      await writeFile(join(setup.testDir, 'src/__tests__/alpha.test.ts'), test1);
 
       // Feature 2
       const feature2 = `@VTEST-003
@@ -309,7 +280,7 @@ Feature: Feature Beta
     When beta action
     Then beta result
 `;
-      await writeFile(join(featuresDir, 'feature-beta.feature'), feature2);
+      await writeFile(join(setup.featuresDir, 'feature-beta.feature'), feature2);
 
       const coverage2 = {
         scenarios: [
@@ -322,7 +293,7 @@ Feature: Feature Beta
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-beta.feature.coverage'),
+        join(setup.featuresDir, 'feature-beta.feature.coverage'),
         JSON.stringify(coverage2, null, 2)
       );
 
@@ -335,7 +306,7 @@ describe('Beta scenario', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/beta.test.ts'), test2);
+      await writeFile(join(setup.testDir, 'src/__tests__/beta.test.ts'), test2);
 
       // Feature 3
       const feature3 = `@VTEST-003
@@ -346,7 +317,7 @@ Feature: Feature Gamma
     When gamma action
     Then gamma result
 `;
-      await writeFile(join(featuresDir, 'feature-gamma.feature'), feature3);
+      await writeFile(join(setup.featuresDir, 'feature-gamma.feature'), feature3);
 
       const coverage3 = {
         scenarios: [
@@ -359,7 +330,7 @@ Feature: Feature Gamma
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-gamma.feature.coverage'),
+        join(setup.featuresDir, 'feature-gamma.feature.coverage'),
         JSON.stringify(coverage3, null, 2)
       );
 
@@ -372,11 +343,11 @@ describe('Gamma scenario', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/gamma.test.ts'), test3);
+      await writeFile(join(setup.testDir, 'src/__tests__/gamma.test.ts'), test3);
 
       // Work unit with all 3 features
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -416,7 +387,7 @@ describe('Gamma scenario', () => {
         updateWorkUnitStatus({
           workUnitId: 'VTEST-003',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).resolves.not.toThrow();
@@ -436,7 +407,7 @@ Feature: Feature Delta
     When delta action
     Then delta result
 `;
-      await writeFile(join(featuresDir, 'feature-delta.feature'), feature1);
+      await writeFile(join(setup.featuresDir, 'feature-delta.feature'), feature1);
 
       const coverage1 = {
         scenarios: [
@@ -449,7 +420,7 @@ Feature: Feature Delta
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-delta.feature.coverage'),
+        join(setup.featuresDir, 'feature-delta.feature.coverage'),
         JSON.stringify(coverage1, null, 2)
       );
 
@@ -462,7 +433,7 @@ describe('Delta scenario', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/delta.test.ts'), test1);
+      await writeFile(join(setup.testDir, 'src/__tests__/delta.test.ts'), test1);
 
       // Feature 2 - has 2 test files (BAD - should trigger error)
       const feature2 = `@VTEST-004
@@ -478,7 +449,7 @@ Feature: Feature Epsilon
     When epsilon2 action
     Then epsilon2 result
 `;
-      await writeFile(join(featuresDir, 'feature-epsilon.feature'), feature2);
+      await writeFile(join(setup.featuresDir, 'feature-epsilon.feature'), feature2);
 
       const coverage2 = {
         scenarios: [
@@ -497,7 +468,7 @@ Feature: Feature Epsilon
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-epsilon.feature.coverage'),
+        join(setup.featuresDir, 'feature-epsilon.feature.coverage'),
         JSON.stringify(coverage2, null, 2)
       );
 
@@ -510,7 +481,7 @@ describe('Epsilon scenario 1', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/epsilon1.test.ts'), test2a);
+      await writeFile(join(setup.testDir, 'src/__tests__/epsilon1.test.ts'), test2a);
 
       const test2b = `// Feature: spec/features/feature-epsilon.feature
 describe('Epsilon scenario 2', () => {
@@ -521,7 +492,7 @@ describe('Epsilon scenario 2', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/epsilon2.test.ts'), test2b);
+      await writeFile(join(setup.testDir, 'src/__tests__/epsilon2.test.ts'), test2b);
 
       // Feature 3 - has 1 test file (OK)
       const feature3 = `@VTEST-004
@@ -532,7 +503,7 @@ Feature: Feature Zeta
     When zeta action
     Then zeta result
 `;
-      await writeFile(join(featuresDir, 'feature-zeta.feature'), feature3);
+      await writeFile(join(setup.featuresDir, 'feature-zeta.feature'), feature3);
 
       const coverage3 = {
         scenarios: [
@@ -545,7 +516,7 @@ Feature: Feature Zeta
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-zeta.feature.coverage'),
+        join(setup.featuresDir, 'feature-zeta.feature.coverage'),
         JSON.stringify(coverage3, null, 2)
       );
 
@@ -558,10 +529,10 @@ describe('Zeta scenario', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/zeta.test.ts'), test3);
+      await writeFile(join(setup.testDir, 'src/__tests__/zeta.test.ts'), test3);
 
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -601,7 +572,7 @@ describe('Zeta scenario', () => {
         updateWorkUnitStatus({
           workUnitId: 'VTEST-004',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/Multiple test files detected/);
@@ -611,7 +582,7 @@ describe('Zeta scenario', () => {
         updateWorkUnitStatus({
           workUnitId: 'VTEST-004',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/feature-epsilon\.feature/);
@@ -631,7 +602,7 @@ Feature: Feature Eta
     When eta action
     Then eta result
 `;
-      await writeFile(join(featuresDir, 'feature-eta.feature'), feature1);
+      await writeFile(join(setup.featuresDir, 'feature-eta.feature'), feature1);
 
       const coverage1 = {
         scenarios: [
@@ -644,7 +615,7 @@ Feature: Feature Eta
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-eta.feature.coverage'),
+        join(setup.featuresDir, 'feature-eta.feature.coverage'),
         JSON.stringify(coverage1, null, 2)
       );
 
@@ -657,7 +628,7 @@ describe('Eta scenario', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/eta.test.ts'), test1);
+      await writeFile(join(setup.testDir, 'src/__tests__/eta.test.ts'), test1);
 
       // Feature 2 - has 0 test files (BAD - should trigger error)
       const feature2 = `@VTEST-005
@@ -668,7 +639,7 @@ Feature: Feature Theta
     When theta action
     Then theta result
 `;
-      await writeFile(join(featuresDir, 'feature-theta.feature'), feature2);
+      await writeFile(join(setup.featuresDir, 'feature-theta.feature'), feature2);
 
       // Coverage file with no test mappings
       const coverage2 = {
@@ -680,7 +651,7 @@ Feature: Feature Theta
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-theta.feature.coverage'),
+        join(setup.featuresDir, 'feature-theta.feature.coverage'),
         JSON.stringify(coverage2, null, 2)
       );
 
@@ -693,7 +664,7 @@ Feature: Feature Iota
     When iota action
     Then iota result
 `;
-      await writeFile(join(featuresDir, 'feature-iota.feature'), feature3);
+      await writeFile(join(setup.featuresDir, 'feature-iota.feature'), feature3);
 
       const coverage3 = {
         scenarios: [
@@ -706,7 +677,7 @@ Feature: Feature Iota
         ],
       };
       await writeFile(
-        join(featuresDir, 'feature-iota.feature.coverage'),
+        join(setup.featuresDir, 'feature-iota.feature.coverage'),
         JSON.stringify(coverage3, null, 2)
       );
 
@@ -719,10 +690,10 @@ describe('Iota scenario', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/iota.test.ts'), test3);
+      await writeFile(join(setup.testDir, 'src/__tests__/iota.test.ts'), test3);
 
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -762,7 +733,7 @@ describe('Iota scenario', () => {
         updateWorkUnitStatus({
           workUnitId: 'VTEST-005',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/No test files/);
@@ -772,7 +743,7 @@ describe('Iota scenario', () => {
         updateWorkUnitStatus({
           workUnitId: 'VTEST-005',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/feature-theta\.feature/);

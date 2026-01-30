@@ -6,82 +6,88 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { auditCoverage } from '../audit-coverage';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  ensureTestDirectory,
+  createTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Audit Coverage Command', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let specDir: string;
   let featuresDir: string;
   let srcDir: string;
   let testsDir: string;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
+    setup = await setupTestDirectory('audit-coverage');
+    specDir = join(setup.testDir, 'spec');
     featuresDir = join(specDir, 'features');
-    srcDir = join(testDir, 'src');
+    srcDir = join(setup.testDir, 'src');
     testsDir = join(srcDir, '__tests__');
 
     // Create directory structure
-    await mkdir(featuresDir, { recursive: true });
-    await mkdir(testsDir, { recursive: true });
+    await ensureTestDirectory(featuresDir);
+    await ensureTestDirectory(testsDir);
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Audit coverage with all files present', () => {
     it('should display success message when all files exist', async () => {
       // Given I have a coverage file "user-login.feature.coverage"
-      const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await writeFile(
-        coverageFile,
-        JSON.stringify({
-          scenarios: [
-            {
-              name: 'Login with valid credentials',
-              testMappings: [
-                {
-                  file: 'src/__tests__/login.test.ts',
-                  lines: '10-20',
-                  implMappings: [
-                    {
-                      file: 'src/auth/login.ts',
-                      lines: [25, 30],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-          stats: {
-            totalScenarios: 1,
-            coveredScenarios: 1,
-            coveragePercent: 100,
-            testFiles: ['src/__tests__/login.test.ts'],
-            implFiles: ['src/auth/login.ts'],
-            totalLinesCovered: 5,
+      const coverageData = {
+        scenarios: [
+          {
+            name: 'Login with valid credentials',
+            testMappings: [
+              {
+                file: 'src/__tests__/login.test.ts',
+                lines: '10-20',
+                implMappings: [
+                  {
+                    file: 'src/auth/login.ts',
+                    lines: [25, 30],
+                  },
+                ],
+              },
+            ],
           },
-        })
+        ],
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 1,
+          coveragePercent: 100,
+          testFiles: ['src/__tests__/login.test.ts'],
+          implFiles: ['src/auth/login.ts'],
+          totalLinesCovered: 5,
+        },
+      };
+
+      await writeJsonTestFile(
+        join(featuresDir, 'user-login.feature.coverage'),
+        coverageData
       );
 
       // And all test files referenced in coverage exist
-      await writeFile(join(testsDir, 'login.test.ts'), '// test content');
+      await createTestFile(testsDir, 'login.test.ts', '// test content');
 
       // And all implementation files referenced in coverage exist
-      await mkdir(join(srcDir, 'auth'), { recursive: true });
-      await writeFile(join(srcDir, 'auth', 'login.ts'), '// impl content');
+      await ensureTestDirectory(join(srcDir, 'auth'));
+      await createTestFile(join(srcDir, 'auth'), 'login.ts', '// impl content');
 
       // When I run `fspec audit-coverage user-login`
       const result = await auditCoverage({
         featureName: 'user-login',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should display "✅ All files found (2/2)"
@@ -98,31 +104,32 @@ describe('Feature: Audit Coverage Command', () => {
   describe('Scenario: Audit detects missing test file', () => {
     it('should display error message when test file is missing', async () => {
       // Given I have a coverage file with mapping to "src/__tests__/deleted.test.ts"
-      const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await writeFile(
-        coverageFile,
-        JSON.stringify({
-          scenarios: [
-            {
-              name: 'Login with valid credentials',
-              testMappings: [
-                {
-                  file: 'src/__tests__/deleted.test.ts',
-                  lines: '10-20',
-                  implMappings: [],
-                },
-              ],
-            },
-          ],
-          stats: {
-            totalScenarios: 1,
-            coveredScenarios: 1,
-            coveragePercent: 100,
-            testFiles: ['src/__tests__/deleted.test.ts'],
-            implFiles: [],
-            totalLinesCovered: 3,
+      const coverageData = {
+        scenarios: [
+          {
+            name: 'Login with valid credentials',
+            testMappings: [
+              {
+                file: 'src/__tests__/deleted.test.ts',
+                lines: '10-20',
+                implMappings: [],
+              },
+            ],
           },
-        })
+        ],
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 1,
+          coveragePercent: 100,
+          testFiles: ['src/__tests__/deleted.test.ts'],
+          implFiles: [],
+          totalLinesCovered: 3,
+        },
+      };
+
+      await writeJsonTestFile(
+        join(featuresDir, 'user-login.feature.coverage'),
+        coverageData
       );
 
       // And the test file "src/__tests__/deleted.test.ts" does not exist
@@ -131,7 +138,7 @@ describe('Feature: Audit Coverage Command', () => {
       // When I run `fspec audit-coverage user-login`
       const result = await auditCoverage({
         featureName: 'user-login',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should display "❌ Test file not found: src/__tests__/deleted.test.ts"
@@ -152,49 +159,47 @@ describe('Feature: Audit Coverage Command', () => {
   describe('Scenario: Audit detects missing implementation file', () => {
     it('should display error message when implementation file is missing', async () => {
       // Given I have a coverage file with mapping to "src/auth/deleted.ts"
-      const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await writeFile(
-        coverageFile,
-        JSON.stringify({
-          scenarios: [
-            {
-              name: 'Login with valid credentials',
-              testMappings: [
-                {
-                  file: 'src/__tests__/placeholder.test.ts',
-                  lines: '1-5',
-                  implMappings: [
-                    {
-                      file: 'src/auth/deleted.ts',
-                      lines: [25, 30],
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-          stats: {
-            totalScenarios: 1,
-            coveredScenarios: 1,
-            coveragePercent: 100,
-            testFiles: ['src/__tests__/placeholder.test.ts'],
-            implFiles: ['src/auth/deleted.ts'],
-            totalLinesCovered: 2,
+      const coverageData = {
+        scenarios: [
+          {
+            name: 'Login with valid credentials',
+            testMappings: [
+              {
+                file: 'src/__tests__/placeholder.test.ts',
+                lines: '1-5',
+                implMappings: [
+                  {
+                    file: 'src/auth/deleted.ts',
+                    lines: [25, 30],
+                  },
+                ],
+              },
+            ],
           },
-        })
+        ],
+        stats: {
+          totalScenarios: 1,
+          coveredScenarios: 1,
+          coveragePercent: 100,
+          testFiles: ['src/__tests__/placeholder.test.ts'],
+          implFiles: ['src/auth/deleted.ts'],
+          totalLinesCovered: 2,
+        },
+      };
+
+      await writeJsonTestFile(
+        join(featuresDir, 'user-login.feature.coverage'),
+        coverageData
       );
 
       // And the test file exists but implementation file doesn't
-      await writeFile(
-        join(testsDir, 'placeholder.test.ts'),
-        '// placeholder test'
-      );
+      await createTestFile(testsDir, 'placeholder.test.ts', '// placeholder test');
       // (implementation file "src/auth/deleted.ts" not created, so it doesn't exist)
 
       // When I run `fspec audit-coverage user-login`
       const result = await auditCoverage({
         featureName: 'user-login',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should display "❌ Implementation file not found: src/auth/deleted.ts"

@@ -6,28 +6,28 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { review } from '../review';
+import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: AI-Driven Deep Code Review', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-review-ai-driven-'));
+    setup = await setupTestDirectory('review-ai-driven');
 
     // Configure agent as 'claude' to get system-reminder tags
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    await mkdir(join(setup.testDir, 'spec'), { recursive: true });
     const configData = { agent: 'claude' };
     await writeFile(
-      join(testDir, 'spec', 'fspec-config.json'),
+      join(setup.testDir, 'spec', 'fspec-config.json'),
       JSON.stringify(configData, null, 2)
     );
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Review provides system-reminder with AI instructions for deep analysis', () => {
@@ -45,9 +45,9 @@ describe('Feature: AI-Driven Deep Code Review', () => {
         },
       };
 
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -65,9 +65,9 @@ Feature: User Login
     When I enter valid credentials
     Then I should be logged in`;
 
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'features', 'user-login.feature'),
+        join(setup.testDir, 'spec', 'features', 'user-login.feature'),
         featureContent
       );
 
@@ -76,8 +76,8 @@ Feature: User Login
   return { success: true };
 }`;
 
-      await mkdir(join(testDir, 'src', 'auth'), { recursive: true });
-      await writeFile(join(testDir, 'src', 'auth', 'login.ts'), implContent);
+      await mkdir(join(setup.testDir, 'src', 'auth'), { recursive: true });
+      await writeFile(join(setup.testDir, 'src', 'auth', 'login.ts'), implContent);
 
       // Create coverage file with implementation mapping
       const coverageData = {
@@ -106,7 +106,7 @@ Feature: User Login
       };
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'user-login.feature.coverage'),
+        join(setup.testDir, 'spec', 'features', 'user-login.feature.coverage'),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -115,12 +115,12 @@ Feature: User Login
         { file: 'spec/features/user-login.feature' },
       ];
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run "fspec review AUTH-001"
-      const result = await review('AUTH-001', { cwd: testDir });
+      const result = await review('AUTH-001', { cwd: setup.testDir });
 
       // @step Then the output should contain a <system-reminder> tag
       expect(result.output).toContain('<system-reminder>');
@@ -159,9 +159,9 @@ Feature: User Login
         },
       };
 
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -174,24 +174,24 @@ Feature: Data Validation
     When I validate it
     Then it should be validated`;
 
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'features', 'data-validation.feature'),
+        join(setup.testDir, 'spec', 'features', 'data-validation.feature'),
         featureContent
       );
 
       // @step And all 3 files contain similar validation logic
-      await mkdir(join(testDir, 'src', 'validators'), { recursive: true });
+      await mkdir(join(setup.testDir, 'src', 'validators'), { recursive: true });
       await writeFile(
-        join(testDir, 'src', 'validators', 'user.ts'),
+        join(setup.testDir, 'src', 'validators', 'user.ts'),
         'export function validateUser() { /* duplicated */ }'
       );
       await writeFile(
-        join(testDir, 'src', 'validators', 'post.ts'),
+        join(setup.testDir, 'src', 'validators', 'post.ts'),
         'export function validatePost() { /* duplicated */ }'
       );
       await writeFile(
-        join(testDir, 'src', 'validators', 'comment.ts'),
+        join(setup.testDir, 'src', 'validators', 'comment.ts'),
         'export function validateComment() { /* duplicated */ }'
       );
 
@@ -216,7 +216,7 @@ Feature: Data Validation
       };
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'data-validation.feature.coverage'),
+        join(setup.testDir, 'spec', 'features', 'data-validation.feature.coverage'),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -224,12 +224,12 @@ Feature: Data Validation
         { file: 'spec/features/data-validation.feature' },
       ];
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run "fspec review VAL-001"
-      const result = await review('VAL-001', { cwd: testDir });
+      const result = await review('VAL-001', { cwd: setup.testDir });
 
       // @step Then the output should contain a <system-reminder> tag
       expect(result.output).toContain('<system-reminder>');
@@ -262,9 +262,9 @@ Feature: Data Validation
         },
       };
 
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -276,16 +276,16 @@ Feature: File Operations
     When I save it to disk
     Then it should be saved atomically`;
 
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'features', 'file-operations.feature'),
+        join(setup.testDir, 'spec', 'features', 'file-operations.feature'),
         featureContent
       );
 
       // @step And the code has potential race conditions
-      await mkdir(join(testDir, 'src', 'file-ops'), { recursive: true });
+      await mkdir(join(setup.testDir, 'src', 'file-ops'), { recursive: true });
       await writeFile(
-        join(testDir, 'src', 'file-ops', 'save.ts'),
+        join(setup.testDir, 'src', 'file-ops', 'save.ts'),
         `export async function save() {
   await writeFile('test.txt', 'data');
   await writeFile('test.txt', 'more data'); // race condition
@@ -294,7 +294,7 @@ Feature: File Operations
 
       // @step And FOUNDATION.md defines file locking patterns
       await writeFile(
-        join(testDir, 'FOUNDATION.md'),
+        join(setup.testDir, 'FOUNDATION.md'),
         '# File Locking\nUse atomic writes with temp files.'
       );
 
@@ -317,7 +317,7 @@ Feature: File Operations
       };
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'file-operations.feature.coverage'),
+        join(setup.testDir, 'spec', 'features', 'file-operations.feature.coverage'),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -325,12 +325,12 @@ Feature: File Operations
         { file: 'spec/features/file-operations.feature' },
       ];
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run "fspec review FILE-001"
-      const result = await review('FILE-001', { cwd: testDir });
+      const result = await review('FILE-001', { cwd: setup.testDir });
 
       // @step Then the output should contain a <system-reminder> tag
       expect(result.output).toContain('<system-reminder>');
@@ -361,9 +361,9 @@ Feature: File Operations
         },
       };
 
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -375,9 +375,9 @@ Feature: Data Processing
     When I process it
     Then it should be processed`;
 
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'features', 'data-processing.feature'),
+        join(setup.testDir, 'spec', 'features', 'data-processing.feature'),
         featureContent
       );
 
@@ -389,9 +389,9 @@ ${Array(500)
   .join('\n')}
 }`;
 
-      await mkdir(join(testDir, 'src', 'processing'), { recursive: true });
+      await mkdir(join(setup.testDir, 'src', 'processing'), { recursive: true });
       await writeFile(
-        join(testDir, 'src', 'processing', 'processor.ts'),
+        join(setup.testDir, 'src', 'processing', 'processor.ts'),
         godFunction
       );
 
@@ -417,7 +417,7 @@ ${Array(500)
       };
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'data-processing.feature.coverage'),
+        join(setup.testDir, 'spec', 'features', 'data-processing.feature.coverage'),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -425,12 +425,12 @@ ${Array(500)
         { file: 'spec/features/data-processing.feature' },
       ];
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run "fspec review PROC-001"
-      const result = await review('PROC-001', { cwd: testDir });
+      const result = await review('PROC-001', { cwd: setup.testDir });
 
       // @step Then the output should contain a <system-reminder> tag
       expect(result.output).toContain('<system-reminder>');
@@ -461,9 +461,9 @@ ${Array(500)
         },
       };
 
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -475,9 +475,9 @@ Feature: Large File Feature
     When I review it
     Then it should flag size violations`;
 
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'features', 'large-file-feature.feature'),
+        join(setup.testDir, 'spec', 'features', 'large-file-feature.feature'),
         featureContent
       );
 
@@ -487,12 +487,12 @@ Feature: Large File Feature
         .map((_, i) => `// Line ${i + 1}`)
         .join('\n');
 
-      await mkdir(join(testDir, 'src', 'large'), { recursive: true });
-      await writeFile(join(testDir, 'src', 'large', 'big-file.ts'), bigFile);
+      await mkdir(join(setup.testDir, 'src', 'large'), { recursive: true });
+      await writeFile(join(setup.testDir, 'src', 'large', 'big-file.ts'), bigFile);
 
       // @step And FOUNDATION.md states "keep files under 300 lines"
       await writeFile(
-        join(testDir, 'FOUNDATION.md'),
+        join(setup.testDir, 'FOUNDATION.md'),
         '# Coding Standards\n- Keep files under 300 lines'
       );
 
@@ -519,7 +519,7 @@ Feature: Large File Feature
 
       await writeFile(
         join(
-          testDir,
+          setup.testDir,
           'spec',
           'features',
           'large-file-feature.feature.coverage'
@@ -531,12 +531,12 @@ Feature: Large File Feature
         { file: 'spec/features/large-file-feature.feature' },
       ];
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run "fspec review BIG-001"
-      const result = await review('BIG-001', { cwd: testDir });
+      const result = await review('BIG-001', { cwd: setup.testDir });
 
       // @step Then the output should contain a <system-reminder> tag
       expect(result.output).toContain('<system-reminder>');
@@ -570,9 +570,9 @@ Feature: Large File Feature
         },
       };
 
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -589,9 +589,9 @@ Feature: Test Feature
     When I run it
     Then it should also pass`;
 
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
       await writeFile(
-        join(testDir, 'spec', 'features', 'test-feature.feature'),
+        join(setup.testDir, 'spec', 'features', 'test-feature.feature'),
         featureContent
       );
 
@@ -602,9 +602,9 @@ Feature: Test Feature
   });
 });`;
 
-      await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+      await mkdir(join(setup.testDir, 'src', '__tests__'), { recursive: true });
       await writeFile(
-        join(testDir, 'src', '__tests__', 'test.test.ts'),
+        join(setup.testDir, 'src', '__tests__', 'test.test.ts'),
         testContent
       );
 
@@ -630,7 +630,7 @@ Feature: Test Feature
       };
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'test-feature.feature.coverage'),
+        join(setup.testDir, 'spec', 'features', 'test-feature.feature.coverage'),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -639,12 +639,12 @@ Feature: Test Feature
         { file: 'spec/features/test-feature.feature' },
       ];
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // @step When I run "fspec review TEST-001"
-      const result = await review('TEST-001', { cwd: testDir });
+      const result = await review('TEST-001', { cwd: setup.testDir });
 
       // @step Then the output should contain critical issue for "any" type usage
       expect(result.output).toContain('any');

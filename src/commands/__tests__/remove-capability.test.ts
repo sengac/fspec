@@ -5,28 +5,28 @@
  * Tests for remove-capability command.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { removeCapability } from '../remove-capability';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 
 import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: remove-capability command', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let foundationPath: string;
 
   beforeEach(async () => {
     // Create temp directory for tests
-    testDir = await createTempTestDir('remove-capability');
-    foundationPath = join(testDir, 'spec/foundation.json');
-  });
-
-  afterEach(async () => {
-    // Clean up
-    await removeTempTestDir(testDir);
+    setup = await setupTestDirectory('remove-capability');
+    foundationPath = join(setup.testDir, 'spec/foundation.json');
+    await ensureTestDirectory(join(setup.testDir, 'spec'));
   });
 
   describe('Scenario: Remove capability from foundation.json by name', () => {
@@ -62,19 +62,16 @@ describe('Feature: remove-capability command', () => {
         },
         personas: [],
       };
-      await writeFile(
+      await writeJsonTestFile(
         foundationPath,
-        JSON.stringify(foundation, null, 2),
-        'utf-8'
+        foundation
       );
 
       // When I run `fspec remove-capability "Mind Mapping"`
-      await removeCapability(testDir, 'Mind Mapping');
+      await removeCapability(setup.testDir, 'Mind Mapping');
 
       // Then the capability "Mind Mapping" should be removed from spec/foundation.json
-      const updatedFoundation = JSON.parse(
-        await readFile(foundationPath, 'utf-8')
-      );
+      const updatedFoundation = await readJsonTestFile(foundationPath);
       expect(updatedFoundation.solutionSpace.capabilities).toHaveLength(1);
       expect(updatedFoundation.solutionSpace.capabilities[0].name).toBe(
         'AI Chat'

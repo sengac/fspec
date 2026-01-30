@@ -3,34 +3,30 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import {
-  mkdtempSync,
   mkdirSync,
-  rmSync,
   writeFileSync,
   readFileSync,
 } from 'fs';
-import { tmpdir } from 'os';
 import type { WorkUnitsData } from '../../types';
 import { generateExampleMappingFromEventStorm } from '../generate-example-mapping-from-event-storm';
 import { addQuestion } from '../add-question';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Duplicate question IDs from generate-example-mapping-from-event-storm', () => {
-  let tmpDir: string;
+  let setup: WorkUnitTestSetup;
 
-  beforeEach(() => {
-    tmpDir = mkdtempSync(join(tmpdir(), 'fspec-test-'));
+  beforeEach(async () => {
+    setup = await setupWorkUnitTest('event-storm-bug-092');
   });
 
-  afterEach(() => {
-    if (tmpDir) {
-      rmSync(tmpDir, { recursive: true, force: true });
-    }
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: Initialize nextQuestionId when undefined', () => {
     it('should initialize nextQuestionId to 0 and assign sequential IDs', async () => {
       // @step Given a work unit with event storm hotspots
-      const workUnitsFile = join(tmpDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const workUnitsData: WorkUnitsData = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -81,7 +77,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
           },
         },
       };
-      mkdirSync(join(tmpDir, 'spec'), { recursive: true });
+      mkdirSync(join(setup.testDir, 'spec'), { recursive: true });
       writeFileSync(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // @step And the work unit has no questions array or nextQuestionId is undefined
@@ -91,7 +87,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
       // @step When I run generate-example-mapping-from-event-storm command
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step Then nextQuestionId should be initialized to 0
@@ -113,7 +109,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
   describe('Scenario: Assign sequential IDs when converting hotspots', () => {
     it('should create 3 questions with IDs 0, 1, 2 and nextQuestionId 3', async () => {
       // @step Given a work unit with 3 event storm hotspots
-      const workUnitsFile = join(tmpDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const workUnitsData: WorkUnitsData = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -174,7 +170,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
           },
         },
       };
-      mkdirSync(join(tmpDir, 'spec'), { recursive: true });
+      mkdirSync(join(setup.testDir, 'spec'), { recursive: true });
       writeFileSync(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // @step And the work unit nextQuestionId is 0
@@ -183,7 +179,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
       // @step When I run generate-example-mapping-from-event-storm command
       const result = await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-002',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step Then 3 questions should be created with IDs 0, 1, 2
@@ -205,7 +201,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
   describe('Scenario: Prevent duplicate IDs on multiple invocations', () => {
     it('should assign unique IDs without duplicates on second invocation', async () => {
       // @step Given a work unit with event storm hotspots
-      const workUnitsFile = join(tmpDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const workUnitsData: WorkUnitsData = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -247,13 +243,13 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
           },
         },
       };
-      mkdirSync(join(tmpDir, 'spec'), { recursive: true });
+      mkdirSync(join(setup.testDir, 'spec'), { recursive: true });
       writeFileSync(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // @step And I have run generate-example-mapping-from-event-storm once
       await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-003',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step And questions already exist with specific IDs
@@ -280,7 +276,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
 
       await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-003',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step Then new questions should get sequential IDs without duplicates
@@ -305,7 +301,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
   describe('Scenario: Integrate with manual add-question command', () => {
     it('should prevent ID collision between generated and manual questions', async () => {
       // @step Given a work unit with event storm hotspots
-      const workUnitsFile = join(tmpDir, 'spec', 'work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec', 'work-units.json');
       const workUnitsData: WorkUnitsData = {
         meta: { version: '1.0.0', lastUpdated: new Date().toISOString() },
         states: {
@@ -356,13 +352,13 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
           },
         },
       };
-      mkdirSync(join(tmpDir, 'spec'), { recursive: true });
+      mkdirSync(join(setup.testDir, 'spec'), { recursive: true });
       writeFileSync(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // @step And I have run generate-example-mapping-from-event-storm
       await generateExampleMappingFromEventStorm({
         workUnitId: 'TEST-004',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step And questions exist with IDs up to N
@@ -378,7 +374,7 @@ describe('Feature: Duplicate question IDs from generate-example-mapping-from-eve
       await addQuestion({
         workUnitId: 'TEST-004',
         question: '@human: Manual question?',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the new question should get ID N+1

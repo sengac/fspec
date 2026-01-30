@@ -6,24 +6,29 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { research } from '../research';
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
+import { join } from 'path';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Unconfigured research tool visibility and discovery', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let configPath: string;
   let consoleLogSpy: any;
   let consoleErrorSpy: any;
   let processExitSpy: any;
 
-  beforeEach(() => {
-    // Create temporary test directory
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fspec-test-'));
-    configPath = path.join(testDir, 'spec', 'fspec-config.json');
+  beforeEach(async () => {
+    setup = await setupTestDirectory('research-error-handling');
+    configPath = join(setup.testDir, 'spec', 'fspec-config.json');
 
     // Ensure spec directory exists
-    fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+    await ensureTestDirectory(join(setup.testDir, 'spec'));
 
     // Spy on console and process.exit
     consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -35,12 +40,8 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       });
   });
 
-  afterEach(() => {
-    // Cleanup
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
-
+  afterEach(async () => {
+    await setup.cleanup();
     consoleLogSpy.mockRestore();
     consoleErrorSpy.mockRestore();
     processExitSpy.mockRestore();
@@ -49,13 +50,13 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
   describe('Scenario: Error when using unconfigured tool', () => {
     it('should fail with helpful error and setup instructions', async () => {
       // @step Given Perplexity is not configured
-      fs.writeFileSync(configPath, JSON.stringify({}), 'utf-8');
+      await writeJsonTestFile(configPath, {});
 
       // @step When I run 'fspec research --tool=perplexity --query="test"'
       try {
         await research(['--query=test'], {
           tool: 'perplexity',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         expect.fail('Should have thrown an error');
       } catch (error: any) {
@@ -74,12 +75,12 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
           },
         },
       };
-      fs.writeFileSync(configPath, JSON.stringify(config), 'utf-8');
+      await writeJsonTestFile(configPath, config);
 
       try {
         await research(['--query=test'], {
           tool: 'perplexity',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         expect.fail('Should have thrown an error');
       } catch (error: any) {
@@ -88,12 +89,12 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
     });
 
     it('should handle missing JIRA credentials', async () => {
-      fs.writeFileSync(configPath, JSON.stringify({}), 'utf-8');
+      await writeJsonTestFile(configPath, {});
 
       try {
         await research(['--issue=PROJ-123'], {
           tool: 'jira',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         expect.fail('Should have thrown an error');
       } catch (error: any) {
@@ -104,12 +105,12 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
 
   describe('System-reminder error wrapping', () => {
     it('should wrap config errors in system-reminder tags', async () => {
-      fs.writeFileSync(configPath, JSON.stringify({}), 'utf-8');
+      await writeJsonTestFile(configPath, {});
 
       try {
         await research(['--query=test'], {
           tool: 'perplexity',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
         expect.fail('Should have thrown an error');
       } catch (error: any) {

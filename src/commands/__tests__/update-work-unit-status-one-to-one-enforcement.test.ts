@@ -6,50 +6,20 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
-import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import { writeFile, mkdir } from 'fs/promises';
+import { join } from 'path';
 
 describe('Feature: Multiple test files mapped to single feature file causes validation errors', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
-  let featuresDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    featuresDir = join(specDir, 'features');
-
-    await mkdir(specDir, { recursive: true });
-    await mkdir(featuresDir, { recursive: true });
-    await mkdir(join(testDir, 'src/__tests__'), { recursive: true });
-
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify(
-        {
-          workUnits: {},
-          states: {
-            backlog: [],
-            specifying: [],
-            testing: [],
-            implementing: [],
-            validating: [],
-            done: [],
-            blocked: [],
-          },
-        },
-        null,
-        2
-      )
-    );
+    setup = await setupWorkUnitTest('update-work-unit-status-one-to-one-enforcement');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Allow transition when 1 feature has 1 test file', () => {
@@ -64,7 +34,7 @@ Feature: Test Feature
     Then a result
 `;
       await writeFile(
-        join(featuresDir, 'test-feature.feature'),
+        join(setup.featuresDir, 'test-feature.feature'),
         featureContent
       );
 
@@ -83,7 +53,7 @@ Feature: Test Feature
         ],
       };
       await writeFile(
-        join(featuresDir, 'test-feature.feature.coverage'),
+        join(setup.featuresDir, 'test-feature.feature.coverage'),
         JSON.stringify(coverageContent, null, 2)
       );
 
@@ -98,11 +68,15 @@ describe('Test scenario', () => {
   });
 });
 `;
-      await writeFile(join(testDir, 'src/__tests__/test.test.ts'), testContent);
+      
+      // Ensure tests directory exists
+      await mkdir(join(setup.testDir, 'src/__tests__'), { recursive: true });
+      
+      await writeFile(join(setup.testDir, 'src/__tests__', 'test.test.ts'), testContent);
 
       // Create work unit
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -143,7 +117,7 @@ describe('Test scenario', () => {
         updateWorkUnitStatus({
           workUnitId: 'TEST-001',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).resolves.not.toThrow();
@@ -167,7 +141,7 @@ Feature: Test Feature
     Then result 2
 `;
       await writeFile(
-        join(featuresDir, 'test-feature.feature'),
+        join(setup.featuresDir, 'test-feature.feature'),
         featureContent
       );
 
@@ -195,7 +169,7 @@ Feature: Test Feature
         ],
       };
       await writeFile(
-        join(featuresDir, 'test-feature.feature.coverage'),
+        join(setup.featuresDir, 'test-feature.feature.coverage'),
         JSON.stringify(coverageContent, null, 2)
       );
 
@@ -210,8 +184,12 @@ describe('Scenario 1', () => {
   });
 });
 `;
+      
+      // Ensure tests directory exists
+      await mkdir(join(setup.testDir, 'src/__tests__'), { recursive: true });
+      
       await writeFile(
-        join(testDir, 'src/__tests__/test1.test.ts'),
+        join(setup.testDir, 'src/__tests__', 'test1.test.ts'),
         testContent1
       );
 
@@ -226,13 +204,13 @@ describe('Scenario 2', () => {
 });
 `;
       await writeFile(
-        join(testDir, 'src/__tests__/test2.test.ts'),
+        join(setup.testDir, 'src/__tests__', 'test2.test.ts'),
         testContent2
       );
 
       // Create work unit
       await writeFile(
-        workUnitsFile,
+        setup.workUnitsFile,
         JSON.stringify(
           {
             workUnits: {
@@ -275,7 +253,7 @@ describe('Scenario 2', () => {
         updateWorkUnitStatus({
           workUnitId: 'TEST-002',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/Multiple test files detected/);
@@ -284,7 +262,7 @@ describe('Scenario 2', () => {
         updateWorkUnitStatus({
           workUnitId: 'TEST-002',
           status: 'implementing',
-          cwd: testDir,
+          cwd: setup.testDir,
           skipTemporalValidation: true,
         })
       ).rejects.toThrow(/Split feature file/);

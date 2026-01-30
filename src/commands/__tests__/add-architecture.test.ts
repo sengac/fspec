@@ -1,24 +1,24 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { addArchitecture } from '../add-architecture';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
-import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+import { 
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
 describe('Feature: Add Architecture Documentation to Feature Files', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('add-architecture');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('add-architecture');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Add architecture notes to feature without existing doc string', () => {
@@ -36,20 +36,20 @@ Feature: User Login
     When I enter valid credentials
     Then I should be logged in`;
 
-      await writeFile(join(testDir, 'spec/features/login.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/login.feature'), content);
 
       // When I run `fspec add-architecture login "Uses JWT for authentication"`
       const result = await addArchitecture({
         feature: 'login',
         text: 'Uses JWT for authentication',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/login.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/login.feature'),
         'utf-8'
       );
 
@@ -81,20 +81,20 @@ Feature: User Login
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/api.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/api.feature'), content);
 
       // When I run `fspec add-architecture api "Architecture notes:\n- Uses REST API\n- Requires authentication"`
       const result = await addArchitecture({
         feature: 'api',
         text: 'Architecture notes:\n- Uses REST API\n- Requires authentication',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/api.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/api.feature'),
         'utf-8'
       );
 
@@ -126,20 +126,20 @@ Feature: User Login
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/payment.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/payment.feature'), content);
 
       // When I run `fspec add-architecture payment "New architecture notes"`
       const result = await addArchitecture({
         feature: 'payment',
         text: 'New architecture notes',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/payment.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/payment.feature'),
         'utf-8'
       );
 
@@ -177,20 +177,20 @@ Feature: User Login
     When I submit payment
     Then order confirmed`;
 
-      await writeFile(join(testDir, 'spec/features/checkout.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/checkout.feature'), content);
 
       // When I run `fspec add-architecture checkout "Payment processing architecture"`
       const result = await addArchitecture({
         feature: 'checkout',
         text: 'Payment processing architecture',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/checkout.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/checkout.feature'),
         'utf-8'
       );
 
@@ -226,20 +226,20 @@ Feature: User Login
     When I submit
     Then I am authenticated`;
 
-      await writeFile(join(testDir, 'spec/features/auth.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/auth.feature'), content);
 
       // When I run `fspec add-architecture auth "OAuth 2.0 implementation"`
       const result = await addArchitecture({
         feature: 'auth',
         text: 'OAuth 2.0 implementation',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/auth.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/auth.feature'),
         'utf-8'
       );
 
@@ -271,20 +271,20 @@ Feature: Search Functionality
     When I search
     Then results displayed`;
 
-      await writeFile(join(testDir, 'spec/features/search.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/search.feature'), content);
 
       // When I run `fspec add-architecture search "ElasticSearch integration"`
       const result = await addArchitecture({
         feature: 'search',
         text: 'ElasticSearch integration',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/search.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/search.feature'),
         'utf-8'
       );
 
@@ -313,7 +313,7 @@ Feature: Search Functionality
       const result = await addArchitecture({
         feature: 'missing',
         text: 'Some notes',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -331,21 +331,21 @@ Feature: Search Functionality
   Scenario: Test
     Given step`;
 
-      await writeFile(join(testDir, 'spec/features/login.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/login.feature'), content);
 
       // When I run `fspec add-architecture login "Authentication notes"`
       const result = await addArchitecture({
         feature: 'login',
         text: 'Authentication notes',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the file "spec/features/login.feature" should contain the doc string
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/login.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/login.feature'),
         'utf-8'
       );
       expect(updatedContent).toContain('Authentication notes');
@@ -359,8 +359,8 @@ Feature: Search Functionality
   Scenario: Test
     Given step`;
 
-      await writeFile(
-        join(testDir, 'spec/features/user-management.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/user-management.feature'),
         content
       );
 
@@ -368,15 +368,15 @@ Feature: Search Functionality
       const result = await addArchitecture({
         feature: 'spec/features/user-management.feature',
         text: 'User CRUD operations',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the file should contain the doc string with "User CRUD operations"
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/user-management.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/user-management.feature'),
         'utf-8'
       );
       expect(updatedContent).toContain('User CRUD operations');
@@ -390,8 +390,8 @@ Feature: Search Functionality
   Scenario: Test
     Given step`;
 
-      await writeFile(
-        join(testDir, 'spec/features/reporting.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/reporting.feature'),
         content
       );
 
@@ -399,14 +399,14 @@ Feature: Search Functionality
       const result = await addArchitecture({
         feature: 'reporting',
         text: 'Line 1\nLine 2\nLine 3',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/reporting.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/reporting.feature'),
         'utf-8'
       );
 
@@ -442,8 +442,8 @@ Feature: Search Functionality
     When I send notification
     Then user receives it`;
 
-      await writeFile(
-        join(testDir, 'spec/features/notifications.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/notifications.feature'),
         content
       );
 
@@ -451,14 +451,14 @@ Feature: Search Functionality
       const result = await addArchitecture({
         feature: 'notifications',
         text: 'Notification service architecture',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/notifications.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/notifications.feature'),
         'utf-8'
       );
 
@@ -480,8 +480,8 @@ Feature: Search Functionality
   Scenario: Test
     Given step`;
 
-      await writeFile(
-        join(testDir, 'spec/features/dashboard.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/dashboard.feature'),
         content
       );
 
@@ -489,7 +489,7 @@ Feature: Search Functionality
       const result = await addArchitecture({
         feature: 'dashboard',
         text: '',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1

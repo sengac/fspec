@@ -1,20 +1,20 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { registerTag } from '../register-tag';
+import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Register New Tag in Tag Registry', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('register-tag');
     originalCwd = process.cwd();
-    process.chdir(testDir);
+    process.chdir(setup.testDir);
 
     // Create minimal tags.json for testing
-    const specDir = join(testDir, 'spec');
+    const specDir = join(setup.testDir, 'spec');
     await mkdir(specDir, { recursive: true });
 
     const minimalTags = {
@@ -84,7 +84,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Register a new tag in an existing category', () => {
@@ -95,12 +95,12 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         '@api',
         'Technical Tags',
         'API integration features',
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the tag should be added to the Technical Tags table in TAGS.md
       const tagsContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
       expect(tagsContent).toContain('`@api`');
@@ -122,13 +122,13 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       // Given I have tags.json with tag @cli registered
       // When I run `fspec register-tag @cli "Component Tags" "CLI component"`
       await expect(
-        registerTag('@cli', 'Component Tags', 'CLI component', { cwd: testDir })
+        registerTag('@cli', 'Component Tags', 'CLI component', { cwd: setup.testDir })
       ).rejects.toThrow();
 
       // Then the error message should indicate @cli is already registered
       try {
         await registerTag('@cli', 'Component Tags', 'CLI component', {
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: any) {
         expect(error.message).toContain('@cli');
@@ -137,7 +137,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
 
       // And tags.json should remain unchanged
       const tagsJson = JSON.parse(
-        await readFile(join(testDir, 'spec', 'tags.json'), 'utf-8')
+        await readFile(join(setup.testDir, 'spec', 'tags.json'), 'utf-8')
       );
       const componentCategory = tagsJson.categories.find(
         (c: any) => c.name === 'Component Tags'
@@ -155,14 +155,14 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       // When I run `fspec register-tag InvalidTag "Technical Tags" "Invalid format"`
       await expect(
         registerTag('InvalidTag', 'Technical Tags', 'Invalid format', {
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow();
 
       // Then the error message should indicate invalid tag format
       try {
         await registerTag('InvalidTag', 'Technical Tags', 'Invalid format', {
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: any) {
         expect(error.message).toContain('Invalid tag format');
@@ -174,25 +174,25 @@ describe('Feature: Register New Tag in Tag Registry', () => {
   describe("Scenario: Create tags.json if it doesn't exist", () => {
     it('should create tags.json with standard structure and add tag', async () => {
       // Given no tags.json file exists in spec/
-      await rm(join(testDir, 'spec', 'tags.json'));
+      await rm(join(setup.testDir, 'spec', 'tags.json'));
 
       // When I run `fspec register-tag @custom "Technical Tags" "Custom feature"`
       const result = await registerTag(
         '@custom',
         'Technical Tags',
         'Custom feature',
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then a new tags.json file should be created
       const tagsJson = JSON.parse(
-        await readFile(join(testDir, 'spec', 'tags.json'), 'utf-8')
+        await readFile(join(setup.testDir, 'spec', 'tags.json'), 'utf-8')
       );
       expect(tagsJson.categories).toBeDefined();
 
       // And TAGS.md should be generated with standard structure
       const tagsContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
       expect(tagsContent).toContain('<!-- THIS FILE IS AUTO-GENERATED');
@@ -220,12 +220,12 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         '@API-Integration',
         'Technical Tags',
         'API features',
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the tag should be registered as @api-integration (lowercase)
       const tagsContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
       expect(tagsContent).toContain('`@api-integration`');
@@ -243,14 +243,14 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       // When I run `fspec register-tag @custom "NonExistent Category" "Description"`
       await expect(
         registerTag('@custom', 'NonExistent Category', 'Description', {
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow();
 
       // Then the error message should list valid categories
       try {
         await registerTag('@custom', 'NonExistent Category', 'Description', {
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: any) {
         expect(error.message).toContain('Invalid category');
@@ -265,17 +265,17 @@ describe('Feature: Register New Tag in Tag Registry', () => {
     it('should maintain JSON structure and regenerate MD', async () => {
       // Given I have tags.json with existing tags
       const originalJson = JSON.parse(
-        await readFile(join(testDir, 'spec', 'tags.json'), 'utf-8')
+        await readFile(join(setup.testDir, 'spec', 'tags.json'), 'utf-8')
       );
 
       // When I run `fspec register-tag @new-tag "Technical Tags" "New feature"`
       await registerTag('@new-tag', 'Technical Tags', 'New feature', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then tags.json should have the new tag
       const newJson = JSON.parse(
-        await readFile(join(testDir, 'spec', 'tags.json'), 'utf-8')
+        await readFile(join(setup.testDir, 'spec', 'tags.json'), 'utf-8')
       );
       const technicalCat = newJson.categories.find(
         (c: any) => c.name === 'Technical Tags'
@@ -286,7 +286,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
 
       // And TAGS.md should be regenerated with all tags
       const newContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
       expect(newContent).toContain('## Priority Tags');
@@ -309,12 +309,12 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         '@long-desc',
         'Technical Tags',
         longDesc,
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the tag should be registered with the full description
       const tagsContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
       expect(tagsContent).toContain('`@long-desc`');
@@ -335,14 +335,14 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         '@websocket',
         'Technical Tags',
         'WebSocket communication features',
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the tag should be successfully registered in TAGS.md
       expect(result.success).toBe(true);
 
       const tagsContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
       expect(tagsContent).toContain('`@websocket`');
@@ -363,24 +363,24 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         'Priority Tags',
         'Phase 4: Future features',
         {
-          cwd: testDir,
+          cwd: setup.testDir,
         }
       );
 
       // Then the tag should be added to Priority Tags section
       let tagsContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
       expect(tagsContent).toContain('`@v2-release`');
 
       // When I run `fspec register-tag @new-component "Component Tags" "New component"`
       await registerTag('@new-component', 'Component Tags', 'New component', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the tag should be added to Component Tags section
-      tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      tagsContent = await readFile(join(setup.testDir, 'spec', 'TAGS.md'), 'utf-8');
       expect(tagsContent).toContain('`@new-component`');
 
       // When I run `fspec register-tag @new-group "Feature Group Tags" "New feature group"`
@@ -388,11 +388,11 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         '@new-group',
         'Feature Group Tags',
         'New feature group',
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the tag should be added to Feature Group Tags section
-      tagsContent = await readFile(join(testDir, 'spec', 'TAGS.md'), 'utf-8');
+      tagsContent = await readFile(join(setup.testDir, 'spec', 'TAGS.md'), 'utf-8');
       expect(tagsContent).toContain('`@new-group`');
 
       // And all registrations should maintain proper formatting
@@ -405,7 +405,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
   describe('Scenario: JSON-backed workflow - modify JSON and regenerate MD', () => {
     it('should update tags.json and regenerate TAGS.md', async () => {
       // Given I have a valid tags.json file
-      const tagsJsonPath = join(testDir, 'spec', 'tags.json');
+      const tagsJsonPath = join(setup.testDir, 'spec', 'tags.json');
       const minimalTags = {
         $schema: '../src/schemas/tags.schema.json',
         categories: [
@@ -459,7 +459,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
         '@new-tag',
         'Technical Tags',
         'New technical tag',
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the tags.json file should be updated with the new tag
@@ -490,7 +490,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
 
       // And TAGS.md should be regenerated from tags.json
       const tagsContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
 
@@ -511,7 +511,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
   describe('Scenario: Rollback if markdown generation fails', () => {
     it('should rollback tags.json to previous state on MD generation failure', async () => {
       // Given I have a valid file "spec/tags.json"
-      const tagsJsonPath = join(testDir, 'spec', 'tags.json');
+      const tagsJsonPath = join(setup.testDir, 'spec', 'tags.json');
       const originalTagsJson = JSON.parse(
         await readFile(tagsJsonPath, 'utf-8')
       );
@@ -526,7 +526,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       try {
         // Register the tag which should succeed initially
         await registerTag('@new-tag', 'Priority Tags', 'Description', {
-          cwd: testDir,
+          cwd: setup.testDir,
         });
 
         // Check that tags.json was updated successfully despite any issues
@@ -558,7 +558,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
   describe('Scenario: Update statistics after registering tag', () => {
     it('should update lastUpdated timestamp in statistics', async () => {
       // Given I have a valid file "spec/tags.json" with current statistics
-      const tagsJsonPath = join(testDir, 'spec', 'tags.json');
+      const tagsJsonPath = join(setup.testDir, 'spec', 'tags.json');
       const originalTagsJson = JSON.parse(
         await readFile(tagsJsonPath, 'utf-8')
       );
@@ -569,7 +569,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
 
       // When I run `fspec register-tag @new-tag "Technical Tags" "New technical tag"`
       await registerTag('@new-tag', 'Technical Tags', 'New technical tag', {
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then "spec/tags.json" statistics should be updated
@@ -587,7 +587,7 @@ describe('Feature: Register New Tag in Tag Registry', () => {
 
       // And "spec/TAGS.md" should reflect updated statistics
       const tagsContent = await readFile(
-        join(testDir, 'spec', 'TAGS.md'),
+        join(setup.testDir, 'spec', 'TAGS.md'),
         'utf-8'
       );
       expect(tagsContent).toContain('@new-tag');

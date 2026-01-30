@@ -7,21 +7,21 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile, readJsonTestFile } from '../../test-helpers/test-file-operations';
 import type { WorkUnitsData } from '../../types';
 
 describe('Feature: Work unit details panel shows incorrect work unit after reordering', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    setup = await setupWorkUnitTest('update-work-unit-status-done-sorting');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Moving work unit to done inserts at correct sorted position', () => {
@@ -30,7 +30,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
       // @step And the states.done array contains [BOARD-003, BOARD-001]
       // @step And BOARD-003 has updated timestamp 2025-10-28T11:00:00Z
       // @step And BOARD-001 has updated timestamp 2025-10-28T09:00:00Z
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -78,13 +78,13 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
+      await writeJsonTestFile(workUnitsFile, initialData, null, 2);
 
       // @step When I run "fspec update-work-unit-status BOARD-005 done"
       await updateWorkUnitStatus({
         workUnitId: 'BOARD-005',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then BOARD-005 should be inserted and ENTIRE array sorted
@@ -114,7 +114,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
 
     it('should insert at beginning when work unit has most recent timestamp', async () => {
       // Work unit with timestamp AFTER all existing done items
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -162,12 +162,12 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
+      await writeJsonTestFile(workUnitsFile, initialData, null, 2);
 
       await updateWorkUnitStatus({
         workUnitId: 'BOARD-007',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       const fileContent = await readFile(workUnitsFile, 'utf-8');
@@ -183,7 +183,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
 
     it('should sort entire array when moving work unit to done', async () => {
       // With full array sorting, the newly moved work unit gets current timestamp (most recent)
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -231,12 +231,12 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
+      await writeJsonTestFile(workUnitsFile, initialData, null, 2);
 
       await updateWorkUnitStatus({
         workUnitId: 'BOARD-002',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       const fileContent = await readFile(workUnitsFile, 'utf-8');
@@ -253,7 +253,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
 
     it('should handle empty done array correctly', async () => {
       // First work unit moving to done
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -280,12 +280,12 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
+      await writeJsonTestFile(workUnitsFile, initialData, null, 2);
 
       await updateWorkUnitStatus({
         workUnitId: 'BOARD-001',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       const fileContent = await readFile(workUnitsFile, 'utf-8');
@@ -298,7 +298,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
 
     it('should sort entire done array when moving new work unit to done', async () => {
       // Done array has mis-ordered work units
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -356,13 +356,13 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
+      await writeJsonTestFile(workUnitsFile, initialData, null, 2);
 
       // Move BOARD-007 to done
       await updateWorkUnitStatus({
         workUnitId: 'BOARD-007',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       const fileContent = await readFile(workUnitsFile, 'utf-8');
@@ -390,7 +390,7 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
 
     it('should sort using createdAt as fallback when updated field is missing', async () => {
       // Mix of work units: some with updated, some without
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -447,13 +447,13 @@ describe('Feature: Work unit details panel shows incorrect work unit after reord
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(initialData, null, 2));
+      await writeJsonTestFile(workUnitsFile, initialData, null, 2);
 
       // Move BOARD-005 to done (will get current timestamp via updated field)
       await updateWorkUnitStatus({
         workUnitId: 'BOARD-005',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       const fileContent = await readFile(workUnitsFile, 'utf-8');

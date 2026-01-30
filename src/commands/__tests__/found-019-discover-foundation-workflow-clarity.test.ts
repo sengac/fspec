@@ -3,49 +3,51 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { discoverFoundation } from '../discover-foundation';
 import { updateFoundation } from '../update-foundation';
-import { readFile, writeFile, unlink, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+  createTestFile,
+} from '../../test-helpers/universal-test-setup';
+import { 
+  ensureTestDirectory,
+  writeJsonTestFile,
+  readJsonTestFile 
+} from '../../test-helpers/test-file-operations';
 
 describe('discover-foundation workflow clarity', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let draftPath: string;
 
   beforeEach(async () => {
-    // Create temporary test directory
-    testDir = join(tmpdir(), `fspec-test-${Date.now()}`);
-    await mkdir(join(testDir, 'spec'), { recursive: true });
-    draftPath = join(testDir, 'spec', 'foundation.json.draft');
+    setup = await setupTestDirectory('discover-foundation-workflow-clarity');
+    await ensureTestDirectory(join(setup.testDir, 'spec'));
+    draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
   });
 
   afterEach(async () => {
-    // Cleanup
-    try {
-      await unlink(draftPath);
-    } catch {
-      // Ignore
-    }
+    await setup.cleanup();
   });
 
   it('AI accidentally runs discover-foundation and draft is protected', async () => {
     // @step Given a foundation draft exists with 3 fields already filled
-    await discoverFoundation({ cwd: testDir, draftPath, force: true });
+    await discoverFoundation({ cwd: setup.testDir, draftPath, force: true });
 
     // @step And the draft contains filled values for projectName, projectVision, and projectType
-    const draftContent = JSON.parse(await readFile(draftPath, 'utf-8'));
+    const draftContent = await readJsonTestFile(draftPath);
     draftContent.project.name = 'fspec';
     draftContent.project.vision = 'Test vision';
     draftContent.project.projectType = 'cli-tool';
-    await writeFile(draftPath, JSON.stringify(draftContent, null, 2));
+    await writeJsonTestFile(draftPath, draftContent);
 
     // Verify fields are filled
-    const filledDraft = JSON.parse(await readFile(draftPath, 'utf-8'));
+    const filledDraft = await readJsonTestFile(draftPath);
     expect(filledDraft.project.name).toBe('fspec');
     expect(filledDraft.project.vision).toBe('Test vision');
     expect(filledDraft.project.projectType).toBe('cli-tool');
 
     // @step When AI runs "fspec discover-foundation" without flags
-    const result = await discoverFoundation({ cwd: testDir, draftPath });
+    const result = await discoverFoundation({ cwd: setup.testDir, draftPath });
 
     // @step Then the command fails with error
     expect(result.valid).toBe(false);
@@ -54,7 +56,7 @@ describe('discover-foundation workflow clarity', () => {
     );
 
     // @step And the draft is NOT overwritten
-    const unchangedDraft = JSON.parse(await readFile(draftPath, 'utf-8'));
+    const unchangedDraft = await readJsonTestFile(draftPath);
 
     // @step And all 3 previously filled fields remain unchanged
     expect(unchangedDraft.project.name).toBe('fspec');
@@ -67,11 +69,11 @@ describe('discover-foundation workflow clarity', () => {
 
   it('update-foundation emits next field reminder', async () => {
     // @step Given a foundation draft exists
-    await discoverFoundation({ cwd: testDir, draftPath, force: true });
+    await discoverFoundation({ cwd: setup.testDir, draftPath, force: true });
 
     // @step When AI runs "fspec update-foundation projectName 'fspec'"
     const result = await updateFoundation({
-      cwd: testDir,
+      cwd: setup.testDir,
       draftPath,
       section: 'projectName',
       content: 'fspec',
@@ -94,11 +96,11 @@ describe('discover-foundation workflow clarity', () => {
 
   it('System-reminder guides to next field without confusing instructions', async () => {
     // @step Given a foundation draft exists
-    await discoverFoundation({ cwd: testDir, draftPath });
+    await discoverFoundation({ cwd: setup.testDir, draftPath });
 
     // @step When AI runs any "fspec update-foundation" command successfully
     const result = await updateFoundation({
-      cwd: testDir,
+      cwd: setup.testDir,
       draftPath,
       section: 'projectName',
       content: 'test-project',

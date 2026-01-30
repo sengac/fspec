@@ -4,32 +4,33 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, access } from 'fs/promises';
-import { tmpdir } from 'os';
+import { access } from 'fs/promises';
 import { join } from 'path';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory } from '../../test-helpers/test-file-operations';
 import { listWorkUnits } from '../list-work-units';
 
 describe('Feature: Automatic JSON File Initialization', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('list-work-units');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: List work units command auto-creates spec/work-units.json when missing', () => {
     it('should create work-units.json with proper structure when missing', async () => {
       // Given I have a fresh project with spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await ensureTestDirectory(join(setup.testDir, 'spec'));
 
       // And spec/work-units.json does not exist
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
 
       // When I run "fspec list-work-units"
-      const result = await listWorkUnits({ cwd: testDir });
+      const result = await listWorkUnits({ cwd: setup.testDir });
 
       // Then the command should succeed
       expect(result).toBeDefined();

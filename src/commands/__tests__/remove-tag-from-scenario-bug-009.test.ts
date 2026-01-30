@@ -6,24 +6,24 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { removeTagFromScenario } from '../remove-tag-from-scenario';
 
-import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+import { 
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
 describe('Feature: Scenario Tag Removal (BUG-009)', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('bug-009');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('bug-009');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Remove single tag from scenario', () => {
@@ -37,8 +37,8 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
     When I enter valid credentials
     Then I should be logged in
 `;
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         featureContent
       );
 
@@ -47,12 +47,12 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
         'spec/features/test.feature',
         'Login scenario',
         ['@COV-010'],
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the tag @COV-010 should be removed from the scenario line
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/test.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         'utf-8'
       );
       expect(updatedContent).not.toContain('@COV-010');
@@ -78,8 +78,8 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
     When I enter valid credentials
     Then I should be logged in
 `;
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         featureContent
       );
 
@@ -88,12 +88,12 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
         'spec/features/test.feature',
         'Login scenario',
         ['@COV-010'],
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the tag @COV-010 should be removed from the scenario
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/test.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         'utf-8'
       );
       expect(updatedContent).not.toContain('@COV-010');
@@ -115,8 +115,8 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
   Scenario: Existing Scenario
     Given test
 `;
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         featureContent
       );
 
@@ -125,7 +125,7 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
         'spec/features/test.feature',
         'Nonexistent Scenario',
         ['@COV-010'],
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the command should display a warning message
@@ -149,8 +149,8 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
   Scenario: Login scenario
     Given test
 `;
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         featureContent
       );
 
@@ -159,7 +159,7 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
         'spec/features/test.feature',
         'Login scenario',
         ['@COV-010'],
-        { cwd: testDir }
+        { cwd: setup.testDir }
       );
 
       // Then the command should succeed (idempotent behavior)
@@ -172,8 +172,8 @@ describe('Feature: Scenario Tag Removal (BUG-009)', () => {
       expect(result.message).toContain('No changes'); // Should indicate no changes made
 
       // And the @wip tag should remain on the scenario
-      const updatedContent = await readFile(
-        join(testDir, 'spec/features/test.feature'),
+      const updatedContent = await readTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         'utf-8'
       );
       expect(updatedContent).toContain('@wip');

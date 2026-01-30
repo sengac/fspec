@@ -6,30 +6,21 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { removeQuestion } from '../remove-question';
 import type { WorkUnitsData } from '../../types';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: remove-question command shows "[object Object]" instead of question text', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-
-    // Create spec directory structure
-    await mkdir(specDir, { recursive: true });
+    setup = await setupWorkUnitTest('remove-question-display-bug');
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Remove question displays actual question text', () => {
@@ -57,13 +48,13 @@ describe('Feature: remove-question command shows "[object Object]" instead of qu
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec remove-question TEST-001 0"
       const result = await removeQuestion({
         workUnitId: 'TEST-001',
         index: 0,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the success message should display "Removed question: Should we support OAuth?"
@@ -99,13 +90,13 @@ describe('Feature: remove-question command shows "[object Object]" instead of qu
           blocked: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec remove-question TEST-002 0"
       const result = await removeQuestion({
         workUnitId: 'TEST-002',
         index: 0,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the success message should display "Removed question: @human: What happens?"

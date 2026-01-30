@@ -4,27 +4,20 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync } from 'fs';
-import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdir, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import type { WorkUnit } from '../../types/work-unit';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let tempDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Given I have a project with spec directory
-    tempDir = mkdtempSync(join(tmpdir(), 'fspec-test-'));
-    specDir = join(tempDir, 'spec');
-    await mkdir(specDir, { recursive: true });
-    workUnitsFile = join(specDir, 'work-units.json');
+    setup = await setupWorkUnitTest('suggest-dependencies');
   });
 
-  afterEach(() => {
-    rmSync(tempDir, { recursive: true, force: true });
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: Auto-suggest dependency relationships based on work unit metadata', () => {
@@ -81,14 +74,14 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // When I run "fspec suggest-dependencies --output=json"
       const { suggestDependencies } = await import(
         '../suggest-dependencies.js'
       );
       const result = await suggestDependencies({
-        cwd: tempDir,
+        cwd: setup.testDir,
         output: 'json',
       });
 

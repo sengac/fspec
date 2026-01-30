@@ -6,7 +6,6 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData, PrefixesData } from '../../types';
 import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
@@ -17,17 +16,21 @@ import { createBug } from '../create-bug';
 import { createTask } from '../create-task';
 
 import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Replace generic create-work-unit with type-specific commands', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('type-specific-commands');
+    setup = await setupTestDirectory('type-specific-commands');
 
     // Create foundation.json for all tests
-    await createMinimalFoundation(testDir);
+    await createMinimalFoundation(setup.testDir);
 
     // Create prefixes.json
     const prefixes: PrefixesData = {
@@ -49,10 +52,7 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
         },
       },
     };
-    await writeFile(
-      join(testDir, 'spec/prefixes.json'),
-      JSON.stringify(prefixes, null, 2)
-    );
+    await writeJsonTestFile(join(setup.testDir, 'spec/prefixes.json'), prefixes);
 
     // Create empty work-units.json
     const workUnits: WorkUnitsData = {
@@ -67,14 +67,14 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
         blocked: [],
       },
     };
-    await writeFile(
-      join(testDir, 'spec/work-units.json'),
-      JSON.stringify(workUnits, null, 2)
+    await writeJsonTestFile(
+      join(setup.testDir, 'spec/work-units.json'),
+      workUnits
     );
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Create story with Example Mapping guidance', () => {
@@ -86,18 +86,17 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
       const result = await createStory({
         prefix: 'AUTH',
         title: 'User login',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then a new story work unit AUTH-001 should be created
       expect(result.success).toBe(true);
       expect(result.workUnitId).toBe('AUTH-001');
 
-      const workUnitsContent = await readFile(
-        join(testDir, 'spec/work-units.json'),
-        'utf-8'
+      const workUnitsContent = await readJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json')
       );
-      const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
+      const workUnitsData: WorkUnitsData = workUnitsContent;
       expect(workUnitsData.workUnits['AUTH-001']).toBeDefined();
       expect(workUnitsData.workUnits['AUTH-001'].type).toBe('story');
 
@@ -128,18 +127,17 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
       const result = await createBug({
         prefix: 'BUG',
         title: 'Login validation broken',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then a new bug work unit BUG-001 should be created
       expect(result.success).toBe(true);
       expect(result.workUnitId).toBe('BUG-001');
 
-      const workUnitsContent = await readFile(
-        join(testDir, 'spec/work-units.json'),
-        'utf-8'
+      const workUnitsContent = await readJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json')
       );
-      const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
+      const workUnitsData: WorkUnitsData = workUnitsContent;
       expect(workUnitsData.workUnits['BUG-001']).toBeDefined();
       expect(workUnitsData.workUnits['BUG-001'].type).toBe('bug');
 
@@ -170,18 +168,17 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
       const result = await createTask({
         prefix: 'TASK',
         title: 'Setup CI/CD pipeline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then a new task work unit TASK-001 should be created
       expect(result.success).toBe(true);
       expect(result.workUnitId).toBe('TASK-001');
 
-      const workUnitsContent = await readFile(
-        join(testDir, 'spec/work-units.json'),
-        'utf-8'
+      const workUnitsContent = await readJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json')
       );
-      const workUnitsData: WorkUnitsData = JSON.parse(workUnitsContent);
+      const workUnitsData: WorkUnitsData = workUnitsContent;
       expect(workUnitsData.workUnits['TASK-001']).toBeDefined();
       expect(workUnitsData.workUnits['TASK-001'].type).toBe('task');
 
@@ -198,26 +195,22 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
     it('should support --epic, --description, --parent options', async () => {
       // Given I have fspec installed
       // And epic exists
-      await writeFile(
-        join(testDir, 'spec/epics.json'),
-        JSON.stringify(
-          {
-            epics: {
-              'user-management': {
-                name: 'user-management',
-                title: 'User Management',
-                createdAt: new Date().toISOString(),
-              },
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/epics.json'),
+        {
+          epics: {
+            'user-management': {
+              name: 'user-management',
+              title: 'User Management',
+              createdAt: new Date().toISOString(),
             },
           },
-          null,
-          2
-        )
+        }
       );
 
       // And parent work unit exists
-      const workUnitsData = JSON.parse(
-        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      const workUnitsData = await readJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json')
       );
       workUnitsData.workUnits['AUTH-000'] = {
         id: 'AUTH-000',
@@ -228,9 +221,9 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
         updatedAt: new Date().toISOString(),
       };
       workUnitsData.states.done.push('AUTH-000');
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnitsData
       );
 
       // When I run 'fspec create-story AUTH "Login" --epic user-management --description "User authentication" --parent AUTH-000'
@@ -240,16 +233,15 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
         epic: 'user-management',
         description: 'User authentication',
         parent: 'AUTH-000',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the story should be created with epic set to 'user-management'
       expect(result.success).toBe(true);
-      const content = await readFile(
-        join(testDir, 'spec/work-units.json'),
-        'utf-8'
+      const content = await readJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json')
       );
-      const data: WorkUnitsData = JSON.parse(content);
+      const data: WorkUnitsData = content;
       expect(data.workUnits[result.workUnitId!].epic).toBe('user-management');
 
       // And the story should have description 'User authentication'
@@ -310,7 +302,7 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
       const storyResult = await createStory({
         prefix: 'AUTH',
         title: 'Test story',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Verify output uses 'story' not 'work unit'
@@ -320,7 +312,7 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
       const bugResult = await createBug({
         prefix: 'BUG',
         title: 'Test bug',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Verify output uses 'bug' not 'work unit'
@@ -330,7 +322,7 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
       const taskResult = await createTask({
         prefix: 'TASK',
         title: 'Test task',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Verify output uses 'task' not 'work unit'
@@ -378,19 +370,19 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
       const storyResult = await createStory({
         prefix: 'AUTH',
         title: 'Test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       const bugResult = await createBug({
         prefix: 'BUG',
         title: 'Test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       const taskResult = await createTask({
         prefix: 'TASK',
         title: 'Test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And no system-reminders should reference create-work-unit

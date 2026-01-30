@@ -8,29 +8,26 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile, readFile } from 'fs/promises';
 import { generateScenarios } from '../generate-scenarios';
 import { auditScenarios } from '../audit-scenarios';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Scenario deduplication and refactoring detection during generation', () => {
-  let tmpDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    // Setup required directories
-    await mkdir(join(tmpDir, 'spec/features'), { recursive: true });
-    await mkdir(join(tmpDir, 'spec/work-units'), { recursive: true });
+    setup = await setupWorkUnitTest('scenario-deduplication');
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Update existing feature file when scenario is a refactor', () => {
     it('should detect existing scenario and prompt to update', async () => {
       // Given I have a work unit AUTH-005 with examples describing login validation
-      const workUnitsFile = join(tmpDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       await writeFile(
         workUnitsFile,
         JSON.stringify(
@@ -65,7 +62,7 @@ describe('Feature: Scenario deduplication and refactoring detection during gener
 
       // And an existing feature file 'user-authentication.feature' contains scenario 'Validate user credentials'
       const existingFeature = join(
-        tmpDir,
+        setup.testDir,
         'spec/features/user-authentication.feature'
       );
       await writeFile(
@@ -89,7 +86,7 @@ Feature: User Authentication
       // When I run 'fspec generate-scenarios AUTH-005 --ignore-possible-duplicates'
       const result = await generateScenarios({
         workUnitId: 'AUTH-005',
-        cwd: tmpDir,
+        cwd: setup.testDir,
         ignorePossibleDuplicates: true,
       });
 
@@ -107,7 +104,7 @@ Feature: User Authentication
 
     it('should update existing scenario when user confirms', async () => {
       // Given I have a work unit AUTH-005 with examples describing login validation
-      const workUnitsFile = join(tmpDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       await writeFile(
         workUnitsFile,
         JSON.stringify(
@@ -142,7 +139,7 @@ Feature: User Authentication
 
       // And an existing feature file 'user-authentication.feature' contains scenario 'Validate user credentials'
       const existingFeature = join(
-        tmpDir,
+        setup.testDir,
         'spec/features/user-authentication.feature'
       );
       await writeFile(
@@ -166,7 +163,7 @@ Feature: User Authentication
       // When I confirm 'y', the existing scenario should be updated
       const result = await generateScenarios({
         workUnitId: 'AUTH-005',
-        cwd: tmpDir,
+        cwd: setup.testDir,
         confirmUpdate: true, // Auto-confirm for testing
         ignorePossibleDuplicates: true, // Skip duplicate blocking
       });
@@ -182,7 +179,7 @@ Feature: User Authentication
   describe('Scenario: Create new feature file when no match found', () => {
     it('should create new feature file when no existing scenarios match', async () => {
       // Given I have a work unit AUTH-006 with examples describing OAuth integration
-      const workUnitsFile = join(tmpDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       await writeFile(
         workUnitsFile,
         JSON.stringify(
@@ -216,12 +213,12 @@ Feature: User Authentication
       );
 
       // And no existing feature files contain OAuth-related scenarios
-      // (no setup needed - tmpDir is empty except work units)
+      // (no setup needed - setup.testDir is empty except work units)
 
       // When I run 'fspec generate-scenarios AUTH-006'
       const result = await generateScenarios({
         workUnitId: 'AUTH-006',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then the system should create a new feature file 'oauth-integration.feature'
@@ -229,7 +226,7 @@ Feature: User Authentication
 
       // And the new file should be created (context-only, no scenarios yet)
       const newFeature = await readFile(
-        join(tmpDir, 'spec/features/oauth-integration.feature'),
+        join(setup.testDir, 'spec/features/oauth-integration.feature'),
         'utf-8'
       );
       expect(newFeature).toContain('Feature: OAuth integration');
@@ -241,7 +238,7 @@ Feature: User Authentication
   describe('Scenario: Handle mixed refactor and new scenarios', () => {
     it('should handle mixed refactor and new scenarios correctly', async () => {
       // Given I have a work unit BUG-009 with 3 examples
-      const workUnitsFile = join(tmpDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       await writeFile(
         workUnitsFile,
         JSON.stringify(
@@ -278,7 +275,7 @@ Feature: User Authentication
 
       // And Example 1 matches an existing scenario in feature-validation.feature
       await writeFile(
-        join(tmpDir, 'spec/features/feature-validation.feature'),
+        join(setup.testDir, 'spec/features/feature-validation.feature'),
         `Feature: Feature Validation
   Scenario: Validate empty tags in feature files
     Given a feature with empty tags
@@ -289,7 +286,7 @@ Feature: User Authentication
 
       // And Example 2 matches an existing scenario in tag-management.feature
       await writeFile(
-        join(tmpDir, 'spec/features/tag-management.feature'),
+        join(setup.testDir, 'spec/features/tag-management.feature'),
         `Feature: Tag Management
   Scenario: Handle malformed tag JSON gracefully
     Given a feature with malformed tag JSON
@@ -304,7 +301,7 @@ Feature: User Authentication
       // When I run 'fspec generate-scenarios BUG-009 --ignore-possible-duplicates'
       const result = await generateScenarios({
         workUnitId: 'BUG-009',
-        cwd: tmpDir,
+        cwd: setup.testDir,
         confirmUpdate: true, // Auto-confirm all updates
         ignorePossibleDuplicates: true, // Skip duplicate blocking
       });
@@ -328,7 +325,7 @@ Feature: User Authentication
       // Given I have been developing for several months
       // And duplicate scenarios exist across different feature files
       await writeFile(
-        join(tmpDir, 'spec/features/auth.feature'),
+        join(setup.testDir, 'spec/features/auth.feature'),
         `Feature: Authentication
   Scenario: User login with valid credentials
     Given a user has valid credentials
@@ -339,7 +336,7 @@ Feature: User Authentication
       );
 
       await writeFile(
-        join(tmpDir, 'spec/features/security.feature'),
+        join(setup.testDir, 'spec/features/security.feature'),
         `Feature: Security
   Scenario: User login with valid credentials
     Given a user has valid credentials
@@ -350,7 +347,7 @@ Feature: User Authentication
       );
 
       // When I run 'fspec audit-scenarios'
-      const result = await auditScenarios({ cwd: tmpDir });
+      const result = await auditScenarios({ cwd: setup.testDir });
 
       // Then the system should report 'Found 5 potential duplicates'
       // (adjust based on test data - this example has 1 duplicate pair)

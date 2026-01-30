@@ -6,20 +6,18 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import { setUserStory } from '../set-user-story';
 import type { WorkUnitsData } from '../../types';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: User Story Management in Work Units', () => {
-  let tmpDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    const specDir = join(tmpDir, 'spec');
-    const { mkdir: mkdirp } = await import('fs/promises');
-    await mkdirp(specDir, { recursive: true });
+    setup = await setupWorkUnitTest('set-user-story');
+    const specDir = join(setup.testDir, 'spec');
     await writeFile(
       join(specDir, 'work-units.json'),
       JSON.stringify({
@@ -40,7 +38,7 @@ describe('Feature: User Story Management in Work Units', () => {
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Set user story fields for work unit', () => {
@@ -51,13 +49,13 @@ describe('Feature: User Story Management in Work Units', () => {
         role: 'developer',
         action: 'track user stories',
         benefit: 'better specification quality',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then: The work unit should have userStory field
       const { readFile: read } = await import('fs/promises');
       const content = await read(
-        join(tmpDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         'utf-8'
       );
       const data: WorkUnitsData = JSON.parse(content);
@@ -78,13 +76,13 @@ describe('Feature: User Story Management in Work Units', () => {
         role: 'developer',
         action: 'test timestamps',
         benefit: 'accurate tracking',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then: The updatedAt should be recent
       const { readFile: read } = await import('fs/promises');
       const content = await read(
-        join(tmpDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         'utf-8'
       );
       const data: WorkUnitsData = JSON.parse(content);
@@ -103,7 +101,7 @@ describe('Feature: User Story Management in Work Units', () => {
           role: 'test',
           action: 'test',
           benefit: 'test',
-          cwd: tmpDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow("Work unit 'NONEXISTENT-001' does not exist");
     });

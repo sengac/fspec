@@ -11,23 +11,31 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, readFile, mkdir } from 'fs/promises';
+import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import { generateScenarios } from '../generate-scenarios';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  ensureTestDirectory,
+  createTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Preserve example mapping context as comments', () => {
-  let tmpDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(tmpDir, 'spec', 'features'), { recursive: true });
-    await writeFile(join(tmpDir, 'spec', 'features', '.gitkeep'), '');
+    setup = await setupTestDirectory('generate-scenarios-comment-embedding');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
+    await createTestFile(join(setup.testDir, 'spec', 'features'), '.gitkeep', '');
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Generate context-only feature file with no scenarios', () => {
@@ -77,20 +85,20 @@ describe('Feature: Preserve example mapping context as comments', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
+        workUnitsData
       );
 
       // When I run "fspec generate-scenarios EXMAP-002"
       const result = await generateScenarios({
         workUnitId: 'EXMAP-002',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then a feature file should be created
       expect(result.success).toBe(true);
-      expect(result.featureFile).toBeDefined();
+      expect(result.featureFile, 'utf-8').toBeDefined();
 
       const content = await readFile(result.featureFile, 'utf-8');
 
@@ -152,15 +160,15 @@ describe('Feature: Preserve example mapping context as comments', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
+        workUnitsData
       );
 
       // When I run "fspec generate-scenarios" on the work unit
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       const content = await readFile(result.featureFile, 'utf-8');
@@ -204,14 +212,14 @@ describe('Feature: Preserve example mapping context as comments', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
+        workUnitsData
       );
 
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // When I view the generated feature file
@@ -269,15 +277,15 @@ describe('Feature: Preserve example mapping context as comments', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
+        workUnitsData
       );
 
       // When I generate scenarios from the work unit
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       const content = await readFile(result.featureFile, 'utf-8');
@@ -326,15 +334,15 @@ describe('Feature: Preserve example mapping context as comments', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
+        workUnitsData
       );
 
       // When I generate scenarios from the work unit
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       const content = await readFile(result.featureFile, 'utf-8');
@@ -377,15 +385,15 @@ describe('Feature: Preserve example mapping context as comments', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
+        workUnitsData
       );
 
       // When I run "fspec generate-scenarios" on it
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       const content = await readFile(result.featureFile, 'utf-8');
@@ -426,15 +434,15 @@ describe('Feature: Preserve example mapping context as comments', () => {
         },
       };
 
-      await writeFile(
-        join(tmpDir, 'spec', 'work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
+        workUnitsData
       );
 
       // When the command completes
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then a system-reminder should be emitted

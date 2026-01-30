@@ -6,30 +6,34 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import type { WorkUnitsData } from '../../types';
 import { createMinimalFoundation } from '../../test-helpers/foundation-helper';
 import { prioritizeWorkUnit } from '../prioritize-work-unit';
 
 import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Data integrity validation missing in prioritize-work-unit', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('prioritize-work-unit-data-integrity');
-    await mkdir(join(testDir, 'spec/features'), { recursive: true });
+    setup = await setupTestDirectory('prioritize-work-unit-data-integrity');
+    await ensureTestDirectory(join(setup.testDir, 'spec/features'));
 
     // Create foundation.json for all tests (required by commands)
-    await createMinimalFoundation(testDir);
+    await createMinimalFoundation(setup.testDir);
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Detect work unit in wrong states array', () => {
@@ -56,16 +60,16 @@ describe('Feature: Data integrity validation missing in prioritize-work-unit', (
           blocked: [],
         },
       };
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnits, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnits
       );
 
       // When I run "fspec prioritize-work-unit AUTH-001 --position top"
       const error = await prioritizeWorkUnit({
         workUnitId: 'AUTH-001',
         position: 'top',
-        cwd: testDir,
+        cwd: setup.testDir,
       }).catch((e: Error) => e);
 
       // Then the command should fail
@@ -117,16 +121,16 @@ describe('Feature: Data integrity validation missing in prioritize-work-unit', (
           blocked: [],
         },
       };
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnits, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnits
       );
 
       // When I run "fspec prioritize-work-unit FEAT-017 --before AUTH-001"
       const error = await prioritizeWorkUnit({
         workUnitId: 'FEAT-017',
         before: 'AUTH-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       }).catch((e: Error) => e);
 
       // Then the command should fail
@@ -174,23 +178,23 @@ describe('Feature: Data integrity validation missing in prioritize-work-unit', (
           blocked: [],
         },
       };
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnits, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnits
       );
 
       // When I run "fspec prioritize-work-unit AUTH-001 --position top"
       const result = await prioritizeWorkUnit({
         workUnitId: 'AUTH-001',
         position: 'top',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
       expect(result.success).toBe(true);
 
-      const updated = JSON.parse(
-        await readFile(join(testDir, 'spec/work-units.json'), 'utf-8')
+      const updated = await readJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json')
       );
 
       // And AUTH-001 should be first in the states.implementing array

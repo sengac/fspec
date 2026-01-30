@@ -1,24 +1,24 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { deleteStep } from '../delete-step';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
-import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+import { 
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
 describe('Feature: Delete Step from Scenario', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('delete-step');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('delete-step');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Delete step by exact text', () => {
@@ -32,22 +32,22 @@ describe('Feature: Delete Step from Scenario', () => {
     Then I should be logged in
     And I should see the dashboard
 `;
-      const filePath = join(testDir, 'spec/features/login.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/login.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec delete-step login "Login" "And I should see the dashboard"`
       const result = await deleteStep({
         feature: 'login',
         scenario: 'Login',
         step: 'And I should see the dashboard',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the step "And I should see the dashboard" should be removed
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).not.toContain('And I should see the dashboard');
 
       // And the other 3 steps should remain
@@ -78,22 +78,22 @@ describe('Feature: Delete Step from Scenario', () => {
     When I click the button
     Then I should see success
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec delete-step test "Test scenario" "Given I am logged in"`
       const result = await deleteStep({
         feature: 'test',
         scenario: 'Test scenario',
         step: 'Given I am logged in',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the Given step should be removed
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).not.toContain('Given I am logged in');
 
       // And remaining steps should be preserved
@@ -112,22 +112,22 @@ describe('Feature: Delete Step from Scenario', () => {
     When I click the button
     Then I should see result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec delete-step test "Test scenario" "When I click the button"`
       const result = await deleteStep({
         feature: 'test',
         scenario: 'Test scenario',
         step: 'When I click the button',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the When step should be removed
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).not.toContain('When I click the button');
 
       // And the Given and Then steps should remain
@@ -147,22 +147,22 @@ describe('Feature: Delete Step from Scenario', () => {
     Then I should see success
     And I should see confirmation
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec delete-step test "Test scenario" "Then I should see success"`
       const result = await deleteStep({
         feature: 'test',
         scenario: 'Test scenario',
         step: 'Then I should see success',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And only the specified Then step should be removed
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).not.toContain('Then I should see success');
       expect(updatedContent).toContain('And I should see confirmation');
     });
@@ -176,22 +176,22 @@ describe('Feature: Delete Step from Scenario', () => {
   Scenario: Test scenario
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec delete-step test "Test scenario" "Given test"`
       const result = await deleteStep({
         feature: 'test',
         scenario: 'Test scenario',
         step: 'Given test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the step should be removed
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).not.toContain('Given test');
 
       // And the scenario should have no steps
@@ -213,8 +213,8 @@ describe('Feature: Delete Step from Scenario', () => {
     When I click button
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec delete-step test "Test scenario" "Given non-existent step"`
@@ -222,7 +222,7 @@ describe('Feature: Delete Step from Scenario', () => {
         feature: 'test',
         scenario: 'Test scenario',
         step: 'Given non-existent step',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -234,7 +234,7 @@ describe('Feature: Delete Step from Scenario', () => {
       expect(result.error).toContain('Test scenario');
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -255,21 +255,21 @@ describe('Feature: Delete Step from Scenario', () => {
     When I do other thing
     Then I see other result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec delete-step test "First" "Given I am logged in"`
       const result = await deleteStep({
         feature: 'test',
         scenario: 'First',
         step: 'Given I am logged in',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
 
       // And the step should be removed from "First" scenario only
       const firstScenarioSection = updatedContent.split('Scenario: Second')[0];
@@ -291,22 +291,22 @@ describe('Feature: Delete Step from Scenario', () => {
     When I click submit
     Then I see success
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec delete-step test "Test scenario" "When I click submit"`
       const result = await deleteStep({
         feature: 'test',
         scenario: 'Test scenario',
         step: 'When I click submit',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the remaining steps should preserve proper indentation
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).toContain('    Given I am on the page');
       expect(updatedContent).toContain('    Then I see success');
 
@@ -325,22 +325,22 @@ describe('Feature: Delete Step from Scenario', () => {
     When I try to login
     Then I see error
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec delete-step test "Test scenario" "Given I can't access @admin features"`
       const result = await deleteStep({
         feature: 'test',
         scenario: 'Test scenario',
         step: "Given I can't access @admin features",
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
       // And the step should be removed
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).not.toContain(
         "Given I can't access @admin features"
       );
@@ -355,8 +355,8 @@ describe('Feature: Delete Step from Scenario', () => {
   Scenario: Existing scenario
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/login.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/login.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec delete-step login "Non-existent scenario" "Given test"`
@@ -364,7 +364,7 @@ describe('Feature: Delete Step from Scenario', () => {
         feature: 'login',
         scenario: 'Non-existent scenario',
         step: 'Given test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -375,7 +375,7 @@ describe('Feature: Delete Step from Scenario', () => {
       expect(result.error).toContain('Non-existent scenario');
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -388,8 +388,8 @@ describe('Feature: Delete Step from Scenario', () => {
   Scenario: Some scenario
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/broken.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/broken.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec delete-step broken "Some scenario" "Given test"`
@@ -397,7 +397,7 @@ describe('Feature: Delete Step from Scenario', () => {
         feature: 'broken',
         scenario: 'Some scenario',
         step: 'Given test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -407,7 +407,7 @@ describe('Feature: Delete Step from Scenario', () => {
       expect(result.error).toMatch(/invalid.*syntax/i);
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath, 'utf-8');
       expect(updatedContent).toBe(originalContent);
     });
   });

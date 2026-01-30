@@ -4,27 +4,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { queryWorkUnits } from '../query-work-units';
 import type { WorkUnitsData } from '../../types';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('query-blocked-work-units');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Find all currently blocked work units', () => {
     it('should find all work units with blocked status', async () => {
       // Given I have a project with spec directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And multiple work units exist with various statuses
       // And 3 work units are in "blocked" status
@@ -101,14 +101,14 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When I run "fspec query-work-units --status=blocked"
       const result = await queryWorkUnits({
         status: 'blocked',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show 3 blocked work units

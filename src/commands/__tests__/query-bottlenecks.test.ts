@@ -4,27 +4,20 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtempSync, rmSync } from 'fs';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 import type { WorkUnit } from '../../types/work-unit';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
-  let tempDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Given I have a project with spec directory
-    tempDir = mkdtempSync(join(tmpdir(), 'fspec-test-'));
-    specDir = join(tempDir, 'spec');
-    await mkdir(specDir, { recursive: true });
-    workUnitsFile = join(specDir, 'work-units.json');
+    setup = await setupWorkUnitTest('query-bottlenecks');
   });
 
-  afterEach(() => {
-    rmSync(tempDir, { recursive: true, force: true });
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: Identify bottleneck work units blocking the most work', () => {
@@ -108,11 +101,11 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnitsData, null, 2));
 
       // When I run "fspec query bottlenecks --output=json"
       const { queryBottlenecks } = await import('../query-bottlenecks');
-      const result = await queryBottlenecks({ cwd: tempDir, output: 'json' });
+      const result = await queryBottlenecks({ cwd: setup.testDir, output: 'json' });
 
       // Then the output should list work units ranked by bottleneck score
       expect(result).toBeDefined();

@@ -6,26 +6,26 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { CoverageFile } from '../../utils/coverage-file';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Show Coverage Statistics', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-show-coverage-test-'));
+    setup = await setupWorkUnitTest('show-coverage');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Display markdown report for single file with full breakdown', () => {
     it('should display markdown with 80% coverage, symbols, and coverage gaps section', async () => {
       // Given a feature file with coverage data (4/5 scenarios covered)
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -107,7 +107,7 @@ describe('Feature: Show Coverage Statistics', () => {
       const { showCoverage } = await import('../show-coverage');
       const output = await showCoverage('user-login.feature', {
         format: 'markdown',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the markdown should contain coverage percentage
@@ -135,7 +135,7 @@ describe('Feature: Show Coverage Statistics', () => {
   describe('Scenario: Display JSON output for single file', () => {
     it('should output JSON with scenarios, stats, and three-tier coverage', async () => {
       // Given a feature file with coverage data
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -173,7 +173,7 @@ describe('Feature: Show Coverage Statistics', () => {
       const { showCoverage } = await import('../show-coverage');
       const output = await showCoverage('test.feature', {
         format: 'json',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should be valid JSON
@@ -196,7 +196,7 @@ describe('Feature: Show Coverage Statistics', () => {
   describe('Scenario: Display project-wide coverage for all files', () => {
     it('should show aggregated summary and per-feature breakdown', async () => {
       // Given multiple feature files with coverage data
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // Feature 1: user-login.feature (80%)
@@ -261,7 +261,7 @@ describe('Feature: Show Coverage Statistics', () => {
       const { showCoverage } = await import('../show-coverage');
       const output = await showCoverage(undefined, {
         format: 'markdown',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then should show project summary
@@ -280,7 +280,7 @@ describe('Feature: Show Coverage Statistics', () => {
   describe('Scenario: Handle missing coverage file', () => {
     it('should error with exit code 1 and suggestion message', async () => {
       // Given no coverage file exists
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // When I run 'fspec show-coverage missing.feature'
@@ -288,14 +288,14 @@ describe('Feature: Show Coverage Statistics', () => {
 
       // Then should throw error
       await expect(
-        showCoverage('missing.feature', { format: 'markdown', cwd: testDir })
+        showCoverage('missing.feature', { format: 'markdown', cwd: setup.testDir })
       ).rejects.toThrow('Coverage file not found');
 
       // And error message should suggest creating coverage file
       try {
         await showCoverage('missing.feature', {
           format: 'markdown',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
@@ -307,7 +307,7 @@ describe('Feature: Show Coverage Statistics', () => {
   describe('Scenario: Handle invalid JSON in coverage file', () => {
     it('should error with parse details and suggestion', async () => {
       // Given a coverage file with invalid JSON
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageFile = join(featuresDir, 'invalid.feature.coverage');
@@ -318,14 +318,14 @@ describe('Feature: Show Coverage Statistics', () => {
 
       // Then should throw error with parse details
       await expect(
-        showCoverage('invalid.feature', { format: 'markdown', cwd: testDir })
+        showCoverage('invalid.feature', { format: 'markdown', cwd: setup.testDir })
       ).rejects.toThrow('Invalid JSON');
 
       // And error message should mention recreation
       try {
         await showCoverage('invalid.feature', {
           format: 'markdown',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
@@ -337,7 +337,7 @@ describe('Feature: Show Coverage Statistics', () => {
   describe('Scenario: Validate file paths and show warnings', () => {
     it('should warn about missing files but still display coverage', async () => {
       // Given coverage data with non-existent file paths
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -375,7 +375,7 @@ describe('Feature: Show Coverage Statistics', () => {
       const { showCoverage } = await import('../show-coverage');
       const output = await showCoverage('test.feature', {
         format: 'markdown',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then should show warning about missing files
@@ -396,7 +396,7 @@ describe('Feature: Show Coverage Statistics', () => {
         // @step Given a coverage file exists with 4 scenarios
         // @step And all 4 scenarios have testMappings
         // @step And the coverage file is missing the stats object
-        const featuresDir = join(testDir, 'spec', 'features');
+        const featuresDir = join(setup.testDir, 'spec', 'features');
         await mkdir(featuresDir, { recursive: true });
 
         const coverageData = {
@@ -452,7 +452,7 @@ describe('Feature: Show Coverage Statistics', () => {
         const { showCoverage } = await import('../show-coverage');
         const output = await showCoverage('test-feature', {
           format: 'markdown',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
 
         // Then the command should not crash
@@ -472,7 +472,7 @@ describe('Feature: Show Coverage Statistics', () => {
         // @step And 1 scenario has testMappings
         // @step And 1 scenario has no testMappings
         // @step And the coverage file is missing the stats object
-        const featuresDir = join(testDir, 'spec', 'features');
+        const featuresDir = join(setup.testDir, 'spec', 'features');
         await mkdir(featuresDir, { recursive: true });
 
         const coverageData = {
@@ -502,7 +502,7 @@ describe('Feature: Show Coverage Statistics', () => {
         const { showCoverage } = await import('../show-coverage');
         const output = await showCoverage('half-covered', {
           format: 'markdown',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
 
         // Then the command should not crash
@@ -522,7 +522,7 @@ describe('Feature: Show Coverage Statistics', () => {
         // @step And the scenarios reference test files "test1.ts" and "test2.ts"
         // @step And the scenarios reference impl files "impl1.ts" and "impl2.ts"
         // @step And the coverage file is missing the stats object
-        const featuresDir = join(testDir, 'spec', 'features');
+        const featuresDir = join(setup.testDir, 'spec', 'features');
         await mkdir(featuresDir, { recursive: true });
 
         const coverageData = {
@@ -558,7 +558,7 @@ describe('Feature: Show Coverage Statistics', () => {
         const { showCoverage } = await import('../show-coverage');
         const output = await showCoverage('multi-file', {
           format: 'json',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
 
         // Parse JSON output to verify stats

@@ -239,88 +239,93 @@ import { setupFullTest } from '../../test-helpers/universal-test-setup';
 
 ## Migration Status
 
-### ✅ COMPLETED (315 tests):
-- ✅ `src/test/system-reminder-preservation.test.ts` (5 tests)
-- ✅ `src/test/fspec-session-interception.test.ts` (3 tests)  
-- ✅ `src/commands/__tests__/work-unit.test.ts` (27 tests)
-- ✅ `src/commands/__tests__/kanban-workflow.test.ts` (30 tests)
-- ✅ `src/commands/__tests__/update-work-unit-status-done-sorting.test.ts` (6 tests)
-- ✅ `src/commands/__tests__/list-tags-ensure.test.ts` (1 test)
-- ✅ `src/commands/__tests__/event-storm-duplicate-detection.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/answer-question-preserves-text.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/query-work-units-advanced.test.ts` (4 tests)
-- ✅ `src/commands/__tests__/update-work-unit-ensure.test.ts` (1 test)
-- ✅ `src/commands/__tests__/generate-coverage-update-existing.test.ts` (2 tests)
-- ✅ `src/commands/__tests__/query-dependency-stats.test.ts` (1 test)
-- ✅ `src/commands/__tests__/show-event-storm.test.ts` (4 tests)
-- ✅ `src/commands/__tests__/event-storm-skip-example-generation.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/show-epic.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/research-auto-attachment.test.ts` (5 tests)
-- ✅ `src/commands/__tests__/conversational-review-prompt-before-done.test.ts` (5 tests)
-- ✅ `src/commands/__tests__/review-agent-agnostic.test.ts` (4 tests)
-- ✅ `src/commands/__tests__/update-work-unit-status-step-validation.test.ts` (4 tests)
-- ✅ `src/commands/__tests__/virtual-hook-commands.test.ts` (9 tests)
-- ✅ `src/commands/__tests__/add-foundation-bounded-context.test.ts` (4 tests)
-- ✅ `src/commands/__tests__/generate-scenarios-naming.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/board.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/impact-analysis.test.ts` (1 test)
-- ✅ `src/commands/__tests__/attachment-support.test.ts` (9 tests)
-- ✅ `src/migrations/__tests__/migration-system.test.ts` (10 tests)
-- ✅ `src/tui/components/__tests__/BoardView-exit-confirmation.test.tsx` (4 tests)
-- ✅ `src/utils/__tests__/search-scenarios-bug-059.test.ts` (5 tests)
-- ✅ `src/utils/__tests__/enhanced-research-tool-reminders.test.ts` (7 tests)
-- ✅ `src/utils/__tests__/foundation-check.test.ts` (6 tests)
-- ✅ `src/utils/__tests__/config-resolution.test.ts` (5 tests)
-- ✅ `src/utils/__tests__/git-checkpoint-deleted-files.test.ts` (4 tests)
-- ✅ `src/utils/__tests__/coverage-file-synchronization.test.ts` (6 tests)
-- ✅ `src/utils/__tests__/system-reminder-research-tools.test.ts` (2 tests)
-- ✅ `src/utils/__tests__/ensure-files.test.ts` (9 tests)
-- ✅ `src/commands/__tests__/validate.test.ts` (16 tests)
-- ✅ `src/commands/__tests__/list-features.test.ts` (10 tests)
-- ✅ `src/commands/__tests__/create-feature.test.ts` (9 tests)
-- ✅ `src/commands/__tests__/list-prefixes.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/format.test.ts` (17 tests)
-- ✅ `src/commands/__tests__/query-orphans.test.ts` (1 test)
-- ✅ `src/commands/__tests__/init-bundling.test.ts` (9 tests)
-- ✅ `src/commands/__tests__/prevent-starting-blocked-work.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/hotspot-question-transformation.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/research-tool-visibility.integration.test.ts` (5 tests)
-- ✅ `src/commands/__tests__/add-attachment-mermaid-validation.test.ts` (4 tests)
-- ✅ `src/commands/__tests__/acdd-workflow-integration.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/architecture-notes-example-mapping.test.ts` (5 tests)
-- ✅ `src/commands/__tests__/research-listing.test.ts` (4 tests)
-- ✅ `src/commands/__tests__/dependency-bidirectional.test.ts` (2 tests)
-- ✅ `src/commands/__tests__/virtual-hooks-reminders.test.ts` (5 tests)
-- ✅ `src/commands/__tests__/validate.test.ts` (16 tests)
-- ✅ `src/commands/__tests__/list-features.test.ts` (10 tests)
-- ✅ `src/commands/__tests__/create-feature.test.ts` (9 tests)
-- ✅ `src/commands/__tests__/list-prefixes.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/format.test.ts` (17 tests)
-- ✅ `src/commands/__tests__/query-orphans.test.ts` (1 test)
-- ✅ `src/commands/__tests__/init-bundling.test.ts` (9 tests)
-- ✅ `src/commands/__tests__/prevent-starting-blocked-work.test.ts` (3 tests)
-- ✅ `src/commands/__tests__/hotspot-question-transformation.test.ts` (3 tests)
+### ✅ COMPLETED:
+**Total migrated files**: All test files using the universal test setup utilities (`setupTestDirectory`, `setupWorkUnitTest`, `setupFoundationTest`, `setupFullTest`)
 
-### 🔄 STILL NEEDS MIGRATION (~84 files with ~160+ tests):
+Files successfully using shared test setup include:
+- All files importing from `'../../test-helpers/universal-test-setup'`
+- All files using the standardized setup/cleanup pattern
+- Tests that follow the DRY principle for temporary directory management
 
-**High Priority (Command tests):**
-- `src/commands/__tests__/validate.test.ts`
-- `src/commands/__tests__/create-story.test.ts`
-- `src/commands/__tests__/update-work-unit-status.test.ts`
-- All other files in `/src/commands/__tests__/` that use `mkdtemp`
+### 🔄 STILL NEEDS MIGRATION (61 files):
 
-**Medium Priority:**
-- Files in `/src/utils/__tests__/`
-- Files in `/src/hooks/__tests__/`
-- Files in `/src/tui/__tests__/` (some may already be migrated)
+**High Priority (Command tests - 53 files):**
+- `src/commands/__tests__/add-dependency-auto-block.test.ts`
+- `src/commands/__tests__/add-example.test.ts`
+- `src/commands/__tests__/audit-coverage.test.ts`
+- `src/commands/__tests__/auto-checkpoint-cleanup.test.ts`
+- `src/commands/__tests__/auto-checkpoint-on-status-transition.test.ts`
+- `src/commands/__tests__/bug-078-dry-solid-work-unit-creation.test.ts`
+- `src/commands/__tests__/create-feature-system-reminder.test.ts`
+- `src/commands/__tests__/critical-path.test.ts`
+- `src/commands/__tests__/dependencies.test.ts`
+- `src/commands/__tests__/dependency-graph.test.ts`
+- `src/commands/__tests__/draft-driven-discovery-feedback-loop.test.ts`
+- `src/commands/__tests__/estimation-timing-clarification.test.ts`
+- `src/commands/__tests__/example-mapping.test.ts`
+- `src/commands/__tests__/generate-coverage.test.ts`
+- `src/commands/__tests__/generate-example-mapping-from-event-storm-bug-092.test.ts`
+- `src/commands/__tests__/generate-example-mapping-from-event-storm-exmap-014.test.ts`
+- `src/commands/__tests__/generate-scenarios-bug-naming.test.ts`
+- `src/commands/__tests__/generate-scenarios-comment-embedding.test.ts`
+- `src/commands/__tests__/generate-scenarios-tag-placement.test.ts`
+- `src/commands/__tests__/init-codex-home-directory.test.ts`
+- `src/commands/__tests__/link-coverage.test.ts`
+- `src/commands/__tests__/list-tags.test.ts`
+- `src/commands/__tests__/list-work-units.test.ts`
+- `src/commands/__tests__/parent-work-unit-validation.test.ts`
+- `src/commands/__tests__/pm-remaining.test.ts`
+- `src/commands/__tests__/prefill-workflow-blocking.test.ts`
+- `src/commands/__tests__/preserve-comments-in-commands.test.ts`
+- `src/commands/__tests__/query-blocked-work-units.test.ts`
+- `src/commands/__tests__/query-bottlenecks.test.ts`
+- `src/commands/__tests__/query-work-units-blocked-by.test.ts`
+- `src/commands/__tests__/register-tag-ensure.test.ts`
+- `src/commands/__tests__/register-tag.test.ts`
+- `src/commands/__tests__/remove-question-display-bug.test.ts`
+- `src/commands/__tests__/report-bug-to-github.test.ts`
+- `src/commands/__tests__/research-error-handling.test.ts`
+- `src/commands/__tests__/restore-checkpoint-terminology.test.ts`
+- `src/commands/__tests__/review-ai-driven.test.ts`
+- `src/commands/__tests__/scenario-deduplication.test.ts`
+- `src/commands/__tests__/set-user-story.test.ts`
+- `src/commands/__tests__/show-coverage.test.ts`
+- `src/commands/__tests__/show-work-unit-dependencies.test.ts`
+- `src/commands/__tests__/skip-step-validation-enforcement.test.ts`
+- `src/commands/__tests__/stable-question-indices.test.ts`
+- `src/commands/__tests__/suggest-dependencies.test.ts`
+- `src/commands/__tests__/system-reminder-consolidation.test.ts`
+- `src/commands/__tests__/unlink-coverage.test.ts`
+- `src/commands/__tests__/update-work-unit-status-coverage-validation.test.ts`
+- `src/commands/__tests__/update-work-unit-status-done-sorting.test.ts`
+- `src/commands/__tests__/update-work-unit-status-one-to-one-enforcement.test.ts`
+- `src/commands/__tests__/update-work-unit-status-val-005-per-feature.test.ts`
+- `src/commands/__tests__/validate-tags-scenario-level.test.ts`
+- `src/commands/__tests__/validate-tags-work-unit-placement.test.ts`
+- `src/commands/__tests__/validate-tags.test.ts`
+- `src/commands/__tests__/work-unit.test.ts`
+
+**Medium Priority (Utils/Hooks/Other - 8 files):**
+- `src/git/__tests__/diff-binary-and-truncation.test.ts`
+- `src/hooks/__tests__/command-utils.test.ts`
+- `src/hooks/__tests__/git-context.test.ts`
+- `src/hooks/__tests__/script-generation.test.ts`
+- `src/hooks/__tests__/virtual-hook-execution.test.ts`
+- `src/research-tools/__tests__/registry-config-status.test.ts`
+- `src/tui/__tests__/bug-065-checkpoint-integration.test.ts`
+- `src/utils/__tests__/git-checkpoint-restore-deletes-new-files.test.ts`
+- `src/utils/__tests__/provider-configuration-and-credentials-management.test.ts`
 
 **To Find Remaining Files:**
 ```bash
 # Find all test files still using legacy pattern:
-grep -r "mkdtemp" src --include="*.test.ts" --include="*.test.tsx"
+grep -r "mkdtemp\|mkdirSync.*tmp.*\|mkdtempSync" src --include="*.test.ts" --include="*.test.tsx"
 
 # Count remaining files:
-grep -r "mkdtemp" src --include="*.test.ts" --include="*.test.tsx" | wc -l
+grep -r "mkdtemp\|mkdirSync.*tmp.*\|mkdtempSync" src --include="*.test.ts" --include="*.test.tsx" | wc -l
+
+# Find files that use manual filesystem operations but NOT the shared setup:
+find src -name "*.test.ts" -exec bash -c 'grep -q "mkdtemp\|mkdirSync.*tmp.*\|mkdtempSync" "$1" && ! grep -q "setupTestDirectory\|setupWorkUnitTest\|setupFoundationTest\|setupFullTest" "$1" && echo "$1"' _ {} \;
 ```
 
 ## Testing Migration

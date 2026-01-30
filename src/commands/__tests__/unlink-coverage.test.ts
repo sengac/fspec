@@ -6,29 +6,34 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { unlinkCoverage } from '../unlink-coverage';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  createTestFile,
+  readJsonTestFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Unlink Coverage Mappings', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-unlink-coverage-test-'));
+    setup = await setupTestDirectory('unlink-coverage');
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Remove all mappings from scenario with --all flag', () => {
     it('should remove all mappings and update stats', async () => {
       // Given I have a scenario with test and implementation mappings
-      const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true });
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      await ensureTestDirectory(featuresDir);
 
       const coverageData = {
         scenarios: [
@@ -59,21 +64,20 @@ describe('Feature: Unlink Coverage Mappings', () => {
       };
 
       const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
+      await createTestFile(featuresDir, 'user-login.feature.coverage', JSON.stringify(coverageData, null, 2));
 
       // When I run 'fspec unlink-coverage user-login --scenario "Login" --all'
       const result = await unlinkCoverage('user-login', {
         scenario: 'Login',
         all: true,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then all mappings should be removed
       expect(result.success).toBe(true);
 
       // And the scenario should have empty testMappings array
-      const updatedContent = await readFile(coverageFile, 'utf-8');
-      const updated = JSON.parse(updatedContent);
+      const updated = await readJsonTestFile(coverageFile);
       expect(updated.scenarios[0].testMappings).toEqual([]);
 
       // And stats should show coveragePercent decreased
@@ -87,8 +91,8 @@ describe('Feature: Unlink Coverage Mappings', () => {
   describe('Scenario: Remove test mapping removes implementation mappings too', () => {
     it('should remove test mapping and all its implementation mappings', async () => {
       // Given I have a test mapping with implementation mappings
-      const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true });
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      await ensureTestDirectory(featuresDir);
 
       const coverageData = {
         scenarios: [
@@ -123,20 +127,19 @@ describe('Feature: Unlink Coverage Mappings', () => {
       };
 
       const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
+      await createTestFile(featuresDir, 'user-login.feature.coverage', JSON.stringify(coverageData, null, 2));
 
       // When I run 'fspec unlink-coverage user-login --scenario "Login" --test-file src/__tests__/auth.test.ts'
       const result = await unlinkCoverage('user-login', {
         scenario: 'Login',
         testFile: 'src/__tests__/auth.test.ts',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the test mapping and all its impl mappings should be removed
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(coverageFile, 'utf-8');
-      const updated = JSON.parse(updatedContent);
+      const updated = await readJsonTestFile(coverageFile);
       expect(updated.scenarios[0].testMappings).toEqual([]);
       expect(updated.stats.coveredScenarios).toBe(0);
       expect(updated.stats.implFiles).toEqual([]);
@@ -146,8 +149,8 @@ describe('Feature: Unlink Coverage Mappings', () => {
   describe('Scenario: Remove only implementation mapping keeps test mapping', () => {
     it('should remove only implementation mapping and keep test mapping', async () => {
       // Given I have a test mapping with an implementation mapping
-      const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true });
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      await ensureTestDirectory(featuresDir);
 
       const coverageData = {
         scenarios: [
@@ -182,21 +185,20 @@ describe('Feature: Unlink Coverage Mappings', () => {
       };
 
       const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
+      await createTestFile(featuresDir, 'user-login.feature.coverage', JSON.stringify(coverageData, null, 2));
 
       // When I run 'fspec unlink-coverage user-login --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/auth/old.ts'
       const result = await unlinkCoverage('user-login', {
         scenario: 'Login',
         testFile: 'src/__tests__/auth.test.ts',
         implFile: 'src/auth/old.ts',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then only the implementation mapping should be removed
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(coverageFile, 'utf-8');
-      const updated = JSON.parse(updatedContent);
+      const updated = await readJsonTestFile(coverageFile);
 
       // And the test mapping should still exist
       expect(updated.scenarios[0].testMappings).toHaveLength(1);

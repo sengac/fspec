@@ -18,22 +18,23 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, readFile, mkdir } from 'fs/promises';
+import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import { createTestFile, ensureTestDirectory } from '../../test-helpers/test-file-operations';
 import { addScenario } from '../add-scenario';
 import { addBackground } from '../add-background';
 
 describe('Feature: Preserve example mapping context as comments', () => {
-  let tmpDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    tmpDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(tmpDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('preserve-comments-in-commands');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   afterEach(async () => {
-    await rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Add-scenario command preserves example mapping comments', () => {
@@ -63,7 +64,7 @@ Feature: Test Feature
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -71,7 +72,7 @@ Feature: Test Feature
       await writeFile(featureFile, featureContent);
 
       // When I run "fspec add-scenario" to manually add a scenario
-      await addScenario('test-feature', 'New test scenario', { cwd: tmpDir });
+      await addScenario('test-feature', 'New test scenario', { cwd: setup.testDir });
 
       // Then the new scenario should be appended at the end
       const updatedContent = await readFile(featureFile, 'utf-8');
@@ -114,7 +115,7 @@ Feature: Test Feature
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -127,7 +128,7 @@ Feature: Test Feature
         text: `As a new user
 I want new functionality
 So that new benefit`,
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       // Then the Background section should be replaced
@@ -168,7 +169,7 @@ Feature: Test Feature
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -178,11 +179,11 @@ Feature: Test Feature
       // When an AI agent writes scenarios based on the comments
       // Then the agent can create 3 separate scenarios
       await addScenario('test-feature', 'User logs in with valid credentials', {
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
-      await addScenario('test-feature', 'User logs out', { cwd: tmpDir });
+      await addScenario('test-feature', 'User logs out', { cwd: setup.testDir });
       await addScenario('test-feature', 'User resets password', {
-        cwd: tmpDir,
+        cwd: setup.testDir,
       });
 
       const updatedContent = await readFile(featureFile, 'utf-8');
@@ -224,7 +225,7 @@ Feature: Test Feature
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -266,7 +267,7 @@ Feature: User Authentication
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -303,7 +304,7 @@ Feature: Test Feature
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -351,7 +352,7 @@ Feature: Test Feature
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -391,7 +392,7 @@ Feature: Test Feature
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -464,7 +465,7 @@ Feature: Test Feature
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'
@@ -509,7 +510,7 @@ Feature: User Authentication
 `;
 
       const featureFile = join(
-        tmpDir,
+        setup.testDir,
         'spec',
         'features',
         'test-feature.feature'

@@ -7,36 +7,38 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import {
-  mkdtemp,
-  rm,
   readFile,
-  mkdir,
-  writeFile,
   access,
   readdir,
 } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { generateCoverage } from '../generate-coverage';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  ensureTestDirectory,
+  createTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Generate Coverage Files for Existing Features', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-generate-coverage-test-'));
+    setup = await setupTestDirectory('generate-coverage');
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Generate coverage files for all features without coverage', () => {
     it('should create coverage files for all .feature files without .coverage files', async () => {
       // Given I have a project with spec/features/ directory
-      const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true });
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      await ensureTestDirectory(featuresDir, );
 
       // And there are 3 .feature files with no .coverage files
       const featureContent = `@critical
@@ -47,12 +49,12 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeFile(join(featuresDir, 'feature1.feature'), featureContent);
-      await writeFile(join(featuresDir, 'feature2.feature'), featureContent);
-      await writeFile(join(featuresDir, 'feature3.feature'), featureContent);
+      await createTestFile(featuresDir, 'feature1.feature', featureContent);
+      await createTestFile(featuresDir, 'feature2.feature', featureContent);
+      await createTestFile(featuresDir, 'feature3.feature', featureContent);
 
       // When I run 'fspec generate-coverage'
-      const result = await generateCoverage({ cwd: testDir });
+      const result = await generateCoverage({ cwd: setup.testDir });
 
       // Then 3 .feature.coverage files should be created
       await access(join(featuresDir, 'feature1.feature.coverage'));
@@ -69,8 +71,8 @@ Feature: Test Feature
   describe('Scenario: Skip existing valid coverage files', () => {
     it('should create coverage files only for features without coverage', async () => {
       // Given I have 5 .feature files
-      const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true });
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      await ensureTestDirectory(featuresDir, );
 
       const featureContent = `@critical
 Feature: Test Feature
@@ -80,11 +82,11 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeFile(join(featuresDir, 'feature1.feature'), featureContent);
-      await writeFile(join(featuresDir, 'feature2.feature'), featureContent);
-      await writeFile(join(featuresDir, 'feature3.feature'), featureContent);
-      await writeFile(join(featuresDir, 'feature4.feature'), featureContent);
-      await writeFile(join(featuresDir, 'feature5.feature'), featureContent);
+      await createTestFile(featuresDir, 'feature1.feature', featureContent);
+      await createTestFile(featuresDir, 'feature2.feature', featureContent);
+      await createTestFile(featuresDir, 'feature3.feature', featureContent);
+      await createTestFile(featuresDir, 'feature4.feature', featureContent);
+      await createTestFile(featuresDir, 'feature5.feature', featureContent);
 
       // And 3 of them already have valid .feature.coverage files
       const validCoverage = {
@@ -103,21 +105,21 @@ Feature: Test Feature
           totalLinesCovered: 0,
         },
       };
-      await writeFile(
+      await writeJsonTestFile(
         join(featuresDir, 'feature1.feature.coverage'),
-        JSON.stringify(validCoverage, null, 2)
+        validCoverage
       );
-      await writeFile(
+      await writeJsonTestFile(
         join(featuresDir, 'feature2.feature.coverage'),
-        JSON.stringify(validCoverage, null, 2)
+        validCoverage
       );
-      await writeFile(
+      await writeJsonTestFile(
         join(featuresDir, 'feature3.feature.coverage'),
-        JSON.stringify(validCoverage, null, 2)
+        validCoverage
       );
 
       // When I run 'fspec generate-coverage'
-      const result = await generateCoverage({ cwd: testDir });
+      const result = await generateCoverage({ cwd: setup.testDir });
 
       // Then 2 new .feature.coverage files should be created
       await access(join(featuresDir, 'feature4.feature.coverage'));
@@ -139,8 +141,8 @@ Feature: Test Feature
   describe('Scenario: Recreate corrupted coverage files with invalid JSON', () => {
     it('should overwrite coverage files with invalid JSON', async () => {
       // Given I have a .feature file user-login.feature
-      const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true });
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      await ensureTestDirectory(featuresDir, );
 
       const featureContent = `@critical
 Feature: User Login
@@ -150,16 +152,17 @@ Feature: User Login
     When I enter valid credentials
     Then I should be logged in
 `;
-      await writeFile(join(featuresDir, 'user-login.feature'), featureContent);
+      await createTestFile(featuresDir, 'user-login.feature', featureContent);
 
       // And a corrupted user-login.feature.coverage file with invalid JSON
-      await writeFile(
-        join(featuresDir, 'user-login.feature.coverage'),
+      await createTestFile(
+        featuresDir,
+        'user-login.feature.coverage',
         '{ invalid json here }'
       );
 
       // When I run 'fspec generate-coverage'
-      const result = await generateCoverage({ cwd: testDir });
+      const result = await generateCoverage({ cwd: setup.testDir });
 
       // Then the corrupted file should be overwritten with valid JSON
       const coverageContent = await readFile(
@@ -181,8 +184,8 @@ Feature: User Login
   describe('Scenario: Dry-run mode previews without creating files', () => {
     it('should preview what would be created without actually creating files', async () => {
       // Given I have 3 .feature files with no .coverage files
-      const featuresDir = join(testDir, 'spec', 'features');
-      await mkdir(featuresDir, { recursive: true });
+      const featuresDir = join(setup.testDir, 'spec', 'features');
+      await ensureTestDirectory(featuresDir, );
 
       const featureContent = `@critical
 Feature: Test Feature
@@ -192,12 +195,12 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeFile(join(featuresDir, 'feature1.feature'), featureContent);
-      await writeFile(join(featuresDir, 'feature2.feature'), featureContent);
-      await writeFile(join(featuresDir, 'feature3.feature'), featureContent);
+      await createTestFile(featuresDir, 'feature1.feature', featureContent);
+      await createTestFile(featuresDir, 'feature2.feature', featureContent);
+      await createTestFile(featuresDir, 'feature3.feature', featureContent);
 
       // When I run 'fspec generate-coverage --dry-run'
-      const result = await generateCoverage({ cwd: testDir, dryRun: true });
+      const result = await generateCoverage({ cwd: setup.testDir, dryRun: true });
 
       // Then no .coverage files should be created
       const files = await readdir(featuresDir);

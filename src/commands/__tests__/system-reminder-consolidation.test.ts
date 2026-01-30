@@ -3,22 +3,29 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  ensureTestDirectory,
+  createTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Multiple consecutive system-reminder blocks in update-work-unit-status', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    await mkdir(join(testDir, 'spec'), { recursive: true });
-    await mkdir(join(testDir, 'spec/features'), { recursive: true });
+    setup = await setupTestDirectory('system-reminder-consolidation');
+    await ensureTestDirectory(join(setup.testDir, 'spec'));
+    await ensureTestDirectory(join(setup.testDir, 'spec/features'));
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Multiple reminders combined into single block', () => {
@@ -49,9 +56,9 @@ describe('Feature: Multiple consecutive system-reminder blocks in update-work-un
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnitsData
       );
 
       // @step And each reminder is individually wrapped in system-reminder tags
@@ -61,7 +68,7 @@ describe('Feature: Multiple consecutive system-reminder blocks in update-work-un
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'specifying',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 
@@ -116,9 +123,9 @@ describe('Feature: Multiple consecutive system-reminder blocks in update-work-un
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnitsData
       );
 
       // Create feature file to link
@@ -136,8 +143,9 @@ Feature: Test Feature
     Then it should work
 `;
 
-      await writeFile(
-        join(testDir, 'spec/features/test-feature.feature'),
+      await createTestFile(
+        join(setup.testDir, 'spec/features'),
+        'test-feature.feature',
         featureContent
       );
 
@@ -149,7 +157,7 @@ Feature: Test Feature
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-002',
         status: 'done',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true,
       });
 

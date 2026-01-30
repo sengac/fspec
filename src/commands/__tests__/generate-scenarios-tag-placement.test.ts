@@ -6,31 +6,20 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { generateScenarios } from '../generate-scenarios';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
-  let testDir: string;
-  let specDir: string;
-  let workUnitsFile: string;
-  let featuresDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    // Create temporary directory for each test
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    featuresDir = join(specDir, 'features');
+    setup = await setupWorkUnitTest('generate-scenarios-tag-placement');
 
-    // Create spec directory structure
-    await mkdir(specDir, { recursive: true });
-    await mkdir(featuresDir, { recursive: true });
-
-    // Initialize work units file
+    // Initialize work units file with test data
     await writeFile(
-      workUnitsFile,
+      setup.workUnitsFile,
       JSON.stringify(
         {
           workUnits: {},
@@ -51,15 +40,14 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Generate scenarios adds work unit ID as feature-level tag only', () => {
     it('should add work unit ID as feature-level tag and not on scenarios', async () => {
       // Given I have a work unit with ID "TEST-001" in specifying status
       // And the work unit has example mapping data (rules, examples, questions answered)
-      const workUnits = JSON.parse(await readFile(workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
       workUnits.workUnits['TEST-001'] = {
         id: 'TEST-001',
         title: 'Test Feature',
@@ -79,12 +67,12 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
         updatedAt: new Date().toISOString(),
       };
       workUnits.states.specifying.push('TEST-001');
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run `fspec generate-scenarios TEST-001`
       const result = await generateScenarios({
         workUnitId: 'TEST-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then a feature file should be created with @TEST-001 as a feature-level tag

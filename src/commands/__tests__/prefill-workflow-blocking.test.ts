@@ -4,27 +4,34 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  ensureTestDirectory,
+  createTestFile,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('prefill-workflow-blocking');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Workflow blocking prevents status change with prefill', () => {
     it('should fail when trying to move to testing with prefill in linked feature', async () => {
       // Given a linked feature file contains prefill placeholders
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
 
       // Create feature file with prefill
       const featureContent = `@TEST-001
@@ -42,8 +49,9 @@ Feature: Test Feature
     Then [expected outcome]
 `;
 
-      await writeFile(
-        join(testDir, 'spec/features/test-feature.feature'),
+      await createTestFile(
+        join(setup.testDir, 'spec/features'),
+        'test-feature.feature',
         featureContent
       );
 
@@ -84,9 +92,9 @@ Feature: Test Feature
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnitsData
       );
 
       // When I try to update work unit status to testing
@@ -95,7 +103,7 @@ Feature: Test Feature
         updateWorkUnitStatus({
           workUnitId: 'TEST-001',
           status: 'testing',
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow(/prefill/i);
 
@@ -104,7 +112,7 @@ Feature: Test Feature
         await updateWorkUnitStatus({
           workUnitId: 'TEST-001',
           status: 'testing',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: any) {
         expect(error.message).toMatch(/\[role\]|\[action\]|\[benefit\]/);
@@ -114,7 +122,7 @@ Feature: Test Feature
 
     it('should succeed when feature file has no prefill', async () => {
       // Given a linked feature file WITHOUT prefill placeholders
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
 
       // Create feature file WITHOUT prefill
       const featureContent = `@TEST-002
@@ -132,8 +140,9 @@ Feature: Complete Feature
     Then it should succeed
 `;
 
-      await writeFile(
-        join(testDir, 'spec/features/complete-feature.feature'),
+      await createTestFile(
+        join(setup.testDir, 'spec/features'),
+        'complete-feature.feature',
         featureContent
       );
 
@@ -176,9 +185,9 @@ Feature: Complete Feature
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec/work-units.json'),
-        JSON.stringify(workUnitsData, null, 2)
+      await writeJsonTestFile(
+        join(setup.testDir, 'spec/work-units.json'),
+        workUnitsData
       );
 
       // When I try to update work unit status to testing
@@ -186,7 +195,7 @@ Feature: Complete Feature
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-002',
         status: 'testing',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);

@@ -6,25 +6,25 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 
-import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+import { 
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory, writeTextFile, writeJsonTestFile } from '../../test-helpers/test-file-operations';
 describe('Feature: Enhance fspec review with architecture alignment and AST verification', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('review-arch-alignment');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
-    await mkdir(join(testDir, 'spec', 'attachments'), { recursive: true });
+    setup = await setupTestDirectory('review-arch-alignment');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'attachments'));
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Block transition when AST research is missing', () => {
@@ -62,8 +62,8 @@ describe('Feature: Enhance fspec review with architecture alignment and AST veri
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsContent, null, 2)
       );
 
@@ -82,8 +82,8 @@ Feature: Test Feature
     Then it should pass
 `;
 
-      await writeFile(
-        join(testDir, 'spec', 'features', 'test-feature.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'features', 'test-feature.feature'),
         featureContent
       );
 
@@ -94,7 +94,7 @@ Feature: Test Feature
       const result = await updateWorkUnitStatus({
         workUnitId: 'WORK-001',
         status: 'testing',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true, // Skip temporal validation in test environment
       });
 
@@ -150,8 +150,8 @@ Feature: Test Feature
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsContent, null, 2)
       );
 
@@ -170,23 +170,21 @@ Feature: Test Feature
     Then it should pass
 `;
 
-      await writeFile(
-        join(testDir, 'spec', 'features', 'test-feature.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'features', 'test-feature.feature'),
         featureContent
       );
 
       // Create AST research attachment
-      await mkdir(join(testDir, 'spec', 'attachments', 'WORK-001'), {
-        recursive: true,
-      });
+      await ensureTestDirectory(join(setup.testDir, 'spec', 'attachments', 'WORK-001'));
       const astData = {
         functions: [
           { name: 'validateFeature', file: 'src/utils/validation.ts' },
           { name: 'validateFeature', file: 'src/commands/validate.ts' },
         ],
       };
-      await writeFile(
-        join(testDir, 'spec', 'attachments', 'WORK-001', 'ast-research.json'),
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'attachments', 'WORK-001', 'ast-research.json'),
         JSON.stringify(astData, null, 2)
       );
 
@@ -194,7 +192,7 @@ Feature: Test Feature
       const result = await updateWorkUnitStatus({
         workUnitId: 'WORK-001',
         status: 'testing',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true, // Skip temporal validation in test environment
       });
 
@@ -254,15 +252,13 @@ Feature: Test Feature
         },
       };
 
-      await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsContent, null, 2)
       );
 
       // @step And the work unit has AST research attachments showing 3 copies of validation pattern
-      await mkdir(join(testDir, 'spec', 'attachments', 'WORK-001'), {
-        recursive: true,
-      });
+      await ensureTestDirectory(join(setup.testDir, 'spec', 'attachments', 'WORK-001'));
       const astData = {
         duplicatePatterns: [
           { file: 'src/commands/create.ts', lines: [45, 60] },
@@ -270,8 +266,8 @@ Feature: Test Feature
           { file: 'src/commands/delete.ts', lines: [12, 27] },
         ],
       };
-      await writeFile(
-        join(testDir, 'spec', 'attachments', 'WORK-001', 'ast-research.json'),
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'attachments', 'WORK-001', 'ast-research.json'),
         JSON.stringify(astData, null, 2)
       );
 
@@ -290,8 +286,8 @@ Feature: Extract Validation Utility
     Then all 3 files should use the shared utility
 `;
 
-      await writeFile(
-        join(testDir, 'spec', 'features', 'extract-validation-utility.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'features', 'extract-validation-utility.feature'),
         featureContent
       );
 
@@ -299,7 +295,7 @@ Feature: Extract Validation Utility
       const result = await updateWorkUnitStatus({
         workUnitId: 'WORK-001',
         status: 'testing',
-        cwd: testDir,
+        cwd: setup.testDir,
         skipTemporalValidation: true, // Skip temporal validation in test environment
       });
 

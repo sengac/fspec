@@ -12,7 +12,7 @@ export declare class CodeletSession {
    * If provider_name is not specified, auto-detects the highest priority available provider.
    * Priority order: Claude > Gemini > Codex > OpenAI
    */
-  constructor(providerName?: string | undefined | null);
+  constructor(providerName?: string | undefined | null)
   /**
    * MODEL-001: Create a new CodeletSession with dynamic model selection
    *
@@ -27,7 +27,7 @@ export declare class CodeletSession {
    * const session = await CodeletSession.newWithModel("anthropic/claude-sonnet-4");
    * ```
    */
-  static newWithModel(modelString: string): Promise<CodeletSession>;
+  static newWithModel(modelString: string): Promise<CodeletSession>
   /**
    * CONFIG-004: Create a new CodeletSession with explicit credentials
    *
@@ -47,10 +47,7 @@ export declare class CodeletSession {
    * );
    * ```
    */
-  static newWithCredentials(
-    modelString: string,
-    providerConfig: NapiProviderConfig
-  ): Promise<CodeletSession>;
+  static newWithCredentials(modelString: string, providerConfig: NapiProviderConfig): Promise<CodeletSession>
   /**
    * Interrupt the current agent execution
    *
@@ -64,14 +61,14 @@ export declare class CodeletSession {
    * - notify_one() stores a permit if no one waiting, so next notified() returns immediately
    * This eliminates the race condition between flag check and entering tokio::select!
    */
-  interrupt(): void;
+  interrupt(): void
   /**
    * Reset the interrupt flag
    *
    * Called automatically at the start of each prompt, but can be called
    * manually if needed.
    */
-  resetInterrupt(): void;
+  resetInterrupt(): void
   /**
    * Toggle debug capture mode (AGENT-021)
    *
@@ -83,7 +80,7 @@ export declare class CodeletSession {
    * instead of the default directory. For fspec, pass `~/.fspec` to write to
    * `~/.fspec/debug/`.
    */
-  toggleDebug(debugDir?: string | undefined | null): DebugCommandResult;
+  toggleDebug(debugDir?: string | undefined | null): DebugCommandResult
   /**
    * Manually trigger context compaction (NAPI-005)
    *
@@ -93,24 +90,24 @@ export declare class CodeletSession {
    * Returns CompactionResult with metrics about the compaction operation.
    * Returns error if session is empty (nothing to compact).
    */
-  compact(): Promise<CompactionResult>;
+  compact(): Promise<CompactionResult>
   /** Get the current provider name */
-  get currentProviderName(): string;
+  get currentProviderName(): string
   /**
    * MODEL-001: Get the currently selected model string
    *
    * Returns the model string in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4")
    * if a model was explicitly selected via newWithModel() or selectModel(), otherwise None.
    */
-  get selectedModel(): string | null;
+  get selectedModel(): string | null
   /** Get list of available providers */
-  get availableProviders(): Array<string>;
+  get availableProviders(): Array<string>
   /** Get the token usage tracker */
-  get tokenTracker(): TokenTracker;
+  get tokenTracker(): TokenTracker
   /** Get conversation messages (simplified representation) */
-  get messages(): Array<Message>;
+  get messages(): Array<Message>
   /** Switch to a different provider */
-  switchProvider(providerName: string): Promise<void>;
+  switchProvider(providerName: string): Promise<void>
   /**
    * MODEL-001: Select a different model mid-session
    *
@@ -130,7 +127,7 @@ export declare class CodeletSession {
    * await session.selectModel("anthropic/claude-opus-4");  // Switch to Opus
    * ```
    */
-  selectModel(modelString: string): Promise<void>;
+  selectModel(modelString: string): Promise<void>
   /**
    * Clear conversation history and reinject context reminders
    *
@@ -141,7 +138,7 @@ export declare class CodeletSession {
    * to restore project context (CLAUDE.md, environment info). Without this,
    * the AI loses CLAUDE.md context on the next prompt after /clear.
    */
-  clearHistory(): void;
+  clearHistory(): void
   /**
    * Restore messages from a persisted session (NAPI-003)
    *
@@ -162,7 +159,7 @@ export declare class CodeletSession {
    * 3. Injects context reminders (CLAUDE.md, environment info)
    * 4. Messages are ready for use in next prompt
    */
-  restoreMessages(messages: Array<Message>): void;
+  restoreMessages(messages: Array<Message>): void
   /**
    * Restore messages from full envelope JSON strings (NAPI-008)
    *
@@ -176,7 +173,7 @@ export declare class CodeletSession {
    * # Arguments
    * * `envelopes` - Array of envelope JSON strings from persistenceGetSessionMessageEnvelopes
    */
-  restoreMessagesFromEnvelopes(envelopes: Array<string>): void;
+  restoreMessagesFromEnvelopes(envelopes: Array<string>): void
   /**
    * Restore token state from persisted session (TUI-033, NAPI-008)
    *
@@ -190,14 +187,7 @@ export declare class CodeletSession {
    * * `cache_read_tokens` - Cache read tokens from session manifest
    * * `cache_creation_tokens` - Cache creation tokens from session manifest
    */
-  restoreTokenState(
-    inputTokens: number,
-    outputTokens: number,
-    cacheReadTokens: number,
-    cacheCreationTokens: number,
-    cumulativeBilledInput: number,
-    cumulativeBilledOutput: number
-  ): void;
+  restoreTokenState(inputTokens: number, outputTokens: number, cacheReadTokens: number, cacheCreationTokens: number, cumulativeBilledInput: number, cumulativeBilledOutput: number): void
   /**
    * Get current context fill info (TUI-033)
    *
@@ -208,7 +198,7 @@ export declare class CodeletSession {
    * # Returns
    * * `ContextFillInfo` with fill_percentage, effective_tokens, threshold, context_window
    */
-  getContextFillInfo(): ContextFillInfo;
+  getContextFillInfo(): ContextFillInfo
   /**
    * Send a prompt and stream the response
    *
@@ -224,11 +214,7 @@ export declare class CodeletSession {
    * * `thinking_config` - Optional JSON string from getThinkingConfig() (TOOL-010)
    * * `callback` - Stream callback for receiving chunks
    */
-  prompt(
-    input: string,
-    thinkingConfig: string | undefined | null,
-    callback: (chunk: StreamChunk) => void
-  ): Promise<void>;
+  prompt(input: string, thinkingConfig: string | undefined | null, callback: (chunk: StreamChunk) => void): Promise<void>
 }
 
 /** Case conversion types for transforms */
@@ -239,39 +225,39 @@ export declare const enum AstGrepCaseType {
   CamelCase = 'CamelCase',
   SnakeCase = 'SnakeCase',
   KebabCase = 'KebabCase',
-  PascalCase = 'PascalCase',
+  PascalCase = 'PascalCase'
 }
 
 /** Convert transform configuration */
 export interface AstGrepConvertTransform {
   /** Source variable (e.g., "$NAME") */
-  source: string;
+  source: string
   /** Target case type */
-  toCase: AstGrepCaseType;
+  toCase: AstGrepCaseType
   /** Optional separators for word splitting */
-  separatedBy?: Array<AstGrepSeparator>;
+  separatedBy?: Array<AstGrepSeparator>
 }
 
 /** Match information for replace operations */
 export interface AstGrepMatchInfo {
   /** Location in format "file:line:column" */
-  location: string;
+  location: string
   /** Original matched code */
-  original: string;
+  original: string
   /** Replacement code */
-  replacement: string;
+  replacement: string
 }
 
 /** Result of an AST-grep search match */
 export interface AstGrepMatchResult {
   /** File path where match was found */
-  file: string;
+  file: string
   /** Line number (1-based) */
-  line: number;
+  line: number
   /** Column number (1-based) */
-  column: number;
+  column: number
   /** Matched text */
-  text: string;
+  text: string
 }
 
 /**
@@ -286,23 +272,18 @@ export interface AstGrepMatchResult {
  * # Returns
  * Result containing the moved code, or error if pattern doesn't match exactly 1 node
  */
-export declare function astGrepRefactor(
-  pattern: string,
-  language: string,
-  sourceFile: string,
-  targetFile: string
-): Promise<AstGrepRefactorResult>;
+export declare function astGrepRefactor(pattern: string, language: string, sourceFile: string, targetFile: string): Promise<AstGrepRefactorResult>
 
 /** Result of an AST-grep refactor operation (extract mode) */
 export interface AstGrepRefactorResult {
   /** Whether the refactor was successful */
-  success: boolean;
+  success: boolean
   /** The code that was moved */
-  movedCode: string;
+  movedCode: string
   /** Source file path */
-  sourceFile: string;
+  sourceFile: string
   /** Target file path */
-  targetFile: string;
+  targetFile: string
 }
 
 /**
@@ -320,40 +301,32 @@ export interface AstGrepRefactorResult {
  * # Returns
  * Result containing match details and replacement info
  */
-export declare function astGrepReplace(
-  pattern: string,
-  language: string,
-  sourceFile: string,
-  replacement: string,
-  transforms?: Array<AstGrepTransform> | undefined | null,
-  batch?: boolean | undefined | null,
-  preview?: boolean | undefined | null
-): Promise<AstGrepReplaceResult>;
+export declare function astGrepReplace(pattern: string, language: string, sourceFile: string, replacement: string, transforms?: Array<AstGrepTransform> | undefined | null, batch?: boolean | undefined | null, preview?: boolean | undefined | null): Promise<AstGrepReplaceResult>
 
 /** Result of an AST-grep replace operation (replace mode) */
 export interface AstGrepReplaceResult {
   /** Whether the operation was successful */
-  success: boolean;
+  success: boolean
   /** Mode: "replace" or "extract" */
-  mode: string;
+  mode: string
   /** Source file path */
-  sourceFile: string;
+  sourceFile: string
   /** Number of matches replaced (batch mode) */
-  matchesCount: number;
+  matchesCount: number
   /** Whether this was a preview (dry-run) */
-  preview: boolean;
+  preview: boolean
   /** Match details (location, original, replacement) */
-  matches: Array<AstGrepMatchInfo>;
+  matches: Array<AstGrepMatchInfo>
 }
 
 /** Replace transform configuration */
 export interface AstGrepReplaceTransform {
   /** Source variable (e.g., "$NAME") */
-  source: string;
+  source: string
   /** Regex pattern to find */
-  replace: string;
+  replace: string
   /** Replacement string */
-  by: string;
+  by: string
 }
 
 /**
@@ -367,11 +340,7 @@ export interface AstGrepReplaceTransform {
  * # Returns
  * Array of match results with file, line, column, and matched text
  */
-export declare function astGrepSearch(
-  pattern: string,
-  language: string,
-  paths: Array<string>
-): Promise<Array<AstGrepMatchResult>>;
+export declare function astGrepSearch(pattern: string, language: string, paths: Array<string>): Promise<Array<AstGrepMatchResult>>
 
 /** Separator options for word splitting */
 export declare const enum AstGrepSeparator {
@@ -380,29 +349,29 @@ export declare const enum AstGrepSeparator {
   Dash = 'Dash',
   Dot = 'Dot',
   Slash = 'Slash',
-  Space = 'Space',
+  Space = 'Space'
 }
 
 /** Substring transform configuration */
 export interface AstGrepSubstringTransform {
   /** Source variable (e.g., "$NAME") */
-  source: string;
+  source: string
   /** Start character index (0-based, negative counts from end) */
-  startChar?: number;
+  startChar?: number
   /** End character index (negative counts from end) */
-  endChar?: number;
+  endChar?: number
 }
 
 /** Transform definition - one of substring, replace, or convert */
 export interface AstGrepTransform {
   /** Transform name (the variable it creates, e.g., "NEW") */
-  name: string;
+  name: string
   /** Substring transform (mutually exclusive with replace/convert) */
-  substring?: AstGrepSubstringTransform;
+  substring?: AstGrepSubstringTransform
   /** Replace transform (mutually exclusive with substring/convert) */
-  replaceTransform?: AstGrepReplaceTransform;
+  replaceTransform?: AstGrepReplaceTransform
   /** Convert transform (mutually exclusive with substring/replace) */
-  convert?: AstGrepConvertTransform;
+  convert?: AstGrepConvertTransform
 }
 
 /**
@@ -422,12 +391,7 @@ export interface AstGrepTransform {
  * ): string
  * ```
  */
-export declare function callFspecCommand(
-  command: string,
-  argsJson: string,
-  projectRoot: string,
-  callback: (arg0: string, arg1: string, arg2: string) => string
-): string;
+export declare function callFspecCommand(command: string, argsJson: string, projectRoot: string, callback: (arg0: string, arg1: string, arg2: string) => string): string
 
 /** Stream chunk types for streaming responses (TOOL-010) */
 export declare const enum ChunkType {
@@ -447,7 +411,7 @@ export declare const enum ChunkType {
   /** User input message (NAPI-009: for resume/attach to restore user messages) */
   UserInput = 'UserInput',
   /** Watcher pending injection - shown when auto_inject=false (WATCH-020) */
-  WatcherPendingInjection = 'WatcherPendingInjection',
+  WatcherPendingInjection = 'WatcherPendingInjection'
 }
 
 /**
@@ -456,15 +420,15 @@ export declare const enum ChunkType {
  */
 export interface CompactionResult {
   /** Original token count before compaction */
-  originalTokens: number;
+  originalTokens: number
   /** Token count after compaction */
-  compactedTokens: number;
+  compactedTokens: number
   /** Compression ratio as percentage (0-100) */
-  compressionRatio: number;
+  compressionRatio: number
   /** Number of turns summarized */
-  turnsSummarized: number;
+  turnsSummarized: number
   /** Number of turns kept */
-  turnsKept: number;
+  turnsKept: number
 }
 
 /**
@@ -473,13 +437,13 @@ export interface CompactionResult {
  */
 export interface ContextFillInfo {
   /** Fill percentage (0-100+, can exceed 100 near compaction) */
-  fillPercentage: number;
+  fillPercentage: number
   /** Effective tokens (after cache discount) - using f64 for NAPI compatibility */
-  effectiveTokens: number;
+  effectiveTokens: number
   /** Compaction threshold (usable context after output reservation) - using f64 for NAPI compatibility */
-  threshold: number;
+  threshold: number
   /** Provider's context window size - using f64 for NAPI compatibility */
-  contextWindow: number;
+  contextWindow: number
 }
 
 /**
@@ -488,11 +452,11 @@ export interface ContextFillInfo {
  */
 export interface DebugCommandResult {
   /** Whether debug capture is now enabled */
-  enabled: boolean;
+  enabled: boolean
   /** Path to the debug session file (if available) */
-  sessionFile?: string;
+  sessionFile?: string
   /** Human-readable message about the result */
-  message: string;
+  message: string
 }
 
 /**
@@ -505,10 +469,7 @@ export interface DebugCommandResult {
  * # Returns
  * The thinking text if present, null otherwise.
  */
-export declare function extractThinkingText(
-  provider: string,
-  partJson: string
-): string | null;
+export declare function extractThinkingText(provider: string, partJson: string): string | null
 
 /**
  * Get thinking configuration JSON for a provider at a specific level.
@@ -528,19 +489,16 @@ export declare function extractThinkingText(
  * // { thinkingConfig: { includeThoughts: true, thinkingLevel: "high" } }
  * ```
  */
-export declare function getThinkingConfig(
-  provider: string,
-  level: JsThinkingLevel
-): string;
+export declare function getThinkingConfig(provider: string, level: JsThinkingLevel): string
 
 /** Result of a Glob tool search */
 export interface GlobResult {
   /** Whether the search was successful */
-  success: boolean;
+  success: boolean
   /** Matching file paths (one per line) */
-  data?: string;
+  data?: string
   /** Error message if search failed */
-  error?: string;
+  error?: string
 }
 
 /**
@@ -556,11 +514,7 @@ export interface GlobResult {
  * # Returns
  * GlobResult with matching file paths or error message
  */
-export declare function globSearch(
-  pattern: string,
-  path?: string | undefined | null,
-  caseInsensitive?: boolean | undefined | null
-): Promise<GlobResult>;
+export declare function globSearch(pattern: string, path?: string | undefined | null, caseInsensitive?: boolean | undefined | null): Promise<GlobResult>
 
 /**
  * Check if a response part contains thinking content.
@@ -581,10 +535,7 @@ export declare function globSearch(
  * // true
  * ```
  */
-export declare function isThinkingContent(
-  provider: string,
-  partJson: string
-): boolean;
+export declare function isThinkingContent(provider: string, partJson: string): boolean
 
 /** TypeScript-friendly thinking level enum */
 export declare const enum JsThinkingLevel {
@@ -595,20 +546,20 @@ export declare const enum JsThinkingLevel {
   /** Balanced thinking (default for most tasks) */
   Medium = 2,
   /** Maximum thinking (complex reasoning tasks) */
-  High = 3,
+  High = 3
 }
 
 /** A conversation message (simplified for JS) */
 export interface Message {
-  role: string;
-  content: string;
+  role: string
+  content: string
 }
 
 /** Message role enum */
 export declare const enum MessageRole {
   System = 'System',
   User = 'User',
-  Assistant = 'Assistant',
+  Assistant = 'Assistant'
 }
 
 /**
@@ -617,7 +568,7 @@ export declare const enum MessageRole {
  * Returns the custom directory if set via modelsSetCacheDirectory(),
  * otherwise returns ~/.fspec/cache as the default.
  */
-export declare function modelsGetCacheDirectory(): string;
+export declare function modelsGetCacheDirectory(): string
 
 /**
  * Get information for a specific model (async)
@@ -626,10 +577,7 @@ export declare function modelsGetCacheDirectory(): string;
  * * `provider_id` - Provider ID (e.g., "anthropic")
  * * `model_id` - Model ID (e.g., "claude-sonnet-4")
  */
-export declare function modelsGetInfo(
-  providerId: string,
-  modelId: string
-): Promise<NapiModelInfo>;
+export declare function modelsGetInfo(providerId: string, modelId: string): Promise<NapiModelInfo>
 
 /**
  * List all available models from models.dev (async)
@@ -643,7 +591,7 @@ export declare function modelsGetInfo(
  *
  * Sorts models by release date (newest first).
  */
-export declare function modelsListAll(): Promise<Array<NapiProviderModels>>;
+export declare function modelsListAll(): Promise<Array<NapiProviderModels>>
 
 /**
  * List models for a specific provider (async)
@@ -651,9 +599,7 @@ export declare function modelsListAll(): Promise<Array<NapiProviderModels>>;
  * # Arguments
  * * `provider_id` - Provider ID (e.g., "anthropic", "openai", "google")
  */
-export declare function modelsListForProvider(
-  providerId: string
-): Promise<Array<NapiModelInfo>>;
+export declare function modelsListForProvider(providerId: string): Promise<Array<NapiModelInfo>>
 
 /**
  * Refresh the model cache from models.dev API (async)
@@ -664,7 +610,7 @@ export declare function modelsListForProvider(
  *
  * Returns the number of providers loaded.
  */
-export declare function modelsRefreshCache(): Promise<number>;
+export declare function modelsRefreshCache(): Promise<number>
 
 /**
  * Set the cache directory for model data (e.g., ~/.fspec/cache)
@@ -677,79 +623,79 @@ export declare function modelsRefreshCache(): Promise<number>;
  * # Arguments
  * * `dir` - The directory path for cache data (models.json will be stored here)
  */
-export declare function modelsSetCacheDirectory(dir: string): void;
+export declare function modelsSetCacheDirectory(dir: string): void
 
 export interface NapiAppendResult {
-  messageId: string;
-  session: NapiSessionManifest;
+  messageId: string
+  session: NapiSessionManifest
 }
 
 export interface NapiCherryPickResult {
-  session: NapiSessionManifest;
-  importedIndices: Array<number>;
+  session: NapiSessionManifest
+  importedIndices: Array<number>
 }
 
 export interface NapiCompactionState {
-  summary: string;
-  compactedBeforeIndex: number;
-  compactedAt: string;
+  summary: string
+  compactedBeforeIndex: number
+  compactedAt: string
 }
 
 export interface NapiForkPoint {
-  sourceSessionId: string;
-  forkAfterIndex: number;
-  forkedAt: string;
+  sourceSessionId: string
+  forkAfterIndex: number
+  forkedAt: string
 }
 
 export interface NapiHistoryEntry {
-  display: string;
-  timestamp: string;
-  project: string;
-  sessionId: string;
-  hasPastedContent: boolean;
+  display: string
+  timestamp: string
+  project: string
+  sessionId: string
+  hasPastedContent: boolean
 }
 
 export interface NapiMergeRecord {
-  sourceSessionId: string;
-  sourceIndices: Array<number>;
-  insertedAt?: number;
-  mergedAt: string;
+  sourceSessionId: string
+  sourceIndices: Array<number>
+  insertedAt?: number
+  mergedAt: string
 }
 
 /** Model information from models.dev */
 export interface NapiModelInfo {
   /** The API model ID (e.g., "claude-sonnet-4-20250514") */
-  id: string;
+  id: string
   /** Display name (e.g., "Claude Sonnet 4") */
-  name: string;
+  name: string
   /** Model family (e.g., "claude-sonnet") */
-  family?: string;
+  family?: string
   /** Whether model supports reasoning/thinking */
-  reasoning: boolean;
+  reasoning: boolean
   /** Whether model supports tool calls */
-  toolCall: boolean;
+  toolCall: boolean
   /** Whether model supports file/image attachments */
-  attachment: boolean;
+  attachment: boolean
   /** Whether model supports temperature parameter */
-  temperature: boolean;
+  temperature: boolean
   /** Context window size in tokens */
-  contextWindow: number;
+  contextWindow: number
   /** Maximum output tokens */
-  maxOutput: number;
+  maxOutput: number
   /** Whether model has vision capability (image input) */
-  hasVision: boolean;
+  hasVision: boolean
 }
 
 /** PAUSE-001: Pause state returned to TypeScript via NAPI */
 export interface NapiPauseState {
   /** "continue" or "confirm" */
-  kind: string;
+  kind: string
   /** Tool name that initiated the pause (e.g., "WebSearch") */
-  toolName: string;
+  toolName: string
   /** Human-readable message (e.g., "Page loaded at https://...") */
-  message: string;
+  message: string
   /** Optional additional details (e.g., command text for confirm) */
-  details?: string;
+  details?: string
 }
 
 /**
@@ -760,51 +706,51 @@ export interface NapiPauseState {
  */
 export interface NapiProviderConfig {
   /** Provider ID (e.g., "anthropic", "openai", "gemini") */
-  providerId: string;
+  providerId: string
   /** API key for the provider */
-  apiKey?: string;
+  apiKey?: string
   /** Custom base URL (optional) */
-  baseUrl?: string;
+  baseUrl?: string
   /** Whether the provider is enabled */
-  enabled: boolean;
+  enabled: boolean
   /** Default model (optional) */
-  defaultModel?: string;
+  defaultModel?: string
 }
 
 /** Provider with its available models */
 export interface NapiProviderModels {
   /** Provider ID (e.g., "anthropic", "openai", "google") */
-  providerId: string;
+  providerId: string
   /** Provider display name (e.g., "Anthropic", "OpenAI", "Google") */
-  providerName: string;
+  providerName: string
   /** List of models available from this provider */
-  models: Array<NapiModelInfo>;
+  models: Array<NapiModelInfo>
 }
 
 export interface NapiSessionManifest {
-  id: string;
-  name: string;
-  project: string;
-  provider: string;
-  createdAt: string;
-  updatedAt: string;
-  messageCount: number;
-  forkedFrom?: NapiForkPoint;
-  mergedFrom: Array<NapiMergeRecord>;
-  compaction?: NapiCompactionState;
-  tokenUsage: NapiTokenUsage;
+  id: string
+  name: string
+  project: string
+  provider: string
+  createdAt: string
+  updatedAt: string
+  messageCount: number
+  forkedFrom?: NapiForkPoint
+  mergedFrom: Array<NapiMergeRecord>
+  compaction?: NapiCompactionState
+  tokenUsage: NapiTokenUsage
 }
 
 export interface NapiStoredMessage {
-  id: string;
-  contentHash: string;
-  createdAt: string;
-  role: string;
-  content: string;
-  tokenCount?: number;
-  blobRefs: Array<string>;
+  id: string
+  contentHash: string
+  createdAt: string
+  role: string
+  content: string
+  tokenCount?: number
+  blobRefs: Array<string>
   /** Metadata as a JSON string */
-  metadataJson: string;
+  metadataJson: string
 }
 
 /**
@@ -819,143 +765,95 @@ export interface NapiTokenUsage {
    * Current context size (latest input_tokens from API - overwritten, not accumulated)
    * CTX-003: This is what should be displayed to users and used for threshold checks
    */
-  currentContextTokens: number;
+  currentContextTokens: number
   /**
    * Cumulative billed input tokens (sum of all API calls - for billing analytics)
    * CTX-003: This is the total billed by Anthropic across all API calls
    */
-  cumulativeBilledInput: number;
+  cumulativeBilledInput: number
   /** Cumulative billed output tokens (sum of all API calls) */
-  cumulativeBilledOutput: number;
+  cumulativeBilledOutput: number
   /** Cache read tokens from current API call */
-  cacheReadTokens: number;
+  cacheReadTokens: number
   /** Cache creation tokens from current API call */
-  cacheCreationTokens: number;
+  cacheCreationTokens: number
 }
 
 /** Add a history entry */
-export declare function persistenceAddHistory(
-  display: string,
-  project: string,
-  sessionId: string
-): void;
+export declare function persistenceAddHistory(display: string, project: string, sessionId: string): void
 
 /** Append a message to a session */
-export declare function persistenceAppendMessage(
-  sessionId: string,
-  role: string,
-  content: string
-): NapiAppendResult;
+export declare function persistenceAppendMessage(sessionId: string, role: string, content: string): NapiAppendResult
 
 /**
  * Append a message with metadata to a session
  *
  * metadata_json should be a JSON object string, e.g. '{"model": "claude-3", "stop_reason": "end_turn"}'
  */
-export declare function persistenceAppendMessageWithMetadata(
-  sessionId: string,
-  role: string,
-  content: string,
-  metadataJson: string
-): NapiAppendResult;
+export declare function persistenceAppendMessageWithMetadata(sessionId: string, role: string, content: string, metadataJson: string): NapiAppendResult
 
 /** Check if a blob exists */
-export declare function persistenceBlobExists(hash: string): boolean;
+export declare function persistenceBlobExists(hash: string): boolean
 
 /** Cherry-pick messages with context */
-export declare function persistenceCherryPick(
-  targetId: string,
-  sourceId: string,
-  index: number,
-  context: number
-): NapiCherryPickResult;
+export declare function persistenceCherryPick(targetId: string, sourceId: string, index: number, context: number): NapiCherryPickResult
 
 /** Cleanup orphaned messages */
-export declare function persistenceCleanupOrphanedMessages(): number;
+export declare function persistenceCleanupOrphanedMessages(): number
 
 /** Clear compaction state for a session */
-export declare function persistenceClearCompactionState(
-  sessionId: string
-): NapiSessionManifest;
+export declare function persistenceClearCompactionState(sessionId: string): NapiSessionManifest
 
 /** Create a new session */
-export declare function persistenceCreateSession(
-  name: string,
-  project: string
-): NapiSessionManifest;
+export declare function persistenceCreateSession(name: string, project: string): NapiSessionManifest
 
 /** Create a new session with a specific provider */
-export declare function persistenceCreateSessionWithProvider(
-  name: string,
-  project: string,
-  provider: string
-): NapiSessionManifest;
+export declare function persistenceCreateSessionWithProvider(name: string, project: string, provider: string): NapiSessionManifest
 
 /** Delete a session */
-export declare function persistenceDeleteSession(id: string): void;
+export declare function persistenceDeleteSession(id: string): void
 
 /** Fork a session at a specific message index */
-export declare function persistenceForkSession(
-  sessionId: string,
-  atIndex: number,
-  name: string
-): NapiSessionManifest;
+export declare function persistenceForkSession(sessionId: string, atIndex: number, name: string): NapiSessionManifest
 
 /** Get content from blob storage */
-export declare function persistenceGetBlob(hash: string): Buffer;
+export declare function persistenceGetBlob(hash: string): Buffer
 
 /** Get the current data directory */
-export declare function persistenceGetDataDirectory(): string;
+export declare function persistenceGetDataDirectory(): string
 
 /** Get history entries */
-export declare function persistenceGetHistory(
-  project?: string | undefined | null,
-  limit?: number | undefined | null
-): Array<NapiHistoryEntry>;
+export declare function persistenceGetHistory(project?: string | undefined | null, limit?: number | undefined | null): Array<NapiHistoryEntry>
 
 /** Get a message by ID */
-export declare function persistenceGetMessage(
-  id: string
-): NapiStoredMessage | null;
+export declare function persistenceGetMessage(id: string): NapiStoredMessage | null
 
 /** Get a message as a full envelope JSON with blob content rehydrated */
-export declare function persistenceGetMessageEnvelope(
-  id: string
-): string | null;
+export declare function persistenceGetMessageEnvelope(id: string): string | null
 
 /**
  * Get a message envelope WITHOUT blob rehydration (returns blob references as-is)
  * Use this when you want to inspect the raw stored format with blob:sha256: references.
  */
-export declare function persistenceGetMessageEnvelopeRaw(
-  id: string
-): string | null;
+export declare function persistenceGetMessageEnvelopeRaw(id: string): string | null
 
 /**
  * Get all messages for a session as envelope JSON array with blob content rehydrated
  * (respects compaction - use for LLM context)
  */
-export declare function persistenceGetSessionMessageEnvelopes(
-  sessionId: string
-): Array<string>;
+export declare function persistenceGetSessionMessageEnvelopes(sessionId: string): Array<string>
 
 /** Get all messages for a session as envelope JSON array - FULL history (ignores compaction) */
-export declare function persistenceGetSessionMessageEnvelopesFull(
-  sessionId: string
-): Array<string>;
+export declare function persistenceGetSessionMessageEnvelopesFull(sessionId: string): Array<string>
 
 /**
  * Get all messages for a session WITHOUT blob rehydration (returns blob references as-is)
  * (respects compaction)
  */
-export declare function persistenceGetSessionMessageEnvelopesRaw(
-  sessionId: string
-): Array<string>;
+export declare function persistenceGetSessionMessageEnvelopesRaw(sessionId: string): Array<string>
 
 /** Get all messages for a session WITHOUT blob rehydration - FULL history (ignores compaction) */
-export declare function persistenceGetSessionMessageEnvelopesRawFull(
-  sessionId: string
-): Array<string>;
+export declare function persistenceGetSessionMessageEnvelopesRawFull(sessionId: string): Array<string>
 
 /**
  * Get all messages for a session (respects compaction - use for LLM context)
@@ -966,9 +864,7 @@ export declare function persistenceGetSessionMessageEnvelopesRawFull(
  *
  * For the full uncompacted history, use `persistence_get_session_messages_full`.
  */
-export declare function persistenceGetSessionMessages(
-  sessionId: string
-): Array<NapiStoredMessage>;
+export declare function persistenceGetSessionMessages(sessionId: string): Array<NapiStoredMessage>
 
 /**
  * Get ALL messages for a session (ignores compaction - use for debugging/export)
@@ -976,48 +872,28 @@ export declare function persistenceGetSessionMessages(
  * This returns the complete message history regardless of compaction state.
  * For LLM context, use `persistence_get_session_messages` which respects compaction.
  */
-export declare function persistenceGetSessionMessagesFull(
-  sessionId: string
-): Array<NapiStoredMessage>;
+export declare function persistenceGetSessionMessagesFull(sessionId: string): Array<NapiStoredMessage>
 
 /** List all sessions for a project */
-export declare function persistenceListSessions(
-  project: string
-): Array<NapiSessionManifest>;
+export declare function persistenceListSessions(project: string): Array<NapiSessionManifest>
 
 /** Load a session by ID */
-export declare function persistenceLoadSession(id: string): NapiSessionManifest;
+export declare function persistenceLoadSession(id: string): NapiSessionManifest
 
 /** Merge messages from another session */
-export declare function persistenceMergeMessages(
-  targetId: string,
-  sourceId: string,
-  indices: Array<number>
-): NapiSessionManifest;
+export declare function persistenceMergeMessages(targetId: string, sourceId: string, indices: Array<number>): NapiSessionManifest
 
 /** Rename a session */
-export declare function persistenceRenameSession(
-  id: string,
-  newName: string
-): void;
+export declare function persistenceRenameSession(id: string, newName: string): void
 
 /** Resume the last session for a project */
-export declare function persistenceResumeLastSession(
-  project: string
-): NapiSessionManifest;
+export declare function persistenceResumeLastSession(project: string): NapiSessionManifest
 
 /** Search history entries */
-export declare function persistenceSearchHistory(
-  query: string,
-  project?: string | undefined | null
-): Array<NapiHistoryEntry>;
+export declare function persistenceSearchHistory(query: string, project?: string | undefined | null): Array<NapiHistoryEntry>
 
 /** Set compaction state for a session (after manual or automatic compaction) */
-export declare function persistenceSetCompactionState(
-  sessionId: string,
-  summary: string,
-  compactedBeforeIndex: number
-): NapiSessionManifest;
+export declare function persistenceSetCompactionState(sessionId: string, summary: string, compactedBeforeIndex: number): NapiSessionManifest
 
 /**
  * Set the data directory for persistence (e.g., ~/.fspec or ~/.codelet)
@@ -1025,21 +901,13 @@ export declare function persistenceSetCompactionState(
  * This must be called before any other persistence operations if you want
  * to use a custom directory instead of the default ~/.fspec.
  */
-export declare function persistenceSetDataDirectory(dir: string): void;
+export declare function persistenceSetDataDirectory(dir: string): void
 
 /** Set session token usage (REPLACES existing - use for cumulative totals) */
-export declare function persistenceSetSessionTokens(
-  sessionId: string,
-  input: number,
-  output: number,
-  cacheRead: number,
-  cacheCreate: number,
-  cumulativeInput: number,
-  cumulativeOutput: number
-): NapiSessionManifest;
+export declare function persistenceSetSessionTokens(sessionId: string, input: number, output: number, cacheRead: number, cacheCreate: number, cumulativeInput: number, cumulativeOutput: number): NapiSessionManifest
 
 /** Store content in blob storage */
-export declare function persistenceStoreBlob(content: Buffer): string;
+export declare function persistenceStoreBlob(content: Buffer): string
 
 /**
  * Store a message envelope as JSON
@@ -1047,31 +915,19 @@ export declare function persistenceStoreBlob(content: Buffer): string;
  * This is the primary function for storing Claude Code format messages.
  * It handles blob storage for large content automatically.
  */
-export declare function persistenceStoreMessageEnvelope(
-  sessionId: string,
-  envelopeJson: string
-): NapiAppendResult;
+export declare function persistenceStoreMessageEnvelope(sessionId: string, envelopeJson: string): NapiAppendResult
 
 /** Update session token usage (ADDS to existing) */
-export declare function persistenceUpdateSessionTokens(
-  sessionId: string,
-  input: number,
-  output: number,
-  cacheRead: number,
-  cacheCreate: number
-): NapiSessionManifest;
+export declare function persistenceUpdateSessionTokens(sessionId: string, input: number, output: number, cacheRead: number, cacheCreate: number): NapiSessionManifest
 
 /** Attach to a session for live streaming */
-export declare function sessionAttach(
-  sessionId: string,
-  callback: (err: Error | null, arg: StreamChunk) => any
-): void;
+export declare function sessionAttach(sessionId: string, callback: ((err: Error | null, arg: StreamChunk) => any)): void
 
 /**
  * Clear the active session tracking (VIEWNV-001)
  * Call this when returning to BoardView to ensure navigation works correctly
  */
-export declare function sessionClearActive(): void;
+export declare function sessionClearActive(): void
 
 /**
  * Clear pending observed correlation IDs for a session (WATCH-011)
@@ -1079,16 +935,14 @@ export declare function sessionClearActive(): void;
  * Call this after the watcher finishes processing an observation response.
  * Subsequent output chunks will no longer have observed_correlation_ids set.
  */
-export declare function sessionClearObservedCorrelationIds(
-  sessionId: string
-): void;
+export declare function sessionClearObservedCorrelationIds(sessionId: string): void
 
 /**
  * Clear the role for a session (WATCH-004)
  *
  * Returns the session to a regular (non-watcher) state.
  */
-export declare function sessionClearRole(sessionId: string): void;
+export declare function sessionClearRole(sessionId: string): void
 
 /**
  * Manually trigger context compaction for a background session (NAPI-009 + NAPI-005)
@@ -1099,9 +953,7 @@ export declare function sessionClearRole(sessionId: string): void;
  * Returns CompactionResult with metrics about the compaction operation.
  * Returns error if session is empty (nothing to compact).
  */
-export declare function sessionCompact(
-  sessionId: string
-): Promise<CompactionResult>;
+export declare function sessionCompact(sessionId: string): Promise<CompactionResult>
 
 /**
  * Create a watcher session for a parent session (WATCH-007)
@@ -1111,15 +963,10 @@ export declare function sessionCompact(
  * the parent's output stream via broadcast subscription.
  * WATCH-019: Now spawns watcher_agent_loop instead of regular agent_loop.
  */
-export declare function sessionCreateWatcher(
-  parentId: string,
-  model: string,
-  project: string,
-  name: string
-): Promise<string>;
+export declare function sessionCreateWatcher(parentId: string, model: string, project: string, name: string): Promise<string>
 
 /** Detach from a session (session continues running) */
-export declare function sessionDetach(sessionId: string): void;
+export declare function sessionDetach(sessionId: string): void
 
 /**
  * Get the base thinking level for a session (TUI-054)
@@ -1127,47 +974,42 @@ export declare function sessionDetach(sessionId: string): void;
  * Returns the base thinking level: 0=Off, 1=Low, 2=Medium, 3=High
  * This is the level set via /thinking command dialog.
  */
-export declare function sessionGetBaseThinkingLevel(sessionId: string): number;
+export declare function sessionGetBaseThinkingLevel(sessionId: string): number
 
 /** Get buffered output from a session */
-export declare function sessionGetBufferedOutput(
-  sessionId: string,
-  limit: number
-): Array<StreamChunk>;
+export declare function sessionGetBufferedOutput(sessionId: string, limit: number): Array<StreamChunk>
 
 /** Get debug enabled state for a background session */
-export declare function sessionGetDebugEnabled(sessionId: string): boolean;
+export declare function sessionGetDebugEnabled(sessionId: string): boolean
 
 /**
  * Get the first session (VIEWNV-001)
  * Returns None if no sessions exist
  */
-export declare function sessionGetFirst(): string | null;
+export declare function sessionGetFirst(): string | null
 
 /**
  * Get buffered output with consecutive Text/Thinking chunks merged.
  * This is more efficient for reattachment - JS can process fewer chunks.
  */
-export declare function sessionGetMergedOutput(
-  sessionId: string
-): Array<StreamChunk>;
+export declare function sessionGetMergedOutput(sessionId: string): Array<StreamChunk>
 
 /** Get the model info for a background session */
-export declare function sessionGetModel(sessionId: string): SessionModel;
+export declare function sessionGetModel(sessionId: string): SessionModel
 
 /**
  * Get the next session after the currently active one (VIEWNV-001)
  * Returns None if no sessions exist or at the last session
  * If no active session (BoardView), returns the first session
  */
-export declare function sessionGetNext(): string | null;
+export declare function sessionGetNext(): string | null
 
 /**
  * Get the parent session ID for a watcher (WATCH-007)
  *
  * Returns the parent session ID if the session is a watcher, None otherwise.
  */
-export declare function sessionGetParent(sessionId: string): string | null;
+export declare function sessionGetParent(sessionId: string): string | null
 
 /**
  * Get pause state for a session (PAUSE-001)
@@ -1175,9 +1017,7 @@ export declare function sessionGetParent(sessionId: string): string | null;
  * Returns the current pause state if the session is paused, null otherwise.
  * TypeScript uses this to display pause UI (tool name, message, kind).
  */
-export declare function sessionGetPauseState(
-  sessionId: string
-): NapiPauseState | null;
+export declare function sessionGetPauseState(sessionId: string): NapiPauseState | null
 
 /**
  * Get pending input text for a background session (TUI-049)
@@ -1185,59 +1025,52 @@ export declare function sessionGetPauseState(
  * Returns the input text that was being typed when the user switched away from this session.
  * Used to restore input field state when switching back to the session.
  */
-export declare function sessionGetPendingInput(
-  sessionId: string
-): string | null;
+export declare function sessionGetPendingInput(sessionId: string): string | null
 
 /**
  * Get the previous session before the currently active one (VIEWNV-001)
  * Returns None if no sessions exist or at the first session (should go to board)
  */
-export declare function sessionGetPrev(): string | null;
+export declare function sessionGetPrev(): string | null
 
 /**
  * Get the role for a session (WATCH-004)
  *
  * Returns None for regular sessions, role info for watcher sessions.
  */
-export declare function sessionGetRole(
-  sessionId: string
-): SessionRoleInfo | null;
+export declare function sessionGetRole(sessionId: string): SessionRoleInfo | null
 
 /** Get session status */
-export declare function sessionGetStatus(sessionId: string): string;
+export declare function sessionGetStatus(sessionId: string): string
 
 /** Get cached token counts for a background session */
-export declare function sessionGetTokens(sessionId: string): SessionTokens;
+export declare function sessionGetTokens(sessionId: string): SessionTokens
 
 /**
  * Get all watcher session IDs for a parent session (WATCH-007)
  *
  * Returns a list of session IDs that are watching the specified parent.
  */
-export declare function sessionGetWatchers(sessionId: string): Array<string>;
+export declare function sessionGetWatchers(sessionId: string): Array<string>
 
 /** Session info returned to TypeScript */
 export interface SessionInfo {
-  id: string;
-  name: string;
-  status: string;
-  project: string;
-  messageCount: number;
+  id: string
+  name: string
+  status: string
+  project: string
+  messageCount: number
   /** Provider ID (e.g., "anthropic", "openai") */
-  providerId?: string;
+  providerId?: string
   /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
-  modelId?: string;
+  modelId?: string
 }
 
 /** Interrupt a session */
-export declare function sessionInterrupt(sessionId: string): void;
+export declare function sessionInterrupt(sessionId: string): void
 
 /** Create a new background session (generates new UUID) */
-export declare function sessionManagerCreate(
-  model: string,
-  project: string
-): Promise<string>;
+export declare function sessionManagerCreate(model: string, project: string): Promise<string>
 
 /**
  * Create a background session with a specific ID (for persistence integration).
@@ -1248,25 +1081,20 @@ export declare function sessionManagerCreate(
  * Note: This must be async because it uses tokio::spawn internally, which requires
  * a Tokio runtime context. NAPI-RS provides this context for async functions.
  */
-export declare function sessionManagerCreateWithId(
-  sessionId: string,
-  model: string,
-  project: string,
-  name: string
-): Promise<void>;
+export declare function sessionManagerCreateWithId(sessionId: string, model: string, project: string, name: string): Promise<void>
 
 /** Destroy a background session */
-export declare function sessionManagerDestroy(sessionId: string): void;
+export declare function sessionManagerDestroy(sessionId: string): void
 
 /** List all background sessions */
-export declare function sessionManagerList(): Array<SessionInfo>;
+export declare function sessionManagerList(): Array<SessionInfo>
 
 /** Model info returned by session_get_model */
 export interface SessionModel {
   /** Provider ID (e.g., "anthropic", "openai") */
-  providerId?: string;
+  providerId?: string
   /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
-  modelId?: string;
+  modelId?: string
 }
 
 /**
@@ -1275,10 +1103,7 @@ export interface SessionModel {
  * Called when user presses Y (approved=true) or N (approved=false) during a Confirm pause.
  * Sends Approved or Denied response to unblock the waiting tool.
  */
-export declare function sessionPauseConfirm(
-  sessionId: string,
-  approved: boolean
-): void;
+export declare function sessionPauseConfirm(sessionId: string, approved: boolean): void
 
 /**
  * Resume a paused session (PAUSE-001)
@@ -1286,7 +1111,7 @@ export declare function sessionPauseConfirm(
  * Called when user presses Enter during a Continue pause.
  * Sends Resumed response to unblock the waiting tool.
  */
-export declare function sessionPauseResume(sessionId: string): void;
+export declare function sessionPauseResume(sessionId: string): void
 
 /**
  * Restore messages to a background session from persisted envelopes.
@@ -1298,10 +1123,7 @@ export declare function sessionPauseResume(sessionId: string): void;
  * sessionGetMergedOutput() returns the restored conversation. This enables
  * proper UI replay when detaching and re-attaching via kanban.
  */
-export declare function sessionRestoreMessages(
-  sessionId: string,
-  envelopes: Array<string>
-): Promise<void>;
+export declare function sessionRestoreMessages(sessionId: string, envelopes: Array<string>): Promise<void>
 
 /**
  * Restore token state to a background session from persisted values.
@@ -1309,32 +1131,20 @@ export declare function sessionRestoreMessages(
  * This is used when attaching to a session via /resume - it restores the
  * token tracking state so context fill percentage and token counts are accurate.
  */
-export declare function sessionRestoreTokenState(
-  sessionId: string,
-  inputTokens: number,
-  outputTokens: number,
-  cacheReadTokens: number,
-  cacheCreationTokens: number,
-  cumulativeBilledInput: number,
-  cumulativeBilledOutput: number
-): Promise<void>;
+export declare function sessionRestoreTokenState(sessionId: string, inputTokens: number, outputTokens: number, cacheReadTokens: number, cacheCreationTokens: number, cumulativeBilledInput: number, cumulativeBilledOutput: number): Promise<void>
 
 /** Session role info returned to TypeScript (WATCH-004) */
 export interface SessionRoleInfo {
   /** Role name (e.g., "code-reviewer", "supervisor") */
-  name: string;
+  name: string
   /** Optional description */
-  description?: string;
+  description?: string
   /** Authority level ("peer" or "supervisor") */
-  authority: string;
+  authority: string
 }
 
 /** Send input to a session with optional thinking config */
-export declare function sessionSendInput(
-  sessionId: string,
-  input: string,
-  thinkingConfig?: string | undefined | null
-): void;
+export declare function sessionSendInput(sessionId: string, input: string, thinkingConfig?: string | undefined | null): void
 
 /**
  * Explicitly set the active session for navigation.
@@ -1344,7 +1154,7 @@ export declare function sessionSendInput(
  *
  * VIEWNV-001: This allows TypeScript to explicitly control the navigation state.
  */
-export declare function sessionSetActive(sessionId: string): void;
+export declare function sessionSetActive(sessionId: string): void
 
 /**
  * Set the base thinking level for a session (TUI-054)
@@ -1353,23 +1163,13 @@ export declare function sessionSetActive(sessionId: string): void;
  * Values > 3 are clamped to 3.
  * This is called when user selects a level in the /thinking dialog.
  */
-export declare function sessionSetBaseThinkingLevel(
-  sessionId: string,
-  level: number
-): void;
+export declare function sessionSetBaseThinkingLevel(sessionId: string, level: number): void
 
 /** Set debug enabled state for a background session (without toggling global state) */
-export declare function sessionSetDebugEnabled(
-  sessionId: string,
-  enabled: boolean
-): void;
+export declare function sessionSetDebugEnabled(sessionId: string, enabled: boolean): void
 
 /** Update the model for a background session */
-export declare function sessionSetModel(
-  sessionId: string,
-  providerId: string,
-  modelId: string
-): Promise<void>;
+export declare function sessionSetModel(sessionId: string, providerId: string, modelId: string): Promise<void>
 
 /**
  * Set pending observed correlation IDs for a watcher session (WATCH-011)
@@ -1381,10 +1181,7 @@ export declare function sessionSetModel(
  * This enables cross-pane highlighting: when viewing a watcher session in split view,
  * selecting a watcher turn shows which parent turns it was responding to.
  */
-export declare function sessionSetObservedCorrelationIds(
-  sessionId: string,
-  correlationIds: Array<string>
-): void;
+export declare function sessionSetObservedCorrelationIds(sessionId: string, correlationIds: Array<string>): void
 
 /**
  * Set pending input text for a background session (TUI-049)
@@ -1392,10 +1189,7 @@ export declare function sessionSetObservedCorrelationIds(
  * Saves the current input field text before switching to another session.
  * Pass None to clear the pending input.
  */
-export declare function sessionSetPendingInput(
-  sessionId: string,
-  input?: string | undefined | null
-): void;
+export declare function sessionSetPendingInput(sessionId: string, input?: string | undefined | null): void
 
 /**
  * Set the role for a session (WATCH-004)
@@ -1403,13 +1197,7 @@ export declare function sessionSetPendingInput(
  * Used to mark a session as a watcher with a specific role and authority level.
  * Authority must be "peer" or "supervisor" (case-insensitive).
  */
-export declare function sessionSetRole(
-  sessionId: string,
-  roleName: string,
-  roleDescription: string | undefined | null,
-  authority: string,
-  autoInject?: boolean | undefined | null
-): void;
+export declare function sessionSetRole(sessionId: string, roleName: string, roleDescription: string | undefined | null, authority: string, autoInject?: boolean | undefined | null): void
 
 /**
  * Subscribe to a session for live streaming WITHOUT changing the active session.
@@ -1420,10 +1208,7 @@ export declare function sessionSetRole(
  * VIEWNV-001: This is separate from session_attach to avoid corrupting the
  * active_session_id when subscribing to parent sessions for observation.
  */
-export declare function sessionSubscribe(
-  sessionId: string,
-  callback: (err: Error | null, arg: StreamChunk) => any
-): void;
+export declare function sessionSubscribe(sessionId: string, callback: ((err: Error | null, arg: StreamChunk) => any)): void
 
 /**
  * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
@@ -1436,17 +1221,14 @@ export declare function sessionSubscribe(
  * instead of the default directory. For fspec, pass `~/.fspec` to write to
  * `~/.fspec/debug/`.
  */
-export declare function sessionToggleDebug(
-  sessionId: string,
-  debugDir?: string | undefined | null
-): Promise<DebugCommandResult>;
+export declare function sessionToggleDebug(sessionId: string, debugDir?: string | undefined | null): Promise<DebugCommandResult>
 
 /** Token info returned by session_get_tokens */
 export interface SessionTokens {
   /** Input tokens (context size) */
-  inputTokens: number;
+  inputTokens: number
   /** Output tokens */
-  outputTokens: number;
+  outputTokens: number
 }
 
 /**
@@ -1457,16 +1239,14 @@ export interface SessionTokens {
  * VIEWNV-001: This is separate from session_detach to avoid clearing the
  * active_session_id when unsubscribing from parent sessions.
  */
-export declare function sessionUnsubscribe(sessionId: string): void;
+export declare function sessionUnsubscribe(sessionId: string): void
 
 /**
  * Update debug capture metadata with session info.
  *
  * Call this after creating a session if debug was enabled before the session existed.
  */
-export declare function sessionUpdateDebugMetadata(
-  sessionId: string
-): Promise<void>;
+export declare function sessionUpdateDebugMetadata(sessionId: string): Promise<void>
 
 /**
  * Set the logging callback from TypeScript and initialize the tracing subscriber.
@@ -1479,42 +1259,39 @@ export declare function sessionUpdateDebugMetadata(
  * unrefs the ThreadsafeFunction. This prevents keeping the Node.js event loop alive,
  * allowing CLI commands to exit normally after completion.
  */
-export declare function setRustLogCallback(callback: LogCallback): void;
+export declare function setRustLogCallback(callback: LogCallback): void
 
 /** A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress, WATCH-020: added watcher_pending_injection) */
 export interface StreamChunk {
-  type: string;
-  text?: string;
+  type: string
+  text?: string
   /** Thinking/reasoning content from extended thinking (TOOL-010) */
-  thinking?: string;
-  toolCall?: ToolCallInfo;
-  toolResult?: ToolResultInfo;
+  thinking?: string
+  toolCall?: ToolCallInfo
+  toolResult?: ToolResultInfo
   /** Tool execution progress - streaming output from bash/shell tools (TOOL-011) */
-  toolProgress?: ToolProgressInfo;
-  status?: string;
-  queuedInputs?: Array<string>;
-  tokens?: TokenTracker;
-  contextFill?: ContextFillInfo;
-  error?: string;
+  toolProgress?: ToolProgressInfo
+  status?: string
+  queuedInputs?: Array<string>
+  tokens?: TokenTracker
+  contextFill?: ContextFillInfo
+  error?: string
   /**
    * Correlation ID for cross-pane selection highlighting (WATCH-011)
    * Assigned by handle_output() using per-session atomic counter
    */
-  correlationId?: string;
+  correlationId?: string
   /**
    * IDs of observed parent chunks that triggered this watcher response (WATCH-011)
    * Only populated on watcher session output chunks
    */
-  observedCorrelationIds?: Array<string>;
+  observedCorrelationIds?: Array<string>
   /** Pending injection from watcher when auto_inject=false (WATCH-020) */
-  watcherPendingInjection?: WatcherPendingInjectionInfo;
+  watcherPendingInjection?: WatcherPendingInjectionInfo
 }
 
 /** Simple test function to verify callback pattern works from TypeScript */
-export declare function testCallback(
-  input: string,
-  callback: (arg0: string) => string
-): string;
+export declare function testCallback(input: string, callback: (arg0: string) => string): string
 
 /**
  * Toggle debug capture mode without requiring a session.
@@ -1526,29 +1303,27 @@ export declare function testCallback(
  * instead of the default directory. For fspec, pass `~/.fspec` to write to
  * `~/.fspec/debug/`.
  */
-export declare function toggleDebug(
-  debugDir?: string | undefined | null
-): DebugCommandResult;
+export declare function toggleDebug(debugDir?: string | undefined | null): DebugCommandResult
 
 /** Token usage tracking information */
 export interface TokenTracker {
-  inputTokens: number;
-  outputTokens: number;
-  cacheReadInputTokens?: number;
-  cacheCreationInputTokens?: number;
+  inputTokens: number
+  outputTokens: number
+  cacheReadInputTokens?: number
+  cacheCreationInputTokens?: number
   /** Tokens per second (EMA-smoothed, calculated in Rust) */
-  tokensPerSecond?: number;
+  tokensPerSecond?: number
   /** Cumulative billed input tokens (sum of all API calls) */
-  cumulativeBilledInput?: number;
+  cumulativeBilledInput?: number
   /** Cumulative billed output tokens (sum of all API calls) */
-  cumulativeBilledOutput?: number;
+  cumulativeBilledOutput?: number
 }
 
 /** Tool call information */
 export interface ToolCallInfo {
-  id: string;
-  name: string;
-  input: string;
+  id: string
+  name: string
+  input: string
 }
 
 /**
@@ -1557,20 +1332,20 @@ export interface ToolCallInfo {
  */
 export interface ToolProgressInfo {
   /** Tool call ID this progress is for */
-  toolCallId: string;
+  toolCallId: string
   /** Tool name (e.g., "bash", "run_shell_command") */
-  toolName: string;
+  toolName: string
   /** Output chunk (new text since last progress event) */
-  outputChunk: string;
+  outputChunk: string
   /** Whether this output is from stderr (should be styled as error/red) */
-  isStderr: boolean;
+  isStderr: boolean
 }
 
 /** Tool result information */
 export interface ToolResultInfo {
-  toolCallId: string;
-  content: string;
-  isError: boolean;
+  toolCallId: string
+  content: string
+  isError: boolean
 }
 
 /**
@@ -1579,7 +1354,7 @@ export interface ToolResultInfo {
  * Formats the message with the watcher's role prefix and queues it
  * on the parent session via receive_watcher_input().
  */
-export declare function watcherInject(watcherId: string, message: string): void;
+export declare function watcherInject(watcherId: string, message: string): void
 
 /**
  * Watcher pending injection information (WATCH-020)
@@ -1587,7 +1362,7 @@ export declare function watcherInject(watcherId: string, message: string): void;
  */
 export interface WatcherPendingInjectionInfo {
   /** Whether this is an urgent injection */
-  urgent: boolean;
+  urgent: boolean
   /** The message content that would be injected */
-  content: string;
+  content: string
 }

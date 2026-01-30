@@ -6,26 +6,26 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { CoverageFile } from '../../utils/coverage-file';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Link Coverage Command', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-link-coverage-test-'));
+    setup = await setupWorkUnitTest('link-coverage');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Link test mapping only', () => {
     it('should create test mapping and display success message', async () => {
       // Given I have a coverage file with an uncovered scenario
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -49,8 +49,8 @@ describe('Feature: Link Coverage Command', () => {
       await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
 
       // Create the test file that we'll link to
-      const testFile = join(testDir, 'src', '__tests__', 'auth.test.ts');
-      await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+      const testFile = join(setup.testDir, 'src', '__tests__', 'auth.test.ts');
+      await mkdir(join(setup.testDir, 'src', '__tests__'), { recursive: true });
       await writeFile(testFile, '// test file');
 
       // When I run link-coverage with test-only flags
@@ -59,7 +59,7 @@ describe('Feature: Link Coverage Command', () => {
         scenario: 'Login with valid credentials',
         testFile: 'src/__tests__/auth.test.ts',
         testLines: '45-62',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the test mapping should be created
@@ -82,7 +82,7 @@ describe('Feature: Link Coverage Command', () => {
   describe('Scenario: Link implementation to existing test', () => {
     it('should add impl mapping to existing test mapping', async () => {
       // Given I have a test mapping without implementation
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -112,13 +112,13 @@ describe('Feature: Link Coverage Command', () => {
       await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
 
       // Create the test file (required for validation)
-      const testFile = join(testDir, 'src', '__tests__', 'auth.test.ts');
-      await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+      const testFile = join(setup.testDir, 'src', '__tests__', 'auth.test.ts');
+      await mkdir(join(setup.testDir, 'src', '__tests__'), { recursive: true });
       await writeFile(testFile, '// test file');
 
       // Create the impl file
-      const implFile = join(testDir, 'src', 'auth', 'login.ts');
-      await mkdir(join(testDir, 'src', 'auth'), { recursive: true });
+      const implFile = join(setup.testDir, 'src', 'auth', 'login.ts');
+      await mkdir(join(setup.testDir, 'src', 'auth'), { recursive: true });
       await writeFile(implFile, '// impl file');
 
       // When I run link-coverage with impl flags
@@ -128,7 +128,7 @@ describe('Feature: Link Coverage Command', () => {
         testFile: 'src/__tests__/auth.test.ts',
         implFile: 'src/auth/login.ts',
         implLines: '10,11,12',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the impl mapping should be added
@@ -153,7 +153,7 @@ describe('Feature: Link Coverage Command', () => {
   describe('Scenario: Link both test and impl at once', () => {
     it('should create test mapping with impl mapping in one operation', async () => {
       // Given I have a coverage file with an uncovered scenario
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -177,12 +177,12 @@ describe('Feature: Link Coverage Command', () => {
       await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
 
       // Create both files
-      const testFile = join(testDir, 'src', '__tests__', 'auth.test.ts');
-      await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+      const testFile = join(setup.testDir, 'src', '__tests__', 'auth.test.ts');
+      await mkdir(join(setup.testDir, 'src', '__tests__'), { recursive: true });
       await writeFile(testFile, '// test file');
 
-      const implFile = join(testDir, 'src', 'auth', 'login.ts');
-      await mkdir(join(testDir, 'src', 'auth'), { recursive: true });
+      const implFile = join(setup.testDir, 'src', 'auth', 'login.ts');
+      await mkdir(join(setup.testDir, 'src', 'auth'), { recursive: true });
       await writeFile(implFile, '// impl file');
 
       // When I run link-coverage with all flags
@@ -193,7 +193,7 @@ describe('Feature: Link Coverage Command', () => {
         testLines: '45-62',
         implFile: 'src/auth/login.ts',
         implLines: '10,11,12',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then both mappings should be created
@@ -222,7 +222,7 @@ describe('Feature: Link Coverage Command', () => {
   describe('Scenario: File validation failure', () => {
     it('should error when test file does not exist', async () => {
       // Given I have a coverage file
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -254,7 +254,7 @@ describe('Feature: Link Coverage Command', () => {
           scenario: 'Login with valid credentials',
           testFile: 'src/__tests__/missing.test.ts',
           testLines: '1-10',
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow('File not found');
 
@@ -264,7 +264,7 @@ describe('Feature: Link Coverage Command', () => {
           scenario: 'Login with valid credentials',
           testFile: 'src/__tests__/missing.test.ts',
           testLines: '1-10',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: any) {
         expect(error.message).toContain('--skip-validation');
@@ -273,7 +273,7 @@ describe('Feature: Link Coverage Command', () => {
 
     it('should succeed with warning when --skip-validation is used', async () => {
       // Given I have a coverage file
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -303,7 +303,7 @@ describe('Feature: Link Coverage Command', () => {
         testFile: 'src/__tests__/future.test.ts',
         testLines: '1-10',
         skipValidation: true,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then should succeed
@@ -319,7 +319,7 @@ describe('Feature: Link Coverage Command', () => {
   describe('Scenario: Smart append for impl files', () => {
     it('should update existing impl file instead of creating duplicate', async () => {
       // Given I have a test mapping with existing impl file
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -358,13 +358,13 @@ describe('Feature: Link Coverage Command', () => {
       await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
 
       // Create the test file (required for validation)
-      const testFile = join(testDir, 'src', '__tests__', 'auth.test.ts');
-      await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+      const testFile = join(setup.testDir, 'src', '__tests__', 'auth.test.ts');
+      await mkdir(join(setup.testDir, 'src', '__tests__'), { recursive: true });
       await writeFile(testFile, '// test file');
 
       // Create the impl file
-      const implFile = join(testDir, 'src', 'auth', 'login.ts');
-      await mkdir(join(testDir, 'src', 'auth'), { recursive: true });
+      const implFile = join(setup.testDir, 'src', 'auth', 'login.ts');
+      await mkdir(join(setup.testDir, 'src', 'auth'), { recursive: true });
       await writeFile(implFile, '// impl file');
 
       // When I add the same impl file with different lines
@@ -374,7 +374,7 @@ describe('Feature: Link Coverage Command', () => {
         testFile: 'src/__tests__/auth.test.ts',
         implFile: 'src/auth/login.ts',
         implLines: '20,21,22',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then should update existing entry, not add duplicate
@@ -402,7 +402,7 @@ describe('Feature: Link Coverage Command', () => {
   describe('Scenario: Append test mappings', () => {
     it('should allow multiple test mappings for same file', async () => {
       // Given I have a test mapping for a file
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -432,8 +432,8 @@ describe('Feature: Link Coverage Command', () => {
       await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
 
       // Create the test file
-      const testFile = join(testDir, 'src', '__tests__', 'auth.test.ts');
-      await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+      const testFile = join(setup.testDir, 'src', '__tests__', 'auth.test.ts');
+      await mkdir(join(setup.testDir, 'src', '__tests__'), { recursive: true });
       await writeFile(testFile, '// test file');
 
       // When I add another mapping with same file but different lines
@@ -442,7 +442,7 @@ describe('Feature: Link Coverage Command', () => {
         scenario: 'Login with valid credentials',
         testFile: 'src/__tests__/auth.test.ts',
         testLines: '70-85',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then should append as second mapping
@@ -461,7 +461,7 @@ describe('Feature: Link Coverage Command', () => {
   describe('Edge Cases', () => {
     it('should parse impl line ranges (10-15) into array', async () => {
       // Given I have a coverage file
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -491,12 +491,12 @@ describe('Feature: Link Coverage Command', () => {
       await writeFile(coverageFile, JSON.stringify(coverageData, null, 2));
 
       // Create the test file (required for validation)
-      const testFile = join(testDir, 'src', '__tests__', 'test.test.ts');
-      await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+      const testFile = join(setup.testDir, 'src', '__tests__', 'test.test.ts');
+      await mkdir(join(setup.testDir, 'src', '__tests__'), { recursive: true });
       await writeFile(testFile, '// test file');
 
-      const implFile = join(testDir, 'src', 'test.ts');
-      await mkdir(join(testDir, 'src'), { recursive: true });
+      const implFile = join(setup.testDir, 'src', 'test.ts');
+      await mkdir(join(setup.testDir, 'src'), { recursive: true });
       await writeFile(implFile, '// impl');
 
       // When I provide impl lines as range
@@ -506,7 +506,7 @@ describe('Feature: Link Coverage Command', () => {
         testFile: 'src/__tests__/test.test.ts',
         implFile: 'src/test.ts',
         implLines: '10-15',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then should expand to array
@@ -520,7 +520,7 @@ describe('Feature: Link Coverage Command', () => {
 
     it('should require test-file when adding impl-only', async () => {
       // Given I have a coverage file
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const coverageData: CoverageFile = {
@@ -552,7 +552,7 @@ describe('Feature: Link Coverage Command', () => {
           scenario: 'Test scenario',
           implFile: 'src/test.ts',
           implLines: '10,11',
-          cwd: testDir,
+          cwd: setup.testDir,
         })
       ).rejects.toThrow('--test-file is required');
     });
@@ -562,7 +562,7 @@ describe('Feature: Link Coverage Command', () => {
     describe('Scenario: Scenario exists in feature file but not in coverage file', () => {
       it('should emit system-reminder suggesting generate-coverage', async () => {
         // Given: I have a feature file with a scenario "Login with valid credentials"
-        const featuresDir = join(testDir, 'spec', 'features');
+        const featuresDir = join(setup.testDir, 'spec', 'features');
         await mkdir(featuresDir, { recursive: true });
 
         const featureContent = `Feature: User Login
@@ -607,7 +607,7 @@ describe('Feature: Link Coverage Command', () => {
             testFile: 'src/__tests__/auth.test.ts',
             testLines: '10-20',
             skipValidation: true,
-            cwd: testDir,
+            cwd: setup.testDir,
           })
         ).rejects.toThrow('Scenario not found');
 
@@ -618,7 +618,7 @@ describe('Feature: Link Coverage Command', () => {
             testFile: 'src/__tests__/auth.test.ts',
             testLines: '10-20',
             skipValidation: true,
-            cwd: testDir,
+            cwd: setup.testDir,
           });
         } catch (error: any) {
           expect(error.message).toContain('<system-reminder>');
@@ -634,7 +634,7 @@ describe('Feature: Link Coverage Command', () => {
     describe("Scenario: Scenario doesn't exist in feature file (typo)", () => {
       it('should show normal error without system-reminder', async () => {
         // Given: I have a feature file with scenarios
-        const featuresDir = join(testDir, 'spec', 'features');
+        const featuresDir = join(setup.testDir, 'spec', 'features');
         await mkdir(featuresDir, { recursive: true });
 
         const featureContent = `Feature: User Login
@@ -679,7 +679,7 @@ describe('Feature: Link Coverage Command', () => {
             testFile: 'src/__tests__/auth.test.ts',
             testLines: '10-20',
             skipValidation: true,
-            cwd: testDir,
+            cwd: setup.testDir,
           })
         ).rejects.toThrow('Scenario not found');
 
@@ -690,7 +690,7 @@ describe('Feature: Link Coverage Command', () => {
             testFile: 'src/__tests__/auth.test.ts',
             testLines: '10-20',
             skipValidation: true,
-            cwd: testDir,
+            cwd: setup.testDir,
           });
         } catch (error: any) {
           expect(error.message).toContain('Available scenarios');
@@ -705,7 +705,7 @@ describe('Feature: Link Coverage Command', () => {
     describe('Scenario: Coverage file missing entirely', () => {
       it('should emit system-reminder suggesting generate-coverage', async () => {
         // Given: I have a feature file with a scenario "Login with valid credentials"
-        const featuresDir = join(testDir, 'spec', 'features');
+        const featuresDir = join(setup.testDir, 'spec', 'features');
         await mkdir(featuresDir, { recursive: true });
 
         const featureContent = `Feature: User Login
@@ -731,7 +731,7 @@ describe('Feature: Link Coverage Command', () => {
             testFile: 'src/__tests__/auth.test.ts',
             testLines: '10-20',
             skipValidation: true,
-            cwd: testDir,
+            cwd: setup.testDir,
           })
         ).rejects.toThrow();
 
@@ -742,7 +742,7 @@ describe('Feature: Link Coverage Command', () => {
             testFile: 'src/__tests__/auth.test.ts',
             testLines: '10-20',
             skipValidation: true,
-            cwd: testDir,
+            cwd: setup.testDir,
           });
         } catch (error: any) {
           expect(error.message).toContain('<system-reminder>');

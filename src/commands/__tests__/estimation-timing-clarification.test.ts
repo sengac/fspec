@@ -7,26 +7,23 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
+import { writeFile } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
+import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import { writeJsonTestFile, ensureTestDirectory } from '../../test-helpers/test-file-operations';
 import { showWorkUnit } from '../show-work-unit';
 import { updateWorkUnitEstimate } from '../update-work-unit-estimate';
 
 describe('Feature: Clarify estimation timing in documentation and system-reminders', () => {
-  let testDir: string;
-  let workUnitsFile: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-estimation-timing-test-'));
-    const specDir = join(testDir, 'spec');
-    await mkdir(specDir, { recursive: true });
-    await mkdir(join(specDir, 'features'), { recursive: true });
-    workUnitsFile = join(specDir, 'work-units.json');
+    setup = await setupWorkUnitTest('estimation-timing-clarification');
+    await ensureTestDirectory(join(setup.specDir, 'features'));
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: System-reminder in backlog state should not suggest adding estimates', () => {
@@ -53,12 +50,12 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
           done: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // When I run "fspec show-work-unit <work-unit-id>"
       const result = await showWorkUnit({
         workUnitId: 'TEST-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the system-reminder should NOT suggest adding an estimate
@@ -114,12 +111,12 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
           done: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // When I run "fspec show-work-unit <work-unit-id>"
       const result = await showWorkUnit({
         workUnitId: 'TEST-002',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the system-reminder should say "After generating scenarios from Example Mapping, estimate based on feature file complexity"
@@ -173,7 +170,7 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
           done: [],
         },
       };
-      await writeFile(workUnitsFile, JSON.stringify(workUnits, null, 2));
+      await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       // When I try to estimate with "fspec update-work-unit-estimate <work-unit-id> 3"
       let errorMessage = '';
@@ -181,7 +178,7 @@ describe('Feature: Clarify estimation timing in documentation and system-reminde
         await updateWorkUnitEstimate({
           workUnitId: 'TEST-003',
           estimate: 3,
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error: unknown) {
         const err = error as Error;

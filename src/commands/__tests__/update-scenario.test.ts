@@ -1,24 +1,24 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { join } from 'path';
 import { updateScenario } from '../update-scenario';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
 import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeTextFile,
+  readTextFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Update Scenario Name', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('update-scenario');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
-  });
-
-  afterEach(async () => {
-    await removeTempTestDir(testDir);
+    setup = await setupTestDirectory('update-scenario');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   describe('Scenario: Rename scenario with simple name', () => {
@@ -31,21 +31,21 @@ describe('Feature: Update Scenario Name', () => {
     When I click button
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/login.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/login.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-scenario login "Old scenario name" "New scenario name"`
       const result = await updateScenario({
         feature: 'login',
         oldName: 'Old scenario name',
         newName: 'New scenario name',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
 
       // And the scenario name should be "New scenario name"
       expect(updatedContent).toContain('Scenario: New scenario name');
@@ -81,21 +81,21 @@ describe('Feature: Update Scenario Name', () => {
     And I click submit
     Then I should be logged in
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-scenario test "Login test" "User authentication test"`
       const result = await updateScenario({
         feature: 'test',
         oldName: 'Login test',
         newName: 'User authentication test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
 
       // And the scenario name should be updated
       expect(updatedContent).toContain('Scenario: User authentication test');
@@ -129,21 +129,21 @@ describe('Feature: Update Scenario Name', () => {
     When I confirm transaction
     Then payment should succeed
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-scenario test "Payment processing" "Process payment transaction"`
       const result = await updateScenario({
         feature: 'test',
         oldName: 'Payment processing',
         newName: 'Process payment transaction',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
 
       // And the scenario tags should be preserved
       expect(updatedContent).toContain('@critical @high');
@@ -167,21 +167,21 @@ describe('Feature: Update Scenario Name', () => {
   Scenario: Third
     Given third step
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-scenario test "Second" "Middle scenario"`
       const result = await updateScenario({
         feature: 'test',
         oldName: 'Second',
         newName: 'Middle scenario',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
 
       // And the "First" scenario should remain unchanged
       expect(updatedContent).toContain('Scenario: First');
@@ -206,8 +206,8 @@ describe('Feature: Update Scenario Name', () => {
   Scenario: Registration test
     Given registration step
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec update-scenario test "Login test" "Registration test"`
@@ -215,7 +215,7 @@ describe('Feature: Update Scenario Name', () => {
         feature: 'test',
         oldName: 'Login test',
         newName: 'Registration test',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -226,7 +226,7 @@ describe('Feature: Update Scenario Name', () => {
       expect(result.error).toContain('Registration test');
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -239,8 +239,8 @@ describe('Feature: Update Scenario Name', () => {
   Scenario: Existing scenario
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec update-scenario test "Non-existent scenario" "New name"`
@@ -248,7 +248,7 @@ describe('Feature: Update Scenario Name', () => {
         feature: 'test',
         oldName: 'Non-existent scenario',
         newName: 'New name',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -259,7 +259,7 @@ describe('Feature: Update Scenario Name', () => {
       expect(result.error).toContain('Non-existent scenario');
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -272,21 +272,21 @@ describe('Feature: Update Scenario Name', () => {
   Scenario: User can login
     Given test step
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-scenario test "User can login" "User can't login with invalid credentials"`
       const result = await updateScenario({
         feature: 'test',
         oldName: 'User can login',
         newName: "User can't login with invalid credentials",
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
 
       // And the scenario name should contain apostrophe and special characters
       expect(updatedContent).toContain(
@@ -312,21 +312,21 @@ describe('Feature: Update Scenario Name', () => {
     When I click button
     Then I see result
 `;
-      const filePath = join(testDir, 'spec/features/test.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/test.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-scenario test "Old name" "New name"`
       const result = await updateScenario({
         feature: 'test',
         oldName: 'Old name',
         newName: 'New name',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
 
       // And the scenario header should maintain proper indentation
       expect(updatedContent).toContain('  Scenario: New name');
@@ -346,8 +346,8 @@ describe('Feature: Update Scenario Name', () => {
   Scenario: Some scenario
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/broken.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/broken.feature');
+      await writeTextFile(filePath, content);
       const originalContent = content;
 
       // When I run `fspec update-scenario broken "Some scenario" "New name"`
@@ -355,7 +355,7 @@ describe('Feature: Update Scenario Name', () => {
         feature: 'broken',
         oldName: 'Some scenario',
         newName: 'New name',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 1
@@ -365,7 +365,7 @@ describe('Feature: Update Scenario Name', () => {
       expect(result.error).toMatch(/invalid.*syntax/i);
 
       // And the file should remain unchanged
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
       expect(updatedContent).toBe(originalContent);
     });
   });
@@ -374,27 +374,27 @@ describe('Feature: Update Scenario Name', () => {
     it('should handle full paths', async () => {
       // Given I have a feature file "spec/features/auth/login.feature"
       // And the feature has a scenario "Login flow"
-      await mkdir(join(testDir, 'spec/features/auth'), { recursive: true });
+      await ensureTestDirectory(join(setup.testDir, 'spec/features/auth'));
       const content = `Feature: Login
 
   Scenario: Login flow
     Given test
 `;
-      const filePath = join(testDir, 'spec/features/auth/login.feature');
-      await writeFile(filePath, content);
+      const filePath = join(setup.testDir, 'spec/features/auth/login.feature');
+      await writeTextFile(filePath, content);
 
       // When I run `fspec update-scenario spec/features/auth/login.feature "Login flow" "Authentication workflow"`
       const result = await updateScenario({
         feature: 'spec/features/auth/login.feature',
         oldName: 'Login flow',
         newName: 'Authentication workflow',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
 
-      const updatedContent = await readFile(filePath, 'utf-8');
+      const updatedContent = await readTextFile(filePath);
 
       // And the scenario should be renamed
       expect(updatedContent).toContain('Scenario: Authentication workflow');

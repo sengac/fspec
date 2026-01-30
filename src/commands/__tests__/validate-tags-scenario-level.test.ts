@@ -4,20 +4,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
 import { join } from 'path';
 import { validateTags } from '../validate-tags';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  createTestFile,
+  createJsonTestFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 
 describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('validate-tags-scenario-level');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Validation rejects scenario-level work unit ID tags', () => {
@@ -26,8 +33,8 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
       // (validation is always enabled)
 
       // And I have a feature file with scenario-level work unit ID tag @AUTH-001
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
+      await ensureTestDirectory(join(setup.testDir, 'spec'));
 
       const featureContent = `@critical
 Feature: Test Feature
@@ -44,8 +51,9 @@ Feature: Test Feature
     Then it should fail
 `;
 
-      await writeFile(
-        join(testDir, 'spec/features/test-feature.feature'),
+      await createTestFile(
+        join(setup.testDir, 'spec/features'),
+        'test-feature.feature',
         featureContent
       );
 
@@ -88,13 +96,14 @@ Feature: Test Feature
         references: [],
       };
 
-      await writeFile(
-        join(testDir, 'spec/tags.json'),
-        JSON.stringify(tagsData, null, 2)
+      await createJsonTestFile(
+        join(setup.testDir, 'spec'),
+        'tags.json',
+        tagsData
       );
 
       // When I run `fspec validate-tags`
-      const result = await validateTags({ cwd: testDir });
+      const result = await validateTags({ cwd: setup.testDir });
 
       // Then the validation should fail
       expect(result.invalidCount).toBeGreaterThan(0);
@@ -128,8 +137,8 @@ Feature: Test Feature
 
     it('should pass validation when work unit ID tags are only at feature level', async () => {
       // Given I have a feature file with work unit ID tag at feature level only
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
+      await ensureTestDirectory(join(setup.testDir, 'spec'));
 
       const featureContent = `@critical
 @AUTH-002
@@ -146,8 +155,9 @@ Feature: Valid Feature
     Then it should pass
 `;
 
-      await writeFile(
-        join(testDir, 'spec/features/valid-feature.feature'),
+      await createTestFile(
+        join(setup.testDir, 'spec/features'),
+        'valid-feature.feature',
         featureContent
       );
 
@@ -190,13 +200,14 @@ Feature: Valid Feature
         references: [],
       };
 
-      await writeFile(
-        join(testDir, 'spec/tags.json'),
-        JSON.stringify(tagsData, null, 2)
+      await createJsonTestFile(
+        join(setup.testDir, 'spec'),
+        'tags.json',
+        tagsData
       );
 
       // When I run `fspec validate-tags`
-      const result = await validateTags({ cwd: testDir });
+      const result = await validateTags({ cwd: setup.testDir });
 
       // Then the validation should pass (or only have warnings about unregistered tags)
       // Work unit ID tags at feature level are allowed

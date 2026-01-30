@@ -6,23 +6,23 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { tmpdir } from 'os';
 import { join } from 'path';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'fs/promises';
+import { writeFile, mkdir, readFile } from 'fs/promises';
 import { discoverFoundation } from '../discover-foundation';
 import { createStory } from '../create-story';
 import { createBug } from '../create-bug';
 import { createTask } from '../create-task';
+import { setupFoundationTest, type FoundationTestSetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: discover-foundation --finalize creates work unit without adding to states array', () => {
-  let testDir: string;
+  let setup: FoundationTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-bug-078-'));
-    await mkdir(join(testDir, 'spec'), { recursive: true });
-
-    // Create foundation.json (required by create-story, create-bug, create-task)
-    const foundationPath = join(testDir, 'spec', 'foundation.json');
+    setup = await setupFoundationTest('bug-078');
+    
+    // The foundation.json is already created by setupFoundationTest
+    // but we need to overwrite it with a simpler structure for this test
+    const foundationPath = join(setup.testDir, 'spec', 'foundation.json');
     await writeFile(
       foundationPath,
       JSON.stringify({ project: { name: 'test' } }, null, 2)
@@ -30,13 +30,13 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: discover-foundation --finalize creates work unit without states array entry', () => {
     it('should add FOUND work unit to both workUnits object AND states.backlog array', async () => {
       // @step Given I have a project with foundation.json.draft file
-      const draftPath = join(testDir, 'spec', 'foundation.json.draft');
+      const draftPath = join(setup.testDir, 'spec', 'foundation.json.draft');
       const foundation = {
         version: '2.0.0',
         project: {
@@ -62,7 +62,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       await writeFile(draftPath, JSON.stringify(foundation, null, 2));
 
       // Create work-units.json and prefixes.json
-      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
+      const workUnitsPath = join(setup.testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsPath,
         JSON.stringify(
@@ -83,7 +83,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
         )
       );
 
-      const prefixesPath = join(testDir, 'spec', 'prefixes.json');
+      const prefixesPath = join(setup.testDir, 'spec', 'prefixes.json');
       await writeFile(
         prefixesPath,
         JSON.stringify(
@@ -95,7 +95,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
 
       // @step When I run `fspec discover-foundation --finalize`
       await discoverFoundation({
-        cwd: testDir,
+        cwd: setup.testDir,
         finalize: true,
         draftPath: draftPath, // Use absolute path to test directory
       });
@@ -127,7 +127,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
   describe('Scenario: create-story, create-bug, create-task must call createWorkUnit()', () => {
     it('should add all work units to states.backlog array', async () => {
       // @step Given I have registered prefixes for story, bug, and task work units
-      const prefixesPath = join(testDir, 'spec', 'prefixes.json');
+      const prefixesPath = join(setup.testDir, 'spec', 'prefixes.json');
       await writeFile(
         prefixesPath,
         JSON.stringify(
@@ -143,7 +143,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
         )
       );
 
-      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
+      const workUnitsPath = join(setup.testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsPath,
         JSON.stringify(
@@ -165,7 +165,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       );
 
       // @step When I run `fspec create-story TEST "Test Story"`
-      await createStory({ prefix: 'TEST', title: 'Test Story', cwd: testDir });
+      await createStory({ prefix: 'TEST', title: 'Test Story', cwd: setup.testDir });
 
       let workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       let workUnitsData = JSON.parse(workUnitsContent);
@@ -180,7 +180,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       expect(workUnitsData.states.backlog).toContain('TEST-001');
 
       // @step When I run `fspec create-bug BUG "Test Bug"`
-      await createBug({ prefix: 'BUG', title: 'Test Bug', cwd: testDir });
+      await createBug({ prefix: 'BUG', title: 'Test Bug', cwd: setup.testDir });
 
       workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       workUnitsData = JSON.parse(workUnitsContent);
@@ -195,7 +195,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       expect(workUnitsData.states.backlog).toContain('BUG-001');
 
       // @step When I run `fspec create-task TASK "Test Task"`
-      await createTask({ prefix: 'TASK', title: 'Test Task', cwd: testDir });
+      await createTask({ prefix: 'TASK', title: 'Test Task', cwd: setup.testDir });
 
       workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       workUnitsData = JSON.parse(workUnitsContent);
@@ -222,13 +222,13 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       // This test verifies the DRY principle by checking that after refactoring,
       // all commands properly add work units to states array (proof they use createWorkUnit)
 
-      const prefixesPath = join(testDir, 'spec', 'prefixes.json');
+      const prefixesPath = join(setup.testDir, 'spec', 'prefixes.json');
       await writeFile(
         prefixesPath,
         JSON.stringify({ prefixes: { TEST: { description: 'Test' } } }, null, 2)
       );
 
-      const workUnitsPath = join(testDir, 'spec', 'work-units.json');
+      const workUnitsPath = join(setup.testDir, 'spec', 'work-units.json');
       await writeFile(
         workUnitsPath,
         JSON.stringify(
@@ -250,7 +250,7 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       );
 
       // Create work unit via create-story (which should use createWorkUnit)
-      await createStory({ prefix: 'TEST', title: 'Test Story', cwd: testDir });
+      await createStory({ prefix: 'TEST', title: 'Test Story', cwd: setup.testDir });
 
       const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       const workUnitsData = JSON.parse(workUnitsContent);

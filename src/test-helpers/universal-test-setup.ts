@@ -149,12 +149,55 @@ export async function registerCommonTestPrefixes(
 }
 
 /**
- * Legacy adapter for tests that need to be gradually migrated.
- * Use this to easily replace mkdtemp patterns.
+ * Git repository test setup with all necessary configurations.
+ * Use this for tests that need git operations.
  */
-export async function createLegacyTestDir(): Promise<{
-  testDir: string;
-  cleanup: () => Promise<void>;
-}> {
-  return await setupTestDirectory('legacy-test');
+export interface GitTestSetup extends TestDirectorySetup {
+  initGit: () => Promise<void>;
+}
+
+export async function setupGitTest(testName: string): Promise<GitTestSetup> {
+  const baseSetup = await setupTestDirectory(testName);
+  
+  const initGit = async () => {
+    const git = await import('isomorphic-git');
+    const fs = await import('fs');
+    
+    // Initialize git repository
+    await git.init({ fs, dir: baseSetup.testDir, defaultBranch: 'main' });
+    
+    // Configure git
+    await git.setConfig({
+      fs,
+      dir: baseSetup.testDir,
+      path: 'user.name',
+      value: 'Test User',
+    });
+    await git.setConfig({
+      fs,
+      dir: baseSetup.testDir,
+      path: 'user.email',
+      value: 'test@example.com',
+    });
+    
+    // Create initial commit so HEAD exists
+    const { writeFile } = await import('fs/promises');
+    const { join } = await import('path');
+    await writeFile(join(baseSetup.testDir, 'README.md'), '# Test Project');
+    await git.add({ fs, dir: baseSetup.testDir, filepath: 'README.md' });
+    await git.commit({
+      fs,
+      dir: baseSetup.testDir,
+      message: 'Initial commit',
+      author: {
+        name: 'Test User',
+        email: 'test@example.com',
+      },
+    });
+  };
+  
+  return {
+    ...baseSetup,
+    initGit,
+  };
 }

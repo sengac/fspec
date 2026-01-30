@@ -3,22 +3,22 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import type { WorkUnitsData } from '../../types';
+import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Coverage validation missing for implementing→validating transition', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-coverage-validation-'));
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('coverage-validation');
+    await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Block implementing→validating when implementation coverage is missing', () => {
@@ -68,7 +68,7 @@ describe('Feature: Coverage validation missing for implementing→validating tra
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -88,7 +88,7 @@ Feature: Test Feature
 `;
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'test-feature.feature'),
+        join(setup.testDir, 'spec', 'features', 'test-feature.feature'),
         featureContent
       );
 
@@ -118,14 +118,14 @@ Feature: Test Feature
       };
 
       await writeFile(
-        join(testDir, 'spec', 'features', 'test-feature.feature.coverage'),
+        join(setup.testDir, 'spec', 'features', 'test-feature.feature.coverage'),
         JSON.stringify(coverageData, null, 2)
       );
 
       // Create test file (must exist for validation)
-      await mkdir(join(testDir, 'src', '__tests__'), { recursive: true });
+      await mkdir(join(setup.testDir, 'src', '__tests__'), { recursive: true });
       await writeFile(
-        join(testDir, 'src', '__tests__', 'test.test.ts'),
+        join(setup.testDir, 'src', '__tests__', 'test.test.ts'),
         `
 describe('Test scenario', () => {
   it('should test', () => {
@@ -142,7 +142,7 @@ describe('Test scenario', () => {
       const result = await updateWorkUnitStatus({
         workUnitId: 'TEST-001',
         status: 'validating',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // @step Then the command should fail with error code 1
@@ -156,7 +156,7 @@ describe('Test scenario', () => {
 
       // @step And the work unit status should remain "implementing"
       const workUnitsAfter = JSON.parse(
-        await readFile(join(testDir, 'spec', 'work-units.json'), 'utf-8')
+        await readFile(join(setup.testDir, 'spec', 'work-units.json'), 'utf-8')
       ) as WorkUnitsData;
 
       expect(workUnitsAfter.workUnits['TEST-001'].status).toBe('implementing');

@@ -1,22 +1,22 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdir, writeFile, rm, readFile } from 'fs/promises';
 import { join } from 'path';
 import { showAcceptanceCriteria } from '../show-acceptance-criteria';
 
-import {
-  createTempTestDir,
-  removeTempTestDir,
-} from '../../test-helpers/temp-directory';
+import { 
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
 describe('Feature: Show Acceptance Criteria by Tag', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await createTempTestDir('show-acs');
-    await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+    setup = await setupTestDirectory('show-acs');
+    await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
   });
 
   afterEach(async () => {
-    await removeTempTestDir(testDir);
+    await setup.cleanup();
   });
 
   describe('Scenario: Show acceptance criteria for single tag', () => {
@@ -35,12 +35,12 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeFile(join(testDir, 'spec/features/test.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/test.feature'), content);
 
       // When I run `fspec show-acceptance-criteria --tag=@critical`
       const result = await showAcceptanceCriteria({
         tags: ['@critical'],
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -63,8 +63,8 @@ Feature: Test Feature
   describe('Scenario: Show acceptance criteria with multiple tags', () => {
     it('should only show features with all tags', async () => {
       // Given I have features tagged @critical @critical
-      await writeFile(
-        join(testDir, 'spec/features/both.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/both.feature'),
         `@critical @critical
 Feature: Both Tags
 
@@ -74,8 +74,8 @@ Feature: Both Tags
       );
 
       // And I have features with only @critical
-      await writeFile(
-        join(testDir, 'spec/features/one.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/one.feature'),
         `@critical
 Feature: One Tag
 
@@ -87,7 +87,7 @@ Feature: One Tag
       // When I run `fspec show-acceptance-criteria --tag=@critical --tag=@critical`
       const result = await showAcceptanceCriteria({
         tags: ['@critical', '@critical'],
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show all features with @critical tag
@@ -116,13 +116,13 @@ Feature: Login
     When I enter valid credentials
     Then I should be logged in
 `;
-      await writeFile(join(testDir, 'spec/features/login.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/login.feature'), content);
 
       // When I run `fspec show-acceptance-criteria --tag=@auth --format=markdown`
       const result = await showAcceptanceCriteria({
         tags: ['@auth'],
         format: 'markdown',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.success).toBe(true);
@@ -141,8 +141,8 @@ Feature: Login
   describe('Scenario: Format output as JSON', () => {
     it('should return valid JSON structure', async () => {
       // Given I have feature files tagged @critical
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         `@critical
 Feature: Test
 
@@ -155,7 +155,7 @@ Feature: Test
       const result = await showAcceptanceCriteria({
         tags: ['@critical'],
         format: 'json',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should be valid JSON
@@ -175,8 +175,8 @@ Feature: Test
   describe('Scenario: Show acceptance criteria when no features match', () => {
     it('should show message when no features found', async () => {
       // Given I have feature files without @deprecated tag
-      await writeFile(
-        join(testDir, 'spec/features/active.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/active.feature'),
         `@active
 Feature: Active
 
@@ -188,7 +188,7 @@ Feature: Active
       // When I run `fspec show-acceptance-criteria --tag=@deprecated`
       const result = await showAcceptanceCriteria({
         tags: ['@deprecated'],
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should exit with code 0
@@ -204,8 +204,8 @@ Feature: Active
   describe('Scenario: Include feature-level tags in output', () => {
     it('should show feature tags', async () => {
       // Given I have a feature file with tags @critical @critical @auth
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         `@critical @critical @auth
 Feature: Test
 
@@ -217,7 +217,7 @@ Feature: Test
       // When I run `fspec show-acceptance-criteria --tag=@critical --format=text`
       const result = await showAcceptanceCriteria({
         tags: ['@critical'],
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show the feature tags
@@ -231,8 +231,8 @@ Feature: Test
   describe('Scenario: Handle features with no background', () => {
     it('should handle missing background section', async () => {
       // Given I have a feature file without a Background section
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         `@test
 Feature: No Background
 
@@ -244,7 +244,7 @@ Feature: No Background
       // When I run `fspec show-acceptance-criteria --tag=@test`
       const result = await showAcceptanceCriteria({
         tags: ['@test'],
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show the feature
@@ -261,8 +261,8 @@ Feature: No Background
   describe('Scenario: Handle features with no scenarios', () => {
     it('should show feature with no scenarios message', async () => {
       // Given I have a feature file with only a Feature line
-      await writeFile(
-        join(testDir, 'spec/features/empty.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/empty.feature'),
         `@empty
 Feature: Empty Feature
 `
@@ -271,7 +271,7 @@ Feature: Empty Feature
       // When I run `fspec show-acceptance-criteria --tag=@empty`
       const result = await showAcceptanceCriteria({
         tags: ['@empty'],
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show the feature name
@@ -285,8 +285,8 @@ Feature: Empty Feature
   describe('Scenario: Export to file with --output option', () => {
     it('should write to specified file', async () => {
       // Given I have features tagged @critical
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         `@critical
 Feature: Test
 
@@ -296,16 +296,16 @@ Feature: Test
       );
 
       // When I run `fspec show-acceptance-criteria --tag=@critical --format=markdown --output=phase1-acs.md`
-      const outputPath = join(testDir, 'phase1-acs.md');
+      const outputPath = join(setup.testDir, 'phase1-acs.md');
       const result = await showAcceptanceCriteria({
         tags: ['@critical'],
         format: 'markdown',
         output: outputPath,
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then a file "phase1-acs.md" should be created
-      const fileContent = await readFile(outputPath, 'utf-8');
+      const fileContent = await readTextFile(outputPath, 'utf-8');
       expect(fileContent).toBeDefined();
 
       // And the file should contain all acceptance criteria in markdown format
@@ -320,8 +320,8 @@ Feature: Test
   describe('Scenario: Show architecture notes from doc strings', () => {
     it('should include architecture notes', async () => {
       // Given I have a feature with architecture notes in triple-quoted doc string
-      await writeFile(
-        join(testDir, 'spec/features/test.feature'),
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
         `@test
 Feature: With Architecture
 
@@ -337,7 +337,7 @@ Feature: With Architecture
       );
 
       // When I run `fspec show-acceptance-criteria --format=text`
-      const result = await showAcceptanceCriteria({ cwd: testDir });
+      const result = await showAcceptanceCriteria({ cwd: setup.testDir });
 
       // Then the architecture notes should be displayed
       expect(result.features[0].description).toBeDefined();
@@ -353,8 +353,8 @@ Feature: With Architecture
         for (let j = 1; j <= 3; j++) {
           content += `  Scenario: Scenario ${j}\n    Given test\n\n`;
         }
-        await writeFile(
-          join(testDir, 'spec/features', `f${i}.feature`),
+        await writeTextFile(
+          join(setup.testDir, 'spec/features', `f${i}.feature`),
           content
         );
       }
@@ -362,7 +362,7 @@ Feature: With Architecture
       // When I run `fspec show-acceptance-criteria --tag=@critical`
       const result = await showAcceptanceCriteria({
         tags: ['@critical'],
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the output should show "Showing acceptance criteria for 15 scenarios"
@@ -386,13 +386,13 @@ Feature: Step Indentation Test
     And I should see another outcome
     But I should not see an error
 `;
-      await writeFile(join(testDir, 'spec/features/steps.feature'), content);
+      await writeTextFile(join(setup.testDir, 'spec/features/steps.feature'), content);
 
       // When I run `fspec show-acceptance-criteria --format=text`
       const result = await showAcceptanceCriteria({
         tags: ['@test'],
         format: 'text',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then Given/When/Then steps should be displayed prominently
