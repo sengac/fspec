@@ -108,7 +108,12 @@ const migration001: Migration = {
       // Align questions with ItemWithId structure
       if (workUnit.questions && Array.isArray(workUnit.questions)) {
         workUnit.questions = workUnit.questions.map((q: any, index: number) => {
-          if ('id' in q && 'deleted' in q && 'createdAt' in q) {
+          if (
+            typeof q === 'object' &&
+            'id' in q &&
+            'deleted' in q &&
+            'createdAt' in q
+          ) {
             return q; // Already migrated
           }
           return {
