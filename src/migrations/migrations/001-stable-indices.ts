@@ -14,7 +14,7 @@
 import type { Migration, WorkUnitsData } from '../types';
 
 const migration001: Migration = {
-  version: '0.7.0',
+  version: '0.7.1',
   name: 'stable-indices',
   description: 'Convert string arrays to objects with stable IDs',
 

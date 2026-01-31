@@ -5,6 +5,7 @@
  * and eliminates code duplication across all test files.
  */
 
+import { join } from 'path';
 import { createTempTestDir, removeTempTestDir } from './temp-directory';
 import {
   createWorkUnitTestEnvironment,
@@ -18,6 +19,8 @@ import { createTestFiles } from './test-file-operations';
  */
 export interface TestDirectorySetup {
   testDir: string;
+  specDir: string;
+  workUnitsFile: string;
   cleanup: () => Promise<void>;
 }
 
@@ -25,9 +28,35 @@ export async function setupTestDirectory(
   testName: string
 ): Promise<TestDirectorySetup> {
   const testDir = await createTempTestDir(testName);
+  const specDir = join(testDir, 'spec');
+  const workUnitsFile = join(specDir, 'work-units.json');
+
+  // Create basic structure
+  await createTestFiles(testDir, {
+    'spec/work-units.json': {
+      data: {
+        meta: {
+          version: '1.0.0',
+          lastUpdated: new Date().toISOString(),
+        },
+        workUnits: {},
+        states: {
+          backlog: [],
+          specifying: [],
+          testing: [],
+          implementing: [],
+          validating: [],
+          done: [],
+          blocked: [],
+        },
+      },
+    },
+  });
 
   return {
     testDir,
+    specDir,
+    workUnitsFile,
     cleanup: async () => await removeTempTestDir(testDir),
   };
 }
@@ -158,14 +187,14 @@ export interface GitTestSetup extends TestDirectorySetup {
 
 export async function setupGitTest(testName: string): Promise<GitTestSetup> {
   const baseSetup = await setupTestDirectory(testName);
-  
+
   const initGit = async () => {
     const git = await import('isomorphic-git');
     const fs = await import('fs');
-    
+
     // Initialize git repository
     await git.init({ fs, dir: baseSetup.testDir, defaultBranch: 'main' });
-    
+
     // Configure git
     await git.setConfig({
       fs,
@@ -179,7 +208,7 @@ export async function setupGitTest(testName: string): Promise<GitTestSetup> {
       path: 'user.email',
       value: 'test@example.com',
     });
-    
+
     // Create initial commit so HEAD exists
     const { writeFile } = await import('fs/promises');
     const { join } = await import('path');
@@ -195,7 +224,7 @@ export async function setupGitTest(testName: string): Promise<GitTestSetup> {
       },
     });
   };
-  
+
   return {
     ...baseSetup,
     initGit,

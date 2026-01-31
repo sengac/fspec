@@ -8,115 +8,118 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile, readFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import { createCheckpoint, restoreCheckpoint } from '../git-checkpoint';
 import { getCheckpointFileDiff } from '../../git/diff';
+import {
+  setupGitTest,
+  type GitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe("Feature: Checkpoint restore shows file not found but doesn't delete files added after checkpoint", () => {
-  let testDir: string;
+  let setup: GitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-checkpoint-delete-test-'));
+    setup = await setupGitTest('git-checkpoint-restore-deletes-new-files');
 
     // Initialize git repository
-    await git.init({ fs, dir: testDir, defaultBranch: 'main' });
+    await git.init({ fs, dir: setup.testDir, defaultBranch: 'main' });
 
     // Configure git
     await git.setConfig({
       fs,
-      dir: testDir,
+      dir: setup.testDir,
       path: 'user.name',
       value: 'Test User',
     });
     await git.setConfig({
       fs,
-      dir: testDir,
+      dir: setup.testDir,
       path: 'user.email',
       value: 'test@example.com',
     });
 
     // Create initial directory structure
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
     // Create work-units.json
     await writeFile(
-      join(testDir, 'spec', 'work-units.json'),
+      join(setup.testDir, 'spec', 'work-units.json'),
       '{"version":"1.0","workUnits":{}}'
     );
-    await git.add({ fs, dir: testDir, filepath: 'spec/work-units.json' });
+    await git.add({ fs, dir: setup.testDir, filepath: 'spec/work-units.json' });
     await git.commit({
       fs,
-      dir: testDir,
+      dir: setup.testDir,
       message: 'Initialize fspec',
       author: { name: 'Test User', email: 'test@example.com' },
     });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Restore checkpoint deletes files added after checkpoint creation', () => {
     it('should delete files added after checkpoint and restore original files', async () => {
       // @step Given a checkpoint "baseline" was created containing files "A.txt" and "B.txt"
-      await writeFile(join(testDir, 'A.txt'), 'Content A');
-      await writeFile(join(testDir, 'B.txt'), 'Content B');
+      await writeFile(join(setup.testDir, 'A.txt'), 'Content A');
+      await writeFile(join(setup.testDir, 'B.txt'), 'Content B');
 
       // Create checkpoint with uncommitted files
       const checkpointResult = await createCheckpoint({
         workUnitId: 'TEST-001',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
       expect(checkpointResult.success).toBe(true);
 
       // Now commit the checkpoint to HEAD
-      await git.add({ fs, dir: testDir, filepath: 'A.txt' });
-      await git.add({ fs, dir: testDir, filepath: 'B.txt' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'A.txt' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'B.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Add A and B',
         author: { name: 'Test User', email: 'test@example.com' },
       });
 
       // @step And a new file "C.txt" was added after the checkpoint
       await writeFile(
-        join(testDir, 'C.txt'),
+        join(setup.testDir, 'C.txt'),
         'Content C - added after checkpoint'
       );
-      await git.add({ fs, dir: testDir, filepath: 'C.txt' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'C.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Add C',
         author: { name: 'Test User', email: 'test@example.com' },
       });
 
       // Verify C.txt exists before restore
-      const cExists = fs.existsSync(join(testDir, 'C.txt'));
+      const cExists = fs.existsSync(join(setup.testDir, 'C.txt'));
       expect(cExists).toBe(true);
 
       // @step When I restore checkpoint "baseline"
       const restoreResult = await restoreCheckpoint({
         workUnitId: 'TEST-001',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
         force: true, // Force to skip conflict detection for test
       });
 
       // @step Then file "C.txt" should be deleted from the working directory
-      const cExistsAfterRestore = fs.existsSync(join(testDir, 'C.txt'));
+      const cExistsAfterRestore = fs.existsSync(join(setup.testDir, 'C.txt'));
       expect(cExistsAfterRestore).toBe(false);
 
       // @step And files "A.txt" and "B.txt" should be restored to their checkpoint state
-      const aContent = await readFile(join(testDir, 'A.txt'), 'utf-8');
-      const bContent = await readFile(join(testDir, 'B.txt'), 'utf-8');
+      const aContent = await readFile(join(setup.testDir, 'A.txt'), 'utf-8');
+      const bContent = await readFile(join(setup.testDir, 'B.txt'), 'utf-8');
       expect(aContent).toBe('Content A');
       expect(bContent).toBe('Content B');
 
@@ -128,22 +131,22 @@ describe("Feature: Checkpoint restore shows file not found but doesn't delete fi
   describe('Scenario: Diff viewer shows clear deletion message for files not in checkpoint', () => {
     it('should show "Will be deleted on restore" message instead of "File not found in checkpoint"', async () => {
       // @step Given a checkpoint "baseline" exists
-      await writeFile(join(testDir, 'existing.txt'), 'Existing file');
+      await writeFile(join(setup.testDir, 'existing.txt'), 'Existing file');
 
       // Create checkpoint with uncommitted file
       const checkpointResult = await createCheckpoint({
         workUnitId: 'TEST-002',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
       expect(checkpointResult.success).toBe(true);
 
       // Commit the file to HEAD
-      await git.add({ fs, dir: testDir, filepath: 'existing.txt' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'existing.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Add existing file',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -152,22 +155,29 @@ describe("Feature: Checkpoint restore shows file not found but doesn't delete fi
       const checkpointRef = `refs/fspec-checkpoints/TEST-002/baseline`;
       const checkpointOid = await git.resolveRef({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         ref: checkpointRef,
       });
 
       // @step And file "D.txt" exists in HEAD but not in the checkpoint
-      await writeFile(join(testDir, 'D.txt'), 'File D - not in checkpoint');
-      await git.add({ fs, dir: testDir, filepath: 'D.txt' });
+      await writeFile(
+        join(setup.testDir, 'D.txt'),
+        'File D - not in checkpoint'
+      );
+      await git.add({ fs, dir: setup.testDir, filepath: 'D.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Add D after checkpoint',
         author: { name: 'Test User', email: 'test@example.com' },
       });
 
       // @step When I view the checkpoint diff for "D.txt"
-      const diff = await getCheckpointFileDiff(testDir, 'D.txt', checkpointRef);
+      const diff = await getCheckpointFileDiff(
+        setup.testDir,
+        'D.txt',
+        checkpointRef
+      );
 
       // @step Then the diff should show "Will be deleted on restore" instead of "File not found in checkpoint"
       expect(diff).toBeDefined();
@@ -182,76 +192,85 @@ describe("Feature: Checkpoint restore shows file not found but doesn't delete fi
   describe('Scenario: Restore checkpoint deletes multiple new files and restores modified files', () => {
     it('should delete multiple new files and restore modified files to checkpoint state', async () => {
       // @step Given a checkpoint "before-changes" was created
-      await writeFile(join(testDir, 'main.ts'), 'const main = "original";');
-      await writeFile(join(testDir, 'config.json'), '{"version": "1.0"}');
+      await writeFile(
+        join(setup.testDir, 'main.ts'),
+        'const main = "original";'
+      );
+      await writeFile(join(setup.testDir, 'config.json'), '{"version": "1.0"}');
 
       // Create checkpoint with uncommitted files
       const checkpointResult = await createCheckpoint({
         workUnitId: 'TEST-003',
         checkpointName: 'before-changes',
-        cwd: testDir,
+        cwd: setup.testDir,
         includeUntracked: true,
       });
       expect(checkpointResult.success).toBe(true);
 
       // Commit the files to HEAD
-      await git.add({ fs, dir: testDir, filepath: 'main.ts' });
-      await git.add({ fs, dir: testDir, filepath: 'config.json' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'main.ts' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'config.json' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Initial state',
         author: { name: 'Test User', email: 'test@example.com' },
       });
 
       // @step And 3 new files were added after checkpoint: "new-feature.ts", "test.spec.ts", "README-draft.md"
       await writeFile(
-        join(testDir, 'new-feature.ts'),
+        join(setup.testDir, 'new-feature.ts'),
         'export const newFeature = true;'
       );
       await writeFile(
-        join(testDir, 'test.spec.ts'),
+        join(setup.testDir, 'test.spec.ts'),
         'describe("test", () => {});'
       );
-      await writeFile(join(testDir, 'README-draft.md'), '# Draft README');
-      await git.add({ fs, dir: testDir, filepath: 'new-feature.ts' });
-      await git.add({ fs, dir: testDir, filepath: 'test.spec.ts' });
-      await git.add({ fs, dir: testDir, filepath: 'README-draft.md' });
+      await writeFile(join(setup.testDir, 'README-draft.md'), '# Draft README');
+      await git.add({ fs, dir: setup.testDir, filepath: 'new-feature.ts' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'test.spec.ts' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'README-draft.md' });
 
       // @step And 2 files were modified after checkpoint: "main.ts", "config.json"
-      await writeFile(join(testDir, 'main.ts'), 'const main = "modified";');
-      await writeFile(join(testDir, 'config.json'), '{"version": "2.0"}');
-      await git.add({ fs, dir: testDir, filepath: 'main.ts' });
-      await git.add({ fs, dir: testDir, filepath: 'config.json' });
+      await writeFile(
+        join(setup.testDir, 'main.ts'),
+        'const main = "modified";'
+      );
+      await writeFile(join(setup.testDir, 'config.json'), '{"version": "2.0"}');
+      await git.add({ fs, dir: setup.testDir, filepath: 'main.ts' });
+      await git.add({ fs, dir: setup.testDir, filepath: 'config.json' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Add new files and modify existing',
         author: { name: 'Test User', email: 'test@example.com' },
       });
 
       // Verify all files exist before restore
-      expect(fs.existsSync(join(testDir, 'new-feature.ts'))).toBe(true);
-      expect(fs.existsSync(join(testDir, 'test.spec.ts'))).toBe(true);
-      expect(fs.existsSync(join(testDir, 'README-draft.md'))).toBe(true);
+      expect(fs.existsSync(join(setup.testDir, 'new-feature.ts'))).toBe(true);
+      expect(fs.existsSync(join(setup.testDir, 'test.spec.ts'))).toBe(true);
+      expect(fs.existsSync(join(setup.testDir, 'README-draft.md'))).toBe(true);
 
       // @step When I restore checkpoint "before-changes"
       const restoreResult = await restoreCheckpoint({
         workUnitId: 'TEST-003',
         checkpointName: 'before-changes',
-        cwd: testDir,
+        cwd: setup.testDir,
         force: true,
       });
 
       // @step Then the 3 new files should be deleted: "new-feature.ts", "test.spec.ts", "README-draft.md"
-      expect(fs.existsSync(join(testDir, 'new-feature.ts'))).toBe(false);
-      expect(fs.existsSync(join(testDir, 'test.spec.ts'))).toBe(false);
-      expect(fs.existsSync(join(testDir, 'README-draft.md'))).toBe(false);
+      expect(fs.existsSync(join(setup.testDir, 'new-feature.ts'))).toBe(false);
+      expect(fs.existsSync(join(setup.testDir, 'test.spec.ts'))).toBe(false);
+      expect(fs.existsSync(join(setup.testDir, 'README-draft.md'))).toBe(false);
 
       // @step And the 2 modified files should be restored to checkpoint state: "main.ts", "config.json"
-      const mainContent = await readFile(join(testDir, 'main.ts'), 'utf-8');
+      const mainContent = await readFile(
+        join(setup.testDir, 'main.ts'),
+        'utf-8'
+      );
       const configContent = await readFile(
-        join(testDir, 'config.json'),
+        join(setup.testDir, 'config.json'),
         'utf-8'
       );
       expect(mainContent).toBe('const main = "original";');

@@ -84,6 +84,10 @@ export async function createWorkUnitTestEnvironment(testDir: string): Promise<{
   const files = await createTestFiles(testDir, {
     'spec/work-units.json': {
       data: {
+        meta: {
+          version: '1.0.0',
+          lastUpdated: new Date().toISOString(),
+        },
         workUnits: {},
         states: {
           backlog: [],

@@ -1,20 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { listTags } from '../list-tags';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: List Registered Tags from Registry', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('list-tags');
     originalCwd = process.cwd();
-    process.chdir(testDir);
+    process.chdir(setup.testDir);
 
     // Create tags.json with sample tags
-    const specDir = join(testDir, 'spec');
+    const specDir = setup.specDir;
     await mkdir(specDir, { recursive: true });
 
     const tagsJson = {
@@ -96,14 +99,14 @@ describe('Feature: List Registered Tags from Registry', () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: List all registered tags', () => {
     it('should display tags grouped by category', async () => {
       // Given I have a tags.json file with tags in multiple categories
       // When I run `fspec list-tags`
-      const result = await listTags({ cwd: testDir });
+      const result = await listTags({ cwd: setup.testDir });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -130,7 +133,10 @@ describe('Feature: List Registered Tags from Registry', () => {
     it('should only show tags from specified category', async () => {
       // Given I have a tags.json file with tags in multiple categories
       // When I run `fspec list-tags --category="Phase Tags"`
-      const result = await listTags({ category: 'Phase Tags', cwd: testDir });
+      const result = await listTags({
+        category: 'Phase Tags',
+        cwd: setup.testDir,
+      });
 
       // Then the command should exit with code 0
       expect(result.success).toBe(true);
@@ -154,10 +160,10 @@ describe('Feature: List Registered Tags from Registry', () => {
   describe('Scenario: Auto-create tags.json when missing', () => {
     it('should auto-create tags.json with default structure when missing', async () => {
       // Given no tags.json file exists in spec/
-      await rm(join(testDir, 'spec', 'tags.json'));
+      await rm(join(setup.testDir, 'spec', 'tags.json'));
 
       // When I run `fspec list-tags`
-      const result = await listTags({ cwd: testDir });
+      const result = await listTags({ cwd: setup.testDir });
 
       // Then it should succeed
       expect(result.success).toBe(true);
@@ -176,7 +182,7 @@ describe('Feature: List Registered Tags from Registry', () => {
     it('should show count for each category', async () => {
       // Given I have a tags.json file with tags
       // When I run `fspec list-tags`
-      const result = await listTags({ cwd: testDir });
+      const result = await listTags({ cwd: setup.testDir });
 
       // Then the output should show the count for each category
       const phaseTags = result.categories.find(c => c.name === 'Phase Tags');
@@ -198,7 +204,10 @@ describe('Feature: List Registered Tags from Registry', () => {
     it('should display tags alphabetically', async () => {
       // Given I have Phase Tags: "@medium", "@critical", "@high"
       // When I run `fspec list-tags --category="Phase Tags"`
-      const result = await listTags({ category: 'Phase Tags', cwd: testDir });
+      const result = await listTags({
+        category: 'Phase Tags',
+        cwd: setup.testDir,
+      });
 
       // Then the tags should be displayed in alphabetical order
       const tags = result.categories[0].tags.map(t => t.tag);
@@ -211,12 +220,12 @@ describe('Feature: List Registered Tags from Registry', () => {
       // Given I have a tags.json file
       // When I run `fspec list-tags --category="Invalid Category"`
       await expect(
-        listTags({ category: 'Invalid Category', cwd: testDir })
+        listTags({ category: 'Invalid Category', cwd: setup.testDir })
       ).rejects.toThrow();
 
       // Then the error should contain available categories
       try {
-        await listTags({ category: 'Invalid Category', cwd: testDir });
+        await listTags({ category: 'Invalid Category', cwd: setup.testDir });
       } catch (error: any) {
         expect(error.message).toContain('Category not found');
         expect(error.message).toContain('Invalid Category');
@@ -281,12 +290,12 @@ describe('Feature: List Registered Tags from Registry', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'tags.json'),
+        join(setup.testDir, 'spec', 'tags.json'),
         JSON.stringify(minimalTags, null, 2)
       );
 
       // When I run `fspec list-tags`
-      const result = await listTags({ cwd: testDir });
+      const result = await listTags({ cwd: setup.testDir });
 
       // Then the output should show all category headers
       expect(result.categories.map(c => c.name)).toContain('Phase Tags');
@@ -354,12 +363,12 @@ describe('Feature: List Registered Tags from Registry', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'tags.json'),
+        join(setup.testDir, 'spec', 'tags.json'),
         JSON.stringify(longDescTags, null, 2)
       );
 
       // When I run `fspec list-tags`
-      const result = await listTags({ cwd: testDir });
+      const result = await listTags({ cwd: setup.testDir });
 
       // Then the description should be displayed without truncation
       const technicalTags = result.categories.find(
@@ -379,7 +388,7 @@ describe('Feature: List Registered Tags from Registry', () => {
       // When I run `fspec list-tags --category="Feature Group Tags"`
       const categoryResult = await listTags({
         category: 'Feature Group Tags',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then I should see all available feature group tags
@@ -390,7 +399,7 @@ describe('Feature: List Registered Tags from Registry', () => {
       expect(tags).toContain('@validation');
 
       // And when I run `fspec list-tags`
-      const allResult = await listTags({ cwd: testDir });
+      const allResult = await listTags({ cwd: setup.testDir });
 
       // Then I can see the complete tag vocabulary organized by category
       expect(allResult.categories.length).toBeGreaterThan(1);
@@ -402,7 +411,7 @@ describe('Feature: List Registered Tags from Registry', () => {
     it('should show tags that validate-tags will accept', async () => {
       // Given I have tags registered in tags.json
       // When I run `fspec list-tags` and see tag "@custom-tag"
-      const result = await listTags({ cwd: testDir });
+      const result = await listTags({ cwd: setup.testDir });
 
       // Then these tags should be recognized by validate-tags
       const allTags = result.categories.flatMap(c => c.tags.map(t => t.tag));
@@ -419,7 +428,7 @@ describe('Feature: List Registered Tags from Registry', () => {
     it('should load tags from tags.json', async () => {
       // Given I have a valid tags.json file with multiple categories
       // When I run `fspec list-tags`
-      const result = await listTags({ cwd: testDir });
+      const result = await listTags({ cwd: setup.testDir });
 
       // Then the command should load tags from spec/tags.json
       expect(result.success).toBe(true);

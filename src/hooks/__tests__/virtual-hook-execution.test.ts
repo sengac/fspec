@@ -6,24 +6,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, writeFile, mkdir } from 'fs/promises';
+import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import { runCommandWithHooks } from '../../hooks/integration';
 import { showWorkUnit } from '../../commands/show-work-unit';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Virtual hook execution integration', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-virtual-exec-test-'));
-    await mkdir(join(testDir, 'spec', 'hooks', '.virtual'), {
+    setup = await setupWorkUnitTest('virtual-hook-execution');
+    await mkdir(join(setup.testDir, 'spec', 'hooks', '.virtual'), {
       recursive: true,
     });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Blocking virtual hook prevents workflow transition until fixed', () => {
@@ -53,7 +56,7 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -64,7 +67,7 @@ describe('Feature: Virtual hook execution integration', () => {
         async () => {
           return { success: true };
         },
-        testDir
+        setup.testDir
       );
 
       // Then: Command should execute but exit code should be 1 (hook failure)
@@ -103,13 +106,13 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // Create empty hooks config to ensure hook system is initialized
       await writeFile(
-        join(testDir, 'spec', 'fspec-hooks.json'),
+        join(setup.testDir, 'spec', 'fspec-hooks.json'),
         JSON.stringify({ hooks: {} }, null, 2)
       );
 
@@ -120,7 +123,7 @@ describe('Feature: Virtual hook execution integration', () => {
         async () => {
           return { success: true };
         },
-        testDir
+        setup.testDir
       );
 
       // Then: Command should execute and hook should succeed
@@ -162,7 +165,7 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -179,7 +182,7 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'fspec-hooks.json'),
+        join(setup.testDir, 'spec', 'fspec-hooks.json'),
         JSON.stringify(globalHooksConfig, null, 2)
       );
 
@@ -191,7 +194,7 @@ describe('Feature: Virtual hook execution integration', () => {
         async () => {
           return { success: true };
         },
-        testDir
+        setup.testDir
       );
 
       // Then: Both hooks should execute
@@ -236,7 +239,7 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -247,7 +250,7 @@ describe('Feature: Virtual hook execution integration', () => {
         async () => {
           return { success: true };
         },
-        testDir
+        setup.testDir
       );
 
       // Then: Should return execution failure
@@ -289,7 +292,7 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
@@ -300,7 +303,7 @@ describe('Feature: Virtual hook execution integration', () => {
         async () => {
           return { success: true };
         },
-        testDir
+        setup.testDir
       );
 
       // Then: stderr should be wrapped in <system-reminder> tags
@@ -338,14 +341,14 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When: show-work-unit is called
       const result = await showWorkUnit({
         workUnitId: 'AUTH-001',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: Virtual hook should have gitContext flag
@@ -380,13 +383,13 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // Create empty hooks config
       await writeFile(
-        join(testDir, 'spec', 'fspec-hooks.json'),
+        join(setup.testDir, 'spec', 'fspec-hooks.json'),
         JSON.stringify({ hooks: {} }, null, 2)
       );
 
@@ -397,7 +400,7 @@ describe('Feature: Virtual hook execution integration', () => {
         async () => {
           return { success: true };
         },
-        testDir
+        setup.testDir
       );
 
       // Then: Hook should execute successfully
@@ -448,14 +451,14 @@ describe('Feature: Virtual hook execution integration', () => {
       };
 
       await writeFile(
-        join(testDir, 'spec', 'work-units.json'),
+        join(setup.testDir, 'spec', 'work-units.json'),
         JSON.stringify(workUnitsData, null, 2)
       );
 
       // When: User runs 'fspec show-work-unit HOOK-011'
       const result = await showWorkUnit({
         workUnitId: 'HOOK-011',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: Result should include virtual hooks

@@ -107,7 +107,7 @@ describe('Feature: Answer Question Data Integrity', () => {
     it('should use nextRuleId and increment the counter', async () => {
       // Given a work unit "TEST-003" with nextRuleId set to 5
       const workUnitsData: WorkUnitsData = {
-        version: '0.7.0', // Prevent migration from running
+        version: '0.7.1', // Prevent migration from running
         workUnits: {
           'TEST-003': {
             id: 'TEST-003',

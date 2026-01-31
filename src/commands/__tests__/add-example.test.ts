@@ -6,33 +6,36 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, access, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, access, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { addExample } from '../add-example';
 import type { WorkUnitsData } from '../../types';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Automatic JSON File Initialization', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('add-example');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Example mapping commands auto-create work-units.json', () => {
     it('should create work-units.json when adding example to non-existent file', async () => {
       // Given I have a fresh project with only spec/features/ directory
-      await mkdir(join(testDir, 'spec', 'features'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
 
       // And spec/work-units.json does not exist
       // (file doesn't exist yet)
 
       // Create a work unit first (we need a work unit in specifying state)
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
       const initialData: WorkUnitsData = {
         meta: {
           version: '1.0.0',
@@ -64,7 +67,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
       const result = await addExample({
         workUnitId: 'WORK-001',
         example: 'Query by status - Example data',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then the command should succeed
@@ -95,7 +98,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
 
     it('should auto-create work-units.json if completely missing', async () => {
       // Given I have a fresh project with only spec/ directory
-      await mkdir(join(testDir, 'spec'), { recursive: true });
+      await mkdir(join(setup.testDir, 'spec'), { recursive: true });
 
       // And spec/work-units.json does not exist
       // (testing the pure auto-creation path)
@@ -103,7 +106,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
       // When add-example is called (this will fail because no work unit exists)
       // But the file should still be created
 
-      const workUnitsFile = join(testDir, 'spec/work-units.json');
+      const workUnitsFile = join(setup.testDir, 'spec/work-units.json');
 
       // Let's test this by using the ensure utility directly through addExample
       // First we need to create the work-units.json file with a work unit
@@ -111,7 +114,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
         await addExample({
           workUnitId: 'NONEXISTENT',
           example: 'Test example',
-          cwd: testDir,
+          cwd: setup.testDir,
         });
       } catch (error) {
         // Expected to fail - work unit doesn't exist

@@ -7,39 +7,23 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import * as git from 'isomorphic-git';
 import fs from 'fs';
 import { restoreCheckpoint } from '../restore-checkpoint';
 import { checkpoint } from '../checkpoint';
+import {
+  setupGitTest,
+  type GitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Checkpoint restore shows confusing merge terminology when it actually overwrites files', () => {
-  let testDir: string;
+  let setup: GitTestSetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-restore-terminology-test-'));
-
-    // Initialize git repository
-    await git.init({ fs, dir: testDir, defaultBranch: 'main' });
-
-    // Configure git
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs,
-      dir: testDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
-
-    // Create initial directory structure
-    await mkdir(join(testDir, 'spec'), { recursive: true });
+    setup = await setupGitTest('restore-checkpoint-terminology');
+    await setup.initGit();
 
     // Create work-units.json with AUTH-001 fixture
     const workUnitsData = {
@@ -85,23 +69,23 @@ describe('Feature: Checkpoint restore shows confusing merge terminology when it 
     };
 
     await writeFile(
-      join(testDir, 'spec/work-units.json'),
+      join(setup.testDir, 'spec/work-units.json'),
       JSON.stringify(workUnitsData, null, 2)
     );
 
     // Create initial commit so HEAD exists
-    await writeFile(join(testDir, 'README.md'), '# Test Project');
-    await git.add({ fs, dir: testDir, filepath: 'README.md' });
+    await writeFile(join(setup.testDir, 'README.md'), '# Test Project');
+    await git.add({ fs, dir: setup.testDir, filepath: 'README.md' });
     await git.commit({
       fs,
-      dir: testDir,
+      dir: setup.testDir,
       message: 'Initial commit',
       author: { name: 'Test User', email: 'test@example.com' },
     });
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Restore with dirty working directory shows accurate overwrite option', () => {
@@ -114,11 +98,11 @@ describe('Feature: Checkpoint restore shows confusing merge terminology when it 
 
     it('should show option 3 labeled as Overwrite files (discard changes)', async () => {
       // Given: I have a work unit AUTH-001 with a checkpoint named 'baseline'
-      await writeFile(join(testDir, 'test.txt'), 'initial content');
-      await git.add({ fs, dir: testDir, filepath: 'test.txt' });
+      await writeFile(join(setup.testDir, 'test.txt'), 'initial content');
+      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Add test file',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -127,17 +111,17 @@ describe('Feature: Checkpoint restore shows confusing merge terminology when it 
       await checkpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // And: I have uncommitted changes in my working directory
-      await writeFile(join(testDir, 'test.txt'), 'modified content');
+      await writeFile(join(setup.testDir, 'test.txt'), 'modified content');
 
       // When: I run 'fspec restore-checkpoint AUTH-001 baseline'
       const result = await restoreCheckpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: option 3 should be labeled 'Overwrite files (discard changes)'
@@ -168,11 +152,11 @@ describe('Feature: Checkpoint restore shows confusing merge terminology when it 
 
     it('should not contain any merge terminology in options', async () => {
       // Given: I have a work unit with uncommitted changes
-      await writeFile(join(testDir, 'test.txt'), 'initial content');
-      await git.add({ fs, dir: testDir, filepath: 'test.txt' });
+      await writeFile(join(setup.testDir, 'test.txt'), 'initial content');
+      await git.add({ fs, dir: setup.testDir, filepath: 'test.txt' });
       await git.commit({
         fs,
-        dir: testDir,
+        dir: setup.testDir,
         message: 'Add test file',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -181,17 +165,17 @@ describe('Feature: Checkpoint restore shows confusing merge terminology when it 
       await checkpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Modify file (uncommitted changes)
-      await writeFile(join(testDir, 'test.txt'), 'modified content');
+      await writeFile(join(setup.testDir, 'test.txt'), 'modified content');
 
       // When: I view the restore-checkpoint prompt options
       const result = await restoreCheckpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'baseline',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then: no option should contain the word 'merge'

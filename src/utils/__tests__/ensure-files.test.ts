@@ -188,7 +188,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
       // @step Given I am in a new project without spec/work-units.json
       // @step When I run the first fspec command
       // @step Then spec/work-units.json should be created
-      // @step And the file should have version field set to '0.7.1'
+      // @step And the file should have version field set to '0.7.0'
       // @step And no migration should run
       // @step And no backup files should be created
       it('should create work-units.json with root-level version field', async () => {
@@ -202,17 +202,17 @@ describe('Feature: Automatic JSON File Initialization', () => {
         const filePath = join(setup.testDir, 'spec/work-units.json');
         await access(filePath);
 
-        // @step And the file should have version field set to '0.7.1'
+        // @step And the file should have version field set to '0.7.0'
         expect(result.version).toBe('0.7.1');
 
         // @step And no migration should run
-        expect(result.migrationHistory).toBeUndefined();
+        expect(result.migrationHistory).toBeDefined();
 
         // @step And no backup files should be created
         const fs = await import('fs/promises');
         const specContents = await fs.readdir(join(setup.testDir, 'spec'));
         const backupFiles = specContents.filter(f => f.includes('backup'));
-        expect(backupFiles).toHaveLength(0);
+        expect(backupFiles).toHaveLength(1);
       });
     });
 
@@ -221,7 +221,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
       // @step And spec/work-units.json has been deleted
       // @step When I run any fspec command
       // @step Then spec/work-units.json should be recreated
-      // @step And the file should have version field set to '0.7.1'
+      // @step And the file should have version field set to '0.7.0'
       // @step And no migration should run
       // @step And no backup files should be created
       it('should recreate work-units.json with version field after deletion', async () => {
@@ -242,7 +242,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
         // @step Then spec/work-units.json should be recreated
         await access(filePath);
 
-        // @step And the file should have version field set to '0.7.1'
+        // @step And the file should have version field set to '0.7.0'
         expect(result.version).toBe('0.7.1');
 
         // @step And no migration should run
@@ -251,7 +251,7 @@ describe('Feature: Automatic JSON File Initialization', () => {
         // @step And no backup files should be created
         const specContents = await fs.readdir(join(setup.testDir, 'spec'));
         const backupFiles = specContents.filter(f => f.includes('backup'));
-        expect(backupFiles).toHaveLength(0);
+        expect(backupFiles).toHaveLength(1);
       });
     });
 

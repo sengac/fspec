@@ -59,10 +59,7 @@ describe('Feature: Context-aware system-reminders for workflow state transitions
       nextIds: { TEST: 2 },
     };
 
-    await writeJsonTestFile(
-      join(specDir, 'work-units.json'),
-      JSON.stringify(workUnits, null, 2)
-    );
+    await writeJsonTestFile(join(specDir, 'work-units.json'), workUnits);
 
     // Create feature file with scenario for TEST-001
     const featureContent = `@TEST-001
@@ -129,7 +126,10 @@ describe('Test scenario', () => {
   return true;
 }
 `;
-    await writeJsonTestFile(join(setup.testDir, 'src', 'test-impl.ts'), implFileContent);
+    await writeJsonTestFile(
+      join(setup.testDir, 'src', 'test-impl.ts'),
+      implFileContent
+    );
   });
 
   afterEach(async () => {

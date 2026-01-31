@@ -22,7 +22,7 @@ export const CURRENT_VERSION = '0.7.1';
  * Add new migrations to this array in ascending version order
  */
 const migrations: Migration[] = [
-  migration001, // v0.7.0: Stable indices with soft delete
+  migration001, // v0.7.1: Stable indices with soft delete
 ];
 
 /**

@@ -14,17 +14,20 @@ import {
 import type { Server } from 'net';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { tmpdir } from 'os';
 import { isAutomaticCheckpoint } from '../../utils/checkpoint-index';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: TUI-016 incomplete: CheckpointPanel using chokidar instead of IPC+Zustand', () => {
   let server: Server | null = null;
-  let tempDir: string;
+  let setup: TestDirectorySetup;
   let checkpointIndexDir: string;
 
   beforeEach(async () => {
-    tempDir = await fs.mkdtemp(path.join(tmpdir(), 'fspec-test-'));
-    const gitDir = path.join(tempDir, '.git');
+    setup = await setupTestDirectory('bug-065-checkpoint-integration');
+    const gitDir = path.join(setup.testDir, '.git');
     checkpointIndexDir = path.join(gitDir, 'fspec-checkpoints-index');
     await fs.mkdir(checkpointIndexDir, { recursive: true });
   });
@@ -34,7 +37,7 @@ describe('Feature: TUI-016 incomplete: CheckpointPanel using chokidar instead of
       cleanupIPCServer(server);
       server = null;
     }
-    await fs.rm(tempDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Manual checkpoint triggers IPC update to TUI', () => {

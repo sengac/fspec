@@ -12,8 +12,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { join } from 'path';
-import { mkdtemp, rm, readFile, stat, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, stat, mkdir, writeFile } from 'fs/promises';
 
 // Import the modules under test (will fail until implemented)
 import {
@@ -33,30 +32,33 @@ import {
   SUPPORTED_PROVIDERS,
 } from '../provider-config';
 
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+
 describe('Feature: Provider Configuration and Credentials Management', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let originalHome: string | undefined;
   let originalAnthropicKey: string | undefined;
   let originalClaudeOAuthToken: string | undefined;
   let originalOpenaiKey: string | undefined;
 
   beforeEach(async () => {
-    // Create temp directory to simulate ~/.fspec
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupTestDirectory('provider-configuration');
     originalHome = process.env.HOME;
     originalAnthropicKey = process.env.ANTHROPIC_API_KEY;
     originalClaudeOAuthToken = process.env.CLAUDE_CODE_OAUTH_TOKEN;
     originalOpenaiKey = process.env.OPENAI_API_KEY;
-    process.env.HOME = testDir;
+    process.env.HOME = setup.testDir;
 
     // Clear env vars to test credential resolution
-    // Must clear both ANTHROPIC_API_KEY and CLAUDE_CODE_OAUTH_TOKEN since both are valid for anthropic
     delete process.env.ANTHROPIC_API_KEY;
     delete process.env.CLAUDE_CODE_OAUTH_TOKEN;
     delete process.env.OPENAI_API_KEY;
 
     // Create .fspec directory
-    await mkdir(join(testDir, '.fspec'), { recursive: true });
+    await mkdir(join(setup.testDir, '.fspec'), { recursive: true });
   });
 
   afterEach(async () => {
@@ -70,7 +72,8 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     if (originalOpenaiKey) {
       process.env.OPENAI_API_KEY = originalOpenaiKey;
     }
-    await rm(testDir, { recursive: true, force: true });
+    vi.clearAllMocks();
+    await setup.cleanup();
   });
 
   // ============================================
@@ -80,7 +83,7 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
   describe('Scenario: Save API key with secure file permissions', () => {
     it('should create credentials file with 600 permissions', async () => {
       // @step Given the credentials directory does not exist
-      const credDir = join(testDir, '.fspec', 'credentials');
+      const credDir = join(setup.testDir, '.fspec', 'credentials');
       const credPath = join(credDir, 'credentials.json');
 
       // @step When I save an API key for the "anthropic" provider
@@ -180,11 +183,15 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
       delete process.env.ANTHROPIC_API_KEY;
 
       // @step And I have a .env file with ANTHROPIC_API_KEY defined
-      const envPath = join(testDir, '.env');
+      const envPath = join(setup.testDir, '.env');
       await writeFile(envPath, 'ANTHROPIC_API_KEY=dotenv-key-11111\n');
 
       // @step When the system resolves credentials for "anthropic"
-      const resolved = await resolveCredential('anthropic', undefined, testDir);
+      const resolved = await resolveCredential(
+        'anthropic',
+        undefined,
+        setup.testDir
+      );
 
       // @step Then the .env file API key should be used
       expect(resolved).toBe('dotenv-key-11111');
@@ -261,7 +268,7 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
   describe('Scenario: Configure provider with custom base URL', () => {
     it('should save provider settings to config file', async () => {
       // @step Given I have an existing fspec configuration
-      const configPath = join(testDir, '.fspec', 'fspec-config.json');
+      const configPath = join(setup.testDir, '.fspec', 'fspec-config.json');
       await writeFile(configPath, JSON.stringify({ tui: {} }, null, 2));
 
       // @step When I configure the "openrouter" provider with base URL "https://openrouter.ai/api/v1"

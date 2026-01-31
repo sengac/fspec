@@ -6,24 +6,27 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, access } from 'fs/promises';
+import { readFile, access } from 'fs/promises';
 import { join } from 'path';
-import { tmpdir } from 'os';
 import {
   generateVirtualHookScript,
   cleanupVirtualHookScript,
   getVirtualHookScriptPath,
 } from '../script-generation';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Virtual hook script generation', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-script-gen-test-'));
+    setup = await setupTestDirectory('script-generation');
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('generateVirtualHookScript', () => {
@@ -33,7 +36,7 @@ describe('Virtual hook script generation', () => {
         hookName: 'eslint',
         command: 'eslint',
         gitContext: true,
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       // Verify script file exists
@@ -51,7 +54,7 @@ describe('Virtual hook script generation', () => {
         hookName: 'lint',
         command: 'eslint',
         gitContext: false,
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       const content = await readFile(scriptPath, 'utf-8');
@@ -66,7 +69,7 @@ describe('Virtual hook script generation', () => {
         hookName: 'eslint-changed',
         command: 'eslint',
         gitContext: true,
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       const content = await readFile(scriptPath, 'utf-8');
@@ -83,7 +86,7 @@ describe('Virtual hook script generation', () => {
         hookName: 'simple-lint',
         command: 'npm run lint',
         gitContext: false,
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       const content = await readFile(scriptPath, 'utf-8');
@@ -98,7 +101,7 @@ describe('Virtual hook script generation', () => {
         hookName: 'eslint-src',
         command: 'eslint src/ --fix',
         gitContext: false,
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       const content = await readFile(scriptPath, 'utf-8');
@@ -112,7 +115,7 @@ describe('Virtual hook script generation', () => {
         hookName: 'eslint',
         command: 'eslint',
         gitContext: false,
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       const script2 = await generateVirtualHookScript({
@@ -120,7 +123,7 @@ describe('Virtual hook script generation', () => {
         hookName: 'prettier',
         command: 'prettier',
         gitContext: false,
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       // Should be different files
@@ -138,7 +141,7 @@ describe('Virtual hook script generation', () => {
         hookName: 'test',
         command: 'echo test',
         gitContext: false,
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       // Verify it exists
@@ -148,7 +151,7 @@ describe('Virtual hook script generation', () => {
       await cleanupVirtualHookScript({
         workUnitId: 'TEST-001',
         hookName: 'test',
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       // Verify it's gone
@@ -161,7 +164,7 @@ describe('Virtual hook script generation', () => {
         cleanupVirtualHookScript({
           workUnitId: 'TEST-001',
           hookName: 'nonexistent',
-          projectRoot: testDir,
+          projectRoot: setup.testDir,
         })
       ).resolves.not.toThrow();
     });
@@ -172,13 +175,13 @@ describe('Virtual hook script generation', () => {
       const path1 = getVirtualHookScriptPath({
         workUnitId: 'TEST-001',
         hookName: 'eslint',
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       const path2 = getVirtualHookScriptPath({
         workUnitId: 'TEST-001',
         hookName: 'eslint',
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       expect(path1).toBe(path2);
@@ -188,7 +191,7 @@ describe('Virtual hook script generation', () => {
       const path = getVirtualHookScriptPath({
         workUnitId: 'AUTH-001',
         hookName: 'validate',
-        projectRoot: testDir,
+        projectRoot: setup.testDir,
       });
 
       expect(path).toContain('AUTH-001');

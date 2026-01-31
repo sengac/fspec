@@ -1,7 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, readFile, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { readFile, mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 import {
   assignEstimate,
   incrementIteration,
@@ -30,23 +33,20 @@ import {
 } from '../workflow-automation';
 
 describe('Feature: Work Unit Estimation and Metrics', () => {
+  let setup: TestDirectorySetup;
   let testDir: string;
   let specDir: string;
   let workUnitsFile: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    await mkdir(specDir, { recursive: true });
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify({ workUnits: {}, states: {} }, null, 2)
-    );
+    setup = await setupTestDirectory('pm-remaining');
+    testDir = setup.testDir;
+    specDir = setup.specDir;
+    workUnitsFile = setup.workUnitsFile;
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Assign story points to work unit', () => {
@@ -321,23 +321,24 @@ describe('Feature: Work Unit Estimation and Metrics', () => {
 });
 
 describe('Feature: Epic and Prefix Management', () => {
+  let setup: TestDirectorySetup;
   let testDir: string;
   let specDir: string;
   let epicsFile: string;
   let prefixesFile: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
+    setup = await setupTestDirectory('epic-prefix-management');
+    testDir = setup.testDir;
+    specDir = setup.specDir;
     epicsFile = join(specDir, 'epics.json');
     prefixesFile = join(specDir, 'prefixes.json');
-    await mkdir(specDir, { recursive: true });
     await writeFile(epicsFile, JSON.stringify({ epics: {} }, null, 2));
     await writeFile(prefixesFile, JSON.stringify({ prefixes: {} }, null, 2));
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Create epic', () => {
@@ -523,23 +524,20 @@ describe('Feature: Epic and Prefix Management', () => {
 });
 
 describe('Feature: Work Unit Query and Reporting', () => {
+  let setup: TestDirectorySetup;
   let testDir: string;
   let specDir: string;
   let workUnitsFile: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    await mkdir(specDir, { recursive: true });
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify({ workUnits: {}, states: {} }, null, 2)
-    );
+    setup = await setupTestDirectory('work-unit-query');
+    testDir = setup.testDir;
+    specDir = setup.specDir;
+    workUnitsFile = setup.workUnitsFile;
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Query work units by status', () => {
@@ -763,23 +761,20 @@ describe('Feature: Work Unit Query and Reporting', () => {
 });
 
 describe('Feature: Workflow Automation', () => {
+  let setup: TestDirectorySetup;
   let testDir: string;
   let specDir: string;
   let workUnitsFile: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
-    specDir = join(testDir, 'spec');
-    workUnitsFile = join(specDir, 'work-units.json');
-    await mkdir(specDir, { recursive: true });
-    await writeFile(
-      workUnitsFile,
-      JSON.stringify({ workUnits: {}, states: {} }, null, 2)
-    );
+    setup = await setupTestDirectory('workflow-automation');
+    testDir = setup.testDir;
+    specDir = setup.specDir;
+    workUnitsFile = setup.workUnitsFile;
   });
 
   afterEach(async () => {
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Record iteration after tool use', () => {

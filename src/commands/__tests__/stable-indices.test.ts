@@ -588,7 +588,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
 
       // When migration 001-stable-indices.ts runs
       const { ensureLatestVersion } = await import('../../migrations/index');
-      const migratedData = await ensureLatestVersion(cwd, v060Data, '0.7.0');
+      const migratedData = await ensureLatestVersion(cwd, v060Data, '0.7.1');
 
       // Then rules should be converted to object format
       const workUnit = migratedData.workUnits['AUTH-001'];
@@ -1086,7 +1086,7 @@ describe('Feature: Implement Stable Indices with Soft Delete', () => {
 
       // When migration 001-stable-indices.ts runs
       const { ensureLatestVersion } = await import('../../migrations/index');
-      const migratedData = await ensureLatestVersion(cwd, mixedData, '0.7.0');
+      const migratedData = await ensureLatestVersion(cwd, mixedData, '0.7.1');
 
       // Then migration should detect mixed format
       // (detection happens internally)

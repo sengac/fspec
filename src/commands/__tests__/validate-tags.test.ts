@@ -1,20 +1,23 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { mkdtemp, rm, mkdir, writeFile } from 'fs/promises';
-import { tmpdir } from 'os';
+import { mkdir, writeFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { validateTags } from '../validate-tags';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Validate Feature File Tags Against Registry', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('validate-tags');
     originalCwd = process.cwd();
-    process.chdir(testDir);
+    process.chdir(setup.testDir);
 
     // Create tags.json with standard tags
-    const specDir = join(testDir, 'spec');
+    const specDir = setup.specDir;
     await mkdir(specDir, { recursive: true });
 
     const tagsJson = {
@@ -76,13 +79,13 @@ describe('Feature: Validate Feature File Tags Against Registry', () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Validate tags in a compliant feature file', () => {
     it('should pass when all tags are registered', async () => {
       // Given I have a feature file with all registered tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validContent = `@critical @cli @authentication
@@ -98,7 +101,7 @@ Feature: User Authentication
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/auth.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should pass
@@ -113,7 +116,7 @@ Feature: User Authentication
   describe('Scenario: Detect unregistered tag', () => {
     it('should report unregistered tags with suggestions', async () => {
       // Given I have a feature file with an unregistered tag
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const invalidContent = `@critical @cli @validation @custom-tag
@@ -127,7 +130,7 @@ Feature: API Endpoints
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/api.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should report the unregistered tag
@@ -144,7 +147,7 @@ Feature: API Endpoints
   describe('Scenario: Validate all feature files', () => {
     it('should validate all files and report summary', async () => {
       // Given I have multiple feature files
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
@@ -158,7 +161,7 @@ Feature: API Endpoints
       );
 
       // When I run validate-tags
-      const result = await validateTags({ cwd: testDir });
+      const result = await validateTags({ cwd: setup.testDir });
 
       // Then it should report summary
       expect(result.results).toHaveLength(2);
@@ -170,7 +173,7 @@ Feature: API Endpoints
   describe('Scenario: Detect missing required component tag', () => {
     it('should report missing component tag', async () => {
       // Given I have a feature file without a component tag
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const noComponentContent = `@critical @validation
@@ -184,7 +187,7 @@ Feature: Broken Feature
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/broken.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should report missing component tag
@@ -199,7 +202,7 @@ Feature: Broken Feature
   describe('Scenario: Detect missing required feature-group tag', () => {
     it('should report missing feature-group tag', async () => {
       // Given I have a feature file without a feature-group tag
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const noFeatureGroupContent = `@critical @cli
@@ -216,7 +219,7 @@ Feature: Broken Feature
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/broken.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should report missing feature-group tag
@@ -231,10 +234,10 @@ Feature: Broken Feature
   describe('Scenario: Auto-create tags.json when missing', () => {
     it('should auto-create tags.json when it does not exist', async () => {
       // Given no tags.json exists
-      await rm(join(testDir, 'spec', 'tags.json'));
+      await rm(join(setup.testDir, 'spec', 'tags.json'));
 
       // When I run validate-tags
-      const result = await validateTags({ cwd: testDir });
+      const result = await validateTags({ cwd: setup.testDir });
 
       // Then it should succeed and auto-create tags.json
       expect(result).toBeDefined();
@@ -247,7 +250,7 @@ Feature: Broken Feature
   describe('Scenario: Validate tags after creating new feature', () => {
     it('should warn about placeholder tags', async () => {
       // Given I have a feature with placeholder tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const placeholderContent = `@critical @component @feature-group
@@ -264,7 +267,7 @@ Feature: New Feature
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/new-feature.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should warn about placeholders
@@ -280,7 +283,7 @@ Feature: New Feature
   describe('Scenario: Report multiple violations in one file', () => {
     it('should list all unregistered tags in one file', async () => {
       // Given I have a feature with multiple unregistered tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const multipleErrorsContent = `@critical @unknown1 @unknown2
@@ -297,7 +300,7 @@ Feature: Multi Error Feature
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/multi.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should list both unregistered tags
@@ -312,7 +315,7 @@ Feature: Multi Error Feature
   describe('Scenario: Validate tags in multiple files with summary', () => {
     it('should show summary with pass/fail counts', async () => {
       // Given I have 10 feature files (8 valid, 2 invalid)
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const validFeature =
@@ -332,7 +335,7 @@ Feature: Multi Error Feature
       }
 
       // When I run validate-tags
-      const result = await validateTags({ cwd: testDir });
+      const result = await validateTags({ cwd: setup.testDir });
 
       // Then the summary should show 8 passed, 2 failed
       expect(result.validCount).toBe(8);
@@ -344,7 +347,7 @@ Feature: Multi Error Feature
   describe('Scenario: Automation integration - prevent invalid tag commits', () => {
     it('should support automation workflow for tag validation', async () => {
       // Given I am working in a project with lifecycle hooks
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const unregisteredContent = `@critical @cli @validation @unregistered-tag
@@ -356,7 +359,7 @@ Feature: Test Feature
       await writeFile(join(featuresDir, 'test.feature'), unregisteredContent);
 
       // When a PreToolUse hook runs validate-tags
-      const result = await validateTags({ cwd: testDir });
+      const result = await validateTags({ cwd: setup.testDir });
 
       // And unregistered tags are detected
       expect(result.invalidCount).toBeGreaterThan(0);
@@ -373,7 +376,7 @@ Feature: Test Feature
 
       await writeFile(join(featuresDir, 'test.feature'), fixedContent);
 
-      const fixedResult = await validateTags({ cwd: testDir });
+      const fixedResult = await validateTags({ cwd: setup.testDir });
 
       // And specifications remain compliant with tag registry
       expect(fixedResult.invalidCount).toBe(0);
@@ -384,7 +387,7 @@ Feature: Test Feature
   describe('Scenario: Validate scenario-level tags are registered', () => {
     it('should validate scenario-level tags against registry', async () => {
       // Given I have a feature file with scenario-level tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureWithScenarioTags = `@critical
@@ -407,7 +410,7 @@ Feature: User Login
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/login.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should exit with code 0 (all tags registered)
@@ -421,7 +424,7 @@ Feature: User Login
   describe('Scenario: Detect unregistered scenario-level tag', () => {
     it('should report unregistered scenario-level tags', async () => {
       // Given I have a feature file with an unregistered scenario tag
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureWithUnregisteredTag = `@critical
@@ -444,7 +447,7 @@ Feature: User Login
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/login.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should exit with code 1
@@ -464,7 +467,7 @@ Feature: User Login
   describe('Scenario: Validate both feature-level and scenario-level tags', () => {
     it('should validate tags at both levels', async () => {
       // Given I have a feature file with tags at both levels
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureWithBothLevels = `@critical
@@ -493,7 +496,7 @@ Feature: User Login
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/login.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then all tags at all levels should be validated
@@ -507,7 +510,7 @@ Feature: User Login
   describe('Scenario: Detect mix of registered and unregistered scenario tags', () => {
     it('should report mix of valid and invalid scenario tags', async () => {
       // Given I have a feature file with multiple scenarios
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureWithMixedTags = `@critical
@@ -533,7 +536,7 @@ Feature: User Login
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/login.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then it should exit with code 1
@@ -554,7 +557,7 @@ Feature: User Login
   describe('Scenario: Validate scenario tags do not require phase/component/feature-group tags', () => {
     it('should allow scenario tags without required categories', async () => {
       // Given I have a feature file with properly tagged feature and minimal scenario tags
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const featureWithMinimalScenarioTags = `@critical
@@ -576,7 +579,7 @@ Feature: User Login
       // When I run validate-tags
       const result = await validateTags({
         file: 'spec/features/login.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Then scenario tags should not be required to have phase/component/feature-group tags
@@ -591,7 +594,7 @@ Feature: User Login
   describe('Scenario: JSON-backed workflow - validate against tags.json registry', () => {
     it('should load tag registry from tags.json and validate all tags', async () => {
       // Given I have tags.json with registered tags in multiple categories
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // And I have feature files using both registered and unregistered tags
@@ -606,7 +609,7 @@ Feature: User Login
       );
 
       // When I run `fspec validate-tags`
-      const result = await validateTags({ cwd: testDir });
+      const result = await validateTags({ cwd: setup.testDir });
 
       // Then the command should load tag registry from spec/tags.json
       // (verified by not throwing "tags.json not found" error)
@@ -640,16 +643,16 @@ Feature: User Login
 });
 
 describe('Feature: Validate Work Unit Tags Against work-units.json', () => {
-  let testDir: string;
+  let setup: WorkUnitTestSetup;
   let originalCwd: string;
 
   beforeEach(async () => {
-    testDir = await mkdtemp(join(tmpdir(), 'fspec-test-'));
+    setup = await setupWorkUnitTest('validate-work-unit-tags');
     originalCwd = process.cwd();
-    process.chdir(testDir);
+    process.chdir(setup.testDir);
 
     // Create tags.json with standard tags
-    const specDir = join(testDir, 'spec');
+    const specDir = setup.specDir;
     await mkdir(specDir, { recursive: true });
 
     const tagsJson = {
@@ -701,12 +704,12 @@ describe('Feature: Validate Work Unit Tags Against work-units.json', () => {
 
   afterEach(async () => {
     process.chdir(originalCwd);
-    await rm(testDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Validate work unit tag exists in work-units.json', () => {
     it('should pass when work unit exists', async () => {
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       // Create work-units.json
@@ -723,7 +726,7 @@ describe('Feature: Validate Work Unit Tags Against work-units.json', () => {
         states: { implementing: ['AUTH-001'] },
       };
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnits, null, 2)
       );
 
@@ -739,7 +742,7 @@ Feature: OAuth Login
 
       const result = await validateTags({
         file: 'spec/features/auth.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.results[0].valid).toBe(true);
@@ -749,7 +752,7 @@ Feature: OAuth Login
 
   describe('Scenario: Detect non-existent work unit tag', () => {
     it('should report work unit that does not exist', async () => {
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const workUnits = {
@@ -757,7 +760,7 @@ Feature: OAuth Login
         states: {},
       };
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnits, null, 2)
       );
 
@@ -773,7 +776,7 @@ Feature: Test
 
       const result = await validateTags({
         file: 'spec/features/auth.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.results[0].valid).toBe(false);
@@ -788,7 +791,7 @@ Feature: Test
 
   describe('Scenario: Reject scenario-level work unit tags (BUG-005)', () => {
     it('should reject work unit tags at scenario level', async () => {
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const workUnits = {
@@ -811,7 +814,7 @@ Feature: Test
         states: {},
       };
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnits, null, 2)
       );
 
@@ -832,7 +835,7 @@ Feature: Test
 
       const result = await validateTags({
         file: 'spec/features/test.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       // Should REJECT scenario-level work unit tags (BUG-005)
@@ -850,7 +853,7 @@ Feature: Test
 
   describe('Scenario: Detect multiple invalid work unit tags', () => {
     it('should report all invalid work unit tags (scenario-level and non-existent)', async () => {
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const workUnits = {
@@ -873,7 +876,7 @@ Feature: Test
         states: {},
       };
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnits, null, 2)
       );
 
@@ -895,7 +898,7 @@ Feature: Test
 
       const result = await validateTags({
         file: 'spec/features/test.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.results[0].valid).toBe(false);
@@ -922,11 +925,11 @@ Feature: Test
 
   describe('Scenario: Validate work unit tag format', () => {
     it('should report invalid work unit tag format', async () => {
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify({ workUnits: {}, states: {} }, null, 2)
       );
 
@@ -942,7 +945,7 @@ Feature: Test
 
       const result = await validateTags({
         file: 'spec/features/test.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.results[0].valid).toBe(false);
@@ -957,7 +960,7 @@ Feature: Test
 
   describe('Scenario: Distinguish work unit tags from regular tags', () => {
     it('should validate work unit tags separately from regular tags', async () => {
-      const featuresDir = join(testDir, 'spec', 'features');
+      const featuresDir = join(setup.testDir, 'spec', 'features');
       await mkdir(featuresDir, { recursive: true });
 
       const workUnits = {
@@ -973,7 +976,7 @@ Feature: Test
         states: {},
       };
       await writeFile(
-        join(testDir, 'spec/work-units.json'),
+        join(setup.testDir, 'spec/work-units.json'),
         JSON.stringify(workUnits, null, 2)
       );
 
@@ -989,7 +992,7 @@ Feature: Test
 
       const result = await validateTags({
         file: 'spec/features/test.feature',
-        cwd: testDir,
+        cwd: setup.testDir,
       });
 
       expect(result.results[0].valid).toBe(true);

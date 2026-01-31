@@ -7,44 +7,31 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as os from 'os';
 import { getFileDiff } from '../diff';
 import * as git from 'isomorphic-git';
 import fsNode from 'fs';
+import {
+  setupGitTest,
+  type GitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Handle binary files and large files in diff display', () => {
-  let tmpDir: string;
+  let setup: GitTestSetup;
   let testFilePath: string;
 
   beforeEach(async () => {
-    // Create temporary git repository
-    tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'fspec-diff-test-'));
-    await git.init({ fs: fsNode, dir: tmpDir, defaultBranch: 'main' });
-
-    // Configure git
-    await git.setConfig({
-      fs: fsNode,
-      dir: tmpDir,
-      path: 'user.name',
-      value: 'Test User',
-    });
-    await git.setConfig({
-      fs: fsNode,
-      dir: tmpDir,
-      path: 'user.email',
-      value: 'test@example.com',
-    });
+    setup = await setupGitTest('diff-binary-truncation');
+    await setup.initGit(); // Initialize git repository
   });
 
   afterEach(async () => {
-    // Clean up temporary directory
-    await fs.rm(tmpDir, { recursive: true, force: true });
+    await setup.cleanup();
   });
 
   describe('Scenario: Display binary file message for PNG image', () => {
     it('should show binary file message instead of garbled content', async () => {
       // @step Given I have a checkpoint that includes changes to a PNG image file
-      testFilePath = path.join(tmpDir, 'image.png');
+      testFilePath = path.join(setup.testDir, 'image.png');
 
       // Create a binary PNG file (PNG header + some binary data)
       const pngHeader = Buffer.from([
@@ -68,7 +55,7 @@ describe('Feature: Handle binary files and large files in diff display', () => {
       await fs.writeFile(testFilePath, pngHeader);
 
       // @step When I view the diff for the PNG file in the checkpoint viewer
-      const diff = await getFileDiff(tmpDir, 'image.png');
+      const diff = await getFileDiff(setup.testDir, 'image.png');
 
       // @step Then I should see the message '[Binary file - no diff available]'
       expect(diff).toContain('[Binary file - no diff available]');
@@ -82,7 +69,7 @@ describe('Feature: Handle binary files and large files in diff display', () => {
   describe('Scenario: Truncate large file with over 20,000 lines', () => {
     it('should truncate diff after 20,000 lines with message', async () => {
       // @step Given I have a checkpoint that includes changes to a log file with 50,000 lines
-      testFilePath = path.join(tmpDir, 'large.log');
+      testFilePath = path.join(setup.testDir, 'large.log');
 
       // Create initial file with 10 lines and commit
       const initialContent = Array.from(
@@ -90,10 +77,10 @@ describe('Feature: Handle binary files and large files in diff display', () => {
         (_, i) => `line ${i + 1}`
       ).join('\n');
       await fs.writeFile(testFilePath, initialContent);
-      await git.add({ fs: fsNode, dir: tmpDir, filepath: 'large.log' });
+      await git.add({ fs: fsNode, dir: setup.testDir, filepath: 'large.log' });
       await git.commit({
         fs: fsNode,
-        dir: tmpDir,
+        dir: setup.testDir,
         message: 'Initial commit',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -106,7 +93,7 @@ describe('Feature: Handle binary files and large files in diff display', () => {
       await fs.writeFile(testFilePath, largeContent);
 
       // @step When I view the diff for the log file in the checkpoint viewer
-      const diff = await getFileDiff(tmpDir, 'large.log');
+      const diff = await getFileDiff(setup.testDir, 'large.log');
 
       // @step Then I should see the first 20,000 lines of the diff
       expect(diff).toBeDefined();
@@ -135,7 +122,7 @@ describe('Feature: Handle binary files and large files in diff display', () => {
   describe('Scenario: Display complete diff for normal-sized text file', () => {
     it('should show complete diff without truncation for files under 20,000 lines', async () => {
       // @step Given I have a checkpoint that includes changes to a source file with 500 lines
-      testFilePath = path.join(tmpDir, 'source.ts');
+      testFilePath = path.join(setup.testDir, 'source.ts');
 
       // Create initial file and commit
       const initialContent = Array.from(
@@ -143,10 +130,10 @@ describe('Feature: Handle binary files and large files in diff display', () => {
         (_, i) => `const x${i} = ${i};`
       ).join('\n');
       await fs.writeFile(testFilePath, initialContent);
-      await git.add({ fs: fsNode, dir: tmpDir, filepath: 'source.ts' });
+      await git.add({ fs: fsNode, dir: setup.testDir, filepath: 'source.ts' });
       await git.commit({
         fs: fsNode,
-        dir: tmpDir,
+        dir: setup.testDir,
         message: 'Initial commit',
         author: { name: 'Test User', email: 'test@example.com' },
       });
@@ -159,7 +146,7 @@ describe('Feature: Handle binary files and large files in diff display', () => {
       await fs.writeFile(testFilePath, modifiedContent);
 
       // @step When I view the diff for the source file in the checkpoint viewer
-      const diff = await getFileDiff(tmpDir, 'source.ts');
+      const diff = await getFileDiff(setup.testDir, 'source.ts');
 
       // @step Then I should see the complete diff without truncation
       expect(diff).toBeDefined();
@@ -173,7 +160,7 @@ describe('Feature: Handle binary files and large files in diff display', () => {
   describe('Scenario: Display binary file message for executable binary', () => {
     it('should show binary file message for executable files', async () => {
       // @step Given I have a checkpoint that includes changes to an executable binary file
-      testFilePath = path.join(tmpDir, 'app.exe');
+      testFilePath = path.join(setup.testDir, 'app.exe');
 
       // Create a binary executable file (ELF header for Linux executable)
       const elfHeader = Buffer.from([
@@ -197,7 +184,7 @@ describe('Feature: Handle binary files and large files in diff display', () => {
       await fs.writeFile(testFilePath, elfHeader);
 
       // @step When I view the diff for the executable in the checkpoint viewer
-      const diff = await getFileDiff(tmpDir, 'app.exe');
+      const diff = await getFileDiff(setup.testDir, 'app.exe');
 
       // @step Then I should see the message '[Binary file - no diff available]'
       expect(diff).toContain('[Binary file - no diff available]');

@@ -8,26 +8,25 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { getToolConfigurationStatus, getConfigExample } from '../registry';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Unconfigured research tool visibility and discovery', () => {
-  let testDir: string;
+  let setup: TestDirectorySetup;
   let configPath: string;
 
-  beforeEach(() => {
-    // Create temporary test directory
-    testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fspec-test-'));
-    configPath = path.join(testDir, 'spec', 'fspec-config.json');
+  beforeEach(async () => {
+    setup = await setupTestDirectory('registry-config-status');
+    configPath = path.join(setup.testDir, 'spec', 'fspec-config.json');
 
     // Ensure spec directory exists
-    fs.mkdirSync(path.join(testDir, 'spec'), { recursive: true });
+    fs.mkdirSync(path.join(setup.testDir, 'spec'), { recursive: true });
   });
 
-  afterEach(() => {
-    // Cleanup test directory
-    if (fs.existsSync(testDir)) {
-      fs.rmSync(testDir, { recursive: true, force: true });
-    }
+  afterEach(async () => {
+    await setup.cleanup();
   });
 
   describe('Scenario: List tools with no tools configured', () => {
@@ -38,7 +37,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
 
       // @step When I run 'fspec research'
       // This tests the status detection that powers the listing
-      const status = await getToolConfigurationStatus(testDir);
+      const status = await getToolConfigurationStatus(setup.testDir);
 
       // @step Then I should see only AST listed as available
       const astStatus = status.get('ast');
@@ -69,7 +68,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       fs.writeFileSync(configPath, JSON.stringify({}), 'utf-8');
 
       // @step When I run 'fspec research --all'
-      const status = await getToolConfigurationStatus(testDir);
+      const status = await getToolConfigurationStatus(setup.testDir);
 
       // @step Then I should see all 5 research tools listed
       expect(status.size).toBe(5);
@@ -105,7 +104,7 @@ describe('Feature: Unconfigured research tool visibility and discovery', () => {
       };
       fs.writeFileSync(configPath, JSON.stringify(config), 'utf-8');
 
-      const status = await getToolConfigurationStatus(testDir);
+      const status = await getToolConfigurationStatus(setup.testDir);
 
       // Verify Perplexity is now detected as configured
       const perplexityStatus = status.get('perplexity');
