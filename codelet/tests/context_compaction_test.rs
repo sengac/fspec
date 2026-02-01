@@ -231,7 +231,7 @@ async fn test_select_turns_for_compaction_using_anchor() -> Result<()> {
 
     // @step When I select turns for compaction
     let selector = TurnSelector::new();
-    let selection = selector.select_turns(&turns, Some(&anchor))?;
+    let selection = selector.select_turns_with_recent(&turns, &[anchor])?;
 
     // @step Then turns 40-89 are kept (50 turns, 0-indexed)
     assert_eq!(

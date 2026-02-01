@@ -17,6 +17,7 @@ import React, { useEffect, useRef } from 'react';
 import { Box, Text } from 'ink';
 import { useMultiLineInput } from '../hooks/useMultiLineInput';
 import { useInputCompat, InputPriority } from '../input/index';
+import type { CompactionProgress } from '../hooks/useRustSessionState';
 
 export interface MultiLineInputProps {
   value: string;
@@ -33,6 +34,14 @@ export interface MultiLineInputProps {
    * Use this when an overlay is active that needs to capture Enter.
    */
   suppressEnter?: boolean;
+  /**
+   * UX-002: Whether the session is compacting context
+   */
+  isCompacting?: boolean;
+  /**
+   * UX-002: Compaction progress information for detailed status display
+   */
+  compactionProgress?: CompactionProgress | null;
 }
 
 export const MultiLineInput: React.FC<MultiLineInputProps> = ({
@@ -45,6 +54,8 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
   onHistoryPrev,
   onHistoryNext,
   suppressEnter = false,
+  isCompacting = false,
+  compactionProgress = null,
 }) => {
   const {
     lines,
@@ -126,6 +137,11 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
 
       // Backspace
       if (key.backspace || key.delete) {
+        // UX-002: Block text modification during compaction
+        if (isCompacting) {
+          return true; // Consume input but don't modify text
+        }
+        
         // Check for Alt+Backspace (word delete)
         // Alt modifier may come through as meta in some terminals
         if (key.meta) {
@@ -140,6 +156,10 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
 
       // Delete key (forward delete)
       if (input === '\x1b[3~') {
+        // UX-002: Block text modification during compaction
+        if (isCompacting) {
+          return true; // Consume input but don't modify text
+        }
         
         deleteCharAt();
         return true;
@@ -275,6 +295,10 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
         .join('');
 
       if (clean) {
+        // UX-002: Block typing during compaction per Business Rule #4
+        if (isCompacting) {
+          return true; // Consume input but don't insert characters
+        }
         
         // Use insertString for bulk insert to avoid stale closure issues
         insertString(clean);
@@ -313,12 +337,22 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
     );
   };
 
+  // UX-002: Generate compaction status text for placeholder
+  const getDisplayPlaceholder = () => {
+    if (isCompacting && compactionProgress) {
+      return `Compacting: ${compactionProgress.phase}... ${compactionProgress.current}/${compactionProgress.total} turns`;
+    }
+    return placeholder;
+  };
+
   // Empty state with placeholder
   if (lines.length === 1 && lines[0] === '') {
+    const displayPlaceholder = getDisplayPlaceholder();
+    
     return (
       <Box flexDirection="column">
         <Text>
-          <Text dimColor>{placeholder}</Text>
+          <Text dimColor>{displayPlaceholder}</Text>
           <Text inverse> </Text>
         </Text>
       </Box>

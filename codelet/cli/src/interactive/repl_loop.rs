@@ -86,7 +86,7 @@ pub(super) async fn repl_loop(session: &mut Session) -> Result<()> {
             println!("[Compacting context...]");
 
             match execute_compaction(session).await {
-                Ok(metrics) => {
+                Ok((metrics, _anchor)) => {
                     // Calculate compression percentage
                     let compression_pct = metrics.compression_ratio * 100.0;
 

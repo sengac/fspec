@@ -6,7 +6,7 @@
 //! each running in its own tokio task. Sessions can be attached/detached without
 //! interrupting agent execution.
 
-use crate::types::{CompactionResult, DebugCommandResult, StreamChunk, ToolCallInfo, ToolResultInfo};
+use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiTurnDetails};
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
@@ -43,6 +43,19 @@ pub enum SessionStatus {
     Interrupted = 2,
     /// PAUSE-001: Session is paused waiting for user input (Enter/Y/N/Esc)
     Paused = 3,
+    /// PERF-002: Session is compacting context - supports progress tracking
+    Compacting = 4,
+}
+
+/// PERF-002: Compaction progress information  
+#[derive(Debug, Clone, Default)]
+pub(crate) struct CompactionProgress {
+    /// Current compaction phase (e.g., "Analyzing anchors", "Generating summary")
+    pub phase: String,
+    /// Current progress count (e.g., current turn being processed)
+    pub current: u32,
+    /// Total items to process (e.g., total turns to analyze)
+    pub total: u32,
 }
 
 /// Role authority level for watcher sessions (WATCH-004)
@@ -332,10 +345,9 @@ impl ObservationBuffer {
         self.chunks
             .iter()
             .filter_map(|c| {
-                if c.chunk_type == "Text" {
-                    c.text.clone()
-                } else {
-                    None
+                match c {
+                    StreamChunk::Text { text, .. } => Some(text.clone()),
+                    _ => None,
                 }
             })
             .collect()
@@ -356,7 +368,16 @@ impl ObservationBuffer {
     pub fn correlation_ids(&self) -> Vec<String> {
         self.chunks
             .iter()
-            .filter_map(|c| c.correlation_id.clone())
+            .filter_map(|c| {
+                match c {
+                    StreamChunk::Text { correlation_id, .. } => correlation_id.clone(),
+                    StreamChunk::Thinking { correlation_id, .. } => correlation_id.clone(),
+                    StreamChunk::ToolCall { correlation_id, .. } => correlation_id.clone(),
+                    StreamChunk::ToolResult { correlation_id, .. } => correlation_id.clone(),
+                    StreamChunk::ToolProgress { correlation_id, .. } => correlation_id.clone(),
+                    _ => None,
+                }
+            })
             .collect()
     }
 }
@@ -367,7 +388,7 @@ impl ObservationBuffer {
 /// - Done (turn complete)
 /// - ToolResult (tool execution finished)
 pub fn is_natural_breakpoint(chunk: &StreamChunk) -> bool {
-    matches!(chunk.chunk_type.as_str(), "Done" | "ToolResult")
+    matches!(chunk, StreamChunk::Done | StreamChunk::ToolResult { .. })
 }
 
 /// Check if silence timeout has been reached (WATCH-005)
@@ -399,26 +420,18 @@ pub fn format_evaluation_prompt(buffer: &ObservationBuffer, role: &SessionRole) 
     
     // Add accumulated observations
     for chunk in buffer.chunks() {
-        match chunk.chunk_type.as_str() {
-            "Text" => {
-                if let Some(text) = &chunk.text {
-                    prompt.push_str(text);
-                }
+        match chunk {
+            StreamChunk::Text { text, .. } => {
+                prompt.push_str(text);
             }
-            "Thinking" => {
-                if let Some(thinking) = &chunk.thinking {
-                    prompt.push_str(&format!("[Thinking]: {}\n", thinking));
-                }
+            StreamChunk::Thinking { thinking, .. } => {
+                prompt.push_str(&format!("[Thinking]: {}\n", thinking));
             }
-            "ToolCall" => {
-                if let Some(tc) = &chunk.tool_call {
-                    prompt.push_str(&format!("[Tool Call]: {} ({})\n", tc.name, tc.id));
-                }
+            StreamChunk::ToolCall { tool_call, .. } => {
+                prompt.push_str(&format!("[Tool Call]: {} ({})\n", tool_call.name, tool_call.id));
             }
-            "ToolResult" => {
-                if let Some(tr) = &chunk.tool_result {
-                    prompt.push_str(&format!("[Tool Result]: {}\n{}\n", tr.tool_call_id, tr.content));
-                }
+            StreamChunk::ToolResult { tool_result, .. } => {
+                prompt.push_str(&format!("[Tool Result]: {}\n{}\n", tool_result.tool_call_id, tool_result.content));
             }
             _ => {} // Ignore other chunk types
         }
@@ -659,6 +672,7 @@ impl SessionStatus {
             SessionStatus::Running => "running",
             SessionStatus::Interrupted => "interrupted",
             SessionStatus::Paused => "paused",
+            SessionStatus::Compacting => "compacting",
         }
     }
 }
@@ -808,6 +822,12 @@ pub struct BackgroundSession {
     /// This is the level set via /thinking command, persists for the session.
     /// Effective level = max(base_thinking_level, detected_level_from_text)
     base_thinking_level: AtomicU8,
+    
+    /// TUI-056: Anchor points detected during compaction (stored for retrieval)
+    anchor_points: std::sync::Mutex<Vec<codelet_core::compaction::AnchorPoint>>,
+    
+    /// PERF-002: Current compaction progress information
+    compaction_progress: RwLock<Option<CompactionProgress>>,
 }
 
 impl BackgroundSession {
@@ -855,6 +875,8 @@ impl BackgroundSession {
             pause_response_tx,
             pause_response_rx: std::sync::Mutex::new(pause_response_rx),
             base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
+            anchor_points: std::sync::Mutex::new(Vec::new()), // TUI-056: Empty anchor points initially
+            compaction_progress: RwLock::new(None), // PERF-002: No compaction in progress initially
         }
     }
 
@@ -907,15 +929,17 @@ impl BackgroundSession {
     pub fn set_status(&self, status: SessionStatus) {
         let old_status = self.status.swap(status as u8, Ordering::AcqRel);
         
-        // Notify TypeScript when status changes (especially for pause state)
+        // NAPI-010: Notify TypeScript when status changes via SessionStateChange chunk
+        // This is an internal state update - NOT added to conversation
         if old_status != status as u8 {
-            let status_str = match status {
-                SessionStatus::Idle => "idle",
-                SessionStatus::Running => "running", 
-                SessionStatus::Interrupted => "interrupted",
-                SessionStatus::Paused => "paused",
+            let state = match status {
+                SessionStatus::Idle => SessionState::Idle,
+                SessionStatus::Running => SessionState::Running, 
+                SessionStatus::Interrupted => SessionState::Interrupted,
+                SessionStatus::Paused => SessionState::Paused,
+                SessionStatus::Compacting => SessionState::Compacting,
             };
-            self.handle_output(StreamChunk::status(status_str.to_string()));
+            self.handle_output(StreamChunk::session_state_change(state));
         }
     }
     
@@ -927,22 +951,23 @@ impl BackgroundSession {
     /// Handle output chunk - buffer and optionally forward to callback
     /// WATCH-011: Assigns correlation_id for cross-pane selection highlighting
     /// WATCH-011: Applies pending_observed_correlation_ids for watcher responses
-    pub fn handle_output(&self, mut chunk: StreamChunk) {
-        // WATCH-011: Assign correlation_id if not already set
-        if chunk.correlation_id.is_none() {
-            let id = self.correlation_counter.fetch_add(1, Ordering::SeqCst);
-            chunk.correlation_id = Some(format!("{}-{}", self.id, id));
-        }
+    pub fn handle_output(&self, chunk: StreamChunk) {
+        // WATCH-011: Assign correlation_id if not already set (for variants that support it)
+        let id = self.correlation_counter.fetch_add(1, Ordering::SeqCst);
+        let correlation_id = format!("{}-{}", self.id, id);
+        let chunk = chunk.with_correlation_id(correlation_id);
 
         // WATCH-011: Apply pending observed_correlation_ids for watcher responses
         // This tags watcher output chunks with the parent chunk IDs that triggered this response
-        if chunk.observed_correlation_ids.is_none() {
+        let chunk = {
             let pending_ids = self.pending_observed_correlation_ids.read()
                 .expect("pending_observed_correlation_ids lock poisoned");
             if !pending_ids.is_empty() {
-                chunk.observed_correlation_ids = Some(pending_ids.clone());
+                chunk.with_observed_correlation_ids(pending_ids.clone())
+            } else {
+                chunk
             }
-        }
+        };
 
         // Always buffer (unbounded)
         {
@@ -1096,6 +1121,22 @@ impl BackgroundSession {
         self.base_thinking_level.store(clamped, Ordering::Release);
     }
 
+    /// PERF-002: Get current compaction progress information
+    pub(crate) fn get_compaction_progress(&self) -> Option<CompactionProgress> {
+        self.compaction_progress.read().unwrap().clone()
+    }
+
+    /// PERF-002: Set compaction progress information
+    pub(crate) fn set_compaction_progress(&self, progress: Option<CompactionProgress>) {
+        *self.compaction_progress.write().unwrap() = progress;
+    }
+
+    /// PERF-002: Update compaction progress phase and counts
+    pub fn update_compaction_progress(&self, phase: String, current: u32, total: u32) {
+        let progress = CompactionProgress { phase, current, total };
+        *self.compaction_progress.write().unwrap() = Some(progress);
+    }
+
     /// Set pending observed correlation IDs (WATCH-011)
     ///
     /// When a watcher processes observations, call this before sending the
@@ -1195,7 +1236,7 @@ impl BackgroundSession {
             .read()
             .expect("output buffer lock poisoned")
             .iter()
-            .filter(|c| c.chunk_type == "Done")
+            .filter(|c| matches!(c, StreamChunk::Done))
             .count() as u32;
 
         SessionInfo {
@@ -1384,7 +1425,8 @@ mod watcher_broadcast_tests {
         // @step Then the chunk should be added to the output buffer
         let buffer = output_buffer.read().expect("lock");
         assert_eq!(buffer.len(), 1, "chunk should be buffered");
-        assert_eq!(buffer[0].chunk_type, "Text");
+        // NAPI-010: Use pattern matching to check variant
+        assert!(matches!(buffer[0], StreamChunk::Text { .. }));
 
         // @step And no error should occur from the broadcast
         // (if we got here, no panic occurred)
@@ -1416,8 +1458,13 @@ mod watcher_broadcast_tests {
 
         // @step Then the watcher should receive the same chunk via its receiver
         let received = rx.try_recv().expect("should receive chunk");
-        assert_eq!(received.chunk_type, "Text");
-        assert_eq!(received.text, Some("watcher test".to_string()));
+        // NAPI-010: Use pattern matching to check variant
+        match received {
+            StreamChunk::Text { text, .. } => {
+                assert_eq!(text, "watcher test");
+            }
+            _ => panic!("Expected Text variant"),
+        }
 
         // @step And the chunk should also be buffered normally
         let buffer = output_buffer.read().expect("lock");
@@ -1455,9 +1502,14 @@ mod watcher_broadcast_tests {
         let received_b = rx_b.try_recv().expect("watcher B should receive");
 
         // @step And both received chunks should be identical
-        assert_eq!(received_a.chunk_type, received_b.chunk_type);
-        assert_eq!(received_a.text, received_b.text);
-        assert_eq!(received_a.text, Some("multi-watcher".to_string()));
+        // NAPI-010: Use pattern matching to check variants
+        match (&received_a, &received_b) {
+            (StreamChunk::Text { text: text_a, .. }, StreamChunk::Text { text: text_b, .. }) => {
+                assert_eq!(text_a, text_b);
+                assert_eq!(text_a, "multi-watcher");
+            }
+            _ => panic!("Expected Text variants"),
+        }
     }
 
     /// Scenario: Slow watcher receives lagged error when falling behind
@@ -1522,7 +1574,13 @@ mod watcher_broadcast_tests {
 
         // @step Then watcher B should still receive the chunk normally
         let received = rx_b.try_recv().expect("watcher B should receive");
-        assert_eq!(received.text, Some("after drop".to_string()));
+        // NAPI-010: Use pattern matching
+        match received {
+            StreamChunk::Text { text, .. } => {
+                assert_eq!(text, "after drop");
+            }
+            _ => panic!("Expected Text variant"),
+        }
 
         // @step And the parent session should continue operating normally
         assert!(send_result.is_ok(), "send should succeed with remaining receiver");
@@ -1556,7 +1614,13 @@ mod watcher_broadcast_tests {
 
         // @step Then the new watcher should receive only the new chunk
         let received = late_rx.try_recv().expect("should receive new chunk");
-        assert_eq!(received.text, Some("new chunk".to_string()));
+        // NAPI-010: Use pattern matching
+        match received {
+            StreamChunk::Text { text, .. } => {
+                assert_eq!(text, "new chunk");
+            }
+            _ => panic!("Expected Text variant"),
+        }
 
         // @step And the new watcher should not receive the previous 10 chunks
         // (already verified - we only got one chunk, the new one)
@@ -2470,8 +2534,13 @@ mod watcher_input_tests {
         let chunk = StreamChunk::watcher_input(format_watcher_input(&input));
 
         // @step And the chunk should contain the formatted message with structured prefix
-        assert_eq!(chunk.chunk_type, "WatcherInput");
-        assert!(chunk.text.as_ref().unwrap().starts_with("[WATCHER: security-auditor | Authority: Supervisor | Session: xyz789]"));
+        // NAPI-010: Use pattern matching
+        match chunk {
+            StreamChunk::WatcherInput { text } => {
+                assert!(text.starts_with("[WATCHER: security-auditor | Authority: Supervisor | Session: xyz789]"));
+            }
+            _ => panic!("Expected WatcherInput variant"),
+        }
     }
 
     /// Scenario: Receive watcher input queues message asynchronously
@@ -2840,16 +2909,17 @@ mod correlation_id_tests {
         let mut buffer = ObservationBuffer::new();
 
         // @step And the parent emits chunks with correlation_ids "p-0", "p-1", "p-2"
-        let mut chunk1 = StreamChunk::text("Hello".to_string());
-        chunk1.correlation_id = Some("p-0".to_string());
+        // NAPI-010: Use with_correlation_id() builder method
+        let chunk1 = StreamChunk::text("Hello".to_string())
+            .with_correlation_id("p-0".to_string());
         buffer.push(chunk1);
 
-        let mut chunk2 = StreamChunk::text("World".to_string());
-        chunk2.correlation_id = Some("p-1".to_string());
+        let chunk2 = StreamChunk::text("World".to_string())
+            .with_correlation_id("p-1".to_string());
         buffer.push(chunk2);
 
-        let mut chunk3 = StreamChunk::text("!".to_string());
-        chunk3.correlation_id = Some("p-2".to_string());
+        let chunk3 = StreamChunk::text("!".to_string())
+            .with_correlation_id("p-2".to_string());
         buffer.push(chunk3);
 
         // @step When a natural breakpoint triggers watcher evaluation
@@ -2875,9 +2945,15 @@ mod correlation_id_tests {
         ]);
 
         // @step Then the chunk has observed_correlation_ids set
-        assert!(tagged_chunk.observed_correlation_ids.is_some());
-        let ids = tagged_chunk.observed_correlation_ids.unwrap();
-        assert_eq!(ids, vec!["p-0", "p-1"]);
+        // NAPI-010: Check using pattern matching on the enum variant
+        match tagged_chunk {
+            StreamChunk::Text { observed_correlation_ids, .. } => {
+                assert!(observed_correlation_ids.is_some());
+                let ids = observed_correlation_ids.unwrap();
+                assert_eq!(ids, vec!["p-0", "p-1"]);
+            }
+            _ => panic!("Expected Text variant"),
+        }
     }
 
     /// Scenario: WatcherLoopAction::ProcessObservations includes observed correlation IDs
@@ -2966,7 +3042,13 @@ mod watcher_integration_tests {
         
         let received = watcher_broadcast_rx.try_recv();
         assert!(received.is_ok(), "Watcher should receive chunks from parent broadcast");
-        assert_eq!(received.unwrap().text, Some("test from parent".to_string()));
+        // NAPI-010: Check using pattern matching on the enum variant
+        match received.unwrap() {
+            StreamChunk::Text { text, .. } => {
+                assert_eq!(text, "test from parent");
+            }
+            _ => panic!("Expected Text variant"),
+        }
     }
 
     /// Scenario: Watcher loop processes parent observations at breakpoints
@@ -3775,7 +3857,9 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 output_chunk: tp.output_chunk,
                 is_stderr: tp.is_stderr,
             }),
-            StreamEvent::Status(status) => StreamChunk::status(status),
+            // NAPI-010: StreamEvent::Status messages are user-visible notifications
+            // (e.g., "[Continuing with compacted context...]"), NOT internal state changes
+            StreamEvent::Status(status) => StreamChunk::user_notification(status, NotificationSeverity::Info),
             StreamEvent::Tokens(info) => {
                 // Update cached tokens for sync access
                 self.session.update_tokens(info.input_tokens as u32, info.output_tokens as u32);
@@ -4016,6 +4100,20 @@ pub fn session_get_status(session_id: String) -> Result<String> {
     Ok(status.as_str().to_string())
 }
 
+/// PERF-002: Get compaction progress for a session
+///
+/// Returns the current compaction progress if compaction is in progress, null otherwise.
+/// Used by TypeScript to display progress indication: "Analyzing anchors... X/Y turns"
+#[napi]
+pub fn session_get_compaction_progress(session_id: String) -> Result<Option<crate::types::CompactionProgress>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    Ok(session.get_compaction_progress().map(|p| crate::types::CompactionProgress {
+        phase: p.phase,
+        current: p.current,
+        total: p.total,
+    }))
+}
+
 // === PAUSE-001: Session pause NAPI functions ===
 
 /// Get pause state for a session (PAUSE-001)
@@ -4110,7 +4208,53 @@ pub fn session_clear_active() {
     SessionManager::instance().clear_active_session();
 }
 
-/// Update the model for a background session
+/// Get anchor points for a session (TUI-056)
+///
+/// Returns anchor points that were detected during compaction operations.
+/// Empty list if no compaction has been performed or no anchors were found.
+#[napi]
+pub fn session_get_anchor_points(session_id: String) -> Result<Vec<NapiAnchorPoint>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
+    
+    // Convert internal anchor points to NAPI types
+    let napi_anchors: Vec<NapiAnchorPoint> = anchor_points.iter().map(|anchor| {
+        let napi_type = match anchor.anchor_type {
+            codelet_core::compaction::AnchorType::ErrorResolution => NapiAnchorType::ErrorResolution,
+            codelet_core::compaction::AnchorType::TaskCompletion => NapiAnchorType::TaskCompletion,
+            codelet_core::compaction::AnchorType::UserCheckpoint => NapiAnchorType::UserCheckpoint,
+            codelet_core::compaction::AnchorType::FeatureMilestone => NapiAnchorType::FeatureMilestone,
+        };
+        
+        NapiAnchorPoint {
+            turn_index: anchor.turn_index as u32,
+            anchor_type: napi_type,
+            weight: anchor.weight,
+            confidence: anchor.confidence,
+            description: anchor.description.clone(),
+            timestamp: anchor.timestamp.duration_since(std::time::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_millis() as f64,
+        }
+    }).collect();
+    
+    Ok(napi_anchors)
+}
+
+/// Get turn details for a session (TUI-056)
+///
+/// Returns detailed information about a specific conversation turn including
+/// user message, assistant response, tool calls, and file modifications.
+#[napi]
+pub fn session_get_turn_details(session_id: String, _turn_index: u32) -> Result<Option<NapiTurnDetails>> {
+    let _session = SessionManager::instance().get_session(&session_id)?;
+    
+    // Access session data to get turn details
+    // For now, return None since we need to implement the actual turn detail retrieval
+    // This would require storing conversation turns in BackgroundSession
+    Ok(None)
+}
+
 #[napi]
 pub async fn session_set_model(session_id: String, provider_id: String, model_id: String) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
@@ -4412,34 +4556,28 @@ pub fn session_get_merged_output(session_id: String) -> Result<Vec<StreamChunk>>
     let mut merged: Vec<StreamChunk> = Vec::new();
 
     for chunk in chunks {
-        match chunk.chunk_type.as_str() {
-            "Text" => {
+        match &chunk {
+            StreamChunk::Text { text, .. } => {
                 // Merge consecutive Text chunks
-                if let Some(last) = merged.last_mut() {
-                    if last.chunk_type == "Text" {
-                        if let (Some(existing), Some(new)) = (&mut last.text, &chunk.text) {
-                            existing.push_str(new);
-                            continue;
-                        }
-                    }
+                if let Some(StreamChunk::Text { text: existing_text, .. }) = merged.last_mut() {
+                    existing_text.push_str(text);
+                    continue;
                 }
                 merged.push(chunk);
             }
-            "Thinking" => {
+            StreamChunk::Thinking { thinking, .. } => {
                 // Merge consecutive Thinking chunks
-                if let Some(last) = merged.last_mut() {
-                    if last.chunk_type == "Thinking" {
-                        if let (Some(existing), Some(new)) = (&mut last.thinking, &chunk.thinking) {
-                            existing.push_str(new);
-                            continue;
-                        }
-                    }
+                if let Some(StreamChunk::Thinking { thinking: existing_thinking, .. }) = merged.last_mut() {
+                    existing_thinking.push_str(thinking);
+                    continue;
                 }
                 merged.push(chunk);
             }
             // TUI-049: Include TokenUpdate and ContextFillUpdate in merged output
             // These are needed to restore token state when switching sessions
-            "TokenUpdate" | "ContextFillUpdate" => merged.push(chunk),
+            StreamChunk::TokenUpdate { .. } | StreamChunk::ContextFillUpdate { .. } => {
+                merged.push(chunk);
+            }
             _ => merged.push(chunk),
         }
     }
@@ -4745,6 +4883,11 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
         return Err(Error::from_reason("Nothing to compact - no messages yet"));
     }
 
+    // PERF-002: Set compacting status and initial progress
+    session.set_status(SessionStatus::Compacting);
+    let total_messages = inner.messages.len() as u32;
+    session.update_compaction_progress("Analyzing anchors".to_string(), 0, total_messages);
+
     // Get current token count for reporting
     let original_tokens = inner.token_tracker.input_tokens;
 
@@ -4765,25 +4908,39 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
         }
     }
 
+    // PERF-002: Update progress to generating summary phase
+    session.update_compaction_progress("Generating summary".to_string(), total_messages, total_messages);
+
     // Execute compaction
-    let metrics = execute_compaction(&mut inner).await.map_err(|e| {
-        // Capture compaction.manual.failed event
-        if let Ok(manager_arc) = get_debug_capture_manager() {
-            if let Ok(mut manager) = manager_arc.lock() {
-                if manager.is_enabled() {
-                    manager.capture(
-                        "compaction.manual.failed",
-                        serde_json::json!({
-                            "command": "/compact",
-                            "error": e.to_string(),
-                        }),
-                        None,
-                    );
+    let (metrics, anchor) = match execute_compaction(&mut inner).await {
+        Ok(result) => result,
+        Err(e) => {
+            // PERF-002: Clear progress and reset status on error
+            session.set_compaction_progress(None);
+            session.set_status(SessionStatus::Idle);
+            
+            // Capture compaction.manual.failed event
+            if let Ok(manager_arc) = get_debug_capture_manager() {
+                if let Ok(mut manager) = manager_arc.lock() {
+                    if manager.is_enabled() {
+                        manager.capture(
+                            "compaction.manual.failed",
+                            serde_json::json!({
+                                "command": "/compact",
+                                "error": e.to_string(),
+                            }),
+                            None,
+                        );
+                    }
                 }
             }
+            return Err(Error::from_reason(format!("Compaction failed: {e}")));
         }
-        Error::from_reason(format!("Compaction failed: {e}"))
-    })?;
+    };
+
+    // PERF-002: Clear progress and reset status after successful completion
+    session.set_compaction_progress(None);
+    session.set_status(SessionStatus::Idle);
 
     // Capture compaction.manual.complete event
     if let Ok(manager_arc) = get_debug_capture_manager() {
@@ -4803,6 +4960,12 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
                 );
             }
         }
+    }
+
+    // TUI-056: Store anchor point if one was created during compaction
+    if let Some(anchor_point) = anchor {
+        let mut anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
+        anchor_points.push(anchor_point);
     }
 
     Ok(CompactionResult {

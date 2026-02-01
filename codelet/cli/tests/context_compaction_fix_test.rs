@@ -321,7 +321,7 @@ fn test_turn_selection_from_anchor_forward() {
 
     // @step When compaction is triggered
     let selector = TurnSelector::new();
-    let selection = selector.select_turns(&turns, Some(&anchor)).unwrap();
+    let selection = selector.select_turns_with_recent(&turns, &[anchor]).unwrap();
 
     // @step Then turns 7 through 10 should be kept in full
     // Note: turns are 0-indexed, so turns 7,8,9 (3 turns total)

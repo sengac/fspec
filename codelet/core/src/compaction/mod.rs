@@ -15,7 +15,9 @@ mod model;
 mod selector;
 
 #[cfg(test)]
-mod ctx001_tests;
+mod llm_anchor_detection_tests {
+    include!("__tests__/llm_anchor_detection.test.rs");
+}
 
 // Re-export public types from model
 pub use model::{ConversationTurn, TokenTracker, ToolCall, ToolResult};

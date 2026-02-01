@@ -4,6 +4,90 @@
 
 use serde::{Deserialize, Serialize};
 
+/// PERF-002: Progress information for compaction process
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompactionProgress {
+    /// Current compaction phase (e.g., "Analyzing anchors", "Generating summary")
+    pub phase: String,
+    /// Current progress count (e.g., current turn being processed)
+    pub current: u32,
+    /// Total items to process (e.g., total turns to analyze)
+    pub total: u32,
+}
+
+/// TUI-056: Anchor point types for NAPI
+#[napi(string_enum)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum NapiAnchorType {
+    ErrorResolution,
+    TaskCompletion,
+    UserCheckpoint,
+    FeatureMilestone,
+}
+
+/// TUI-056: Anchor point for NAPI
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NapiAnchorPoint {
+    /// Index of turn in conversation history
+    pub turn_index: u32,
+    /// Type of anchor
+    pub anchor_type: NapiAnchorType,
+    /// Weight for preservation (0.7-0.9)
+    pub weight: f64,
+    /// Detection confidence (0.0-1.0)
+    pub confidence: f64,
+    /// Human-readable description
+    pub description: String,
+    /// Timestamp when anchor was created (Unix timestamp in milliseconds)
+    pub timestamp: f64,
+}
+
+/// TUI-056: Tool call info for turn details
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NapiToolCall {
+    /// Tool name
+    pub tool: String,
+    /// Tool parameters as JSON string
+    pub parameters: String,
+    /// Whether tool call was successful
+    pub success: bool,
+}
+
+/// TUI-056: File modification info for turn details
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NapiFileModification {
+    /// File path
+    pub path: String,
+    /// Type of operation
+    pub operation: String, // "create" | "edit" | "delete"
+    /// Summary of what was changed
+    pub summary: String,
+}
+
+/// TUI-056: Turn details for NAPI
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NapiTurnDetails {
+    /// Turn index for reference
+    pub turn_index: u32,
+    /// User message for this turn
+    pub user_message: String,
+    /// Assistant response for this turn
+    pub assistant_response: String,
+    /// Tool calls made during this turn
+    pub tool_calls: Vec<NapiToolCall>,
+    /// File modifications made during this turn
+    pub file_modifications: Vec<NapiFileModification>,
+    /// Overall success/failure status of turn
+    pub status: String, // "success" | "partial" | "failed"
+    /// Brief context about what happened
+    pub context: String,
+}
+
 /// Token usage tracking information
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -80,29 +164,6 @@ pub struct ToolProgressInfo {
     pub is_stderr: bool,
 }
 
-/// Stream chunk types for streaming responses (TOOL-010)
-#[napi(string_enum)]
-#[derive(Debug, PartialEq, Eq)]
-pub enum ChunkType {
-    Text,
-    /// Thinking/reasoning content from extended thinking (TOOL-010)
-    Thinking,
-    ToolCall,
-    ToolResult,
-    /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
-    ToolProgress,
-    Status,
-    Interrupted,
-    TokenUpdate,
-    ContextFillUpdate,
-    Done,
-    Error,
-    /// User input message (NAPI-009: for resume/attach to restore user messages)
-    UserInput,
-    /// Watcher pending injection - shown when auto_inject=false (WATCH-020)
-    WatcherPendingInjection,
-}
-
 /// Context window fill information (TUI-033)
 /// Sent with each token update to show context window usage
 #[napi(object)]
@@ -129,310 +190,259 @@ pub struct WatcherPendingInjectionInfo {
     pub content: String,
 }
 
-/// A chunk of streaming response (TOOL-010: added thinking field, TOOL-011: added tool_progress, WATCH-020: added watcher_pending_injection)
-#[napi(object)]
+/// NAPI-010: Session state for internal state machine tracking
+/// NOT for conversation display - use SessionStateChange chunk variant
+#[napi(string_enum)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SessionState {
+    Idle,
+    Running,
+    Paused,
+    Compacting,
+    Interrupted,
+}
+
+/// NAPI-010: User notification severity levels
+#[napi(string_enum)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum NotificationSeverity {
+    Info,
+    Warning,
+    Error,
+}
+
+/// NAPI-010: Stream chunk - proper discriminated union
+///
+/// The type system enforces correct handling in TypeScript via exhaustive switch statements.
+/// This replaces the old struct-based StreamChunk that required fragile string parsing.
+///
+/// Key distinction:
+/// - SessionStateChange: INTERNAL state updates, do NOT add to conversation
+/// - UserNotification: User-facing messages, DISPLAY in conversation
+#[napi(discriminant = "type")]
 #[derive(Debug, Clone)]
-pub struct StreamChunk {
-    #[napi(js_name = "type")]
-    pub chunk_type: String,
-    pub text: Option<String>,
+pub enum StreamChunk {
+    /// Text content from assistant
+    Text {
+        text: String,
+        /// Correlation ID for cross-pane selection highlighting (WATCH-011)
+        #[napi(js_name = "correlationId")]
+        correlation_id: Option<String>,
+        /// IDs of observed parent chunks that triggered this watcher response (WATCH-011)
+        #[napi(js_name = "observedCorrelationIds")]
+        observed_correlation_ids: Option<Vec<String>>,
+    },
+
     /// Thinking/reasoning content from extended thinking (TOOL-010)
-    pub thinking: Option<String>,
-    pub tool_call: Option<ToolCallInfo>,
-    pub tool_result: Option<ToolResultInfo>,
+    Thinking {
+        thinking: String,
+        #[napi(js_name = "correlationId")]
+        correlation_id: Option<String>,
+        #[napi(js_name = "observedCorrelationIds")]
+        observed_correlation_ids: Option<Vec<String>>,
+    },
+
+    /// Tool invocation from assistant
+    ToolCall {
+        #[napi(js_name = "toolCall")]
+        tool_call: ToolCallInfo,
+        #[napi(js_name = "correlationId")]
+        correlation_id: Option<String>,
+        #[napi(js_name = "observedCorrelationIds")]
+        observed_correlation_ids: Option<Vec<String>>,
+    },
+
+    /// Tool execution result
+    ToolResult {
+        #[napi(js_name = "toolResult")]
+        tool_result: ToolResultInfo,
+        #[napi(js_name = "correlationId")]
+        correlation_id: Option<String>,
+        #[napi(js_name = "observedCorrelationIds")]
+        observed_correlation_ids: Option<Vec<String>>,
+    },
+
     /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
-    pub tool_progress: Option<ToolProgressInfo>,
-    pub status: Option<String>,
-    pub queued_inputs: Option<Vec<String>>,
-    pub tokens: Option<TokenTracker>,
-    pub context_fill: Option<ContextFillInfo>,
-    pub error: Option<String>,
-    /// Correlation ID for cross-pane selection highlighting (WATCH-011)
-    /// Assigned by handle_output() using per-session atomic counter
-    pub correlation_id: Option<String>,
-    /// IDs of observed parent chunks that triggered this watcher response (WATCH-011)
-    /// Only populated on watcher session output chunks
-    pub observed_correlation_ids: Option<Vec<String>>,
-    /// Pending injection from watcher when auto_inject=false (WATCH-020)
-    pub watcher_pending_injection: Option<WatcherPendingInjectionInfo>,
+    ToolProgress {
+        #[napi(js_name = "toolProgress")]
+        tool_progress: ToolProgressInfo,
+        #[napi(js_name = "correlationId")]
+        correlation_id: Option<String>,
+        #[napi(js_name = "observedCorrelationIds")]
+        observed_correlation_ids: Option<Vec<String>>,
+    },
+
+    /// NAPI-010: Internal session state change - NOT for conversation display
+    /// TypeScript should update state machine and UI indicators, but NOT add to conversation
+    SessionStateChange {
+        state: SessionState,
+    },
+
+    /// NAPI-010: User-facing notification - DISPLAY in conversation
+    /// For messages that should be visible to the user in the conversation area
+    UserNotification {
+        message: String,
+        severity: NotificationSeverity,
+    },
+
+    /// User interrupted agent execution
+    Interrupted {
+        #[napi(js_name = "queuedInputs")]
+        queued_inputs: Vec<String>,
+    },
+
+    /// Token usage update
+    TokenUpdate {
+        tokens: TokenTracker,
+    },
+
+    /// Context fill percentage update (TUI-033)
+    ContextFillUpdate {
+        #[napi(js_name = "contextFill")]
+        context_fill: ContextFillInfo,
+    },
+
+    /// Stream completed
+    Done,
+
+    /// Error occurred
+    Error {
+        error: String,
+    },
+
+    /// User input message (NAPI-009: for resume/attach to restore user messages)
+    UserInput {
+        text: String,
+    },
+
+    /// Watcher input message (WATCH-006: for watcher injection into parent session)
+    WatcherInput {
+        text: String,
+    },
+
+    /// Watcher pending injection - when auto_inject=false (WATCH-020)
+    WatcherPendingInjection {
+        #[napi(js_name = "watcherPendingInjection")]
+        watcher_pending_injection: WatcherPendingInjectionInfo,
+    },
 }
 
 impl StreamChunk {
     pub fn text(text: String) -> Self {
-        Self {
-            chunk_type: "Text".to_string(),
-            text: Some(text),
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
+        Self::Text {
+            text,
             correlation_id: None,
             observed_correlation_ids: None,
-            watcher_pending_injection: None,
         }
     }
 
     /// Create a thinking/reasoning content chunk (TOOL-010)
     pub fn thinking(thinking: String) -> Self {
-        Self {
-            chunk_type: "Thinking".to_string(),
-            text: None,
-            thinking: Some(thinking),
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
+        Self::Thinking {
+            thinking,
             correlation_id: None,
             observed_correlation_ids: None,
-            watcher_pending_injection: None,
         }
     }
 
     pub fn tool_call(info: ToolCallInfo) -> Self {
-        Self {
-            chunk_type: "ToolCall".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: Some(info),
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
+        Self::ToolCall {
+            tool_call: info,
             correlation_id: None,
             observed_correlation_ids: None,
-            watcher_pending_injection: None,
         }
     }
 
     pub fn tool_result(info: ToolResultInfo) -> Self {
-        Self {
-            chunk_type: "ToolResult".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: Some(info),
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
+        Self::ToolResult {
+            tool_result: info,
             correlation_id: None,
             observed_correlation_ids: None,
-            watcher_pending_injection: None,
         }
     }
 
     /// Tool execution progress - streaming output from bash/shell tools (TOOL-011)
     pub fn tool_progress(info: ToolProgressInfo) -> Self {
-        Self {
-            chunk_type: "ToolProgress".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: Some(info),
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
+        Self::ToolProgress {
+            tool_progress: info,
             correlation_id: None,
             observed_correlation_ids: None,
-            watcher_pending_injection: None,
         }
     }
 
-    pub fn status(message: String) -> Self {
-        Self {
-            chunk_type: "Status".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: Some(message),
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: None,
-        }
+    /// NAPI-010: Create a session state change chunk (internal state, not for conversation)
+    pub fn session_state_change(state: SessionState) -> Self {
+        Self::SessionStateChange { state }
+    }
+
+    /// NAPI-010: Create a user notification chunk (for conversation display)
+    pub fn user_notification(message: String, severity: NotificationSeverity) -> Self {
+        Self::UserNotification { message, severity }
     }
 
     pub fn interrupted(queued_inputs: Vec<String>) -> Self {
-        Self {
-            chunk_type: "Interrupted".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: Some(queued_inputs),
-            tokens: None,
-            context_fill: None,
-            error: None,
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: None,
-        }
+        Self::Interrupted { queued_inputs }
     }
 
     pub fn token_update(tokens: TokenTracker) -> Self {
-        Self {
-            chunk_type: "TokenUpdate".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: Some(tokens),
-            context_fill: None,
-            error: None,
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: None,
-        }
+        Self::TokenUpdate { tokens }
     }
 
     /// Context fill percentage update (TUI-033)
     pub fn context_fill_update(info: ContextFillInfo) -> Self {
-        Self {
-            chunk_type: "ContextFillUpdate".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: Some(info),
-            error: None,
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: None,
-        }
+        Self::ContextFillUpdate { context_fill: info }
     }
 
     pub fn done() -> Self {
-        Self {
-            chunk_type: "Done".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: None,
-        }
+        Self::Done
     }
 
     pub fn error(message: String) -> Self {
-        Self {
-            chunk_type: "Error".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: Some(message),
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: None,
-        }
+        Self::Error { error: message }
     }
 
     /// User input message (NAPI-009: for resume/attach to restore user messages)
     pub fn user_input(text: String) -> Self {
-        Self {
-            chunk_type: "UserInput".to_string(),
-            text: Some(text),
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: None,
-        }
+        Self::UserInput { text }
     }
 
     /// Watcher input message (WATCH-006: for watcher injection into parent session)
     pub fn watcher_input(formatted_message: String) -> Self {
-        Self {
-            chunk_type: "WatcherInput".to_string(),
-            text: Some(formatted_message),
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: None,
+        Self::WatcherInput { text: formatted_message }
+    }
+
+    /// Set correlation ID on the chunk (for variants that support it)
+    pub fn with_correlation_id(mut self, id: String) -> Self {
+        match &mut self {
+            Self::Text { correlation_id, .. } => *correlation_id = Some(id),
+            Self::Thinking { correlation_id, .. } => *correlation_id = Some(id),
+            Self::ToolCall { correlation_id, .. } => *correlation_id = Some(id),
+            Self::ToolResult { correlation_id, .. } => *correlation_id = Some(id),
+            Self::ToolProgress { correlation_id, .. } => *correlation_id = Some(id),
+            // Other variants don't have correlation_id
+            _ => {}
         }
+        self
     }
 
     /// Set observed correlation IDs for watcher response chunks (WATCH-011)
     pub fn with_observed_correlation_ids(mut self, ids: Vec<String>) -> Self {
-        self.observed_correlation_ids = Some(ids);
+        match &mut self {
+            Self::Text { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
+            Self::Thinking { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
+            Self::ToolCall { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
+            Self::ToolResult { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
+            Self::ToolProgress { observed_correlation_ids, .. } => *observed_correlation_ids = Some(ids),
+            // Other variants don't have observed_correlation_ids
+            _ => {}
+        }
         self
     }
-    
+
     /// Watcher pending injection - when auto_inject=false (WATCH-020)
     pub fn watcher_pending_injection(urgent: bool, content: String) -> Self {
-        Self {
-            chunk_type: "WatcherPendingInjection".to_string(),
-            text: None,
-            thinking: None,
-            tool_call: None,
-            tool_result: None,
-            tool_progress: None,
-            status: None,
-            queued_inputs: None,
-            tokens: None,
-            context_fill: None,
-            error: None,
-            correlation_id: None,
-            observed_correlation_ids: None,
-            watcher_pending_injection: Some(WatcherPendingInjectionInfo { urgent, content }),
+        Self::WatcherPendingInjection {
+            watcher_pending_injection: WatcherPendingInjectionInfo { urgent, content },
         }
     }
 }
@@ -494,25 +504,18 @@ pub struct CompactionResult {
 mod tests {
     use super::*;
 
-    /// Test StreamChunk::user_input creates correct chunk type
+    /// Test StreamChunk::user_input creates correct variant
     #[test]
     fn test_user_input_chunk_creation() {
         let user_message = "Hello, can you help me with this task?";
         let chunk = StreamChunk::user_input(user_message.to_string());
 
-        assert_eq!(chunk.chunk_type, "UserInput");
-        assert_eq!(chunk.text, Some(user_message.to_string()));
-        assert!(chunk.thinking.is_none());
-        assert!(chunk.tool_call.is_none());
-        assert!(chunk.tool_result.is_none());
-        assert!(chunk.tool_progress.is_none());
-        assert!(chunk.status.is_none());
-        assert!(chunk.queued_inputs.is_none());
-        assert!(chunk.tokens.is_none());
-        assert!(chunk.context_fill.is_none());
-        assert!(chunk.error.is_none());
-        assert!(chunk.correlation_id.is_none());
-        assert!(chunk.observed_correlation_ids.is_none());
+        match chunk {
+            StreamChunk::UserInput { text } => {
+                assert_eq!(text, user_message);
+            }
+            _ => panic!("Expected UserInput variant"),
+        }
     }
 
     /// Test empty user input is handled correctly
@@ -520,8 +523,12 @@ mod tests {
     fn test_empty_user_input_chunk() {
         let chunk = StreamChunk::user_input(String::new());
 
-        assert_eq!(chunk.chunk_type, "UserInput");
-        assert_eq!(chunk.text, Some(String::new()));
+        match chunk {
+            StreamChunk::UserInput { text } => {
+                assert_eq!(text, "");
+            }
+            _ => panic!("Expected UserInput variant"),
+        }
     }
 
     /// Test user input with multiline content
@@ -530,9 +537,13 @@ mod tests {
         let multiline_message = "First line\nSecond line\nThird line with code:\n```rust\nfn main() {}\n```";
         let chunk = StreamChunk::user_input(multiline_message.to_string());
 
-        assert_eq!(chunk.chunk_type, "UserInput");
-        assert_eq!(chunk.text, Some(multiline_message.to_string()));
-        assert!(chunk.text.as_ref().unwrap().contains('\n'));
+        match chunk {
+            StreamChunk::UserInput { text } => {
+                assert_eq!(text, multiline_message);
+                assert!(text.contains('\n'));
+            }
+            _ => panic!("Expected UserInput variant"),
+        }
     }
 
     /// Test user input with special characters
@@ -541,21 +552,56 @@ mod tests {
         let special_message = "Test with émojis 🎉 and symbols: <>&\"' and unicode: 你好世界";
         let chunk = StreamChunk::user_input(special_message.to_string());
 
-        assert_eq!(chunk.chunk_type, "UserInput");
-        assert_eq!(chunk.text, Some(special_message.to_string()));
+        match chunk {
+            StreamChunk::UserInput { text } => {
+                assert_eq!(text, special_message);
+            }
+            _ => panic!("Expected UserInput variant"),
+        }
     }
 
-    /// Test UserInput chunk type is distinct from Text chunk
+    /// Test UserInput chunk is distinct from Text chunk
     #[test]
     fn test_user_input_distinct_from_text() {
         let message = "Same content";
         let user_chunk = StreamChunk::user_input(message.to_string());
         let text_chunk = StreamChunk::text(message.to_string());
 
-        assert_ne!(user_chunk.chunk_type, text_chunk.chunk_type);
-        assert_eq!(user_chunk.chunk_type, "UserInput");
-        assert_eq!(text_chunk.chunk_type, "Text");
-        // Both store content in the text field
-        assert_eq!(user_chunk.text, text_chunk.text);
+        match (&user_chunk, &text_chunk) {
+            (StreamChunk::UserInput { .. }, StreamChunk::Text { .. }) => {
+                // They are different variants - good!
+            }
+            _ => panic!("Expected different variants"),
+        }
+    }
+
+    /// NAPI-010: Test SessionStateChange for compacting state
+    #[test]
+    fn test_session_state_change_compacting() {
+        let chunk = StreamChunk::session_state_change(SessionState::Compacting);
+
+        match chunk {
+            StreamChunk::SessionStateChange { state } => {
+                assert_eq!(state, SessionState::Compacting);
+            }
+            _ => panic!("Expected SessionStateChange variant"),
+        }
+    }
+
+    /// NAPI-010: Test UserNotification with severity
+    #[test]
+    fn test_user_notification_with_severity() {
+        let chunk = StreamChunk::user_notification(
+            "API rate limit exceeded".to_string(),
+            NotificationSeverity::Warning,
+        );
+
+        match chunk {
+            StreamChunk::UserNotification { message, severity } => {
+                assert_eq!(message, "API rate limit exceeded");
+                assert_eq!(severity, NotificationSeverity::Warning);
+            }
+            _ => panic!("Expected UserNotification variant"),
+        }
     }
 }

@@ -120,10 +120,15 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
 }) => {
   const { inputTokens, outputTokens } = getMaxTokens(tokenUsage, rustTokens);
 
+  // Format percentage with 2 decimal places, removing trailing zeros
+  const formatPercentage = (num: number): string => {
+    return parseFloat(num.toFixed(2)).toString();
+  };
+
   const percentText =
     compactionReduction !== null
-      ? `[${contextFillPercentage}%: COMPACTED -${compactionReduction}%]`
-      : `[${contextFillPercentage}%]`;
+      ? `[${formatPercentage(contextFillPercentage)}%: COMPACTED ${formatPercentage(Math.abs(compactionReduction))}%]`
+      : `[${formatPercentage(contextFillPercentage)}%]`;
 
   // TUI-054: Show thinking level badge only when level > Off
   // During loading: show the effective level (already computed in AgentView)

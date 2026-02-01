@@ -17,13 +17,15 @@ import {
   sessionGetPauseState,
   sessionGetBaseThinkingLevel,
   sessionSetBaseThinkingLevel,
+  sessionGetCompactionProgress,
   type SessionModel,
   type SessionTokens,
+  type CompactionProgress,
 } from '@sengac/codelet-napi';
 import { type PauseInfo, parsePauseInfo } from '../types/pause';
 
 // Re-export types for convenience
-export type { SessionModel, SessionTokens };
+export type { SessionModel, SessionTokens, CompactionProgress };
 
 /**
  * Default token values when session doesn't exist or throws
@@ -47,6 +49,8 @@ export interface RustStateSource {
   getBaseThinkingLevel(sessionId: string): number;
   /** TUI-054: Set the base thinking level (0=Off, 1=Low, 2=Medium, 3=High) */
   setBaseThinkingLevel(sessionId: string, level: number): void;
+  /** PERF-002: Get compaction progress when session is compacting */
+  getCompactionProgress(sessionId: string): CompactionProgress | null;
 }
 
 /**
@@ -110,6 +114,15 @@ export const defaultRustStateSource: RustStateSource = {
       sessionSetBaseThinkingLevel(sessionId, level);
     } catch {
       // Silently fail - state will be stale but won't crash
+    }
+  },
+
+  /** PERF-002: Get compaction progress when session is compacting */
+  getCompactionProgress(sessionId: string): CompactionProgress | null {
+    try {
+      return sessionGetCompactionProgress(sessionId);
+    } catch {
+      return null;
     }
   },
 };

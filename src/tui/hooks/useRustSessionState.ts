@@ -22,22 +22,23 @@ import {
   getOrCreateSubscription,
   invalidateCache,
   refreshSessionState,
-  clearAllSubscriptions,
-  getSubscriptionForTesting,
-  type SessionSubscription,
+  clearAllSubscriptions as _clearAllSubscriptions,
+  getSubscriptionForTesting as _getSubscriptionForTesting,
+  type SessionSubscription as _SessionSubscription,
 } from './sessionSubscription';
 import {
   getRustStateSource,
-  setRustStateSource,
-  resetRustStateSource,
+  setRustStateSource as _setRustStateSource,
+  resetRustStateSource as _resetRustStateSource,
   DEFAULT_TOKENS,
-  type RustStateSource,
+  type RustStateSource as _RustStateSource,
+  type CompactionProgress,
 } from './rustStateSource';
-import { logger } from '../../utils/logger';
+import { logger as _logger } from '../../utils/logger';
 
 // Re-exports for backwards compatibility
 export type { PauseInfo } from '../types/pause';
-export type { RustStateSource } from './rustStateSource';
+export type { RustStateSource, CompactionProgress } from './rustStateSource';
 export { setRustStateSource, resetRustStateSource } from './rustStateSource';
 export {
   refreshSessionState,
@@ -61,6 +62,10 @@ export interface RustSessionSnapshot {
   isPaused: boolean;
   /** PAUSE-001: Pause details when session is paused, null otherwise */
   pauseInfo: PauseInfo | null;
+  /** PERF-002: True when session status is "compacting" */
+  isCompacting: boolean;
+  /** PERF-002: Compaction progress when session is compacting, null otherwise */
+  compactionProgress: CompactionProgress | null;
   model: SessionModel | null;
   tokens: SessionTokens;
   isDebugEnabled: boolean;
@@ -78,6 +83,8 @@ const EMPTY_SNAPSHOT: RustSessionSnapshot = Object.freeze({
   isLoading: false,
   isPaused: false,
   pauseInfo: null,
+  isCompacting: false,
+  compactionProgress: null,
   model: null,
   tokens: DEFAULT_TOKENS,
   isDebugEnabled: false,
@@ -103,6 +110,19 @@ function modelEqual(a: SessionModel | null, b: SessionModel | null): boolean {
   return a.providerId === b.providerId && a.modelId === b.modelId;
 }
 
+function compactionProgressEqual(
+  a: CompactionProgress | null,
+  b: CompactionProgress | null
+): boolean {
+  if (a === null && b === null) {
+    return true;
+  }
+  if (a === null || b === null) {
+    return false;
+  }
+  return a.phase === b.phase && a.current === b.current && a.total === b.total;
+}
+
 function snapshotsAreEqual(
   a: RustSessionSnapshot,
   b: RustSessionSnapshot
@@ -111,8 +131,10 @@ function snapshotsAreEqual(
     a.status === b.status &&
     a.isDebugEnabled === b.isDebugEnabled &&
     a.isPaused === b.isPaused &&
+    a.isCompacting === b.isCompacting &&
     a.baseThinkingLevel === b.baseThinkingLevel && // TUI-054
     pauseInfoEqual(a.pauseInfo, b.pauseInfo) &&
+    compactionProgressEqual(a.compactionProgress, b.compactionProgress) &&
     tokensEqual(a.tokens, b.tokens) &&
     modelEqual(a.model, b.model)
   );
@@ -131,12 +153,18 @@ function fetchFreshSnapshot(
   const isLoading = status === 'running';
   const isPaused = status === 'paused';
   const pauseInfo = isPaused ? source.getPauseState(sessionId) : null;
+  const isCompacting = status === 'compacting';
+  const compactionProgress = isCompacting
+    ? source.getCompactionProgress(sessionId)
+    : null;
 
   return {
     status,
     isLoading,
     isPaused,
     pauseInfo,
+    isCompacting,
+    compactionProgress,
     model: source.getModel(sessionId),
     tokens: source.getTokens(sessionId),
     isDebugEnabled: source.getDebugEnabled(sessionId),

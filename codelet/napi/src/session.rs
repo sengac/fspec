@@ -13,11 +13,12 @@
 use crate::output::{NapiOutput, StreamCallback};
 use crate::types::{
     CompactionResult, ContextFillInfo, DebugCommandResult, Message, NapiProviderConfig,
-    TokenTracker,
+    TokenTracker, NapiAnchorPoint, NapiAnchorType, NapiTurnDetails, NapiToolCall, NapiFileModification,
 };
 use codelet_cli::compaction_threshold::calculate_usable_context;
 use codelet_cli::interactive::run_agent_stream;
 use codelet_cli::interactive_helpers::execute_compaction;
+use codelet_core::compaction::{AnchorDetector, AnchorType};
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
 };
@@ -27,6 +28,7 @@ use std::sync::atomic::AtomicBool;
 // Use Release ordering for stores to synchronize with Acquire loads in stream_loop
 use std::sync::atomic::Ordering::Release;
 use std::sync::Arc;
+use std::time::UNIX_EPOCH;
 use tokio::sync::{Mutex, Notify};
 
 /// CodeletSession - Main class for AI agent interactions
@@ -304,7 +306,7 @@ impl CodeletSession {
         }
 
         // Execute compaction
-        let metrics = execute_compaction(&mut session).await.map_err(|e| {
+        let (metrics, _anchor) = execute_compaction(&mut session).await.map_err(|e| {
             // Capture compaction.manual.failed event
             if let Ok(manager_arc) = get_debug_capture_manager() {
                 if let Ok(mut manager) = manager_arc.lock() {
@@ -1067,5 +1069,191 @@ impl CodeletSession {
         };
 
         result.map_err(|e| Error::from_reason(format!("Stream error: {e}")))
+    }
+
+    /// TUI-056: Get anchor points detected in current session
+    ///
+    /// Runs anchor detection on conversation turns to identify meaningful moments
+    /// for context compaction. Returns all detected anchor points, not just the
+    /// one selected for compaction.
+    ///
+    /// # Returns
+    /// * `Result<Vec<NapiAnchorPoint>>` - All detected anchor points or error
+    #[napi]
+    pub async fn get_anchor_points(&self) -> Result<Vec<NapiAnchorPoint>> {
+        let session_arc = Arc::clone(&self.inner);
+        let session = session_arc.lock().await;
+        
+        let turns = &session.turns;
+        if turns.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        // Use same anchor detection logic as compaction
+        let detector = AnchorDetector::new(0.8); // Default confidence threshold
+        let mut anchors = Vec::new();
+
+        let provider_name = session.provider_manager().current_provider_name();
+
+        let llm_prompt = |prompt: String| async move {
+            let manager = codelet_providers::ProviderManager::with_provider(provider_name)?;
+            match manager.current_provider_name() {
+                "claude" => {
+                    let provider = manager.get_claude()?;
+                    let rig_agent = provider.create_rig_agent(None, None);
+                    let agent = RigAgent::with_default_depth(rig_agent);
+                    agent.prompt(&prompt).await
+                }
+                "openai" => {
+                    let provider = manager.get_openai()?;
+                    let rig_agent = provider.create_rig_agent(None, None);
+                    let agent = RigAgent::with_default_depth(rig_agent);
+                    agent.prompt(&prompt).await
+                }
+                "gemini" => {
+                    let provider = manager.get_gemini()?;
+                    let rig_agent = provider.create_rig_agent(None, None);
+                    let agent = RigAgent::with_default_depth(rig_agent);
+                    agent.prompt(&prompt).await
+                }
+                "codex" => {
+                    let provider = manager.get_codex()?;
+                    let rig_agent = provider.create_rig_agent(None, None);
+                    let agent = RigAgent::with_default_depth(rig_agent);
+                    agent.prompt(&prompt).await
+                }
+                "zai" => {
+                    let provider = manager.get_zai()?;
+                    let rig_agent = provider.create_rig_agent(None, None);
+                    let agent = RigAgent::with_default_depth(rig_agent);
+                    agent.prompt(&prompt).await
+                }
+                _ => Err(anyhow::anyhow!("Unsupported provider: {}", manager.current_provider_name()))
+            }
+        };
+
+        for (idx, turn) in turns.iter().enumerate() {
+            if let Ok(Some(anchor)) = detector.detect(turn, idx, &llm_prompt).await {
+                // Convert AnchorType to NapiAnchorType
+                let napi_anchor_type = match anchor.anchor_type {
+                    AnchorType::ErrorResolution => NapiAnchorType::ErrorResolution,
+                    AnchorType::TaskCompletion => NapiAnchorType::TaskCompletion,
+                    AnchorType::UserCheckpoint => NapiAnchorType::UserCheckpoint,
+                    AnchorType::FeatureMilestone => NapiAnchorType::FeatureMilestone,
+                };
+
+                // Convert SystemTime to Unix timestamp in milliseconds
+                let timestamp_ms = anchor.timestamp
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_millis() as f64;
+
+                let napi_anchor = NapiAnchorPoint {
+                    turn_index: anchor.turn_index as u32,
+                    anchor_type: napi_anchor_type,
+                    weight: anchor.weight,
+                    confidence: anchor.confidence,
+                    description: anchor.description,
+                    timestamp: timestamp_ms,
+                };
+
+                anchors.push(napi_anchor);
+            }
+        }
+
+        Ok(anchors)
+    }
+
+    /// TUI-056: Get detailed information about a specific conversation turn
+    ///
+    /// Retrieves comprehensive information about a conversation turn including
+    /// user message, assistant response, tool calls, and file modifications.
+    ///
+    /// # Arguments
+    /// * `turn_index` - Index of the turn to retrieve details for
+    ///
+    /// # Returns
+    /// * `Result<Option<NapiTurnDetails>>` - Turn details or None if index invalid
+    #[napi]
+    pub async fn get_turn_details(&self, turn_index: u32) -> Result<Option<NapiTurnDetails>> {
+        let session_arc = Arc::clone(&self.inner);
+        let session = session_arc.lock().await;
+        
+        let turns = &session.turns;
+        let turn = match turns.get(turn_index as usize) {
+            Some(turn) => turn,
+            None => return Ok(None),
+        };
+
+        // Convert tool calls to NAPI format
+        let napi_tool_calls: Vec<NapiToolCall> = turn.tool_calls.iter().enumerate().map(|(idx, call)| {
+            NapiToolCall {
+                tool: call.tool.clone(),
+                parameters: serde_json::to_string(&call.parameters).unwrap_or_default(),
+                success: turn.tool_results.get(idx)
+                    .map(|result| result.success)
+                    .unwrap_or(false),
+            }
+        }).collect();
+
+        // Analyze tool calls to determine file modifications
+        let napi_file_modifications: Vec<NapiFileModification> = turn.tool_calls.iter()
+            .filter_map(|call| {
+                match call.tool.as_str() {
+                    "Edit" | "edit" => {
+                        if let Some(file_path) = call.parameters.get("file_path")
+                            .and_then(|v| v.as_str()) {
+                            Some(NapiFileModification {
+                                path: file_path.to_string(),
+                                operation: "edit".to_string(),
+                                summary: format!("Modified {}", file_path),
+                            })
+                        } else {
+                            None
+                        }
+                    },
+                    "Write" | "write" => {
+                        if let Some(file_path) = call.parameters.get("file_path")
+                            .and_then(|v| v.as_str()) {
+                            Some(NapiFileModification {
+                                path: file_path.to_string(),
+                                operation: "create".to_string(),
+                                summary: format!("Created {}", file_path),
+                            })
+                        } else {
+                            None
+                        }
+                    },
+                    _ => None,
+                }
+            }).collect();
+
+        // Determine overall status based on tool results
+        let status = if turn.tool_results.iter().all(|result| result.success) {
+            "success"
+        } else if turn.tool_results.iter().any(|result| result.success) {
+            "partial"
+        } else {
+            "failed"
+        }.to_string();
+
+        // Generate context summary
+        let context = if !turn.tool_calls.is_empty() {
+            format!("Turn involved {} tool calls", turn.tool_calls.len())
+        } else {
+            "Conversation turn without tool usage".to_string()
+        };
+
+        let turn_details = NapiTurnDetails {
+            turn_index,
+            user_message: turn.user_message.clone(),
+            assistant_response: turn.assistant_response.clone(),
+            tool_calls: napi_tool_calls,
+            file_modifications: napi_file_modifications,
+            status,
+            context,
+        };
+
+        Ok(Some(turn_details))
     }
 }

@@ -9,6 +9,21 @@ use std::time::SystemTime;
 use super::model::ConversationTurn;
 
 // ==========================================
+// LLM RESPONSE PARSING
+// ==========================================
+
+/// LLM response structure for anchor detection
+#[derive(Debug, Deserialize)]
+struct LlmAnchorResponse {
+    anchor_type: Option<String>,
+    confidence: f64,
+    description: String,
+}
+
+// Constants for timeout and JSON parsing
+const LLM_TIMEOUT_SECS: u64 = 15;
+
+// ==========================================
 // ANCHOR POINTS
 // ==========================================
 
@@ -64,6 +79,24 @@ pub struct AnchorPoint {
     pub timestamp: SystemTime,
 }
 
+impl AnchorPoint {
+    /// Create synthetic anchor for timeout/failure scenarios (CTX-004 requirement)
+    pub fn synthetic_checkpoint(
+        turn_index: usize,
+        turn: &ConversationTurn, 
+        reason: &str
+    ) -> Self {
+        AnchorPoint {
+            turn_index,
+            anchor_type: AnchorType::UserCheckpoint,
+            weight: 1.0, // Highest priority for reliability
+            confidence: 1.0, // Synthetic anchors have full confidence
+            description: format!("Synthetic anchor - {}", reason),
+            timestamp: turn.timestamp,
+        }
+    }
+}
+
 // ==========================================
 // ANCHOR DETECTION
 // ==========================================
@@ -81,147 +114,289 @@ impl AnchorDetector {
         }
     }
 
-    /// Detect anchor point in a conversation turn
+    /// Detect anchor points in conversation turns using LLM analysis
     ///
     /// Returns Some(AnchorPoint) if confidence >= threshold, None otherwise
-    pub fn detect(
+    pub async fn detect<F, Fut>(
         &self,
         turn: &ConversationTurn,
         turn_index: usize,
-    ) -> Result<Option<AnchorPoint>> {
-        // Analyze completion patterns (matches codelet's analyzeCompletionPatterns)
-        let has_test_success = turn.tool_results.iter().any(|result| {
-            result.success
-                && result.output.to_lowercase().contains("test")
-                && (result.output.contains("pass") || result.output.contains("success"))
-        });
+        llm_prompt: &F,
+    ) -> Result<Option<AnchorPoint>>
+    where
+        F: Fn(String) -> Fut,
+        Fut: std::future::Future<Output = Result<String>>,
+    {
+        use tokio::time::{timeout, Duration};
 
-        let has_file_modification = turn
-            .tool_calls
-            .iter()
-            .any(|call| call.tool == "Edit" || call.tool == "Write");
-
-        let has_previous_error = turn.previous_error.unwrap_or(false);
-
-        // Error resolution pattern: Previous error + Fix + Success
-        if has_previous_error && has_file_modification && has_test_success {
-            let confidence = 0.95;
-            if confidence >= self.confidence_threshold {
-                return Ok(Some(AnchorPoint {
-                    turn_index,
-                    anchor_type: AnchorType::ErrorResolution,
-                    weight: 0.9,
-                    confidence,
-                    description: "Build error fixed and tests now pass".to_string(),
-                    timestamp: turn.timestamp,
-                }));
+        // Build LLM prompt for anchor analysis
+        let prompt = self.build_anchor_analysis_prompt(turn);
+        
+        // Call LLM with 15-second timeout
+        let llm_result = timeout(Duration::from_secs(LLM_TIMEOUT_SECS), llm_prompt(prompt)).await;
+        
+        match llm_result {
+            Ok(Ok(response)) => {
+                // Parse LLM response for anchor detection
+                self.parse_llm_anchor_response(&response, turn_index, turn)
+            }
+            Ok(Err(_)) | Err(_) => {
+                // LLM analysis failed or timed out - create synthetic anchor as fallback
+                // This is REQUIRED by CTX-004 feature file: "Then the system creates a synthetic anchor as fallback"
+                Ok(Some(AnchorPoint::synthetic_checkpoint(
+                    turn_index, 
+                    turn, 
+                    "LLM analysis failed/timeout"
+                )))
             }
         }
-
-        // Task completion pattern: Modify + Test + Success (without previous error)
-        if !has_previous_error && has_file_modification && has_test_success {
-            let confidence = 0.92;
-            if confidence >= self.confidence_threshold {
-                return Ok(Some(AnchorPoint {
-                    turn_index,
-                    anchor_type: AnchorType::TaskCompletion,
-                    weight: 0.8,
-                    confidence,
-                    description: "File changes implemented and tests pass".to_string(),
-                    timestamp: turn.timestamp,
-                }));
-            }
-        }
-
-        // CTX-001: Bash milestone pattern - successful install/build/compile
-        if let Some(anchor) = self.detect_bash_milestone(turn, turn_index)? {
-            return Ok(Some(anchor));
-        }
-
-        // CTX-001: Web search pattern - successful search with synthesis
-        if let Some(anchor) = self.detect_successful_search(turn, turn_index)? {
-            return Ok(Some(anchor));
-        }
-
-        Ok(None)
     }
 
-    /// CTX-001: Detect bash command milestones (successful installs, builds, etc.)
-    fn detect_bash_milestone(
+    /// PERF-002: Batch detect anchor points in multiple turns using single LLM call
+    ///
+    /// This replaces sequential per-turn detection with batched processing to improve performance.
+    /// Instead of N LLM calls, this makes 1 LLM call to analyze all turns together.
+    pub async fn detect_batch<F, Fut>(
         &self,
-        turn: &ConversationTurn,
-        turn_index: usize,
-    ) -> Result<Option<AnchorPoint>> {
-        let has_bash = turn
-            .tool_calls
-            .iter()
-            .any(|call| call.tool == "bash" || call.tool == "Bash");
+        turns: &[ConversationTurn],
+        llm_prompt: &F,
+    ) -> Result<Vec<AnchorPoint>>
+    where
+        F: Fn(String) -> Fut,
+        Fut: std::future::Future<Output = Result<String>>,
+    {
+        use tokio::time::{timeout, Duration};
 
-        let bash_success = turn.tool_results.iter().any(|r| r.success);
-
-        // Look for milestone indicators in output
-        let is_milestone = turn.tool_results.iter().any(|r| {
-            let output_lower = r.output.to_lowercase();
-            output_lower.contains("successfully")
-                || output_lower.contains("installed")
-                || output_lower.contains("built")
-                || output_lower.contains("compiled")
-                || output_lower.contains("completed")
-        });
-
-        if has_bash && bash_success && is_milestone {
-            let confidence = 0.92;
-            if confidence >= self.confidence_threshold {
-                return Ok(Some(AnchorPoint {
-                    turn_index,
-                    anchor_type: AnchorType::TaskCompletion,
-                    weight: 0.8,
-                    confidence,
-                    description: "Bash command milestone completed".to_string(),
-                    timestamp: turn.timestamp,
-                }));
-            }
+        if turns.is_empty() {
+            return Ok(Vec::new());
         }
 
-        Ok(None)
+        // Build batch LLM prompt for analyzing all turns together
+        let prompt = self.build_batch_anchor_analysis_prompt(turns);
+        
+        // Call LLM with extended timeout (more turns to analyze)
+        let timeout_secs = LLM_TIMEOUT_SECS + (turns.len() as u64 * 2); // Base + 2 secs per turn
+        let llm_result = timeout(Duration::from_secs(timeout_secs), llm_prompt(prompt)).await;
+        
+        match llm_result {
+            Ok(Ok(response)) => {
+                // Parse batch LLM response for anchor detection
+                self.parse_batch_llm_anchor_response(&response, turns)
+            }
+            Ok(Err(_)) | Err(_) => {
+                // LLM analysis failed or timed out - create synthetic anchor as fallback
+                // PERF-002: For batch failure, create one synthetic anchor at the last turn
+                let last_idx = turns.len() - 1;
+                let last_turn = &turns[last_idx];
+                Ok(vec![AnchorPoint::synthetic_checkpoint(
+                    last_idx, 
+                    last_turn, 
+                    "batch LLM analysis failed/timeout"
+                )])
+            }
+        }
     }
 
-    /// CTX-001: Detect successful web search that answered user's question
-    fn detect_successful_search(
-        &self,
-        turn: &ConversationTurn,
-        turn_index: usize,
+    /// Build structured prompt for LLM anchor analysis
+    fn build_anchor_analysis_prompt(&self, turn: &ConversationTurn) -> String {
+        format!(
+            r#"Analyze this conversation turn to detect meaningful anchor points for context preservation.
+
+TURN CONTENT:
+Assistant Response: {}
+Tool Calls: {:?}
+Tool Results: {:?}
+Previous Error State: {:?}
+
+ANCHOR TYPES (select the most appropriate):
+- ErrorResolution: Error was resolved (previous error + fix + success)
+- TaskCompletion: Task was completed (modify + test + success, no previous error)  
+- UserCheckpoint: User created explicit checkpoint or significant milestone
+- FeatureMilestone: Feature milestone reached
+
+ANALYSIS INSTRUCTIONS:
+1. Determine if this turn represents a meaningful moment worth preserving
+2. If meaningful, classify into one of the 4 anchor types above
+3. Assess confidence level (0.0-1.0) - use {} as minimum threshold
+4. Provide brief description of why this moment is significant
+
+RESPONSE FORMAT (JSON):
+{{"anchor_type": "TaskCompletion", "confidence": 0.92, "description": "Brief explanation"}}
+
+If no meaningful anchor: {{"anchor_type": null, "confidence": 0.0, "description": "No significant moment detected"}}"#,
+            turn.assistant_response,
+            turn.tool_calls,
+            turn.tool_results,
+            turn.previous_error,
+            self.confidence_threshold
+        )
+    }
+
+    /// Parse LLM response into anchor point using secure JSON parsing
+    fn parse_llm_anchor_response(
+        &self, 
+        response: &str, 
+        turn_index: usize, 
+        turn: &ConversationTurn
     ) -> Result<Option<AnchorPoint>> {
-        let has_web_search = turn
-            .tool_calls
-            .iter()
-            .any(|call| call.tool == "web_search" || call.tool == "WebSearch");
-
-        let search_succeeded = turn
-            .tool_results
-            .iter()
-            .any(|r| r.success && r.output.len() > 100); // Non-trivial results
-
-        // Look for synthesis indicators in assistant response
-        let has_synthesis = turn.assistant_response.contains("Based on")
-            || turn.assistant_response.contains("According to")
-            || turn.assistant_response.contains("search results show")
-            || turn.assistant_response.contains("search results,");
-
-        if has_web_search && search_succeeded && has_synthesis {
-            let confidence = 0.91;
-            if confidence >= self.confidence_threshold {
-                return Ok(Some(AnchorPoint {
-                    turn_index,
-                    anchor_type: AnchorType::UserCheckpoint,
-                    weight: 0.7,
-                    confidence,
-                    description: "Web search completed with synthesized results".to_string(),
-                    timestamp: turn.timestamp,
-                }));
+        // Use serde for secure JSON parsing instead of manual string matching
+        let parsed_response: LlmAnchorResponse = match serde_json::from_str(response) {
+            Ok(response) => response,
+            Err(_) => {
+                // If JSON parsing fails, treat as no anchor detected
+                return Ok(None);
             }
+        };
+
+        // Check if anchor type is null (no meaningful anchor detected)
+        let anchor_type_str = match parsed_response.anchor_type {
+            Some(anchor_type) => anchor_type,
+            None => return Ok(None),
+        };
+
+        // Map string to AnchorType enum
+        let anchor_type = match anchor_type_str.as_str() {
+            "ErrorResolution" => AnchorType::ErrorResolution,
+            "TaskCompletion" => AnchorType::TaskCompletion,
+            "FeatureMilestone" => AnchorType::FeatureMilestone,
+            "UserCheckpoint" => AnchorType::UserCheckpoint,
+            _ => return Ok(None), // Unknown anchor type
+        };
+
+        // Check confidence threshold
+        if parsed_response.confidence < self.confidence_threshold {
+            return Ok(None);
         }
 
-        Ok(None)
+        Ok(Some(AnchorPoint {
+            turn_index,
+            anchor_type,
+            weight: anchor_type.weight(),
+            confidence: parsed_response.confidence,
+            description: parsed_response.description,
+            timestamp: turn.timestamp,
+        }))
+    }
+
+    /// PERF-002: Build batch LLM prompt for analyzing multiple turns simultaneously
+    fn build_batch_anchor_analysis_prompt(&self, turns: &[ConversationTurn]) -> String {
+        let mut prompt = format!(
+            r#"Analyze these conversation turns to detect meaningful anchor points for context preservation.
+
+ANCHOR TYPES (select the most appropriate for each turn):
+- ErrorResolution: Error was resolved (previous error + fix + success)
+- TaskCompletion: Task was completed (modify + test + success, no previous error)  
+- UserCheckpoint: User created explicit checkpoint or significant milestone
+- FeatureMilestone: Major feature or capability achieved
+
+ANALYSIS CRITERIA:
+1. Look for task completion, error resolution, or significant milestones
+2. Weight: ErrorResolution (0.9) > FeatureMilestone (0.75) > TaskCompletion (0.8) > UserCheckpoint (0.7)
+3. Assess confidence level (0.0-1.0) - use {} as minimum threshold
+4. Provide brief description of why each moment is significant
+
+TURNS TO ANALYZE:
+"#,
+            self.confidence_threshold
+        );
+
+        for (idx, turn) in turns.iter().enumerate() {
+            prompt.push_str(&format!(
+                r#"
+TURN {}:
+Assistant Response: {}
+Tool Calls: {:?}
+Tool Results: {:?}
+Previous Error State: {:?}
+
+"#,
+                idx,
+                turn.assistant_response,
+                turn.tool_calls,
+                turn.tool_results,
+                turn.previous_error
+            ));
+        }
+
+        prompt.push_str(&format!(
+            r#"
+RESPONSE FORMAT (JSON array):
+[
+  {{"turn_index": 0, "anchor_type": "TaskCompletion", "confidence": 0.92, "description": "Brief explanation"}},
+  {{"turn_index": 2, "anchor_type": null, "confidence": 0.0, "description": "No significant moment detected"}},
+  ...
+]
+
+Return one entry per turn analyzed. Use null for anchor_type when no meaningful anchor is detected."#
+        ));
+
+        prompt
+    }
+
+    /// PERF-002: Parse batch LLM response into multiple anchor points
+    fn parse_batch_llm_anchor_response(
+        &self, 
+        response: &str, 
+        turns: &[ConversationTurn]
+    ) -> Result<Vec<AnchorPoint>> {
+        // Parse response as JSON array of LlmAnchorResponse
+        #[derive(Debug, Deserialize)]
+        struct BatchLlmAnchorResponse {
+            turn_index: usize,
+            anchor_type: Option<String>,
+            confidence: f64,
+            description: String,
+        }
+
+        let parsed_responses: Vec<BatchLlmAnchorResponse> = match serde_json::from_str(response) {
+            Ok(responses) => responses,
+            Err(_) => {
+                // If JSON parsing fails, return empty vec (no anchors detected)
+                return Ok(Vec::new());
+            }
+        };
+
+        let mut anchors = Vec::new();
+
+        for batch_response in parsed_responses {
+            // Validate turn index
+            if batch_response.turn_index >= turns.len() {
+                continue; // Skip invalid turn indices
+            }
+
+            // Check if anchor type is null (no meaningful anchor detected)
+            let anchor_type_str = match batch_response.anchor_type {
+                Some(anchor_type) => anchor_type,
+                None => continue, // Skip null anchor types
+            };
+
+            // Map string to AnchorType enum
+            let anchor_type = match anchor_type_str.as_str() {
+                "ErrorResolution" => AnchorType::ErrorResolution,
+                "TaskCompletion" => AnchorType::TaskCompletion,
+                "FeatureMilestone" => AnchorType::FeatureMilestone,
+                "UserCheckpoint" => AnchorType::UserCheckpoint,
+                _ => continue, // Skip unknown anchor types
+            };
+
+            // Check confidence threshold
+            if batch_response.confidence < self.confidence_threshold {
+                continue; // Skip low confidence anchors
+            }
+
+            let turn = &turns[batch_response.turn_index];
+
+            // All checks passed - create anchor point
+            anchors.push(AnchorPoint {
+                turn_index: batch_response.turn_index,
+                anchor_type,
+                weight: anchor_type.weight(),
+                confidence: batch_response.confidence,
+                description: batch_response.description,
+                timestamp: turn.timestamp,
+            });
+        }
+
+        Ok(anchors)
     }
 }

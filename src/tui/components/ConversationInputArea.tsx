@@ -12,6 +12,7 @@ import React from 'react';
 import { Box, Text } from 'ink';
 import { InputTransition } from './InputTransition';
 import type { PauseInfo } from '../types/pause';
+import type { CompactionProgress } from '../hooks/useRustSessionState';
 
 // Re-export for convenience
 export type { PauseInfo } from '../types/pause';
@@ -50,6 +51,10 @@ export interface ConversationInputAreaProps {
    * Used when slash command palette is visible to let it handle Enter.
    */
   suppressEnter?: boolean;
+  /** UX-002: Whether the session is compacting context */
+  isCompacting?: boolean;
+  /** UX-002: Compaction progress information */
+  compactionProgress?: CompactionProgress | null;
 }
 
 /**
@@ -75,6 +80,8 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
   isPaused = false,
   pauseInfo,
   suppressEnter = false,
+  isCompacting = false,
+  compactionProgress = null,
 }) => {
   return (
     <Box
@@ -101,6 +108,8 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
           isPaused={isPaused}
           pauseInfo={pauseInfo}
           suppressEnter={suppressEnter}
+          isCompacting={isCompacting}
+          compactionProgress={compactionProgress}
         />
       </Box>
     </Box>

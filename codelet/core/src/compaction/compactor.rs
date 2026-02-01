@@ -5,7 +5,7 @@
 use anyhow::Result;
 use codelet_common::token_estimator::count_tokens;
 
-use super::anchor::{AnchorDetector, AnchorPoint, AnchorType};
+use super::anchor::{AnchorDetector, AnchorPoint};
 use super::metrics::{CompactionMetrics, CompactionResult};
 use super::model::{ConversationTurn, PreservationContext, ToolCall};
 use super::selector::TurnSelector;
@@ -85,12 +85,12 @@ impl ContextCompactor {
     /// # Arguments
     /// * `turns` - Conversation turns to compact
     /// * `target_tokens` - Target token count after compaction (budget)
-    /// * `_llm_prompt` - UNUSED: Kept for API compatibility, summary is now template-based
+    /// * `llm_prompt` - LLM function for anchor detection analysis
     pub async fn compact<F, Fut>(
         &self,
         turns: &[ConversationTurn],
         target_tokens: u64,
-        _llm_prompt: F,
+        llm_prompt: F,
     ) -> Result<CompactionResult>
     where
         F: Fn(String) -> Fut,
@@ -104,32 +104,24 @@ impl ContextCompactor {
             anyhow::bail!("Cannot compact empty turn history");
         }
 
-        // Step 1: Detect anchor points
+        // Step 1: Detect anchor points using batch LLM analysis (PERF-002)
+        // Single LLM call instead of per-turn calls for better performance
         let detector = AnchorDetector::new(self.confidence_threshold);
-        let mut anchors: Vec<AnchorPoint> = Vec::new();
+        let anchors = detector.detect_batch(turns, &llm_prompt).await?;
 
-        for (idx, turn) in turns.iter().enumerate() {
-            if let Some(anchor) = detector.detect(turn, idx)? {
-                anchors.push(anchor);
-            }
-        }
-
-        // Step 1b: Create synthetic anchor if no natural anchors found
-        // CTX-001 Rule [3]: When no natural anchors are detected, create a synthetic
-        // UserCheckpoint at conversation end. This ensures compaction always has a
-        // reference point, even for non-coding conversations.
-        if anchors.is_empty() && !turns.is_empty() {
+        // Step 1b: Create synthetic anchor if no natural anchors found  
+        // This ensures compaction always has a reference point, even when LLM doesn't detect natural anchors
+        let anchors = if anchors.is_empty() && !turns.is_empty() {
             let last_idx = turns.len() - 1;
             let last_turn = &turns[last_idx];
-            anchors.push(AnchorPoint {
-                turn_index: last_idx,
-                anchor_type: AnchorType::UserCheckpoint,
-                weight: 0.7,
-                confidence: 1.0, // Synthetic anchors have full confidence
-                description: "Synthetic checkpoint (no natural anchors detected)".to_string(),
-                timestamp: last_turn.timestamp,
-            });
-        }
+            vec![AnchorPoint::synthetic_checkpoint(
+                last_idx, 
+                last_turn, 
+                "no natural anchors detected"
+            )]
+        } else {
+            anchors
+        };
 
         // Step 2: Select turns using TypeScript-matching logic
         let selector = TurnSelector::new();
@@ -192,8 +184,7 @@ impl ContextCompactor {
         }
 
         // Use selector's anchor if it found one in older turns,
-        // otherwise use the most recent anchor (which may be synthetic)
-        // This ensures synthetic anchors are returned even when in "recent" turns
+        // otherwise use the most recent LLM-detected anchor
         let result_anchor = selection
             .preserved_anchor
             .or_else(|| anchors.last().cloned());

@@ -72,6 +72,11 @@ export function wrapText(text: string, options: WrapOptions): string[] {
   } = options;
   const lines: string[] = [];
 
+  // Handle undefined or null text
+  if (!text) {
+    return [];
+  }
+
   // Normalize emoji for consistent width calculation
   const normalizedText = normalizeEmojiWidth(text);
 

@@ -1,0 +1,98 @@
+{
+  "scenarios": [
+    {
+      "name": "Fast compaction with detailed progress indication",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/PERF-002-compaction-performance-and-ux.test.tsx",
+          "lines": "37-66",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [3566, 3567, 3568, 3569, 3570, 3571, 3572, 3573, 3574, 3575, 3576, 3577, 3578, 3579, 3580, 3581, 3582, 3583, 3584, 3585, 3586, 3587, 3588, 3589, 3590, 3591, 3592, 3593, 3594, 3595, 3596, 3597, 3598, 3599, 3600, 3601, 3602]
+            },
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [4791, 4792, 4793, 4794, 4795, 4796, 4797, 4798, 4799, 4800, 4801, 4802, 4848, 4849]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Compaction works immediately in new session",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/PERF-002-compaction-performance-and-ux.test.tsx", 
+          "lines": "68-84",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [3566, 3567, 3568, 3569, 3570, 3571, 3572, 3573, 3574, 3575]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Input disabled during compaction with clear feedback",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/PERF-002-compaction-performance-and-ux.test.tsx",
+          "lines": "85-113", 
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [47]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Error handling with retry dialog for provider unavailable", 
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/PERF-002-compaction-performance-and-ux.test.tsx",
+          "lines": "114-137",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx", 
+              "lines": [3594, 3595, 3596, 3597, 3598, 3599, 3600]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Auto-retry succeeds after transient network issue",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/PERF-002-compaction-performance-and-ux.test.tsx",
+          "lines": "138-167",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [3582, 3583, 3584, 3585, 3586, 3587, 3588, 3589, 3590, 3591, 3592, 3593]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Manual retry after persistent failure",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/PERF-002-compaction-performance-and-ux.test.tsx",
+          "lines": "168-189",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [3594, 3595, 3596, 3597, 3598, 3599, 3600]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

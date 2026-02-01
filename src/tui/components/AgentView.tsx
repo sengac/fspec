@@ -32,6 +32,7 @@ import { TurnContentModal } from './TurnContentModal';
 import { WatcherCreateView } from './WatcherCreateView';
 import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
+import { AnchorViewerDialog } from './AnchorViewerDialog';
 import { FileSearchPopup } from './FileSearchPopup';
 import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/conversationUtils';
 import {
@@ -111,6 +112,11 @@ import {
   // PAUSE-001: Pause resume/confirm functions
   sessionPauseResume,
   sessionPauseConfirm,
+  // TUI-056: Anchor point retrieval
+  sessionGetAnchorPoints,
+  sessionGetTurnDetails,
+  type NapiAnchorPoint,
+  type NapiTurnDetails,
   type SessionRoleInfo,
   type NapiProviderModels,
   type NapiModelInfo,
@@ -140,11 +146,13 @@ import { WatcherTemplateForm } from './WatcherTemplateForm';
 import { SessionHeader } from './SessionHeader';
 import { formatContextWindow } from '../utils/sessionHeaderUtils';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
+import type { AnchorPoint, AnchorTurnDetails } from '../types/anchor';
 import {
   computeLineDiff,
   changesToDiffLines,
   type DiffLine,
 } from '../../git/diff-parser';
+import { useCompaction } from '../hooks/useCompaction';
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
 import { NotificationDialog } from '../../components/NotificationDialog';
@@ -165,6 +173,7 @@ import {
   manualAttach,
   manualDetach,
   getSessionChunks,
+  type CompactionProgress,
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
@@ -753,7 +762,17 @@ const processChunksToConversation = (
         correlationId,
         observedCorrelationIds,
       });
+    } else if (chunk.type === 'UserNotification') {
+      // NAPI-010: User-facing notification - display in conversation
+      messages.push({
+        type: 'status',
+        content: chunk.message,
+        correlationId,
+        observedCorrelationIds,
+      });
     }
+    // NAPI-010: SessionStateChange is intentionally NOT handled here
+    // It's an internal state update, not a conversation message
   }
 
   return messages;
@@ -1140,6 +1159,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const setCurrentWorkUnitId = useFspecStore(state => state.setCurrentWorkUnitId);
   const getWorkUnitBySession = useFspecStore(state => state.getWorkUnitBySession);
 
+  // PERF-002: Compaction with retry logic hook
+  const compaction = useCompaction();
+
   // NAPI-006: History navigation state
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1); // -1 means not navigating history
@@ -1224,14 +1246,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // TUI-054: Thinking level dialog state
   const [showThinkingLevelDialog, setShowThinkingLevelDialog] = useState(false);
 
+  // TUI-056: Anchor viewer dialog state
+  const [showAnchorViewer, setShowAnchorViewer] = useState(false);
+  const [anchorPoints, setAnchorPoints] = useState<AnchorPoint[]>([]);
+
   // TUI-050: Slash command palette with clean input handling
   // Hook is called here after all state that affects its `disabled` prop is defined
   const slashCommand = useSlashCommandInput({
     inputValue,
     onInputChange: setInputValue,
     onExecuteCommand: (cmd) => executeSlashCommandRef.current?.(cmd),
-    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog)
-    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog,
+    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, TUI-056: add anchor viewer)
+    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog || showAnchorViewer,
   });
 
   // TUI-048: Space+ESC detection for immediate detach
@@ -1976,6 +2002,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       return;
     }
     
+    
     // CONFIG-004: Handle /provider command - open provider settings view (doesn't require session)
     if (userMessage === '/provider') {
       setInputValue('');
@@ -2464,47 +2491,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         setConversation(prev => [
           ...prev,
           { type: 'status', content: `Cherry-pick failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
-
-    // NAPI-005: Handle /compact command - manual context compaction
-    // NAPI-009: Now uses sessionCompact for background sessions
-    if (userMessage === '/compact') {
-      setInputValue('');
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'Compaction requires an active session. Send a message first.' },
-        ]);
-        return;
-      }
-      try {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: '[Compacting context...]' },
-        ]);
-        const result = await sessionCompact(currentSessionId);
-        // Update token display from compaction result
-        setTokenUsage(prev => ({
-          ...prev,
-          inputTokens: result.compactedTokens,
-        }));
-        // Note: Context fill percentage will be updated on next streaming response
-        // via ContextFillUpdate event with the actual model threshold
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${result.compressionRatio.toFixed(0)}% compression, ${result.turnsSummarized} turns summarized, ${result.turnsKept} turns kept]`,
-          },
-        ]);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Compaction failed: ${errorMessage}` },
         ]);
       }
       return;
@@ -3135,35 +3121,23 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
             // NAPI-009: Resolve the promise when agent completes
             resolve();
-          } else if (chunk.type === 'Status' && chunk.status) {
-            const statusMessage = chunk.status;
-            
-            // Refresh session state when status changes (for pause detection)
-            if (statusMessage === 'paused' || statusMessage === 'running' || statusMessage === 'idle' || statusMessage === 'interrupted') {
-              refreshRustState(activeSessionId);
-              // Don't add simple status changes to conversation
-            } else {
-              // TUI-044: Parse compaction notifications and show in percentage indicator
-              // Format: "[Context compacted: 95000→30000 tokens, 68% compression]"
-              const compactionMatch = statusMessage.match(/Context compacted:.*?(\d+)% compression/);
-              if (compactionMatch) {
-                const reductionPct = parseInt(compactionMatch[1], 10);
-                setCompactionReduction(reductionPct);
-              } else if (statusMessage.includes('Continuing with compacted context')) {
-                // Skip this status message too - it's part of the compaction notification
-              } else if (statusMessage.includes('Generating summary') || statusMessage.includes('generating summary')) {
-                // Skip - this is the compaction "generating summary" notification from Rust
-              } else {
-                // Other status messages go to conversation
-                setConversation(prev => [
-                  ...prev,
-                  {
-                    type: 'status',
-                    content: statusMessage,
-                  },
-                ]);
-              }
+          } else if (chunk.type === 'SessionStateChange') {
+            // NAPI-010: Internal state change - update state machine, do NOT add to conversation
+            refreshRustState(activeSessionId);
+          } else if (chunk.type === 'UserNotification') {
+            // NAPI-010: User-facing notification - display in conversation
+            // TUI-044: Parse compaction notifications for percentage indicator
+            const statusMessage = chunk.message;
+            const compactionMatch = statusMessage.match(/Context compacted:.*?(\d+)% compression/);
+            if (compactionMatch) {
+              const reductionPct = parseInt(compactionMatch[1], 10);
+              setCompactionReduction(reductionPct);
             }
+            // Add all user notifications to conversation
+            setConversation(prev => [
+              ...prev,
+              { type: 'status', content: statusMessage },
+            ]);
           } else if (chunk.type === 'Interrupted') {
             // Agent was interrupted by user
             // TUI-037: Only append to tool if it's still streaming (no collapse indicator)
@@ -3487,6 +3461,48 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       return;
     }
     
+    // Handle /compact command
+    if (userMessage === '/compact') {
+      setInputValue('');
+      // PERF-002: Check if there's an active session to compact
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'No active session to compact. Start a conversation first.' },
+        ]);
+        return;
+      }
+      
+      // PERF-002: Use the compaction hook for clean separation of concerns
+      try {
+        // UX-002: Don't add compaction messages to conversation
+        // All compaction feedback is shown in input area via isCompacting state
+        
+        const result = await compaction.performCompaction(currentSessionId);
+        
+        // Update token display from compaction result
+        setTokenUsage(prev => ({
+          ...prev,
+          inputTokens: result.compactedTokens,
+        }));
+        
+        // UX-002: Don't add success message to conversation
+        // Compaction completion is handled by state transition
+        
+        setCompactionReduction(result.compressionRatio);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to compact';
+        // Error handling and retry dialog are managed by the hook
+        if (!compaction.retryState.isVisible) {
+          setConversation(prev => [
+            ...prev,
+            { type: 'status', content: `Compaction failed: ${errorMessage}` },
+          ]);
+        }
+      }
+      return;
+    }
+    
     // Handle /search command - inline state changes to avoid TDZ
     if (userMessage === '/search') {
       setInputValue('');
@@ -3593,43 +3609,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       return;
     }
     
-    // Handle /compact command
-    if (userMessage === '/compact') {
-      setInputValue('');
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'Compaction requires an active session. Send a message first.' },
-        ]);
-        return;
-      }
-      try {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: '[Compacting context...]' },
-        ]);
-        const result = await sessionCompact(currentSessionId);
-        // Update token display from compaction result
-        setTokenUsage(prev => ({
-          ...prev,
-          inputTokens: result.compactedTokens,
-        }));
-        setConversation(prev => [
-          ...prev,
-          {
-            type: 'status',
-            content: `[Context compacted: ${result.originalTokens}→${result.compactedTokens} tokens, ${result.compressionRatio.toFixed(0)}% compression, ${result.turnsSummarized} turns summarized, ${result.turnsKept} turns kept]`,
-          },
-        ]);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to compact';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Compaction failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
     
     // Handle /mcp command (just show status for now)
     if (userMessage === '/mcp') {
@@ -3648,6 +3627,52 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         ...prev,
         { type: 'status', content: 'Mode cycling not yet implemented.' },
       ]);
+      return;
+    }
+    
+    // TUI-056: Handle /anchors command - show anchor points viewer
+    if (userMessage === '/anchors') {
+      setInputValue('');
+      
+      // Require an active session
+      if (!currentSessionId) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'Start a session first to view anchor points.' },
+        ]);
+        return;
+      }
+      
+      // Load anchor points from current session using direct NAPI function
+      try {
+        const napiAnchors = sessionGetAnchorPoints(currentSessionId);
+        
+        // Ensure we have a valid array before processing
+        if (!Array.isArray(napiAnchors)) {
+          console.warn('sessionGetAnchorPoints returned non-array:', napiAnchors);
+          setAnchorPoints([]);
+        } else {
+          // Convert NAPI types to TUI types
+          const convertedAnchors: AnchorPoint[] = napiAnchors.map(napiAnchor => ({
+            turnIndex: napiAnchor.turnIndex,
+            anchorType: napiAnchor.anchorType as AnchorType,
+            weight: napiAnchor.weight,
+            confidence: napiAnchor.confidence,
+            description: napiAnchor.description,
+            timestamp: napiAnchor.timestamp,
+          }));
+
+          setAnchorPoints(convertedAnchors);
+        }
+      } catch (error) {
+        console.error('Failed to load anchor points:', error);
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'Failed to load anchor points. This session may not have any compaction history.' },
+        ]);
+        return;
+      }
+      setShowAnchorViewer(true);
       return;
     }
     
@@ -3711,6 +3736,44 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   useEffect(() => {
     executeSlashCommandRef.current = (cmd: string) => void handleSubmitWithCommand(cmd);
   }, [handleSubmitWithCommand]);
+
+  // TUI-056: Get turn details for anchor viewer
+  const getAnchorTurnDetails = useCallback(async (turnIndex: number): Promise<AnchorTurnDetails | null> => {
+    if (!currentSessionId) {
+      return null;
+    }
+
+    try {
+      const napiTurnDetails: NapiTurnDetails | null = sessionGetTurnDetails(currentSessionId, turnIndex);
+      if (!napiTurnDetails) {
+        return null;
+      }
+
+      // Convert NAPI types to TUI types
+      const turnDetails: AnchorTurnDetails = {
+        turnIndex: napiTurnDetails.turnIndex,
+        userMessage: napiTurnDetails.userMessage,
+        assistantResponse: napiTurnDetails.assistantResponse,
+        toolCalls: napiTurnDetails.toolCalls.map(call => ({
+          tool: call.tool,
+          parameters: JSON.parse(call.parameters || '{}'),
+          success: call.success,
+        })),
+        fileModifications: napiTurnDetails.fileModifications.map(mod => ({
+          path: mod.path,
+          operation: mod.operation as 'create' | 'edit' | 'delete',
+          summary: mod.summary,
+        })),
+        status: napiTurnDetails.status as 'success' | 'partial' | 'failed',
+        context: napiTurnDetails.context,
+      };
+
+      return turnDetails;
+    } catch (error) {
+      console.error('Failed to get turn details:', error);
+      return null;
+    }
+  }, [currentSessionId]);
 
   // Handle provider switching - now just updates local state
   // Actual provider change happens on next session creation
@@ -4256,22 +4319,24 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // PERSIST-001: Persist token state to disk when streaming completes
       // This ensures /resume can restore token counts from persisted sessions
       persistTokenState(currentSessionIdRef.current);
-    } else if (chunk.type === 'Status' && chunk.status) {
-      const statusMessage = chunk.status;
-      
-      // Refresh session state when status changes (for pause detection)
-      if (statusMessage === 'paused' || statusMessage === 'running' || statusMessage === 'idle' || statusMessage === 'interrupted') {
-        refreshRustState(currentSessionIdRef.current);
+    } else if (chunk.type === 'SessionStateChange') {
+      // NAPI-010: Internal state change - update state machine, do NOT add to conversation
+      // The state field tells us the new session state (Idle, Running, Paused, Compacting, Interrupted)
+      refreshRustState(currentSessionIdRef.current);
+    } else if (chunk.type === 'UserNotification') {
+      // NAPI-010: User-facing notification - display in conversation
+      // TUI-044: Parse compaction notifications for percentage indicator
+      const statusMessage = chunk.message;
+      const compactionMatch = statusMessage.match(/Context compacted:.*?(\d+)% compression/);
+      if (compactionMatch) {
+        const reductionPct = parseInt(compactionMatch[1], 10);
+        setCompactionReduction(reductionPct);
       }
-      
-      // Show status messages (except compaction notifications and simple status changes)
-      if (!statusMessage.includes('compacted') && !statusMessage.includes('summary') &&
-          statusMessage !== 'paused' && statusMessage !== 'running' && statusMessage !== 'idle' && statusMessage !== 'interrupted') {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: statusMessage },
-        ]);
-      }
+      // Add all user notifications to conversation
+      setConversation(prev => [
+        ...prev,
+        { type: 'status', content: statusMessage },
+      ]);
     } else if (chunk.type === 'Interrupted') {
       setConversation(prev => {
         const updated = [...prev];
@@ -7293,6 +7358,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             isLoading={displayIsLoading}
             isPaused={displayIsPaused}
             pauseInfo={displayPauseInfo}
+            isCompacting={compaction.progressState.isActive || rustSnapshot.isCompacting}
+            compactionProgress={
+              compaction.progressState.isActive 
+                ? {
+                    phase: compaction.progressState.message,
+                    current: compaction.progressState.turnProgress?.current || 0,
+                    total: compaction.progressState.turnProgress?.total || 0,
+                  }
+                : rustSnapshot.compactionProgress
+            }
             value={inputValue}
             onChange={handleInputChange}
             onSubmit={handleSubmit}
@@ -7302,7 +7377,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             maxVisibleLines={5}
             skipAnimation={skipInputAnimation}
             isActive={!showCreateSessionDialog}
-            suppressEnter={slashCommand.isVisible || fileSearch.isVisible || isTurnSelectMode}
+            suppressEnter={slashCommand.isVisible || fileSearch.isVisible || isTurnSelectMode || compaction.progressState.isActive || rustSnapshot.isCompacting}
           />
         </Box>
       </Box>
@@ -7355,6 +7430,40 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         />
       )}
 
+      {/* PERF-002: Compaction retry dialog */}
+      {compaction.retryState.isVisible && (
+        <ThreeButtonDialog
+          message={`Compaction Failed: ${compaction.retryState.error}`}
+          description="Choose how to proceed after compaction failure:"
+          options={['Retry', 'Continue without compacting', 'Cancel']}
+          defaultSelectedIndex={0}
+          onSelect={(index, option) => {
+            const optionKey = ['retry', 'continue', 'cancel'][index] as 'retry' | 'continue' | 'cancel';
+            compaction.handleRetryOption(optionKey);
+            if (optionKey === 'retry' && currentSessionId) {
+              // Retry compaction
+              compaction.performCompaction(currentSessionId).then(result => {
+                // UX-002: Don't add success message to conversation on retry
+                setCompactionReduction(result.compressionRatio);
+                setTokenUsage(prev => ({
+                  ...prev,
+                  inputTokens: result.compactedTokens,
+                }));
+              }).catch(err => {
+                if (!compaction.retryState.isVisible) {
+                  const errorMessage = err instanceof Error ? err.message : 'Failed to compact';
+                  setConversation(prev => [
+                    ...prev,
+                    { type: 'status', content: `Compaction failed: ${errorMessage}` },
+                  ]);
+                }
+              });
+            }
+          }}
+          onCancel={() => compaction.clearRetryState()}
+        />
+      )}
+
       {/* VIEWNV-001: Create session dialog (shown when navigating past right edge) */}
       {showCreateSessionDialog && (
         <CreateSessionDialog
@@ -7393,6 +7502,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             setShowThinkingLevelDialog(false);
           }}
           onClose={() => setShowThinkingLevelDialog(false)}
+        />
+      )}
+
+      {/* TUI-056: Anchor viewer dialog */}
+      {showAnchorViewer && (
+        <AnchorViewerDialog
+          isVisible={showAnchorViewer}
+          anchorPoints={anchorPoints}
+          onClose={() => setShowAnchorViewer(false)}
+          onGetTurnDetails={getAnchorTurnDetails}
         />
       )}
 

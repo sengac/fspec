@@ -72,7 +72,7 @@ fn main() -> anyhow::Result<()> {
     println!("4. Testing turn selection...");
     let selector = TurnSelector::new();
     let turns = vec![turn.clone(), turn.clone(), turn];
-    let selection = selector.select_turns(&turns, None)?;
+    let selection = selector.select_turns_with_recent(&turns, &[])?;
     println!("   ✓ Turn selection complete:");
     println!("     - Turns to keep: {}", selection.kept_turns.len());
     println!(

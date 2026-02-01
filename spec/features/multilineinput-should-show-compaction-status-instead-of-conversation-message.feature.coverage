@@ -1,0 +1,312 @@
+{
+  "scenarios": [
+    {
+      "name": "Input placeholder shows compaction progress instead of conversation message",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "16-51",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
+              ]
+            },
+            {
+              "file": "src/tui/components/InputTransition.tsx",
+              "lines": [
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Input placeholder shows detailed compaction phases",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "53-99",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Input area blocks typing but shows progress during compaction",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "101-131",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "69-91",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                159,
+                160,
+                161,
+                162,
+                163,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "92-119",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145,
+                159,
+                160,
+                161,
+                162,
+                163,
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "69-91",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                141,
+                142,
+                143,
+                144,
+                145
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "92-119",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                159,
+                160,
+                161,
+                162,
+                163
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "69-91",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "92-119",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                288,
+                289,
+                290,
+                291,
+                292,
+                293
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Conversation history remains clean without compaction status messages",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "133-155",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                3122,
+                3123,
+                3124,
+                3125,
+                3126,
+                3127,
+                3128,
+                3129,
+                3130,
+                3131,
+                3132,
+                3133,
+                3134,
+                3135,
+                3136,
+                3137,
+                3138,
+                3139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Input area returns to normal state after compaction completes",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "133-181",
+          "implMappings": [
+            {
+              "file": "src/tui/components/MultiLineInput.tsx",
+              "lines": [
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/MultiLineInput.tsx",
+      "src/tui/components/InputTransition.tsx",
+      "src/tui/components/AgentView.tsx"
+    ],
+    "totalLinesCovered": 450
+  }
+}

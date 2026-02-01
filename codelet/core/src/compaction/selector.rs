@@ -96,16 +96,6 @@ impl TurnSelector {
         }
     }
 
-    /// Legacy method - kept for backwards compatibility
-    #[allow(dead_code)]
-    pub fn select_turns(
-        &self,
-        turns: &[ConversationTurn],
-        anchor: Option<&AnchorPoint>,
-    ) -> Result<TurnSelection> {
-        let anchors: Vec<AnchorPoint> = anchor.cloned().into_iter().collect();
-        self.select_turns_with_recent(turns, &anchors)
-    }
 }
 
 impl Default for TurnSelector {

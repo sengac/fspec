@@ -16,12 +16,13 @@
  * - INPUT-001: Uses centralized input handling with MEDIUM priority
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Text } from 'ink';
-import { useThinkingText } from './ThinkingIndicator';
+import { useThinkingText, ThinkingIndicator } from './ThinkingIndicator';
 import { MultiLineInput, type MultiLineInputProps } from './MultiLineInput';
 import { CHAR_ANIMATION_INTERVAL_MS, ANIMATION_PHASE_DELAY_MS, CHARS_PER_FRAME } from '../utils/animationConstants';
 import type { PauseInfo } from '../types/pause';
+import { type CompactionProgress } from '../hooks/useRustSessionState';
 import { useInputCompat, InputPriority } from '../input/index';
 import { logger } from '../../utils/logger';
 
@@ -65,6 +66,17 @@ export interface InputTransitionProps extends MultiLineInputProps {
    * Only used when isPaused is true
    */
   pauseInfo?: PauseInfo;
+
+  /**
+   * PERF-002: Whether the session is compacting context
+   */
+  isCompacting?: boolean;
+
+  /**
+   * PERF-002: Compaction progress information
+   * Only used when isCompacting is true
+   */
+  compactionProgress?: CompactionProgress | null;
 }
 
 /**
@@ -97,6 +109,8 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   skipAnimation = false,
   isPaused = false,
   pauseInfo,
+  isCompacting = false,
+  compactionProgress,
   suppressEnter = false,
 }) => {
   // All useState hooks grouped together
@@ -107,6 +121,15 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   const [capturedText, setCapturedText] = useState('');
   const [pendingInput, setPendingInput] = useState('');
   const wasLoadingRef = useRef(isLoading);
+  const wasCompactingRef = useRef(isCompacting);
+
+  // PERF-002: Generate compaction progress text
+  const compactionText = useMemo(() => {
+    if (!isCompacting || !compactionProgress) {
+      return 'Compacting context...';
+    }
+    return `${compactionProgress.phase}... ${compactionProgress.current}/${compactionProgress.total} turns`;
+  }, [isCompacting, compactionProgress]);
 
   // Get the current thinking text (stays in sync with ThinkingIndicator)
   const currentThinkingText = useThinkingText(
@@ -115,6 +138,9 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     'dots',
     isLoading
   );
+
+  // PERF-002: Use compaction text when compacting, otherwise use thinking text
+  const currentDisplayText = isCompacting ? compactionText : currentThinkingText;
 
   // TUI-049: Skip animation when requested (e.g., session switching)
   // Handles two cases:
@@ -129,31 +155,36 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     }
   }, [skipAnimation, animationPhase]);
 
-  // Track loading state changes to trigger animation
+  // Track loading and compacting state changes to trigger animation
   // PAUSE-001: Don't trigger hiding animation when entering paused state
+  // PERF-002: Support compacting state similar to loading state
   useEffect(() => {
-    if (wasLoadingRef.current && !isLoading && !isPaused) {
-      // Loading just finished (and NOT entering pause state)
+    const wasThinking = wasLoadingRef.current || wasCompactingRef.current;
+    const isThinking = isLoading || isCompacting;
+    
+    if (wasThinking && !isThinking && !isPaused) {
+      // Thinking just finished (and NOT entering pause state)
       if (skipAnimation) {
         // TUI-049: Skip animation when switching sessions - go straight to complete
         setAnimationPhase('complete');
         setPendingInput('');
       } else {
         // Normal case: capture current text and start hide animation
-        setCapturedText(currentThinkingText);
+        setCapturedText(currentDisplayText);
         setAnimationPhase('hiding');
-        setVisibleChars(currentThinkingText.length);
+        setVisibleChars(currentDisplayText.length);
         setPendingInput('');
       }
-    } else if (!wasLoadingRef.current && isLoading) {
-      // Loading just started (or resuming from pause)
+    } else if (!wasThinking && isThinking) {
+      // Thinking just started (loading or compacting)
       setAnimationPhase('loading');
       setVisibleChars(0);
       setCapturedText('');
       setPendingInput('');
     }
     wasLoadingRef.current = isLoading;
-  }, [isLoading, isPaused, currentThinkingText, skipAnimation]);
+    wasCompactingRef.current = isCompacting;
+  }, [isLoading, isCompacting, isPaused, currentDisplayText, skipAnimation]);
 
   // Handle keyboard input during animation to interrupt it
   const isAnimating = animationPhase === 'hiding' || animationPhase === 'showing';
@@ -288,8 +319,35 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   }
   
   if (animationPhase === 'loading') {
-    // Show the live thinking text (stays in sync with the hook)
-    return <Text dimColor>{currentThinkingText}</Text>;
+    // UX-002: During compaction, always render MultiLineInput to show status in placeholder
+    if (isCompacting) {
+      return (
+        <MultiLineInput
+          value={value}
+          onChange={onChange}
+          onSubmit={onSubmit}
+          placeholder={placeholder}
+          onHistoryPrev={onHistoryPrev}
+          onHistoryNext={onHistoryNext}
+          maxVisibleLines={maxVisibleLines}
+          isActive={isActive}
+          suppressEnter={suppressEnter}
+          isCompacting={isCompacting}
+          compactionProgress={compactionProgress}
+        />
+      );
+    }
+    
+    // Normal loading: Show ThinkingIndicator
+    return (
+      <ThinkingIndicator
+        message={thinkingMessage}
+        hint={thinkingHint}
+        variant="dots"
+        isPaused={isPaused}
+        pauseInfo={pauseInfo}
+      />
+    );
   }
 
   if (animationPhase === 'hiding') {
@@ -316,6 +374,8 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
       maxVisibleLines={maxVisibleLines}
       isActive={isActive}
       suppressEnter={suppressEnter}
+      isCompacting={isCompacting}
+      compactionProgress={compactionProgress}
     />
   );
 };

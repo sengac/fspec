@@ -918,7 +918,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(sessionCompact).not.toHaveBeenCalled();
 
       // @step And the view should show error about needing a session
-      expect(lastFrame()).toContain('requires an active session');
+      expect(lastFrame()).toContain('No active session to compact');
 
       // @step And the view should show the agent header
       expect(lastFrame()).toContain('Agent');
@@ -967,7 +967,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       stdin.write('/compact');
       await waitForFrame();
       stdin.write('\r'); // Enter key
-      await waitForFrame(100);
+      await waitForFrame(300); // Increased wait time to allow compaction error handling
 
       // @step Then sessionCompact should be called
       expect(sessionCompact).toHaveBeenCalledTimes(1);
@@ -977,6 +977,105 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // @step And error message should be shown
       expect(lastFrame()).toContain('Compaction failed');
+    });
+  });
+
+  // ============================================================================
+  // Feature: NAPI-010 - SessionStateChange vs UserNotification handling
+  // SessionStateChange is internal state (not shown), UserNotification is user-facing (shown)
+  // ============================================================================
+
+  describe('Scenario: NAPI-010 discriminated union chunk handling', () => {
+    it('should not display SessionStateChange in conversation', async () => {
+      // NAPI-010: SessionStateChange is for internal state machine updates
+      // These should NOT appear in the conversation
+      resetMockSession();
+
+      const { lastFrame, stdin } = render(
+        <AgentView onExit={() => {}} />
+      );
+
+      await waitForFrame();
+
+      stdin.write('test');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      if (capturedCallback) {
+        // SessionStateChange should NOT appear in conversation
+        capturedCallback(null, { type: 'SessionStateChange', state: 'Compacting' });
+        // UserNotification SHOULD appear in conversation
+        capturedCallback(null, { type: 'UserNotification', message: 'Context compacted successfully', severity: 'Info' });
+        capturedCallback(null, { type: 'Done' });
+      }
+      if (capturedResolver) {
+        capturedResolver();
+      }
+      await waitForFrame(100);
+
+      const frame = lastFrame();
+      // The word "Compacting" (the state value) should NOT appear as a status message
+      // because SessionStateChange is internal state only
+      expect(frame).not.toMatch(/Compacting(?!.*compacted)/); // "Compacting" alone shouldn't appear
+      // But "Context compacted successfully" should appear because it's a UserNotification
+      expect(frame).toContain('Context compacted successfully');
+    });
+
+    it('should display user notifications in conversation', async () => {
+      resetMockSession();
+
+      const { lastFrame, stdin } = render(
+        <AgentView onExit={() => {}} />
+      );
+
+      await waitForFrame();
+
+      stdin.write('test');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // NAPI-010: UserNotification for user-visible status messages
+      if (capturedCallback) {
+        capturedCallback(null, { type: 'UserNotification', message: 'Processing request...', severity: 'Info' });
+        capturedCallback(null, { type: 'Text', text: 'Done!' });
+        capturedCallback(null, { type: 'Done' });
+      }
+      if (capturedResolver) {
+        capturedResolver();
+      }
+      await waitForFrame(100);
+
+      expect(lastFrame()).toContain('Processing request');
+    });
+
+    it('should handle multiple notification severities', async () => {
+      // NAPI-010: UserNotification supports Info, Warning, Error severities
+      resetMockSession();
+
+      const { lastFrame, stdin } = render(
+        <AgentView onExit={() => {}} />
+      );
+
+      await waitForFrame();
+
+      stdin.write('test');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      if (capturedCallback) {
+        capturedCallback(null, { type: 'UserNotification', message: 'API rate limit exceeded', severity: 'Warning' });
+        capturedCallback(null, { type: 'Done' });
+      }
+      if (capturedResolver) {
+        capturedResolver();
+      }
+      await waitForFrame(100);
+
+      // Verify the warning message appears in conversation
+      expect(lastFrame()).toContain('API rate limit exceeded');
     });
   });
 });

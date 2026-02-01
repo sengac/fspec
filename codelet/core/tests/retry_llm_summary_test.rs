@@ -5,8 +5,9 @@
 //! Tests for CLI-018: Retry Logic for LLM Summary Generation
 //!
 //! NOTE: The compactor now uses template-based summaries (WeightedSummaryProvider pattern)
-//! instead of LLM-generated summaries. The LLM callback parameter is kept for API
-//! compatibility but is UNUSED. These tests verify the new template-based behavior.
+//! instead of LLM-generated summaries. However, the LLM callback is now used for 
+//! ANCHOR DETECTION (CTX-004). These tests verify the template-based summary behavior
+//! while accounting for LLM calls during anchor detection.
 
 use codelet_core::compaction::{ContextCompactor, ConversationTurn, ToolCall, ToolResult};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -60,7 +61,7 @@ fn create_turn_with_file_edit(
 // TEMPLATE-BASED SUMMARY TESTS (replaces LLM retry tests)
 // ==========================================
 
-/// Scenario: Template-based summary generation succeeds without LLM
+/// Scenario: Template-based summary generation with LLM anchor detection
 #[tokio::test]
 async fn test_template_based_summary_no_llm_call() {
     // @step Given the compactor uses template-based summaries
@@ -74,13 +75,14 @@ async fn test_template_based_summary_no_llm_call() {
         create_test_turn("Turn 4", "Response 4", 100),
     ];
 
-    // LLM mock that tracks calls - should NEVER be called
+    // LLM mock for anchor detection - will be called for each turn
     let call_count_clone = call_count.clone();
     let llm_mock = |_prompt: String| {
         let count = call_count_clone.clone();
         async move {
             count.fetch_add(1, Ordering::SeqCst);
-            Ok::<String, anyhow::Error>("LLM should not be called".to_string())
+            // Return no anchor detected for these trivial turns
+            Ok::<String, anyhow::Error>(r#"{"anchor_type": null, "confidence": 0.0, "description": "No meaningful anchor detected"}"#.to_string())
         }
     };
 
@@ -90,18 +92,18 @@ async fn test_template_based_summary_no_llm_call() {
     // @step Then the summary should be generated successfully
     assert!(result.is_ok());
 
-    // @step And NO LLM calls should be made (template-based)
+    // @step And LLM calls should happen for anchor detection (one per turn)
     assert_eq!(
         call_count.load(Ordering::SeqCst),
-        0,
-        "LLM should NOT be called - summaries are template-based"
+        4,
+        "LLM should be called once per turn for anchor detection"
     );
 
-    // @step And the summary should contain key outcomes
+    // @step And the summary should contain template-based content (not LLM-generated)
     let result = result.unwrap();
     assert!(
         result.summary.contains("Key outcomes") || !result.summary.is_empty(),
-        "Summary should be generated from template"
+        "Summary should be generated from template, not LLM"
     );
 }
 

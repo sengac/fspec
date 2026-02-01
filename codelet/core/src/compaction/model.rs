@@ -499,6 +499,3 @@ impl PreservationContext {
         )
     }
 }
-
-// Note: ConversationFlow was removed - synthetic anchor creation is now handled
-// directly in ContextCompactor::compact() to avoid dead code.

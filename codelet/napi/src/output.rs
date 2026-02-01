@@ -18,7 +18,7 @@
 //! users to see Claude's reasoning as it happens.
 
 use crate::types::{
-    ContextFillInfo, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo, ToolResultInfo,
+    ContextFillInfo, NotificationSeverity, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo, ToolResultInfo,
 };
 use codelet_cli::interactive::{StreamEvent, StreamOutput};
 use napi::threadsafe_function::{
@@ -219,11 +219,12 @@ impl StreamOutput for NapiOutput {
                 );
             }
             StreamEvent::Status(message) => {
-                // Flush any pending text first
+                // NAPI-010: Status messages are user-visible notifications
+                // (e.g., "[Continuing with compacted context...]"), NOT internal state changes
                 self.flush_text();
 
                 let _ = self.callback.call(
-                    StreamChunk::status(message),
+                    StreamChunk::user_notification(message, NotificationSeverity::Info),
                     ThreadsafeFunctionCallMode::NonBlocking,
                 );
             }

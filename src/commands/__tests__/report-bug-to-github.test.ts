@@ -12,8 +12,10 @@ import { join } from 'path';
 import git from 'isomorphic-git';
 import fs from 'fs';
 import { reportBugToGitHub } from '../report-bug-to-github';
-import type { BugReportContext, BugReport } from '../report-bug-to-github';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Report bug to GitHub with AI assistance', () => {
   let setup: TestDirectorySetup;
@@ -115,7 +117,11 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
       process.chdir(setup.testDir);
 
       // @step When I run "fspec report-bug-to-github"
-      const bugReport = await reportBugToGitHub({ projectRoot: setup.testDir });
+      const mockOpenBrowser = vi.fn().mockResolvedValue(undefined);
+      const bugReport = await reportBugToGitHub({
+        projectRoot: setup.testDir,
+        openBrowser: mockOpenBrowser,
+      });
 
       // @step Then the bug report should include the work unit ID "AUTH-001"
       expect(bugReport.markdown).toContain('AUTH-001');
@@ -135,7 +141,11 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
     it('should include git context', async () => {
       // @step Given I have uncommitted changes in my working directory
       // Initialize a proper git repository using isomorphic-git
-      await git.init({ fs, dir: setup.testDir, defaultBranch: 'feature-branch' });
+      await git.init({
+        fs,
+        dir: setup.testDir,
+        defaultBranch: 'feature-branch',
+      });
 
       // Create and commit a file to establish the repository
       await writeFile(join(setup.testDir, 'initial.txt'), 'initial content');
@@ -155,7 +165,11 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
       process.chdir(setup.testDir);
 
       // @step When I run "fspec report-bug-to-github"
-      const bugReport = await reportBugToGitHub({ projectRoot: setup.testDir });
+      const mockOpenBrowser = vi.fn().mockResolvedValue(undefined);
+      const bugReport = await reportBugToGitHub({
+        projectRoot: setup.testDir,
+        openBrowser: mockOpenBrowser,
+      });
 
       // @step Then the bug report should include the current git branch
       expect(bugReport.markdown).toContain('feature-branch');
@@ -173,7 +187,9 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
   describe('Scenario: Error log capture', () => {
     it('should capture error logs', async () => {
       // @step Given fspec recently crashed with an error
-      await mkdir(join(setup.testDir, '.fspec', 'error-logs'), { recursive: true });
+      await mkdir(join(setup.testDir, '.fspec', 'error-logs'), {
+        recursive: true,
+      });
       const errorLog = {
         timestamp: new Date().toISOString(),
         error: 'ENOENT: no such file or directory',
@@ -186,7 +202,11 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
       process.chdir(setup.testDir);
 
       // @step When I run "fspec report-bug-to-github"
-      const bugReport = await reportBugToGitHub({ projectRoot: setup.testDir });
+      const mockOpenBrowser = vi.fn().mockResolvedValue(undefined);
+      const bugReport = await reportBugToGitHub({
+        projectRoot: setup.testDir,
+        openBrowser: mockOpenBrowser,
+      });
 
       // @step Then the command should detect recent error logs
       expect(bugReport.context.recentErrors).toBeDefined();
@@ -227,6 +247,7 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
         interactive: true,
         editTitle: mockEditTitle,
         initialReport: initialBugReport,
+        openBrowser: mockOpenBrowser,
       });
       expect(mockEditTitle).toHaveBeenCalled();
       expect(result.title).toBe('Updated Bug Title');
@@ -237,6 +258,7 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
         interactive: true,
         editBody: mockEditBody,
         initialReport: initialBugReport,
+        openBrowser: mockOpenBrowser,
       });
       expect(mockEditBody).toHaveBeenCalled();
       expect(result2.markdown).toContain('Updated bug body content');
@@ -247,6 +269,7 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
         projectRoot: setup.testDir,
         interactive: true,
         confirm: mockConfirmCancel,
+        openBrowser: mockOpenBrowser,
       });
       expect(mockConfirmCancel).toHaveBeenCalled();
       expect(result3.cancelled).toBe(true);
@@ -312,7 +335,9 @@ describe('Feature: Report bug to GitHub with AI assistance', () => {
     describe('Scenario: After fix - command works without --project-root using process.cwd()', () => {
       it('should use process.cwd() when projectRoot is not provided', async () => {
         // @step Given I am in a project directory
-        await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
+        await mkdir(join(setup.testDir, 'spec', 'features'), {
+          recursive: true,
+        });
         process.chdir(setup.testDir);
 
         // @step And findProjectRoot() is called with process.cwd() parameter

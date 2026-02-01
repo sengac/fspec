@@ -168,7 +168,7 @@ fn collect_items<T: Clone>(content: &OneOrMany<T>) -> Vec<T> {
 }
 
 /// Execute compaction and reconstruct messages
-pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetrics> {
+pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetrics, Option<codelet_core::compaction::AnchorPoint>)> {
     // Step 1: Create LLM prompt function that uses the provider
     let provider_manager = session.provider_manager();
     let provider_name = provider_manager.current_provider_name();
@@ -254,7 +254,7 @@ pub async fn execute_compaction(session: &mut Session) -> Result<CompactionMetri
         warn!("{}", warning);
     }
 
-    Ok(result.metrics)
+    Ok((result.metrics, result.anchor))
 }
 
 /// Prompt a provider with a simple text prompt (no preamble, no tools)

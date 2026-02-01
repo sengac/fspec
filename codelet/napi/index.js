@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { CodeletSession, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, callFspecCommand, ChunkType, extractThinkingText, getThinkingConfig, globSearch, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionClearActive, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionDetach, sessionGetBaseThinkingLevel, sessionGetBufferedOutput, sessionGetDebugEnabled, sessionGetFirst, sessionGetMergedOutput, sessionGetModel, sessionGetNext, sessionGetParent, sessionGetPauseState, sessionGetPendingInput, sessionGetPrev, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetWatchers, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionPauseConfirm, sessionPauseResume, sessionRestoreMessages, sessionRestoreTokenState, sessionSendInput, sessionSetActive, sessionSetBaseThinkingLevel, sessionSetDebugEnabled, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, sessionSubscribe, sessionToggleDebug, sessionUnsubscribe, sessionUpdateDebugMetadata, setRustLogCallback, testCallback, toggleDebug, watcherInject } = nativeBinding
+const { CodeletSession, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, callFspecCommand, extractThinkingText, getThinkingConfig, globSearch, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, modelsSetCacheDirectory, NapiAnchorType, NotificationSeverity, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionClearActive, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionDetach, sessionGetAnchorPoints, sessionGetBaseThinkingLevel, sessionGetBufferedOutput, sessionGetCompactionProgress, sessionGetDebugEnabled, sessionGetFirst, sessionGetMergedOutput, sessionGetModel, sessionGetNext, sessionGetParent, sessionGetPauseState, sessionGetPendingInput, sessionGetPrev, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetTurnDetails, sessionGetWatchers, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionPauseConfirm, sessionPauseResume, sessionRestoreMessages, sessionRestoreTokenState, sessionSendInput, sessionSetActive, sessionSetBaseThinkingLevel, sessionSetDebugEnabled, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, SessionState, sessionSubscribe, sessionToggleDebug, sessionUnsubscribe, sessionUpdateDebugMetadata, setRustLogCallback, testCallback, toggleDebug, watcherInject } = nativeBinding
 export { CodeletSession }
 export { AstGrepCaseType }
 export { astGrepRefactor }
@@ -583,7 +583,6 @@ export { astGrepReplace }
 export { astGrepSearch }
 export { AstGrepSeparator }
 export { callFspecCommand }
-export { ChunkType }
 export { extractThinkingText }
 export { getThinkingConfig }
 export { globSearch }
@@ -596,6 +595,8 @@ export { modelsListAll }
 export { modelsListForProvider }
 export { modelsRefreshCache }
 export { modelsSetCacheDirectory }
+export { NapiAnchorType }
+export { NotificationSeverity }
 export { persistenceAddHistory }
 export { persistenceAppendMessage }
 export { persistenceAppendMessageWithMetadata }
@@ -638,8 +639,10 @@ export { sessionClearRole }
 export { sessionCompact }
 export { sessionCreateWatcher }
 export { sessionDetach }
+export { sessionGetAnchorPoints }
 export { sessionGetBaseThinkingLevel }
 export { sessionGetBufferedOutput }
+export { sessionGetCompactionProgress }
 export { sessionGetDebugEnabled }
 export { sessionGetFirst }
 export { sessionGetMergedOutput }
@@ -652,6 +655,7 @@ export { sessionGetPrev }
 export { sessionGetRole }
 export { sessionGetStatus }
 export { sessionGetTokens }
+export { sessionGetTurnDetails }
 export { sessionGetWatchers }
 export { sessionInterrupt }
 export { sessionManagerCreate }
@@ -670,6 +674,7 @@ export { sessionSetModel }
 export { sessionSetObservedCorrelationIds }
 export { sessionSetPendingInput }
 export { sessionSetRole }
+export { SessionState }
 export { sessionSubscribe }
 export { sessionToggleDebug }
 export { sessionUnsubscribe }

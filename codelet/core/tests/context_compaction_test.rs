@@ -234,7 +234,7 @@ async fn test_select_turns_for_compaction_using_anchor() -> Result<()> {
 
     // @step When I select turns for compaction
     let selector = TurnSelector::new();
-    let selection = selector.select_turns(&turns, Some(&anchor))?;
+    let selection = selector.select_turns_with_recent(&turns, &[anchor])?;
 
     // @step Then turns 40-89 are kept (50 turns, 0-indexed)
     assert_eq!(
@@ -526,10 +526,10 @@ impl TurnSelector {
         Self
     }
 
-    fn select_turns(
+    fn select_turns_with_recent(
         &self,
         turns: &[ConversationTurn],
-        anchor: Option<&AnchorPoint>,
+        anchors: &[AnchorPoint],
     ) -> Result<TurnSelection> {
         if turns.is_empty() {
             return Ok(TurnSelection {
@@ -538,7 +538,7 @@ impl TurnSelector {
             });
         }
 
-        match anchor {
+        match anchors.first() {
             Some(anchor_point) => {
                 // Keep turns from anchor point forward (inclusive)
                 let kept_turns: Vec<TurnInfo> = (anchor_point.turn_index..turns.len())

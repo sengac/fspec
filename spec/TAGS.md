@@ -28,6 +28,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@header` | UI header components and status bar elements |
 | `@hooks` | Hooks system and execution engine |
 | `@init` | Initialization and setup features |
+| `@input` | Input handling components (MultiLineInput, InputTransition, etc) |
 | `@input-components` | TUI input components for text editing and user interaction |
 | `@integration` | Cross-Component Integration |
 | `@npm` | npm package management and dependency resolution |
@@ -814,7 +815,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-28T11:17:56.801Z_
+_Last updated: 2026-01-31T10:54:46.858Z_
 
 **Update Command**: `fspec tag-stats`
 

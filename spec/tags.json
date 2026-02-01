@@ -70,6 +70,10 @@
           "description": "Initialization and setup features"
         },
         {
+          "name": "@input",
+          "description": "Input handling components (MultiLineInput, InputTransition, etc)"
+        },
+        {
           "name": "@input-components",
           "description": "TUI input components for text editing and user interaction"
         },
@@ -2290,7 +2294,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-01-28T11:17:56.801Z",
+    "lastUpdated": "2026-01-31T10:54:46.858Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

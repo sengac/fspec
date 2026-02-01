@@ -210,4 +210,84 @@ describe('SessionHeader', () => {
       expect(output).toContain('(TASK-789)');
     });
   });
+
+  describe('compaction percentage formatting', () => {
+    it('should format context fill percentage with 2 decimal places', () => {
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          contextFillPercentage={45.678}
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toContain('[45.68%]');
+    });
+
+    it('should format compaction reduction with 2 decimal places and no double negative', () => {
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          contextFillPercentage={22.123}
+          compactionReduction={35.567}
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toContain('[22.12%: COMPACTED 35.57%]');
+    });
+
+    it('should handle negative compaction reduction values correctly', () => {
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          contextFillPercentage={22.1}
+          compactionReduction={-35.9}
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toContain('[22.1%: COMPACTED 35.9%]');
+    });
+
+    it('should format zero compaction reduction as natural zero', () => {
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          contextFillPercentage={45.0}
+          compactionReduction={0}
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toContain('[45%: COMPACTED 0%]');
+    });
+
+    it('should remove trailing zeros naturally', () => {
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          contextFillPercentage={45.500}
+          compactionReduction={35.000}
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toContain('[45.5%: COMPACTED 35%]');
+    });
+
+    it('should round percentage values properly', () => {
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          contextFillPercentage={45.995}
+          compactionReduction={35.996}
+        />
+      );
+
+      const output = lastFrame();
+      // Note: JavaScript toFixed() rounds 45.995 to 45.99 due to floating point precision
+      expect(output).toContain('[45.99%: COMPACTED 36%]');
+    });
+  });
 });

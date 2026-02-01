@@ -185,7 +185,7 @@ where
         output.emit_status("\n[Context near limit, generating summary...]");
 
         match execute_compaction(session).await {
-            Ok(metrics) => {
+            Ok((metrics, _anchor)) => {
                 output.emit_status(&format!(
                     "[Context compacted: {}→{} tokens, {:.0}% compression]",
                     metrics.original_tokens,
@@ -1139,7 +1139,7 @@ where
 
         // Execute compaction
         match execute_compaction(session).await {
-            Ok(metrics) => {
+            Ok((metrics, _anchor)) => {
                 // Capture context.update event after compaction
                 if let Ok(manager_arc) = get_debug_capture_manager() {
                     if let Ok(mut manager) = manager_arc.lock() {
