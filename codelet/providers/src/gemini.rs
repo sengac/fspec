@@ -16,9 +16,6 @@ use rig::completion::CompletionRequestBuilder;
 use rig::providers::gemini;
 use tracing::warn;
 
-/// Default Gemini model
-const DEFAULT_MODEL: &str = "gemini-2.0-flash-exp";
-
 /// Gemini 2.0 Flash context window size
 pub const CONTEXT_WINDOW: usize = 1_000_000;
 
@@ -43,16 +40,17 @@ impl GeminiProvider {
     /// Create a new GeminiProvider using API key from environment
     ///
     /// Checks for API key in GOOGLE_GENERATIVE_AI_API_KEY environment variable.
-    /// Model can be overridden via GEMINI_MODEL environment variable.
+    /// Model MUST be provided via GEMINI_MODEL environment variable.
     ///
     /// Uses shared detect_credential_from_env() helper (REFAC-013).
     pub fn new() -> Result<Self, ProviderError> {
         // Use shared credential detection helper (REFAC-013)
         let api_key = detect_credential_from_env("gemini", &["GOOGLE_GENERATIVE_AI_API_KEY"])?;
 
-        // Allow model override via GEMINI_MODEL env var
-        let model_name =
-            std::env::var("GEMINI_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.to_string());
+        // Model is REQUIRED via GEMINI_MODEL env var
+        let model_name = std::env::var("GEMINI_MODEL").map_err(|_| {
+            ProviderError::config("gemini", "Model is required. Set GEMINI_MODEL environment variable.")
+        })?;
 
         Self::from_api_key(&api_key, &model_name)
     }

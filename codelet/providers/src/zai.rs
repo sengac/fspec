@@ -26,9 +26,6 @@ const ZAI_API_BASE_URL: &str = "https://api.z.ai/api/paas/v4";
 /// Z.AI coding plan API base URL (OpenAI-compatible)
 const ZAI_PLAN_API_BASE_URL: &str = "https://api.z.ai/api/coding/paas/v4";
 
-/// Default Z.AI model
-const DEFAULT_MODEL: &str = "glm-4.7";
-
 /// Z.AI GLM context window size (GLM-4.7)
 pub const CONTEXT_WINDOW: usize = 128_000;
 
@@ -61,20 +58,9 @@ impl ProviderAdapter for ZAIProvider {
 }
 
 impl ZAIProvider {
-    /// Create a new ZAIProvider using API key from environment
+    /// Create a new ZAIProvider with required model
     ///
-    /// Checks for API key in order:
-    /// 1. ZAI_PLAN_API_KEY - uses coding plan endpoint (https://api.z.ai/api/coding/paas/v4)
-    /// 2. ZAI_API_KEY - uses normal endpoint (https://api.z.ai/api/paas/v4)
-    ///
-    /// Model can be overridden via ZAI_MODEL environment variable.
-    pub fn new() -> Result<Self, ProviderError> {
-        Self::new_with_model(None)
-    }
-
-    /// Create a new ZAIProvider with optional custom model
-    ///
-    /// If model is None, uses DEFAULT_MODEL (glm-4.7).
+    /// Model is REQUIRED - will return error if None.
     /// Automatically detects which endpoint to use based on available env var.
     pub fn new_with_model(model: Option<&str>) -> Result<Self, ProviderError> {
         // Check for plan API key first, then normal API key
@@ -98,11 +84,13 @@ impl ZAIProvider {
             ));
         };
 
-        // Allow model override via ZAI_MODEL env var or parameter
+        // Model is REQUIRED - check parameter first, then env var
         let model_name = model
             .map(ToString::to_string)
             .or_else(|| std::env::var("ZAI_MODEL").ok())
-            .unwrap_or_else(|| DEFAULT_MODEL.to_string());
+            .ok_or_else(|| {
+                ProviderError::config("zai", "Model is required. Provide model parameter or set ZAI_MODEL environment variable.")
+            })?;
 
         Self::from_api_key_with_endpoint(&api_key, &model_name, is_plan)
     }
@@ -369,11 +357,6 @@ impl LlmProvider for ZAIProvider {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_default_model() {
-        assert_eq!(DEFAULT_MODEL, "glm-4.7");
-    }
 
     #[test]
     fn test_base_urls() {

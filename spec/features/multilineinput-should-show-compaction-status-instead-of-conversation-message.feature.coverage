@@ -293,11 +293,82 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Hook-triggered compaction shows progress in input placeholder",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "196-224",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1116,
+                1117,
+                1118,
+                1119,
+                1120
+              ]
+            },
+            {
+              "file": "codelet/napi/src/output.rs",
+              "lines": [
+                221,
+                222,
+                223,
+                224,
+                225,
+                226,
+                227,
+                228,
+                229,
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Emergency compaction shows progress in input placeholder",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx",
+          "lines": "241-270",
+          "implMappings": [
+            {
+              "file": "codelet/cli/src/interactive/stream_loop.rs",
+              "lines": [
+                1036,
+                1037,
+                1038,
+                1039,
+                1040
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
     "coveragePercent": 100,
     "testFiles": [
       "src/tui/components/__tests__/UX-002-multiline-input-compaction.test.tsx"
@@ -305,8 +376,10 @@
     "implFiles": [
       "src/tui/components/MultiLineInput.tsx",
       "src/tui/components/InputTransition.tsx",
-      "src/tui/components/AgentView.tsx"
+      "src/tui/components/AgentView.tsx",
+      "codelet/cli/src/interactive/stream_loop.rs",
+      "codelet/napi/src/output.rs"
     ],
-    "totalLinesCovered": 450
+    "totalLinesCovered": 575
   }
 }

@@ -325,6 +325,13 @@ pub enum StreamChunk {
         #[napi(js_name = "watcherPendingInjection")]
         watcher_pending_injection: WatcherPendingInjectionInfo,
     },
+
+    /// UX-002: Compaction completed with structured result data
+    /// NOT a string to parse - direct access to compression metrics
+    CompactionComplete {
+        #[napi(js_name = "compactionResult")]
+        compaction_result: CompactionResult,
+    },
 }
 
 impl StreamChunk {
@@ -443,6 +450,13 @@ impl StreamChunk {
     pub fn watcher_pending_injection(urgent: bool, content: String) -> Self {
         Self::WatcherPendingInjection {
             watcher_pending_injection: WatcherPendingInjectionInfo { urgent, content },
+        }
+    }
+
+    /// UX-002: Compaction completed with structured result
+    pub fn compaction_complete(result: CompactionResult) -> Self {
+        Self::CompactionComplete {
+            compaction_result: result,
         }
     }
 }

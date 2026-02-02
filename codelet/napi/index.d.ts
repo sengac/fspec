@@ -1662,7 +1662,8 @@ export type StreamChunk =
   | {
       type: 'WatcherPendingInjection';
       watcherPendingInjection: WatcherPendingInjectionInfo;
-    };
+    }
+  | { type: 'CompactionComplete'; compactionResult: CompactionResult };
 
 /** Simple test function to verify callback pattern works from TypeScript */
 export declare function testCallback(

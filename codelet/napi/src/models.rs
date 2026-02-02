@@ -131,6 +131,21 @@ fn is_current_model(model: &codelet_providers::models::ModelInfo) -> bool {
         return false;
     }
 
+    // Filter out invalid aliases (models without dated versions)
+    // For Anthropic models, only show dated versions like "claude-opus-4-5-20251101"
+    // NOT aliases like "claude-opus-4-5" which are not valid API model IDs
+    if model.id.starts_with("claude-") {
+        // Check if it ends with a date pattern (8 digits: YYYYMMDD)
+        let has_date_suffix = model.id.chars().rev().take(8).all(|c| c.is_ascii_digit())
+            && model.id.chars().rev().nth(8) == Some('-');
+
+        if !has_date_suffix {
+            // This is an alias like "claude-opus-4-5" or "claude-sonnet-4-5"
+            // Skip it because it's not a valid Anthropic API model ID
+            return false;
+        }
+    }
+
     // Filter out models older than 18 months
     if let Some(ref release_date) = model.release_date {
         // Parse release date (format: "YYYY-MM-DD")

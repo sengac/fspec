@@ -15,9 +15,6 @@ use rig::completion::CompletionRequestBuilder;
 use rig::providers::openai;
 use tracing::warn;
 
-/// Default OpenAI model
-const DEFAULT_MODEL: &str = "gpt-4-turbo";
-
 /// GPT-4 Turbo context window size
 pub const CONTEXT_WINDOW: usize = 128_000;
 
@@ -50,16 +47,17 @@ impl OpenAIProvider {
     /// Create a new OpenAIProvider using API key from environment
     ///
     /// Checks for API key in OPENAI_API_KEY environment variable.
-    /// Model can be overridden via OPENAI_MODEL environment variable.
+    /// Model MUST be provided via OPENAI_MODEL environment variable.
     ///
     /// Uses shared detect_credential_from_env() helper (REFAC-013).
     pub fn new() -> Result<Self, ProviderError> {
         // Use shared credential detection helper (REFAC-013)
         let api_key = detect_credential_from_env("openai", &["OPENAI_API_KEY"])?;
 
-        // Allow model override via OPENAI_MODEL env var
-        let model_name =
-            std::env::var("OPENAI_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.to_string());
+        // Model is REQUIRED via OPENAI_MODEL env var
+        let model_name = std::env::var("OPENAI_MODEL").map_err(|_| {
+            ProviderError::config("openai", "Model is required. Set OPENAI_MODEL environment variable.")
+        })?;
 
         Self::from_api_key(&api_key, &model_name)
     }

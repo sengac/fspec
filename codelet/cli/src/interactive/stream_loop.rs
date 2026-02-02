@@ -39,7 +39,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::Notify;
 use tokio::time::interval;
-use tracing::{error, info, trace};
+use tracing::{error, info, trace, warn};
 
 /// Check if an error indicates the prompt/context is too long
 fn is_prompt_too_long_error(error_str: &str) -> bool {
@@ -182,17 +182,18 @@ where
             "Pre-prompt compaction triggered: estimated {} > threshold {}",
             estimated_total, threshold
         );
-        output.emit_status("\n[Context near limit, generating summary...]");
+        // UX-002: Use structured compaction event instead of string status
+        output.emit_compaction_started();
 
         match execute_compaction(session).await {
             Ok((metrics, _anchor)) => {
-                output.emit_status(&format!(
-                    "[Context compacted: {}→{} tokens, {:.0}% compression]",
-                    metrics.original_tokens,
-                    metrics.compacted_tokens,
-                    metrics.compression_ratio * 100.0
-                ));
-                output.emit_status("[Continuing with compacted context...]\n");
+                // UX-002: Use structured compaction complete event
+                output.emit_compaction_complete(
+                    metrics.original_tokens as u32,
+                    metrics.compacted_tokens as u32,
+                    metrics.compression_ratio,
+                );
+                output.emit_compaction_continuing();
 
                 // CMPCT-001: Reset output and cache metrics after compaction
                 session.token_tracker.reset_after_compaction();
@@ -200,7 +201,8 @@ where
             Err(e) => {
                 // Log but continue - the API might still work, or will fail with clear error
                 error!("Pre-prompt compaction failed: {}", e);
-                output.emit_status(&format!("[Compaction failed: {e}, continuing anyway...]"));
+                // UX-002: Use structured compaction failed event
+                output.emit_compaction_failed(&format!("{e}, continuing anyway"));
             }
         }
     }
@@ -708,6 +710,11 @@ where
                                 
                                 // Start a new FULL stream for the continuation
                                 // This stream can handle tool calls, unlike the previous simple approach
+                                warn!(
+                                    "API REQUEST (Gemini continuation) - Provider: {}, Model: {}",
+                                    session.current_provider_name(),
+                                    session.current_model_id().as_deref().unwrap_or("NONE")
+                                );
                                 let mut continuation_stream = agent
                                     .prompt_streaming_with_history_and_hook(
                                         continuation_prompt,
@@ -875,7 +882,12 @@ where
                                                     compaction_needed: false,
                                                 }));
                                                 let nested_hook = CompactionHook::new(Arc::clone(&nested_token_state), threshold);
-                                                
+
+                                                warn!(
+                                                    "API REQUEST (Gemini nested continuation) - Provider: {}, Model: {}",
+                                                    session.current_provider_name(),
+                                                    session.current_model_id().as_deref().unwrap_or("NONE")
+                                                );
                                                 continuation_stream = agent
                                                     .prompt_streaming_with_history_and_hook(
                                                         nested_prompt,
@@ -942,7 +954,8 @@ where
                                                 // Set compaction_needed flag so post-loop logic handles it
                                                 signal_compaction_needed(&token_state);
                                                 
-                                                output.emit_status("\n[Context limit reached during continuation, compacting...]");
+                                                // UX-002: Use structured compaction event
+                                                output.emit_compaction_started();
                                                 
                                                 // Clear tool progress callback before breaking
                                                 set_tool_progress_callback(None);
@@ -1030,7 +1043,8 @@ where
 
                     if is_prompt_too_long && !session.messages.is_empty() {
                         info!("Received 'prompt is too long' error, triggering recovery compaction");
-                        output.emit_status("\n[Context exceeded limit, triggering emergency compaction...]");
+                        // UX-002: Use structured compaction event instead of string status
+                        output.emit_compaction_started();
 
                         // Pop the last user message we added at the start of this function
                         if let Some(last_msg) = session.messages.last() {
@@ -1114,6 +1128,9 @@ where
         .unwrap_or(false);
 
     if compaction_needed && !is_interrupted.load(Acquire) {
+        // UX-002: Use structured compaction event - this triggers both CLI display and NAPI state change
+        output.emit_compaction_started();
+        
         // Capture compaction.triggered event
         if let Ok(manager_arc) = get_debug_capture_manager() {
             if let Ok(mut manager) = manager_arc.lock() {
@@ -1134,8 +1151,6 @@ where
                 }
             }
         }
-
-        output.emit_status("\n[Generating summary...]");
 
         // Execute compaction
         match execute_compaction(session).await {
@@ -1158,13 +1173,13 @@ where
                     }
                 }
 
-                output.emit_status(&format!(
-                    "[Context compacted: {}→{} tokens, {:.0}% compression]",
-                    metrics.original_tokens,
-                    metrics.compacted_tokens,
-                    metrics.compression_ratio * 100.0
-                ));
-                output.emit_status("[Continuing with compacted context...]\n");
+                // UX-002: Use structured compaction events
+                output.emit_compaction_complete(
+                    metrics.original_tokens as u32,
+                    metrics.compacted_tokens as u32,
+                    metrics.compression_ratio,
+                );
+                output.emit_compaction_continuing();
 
                 // CMPCT-001: Reset output and cache metrics after compaction
                 // NOTE: execute_compaction already sets session.token_tracker.input_tokens
@@ -1191,6 +1206,11 @@ where
                 let retry_hook = CompactionHook::new(Arc::clone(&retry_token_state), threshold);
 
                 // Start new stream with compacted context
+                warn!(
+                    "API REQUEST (retry after compaction) - Provider: {}, Model: {}",
+                    session.current_provider_name(),
+                    session.current_model_id().as_deref().unwrap_or("NONE")
+                );
                 let mut retry_stream = agent
                     .prompt_streaming_with_history_and_hook(
                         prompt,
@@ -1328,6 +1348,7 @@ where
                             }
 
                             handle_final_response(&retry_assistant_text, &mut session.messages)?;
+                            // UX-002: CompactionComplete already signals state change
                             output.emit_done();
                             break;
                         }
@@ -1339,6 +1360,7 @@ where
                             if !retry_assistant_text.is_empty() {
                                 handle_final_response(&retry_assistant_text, &mut session.messages)?;
                             }
+                            // UX-002: CompactionComplete already signals state change
                             output.emit_done();
                             break;
                         }
@@ -1352,8 +1374,8 @@ where
             Err(e) => {
                 // Compaction failed - DO NOT reset token tracker!
                 // Keep the high token values so next turn will retry compaction.
-                output.emit_status(&format!("Warning: Compaction failed: {e}"));
-                output.emit_status("[Context still large - will retry compaction on next turn]\n");
+                // UX-002: Use structured compaction failed event
+                output.emit_compaction_failed(&format!("{e} - will retry on next turn"));
 
                 // Capture compaction failure for debugging
                 if let Ok(manager_arc) = get_debug_capture_manager() {

@@ -17,9 +17,6 @@ use tracing::warn;
 
 pub mod codex_auth;
 
-/// Default Codex model
-const DEFAULT_MODEL: &str = "gpt-5.1-codex";
-
 /// GPT-5.1 Codex context window size (272K tokens)
 pub const CONTEXT_WINDOW: usize = 272_000;
 
@@ -59,7 +56,7 @@ impl CodexProvider {
     /// If cached OPENAI_API_KEY exists in auth.json, uses it directly.
     /// Otherwise, performs OAuth refresh and token exchange.
     ///
-    /// Model can be overridden via CODEX_MODEL environment variable.
+    /// Model MUST be provided via CODEX_MODEL environment variable.
     ///
     /// Note: CodexProvider uses OAuth authentication via codex_auth module,
     /// which is different from the standard detect_credential_from_env() pattern.
@@ -68,8 +65,10 @@ impl CodexProvider {
         let api_key = codex_auth::get_codex_api_key_sync()
             .map_err(|e| ProviderError::auth("codex", format!("{e}")))?;
 
-        // Allow model override via CODEX_MODEL env var
-        let model_name = std::env::var("CODEX_MODEL").unwrap_or_else(|_| DEFAULT_MODEL.to_string());
+        // Model is REQUIRED via CODEX_MODEL env var
+        let model_name = std::env::var("CODEX_MODEL").map_err(|_| {
+            ProviderError::config("codex", "Model is required. Set CODEX_MODEL environment variable.")
+        })?;
 
         Self::from_api_key(&api_key, &model_name)
     }

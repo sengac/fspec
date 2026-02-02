@@ -24,9 +24,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tracing::warn;
 
-/// Default Claude model
-const DEFAULT_MODEL: &str = "claude-sonnet-4-20250514";
-
 /// Claude Sonnet 4 context window size
 pub const CONTEXT_WINDOW: usize = 200_000;
 
@@ -104,22 +101,13 @@ impl ProviderAdapter for ClaudeProvider {
 }
 
 impl ClaudeProvider {
-    /// Create a new ClaudeProvider using API key from environment
+    /// MODEL-001: Create a new ClaudeProvider with explicit model
     ///
-    /// Checks for API key in order of preference:
-    /// 1. ANTHROPIC_API_KEY (uses standard x-api-key header)
-    /// 2. CLAUDE_CODE_OAUTH_TOKEN (uses Bearer auth with special headers)
-    ///
-    /// Uses shared detect_credential_from_env() helper (REFAC-013).
-    pub fn new() -> Result<Self, ProviderError> {
-        Self::new_with_model(None)
-    }
-
-    /// MODEL-001: Create a new ClaudeProvider with optional custom model
-    ///
-    /// If model is None, uses DEFAULT_MODEL.
+    /// Model is REQUIRED - will return error if None.
     pub fn new_with_model(model: Option<&str>) -> Result<Self, ProviderError> {
-        let model_name = model.unwrap_or(DEFAULT_MODEL);
+        let model_name = model.ok_or_else(|| {
+            ProviderError::config("claude", "Model is required. Please select a model before creating a session.")
+        })?;
 
         // Check for API key first (takes precedence) using shared helper
         if let Ok(api_key) = detect_credential_from_env("claude", &["ANTHROPIC_API_KEY"]) {
@@ -142,26 +130,11 @@ impl ClaudeProvider {
         ))
     }
 
-    /// Create a new ClaudeProvider with an explicit API key (defaults to ApiKey mode)
-    pub fn from_api_key(api_key: &str) -> Result<Self, ProviderError> {
-        Self::from_api_key_with_mode(api_key, AuthMode::ApiKey)
-    }
-
     /// MODEL-001: Create a new ClaudeProvider with explicit model
     ///
-    /// Uses the specified model instead of DEFAULT_MODEL.
+    /// Model is REQUIRED.
     pub fn from_api_key_with_model(api_key: &str, model: &str) -> Result<Self, ProviderError> {
         Self::from_api_key_with_mode_and_model(api_key, AuthMode::ApiKey, model)
-    }
-
-    /// Create a new ClaudeProvider with an explicit API key and auth mode
-    ///
-    /// Uses shared validate_api_key_static() helper (REFAC-013).
-    pub fn from_api_key_with_mode(
-        api_key: &str,
-        auth_mode: AuthMode,
-    ) -> Result<Self, ProviderError> {
-        Self::from_api_key_with_mode_and_model(api_key, auth_mode, DEFAULT_MODEL)
     }
 
     /// MODEL-001: Create a new ClaudeProvider with explicit API key, auth mode, and model

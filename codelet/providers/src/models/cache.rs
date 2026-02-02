@@ -12,7 +12,7 @@ use std::path::PathBuf;
 use std::sync::Mutex;
 use std::time::Duration;
 use tokio::fs;
-use tracing::{debug, info, warn};
+use tracing::{debug, info};
 
 use super::types::ModelsDevResponse;
 use crate::error::ProviderError;
@@ -20,9 +20,8 @@ use crate::error::ProviderError;
 /// URL for models.dev API
 const MODELS_DEV_URL: &str = "https://models.dev/api.json";
 
-/// Embedded fallback snapshot of models.dev data
-/// This is updated at build time by build.rs
-const FALLBACK_MODELS: &[u8] = include_bytes!("fallback_models.json");
+// REMOVED: No more hardcoded fallbacks - must fetch from models.dev or use cache
+// const FALLBACK_MODELS: &[u8] = include_bytes!("fallback_models.json");
 
 // MODEL-001: Global configurable cache directory (thread-safe)
 lazy_static::lazy_static! {
@@ -107,8 +106,7 @@ impl ModelCache {
     /// Strategy:
     /// 1. Try to read and parse cache file
     /// 2. If cache exists and parses, return it (indefinite cache)
-    /// 3. If cache missing or corrupted, fetch from API
-    /// 4. If API fails, use embedded fallback
+    /// 3. If cache missing or corrupted, fetch from API (must succeed or error)
     pub async fn get(&self) -> Result<ModelsDevResponse, ProviderError> {
         // Try to read and parse cache first
         match self.read_cache().await {
@@ -118,7 +116,7 @@ impl ModelCache {
             }
             Err(e) => {
                 info!("Cache miss or invalid ({}), fetching from API", e);
-                self.fetch_with_fallback().await
+                self.fetch_from_api().await
             }
         }
     }
@@ -129,18 +127,14 @@ impl ModelCache {
         self.fetch_and_cache().await
     }
 
-    /// Fetch from API, falling back to embedded snapshot on failure
-    async fn fetch_with_fallback(&self) -> Result<ModelsDevResponse, ProviderError> {
-        match self.fetch_and_cache().await {
-            Ok(data) => Ok(data),
-            Err(e) => {
-                warn!(
-                    "Failed to fetch from models.dev ({}), using embedded fallback",
-                    e
-                );
-                self.load_fallback()
-            }
-        }
+    /// Fetch from API - must succeed or error
+    async fn fetch_from_api(&self) -> Result<ModelsDevResponse, ProviderError> {
+        self.fetch_and_cache().await.map_err(|e| {
+            ProviderError::api(
+                "models.dev",
+                format!("Failed to fetch models (cache miss/invalid, API unreachable): {}", e)
+            )
+        })
     }
 
     /// Fetch from models.dev API and cache the result
@@ -194,11 +188,11 @@ impl ModelCache {
         serde_json::from_str(&data).map_err(|e| CacheError::ParseError(e.to_string()))
     }
 
-    /// Load embedded fallback snapshot
-    fn load_fallback(&self) -> Result<ModelsDevResponse, ProviderError> {
-        serde_json::from_slice(FALLBACK_MODELS)
-            .map_err(|e| ProviderError::api("models.dev", format!("Failed to parse fallback: {e}")))
-    }
+    // REMOVED: No more hardcoded fallbacks
+    // fn load_fallback(&self) -> Result<ModelsDevResponse, ProviderError> {
+    //     serde_json::from_slice(FALLBACK_MODELS)
+    //         .map_err(|e| ProviderError::api("models.dev", format!("Failed to parse fallback: {e}")))
+    // }
 
     /// Get the cache file path
     pub fn cache_path(&self) -> &PathBuf {
@@ -248,21 +242,15 @@ mod tests {
         }
     }
 
-    #[tokio::test]
-    async fn test_cache_miss_returns_fallback() {
-        let (_temp_dir, cache_path) = test_cache_path();
-        let cache = ModelCache::new_with_path(cache_path);
-
-        // Cache doesn't exist, should use fallback
-        let result = cache.load_fallback();
-        assert!(result.is_ok(), "Should load fallback successfully");
-
-        let models = result.unwrap();
-        assert!(
-            !models.providers.is_empty(),
-            "Fallback should contain providers"
-        );
-    }
+    // REMOVED: No more fallback tests - cache must exist or API must be reachable
+    // #[tokio::test]
+    // async fn test_cache_miss_returns_fallback() {
+    //     let (_temp_dir, cache_path) = test_cache_path();
+    //     let cache = ModelCache::new_with_path(cache_path);
+    //     // Cache doesn't exist, should error (no fallback)
+    //     let result = cache.get().await;
+    //     assert!(result.is_err(), "Should error when cache missing and API unreachable");
+    // }
 
     #[tokio::test]
     async fn test_cache_hit() {
@@ -295,21 +283,18 @@ mod tests {
         assert!(models.providers.contains_key("anthropic"));
     }
 
-    #[tokio::test]
-    async fn test_corrupted_cache_uses_fallback() {
-        let (_temp_dir, cache_path) = test_cache_path();
-
-        // Write corrupted cache
-        std::fs::write(&cache_path, "{ this is not valid JSON {{{{")
-            .expect("Failed to write cache");
-
-        let cache = ModelCache::new_with_path(cache_path);
-
-        // This will try to read corrupted cache, fail, then use fallback
-        // Note: In real scenario it would try API first, but for unit test we just check fallback
-        let result = cache.load_fallback();
-        assert!(result.is_ok(), "Should fall back to embedded data");
-    }
+    // REMOVED: No more fallback - corrupted cache must error
+    // #[tokio::test]
+    // async fn test_corrupted_cache_uses_fallback() {
+    //     let (_temp_dir, cache_path) = test_cache_path();
+    //     // Write corrupted cache
+    //     std::fs::write(&cache_path, "{ this is not valid JSON {{{{")
+    //         .expect("Failed to write cache");
+    //     let cache = ModelCache::new_with_path(cache_path);
+    //     // This will try to read corrupted cache, fail, then error (no fallback)
+    //     let result = cache.get().await;
+    //     assert!(result.is_err(), "Should error when cache corrupted and API unreachable");
+    // }
 
     // MODEL-001: Tests for set_cache_directory
     #[test]

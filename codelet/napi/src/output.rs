@@ -219,14 +219,70 @@ impl StreamOutput for NapiOutput {
                 );
             }
             StreamEvent::Status(message) => {
-                // NAPI-010: Status messages are user-visible notifications
-                // (e.g., "[Continuing with compacted context...]"), NOT internal state changes
+                // UX-002: With structured compaction events, Status is now only for non-compaction messages
+                // No need to filter compaction strings - they won't come through Status anymore
                 self.flush_text();
 
                 let _ = self.callback.call(
                     StreamChunk::user_notification(message, NotificationSeverity::Info),
                     ThreadsafeFunctionCallMode::NonBlocking,
                 );
+            }
+            StreamEvent::CompactionStarted => {
+                // UX-002: Compaction started - emit SessionStateChange to Compacting
+                self.flush_text();
+                let _ = self.callback.call(
+                    StreamChunk::session_state_change(crate::types::SessionState::Compacting),
+                    ThreadsafeFunctionCallMode::NonBlocking,
+                );
+            }
+            StreamEvent::CompactionProgress(progress) => {
+                // UX-002: Compaction progress - could emit progress updates if needed
+                // For now, just ignore - UI shows "Compacting..." based on state
+                // Future: Could add StreamChunk::CompactionProgress variant
+                let _ = progress; // Silence unused warning
+            }
+            StreamEvent::CompactionComplete(info) => {
+                // UX-002: Compaction completed - emit SessionStateChange back to Idle
+                // AND send structured CompactionComplete with metrics for UI
+                self.flush_text();
+                // First send state change back to Idle
+                let _ = self.callback.call(
+                    StreamChunk::session_state_change(crate::types::SessionState::Idle),
+                    ThreadsafeFunctionCallMode::NonBlocking,
+                );
+                // UX-002: Send STRUCTURED compaction result - no string parsing needed!
+                let result = crate::types::CompactionResult {
+                    original_tokens: info.original_tokens,
+                    compacted_tokens: info.compacted_tokens,
+                    compression_ratio: info.compression_ratio * 100.0, // Convert to percentage
+                    turns_summarized: 0, // Not available from CompactionCompleteInfo
+                    turns_kept: 0,       // Not available from CompactionCompleteInfo
+                };
+                let _ = self.callback.call(
+                    StreamChunk::compaction_complete(result),
+                    ThreadsafeFunctionCallMode::NonBlocking,
+                );
+            }
+            StreamEvent::CompactionFailed { reason } => {
+                // UX-002: Compaction failed - emit SessionStateChange back to Idle
+                self.flush_text();
+                let _ = self.callback.call(
+                    StreamChunk::session_state_change(crate::types::SessionState::Idle),
+                    ThreadsafeFunctionCallMode::NonBlocking,
+                );
+                // Send user notification about the failure
+                let _ = self.callback.call(
+                    StreamChunk::user_notification(
+                        format!("Compaction failed: {reason}"),
+                        NotificationSeverity::Warning,
+                    ),
+                    ThreadsafeFunctionCallMode::NonBlocking,
+                );
+            }
+            StreamEvent::CompactionContinuing => {
+                // UX-002: Continuing after compaction - just informational for CLI
+                // NAPI doesn't need to emit anything - state is already Idle after CompactionComplete
             }
             StreamEvent::Tokens(tokens) => {
                 // Store token info to send with next flush

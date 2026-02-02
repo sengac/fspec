@@ -3185,15 +3185,28 @@ impl SessionManager {
         // This is required for API keys to be available when running from Node.js
         let _ = dotenvy::dotenv();
 
+        // Require model string in "provider/model-id" format
+        if !model.contains('/') || model.is_empty() {
+            return Err(Error::from_reason(format!(
+                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
+                model
+            )));
+        }
+
         // Parse model string to extract provider_id and model_id for storage
-        let (provider_id, model_id) = if model.contains('/') {
-            let parts: Vec<&str> = model.split('/').collect();
-            let registry_provider = parts.first().unwrap_or(&"anthropic");
-            let model_part = parts.get(1).map(|s| s.to_string());
-            (Some(registry_provider.to_string()), model_part)
-        } else {
-            (Some(model.to_string()), None)
-        };
+        let parts: Vec<&str> = model.split('/').collect();
+        let registry_provider = parts.first().unwrap_or(&"");
+        let model_part = parts.get(1).unwrap_or(&"");
+
+        // Validate both parts are non-empty
+        if registry_provider.is_empty() || model_part.is_empty() {
+            return Err(Error::from_reason(format!(
+                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
+                model
+            )));
+        }
+
+        let (provider_id, model_id) = (Some(registry_provider.to_string()), Some(model_part.to_string()));
 
         // Create ProviderManager with model registry support and select the model
         let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
@@ -3201,10 +3214,8 @@ impl SessionManager {
             .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
 
         // Select the model (validates against registry)
-        if model.contains('/') {
-            provider_manager.select_model(model)
-                .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
-        }
+        provider_manager.select_model(model)
+            .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
 
         // Create session from the configured provider manager
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
@@ -3285,23 +3296,34 @@ impl SessionManager {
 
         let _ = dotenvy::dotenv();
 
-        let (provider_id, model_id) = if model.contains('/') {
-            let parts: Vec<&str> = model.split('/').collect();
-            let registry_provider = parts.first().unwrap_or(&"anthropic");
-            let model_part = parts.get(1).map(|s| s.to_string());
-            (Some(registry_provider.to_string()), model_part)
-        } else {
-            (Some(model.to_string()), None)
-        };
+        // Require model string in "provider/model-id" format
+        if !model.contains('/') || model.is_empty() {
+            return Err(Error::from_reason(format!(
+                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
+                model
+            )));
+        }
+
+        let parts: Vec<&str> = model.split('/').collect();
+        let registry_provider = parts.first().unwrap_or(&"");
+        let model_part = parts.get(1).unwrap_or(&"");
+
+        // Validate both parts are non-empty
+        if registry_provider.is_empty() || model_part.is_empty() {
+            return Err(Error::from_reason(format!(
+                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
+                model
+            )));
+        }
+
+        let (provider_id, model_id) = (Some(registry_provider.to_string()), Some(model_part.to_string()));
 
         let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
             .await
             .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
 
-        if model.contains('/') {
-            provider_manager.select_model(model)
-                .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
-        }
+        provider_manager.select_model(model)
+            .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
 
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
         inner.inject_context_reminders();
@@ -3808,7 +3830,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
     fn emit(&self, event: codelet_cli::interactive::StreamEvent) {
         use codelet_cli::interactive::StreamEvent;
         use crate::types::{
-            ContextFillInfo, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo,
+            ContextFillInfo, SessionState, StreamChunk, TokenTracker, ToolCallInfo, ToolProgressInfo,
             ToolResultInfo,
         };
 
@@ -3858,7 +3880,6 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 is_stderr: tp.is_stderr,
             }),
             // NAPI-010: StreamEvent::Status messages are user-visible notifications
-            // (e.g., "[Continuing with compacted context...]"), NOT internal state changes
             StreamEvent::Status(status) => StreamChunk::user_notification(status, NotificationSeverity::Info),
             StreamEvent::Tokens(info) => {
                 // Update cached tokens for sync access
@@ -3889,6 +3910,44 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 // so we must ensure status is Idle before the chunk is sent.
                 self.session.set_status(SessionStatus::Idle);
                 StreamChunk::done()
+            }
+            // UX-002: Structured compaction events
+            StreamEvent::CompactionStarted => {
+                self.session.set_status(SessionStatus::Compacting);
+                StreamChunk::session_state_change(SessionState::Compacting)
+            }
+            StreamEvent::CompactionProgress(_progress) => {
+                // Progress updates could be emitted if needed - for now just update state
+                // Future: Add StreamChunk::CompactionProgress variant
+                return; // Don't emit anything for progress updates
+            }
+            StreamEvent::CompactionComplete(info) => {
+                self.session.set_status(SessionStatus::Idle);
+                // Emit state change first, then notification
+                self.session.handle_output(StreamChunk::session_state_change(SessionState::Idle));
+                // Send notification with compression info for percentage indicator
+                StreamChunk::user_notification(
+                    format!(
+                        "[Context compacted: {}→{} tokens, {:.0}% compression]",
+                        info.original_tokens,
+                        info.compacted_tokens,
+                        info.compression_ratio * 100.0
+                    ),
+                    NotificationSeverity::Info,
+                )
+            }
+            StreamEvent::CompactionFailed { reason } => {
+                self.session.set_status(SessionStatus::Idle);
+                // Emit state change first, then notification
+                self.session.handle_output(StreamChunk::session_state_change(SessionState::Idle));
+                StreamChunk::user_notification(
+                    format!("Compaction failed: {reason}"),
+                    NotificationSeverity::Warning,
+                )
+            }
+            StreamEvent::CompactionContinuing => {
+                // Just informational for CLI - NAPI already transitioned to Idle
+                return; // Don't emit anything
             }
         };
 

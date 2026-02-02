@@ -394,9 +394,11 @@ describe('Feature: Persist Last Used Model Selection', () => {
 
   describe('Scenario: Restore persisted model on new session', () => {
     it('should start with persisted model when config exists', async () => {
-      // @step Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "anthropic/claude-opus-4"
+      // @step Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "anthropic/claude-opus-4-20250514"
+      // NOTE: Must use FULL model ID (with date suffix) because extractModelIdForRegistry 
+      // preserves full ID for Anthropic models
       mockConfig.loadConfig.mockResolvedValue({
-        tui: { lastUsedModel: 'anthropic/claude-opus-4' },
+        tui: { lastUsedModel: 'anthropic/claude-opus-4-20250514' },
       });
 
       // @step And ANTHROPIC_API_KEY is set
@@ -405,8 +407,8 @@ describe('Feature: Persist Last Used Model Selection', () => {
       // @step When I open the AgentView
       const { lastFrame } = render(<AgentView onExit={() => {}} />);
 
-      // @step Then the session should start with "anthropic/claude-opus-4"
-      // @step And the header should display "Agent: claude-opus-4"
+      // @step Then the session should start with "anthropic/claude-opus-4-20250514"
+      // @step And the header should display "Agent: Claude Opus 4"
       await vi.waitFor(
         () => {
           const frame = lastFrame();

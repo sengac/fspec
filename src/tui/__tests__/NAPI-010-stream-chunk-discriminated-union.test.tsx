@@ -6,7 +6,8 @@
  * 1. The StreamChunk type is a proper discriminated union (type structure)
  * 2. SessionStateChange is NOT added to conversation (behavior)
  * 3. UserNotification IS added to conversation (behavior)
- * 4. The handler code uses discriminated union pattern (static analysis)
+ * 4. CompactionComplete provides structured metrics without conversation pollution
+ * 5. The handler code uses discriminated union pattern (static analysis)
  */
 
 import { describe, it, expect } from 'vitest';
@@ -27,19 +28,19 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
   const agentViewSource = fs.readFileSync(agentViewPath, 'utf-8');
 
   describe('Scenario: SessionStateChange chunk updates state without adding to conversation', () => {
-    /**
-     * @step Given a StreamChunk handler processes incoming chunks from Rust
-     * @step When Rust emits a SessionStateChange chunk with state Compacting
-     * @step Then the handler updates isCompacting state to true
-     * @step And no message is added to the conversation
-     */
     it('should have SessionStateChange variant in discriminated union type', () => {
+      // @step Given a StreamChunk handler processes incoming chunks from Rust
       // Verify the type definition includes SessionStateChange as a discriminated union variant
       expect(indexDts).toMatch(/\|\s*\{\s*type:\s*['"]SessionStateChange['"]/);
       expect(indexDts).toContain('state: SessionState');
     });
 
     it('should handle SessionStateChange by calling refreshRustState, not adding to conversation', () => {
+      // @step Given a StreamChunk handler processes incoming chunks from Rust
+      // @step When Rust emits a SessionStateChange chunk with state Compacting
+      // @step Then the handler updates isCompacting state to true
+      // @step And no message is added to the conversation
+
       // SessionStateChange should:
       // 1. Call refreshRustState to update UI state (status indicators)
       // 2. NOT call setConversation (internal state, not user-visible)
@@ -79,12 +80,8 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
   });
 
   describe('Scenario: UserNotification chunk displays message in conversation', () => {
-    /**
-     * @step Given a StreamChunk handler processes incoming chunks from Rust
-     * @step When Rust emits a UserNotification chunk with message 'API rate limit exceeded' and severity Warning
-     * @step Then a status message 'API rate limit exceeded' is added to the conversation
-     */
     it('should have UserNotification variant with message and severity fields', () => {
+      // @step Given a StreamChunk handler processes incoming chunks from Rust
       // Verify the type definition includes UserNotification variant
       expect(indexDts).toMatch(/\|\s*\{\s*type:\s*['"]UserNotification['"]/);
       expect(indexDts).toContain('message: string');
@@ -92,6 +89,10 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
     });
 
     it('should handle UserNotification by adding status message to conversation', () => {
+      // @step Given a StreamChunk handler processes incoming chunks from Rust
+      // @step When Rust emits a UserNotification chunk with message 'API rate limit exceeded' and severity Warning
+      // @step Then a status message 'API rate limit exceeded' is added to the conversation
+
       // There are two places UserNotification is handled:
       // 1. processChunksToConversation (pure function for replay) - uses messages.push
       // 2. handleStreamChunk (React callback for streaming) - uses setConversation
@@ -125,13 +126,9 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
   });
 
   describe('Scenario: Compacting state change does not appear in conversation', () => {
-    /**
-     * @step Given I have an active session with conversation history
-     * @step When I run the /compact command
-     * @step Then no 'compacting' message appears in the conversation area
-     * @step And the compaction progress is shown only in the input area placeholder
-     */
     it('should NOT have old status?: string pattern that conflated state with messages', () => {
+      // @step Given I have an active session with conversation history
+
       // The old problematic pattern was: { type: 'Status', status: 'compacting' }
       // which couldn't distinguish internal state from user messages
 
@@ -152,6 +149,10 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
     });
 
     it('should emit SessionStateChange for compaction state, not string-based Status', () => {
+      // @step When I run the /compact command
+      // @step Then no 'compacting' message appears in the conversation area
+      // @step And the compaction progress is shown only in the input area placeholder
+
       // Verify session_manager.rs emits SessionStateChange for state transitions
       // This is checked by verifying the Rust types don't have a Status variant
       // and the TypeScript handler doesn't expect one
@@ -160,15 +161,56 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
       // SessionStateChange is the correct way to emit state
       expect(indexDts).toMatch(/\|\s*\{\s*type:\s*['"]SessionStateChange['"]/);
     });
+
+    it('should have CompactionComplete variant for structured compaction results', () => {
+      // UX-002: CompactionComplete provides structured metrics directly
+      // No string parsing needed - compressionRatio is a number field
+      expect(indexDts).toMatch(/\|\s*\{\s*type:\s*['"]CompactionComplete['"]/);
+      expect(indexDts).toContain('compactionResult: CompactionResult');
+    });
+
+    it('should handle CompactionComplete by extracting metrics, NOT adding to conversation', () => {
+      // CompactionComplete should:
+      // 1. Extract compressionRatio from chunk.compactionResult
+      // 2. Call setCompactionReduction with the percentage
+      // 3. NOT call setConversation (compaction feedback is via input area indicator)
+
+      const handleStreamChunkFn = agentViewSource.match(
+        /const handleStreamChunk\s*=\s*useCallback\s*\(\s*\(chunk:\s*StreamChunk\)[\s\S]*?\n\s*\},\s*\[/
+      );
+      expect(handleStreamChunkFn).not.toBeNull();
+
+      const handlerCode = handleStreamChunkFn![0];
+
+      // Extract the CompactionComplete handling block
+      const compactionCompleteMatch = handlerCode.match(
+        /chunk\.type\s*===\s*['"]CompactionComplete['"][\s\S]*?(?=}\s*else\s*if)/
+      );
+      expect(compactionCompleteMatch).not.toBeNull();
+
+      const compactionCompleteHandler = compactionCompleteMatch![0];
+
+      // Verify it accesses chunk.compactionResult directly (structured data)
+      expect(compactionCompleteHandler).toContain('chunk.compactionResult');
+      expect(compactionCompleteHandler).toContain('compressionRatio');
+
+      // Verify it calls setCompactionReduction (for UI indicator)
+      expect(compactionCompleteHandler).toContain('setCompactionReduction');
+
+      // Verify it does NOT call setConversation (no conversation pollution)
+      expect(compactionCompleteHandler).not.toContain('setConversation');
+
+      // Verify NO string parsing is used (the old broken pattern)
+      expect(compactionCompleteHandler).not.toMatch(/\.match\s*\(/);
+      expect(compactionCompleteHandler).not.toMatch(/\.includes\s*\(/);
+      expect(compactionCompleteHandler).not.toMatch(/parseInt\s*\(/);
+    });
   });
 
   describe('Scenario: StreamChunk handler uses exhaustive switch without string parsing', () => {
-    /**
-     * @step Given the StreamChunk type is defined as a discriminated union with type field
-     * @step When the TypeScript handler processes any StreamChunk variant
-     * @step Then it uses a switch statement on chunk.type with no string includes or substring matching
-     */
     it('should define StreamChunk as a discriminated union type, not an interface', () => {
+      // @step Given the StreamChunk type is defined as a discriminated union with type field
+
       // Discriminated unions use: export type X = | { type: 'A' } | { type: 'B' }
       const isTypeAlias = indexDts.includes('export type StreamChunk =');
       const isInterface = indexDts.includes('export interface StreamChunk {');
@@ -181,6 +223,9 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
     });
 
     it('should NOT use string parsing (.includes, .match) for chunk type discrimination', () => {
+      // @step When the TypeScript handler processes any StreamChunk variant
+      // @step Then it uses a switch statement on chunk.type with no string includes or substring matching
+
       // Find all chunk.type comparisons in the handler
       // They should use === 'Type' pattern, not .includes() or .match()
 
@@ -225,6 +270,7 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
         'Done',
         'SessionStateChange',
         'UserNotification',
+        'CompactionComplete',  // UX-002: Structured compaction result
         'Interrupted',
         'TokenUpdate',
         'ContextFillUpdate',

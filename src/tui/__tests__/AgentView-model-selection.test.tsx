@@ -865,8 +865,8 @@ describe('Feature: Agent Modal Model Selection', () => {
       );
 
       // Wait for model loading to complete (header shows model name)
-      // The default mock models have claude-sonnet-4 as the first model
-      await waitForCondition(lastFrame, frame => frame.includes('claude-sonnet-4'));
+      // The default mock models have claude-sonnet-4-20250514 as the first model
+      await waitForCondition(lastFrame, frame => frame.includes('Claude Sonnet 4'));
 
       // Verify model loaded correctly
       expect(lastFrame()).toContain('Claude Sonnet 4');
@@ -894,21 +894,23 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
       await waitForFrame();
 
-      // @step Then the persisted session should store "anthropic/claude-sonnet-4" as the provider field
+      // @step Then the persisted session should store "anthropic/claude-sonnet-4-20250514" as the provider field
       // TUI-034: persistenceCreateSessionWithProvider is called with full model path
+      // NOTE: For Anthropic models, extractModelIdForRegistry preserves full ID with date suffix
       expect(mockCreateSession).toHaveBeenCalled();
       expect(mockCreateSession).toHaveBeenCalledWith(
         expect.any(String), // session name (truncated message)
         expect.any(String), // project path
-        'anthropic/claude-sonnet-4' // full model path
+        'anthropic/claude-sonnet-4-20250514' // full model path (with date suffix for Anthropic)
       );
     });
   });
 
   describe('Scenario: Resumed session restores exact model', () => {
     it('should restore exact model when resuming session', async () => {
-      // @step Given I have a persisted session with provider "anthropic/claude-opus-4"
+      // @step Given I have a persisted session with provider "anthropic/claude-opus-4-20250514"
       // NAPI-009: Model selection uses state management, not session methods
+      // NOTE: Must use full model ID with date suffix for Anthropic models
       resetMockSession();
 
       // Set up persistence mocks for /resume using mockState (after resetMockSession)
@@ -917,7 +919,7 @@ describe('Feature: Agent Modal Model Selection', () => {
           id: 'session-123',
           name: 'Test Session',
           project: '/test',
-          provider: 'anthropic/claude-opus-4', // Full model path
+          provider: 'anthropic/claude-opus-4-20250514', // Full model path with date suffix
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           messageCount: 5,

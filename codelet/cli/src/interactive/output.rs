@@ -96,6 +96,28 @@ pub struct ToolProgressEvent {
     pub is_stderr: bool,
 }
 
+/// UX-002: Compaction progress information for structured events
+#[derive(Debug, Clone)]
+pub struct CompactionProgressInfo {
+    /// Current phase (e.g., "Analyzing anchors", "Generating summary")
+    pub phase: String,
+    /// Current progress count
+    pub current: u32,
+    /// Total items to process
+    pub total: u32,
+}
+
+/// UX-002: Compaction completion result for structured events
+#[derive(Debug, Clone)]
+pub struct CompactionCompleteInfo {
+    /// Original token count before compaction
+    pub original_tokens: u32,
+    /// Token count after compaction
+    pub compacted_tokens: u32,
+    /// Compression ratio (0.0 - 1.0)
+    pub compression_ratio: f64,
+}
+
 /// Stream event enum - all possible events in a single type
 ///
 /// Using an enum instead of multiple trait methods:
@@ -116,7 +138,7 @@ pub enum StreamEvent {
     Error(String),
     /// Agent was interrupted
     Interrupted(Vec<String>),
-    /// Status message (e.g., compaction notifications)
+    /// Status message (for non-compaction status messages only)
     Status(String),
     /// Token usage update
     Tokens(TokenInfo),
@@ -126,6 +148,16 @@ pub enum StreamEvent {
     ToolProgress(ToolProgressEvent),
     /// Thinking/reasoning content from extended thinking (TOOL-010)
     Thinking(String),
+    /// UX-002: Compaction has started
+    CompactionStarted,
+    /// UX-002: Compaction progress update
+    CompactionProgress(CompactionProgressInfo),
+    /// UX-002: Compaction completed successfully
+    CompactionComplete(CompactionCompleteInfo),
+    /// UX-002: Compaction failed
+    CompactionFailed { reason: String },
+    /// UX-002: Continuing after compaction (informational for CLI)
+    CompactionContinuing,
 }
 
 /// Stream output handler trait
@@ -234,6 +266,44 @@ pub trait StreamOutput: Send + Sync {
     #[inline]
     fn emit_thinking(&self, thinking: &str) {
         self.emit(StreamEvent::Thinking(thinking.to_string()));
+    }
+
+    /// UX-002: Emit compaction started event
+    #[inline]
+    fn emit_compaction_started(&self) {
+        self.emit(StreamEvent::CompactionStarted);
+    }
+
+    /// UX-002: Emit compaction progress update
+    #[inline]
+    fn emit_compaction_progress(&self, phase: &str, current: u32, total: u32) {
+        self.emit(StreamEvent::CompactionProgress(CompactionProgressInfo {
+            phase: phase.to_string(),
+            current,
+            total,
+        }));
+    }
+
+    /// UX-002: Emit compaction completed event
+    #[inline]
+    fn emit_compaction_complete(&self, original_tokens: u32, compacted_tokens: u32, compression_ratio: f64) {
+        self.emit(StreamEvent::CompactionComplete(CompactionCompleteInfo {
+            original_tokens,
+            compacted_tokens,
+            compression_ratio,
+        }));
+    }
+
+    /// UX-002: Emit compaction failed event
+    #[inline]
+    fn emit_compaction_failed(&self, reason: &str) {
+        self.emit(StreamEvent::CompactionFailed { reason: reason.to_string() });
+    }
+
+    /// UX-002: Emit compaction continuing event (after successful compaction)
+    #[inline]
+    fn emit_compaction_continuing(&self) {
+        self.emit(StreamEvent::CompactionContinuing);
     }
 }
 
@@ -353,6 +423,36 @@ impl StreamOutput for CliOutput {
                 // Format similar to Gemini CLI's LoadingIndicator
                 let display_text = thinking.replace('\n', "\r\n");
                 print!("\r\n💭 {display_text}\r\n");
+                std::io::stdout().flush().ok();
+            }
+            StreamEvent::CompactionStarted => {
+                // UX-002: Display compaction started message for CLI
+                print!("\r\n[Context near limit, generating summary...]\r\n");
+                std::io::stdout().flush().ok();
+            }
+            StreamEvent::CompactionProgress(progress) => {
+                // UX-002: Display compaction progress for CLI
+                print!("\r[{}... {}/{} turns]", progress.phase, progress.current, progress.total);
+                std::io::stdout().flush().ok();
+            }
+            StreamEvent::CompactionComplete(info) => {
+                // UX-002: Display compaction completion for CLI
+                print!(
+                    "\r\n[Context compacted: {}→{} tokens, {:.0}% compression]\r\n",
+                    info.original_tokens,
+                    info.compacted_tokens,
+                    info.compression_ratio * 100.0
+                );
+                std::io::stdout().flush().ok();
+            }
+            StreamEvent::CompactionFailed { reason } => {
+                // UX-002: Display compaction failure for CLI
+                print!("\r\n[Compaction failed: {reason}]\r\n");
+                std::io::stdout().flush().ok();
+            }
+            StreamEvent::CompactionContinuing => {
+                // UX-002: Display continuation message for CLI
+                print!("[Continuing with compacted context...]\r\n");
                 std::io::stdout().flush().ok();
             }
         }

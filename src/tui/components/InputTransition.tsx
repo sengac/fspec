@@ -25,6 +25,7 @@ import type { PauseInfo } from '../types/pause';
 import { type CompactionProgress } from '../hooks/useRustSessionState';
 import { useInputCompat, InputPriority } from '../input/index';
 import { logger } from '../../utils/logger';
+import { formatCompactionThinking } from '../../utils/compaction-formatting';
 
 // Re-export PauseInfo for backwards compatibility with existing imports
 export type { PauseInfo } from '../types/pause';
@@ -128,7 +129,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
     if (!isCompacting || !compactionProgress) {
       return 'Compacting context...';
     }
-    return `${compactionProgress.phase}... ${compactionProgress.current}/${compactionProgress.total} turns`;
+    return formatCompactionThinking(compactionProgress);
   }, [isCompacting, compactionProgress]);
 
   // Get the current thinking text (stays in sync with ThinkingIndicator)

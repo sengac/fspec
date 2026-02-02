@@ -18,6 +18,12 @@ import { Box, Text } from 'ink';
 import { useMultiLineInput } from '../hooks/useMultiLineInput';
 import { useInputCompat, InputPriority } from '../input/index';
 import type { CompactionProgress } from '../hooks/useRustSessionState';
+import { formatCompactionPlaceholder } from '../../utils/compaction-formatting';
+import { 
+  shouldBlockInputForMultiLineInput,
+  getDisplayPlaceholderForMultiLineInput,
+  validateMultiLineInputCompactionState
+} from './multiline-input-compaction-logic';
 
 export interface MultiLineInputProps {
   value: string;
@@ -137,8 +143,8 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
 
       // Backspace
       if (key.backspace || key.delete) {
-        // UX-002: Block text modification during compaction
-        if (isCompacting) {
+        // UX-002: Block text modification during compaction (using core logic)
+        if (shouldBlockInputForMultiLineInput(isCompacting, compactionProgress)) {
           return true; // Consume input but don't modify text
         }
         
@@ -156,8 +162,8 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
 
       // Delete key (forward delete)
       if (input === '\x1b[3~') {
-        // UX-002: Block text modification during compaction
-        if (isCompacting) {
+        // UX-002: Block text modification during compaction (using core logic)
+        if (shouldBlockInputForMultiLineInput(isCompacting, compactionProgress)) {
           return true; // Consume input but don't modify text
         }
         
@@ -295,8 +301,8 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
         .join('');
 
       if (clean) {
-        // UX-002: Block typing during compaction per Business Rule #4
-        if (isCompacting) {
+        // UX-002: Block typing during compaction per Business Rule #4 (using core logic)
+        if (shouldBlockInputForMultiLineInput(isCompacting, compactionProgress)) {
           return true; // Consume input but don't insert characters
         }
         
@@ -337,12 +343,13 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
     );
   };
 
-  // UX-002: Generate compaction status text for placeholder
+  // UX-002: Generate compaction status text for placeholder using core logic
   const getDisplayPlaceholder = () => {
-    if (isCompacting && compactionProgress) {
-      return `Compacting: ${compactionProgress.phase}... ${compactionProgress.current}/${compactionProgress.total} turns`;
-    }
-    return placeholder;
+    return getDisplayPlaceholderForMultiLineInput(
+      isCompacting,
+      compactionProgress,
+      placeholder
+    );
   };
 
   // Empty state with placeholder

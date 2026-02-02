@@ -789,9 +789,14 @@ const processChunksToConversation = (
  *   "gpt-4o" -> "gpt-4o" (no change)
  */
 const extractModelIdForRegistry = (apiModelId: string): string => {
-  return apiModelId
-    .replace(/-preview-\d{2}-\d{2}$/, '') // Remove Gemini preview suffix
-    .replace(/-\d{8}$/, ''); // Remove date suffix
+  // For Anthropic models, we MUST preserve the full versioned ID (e.g., "claude-opus-4-5-20251101")
+  // because Anthropic API requires the exact dated version, NOT aliases like "claude-opus-4-5"
+  if (apiModelId.startsWith('claude-')) {
+    return apiModelId; // Keep full ID including date suffix
+  }
+
+  // For other providers (e.g., Gemini), remove preview suffixes
+  return apiModelId.replace(/-preview-\d{2}-\d{2}$/, '');
 };
 
 // TUI-037: Claude Code style tool display helpers
@@ -1119,6 +1124,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const [providerSections, setProviderSections] = useState<ProviderSection[]>(
     []
   );
+  const [modelsInitialized, setModelsInitialized] = useState(false);
   const [showModelSelector, setShowModelSelector] = useState(false);
   const [selectedSectionIdx, setSelectedSectionIdx] = useState(0);
   const [selectedModelIdx, setSelectedModelIdx] = useState(-1); // -1 = on section header
@@ -1815,7 +1821,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         }
 
         // Find default model (first available with tool_call=true)
-        let defaultModelString = 'anthropic/claude-sonnet-4'; // Fallback
+        // NO HARDCODED FALLBACKS - must come from models.dev or persisted config
+        let defaultModelString: string | null = null;
         let defaultModelInfo: NapiModelInfo | null = null;
         let defaultSection: ProviderSection | null = null;
 
@@ -1905,6 +1912,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // This prevents empty sessions from being persisted when user opens
         // the modal but doesn't send any messages. See handleSubmit() for
         // the actual session creation logic.
+
+        // Mark models as initialized so session creation can proceed
+        setModelsInitialized(true);
 
         // NAPI-006: Load history for current project
         try {
@@ -3124,20 +3134,24 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           } else if (chunk.type === 'SessionStateChange') {
             // NAPI-010: Internal state change - update state machine, do NOT add to conversation
             refreshRustState(activeSessionId);
+          } else if (chunk.type === 'CompactionComplete') {
+            // UX-002: Structured compaction result - extract percentage directly, no string parsing!
+            const result = chunk.compactionResult;
+            setCompactionReduction(Math.round(result.compressionRatio));
+            // Don't add to conversation - compaction feedback is via input area indicator
           } else if (chunk.type === 'UserNotification') {
             // NAPI-010: User-facing notification - display in conversation
-            // TUI-044: Parse compaction notifications for percentage indicator
+            // UX-002: Compaction success messages now come via CompactionComplete chunk (above)
+            // Only failure messages come through UserNotification
             const statusMessage = chunk.message;
-            const compactionMatch = statusMessage.match(/Context compacted:.*?(\d+)% compression/);
-            if (compactionMatch) {
-              const reductionPct = parseInt(compactionMatch[1], 10);
-              setCompactionReduction(reductionPct);
+            // Filter compaction failure messages from conversation (they show in retry dialog)
+            const isCompactionFailure = /^Compaction failed:/.test(statusMessage);
+            if (!isCompactionFailure) {
+              setConversation(prev => [
+                ...prev,
+                { type: 'status', content: statusMessage },
+              ]);
             }
-            // Add all user notifications to conversation
-            setConversation(prev => [
-              ...prev,
-              { type: 'status', content: statusMessage },
-            ]);
           } else if (chunk.type === 'Interrupted') {
             // Agent was interrupted by user
             // TUI-037: Only append to tool if it's still streaming (no collapse indicator)
@@ -4323,20 +4337,24 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // NAPI-010: Internal state change - update state machine, do NOT add to conversation
       // The state field tells us the new session state (Idle, Running, Paused, Compacting, Interrupted)
       refreshRustState(currentSessionIdRef.current);
+    } else if (chunk.type === 'CompactionComplete') {
+      // UX-002: Structured compaction result - extract percentage directly, no string parsing!
+      const result = chunk.compactionResult;
+      setCompactionReduction(Math.round(result.compressionRatio));
+      // Don't add to conversation - compaction feedback is via input area indicator
     } else if (chunk.type === 'UserNotification') {
       // NAPI-010: User-facing notification - display in conversation
-      // TUI-044: Parse compaction notifications for percentage indicator
+      // UX-002: Compaction success messages now come via CompactionComplete chunk (above)
+      // Only failure messages come through UserNotification
       const statusMessage = chunk.message;
-      const compactionMatch = statusMessage.match(/Context compacted:.*?(\d+)% compression/);
-      if (compactionMatch) {
-        const reductionPct = parseInt(compactionMatch[1], 10);
-        setCompactionReduction(reductionPct);
+      // Filter compaction failure messages from conversation (they show in retry dialog)
+      const isCompactionFailure = /^Compaction failed:/.test(statusMessage);
+      if (!isCompactionFailure) {
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: statusMessage },
+        ]);
       }
-      // Add all user notifications to conversation
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: statusMessage },
-      ]);
     } else if (chunk.type === 'Interrupted') {
       setConversation(prev => {
         const updated = [...prev];
@@ -4510,9 +4528,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // VIEWNV-001: Handle create session dialog confirmation
   // Creates session immediately so /thinking and other commands work right away
   const handleCreateSessionConfirm = useCallback(async () => {
+    // Wait for models to be initialized before creating session
+    // This prevents race condition where session is created with incomplete model info
+    if (!modelsInitialized) {
+      logger.warn('Models not yet initialized, waiting...');
+      // Return early - user can try again once models are loaded
+      return;
+    }
+
     // Save reference to current session before detaching (to detect navigation context)
     const wasInSession = !!currentSessionId;
-    
+
     // Detach from current session if any
     if (currentSessionId) {
       try {
@@ -4525,9 +4551,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
     try {
       const project = currentProjectRef.current;
-      const modelPath = currentModel
-        ? `${currentModel.providerId}/${currentModel.modelId}`
-        : currentProvider;
+
+      // Require currentModel to be set - throw if not
+      if (!currentModel) {
+        throw new Error('Cannot create session: model not initialized');
+      }
+
+      // Always use full model path format (provider/model-id)
+      const modelPath = `${currentModel.providerId}/${currentModel.modelId}`;
 
       // Use the service to create the session
       const result = await createSession({
@@ -4563,7 +4594,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setInputValue('');
       closeCreateSessionDialog();
     }
-  }, [currentSessionId, currentModel, currentProvider, activateSession, closeCreateSessionDialog, prepareForNewSession, workUnitId, attachSessionToWorkUnit]);
+  }, [currentSessionId, currentModel, modelsInitialized, activateSession, closeCreateSessionDialog, prepareForNewSession, workUnitId, attachSessionToWorkUnit]);
 
   // VIEWNV-001: Unified session navigation hook for Shift+Arrow navigation
   // This provides the navigation logic that determines targets based on the session tree
@@ -4647,6 +4678,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       return;
     }
 
+    // Wait for models to be initialized before creating session
+    // This prevents race condition where session is created with incomplete model info
+    if (!modelsInitialized) {
+      logger.debug('Waiting for models to initialize before auto-creating session');
+      return;
+    }
+
     // SESS-001: Don't auto-create if there's an attached session that should be resumed
     if (workUnitId) {
       const attachedSessionId = getAttachedSession(workUnitId);
@@ -4663,9 +4701,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     const autoCreateSession = async () => {
       try {
         const project = currentProjectRef.current;
-        const modelPath = currentModel
-          ? `${currentModel.providerId}/${currentModel.modelId}`
-          : currentProvider;
+
+        // Require currentModel to be set - throw if not
+        if (!currentModel) {
+          throw new Error('Cannot auto-create session: model not initialized');
+        }
+
+        // Always use full model path format (provider/model-id)
+        const modelPath = `${currentModel.providerId}/${currentModel.modelId}`;
 
         const result = await createSession({
           modelPath,
@@ -4689,7 +4732,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     };
 
     void autoCreateSession();
-  }, [shouldAutoCreateSession, currentSessionId, currentModel, currentProvider, activateSession, clearAutoCreateRequest, workUnitId, attachSessionToWorkUnit, getAttachedSession]);
+  }, [shouldAutoCreateSession, currentSessionId, currentModel, modelsInitialized, activateSession, clearAutoCreateRequest, workUnitId, attachSessionToWorkUnit, getAttachedSession]);
 
   // NAPI-003 + TUI-047: Enter resume mode (show session selection overlay)
   // Now queries both persistence and background sessions, merging results
