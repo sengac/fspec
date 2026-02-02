@@ -202,34 +202,15 @@ function executeFspecCommand(...args: unknown[]): string {
 export async function testFspecJsControlledInvocation(
   projectRoot: string = '.'
 ): Promise<void> {
-  try {
-    console.log('[fspec] Testing JS-controlled invocation pattern...');
-
-    // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-    // Call the NAPI function with our TypeScript callback
-    const result = callFspecCommand(
-      'list-work-units',
-      '{}',
-      projectRoot,
-      executeFspecCommand
-    );
-
-    console.log('[fspec] JS-controlled invocation test result:', result);
-    console.log(
-      '[fspec] JS-controlled invocation test completed successfully!'
-    );
-  } catch (error) {
-    console.error('[fspec] Failed to test JS-controlled invocation:', error);
-    throw error;
-  }
+  // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
+  // Call the NAPI function with our TypeScript callback
+  callFspecCommand('list-work-units', '{}', projectRoot, executeFspecCommand);
 }
 
 /**
  * Legacy initialization function - now delegates to test function
  */
 export async function ensureFspecCallbacksInitialized(): Promise<void> {
-  // Test the basic functionality
-  console.log('[fspec] Testing FspecTool JS-controlled invocation...');
   await testFspecJsControlledInvocation();
 }
 

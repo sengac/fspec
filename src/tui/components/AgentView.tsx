@@ -1848,7 +1848,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           }
         }
 
-        // NAPI-009: Don't create CodeletSession - we use SessionManager exclusively
         // Session creation is deferred until first message (in handleSubmit)
         // This prevents empty sessions and enables background execution
 
@@ -2682,7 +2681,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // Track current turn's thinking message index (reset after tool calls)
       let currentThinkingIdx = -1;
       
-      // NAPI-009: Use background session for prompts instead of direct CodeletSession
       // This enables detach/attach to work - the background session continues running
       // even when the UI is detached
 

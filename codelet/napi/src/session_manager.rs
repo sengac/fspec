@@ -4889,7 +4889,7 @@ pub async fn session_update_debug_metadata(session_id: String) -> Result<()> {
 
 /// Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
 ///
-/// Mirrors CodeletSession::toggle_debug() behavior but works with background sessions.
+/// Toggle debug capture mode for a background session.
 /// When enabling, sets session metadata (provider, model, context_window).
 /// When disabling, stops capture and returns path to saved session file.
 ///
@@ -4931,7 +4931,7 @@ pub async fn session_toggle_debug(
 
 /// Manually trigger context compaction for a background session (NAPI-009 + NAPI-005)
 ///
-/// Mirrors CodeletSession::compact() behavior but works with background sessions.
+/// Trigger manual context compaction for a background session.
 /// Calls execute_compaction from interactive_helpers to compress context.
 ///
 /// Returns CompactionResult with metrics about the compaction operation.

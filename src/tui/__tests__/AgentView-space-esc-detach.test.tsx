@@ -3,6 +3,32 @@
 import React from 'react';
 import { render } from 'ink-testing-library';
 import { describe, test, beforeEach, expect, vi } from 'vitest';
+import { createNapiMock } from './fixtures/agentViewTestFixture';
+
+// Mock codelet-napi with complete mocks
+vi.mock('@sengac/codelet-napi', () => createNapiMock());
+
+// Mock credentials utilities
+vi.mock('../../utils/credentials', () => ({
+  getProviderConfig: vi.fn((registryId: string) => {
+    if (registryId === 'anthropic') {
+      return { apiKey: 'test-key', source: 'file' };
+    }
+    return { apiKey: undefined, source: 'none' };
+  }),
+}));
+
+// Mock config
+vi.mock('../../utils/config', () => ({
+  loadConfig: vi.fn(() => Promise.resolve({})),
+  writeConfig: vi.fn(() => Promise.resolve()),
+}));
+
+// Mock getFspecUserDir
+vi.mock('../../utils/getFspecUserDir', () => ({
+  getFspecUserDir: vi.fn(() => '/tmp/fspec-test'),
+}));
+
 import { AgentView } from '../components/AgentView';
 
 describe('AgentView Space+ESC immediate session detach', () => {

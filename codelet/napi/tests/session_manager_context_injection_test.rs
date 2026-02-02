@@ -5,7 +5,7 @@
 //!
 //! These tests verify that background sessions created via SessionManager
 //! have context reminders (CLAUDE.md discovery, environment info) properly
-//! injected, matching the behavior of the original CodeletSession.
+//! injected, matching the behavior of the original BackgroundSession.
 //!
 //! Bug found: NAPI-009 introduced SessionManager but forgot to call
 //! inject_context_reminders() in create_session_with_id(), causing the LLM
@@ -181,7 +181,7 @@ fn test_session_new_does_not_auto_inject() {
     };
 
     // Session::new does NOT call inject_context_reminders internally
-    // The caller (CodeletSession::new in NAPI or run_interactive_mode in CLI)
+    // The caller (BackgroundSession::new in NAPI or run_interactive_mode in CLI)
     // is responsible for calling it
     assert_eq!(
         count_system_reminder_messages(&session),

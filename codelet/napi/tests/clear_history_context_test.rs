@@ -214,7 +214,7 @@ fn test_clear_history_preserves_debug_mode() {
 
     // @step Given I have enabled debug mode with "/debug"
     // Debug mode is managed by the global debug_capture module, not session state
-    // The toggle_debug command on CodeletSession sets a global flag
+    // The toggle_debug command on BackgroundSession sets a global flag
 
     // @step And I have an ongoing conversation
     session.messages.push(Message::User {

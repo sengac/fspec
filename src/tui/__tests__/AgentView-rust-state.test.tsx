@@ -136,56 +136,6 @@ const mockState = vi.hoisted(() => ({
 
 // Mock codelet-napi module with Rust state functions
 vi.mock('@sengac/codelet-napi', () => ({
-  CodeletSession: class MockCodeletSession {
-    currentProviderName: string;
-    availableProviders: string[];
-    tokenTracker: { inputTokens: number; outputTokens: number };
-    messages: Array<{ role: string; content: string }>;
-    prompt: ReturnType<typeof vi.fn>;
-    switchProvider: ReturnType<typeof vi.fn>;
-    clearHistory: ReturnType<typeof vi.fn>;
-    interrupt: ReturnType<typeof vi.fn>;
-    toggleDebug: ReturnType<typeof vi.fn>;
-    compact: ReturnType<typeof vi.fn>;
-    selectModel: ReturnType<typeof vi.fn>;
-    selectedModel: string | null;
-    restoreMessagesFromEnvelopes: ReturnType<typeof vi.fn>;
-    restoreTokenState: ReturnType<typeof vi.fn>;
-    getContextFillInfo: ReturnType<typeof vi.fn>;
-
-    constructor() {
-      if (mockState.shouldThrow) {
-        throw new Error('No AI provider credentials configured');
-      }
-      this.currentProviderName = mockState.session.currentProviderName;
-      this.availableProviders = mockState.session.availableProviders;
-      this.tokenTracker = mockState.session.tokenTracker;
-      this.messages = mockState.session.messages;
-      this.prompt = mockState.session.prompt;
-      this.switchProvider = mockState.session.switchProvider;
-      this.clearHistory = mockState.session.clearHistory;
-      this.interrupt = mockState.session.interrupt;
-      this.toggleDebug = mockState.session.toggleDebug;
-      this.compact = mockState.session.compact;
-      this.selectModel = mockState.session.selectModel;
-      this.selectedModel = mockState.session.selectedModel;
-      this.restoreMessagesFromEnvelopes = mockState.session.restoreMessagesFromEnvelopes;
-      this.restoreTokenState = mockState.session.restoreTokenState;
-      this.getContextFillInfo = mockState.session.getContextFillInfo;
-    }
-
-    static async newWithModel() {
-      return new MockCodeletSession();
-    }
-  },
-  ChunkType: {
-    Text: 'Text',
-    Thinking: 'Thinking',
-    ToolCall: 'ToolCall',
-    ToolResult: 'ToolResult',
-    Done: 'Done',
-    Error: 'Error',
-  },
   JsThinkingLevel: {
     Off: 0,
     Low: 1,
@@ -234,6 +184,10 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionSetModel: (sessionId: string, providerId: string, modelId: string) =>
     rustState.setModel(sessionId, providerId, modelId),
   sessionInterrupt: (sessionId: string) => rustState.interrupt(sessionId),
+  sessionSetPendingInput: vi.fn(),
+  sessionGetPendingInput: vi.fn().mockReturnValue(null),
+  sessionGetCompactionProgress: vi.fn().mockReturnValue(null),
+  persistenceSetSessionTokens: vi.fn(),
   // NEW: Rust state functions for debug mode
   sessionGetDebugEnabled: (sessionId: string) => rustState.getDebugEnabled(sessionId),
   sessionSetDebugEnabled: (sessionId: string, enabled: boolean) =>

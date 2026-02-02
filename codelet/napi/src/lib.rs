@@ -19,10 +19,6 @@ mod glob;
 #[cfg(not(feature = "noop"))]
 mod models;
 #[cfg(not(feature = "noop"))]
-mod output;
-#[cfg(not(feature = "noop"))]
-mod session;
-#[cfg(not(feature = "noop"))]
 pub mod navigation;
 #[cfg(not(feature = "noop"))]
 pub mod session_manager;
@@ -46,8 +42,6 @@ pub use fspec::*;
 pub use glob::*;
 #[cfg(not(feature = "noop"))]
 pub use models::*;
-#[cfg(not(feature = "noop"))]
-pub use session::CodeletSession;
 #[cfg(not(feature = "noop"))]
 pub use session_manager::*;
 #[cfg(not(feature = "noop"))]

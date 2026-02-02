@@ -88,43 +88,6 @@ const mockState = vi.hoisted(() => ({
 
 // Mock codelet-napi module
 vi.mock('@sengac/codelet-napi', () => ({
-  CodeletSession: class MockCodeletSession {
-    currentProviderName: string;
-    availableProviders: string[];
-    tokenTracker: { inputTokens: number; outputTokens: number };
-    messages: Array<{ role: string; content: string }>;
-    prompt: ReturnType<typeof vi.fn>;
-    switchProvider: ReturnType<typeof vi.fn>;
-    clearHistory: ReturnType<typeof vi.fn>;
-    interrupt: ReturnType<typeof vi.fn>;
-    toggleDebug: ReturnType<typeof vi.fn>;
-    compact: ReturnType<typeof vi.fn>; // NAPI-005
-
-    constructor() {
-      if (mockState.shouldThrow) {
-        throw new Error(mockState.errorMessage);
-      }
-      this.currentProviderName = mockState.session.currentProviderName;
-      this.availableProviders = mockState.session.availableProviders;
-      this.tokenTracker = mockState.session.tokenTracker;
-      this.messages = mockState.session.messages;
-      this.prompt = mockState.session.prompt;
-      this.switchProvider = mockState.session.switchProvider;
-      this.clearHistory = mockState.session.clearHistory;
-      this.interrupt = mockState.session.interrupt;
-      this.toggleDebug = mockState.session.toggleDebug;
-      this.compact = mockState.session.compact; // NAPI-005
-    }
-  },
-  ChunkType: {
-    Text: 'Text',
-    Thinking: 'Thinking', // TOOL-010
-    ToolCall: 'ToolCall',
-    ToolResult: 'ToolResult',
-    Done: 'Done',
-    Error: 'Error',
-  },
-  // TOOL-010: Thinking level detection exports
   JsThinkingLevel: {
     Off: 0,
     Low: 1,
@@ -189,6 +152,10 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
+  sessionSetPendingInput: vi.fn(),
+  sessionGetPendingInput: vi.fn().mockReturnValue(null),
+  persistenceSetSessionTokens: vi.fn(),
+  sessionGetCompactionProgress: vi.fn().mockReturnValue(null),
   // TUI-054: Base thinking level
   sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
   sessionSetBaseThinkingLevel: vi.fn(),
@@ -358,7 +325,6 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       // The AgentView renders as an overlay on top of existing views
 
       // @step And at least one AI provider is configured
-      // Mocked CodeletSession returns 'claude' as available provider
 
       // @step When I press the agent modal hotkey
       const { lastFrame } = render(
@@ -494,7 +460,6 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       // New session has empty messages array
 
       // @step And a fresh session should be initialized
-      // CodeletSession constructor called
       expect(lastFrame()).toContain('Agent');
       expect(lastFrame()).toContain('Claude');
 

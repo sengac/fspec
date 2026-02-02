@@ -36,20 +36,11 @@ vi.mock('@sengac/codelet-napi', () => ({
     High: 3,
   },
   getThinkingConfig: vi.fn(() => null),
-  CodeletSession: vi.fn().mockImplementation(() => ({
-    currentProviderName: 'claude',
-    availableProviders: ['claude'],
-    tokenTracker: { inputTokens: 0, outputTokens: 0 },
-    messages: [],
-    clearHistory: vi.fn(),
-    prompt: vi.fn(),
-    toggleDebug: vi.fn(),
-    compact: vi.fn(),
-    restoreMessages: mockRestoreMessages,
-    restoreMessagesFromEnvelopes: mockRestoreMessagesFromEnvelopes,
-    restoreTokenState: mockRestoreTokenState,
-    getContextFillInfo: mockGetContextFillInfo,
-  })),
+  // Session manager functions for background sessions
+  sessionRestoreMessages: mockRestoreMessages,
+  sessionRestoreMessagesFromEnvelopes: mockRestoreMessagesFromEnvelopes,
+  sessionRestoreTokenState: mockRestoreTokenState,
+  sessionGetContextFillInfo: mockGetContextFillInfo,
 }));
 
 // Helper to create mock session data

@@ -94,147 +94,6 @@ const mockState = vi.hoisted(() => ({
 
 // Mock codelet-napi module with persistence functions
 vi.mock('@sengac/codelet-napi', () => ({
-  CodeletSession: class MockCodeletSession {
-    currentProviderName: string;
-    availableProviders: string[];
-    tokenTracker: { inputTokens: number; outputTokens: number };
-    messages: Array<{ role: string; content: string }>;
-    prompt: ReturnType<typeof vi.fn>;
-    switchProvider: ReturnType<typeof vi.fn>;
-    clearHistory: ReturnType<typeof vi.fn>;
-    interrupt: ReturnType<typeof vi.fn>;
-    resetInterrupt: ReturnType<typeof vi.fn>;
-    toggleDebug: ReturnType<typeof vi.fn>;
-    compact: ReturnType<typeof vi.fn>;
-    restoreMessages: ReturnType<typeof vi.fn>;
-    restoreMessagesFromEnvelopes: ReturnType<typeof vi.fn>;
-    restoreTokenState: ReturnType<typeof vi.fn>;
-    getContextFillInfo: ReturnType<typeof vi.fn>;
-
-    constructor() {
-      if (mockState.shouldThrow) {
-        throw new Error(mockState.errorMessage);
-      }
-      this.currentProviderName = mockState.session.currentProviderName;
-      this.availableProviders = mockState.session.availableProviders;
-      this.tokenTracker = mockState.session.tokenTracker;
-      this.messages = mockState.session.messages;
-      this.prompt = mockState.session.prompt;
-      this.switchProvider = mockState.session.switchProvider;
-      this.clearHistory = mockState.session.clearHistory;
-      this.interrupt = mockState.session.interrupt;
-      this.resetInterrupt = mockState.session.resetInterrupt;
-      this.toggleDebug = mockState.session.toggleDebug;
-      this.compact = mockState.session.compact;
-      this.restoreMessages = vi.fn();
-      this.restoreMessagesFromEnvelopes = vi.fn();
-      this.restoreTokenState = vi.fn();
-      this.getContextFillInfo = vi.fn().mockReturnValue({ fillPercentage: 0 });
-    }
-  },
-  // Persistence NAPI bindings (camelCase as exported by NAPI-RS)
-  persistenceAddHistory: vi.fn().mockImplementation((display: string, project: string, sessionId: string) => {
-    mockState.persistence.addHistoryCalled = true;
-    mockState.persistence.historyEntries.push({
-      display,
-      timestamp: new Date().toISOString(),
-      project,
-      sessionId,
-    });
-  }),
-  persistenceGetHistory: vi.fn().mockImplementation((_project: string | null, limit: number | null) => {
-    mockState.persistence.getHistoryCalled = true;
-    let entries = mockState.persistence.historyEntries;
-    if (limit) {
-      entries = entries.slice(0, limit);
-    }
-    return entries;
-  }),
-  persistenceSearchHistory: vi.fn().mockImplementation((query: string, _project: string | null) => {
-    mockState.persistence.searchHistoryCalled = true;
-    mockState.persistence.lastSearchQuery = query;
-    let entries = mockState.persistence.historyEntries.filter(e =>
-      e.display.toLowerCase().includes(query.toLowerCase())
-    );
-    return entries;
-  }),
-  persistenceSetDataDirectory: vi.fn(),
-  // TUI-034: Model selection mocks
-  modelsSetCacheDirectory: vi.fn(),
-  modelsListAll: vi.fn(() => Promise.resolve([mockModels.anthropic, mockModels.openai])),
-  setRustLogCallback: vi.fn(),
-  persistenceCreateSessionWithProvider: vi.fn().mockImplementation((name: string, project: string, provider: string) => ({
-    id: 'mock-session-id',
-    name,
-    project,
-    provider,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    messageCount: 0,
-  })),
-  persistenceResumeLastSession: vi.fn().mockImplementation((project: string) => ({
-    id: 'resumed-session-id',
-    name: 'Resumed Session',
-    project,
-    provider: 'claude',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    messageCount: 20,
-  })),
-  persistenceListSessions: vi.fn().mockImplementation(() => [
-    { id: 'session-1', name: 'Auth Work', project: '/test/project', provider: 'claude', messageCount: 10, updatedAt: new Date().toISOString() },
-    { id: 'session-2', name: 'Bug Fix', project: '/test/project', provider: 'claude', messageCount: 5, updatedAt: new Date().toISOString() },
-    { id: 'session-b', name: 'session-b', project: '/test/project', provider: 'claude', messageCount: 8, updatedAt: new Date().toISOString() },
-  ]),
-  persistenceGetSessionMessages: vi.fn().mockImplementation(() => [
-    { id: '1', role: 'user', content: 'Hello', contentHash: '', createdAt: '', tokenCount: 10, blobRefs: [], metadataJson: '{}' },
-    { id: '2', role: 'assistant', content: 'Hi there!', contentHash: '', createdAt: '', tokenCount: 20, blobRefs: [], metadataJson: '{}' },
-  ]),
-  persistenceGetSessionMessageEnvelopes: vi.fn().mockImplementation(() => [
-    JSON.stringify({ uuid: '1', timestamp: new Date().toISOString(), type: 'user', provider: 'claude', message: { role: 'user', content: [{ type: 'text', text: 'Hello' }] } }),
-    JSON.stringify({ uuid: '2', timestamp: new Date().toISOString(), type: 'assistant', provider: 'claude', message: { role: 'assistant', content: [{ type: 'text', text: 'Hi there!' }] } }),
-  ]),
-  persistenceLoadSession: vi.fn().mockImplementation((id: string) => ({
-    id,
-    name: 'Loaded Session',
-    project: '/test/project',
-    provider: 'claude',
-    messageCount: 10,
-  })),
-  persistenceRenameSession: vi.fn(),
-  persistenceForkSession: vi.fn().mockImplementation((_sessionId: string, atIndex: number, name: string) => ({
-    id: 'forked-session-id',
-    name,
-    project: '/test/project',
-    provider: 'claude',
-    messageCount: atIndex + 1,
-  })),
-  persistenceMergeMessages: vi.fn().mockImplementation((targetId: string) => ({
-    id: targetId,
-    name: 'Merged Session',
-    project: '/test/project',
-    provider: 'claude',
-    messageCount: 15,
-  })),
-  persistenceCherryPick: vi.fn().mockImplementation((targetId: string, _sourceId: string, index: number, context: number) => ({
-    session: {
-      id: targetId,
-      name: 'Session with cherry-pick',
-      project: '/test/project',
-      provider: 'claude',
-      messageCount: 12,
-    },
-    importedIndices: [index - context, index],
-  })),
-  ChunkType: {
-    Text: 'Text',
-    Thinking: 'Thinking', // TOOL-010
-    ToolCall: 'ToolCall',
-    ToolResult: 'ToolResult',
-    Done: 'Done',
-    Error: 'Error',
-  },
-  // TOOL-010: Thinking level detection exports
   JsThinkingLevel: {
     Off: 0,
     Low: 1,
@@ -243,6 +102,57 @@ vi.mock('@sengac/codelet-napi', () => ({
   },
   getThinkingConfig: vi.fn(() => null),
   persistenceStoreMessageEnvelope: vi.fn(),
+  persistenceGetHistory: vi.fn(() => {
+    mockState.persistence.getHistoryCalled = true;
+    return mockState.persistence.historyEntries;
+  }),
+  persistenceSetDataDirectory: vi.fn(),
+  persistenceCreateSessionWithProvider: vi.fn(() => ({
+    id: 'mock-session-id',
+    name: 'Mock Session',
+    project: '/test/project',
+    provider: 'claude',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    messageCount: 0,
+  })),
+  persistenceAddHistory: vi.fn((display: string, project: string, sessionId: string) => {
+    mockState.persistence.addHistoryCalled = true;
+    mockState.persistence.historyEntries.push({
+      display,
+      project,
+      sessionId,
+      timestamp: new Date().toISOString(),
+    });
+  }),
+  persistenceSearchHistory: vi.fn((query) => {
+    mockState.persistence.searchHistoryCalled = true;
+    mockState.persistence.lastSearchQuery = query;
+    return mockState.persistence.historyEntries.filter(e => 
+      e.display?.toLowerCase().includes(query?.toLowerCase() || '')
+    );
+  }),
+  persistenceListSessions: vi.fn(() => []),
+  persistenceAppendMessage: vi.fn(),
+  persistenceRenameSession: vi.fn(),
+  modelsSetCacheDirectory: vi.fn(),
+  modelsListAll: vi.fn(() => Promise.resolve([{
+    providerId: 'anthropic',
+    providerName: 'Anthropic',
+    models: [{
+      id: 'claude-sonnet-4-20250514',
+      name: 'Claude Sonnet 4',
+      family: 'claude-sonnet-4',
+      reasoning: true,
+      toolCall: true,
+      attachment: true,
+      temperature: true,
+      contextWindow: 200000,
+      maxOutput: 16000,
+      hasVision: true,
+    }],
+  }])),
+  setRustLogCallback: vi.fn(),
   // TUI-047: Session management for background sessions
   sessionManagerList: vi.fn().mockReturnValue([]),
   // VIEWNV-001: Session navigation helpers
@@ -276,6 +186,10 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
+  sessionSetPendingInput: vi.fn(),
+  sessionGetPendingInput: vi.fn().mockReturnValue(null),
+  persistenceSetSessionTokens: vi.fn(),
+  sessionGetCompactionProgress: vi.fn().mockReturnValue(null),
   // TUI-054: Base thinking level
   sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
   sessionSetBaseThinkingLevel: vi.fn(),

@@ -78,38 +78,6 @@ const mockState = vi.hoisted(() => ({
 
 // Mock codelet-napi module
 vi.mock('@sengac/codelet-napi', () => ({
-  CodeletSession: class MockCodeletSession {
-    currentProviderName: string;
-    availableProviders: string[];
-    tokenTracker: { inputTokens: number; outputTokens: number };
-    messages: Array<{ role: string; content: string }>;
-    prompt: (input: string, thinkingConfig: string | null, callback: (chunk: unknown) => void) => Promise<void>;
-    switchProvider: ReturnType<typeof vi.fn>;
-    clearHistory: ReturnType<typeof vi.fn>;
-    interrupt: ReturnType<typeof vi.fn>;
-    resetInterrupt: ReturnType<typeof vi.fn>;
-
-    constructor() {
-      if (mockState.shouldThrow) {
-        throw new Error(mockState.errorMessage);
-      }
-      this.currentProviderName = mockState.session.currentProviderName;
-      this.availableProviders = mockState.session.availableProviders;
-      this.tokenTracker = mockState.session.tokenTracker;
-      this.messages = mockState.session.messages;
-      // Capture callback and return a controllable promise (TOOL-010: added thinkingConfig param)
-      this.prompt = async (_input: string, _thinkingConfig: string | null, callback: (chunk: unknown) => void) => {
-        capturedCallback = callback;
-        return new Promise<void>(resolve => {
-          capturedResolver = resolve;
-        });
-      };
-      this.switchProvider = mockState.session.switchProvider;
-      this.clearHistory = mockState.session.clearHistory;
-      this.interrupt = mockState.session.interrupt;
-      this.resetInterrupt = mockState.session.resetInterrupt;
-    }
-  },
   // TOOL-010: Thinking level detection exports
   JsThinkingLevel: {
     Off: 0,
@@ -173,6 +141,10 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionSetModel: vi.fn().mockResolvedValue(undefined),
   sessionInterrupt: vi.fn(),
+  sessionSetPendingInput: vi.fn(),
+  sessionGetPendingInput: vi.fn().mockReturnValue(null),
+  persistenceSetSessionTokens: vi.fn(),
+  sessionGetCompactionProgress: vi.fn().mockReturnValue(null),
   // TUI-054: Base thinking level
   sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
   sessionSetBaseThinkingLevel: vi.fn(),

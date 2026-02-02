@@ -463,7 +463,7 @@ impl StreamChunk {
 
 /// Provider configuration for programmatic credential passing (CONFIG-004)
 ///
-/// Used by CodeletSession.newWithCredentials() to pass explicit API keys
+/// Used by sessionManagerCreateWithCredentials() to pass explicit API keys
 /// without reading from environment variables.
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
