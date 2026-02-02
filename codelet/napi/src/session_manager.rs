@@ -3916,28 +3916,32 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 self.session.set_status(SessionStatus::Compacting);
                 StreamChunk::session_state_change(SessionState::Compacting)
             }
-            StreamEvent::CompactionProgress(_progress) => {
-                // Progress updates could be emitted if needed - for now just update state
-                // Future: Add StreamChunk::CompactionProgress variant
-                return; // Don't emit anything for progress updates
+            StreamEvent::CompactionProgress(progress) => {
+                // UX-002: Update session's compaction progress for TypeScript to poll
+                self.session.update_compaction_progress(
+                    progress.phase.clone(),
+                    progress.current,
+                    progress.total,
+                );
+                return; // Progress is polled via sessionGetCompactionProgress, not streamed
             }
             StreamEvent::CompactionComplete(info) => {
                 self.session.set_status(SessionStatus::Idle);
-                // Emit state change first, then notification
+                self.session.set_compaction_progress(None); // Clear progress on completion
+                // Emit state change first
                 self.session.handle_output(StreamChunk::session_state_change(SessionState::Idle));
-                // Send notification with compression info for percentage indicator
-                StreamChunk::user_notification(
-                    format!(
-                        "[Context compacted: {}→{} tokens, {:.0}% compression]",
-                        info.original_tokens,
-                        info.compacted_tokens,
-                        info.compression_ratio * 100.0
-                    ),
-                    NotificationSeverity::Info,
-                )
+                // UX-002: Send STRUCTURED CompactionComplete - no string parsing needed!
+                StreamChunk::compaction_complete(crate::types::CompactionResult {
+                    original_tokens: info.original_tokens,
+                    compacted_tokens: info.compacted_tokens,
+                    compression_ratio: info.compression_ratio * 100.0, // Convert to percentage
+                    turns_summarized: 0, // Not available from CompactionCompleteInfo
+                    turns_kept: 0,       // Not available from CompactionCompleteInfo
+                })
             }
             StreamEvent::CompactionFailed { reason } => {
                 self.session.set_status(SessionStatus::Idle);
+                self.session.set_compaction_progress(None); // Clear progress on failure
                 // Emit state change first, then notification
                 self.session.handle_output(StreamChunk::session_state_change(SessionState::Idle));
                 StreamChunk::user_notification(
@@ -5185,4 +5189,25 @@ fn execute_fspec_command_sync(command: &str, args_json: &str, project_root: &str
     } else {
         Some(format!("{{\"success\": false, \"error\": true, \"message\": \"Command '{}' not implemented in synchronous execution\"}} ", command))
     }
+}
+
+/// CONFIG-004: Test provider connection by validating credentials
+/// 
+/// This is a lightweight check that validates provider credentials without
+/// creating a full session. Used by the settings UI to test connections.
+/// 
+/// Returns Ok(()) if credentials are valid, or an error message if not.
+#[napi]
+pub fn test_provider_connection(provider_name: String) -> Result<()> {
+    use codelet_providers::ProviderManager;
+    
+    // Load environment variables (for API keys)
+    let _ = dotenvy::dotenv();
+    
+    // Try to create a ProviderManager with this provider
+    // This validates that credentials exist and are non-empty
+    ProviderManager::with_provider(&provider_name)
+        .map_err(|e| Error::from_reason(format!("Connection failed: {e}")))?;
+    
+    Ok(())
 }

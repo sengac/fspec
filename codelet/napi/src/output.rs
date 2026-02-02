@@ -236,11 +236,10 @@ impl StreamOutput for NapiOutput {
                     ThreadsafeFunctionCallMode::NonBlocking,
                 );
             }
-            StreamEvent::CompactionProgress(progress) => {
-                // UX-002: Compaction progress - could emit progress updates if needed
-                // For now, just ignore - UI shows "Compacting..." based on state
-                // Future: Could add StreamChunk::CompactionProgress variant
-                let _ = progress; // Silence unused warning
+            StreamEvent::CompactionProgress(_progress) => {
+                // UX-002: NapiOutput is used by CodeletSession::prompt() which is only used
+                // in tests. Production code uses BackgroundSession (via SessionManager) which
+                // properly handles CompactionProgress events via BackgroundSessionOutput.
             }
             StreamEvent::CompactionComplete(info) => {
                 // UX-002: Compaction completed - emit SessionStateChange back to Idle

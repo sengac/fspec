@@ -1672,6 +1672,16 @@ export declare function testCallback(
 ): string;
 
 /**
+ * CONFIG-004: Test provider connection by validating credentials
+ *
+ * This is a lightweight check that validates provider credentials without
+ * creating a full session. Used by the settings UI to test connections.
+ *
+ * Returns Ok(()) if credentials are valid, or an error message if not.
+ */
+export declare function testProviderConnection(providerName: string): void;
+
+/**
  * Toggle debug capture mode without requiring a session.
  *
  * Can be called before a session exists. Session metadata will not be set.

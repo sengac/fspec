@@ -48,10 +48,10 @@ import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelect
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
-// Initialize FspecTool callbacks before importing CodeletSession
+// Initialize FspecTool callbacks before importing NAPI functions
 import { ensureFspecCallbacksInitialized } from '../../utils/fspec-init';
 import {
-  CodeletSession,
+  testProviderConnection,
   persistenceStoreMessageEnvelope,
   persistenceGetHistory,
   persistenceForkSession,
@@ -386,25 +386,6 @@ const getSessionStatusIcon = (session: MergedSession): string => {
   }
   return '💾';
 };
-
-interface CodeletSessionType {
-  currentProviderName: string;
-  availableProviders: string[];
-  tokenTracker: TokenTracker;
-  messages: Message[];
-  prompt: (
-    input: string,
-    thinkingConfig: string | null, // TOOL-010: Thinking config JSON
-    callback: (chunk: StreamChunk) => void
-  ) => Promise<void>;
-  switchProvider: (providerName: string) => Promise<void>;
-  clearHistory: () => void;
-  interrupt: () => void;
-  resetInterrupt: () => void;
-  toggleDebug: (debugDir?: string) => DebugCommandResult; // AGENT-021
-  compact: () => Promise<CompactionResult>; // NAPI-005
-  getContextFillInfo: () => { fillPercentage: number };
-}
 
 export interface AgentViewProps {
   onExit: () => void;
@@ -3930,23 +3911,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       message: 'Testing...',
     });
     try {
-      // Ensure FspecTool callbacks are initialized before creating session
+      // Ensure FspecTool callbacks are initialized before testing
       await ensureFspecCallbacksInitialized();
       
       // Get the internal name for the provider
       const internalName = mapProviderIdToInternal(providerId);
 
-      // Try to create a session with this provider to test the connection
-      // Attempt to create a session - this will fail if credentials are invalid
-      const testSession = new CodeletSession(internalName);
+      // Test provider connection - validates credentials without creating a full session
+      testProviderConnection(internalName);
 
-      if (testSession) {
-        setConnectionTestResult({
-          providerId,
-          success: true,
-          message: '✓ Connection successful',
-        });
-      }
+      setConnectionTestResult({
+        providerId,
+        success: true,
+        message: '✓ Connection successful',
+      });
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Connection failed';

@@ -184,6 +184,10 @@ where
         );
         // UX-002: Use structured compaction event instead of string status
         output.emit_compaction_started();
+        
+        // UX-002: Emit progress for automatic compaction
+        let total_turns = session.messages.len() as u32 / 2; // Approximate turn count
+        output.emit_compaction_progress("Analyzing context", 0, total_turns.max(1));
 
         match execute_compaction(session).await {
             Ok((metrics, _anchor)) => {
@@ -957,6 +961,10 @@ where
                                                 // UX-002: Use structured compaction event
                                                 output.emit_compaction_started();
                                                 
+                                                // UX-002: Emit progress for continuation compaction
+                                                let total_turns = session.messages.len() as u32 / 2;
+                                                output.emit_compaction_progress("Context limit reached", 0, total_turns.max(1));
+                                                
                                                 // Clear tool progress callback before breaking
                                                 set_tool_progress_callback(None);
                                                 
@@ -1045,6 +1053,10 @@ where
                         info!("Received 'prompt is too long' error, triggering recovery compaction");
                         // UX-002: Use structured compaction event instead of string status
                         output.emit_compaction_started();
+                        
+                        // UX-002: Emit progress for emergency compaction
+                        let total_turns = session.messages.len() as u32 / 2;
+                        output.emit_compaction_progress("Emergency compaction", 0, total_turns.max(1));
 
                         // Pop the last user message we added at the start of this function
                         if let Some(last_msg) = session.messages.last() {
@@ -1130,6 +1142,10 @@ where
     if compaction_needed && !is_interrupted.load(Acquire) {
         // UX-002: Use structured compaction event - this triggers both CLI display and NAPI state change
         output.emit_compaction_started();
+        
+        // UX-002: Emit progress for automatic compaction
+        let total_turns = session.messages.len() as u32 / 2; // Approximate turn count
+        output.emit_compaction_progress("Analyzing context", 0, total_turns.max(1));
         
         // Capture compaction.triggered event
         if let Ok(manager_arc) = get_debug_capture_manager() {
