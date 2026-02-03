@@ -10,7 +10,7 @@
 //! The persistence module is integrated here to persist messages as they stream.
 
 use crate::persistence::{
-    load_session, append_message_with_metadata,
+    load_session, append_message_with_metadata, update_session_tokens, set_compaction_state,
     MessageEnvelope, MessagePayload, UserMessage, UserContent, AssistantMessage, AssistantContent,
 };
 use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiTurnDetails};
@@ -3659,6 +3659,46 @@ fn persist_tool_result_internal(
     Ok(())
 }
 
+/// REFAC-007 Rule [31]: Persist token state to session manifest
+fn persist_token_state(
+    session_id: &uuid::Uuid,
+    input_tokens: u32,
+    output_tokens: u32,
+) -> std::result::Result<(), String> {
+    // Load the session manifest
+    let mut session_manifest = load_session(*session_id)?;
+    
+    // Update token state (using cumulative update)
+    update_session_tokens(
+        &mut session_manifest,
+        input_tokens as u64,
+        output_tokens as u64,
+        0, // cache_read - not tracked per-turn
+        0, // cache_create - not tracked per-turn
+    )?;
+    
+    tracing::debug!("REFAC-007: Persisted token state for session {} (input={}, output={})", 
+        session_id, input_tokens, output_tokens);
+    Ok(())
+}
+
+/// REFAC-007 Rule [32]: Persist compaction state to session manifest
+fn persist_compaction_state(
+    session_id: &uuid::Uuid,
+    summary: &str,
+    compacted_before_index: usize,
+) -> std::result::Result<(), String> {
+    // Load the session manifest
+    let mut session_manifest = load_session(*session_id)?;
+    
+    // Set compaction state
+    set_compaction_state(&mut session_manifest, summary.to_string(), compacted_before_index)?;
+    
+    tracing::debug!("REFAC-007: Persisted compaction state for session {} (boundary_index={})", 
+        session_id, compacted_before_index);
+    Ok(())
+}
+
 /// Macro to reduce duplication in provider handling.
 /// Each provider returns a different concrete type, so we must match and call
 /// run_agent_stream in each branch. This macro eliminates the boilerplate.
@@ -4149,6 +4189,12 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
             StreamEvent::Done => {
                 // REFAC-007: Persist accumulated assistant message on completion
                 self.persist_assistant_message();
+                
+                // REFAC-007 Rule [31]: Persist token state on Done chunk
+                let (input_tokens, output_tokens) = self.session.get_tokens();
+                if let Err(e) = persist_token_state(&self.session.id, input_tokens, output_tokens) {
+                    tracing::error!("REFAC-007: Failed to persist token state: {}", e);
+                }
                 
                 // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
                 // This prevents a race condition where JavaScript receives the Done callback
@@ -5286,6 +5332,36 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
     if let Some(anchor_point) = anchor {
         let mut anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
         anchor_points.push(anchor_point);
+    }
+
+    // REFAC-007 Rule [32]: Persist compaction state to session manifest
+    // After compaction, messages are structured as:
+    // [kept turns...] + [summary message] + [continuation message]
+    // The summary is the second-to-last message
+    let compaction_summary = if inner.messages.len() >= 2 {
+        // Extract text from the summary message (second-to-last)
+        let summary_idx = inner.messages.len() - 2;
+        match &inner.messages[summary_idx] {
+            rig::message::Message::User { content } => {
+                // Extract text from first content item using first_ref()
+                match content.first_ref() {
+                    rig::message::UserContent::Text(text) => text.text.clone(),
+                    _ => String::new(),
+                }
+            }
+            _ => String::new(),
+        }
+    } else {
+        String::new()
+    };
+    
+    // Calculate compaction boundary index (number of kept turns * 2 for user+assistant pairs)
+    let compaction_boundary_index = metrics.turns_kept * 2;
+    
+    if !compaction_summary.is_empty() {
+        if let Err(e) = persist_compaction_state(&session.id, &compaction_summary, compaction_boundary_index) {
+            tracing::error!("REFAC-007: Failed to persist compaction state: {}", e);
+        }
     }
 
     Ok(CompactionResult {
