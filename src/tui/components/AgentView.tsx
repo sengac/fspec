@@ -115,11 +115,14 @@ import {
   // TUI-056: Anchor point retrieval
   sessionGetAnchorPoints,
   sessionGetTurnDetails,
+  // UX-002: Compaction progress polling for automatic compaction
+  sessionGetCompactionProgress,
   type NapiAnchorPoint,
   type NapiTurnDetails,
   type SessionRoleInfo,
   type NapiProviderModels,
   type NapiModelInfo,
+  type CompactionProgress,
 } from '@sengac/codelet-napi';
 import {
   detectThinkingLevel,
@@ -1148,6 +1151,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
   // PERF-002: Compaction with retry logic hook
   const compaction = useCompaction();
+  
+  // UX-002: Ref for compaction functions to avoid stale closures in stream callbacks
+  // The useCompaction hook returns new function references on each render, but stream
+  // callbacks (handleStreamChunk, handleSubmit's sessionAttach) capture the initial
+  // reference. Using a ref ensures callbacks always have access to the latest functions.
+  const compactionRef = useRef(compaction);
+  useEffect(() => {
+    compactionRef.current = compaction;
+  }, [compaction]);
 
   // NAPI-006: History navigation state
   const [historyEntries, setHistoryEntries] = useState<HistoryEntry[]>([]);
@@ -3112,11 +3124,25 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             resolve();
           } else if (chunk.type === 'SessionStateChange') {
             // NAPI-010: Internal state change - update state machine, do NOT add to conversation
+            
+            // UX-002: Use unified compaction hook for ALL compaction state
+            // This ensures consistent behavior across manual, hook-triggered, and emergency compaction
+            // NOTE: Use compactionRef.current to avoid stale closure issues in this callback
+            if (chunk.state === 'Compacting') {
+              const progress = sessionGetCompactionProgress(activeSessionId);
+              compactionRef.current.startCompaction('hook-triggered', activeSessionId, progress ?? undefined);
+            } else {
+              // Non-compacting state - end compaction tracking
+              compactionRef.current.endCompaction();
+            }
+            
             refreshRustState(activeSessionId);
           } else if (chunk.type === 'CompactionComplete') {
             // UX-002: Structured compaction result - extract percentage directly, no string parsing!
             const result = chunk.compactionResult;
             setCompactionReduction(Math.round(result.compressionRatio));
+            // End compaction via unified hook (use ref for callback safety)
+            compactionRef.current.endCompaction();
             // Don't add to conversation - compaction feedback is via input area indicator
           } else if (chunk.type === 'UserNotification') {
             // NAPI-010: User-facing notification - display in conversation
@@ -3471,7 +3497,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // UX-002: Don't add compaction messages to conversation
         // All compaction feedback is shown in input area via isCompacting state
         
-        const result = await compaction.performCompaction(currentSessionId);
+        const result = await compaction.performManualCompaction(currentSessionId);
         
         // Update token display from compaction result
         setTokenUsage(prev => ({
@@ -4312,11 +4338,28 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     } else if (chunk.type === 'SessionStateChange') {
       // NAPI-010: Internal state change - update state machine, do NOT add to conversation
       // The state field tells us the new session state (Idle, Running, Paused, Compacting, Interrupted)
+      
+      // UX-002: Use unified compaction hook for ALL compaction state
+      // This ensures consistent behavior across manual, hook-triggered, and emergency compaction
+      // NOTE: Use compactionRef.current to avoid stale closure issues in this callback
+      if (chunk.state === 'Compacting') {
+        const sessionId = currentSessionIdRef.current;
+        if (sessionId) {
+          const progress = sessionGetCompactionProgress(sessionId);
+          compactionRef.current.startCompaction('hook-triggered', sessionId, progress ?? undefined);
+        }
+      } else {
+        // Non-compacting state - end compaction tracking
+        compactionRef.current.endCompaction();
+      }
+      
       refreshRustState(currentSessionIdRef.current);
     } else if (chunk.type === 'CompactionComplete') {
       // UX-002: Structured compaction result - extract percentage directly, no string parsing!
       const result = chunk.compactionResult;
       setCompactionReduction(Math.round(result.compressionRatio));
+      // End compaction via unified hook (use ref for callback safety)
+      compactionRef.current.endCompaction();
       // Don't add to conversation - compaction feedback is via input area indicator
     } else if (chunk.type === 'UserNotification') {
       // NAPI-010: User-facing notification - display in conversation
@@ -7377,16 +7420,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             isLoading={displayIsLoading}
             isPaused={displayIsPaused}
             pauseInfo={displayPauseInfo}
-            isCompacting={compaction.progressState.isActive || rustSnapshot.isCompacting}
-            compactionProgress={
-              compaction.progressState.isActive 
-                ? {
-                    phase: compaction.progressState.message,
-                    current: compaction.progressState.turnProgress?.current || 0,
-                    total: compaction.progressState.turnProgress?.total || 0,
-                  }
-                : rustSnapshot.compactionProgress
-            }
+            isCompacting={compaction.state.isActive}
+            compactionProgress={compaction.state.progress}
             value={inputValue}
             onChange={handleInputChange}
             onSubmit={handleSubmit}
@@ -7396,7 +7431,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             maxVisibleLines={5}
             skipAnimation={skipInputAnimation}
             isActive={!showCreateSessionDialog}
-            suppressEnter={slashCommand.isVisible || fileSearch.isVisible || isTurnSelectMode || compaction.progressState.isActive || rustSnapshot.isCompacting}
+            suppressEnter={slashCommand.isVisible || fileSearch.isVisible || isTurnSelectMode || compaction.state.isActive}
           />
         </Box>
       </Box>
@@ -7461,7 +7496,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             compaction.handleRetryOption(optionKey);
             if (optionKey === 'retry' && currentSessionId) {
               // Retry compaction
-              compaction.performCompaction(currentSessionId).then(result => {
+              compaction.performManualCompaction(currentSessionId).then(result => {
                 // UX-002: Don't add success message to conversation on retry
                 setCompactionReduction(result.compressionRatio);
                 setTokenUsage(prev => ({

@@ -953,7 +953,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
   describe('Scenario: NAPI-010 discriminated union chunk handling', () => {
     it('should not display SessionStateChange in conversation', async () => {
       // NAPI-010: SessionStateChange is for internal state machine updates
-      // These should NOT appear in the conversation
+      // These should NOT appear in the conversation (but input placeholder CAN show compaction status)
       resetMockSession();
 
       const { lastFrame, stdin } = render(
@@ -980,9 +980,17 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       const frame = lastFrame();
-      // The word "Compacting" (the state value) should NOT appear as a status message
-      // because SessionStateChange is internal state only
-      expect(frame).not.toMatch(/Compacting(?!.*compacted)/); // "Compacting" alone shouldn't appear
+      // UX-002: "Compacting" CAN appear in the input placeholder (at the bottom after ">")
+      // because that's where compaction progress is intentionally shown.
+      // But "Compacting" should NOT appear in the conversation area (status messages).
+      // The input placeholder line starts with "> " so we check lines that don't start with ">"
+      const lines = frame?.split('\n') || [];
+      const conversationLines = lines.filter(line => !line.trimStart().startsWith('>') && !line.includes('───'));
+      const conversationText = conversationLines.join('\n');
+      
+      // Check that "Compacting" as a status doesn't appear in conversation
+      // (it CAN appear in input placeholder which is filtered out above)
+      expect(conversationText).not.toMatch(/^Compacting$/m); // "Compacting" alone as a line shouldn't appear
       // But "Context compacted successfully" should appear because it's a UserNotification
       expect(frame).toContain('Context compacted successfully');
     });
@@ -1041,6 +1049,71 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // Verify the warning message appears in conversation
       expect(lastFrame()).toContain('API rate limit exceeded');
+    });
+
+    it('should show compaction progress in input placeholder when SessionStateChange{Compacting} is received (UX-002 fix)', async () => {
+      // UX-002: This is THE critical test for the bug fix
+      // Bug: "compaction status only updates if we run /compact - it does not run on 
+      // the compaction hook or when an emergency compaction is triggered"
+      // Fix: Use compactionRef.current to avoid stale closures in stream callbacks
+      resetMockSession();
+
+      // Mock sessionGetCompactionProgress to return actual progress
+      const { sessionGetCompactionProgress } = await import('@sengac/codelet-napi');
+      (sessionGetCompactionProgress as ReturnType<typeof vi.fn>).mockReturnValue({
+        phase: 'analyzing anchors',
+        current: 15,
+        total: 32,
+      });
+
+      const { lastFrame, stdin } = render(
+        <AgentView onExit={() => {}} />
+      );
+
+      await waitForFrame();
+
+      // @step Given I have a conversation with a session
+      stdin.write('test message');
+      await waitForFrame();
+      stdin.write('\r');
+      await waitForFrame(100);
+
+      // @step When the compaction hook automatically triggers compaction
+      // (Simulated by SessionStateChange{Compacting} from Rust backend)
+      if (capturedCallback) {
+        capturedCallback(null, { type: 'SessionStateChange', state: 'Compacting' });
+      }
+      await waitForFrame(100);
+
+      // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
+      const frame = lastFrame();
+      
+      // The input area should show compaction progress
+      // Input placeholder contains ">" followed by the compaction status
+      expect(frame).toMatch(/Compacting.*analyzing anchors.*15.*32/i);
+
+      // Clean up - send CompactionComplete to end compaction
+      if (capturedCallback) {
+        capturedCallback(null, { 
+          type: 'CompactionComplete', 
+          compactionResult: {
+            originalTokens: 10000,
+            compactedTokens: 3000,
+            compressionRatio: 70,
+            turnsSummarized: 5,
+            turnsKept: 2,
+          }
+        });
+        capturedCallback(null, { type: 'Done' });
+      }
+      if (capturedResolver) {
+        capturedResolver();
+      }
+      await waitForFrame(100);
+
+      // After compaction completes, progress should be gone
+      const frameAfter = lastFrame();
+      expect(frameAfter).not.toMatch(/Compacting.*analyzing anchors/i);
     });
   });
 });

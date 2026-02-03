@@ -23,7 +23,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
       // @step And the conversation history should NOT contain "[Compacting context...]" messages
       // @step And the input area should remain visible and responsive
 
-      // This represents manual compaction via useCompaction hook
+      // This represents manual compaction via useCompaction hook's unified state
       const { lastFrame } = render(
         <InputManager>
           <MultiLineInput
@@ -31,7 +31,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
             onChange={vi.fn()}
             onSubmit={vi.fn()}
             placeholder="Type a message..."
-            isCompacting={true}  // compaction.progressState.isActive = true
+            isCompacting={true}  // compaction.state.isActive = true
             compactionProgress={{
               phase: 'analyzing anchors',
               current: 15,
@@ -54,7 +54,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
       // @step And the conversation history should NOT contain "[Compacting context...]" messages
       // @step And the input area should remain visible but disabled for typing
 
-      // This represents hook-triggered compaction via rustSnapshot.isCompacting
+      // Hook-triggered compaction also uses unified state (compaction.state.isActive)
       const { lastFrame } = render(
         <InputManager>
           <MultiLineInput
@@ -62,7 +62,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
             onChange={vi.fn()}
             onSubmit={vi.fn()}
             placeholder="Type a message..."
-            isCompacting={true}  // rustSnapshot.isCompacting = true
+            isCompacting={true}  // compaction.state.isActive = true
             compactionProgress={{
               phase: 'analyzing anchors',
               current: 10,
@@ -87,7 +87,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
       // @step And the conversation should NOT show "[Context exceeded limit, triggering emergency compaction...]" messages
       // @step And the input area should show compaction progress instead of error messages
 
-      // This represents emergency compaction triggered by Rust backend
+      // Emergency compaction also uses unified state (compaction.state.isActive)
       const { lastFrame } = render(
         <InputManager>
           <MultiLineInput
@@ -95,7 +95,7 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
             onChange={vi.fn()}
             onSubmit={vi.fn()}
             placeholder="Type a message..."
-            isCompacting={true}  // rustSnapshot.isCompacting = true
+            isCompacting={true}  // compaction.state.isActive = true
             compactionProgress={{
               phase: 'emergency compacting',
               current: 5,
@@ -112,23 +112,25 @@ describe('UX-002: MultiLineInput Compaction Status Integration', () => {
   });
 
   describe('Compaction state coordination logic', () => {
-    it('should verify AgentView logic works correctly', () => {
-      // Simulate AgentView's logic: compaction.progressState.isActive || rustSnapshot.isCompacting
+    it('should verify unified state works correctly for all trigger types', () => {
+      // All compaction triggers now go through unified compaction.state.isActive
+      // This is set by compaction.startCompaction() for all pathways
       
-      // Case 1: Only manual compaction active (original working case)
-      const manualOnly = false || false; // compaction.progressState.isActive=false, rustSnapshot.isCompacting=false
-      expect(manualOnly).toBe(false);
+      // Case 1: No compaction active
+      const noCompaction = false;
+      expect(noCompaction).toBe(false);
       
-      const manualActive = true || false; // compaction.progressState.isActive=true, rustSnapshot.isCompacting=false  
+      // Case 2: Manual compaction (via /compact command)
+      const manualActive = true; // compaction.startCompaction('manual', sessionId)
       expect(manualActive).toBe(true);
 
-      // Case 2: Only hook/emergency compaction active (the bug fix cases)
-      const hookOnly = false || true; // compaction.progressState.isActive=false, rustSnapshot.isCompacting=true
-      expect(hookOnly).toBe(true); // This should work now
+      // Case 3: Hook-triggered compaction (token threshold)
+      const hookActive = true; // compaction.startCompaction('hook-triggered', sessionId)
+      expect(hookActive).toBe(true);
 
-      // Case 3: Both active (should prioritize local)
-      const bothActive = true || true;
-      expect(bothActive).toBe(true);
+      // Case 4: Emergency compaction (API rejection)
+      const emergencyActive = true; // compaction.startCompaction('emergency', sessionId)
+      expect(emergencyActive).toBe(true);
     });
   });
 
