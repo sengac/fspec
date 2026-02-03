@@ -5,7 +5,14 @@
 //! Provides a singleton SessionManager that owns multiple BackgroundSession instances,
 //! each running in its own tokio task. Sessions can be attached/detached without
 //! interrupting agent execution.
+//!
+//! REFAC-007: Session message persistence is now handled in Rust, not TypeScript.
+//! The persistence module is integrated here to persist messages as they stream.
 
+use crate::persistence::{
+    load_session, append_message_with_metadata,
+    MessageEnvelope, MessagePayload, UserMessage, UserContent, AssistantMessage, AssistantContent,
+};
 use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiTurnDetails};
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{
@@ -3508,6 +3515,150 @@ impl SessionManager {
     
 }
 
+// ============================================================================
+// REFAC-007: Persistence Helper Functions
+// ============================================================================
+
+/// Persist a user message to the Rust persistence layer
+/// 
+/// This function creates a proper MessageEnvelope and stores it via the persistence module.
+/// Called from agent_loop when user input is received.
+fn persist_user_message(session_id: &uuid::Uuid, text: &str) -> std::result::Result<(), String> {
+    use chrono::Utc;
+    use std::collections::HashMap;
+    
+    // Load the session manifest
+    let mut session_manifest = load_session(*session_id)?;
+    
+    // Create the message envelope
+    let envelope = MessageEnvelope {
+        uuid: uuid::Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(),
+        provider: "user".to_string(), // User input, not from a provider
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::Text { text: text.to_string() }],
+        }),
+        request_id: None,
+    };
+    
+    // Convert envelope to metadata map for storage
+    let envelope_json = serde_json::to_string(&envelope)
+        .map_err(|e| format!("Failed to serialize envelope: {e}"))?;
+    let metadata_map: HashMap<String, serde_json::Value> = serde_json::from_str(&envelope_json)
+        .map_err(|e| format!("Failed to parse envelope as map: {e}"))?;
+    
+    // Store the message
+    append_message_with_metadata(&mut session_manifest, "user", text, metadata_map)?;
+    
+    tracing::debug!("REFAC-007: Persisted user message for session {}", session_id);
+    Ok(())
+}
+
+/// REFAC-007: Persist an assistant message with accumulated content blocks
+fn persist_assistant_message_internal(
+    session_id: &uuid::Uuid,
+    provider: &str,
+    content: Vec<AssistantContent>,
+) -> std::result::Result<(), String> {
+    use chrono::Utc;
+    use std::collections::HashMap;
+    
+    // Load the session manifest
+    let mut session_manifest = load_session(*session_id)?;
+    
+    // Create a simple text representation for the message content
+    let text_content: String = content.iter().filter_map(|c| {
+        match c {
+            AssistantContent::Text { text } => Some(text.clone()),
+            AssistantContent::ToolUse { name, .. } => Some(format!("[Tool: {}]", name)),
+            AssistantContent::Thinking { thinking, .. } => Some(format!("[Thinking: {}...]", &thinking[..thinking.len().min(50)])),
+        }
+    }).collect::<Vec<_>>().join("\n");
+    
+    // Create the message envelope
+    let envelope = MessageEnvelope {
+        uuid: uuid::Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "assistant".to_string(),
+        provider: provider.to_string(),
+        message: MessagePayload::Assistant(AssistantMessage {
+            role: "assistant".to_string(),
+            id: None,
+            model: None,
+            content,
+            stop_reason: Some("end_turn".to_string()),
+            usage: None,
+        }),
+        request_id: None,
+    };
+    
+    // Convert envelope to metadata map for storage
+    let envelope_json = serde_json::to_string(&envelope)
+        .map_err(|e| format!("Failed to serialize envelope: {e}"))?;
+    let metadata_map: HashMap<String, serde_json::Value> = serde_json::from_str(&envelope_json)
+        .map_err(|e| format!("Failed to parse envelope as map: {e}"))?;
+    
+    // Store the message
+    append_message_with_metadata(&mut session_manifest, "assistant", &text_content, metadata_map)?;
+    
+    tracing::debug!("REFAC-007: Persisted assistant message for session {}", session_id);
+    Ok(())
+}
+
+/// REFAC-007: Persist a tool result message
+fn persist_tool_result_internal(
+    session_id: &uuid::Uuid,
+    tool_call_id: &str,
+    content: &str,
+    is_error: bool,
+) -> std::result::Result<(), String> {
+    use chrono::Utc;
+    use std::collections::HashMap;
+    
+    // Load the session manifest
+    let mut session_manifest = load_session(*session_id)?;
+    
+    // Create the message envelope with tool result
+    let envelope = MessageEnvelope {
+        uuid: uuid::Uuid::new_v4(),
+        parent_uuid: None,
+        timestamp: Utc::now(),
+        message_type: "user".to_string(), // Tool results are user messages
+        provider: "tool".to_string(),
+        message: MessagePayload::User(UserMessage {
+            role: "user".to_string(),
+            content: vec![UserContent::ToolResult {
+                tool_use_id: tool_call_id.to_string(),
+                content: content.to_string(),
+                is_error,
+                tool_use_result: None,
+            }],
+        }),
+        request_id: None,
+    };
+    
+    // Convert envelope to metadata map for storage
+    let envelope_json = serde_json::to_string(&envelope)
+        .map_err(|e| format!("Failed to serialize envelope: {e}"))?;
+    let metadata_map: HashMap<String, serde_json::Value> = serde_json::from_str(&envelope_json)
+        .map_err(|e| format!("Failed to parse envelope as map: {e}"))?;
+    
+    // Store the message - use a truncated summary for the content field
+    let summary = if content.len() > 200 {
+        format!("{}...", &content[..200])
+    } else {
+        content.to_string()
+    };
+    append_message_with_metadata(&mut session_manifest, "user", &summary, metadata_map)?;
+    
+    tracing::debug!("REFAC-007: Persisted tool result for session {}", session_id);
+    Ok(())
+}
+
 /// Macro to reduce duplication in provider handling.
 /// Each provider returns a different concrete type, so we must match and call
 /// run_agent_stream in each branch. This macro eliminates the boilerplate.
@@ -3535,6 +3686,7 @@ macro_rules! run_with_provider {
 
 /// Agent loop that runs in background tokio task
 /// WATCH-019: Modified to also process watcher injections via watcher_input_rx
+/// REFAC-007: Persists messages to Rust persistence layer
 async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receiver<PromptInput>) {
     loop {
         // WATCH-019: Use tokio::select! to wait on both user input and watcher input
@@ -3584,6 +3736,13 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
 
             tracing::debug!("Session {} received input: {}", session.id, &input[..input.len().min(50)]);
 
+            // REFAC-007: Persist user message to Rust persistence layer
+            // This replaces TypeScript's persistenceStoreMessageEnvelope call
+            if let Err(e) = persist_user_message(&session.id, &input) {
+                tracing::error!("Failed to persist user message for session {}: {}", session.id, e);
+                // Continue processing even if persistence fails - don't block agent execution
+            }
+
             // Set status to running
             session.set_status(SessionStatus::Running);
             session.reset_interrupt();
@@ -3593,11 +3752,13 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 serde_json::from_str(config_str).ok()
             });
 
-            // Create output handler that buffers and forwards
-            let session_for_output = session.clone();
-            let output = BackgroundOutput::new(session_for_output);
-
+            // Get provider name before creating output (need inner_session lock)
             let mut inner_session = session.inner.lock().await;
+            let current_provider = inner_session.current_provider_name().to_string();
+            
+            // REFAC-007: Create output handler with provider for message persistence
+            let session_for_output = session.clone();
+            let output = BackgroundOutput::with_provider(session_for_output, current_provider.clone());
 
             let session_for_pause = session.clone();
             let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
@@ -3619,7 +3780,6 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
 
             set_pause_handler(Some(pause_handler));
             
-            let current_provider = inner_session.current_provider_name().to_string();
             let result = match current_provider.as_str() {
                 "claude" => run_with_provider!(&mut inner_session, get_claude, &input, session, &output, thinking_config_value),
                 "openai" => run_with_provider!(&mut inner_session, get_openai, &input, session, &output, thinking_config_value),
@@ -3696,11 +3856,12 @@ async fn watcher_agent_loop(
 
             // WATCH-020: Use WatcherOutput for observation evaluations to capture turn text
             // User prompts use BackgroundOutput directly (no parsing needed)
+            // REFAC-007: Include provider for persistence
             let session_for_output = session.clone();
-            let watcher_output = WatcherOutput::new(session_for_output.clone());
-
+            
             let mut inner_session = session.inner.lock().await;
             let current_provider = inner_session.current_provider_name().to_string();
+            let watcher_output = WatcherOutput::with_provider(session_for_output.clone(), current_provider.clone());
             
             let session_for_pause = session.clone();
             let pause_handler: PauseHandler = Arc::new(move |request: PauseRequest| {
@@ -3816,13 +3977,57 @@ async fn watcher_agent_loop(
 }
 
 /// Output handler for background sessions that implements StreamOutput
+/// 
+/// REFAC-007: This now accumulates assistant content blocks during streaming
+/// and persists the complete assistant message on Done.
 struct BackgroundOutput {
     session: Arc<BackgroundSession>,
+    /// REFAC-007: Accumulated assistant content blocks for current turn
+    assistant_content: std::sync::Mutex<Vec<AssistantContent>>,
+    /// REFAC-007: Current provider name for message envelope
+    provider: String,
 }
 
 impl BackgroundOutput {
+    #[allow(dead_code)] // May be used directly in tests or future code paths
     fn new(session: Arc<BackgroundSession>) -> Self {
-        Self { session }
+        Self { 
+            session,
+            assistant_content: std::sync::Mutex::new(Vec::new()),
+            provider: "claude".to_string(), // Default, will be overridden
+        }
+    }
+    
+    fn with_provider(session: Arc<BackgroundSession>, provider: String) -> Self {
+        Self {
+            session,
+            assistant_content: std::sync::Mutex::new(Vec::new()),
+            provider,
+        }
+    }
+    
+    /// REFAC-007: Add an assistant content block
+    fn add_assistant_content(&self, content: AssistantContent) {
+        let mut guard = self.assistant_content.lock().unwrap();
+        guard.push(content);
+    }
+    
+    /// REFAC-007: Take all accumulated content (clears the buffer)
+    fn take_assistant_content(&self) -> Vec<AssistantContent> {
+        let mut guard = self.assistant_content.lock().unwrap();
+        std::mem::take(&mut *guard)
+    }
+    
+    /// REFAC-007: Persist the accumulated assistant message
+    fn persist_assistant_message(&self) {
+        let content = self.take_assistant_content();
+        if content.is_empty() {
+            return;
+        }
+        
+        if let Err(e) = persist_assistant_message_internal(&self.session.id, &self.provider, content) {
+            tracing::error!("REFAC-007: Failed to persist assistant message: {}", e);
+        }
     }
 }
 
@@ -3835,14 +4040,45 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
         };
 
         let chunk = match event {
-            StreamEvent::Text(text) => StreamChunk::text(text),
-            StreamEvent::Thinking(thinking) => StreamChunk::thinking(thinking),
-            StreamEvent::ToolCall(tc) => StreamChunk::tool_call(ToolCallInfo {
-                id: tc.id,
-                name: tc.name,
-                input: tc.args.to_string(),
-            }),
-            StreamEvent::ToolResult(tr) => {
+            StreamEvent::Text(ref text) => {
+                // REFAC-007: Accumulate text for later persistence
+                self.add_assistant_content(AssistantContent::Text { text: text.clone() });
+                StreamChunk::text(text.clone())
+            }
+            StreamEvent::Thinking(ref thinking) => {
+                // REFAC-007: Accumulate thinking for later persistence
+                self.add_assistant_content(AssistantContent::Thinking { 
+                    thinking: thinking.clone(),
+                    signature: None,
+                });
+                StreamChunk::thinking(thinking.clone())
+            }
+            StreamEvent::ToolCall(ref tc) => {
+                // REFAC-007: Accumulate tool call for later persistence
+                let input_value = serde_json::from_str(&tc.args.to_string())
+                    .unwrap_or_else(|_| serde_json::Value::String(tc.args.to_string()));
+                self.add_assistant_content(AssistantContent::ToolUse {
+                    id: tc.id.clone(),
+                    name: tc.name.clone(),
+                    input: input_value,
+                });
+                StreamChunk::tool_call(ToolCallInfo {
+                    id: tc.id.clone(),
+                    name: tc.name.clone(),
+                    input: tc.args.to_string(),
+                })
+            }
+            StreamEvent::ToolResult(ref tr) => {
+                // REFAC-007: Persist tool result immediately
+                if let Err(e) = persist_tool_result_internal(
+                    &self.session.id,
+                    &tr.id,
+                    &tr.content,
+                    tr.is_error,
+                ) {
+                    tracing::error!("REFAC-007: Failed to persist tool result: {}", e);
+                }
+                
                 // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
                 // Check for FspecTool session-level execution requests and handle them
                 if tr.content.contains("FSPEC_INTERCEPT:") {
@@ -3851,7 +4087,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     if let Some(actual_result) = handle_fspec_session_error(&tr.content) {
                         // Successfully executed via JS callback - emit the result
                         StreamChunk::tool_result(ToolResultInfo {
-                            tool_call_id: tr.id,
+                            tool_call_id: tr.id.clone(),
                             content: actual_result,
                             is_error: false,
                         })
@@ -3859,16 +4095,16 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                         tracing::error!("[FSPEC_DEBUG] Failed to handle FspecTool command!");
                         // If handling failed, emit the original content
                         StreamChunk::tool_result(ToolResultInfo {
-                            tool_call_id: tr.id,
-                            content: tr.content,
+                            tool_call_id: tr.id.clone(),
+                            content: tr.content.clone(),
                             is_error: tr.is_error,
                         })
                     }
                 } else {
                     // Normal tool result - pass through
                     StreamChunk::tool_result(ToolResultInfo {
-                        tool_call_id: tr.id,
-                        content: tr.content,
+                        tool_call_id: tr.id.clone(),
+                        content: tr.content.clone(),
                         is_error: tr.is_error,
                     })
                 }
@@ -3900,9 +4136,20 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 threshold: info.threshold as f64,
                 context_window: info.context_window as f64,
             }),
-            StreamEvent::Error(error) => StreamChunk::error(error),
-            StreamEvent::Interrupted(queued) => StreamChunk::interrupted(queued),
+            StreamEvent::Error(error) => {
+                // REFAC-007: Persist any accumulated content before error
+                self.persist_assistant_message();
+                StreamChunk::error(error)
+            }
+            StreamEvent::Interrupted(queued) => {
+                // REFAC-007: Persist any accumulated content on interrupt
+                self.persist_assistant_message();
+                StreamChunk::interrupted(queued)
+            }
             StreamEvent::Done => {
+                // REFAC-007: Persist accumulated assistant message on completion
+                self.persist_assistant_message();
+                
                 // NAPI-009-FIX: Set status to Idle BEFORE emitting Done chunk
                 // This prevents a race condition where JavaScript receives the Done callback
                 // and calls sessionGetStatus() before Rust has set the status to Idle.
@@ -3999,9 +4246,19 @@ struct WatcherOutput {
 }
 
 impl WatcherOutput {
+    #[allow(dead_code)] // Kept for symmetry with with_provider
     fn new(session: Arc<BackgroundSession>) -> Self {
+        // WatcherOutput uses BackgroundOutput internally, but for watcher prompts we don't persist
+        // (watcher prompts are injected observations, not user input)
         Self {
             inner: BackgroundOutput::new(session),
+            turn_text: std::sync::Mutex::new(String::new()),
+        }
+    }
+    
+    fn with_provider(session: Arc<BackgroundSession>, provider: String) -> Self {
+        Self {
+            inner: BackgroundOutput::with_provider(session, provider),
             turn_text: std::sync::Mutex::new(String::new()),
         }
     }
