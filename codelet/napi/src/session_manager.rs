@@ -5358,9 +5358,11 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
     // Calculate compaction boundary index (number of kept turns * 2 for user+assistant pairs)
     let compaction_boundary_index = metrics.turns_kept * 2;
     
+    // REFAC-007 Rule [34]: If persistence fails, the operation MUST fail
     if !compaction_summary.is_empty() {
         if let Err(e) = persist_compaction_state(&session.id, &compaction_summary, compaction_boundary_index) {
             tracing::error!("REFAC-007: Failed to persist compaction state: {}", e);
+            return Err(Error::from_reason(format!("Failed to persist compaction state: {}", e)));
         }
     }
 
