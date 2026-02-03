@@ -38,7 +38,7 @@ import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/co
 import {
   extractTokenStateFromChunks,
   calculateContextFillPercentage,
-  persistTokenState,
+  // REFAC-007: persistTokenState removed - now handled by Rust
 } from '../utils/tokenStateUtils';
 import { calculatePaneWidth } from '../utils/textWrap';
 import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
@@ -52,7 +52,7 @@ import { logger } from '../../utils/logger';
 import { ensureFspecCallbacksInitialized } from '../../utils/fspec-init';
 import {
   testProviderConnection,
-  persistenceStoreMessageEnvelope,
+  // REFAC-007: persistenceStoreMessageEnvelope removed - now handled by Rust
   persistenceGetHistory,
   persistenceForkSession,
   persistenceAddHistory,
@@ -2619,31 +2619,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     // Add user message to conversation
     setConversation(prev => [...prev, { type: 'user-input', content: userMessage }]);
 
-    // Persist user message as full envelope
-    if (activeSessionId) {
-      try {
-        // Create proper user message envelope
-        // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
-        const userEnvelope = {
-          uuid: crypto.randomUUID(),
-          timestamp: new Date().toISOString(),
-          type: 'user',
-          provider: currentProvider,
-          message: {
-            role: 'user',
-            content: [{ type: 'text', text: userMessage }],
-          },
-        };
-        const envelopeJson = JSON.stringify(userEnvelope);
-        persistenceStoreMessageEnvelope(activeSessionId, envelopeJson);
-
-        // Note: Session naming now happens at creation time (deferred session creation above)
-        // so we don't need to rename here
-      } catch (err) {
-        // User message persistence failed - this is critical as messages won't be saved
-        logger.error('Failed to store user message envelope to persistence:', err);
-      }
-    }
+    // REFAC-007: User message persistence now handled by Rust in agent_loop
+    // (see persist_user_message in session_manager.rs)
 
     // Add streaming assistant message placeholder
     setConversation(prev => [
@@ -2900,61 +2877,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             // Show tool result in CLI format, then start new streaming message
             const result = chunk.toolResult;
 
-            // NAPI-008: Store current assistant envelope BEFORE the tool_result
-            // This ensures the assistant message with tool_use is separate from the continuation
-            if (activeSessionId && assistantContentBlocks.length > 0) {
-              try {
-                const assistantEnvelope = {
-                  uuid: crypto.randomUUID(),
-                  timestamp: new Date().toISOString(),
-                  type: 'assistant',
-                  provider: currentProvider,
-                  message: {
-                    role: 'assistant',
-                    content: [...assistantContentBlocks], // Clone before clearing
-                  },
-                };
-                persistenceStoreMessageEnvelope(
-                  activeSessionId,
-                  JSON.stringify(assistantEnvelope)
-                );
-                // Clear for continuation after tool_result
-                assistantContentBlocks.length = 0;
-              } catch (err) {
-                // Assistant message persistence failed - this is critical as messages won't be saved
-                logger.error('Failed to store assistant message envelope to persistence:', err);
-              }
-            }
+            // REFAC-007: Assistant and tool_result persistence now handled by Rust
+            // - Assistant messages persisted on Done/Error/Interrupted in BackgroundOutput::emit()
+            // - Tool results persisted immediately in BackgroundOutput::emit()
+            // (see persist_assistant_message and persist_tool_result_internal in session_manager.rs)
+            
+            // Clear local accumulator (Rust now owns persistence)
+            assistantContentBlocks.length = 0;
 
-            // Store tool_result as user message immediately
-            if (activeSessionId) {
-              try {
-                const toolResultEnvelope = {
-                  uuid: crypto.randomUUID(),
-                  timestamp: new Date().toISOString(),
-                  type: 'user',
-                  provider: currentProvider,
-                  message: {
-                    role: 'user',
-                    content: [
-                      {
-                        type: 'tool_result',
-                        tool_use_id: result.toolCallId,
-                        content: result.content,
-                        is_error: result.isError,
-                      },
-                    ],
-                  },
-                };
-                persistenceStoreMessageEnvelope(
-                  activeSessionId,
-                  JSON.stringify(toolResultEnvelope)
-                );
-              } catch (err) {
-                // Tool result persistence failed - this is critical as messages won't be saved  
-                logger.error('Failed to store tool result envelope to persistence:', err);
-              }
-            }
+            // REFAC-007: Tool result persistence now handled by Rust in BackgroundOutput::emit()
+            // (see persist_tool_result_internal in session_manager.rs)
 
             // TUI-037 + TUI-038: Sanitize and format with collapsed output style
             // Check for Edit/Write tool diff display
@@ -3116,9 +3048,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             
             refreshRustState(activeSessionId);
 
-            // PERSIST-001: Persist token state to disk when streaming completes
-            // This ensures /resume can restore token counts from persisted sessions
-            persistTokenState(activeSessionId);
+            // REFAC-007: Token state persistence now handled by Rust
+            // (Rust persists token state when streaming completes - TODO: implement in session_manager.rs)
 
             // NAPI-009: Resolve the promise when agent completes
             resolve();
@@ -3370,32 +3301,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       }
 
       // Persist full envelopes to session (includes tool calls and results)
-      if (activeSessionId) {
-        try {
-          // Store assistant message with ALL content blocks (text + tool_use)
-          // Note: "type" field matches Rust's #[serde(rename = "type")] for message_type
-          if (assistantContentBlocks.length > 0) {
-            // Per-message cumulative token usage for analytics/debugging (NAPI-008)
-            // Note: Token tracking is handled by background session
-            const assistantEnvelope = {
-              uuid: crypto.randomUUID(),
-              timestamp: new Date().toISOString(),
-              type: 'assistant',
-              provider: currentProvider,
-              message: {
-                role: 'assistant',
-                content: assistantContentBlocks,
-              },
-            };
-            const assistantJson = JSON.stringify(assistantEnvelope);
-            persistenceStoreMessageEnvelope(activeSessionId, assistantJson);
-          }
-          // Note: Tool results are stored immediately in ToolResult handler (NAPI-008)
-        } catch (err) {
-          // Final message persistence failed - this is critical as messages won't be saved
-          logger.error('Failed to store final assistant message envelope to persistence:', err);
-        }
-      }
+      // REFAC-007: Final assistant message persistence now handled by Rust
+      // BackgroundOutput::emit() persists on Done/Error/Interrupted events
+      // (see persist_assistant_message in session_manager.rs)
 
       // Token usage is now handled by background session via TokenUpdate chunks
     } catch (err) {
@@ -4332,9 +4240,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       
       refreshRustState(currentSessionIdRef.current);
 
-      // PERSIST-001: Persist token state to disk when streaming completes
-      // This ensures /resume can restore token counts from persisted sessions
-      persistTokenState(currentSessionIdRef.current);
+      // REFAC-007: Token state persistence now handled by Rust
+      // (Rust persists token state when streaming completes - TODO: implement in session_manager.rs)
     } else if (chunk.type === 'SessionStateChange') {
       // NAPI-010: Internal state change - update state machine, do NOT add to conversation
       // The state field tells us the new session state (Idle, Running, Paused, Compacting, Interrupted)
