@@ -1,0 +1,272 @@
+{
+  "scenarios": [
+    {
+      "name": "User message is persisted by Rust when prompt is received",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "42-72",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "3526-3558,3779-3784"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Assistant message with tool_use is persisted before tool execution",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "78-121",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "3560-3610,4084-4110,4111-4116"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Tool result is persisted by Rust when tool execution completes",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "127-184",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "3612-3660,4117-4125"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Final assistant response is persisted after tool result",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "189-245",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "4189-4192"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Multiple tool uses in single assistant response are all persisted",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "304-358",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "4096-4110,4111-4125"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Sequential tool calls across multiple turns are persisted",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "364-429",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "4049-4072,4111-4125"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "API error mid-stream persists accumulated content",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "678-732",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "4179-4182"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User interrupt preserves accumulated assistant content via NAPI",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "740-793",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "4184-4187"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resumed session contains all messages including final responses",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "251-298",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/storage.rs",
+              "lines": "1-100"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Manual compaction persists compaction state to session manifest",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "477-511",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "3685-3700,5337-5367"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resumed session restores compaction summary as first message",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "517-553",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/storage.rs",
+              "lines": "1-100"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token state is persisted by Rust on Done chunk via NAPI",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "435-474",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "3662-3683,4193-4197"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Resumed session has accurate token counts",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "559-604",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/storage.rs",
+              "lines": "1-100"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Invalid session operations fail gracefully",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "614-630",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/storage.rs",
+              "lines": "1-100"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session manifest integrity after operations",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "565-605",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/storage.rs",
+              "lines": "1-100"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Large session maintains message order",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "610-672",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/persistence/storage.rs",
+              "lines": "1-100"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Persistence failure propagates error to user via NAPI",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_persistence_test.rs",
+          "lines": "801-837",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "5361-5366"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 17,
+    "coveredScenarios": 17,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/session_persistence_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs",
+      "codelet/napi/src/persistence/storage.rs"
+    ],
+    "totalLinesCovered": 700
+  }
+}

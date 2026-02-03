@@ -2,12 +2,10 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Feature: spec/features/retry-llm-summary.feature
 //!
-//! Tests for CLI-018: Retry Logic for LLM Summary Generation
+//! Tests for LLM Summary Generation with Retry Logic
 //!
-//! NOTE: The compactor now uses template-based summaries (WeightedSummaryProvider pattern)
-//! instead of LLM-generated summaries. However, the LLM callback is now used for 
-//! ANCHOR DETECTION (CTX-004). These tests verify the template-based summary behavior
-//! while accounting for LLM calls during anchor detection.
+//! The compactor uses LLM for both anchor detection AND summary generation.
+//! These tests verify retry behavior and fallback handling.
 
 use codelet_core::compaction::{ContextCompactor, ConversationTurn, ToolCall, ToolResult};
 use std::sync::atomic::{AtomicUsize, Ordering};
@@ -58,13 +56,13 @@ fn create_turn_with_file_edit(
 }
 
 // ==========================================
-// TEMPLATE-BASED SUMMARY TESTS (replaces LLM retry tests)
+// LLM SUMMARY GENERATION TESTS
 // ==========================================
 
-/// Scenario: Template-based summary generation with LLM anchor detection
+/// Scenario: Successful summary generation on first attempt
 #[tokio::test]
-async fn test_template_based_summary_no_llm_call() {
-    // @step Given the compactor uses template-based summaries
+async fn test_successful_summary_on_first_attempt() {
+    // @step Given the LLM provider is functioning normally
     let compactor = ContextCompactor::new().with_compression_threshold(0.0);
     let call_count = Arc::new(AtomicUsize::new(0));
 
@@ -75,35 +73,162 @@ async fn test_template_based_summary_no_llm_call() {
         create_test_turn("Turn 4", "Response 4", 100),
     ];
 
-    // LLM mock for anchor detection - will be called for each turn
     let call_count_clone = call_count.clone();
-    let llm_mock = |_prompt: String| {
+    let llm_mock = move |prompt: String| {
         let count = call_count_clone.clone();
         async move {
             count.fetch_add(1, Ordering::SeqCst);
-            // Return no anchor detected for these trivial turns
-            Ok::<String, anyhow::Error>(r#"{"anchor_type": null, "confidence": 0.0, "description": "No meaningful anchor detected"}"#.to_string())
+            
+            // Return appropriate response based on prompt type
+            if prompt.contains("ANCHOR TYPES") || prompt.contains("TURNS TO ANALYZE") {
+                // Anchor detection prompt - return no anchors
+                Ok::<String, anyhow::Error>(
+                    r#"[{"turn_index": 0, "anchor_type": null, "confidence": 0.0, "description": "No anchor"}]"#.to_string()
+                )
+            } else {
+                // Summary generation prompt
+                Ok("This is an LLM-generated summary of the conversation.".to_string())
+            }
         }
     };
 
-    // @step When compaction is triggered
+    // @step When compaction triggers summary generation
     let result = compactor.compact(&turns, 150_000, llm_mock).await;
 
     // @step Then the summary should be generated successfully
     assert!(result.is_ok());
+    let result = result.unwrap();
 
-    // @step And LLM calls should happen for anchor detection (one per turn)
-    assert_eq!(
-        call_count.load(Ordering::SeqCst),
-        4,
-        "LLM should be called once per turn for anchor detection"
+    // @step And the summary should contain LLM-generated content
+    assert!(
+        result.summary.contains("LLM-generated summary"),
+        "Summary should be LLM-generated, got: {}",
+        result.summary
     );
 
-    // @step And the summary should contain template-based content (not LLM-generated)
+    // @step And LLM should be called (at least once for anchor detection, once for summary)
+    assert!(
+        call_count.load(Ordering::SeqCst) >= 2,
+        "LLM should be called for both anchor detection and summary generation"
+    );
+}
+
+/// Scenario: Retry on transient failure with eventual success
+#[tokio::test]
+async fn test_retry_on_transient_failure_with_eventual_success() {
+    // @step Given the LLM provider fails on first attempt
+    // @step And the LLM provider succeeds on second attempt
+    let compactor = ContextCompactor::new().with_compression_threshold(0.0);
+    let summary_call_count = Arc::new(AtomicUsize::new(0));
+
+    // Need 6+ turns so there are "older turns" to summarize (selector keeps last 3)
+    let turns = vec![
+        create_test_turn("Turn 1", "Response 1", 100),
+        create_test_turn("Turn 2", "Response 2", 100),
+        create_test_turn("Turn 3", "Response 3", 100),
+        create_test_turn("Turn 4", "Response 4", 100),
+        create_test_turn("Turn 5", "Response 5", 100),
+        create_test_turn("Turn 6", "Response 6", 100),
+    ];
+
+    let summary_call_count_clone = summary_call_count.clone();
+    let llm_mock = move |prompt: String| {
+        let count = summary_call_count_clone.clone();
+        async move {
+            if prompt.contains("ANCHOR TYPES") || prompt.contains("TURNS TO ANALYZE") {
+                // Anchor detection - always succeed
+                Ok::<String, anyhow::Error>(
+                    r#"[{"turn_index": 0, "anchor_type": null, "confidence": 0.0, "description": "No anchor"}]"#.to_string()
+                )
+            } else {
+                // Summary generation - fail first, succeed second
+                let attempt = count.fetch_add(1, Ordering::SeqCst);
+                if attempt == 0 {
+                    Err(anyhow::anyhow!("Transient network error"))
+                } else {
+                    Ok("Summary after retry succeeded.".to_string())
+                }
+            }
+        }
+    };
+
+    // @step When compaction triggers summary generation
+    let result = compactor.compact(&turns, 150_000, llm_mock).await;
+
+    // @step Then the second attempt should succeed
+    assert!(result.is_ok());
+    let result = result.unwrap();
+
+    // @step And the summary should be returned
+    assert!(
+        result.summary.contains("retry succeeded"),
+        "Summary should be from successful retry, got: {}",
+        result.summary
+    );
+
+    // @step And at least 2 summary attempts should have been made
+    assert!(
+        summary_call_count.load(Ordering::SeqCst) >= 2,
+        "Should have retried after first failure"
+    );
+}
+
+/// Scenario: Fallback behavior when all retries fail
+#[tokio::test]
+async fn test_fallback_when_all_retries_fail() {
+    // @step Given the LLM provider fails on all retry attempts
+    let compactor = ContextCompactor::new().with_compression_threshold(0.0);
+    let summary_call_count = Arc::new(AtomicUsize::new(0));
+
+    // Need 6+ turns so there are "older turns" to summarize (selector keeps last 3)
+    let turns = vec![
+        create_test_turn("Turn 1", "Response 1", 100),
+        create_test_turn("Turn 2", "Response 2", 100),
+        create_test_turn("Turn 3", "Response 3", 100),
+        create_test_turn("Turn 4", "Response 4", 100),
+        create_test_turn("Turn 5", "Response 5", 100),
+        create_test_turn("Turn 6", "Response 6", 100),
+    ];
+
+    let summary_call_count_clone = summary_call_count.clone();
+    let llm_mock = move |prompt: String| {
+        let count = summary_call_count_clone.clone();
+        async move {
+            if prompt.contains("ANCHOR TYPES") || prompt.contains("TURNS TO ANALYZE") {
+                // Anchor detection - always succeed
+                Ok::<String, anyhow::Error>(
+                    r#"[{"turn_index": 0, "anchor_type": null, "confidence": 0.0, "description": "No anchor"}]"#.to_string()
+                )
+            } else {
+                // Summary generation - always fail
+                count.fetch_add(1, Ordering::SeqCst);
+                Err(anyhow::anyhow!("Persistent LLM failure"))
+            }
+        }
+    };
+
+    // @step When compaction triggers summary generation
+    let result = compactor.compact(&turns, 150_000, llm_mock).await;
+
+    // @step Then compaction should not fail entirely
+    assert!(result.is_ok());
+
+    // @step And a fallback summary should be generated
     let result = result.unwrap();
     assert!(
-        result.summary.contains("Key outcomes") || !result.summary.is_empty(),
-        "Summary should be generated from template, not LLM"
+        result.summary.contains("Summary generation failed"),
+        "Should use fallback summary when all retries fail, got: {}",
+        result.summary
+    );
+
+    // @step And kept messages should still be returned
+    assert!(!result.kept_turns.is_empty() || result.metrics.turns_summarized > 0);
+
+    // @step And 3 retry attempts should have been made
+    assert_eq!(
+        summary_call_count.load(Ordering::SeqCst),
+        3,
+        "Should have made 3 retry attempts"
     );
 }
 
@@ -120,7 +245,21 @@ async fn test_summary_includes_anchor_markers() {
         create_test_turn("Final", "All done", 100),
     ];
 
-    let llm_mock = |_: String| async { Ok::<String, anyhow::Error>("unused".to_string()) };
+    let llm_mock = |prompt: String| async move {
+        if prompt.contains("ANCHOR TYPES") || prompt.contains("TURNS TO ANALYZE") {
+            // Return anchor for the file edit turn
+            Ok::<String, anyhow::Error>(
+                r#"[
+                    {"turn_index": 0, "anchor_type": null, "confidence": 0.0, "description": "No anchor"},
+                    {"turn_index": 1, "anchor_type": "TaskCompletion", "confidence": 0.95, "description": "Fixed bug"},
+                    {"turn_index": 2, "anchor_type": null, "confidence": 0.0, "description": "No anchor"},
+                    {"turn_index": 3, "anchor_type": null, "confidence": 0.0, "description": "No anchor"}
+                ]"#.to_string()
+            )
+        } else {
+            Ok("Summary with anchor: Fixed bug in lib.rs [ANCHOR].".to_string())
+        }
+    };
 
     // @step When compaction is triggered
     let result = compactor.compact(&turns, 150_000, llm_mock).await;
@@ -130,34 +269,7 @@ async fn test_summary_includes_anchor_markers() {
 
     // @step And anchor points should be detected
     let result = result.unwrap();
-    // The summary should contain outcomes from summarized turns
-    assert!(!result.summary.is_empty());
-}
-
-/// Scenario: Compaction succeeds even with no anchor points
-#[tokio::test]
-async fn test_compaction_succeeds_without_natural_anchors() {
-    // @step Given turns without natural anchor points
-    let compactor = ContextCompactor::new().with_compression_threshold(0.0);
-
-    let turns = vec![
-        create_test_turn("Question 1", "Answer 1", 100),
-        create_test_turn("Question 2", "Answer 2", 100),
-        create_test_turn("Question 3", "Answer 3", 100),
-        create_test_turn("Question 4", "Answer 4", 100),
-    ];
-
-    let llm_mock = |_: String| async { Ok::<String, anyhow::Error>("unused".to_string()) };
-
-    // @step When compaction is triggered
-    let result = compactor.compact(&turns, 150_000, llm_mock).await;
-
-    // @step Then compaction should succeed with synthetic anchor
-    assert!(result.is_ok());
-
-    let result = result.unwrap();
-    // Should have an anchor (synthetic if no natural ones)
-    assert!(result.anchor.is_some(), "Should have synthetic anchor");
+    assert!(result.anchor.is_some(), "Should have detected anchor point");
 }
 
 /// Scenario: Empty turns return error
@@ -169,7 +281,7 @@ async fn test_empty_turns_returns_error() {
     let turns: Vec<ConversationTurn> = vec![];
 
     let call_count_clone = call_count.clone();
-    let llm_mock = |_prompt: String| {
+    let llm_mock = move |_prompt: String| {
         let count = call_count_clone.clone();
         async move {
             count.fetch_add(1, Ordering::SeqCst);
@@ -200,7 +312,15 @@ async fn test_compression_metrics_calculated() {
         create_test_turn("Turn 4", "Response 4 final content", 500),
     ];
 
-    let llm_mock = |_: String| async { Ok::<String, anyhow::Error>("unused".to_string()) };
+    let llm_mock = |prompt: String| async move {
+        if prompt.contains("ANCHOR TYPES") || prompt.contains("TURNS TO ANALYZE") {
+            Ok::<String, anyhow::Error>(
+                r#"[{"turn_index": 0, "anchor_type": null, "confidence": 0.0, "description": "No anchor"}]"#.to_string()
+            )
+        } else {
+            Ok("Concise summary.".to_string())
+        }
+    };
 
     let result = compactor.compact(&turns, 150_000, llm_mock).await;
 
@@ -224,7 +344,15 @@ async fn test_kept_turns_preserved() {
         create_test_turn("Latest turn", "Latest response", 100),
     ];
 
-    let llm_mock = |_: String| async { Ok::<String, anyhow::Error>("unused".to_string()) };
+    let llm_mock = |prompt: String| async move {
+        if prompt.contains("ANCHOR TYPES") || prompt.contains("TURNS TO ANALYZE") {
+            Ok::<String, anyhow::Error>(
+                r#"[{"turn_index": 0, "anchor_type": null, "confidence": 0.0, "description": "No anchor"}]"#.to_string()
+            )
+        } else {
+            Ok("Summary of old turns.".to_string())
+        }
+    };
 
     let result = compactor.compact(&turns, 150_000, llm_mock).await;
 

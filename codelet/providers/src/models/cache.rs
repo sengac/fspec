@@ -132,7 +132,7 @@ impl ModelCache {
         self.fetch_and_cache().await.map_err(|e| {
             ProviderError::api(
                 "models.dev",
-                format!("Failed to fetch models (cache miss/invalid, API unreachable): {}", e)
+                format!("Failed to fetch models (cache miss/invalid, API unreachable): {e}")
             )
         })
     }

@@ -91,7 +91,7 @@ impl AnchorPoint {
             anchor_type: AnchorType::UserCheckpoint,
             weight: 1.0, // Highest priority for reliability
             confidence: 1.0, // Synthetic anchors have full confidence
-            description: format!("Synthetic anchor - {}", reason),
+            description: format!("Synthetic anchor - {reason}"),
             timestamp: turn.timestamp,
         }
     }

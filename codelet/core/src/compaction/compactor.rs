@@ -4,11 +4,22 @@
 
 use anyhow::Result;
 use codelet_common::token_estimator::count_tokens;
+use tracing::warn;
 
 use super::anchor::{AnchorDetector, AnchorPoint};
 use super::metrics::{CompactionMetrics, CompactionResult};
-use super::model::{ConversationTurn, PreservationContext, ToolCall};
+use super::model::{ConversationTurn, PreservationContext};
 use super::selector::TurnSelector;
+
+// ==========================================
+// RETRY CONFIGURATION
+// ==========================================
+
+/// Retry delays for LLM summary generation (exponential backoff: 0ms, 1000ms, 2000ms)
+const RETRY_DELAYS_MS: [u64; 3] = [0, 1000, 2000];
+
+/// Fallback summary when all retries fail
+const FALLBACK_SUMMARY: &str = "[Summary generation failed after multiple attempts. Conversation context has been preserved but not summarized.]";
 
 // ==========================================
 // COMPACTION STRATEGY
@@ -78,14 +89,14 @@ impl ContextCompactor {
     ///
     /// Returns CompactionResult containing:
     /// - Kept turns (preserved from anchor point)
-    /// - Summary message (template-based, matches TypeScript WeightedSummaryProvider)
+    /// - Summary message (LLM-generated summary of compacted turns)
     /// - Metrics (compression ratio, token counts)
     /// - Warnings (if compression ratio below threshold)
     ///
     /// # Arguments
     /// * `turns` - Conversation turns to compact
     /// * `target_tokens` - Target token count after compaction (budget)
-    /// * `llm_prompt` - LLM function for anchor detection analysis
+    /// * `llm_prompt` - LLM function for anchor detection and summary generation
     pub async fn compact<F, Fut>(
         &self,
         turns: &[ConversationTurn],
@@ -104,61 +115,57 @@ impl ContextCompactor {
             anyhow::bail!("Cannot compact empty turn history");
         }
 
-        // Step 1: Detect anchor points using batch LLM analysis (PERF-002)
-        // Single LLM call instead of per-turn calls for better performance
+        // Step 1: Detect anchor points using batch LLM analysis
         let detector = AnchorDetector::new(self.confidence_threshold);
         let anchors = detector.detect_batch(turns, &llm_prompt).await?;
 
-        // Step 1b: Create synthetic anchor if no natural anchors found  
-        // This ensures compaction always has a reference point, even when LLM doesn't detect natural anchors
+        // Step 1b: Create synthetic anchor if no natural anchors found
         let anchors = if anchors.is_empty() && !turns.is_empty() {
             let last_idx = turns.len() - 1;
             let last_turn = &turns[last_idx];
             vec![AnchorPoint::synthetic_checkpoint(
-                last_idx, 
-                last_turn, 
-                "no natural anchors detected"
+                last_idx,
+                last_turn,
+                "no natural anchors detected",
             )]
         } else {
             anchors
         };
 
-        // Step 2: Select turns using TypeScript-matching logic
+        // Step 2: Select turns using turn selector
         let selector = TurnSelector::new();
         let selection = selector.select_turns_with_recent(turns, &anchors)?;
 
         // Step 3: Calculate original token count
         let original_tokens: u64 = turns.iter().map(|t| t.tokens).sum();
 
-        // Step 4: Generate template-based summary (matches TypeScript WeightedSummaryProvider)
+        // Step 4: Collect summarized turns
         let summarized_turns: Vec<&ConversationTurn> = selection
             .summarized_turns
             .iter()
             .map(|info| &turns[info.turn_index])
             .collect();
 
-        // Step 5: Collect kept turns (moved up - needed for summary generation)
+        // Step 5: Collect kept turns
         let kept_turns: Vec<ConversationTurn> = selection
             .kept_turns
             .iter()
             .map(|info| turns[info.turn_index].clone())
             .collect();
 
-        // Generate summary - extract context from KEPT turns only (not all turns)
-        // This prevents completed tasks from appearing as current goals
+        // Step 6: Generate LLM summary with retry logic
         let summary = if !summarized_turns.is_empty() {
-            self.generate_weighted_summary(&summarized_turns, &anchors, &kept_turns)
+            self.generate_llm_summary(&summarized_turns, &anchors, &kept_turns, &llm_prompt)
+                .await
         } else {
             "No turns summarized.".to_string()
         };
 
-        // PROV-002: Use tiktoken-rs for accurate token counting
+        // Step 7: Calculate metrics
         let summary_tokens = count_tokens(&summary) as u64;
-
         let kept_tokens: u64 = kept_turns.iter().map(|t| t.tokens).sum();
         let compacted_tokens = summary_tokens + kept_tokens;
 
-        // Step 6: Calculate metrics
         let compression_ratio = if original_tokens > 0 {
             1.0 - (compacted_tokens as f64 / original_tokens as f64)
         } else {
@@ -173,7 +180,7 @@ impl ContextCompactor {
             turns_kept: selection.kept_turns.len(),
         };
 
-        // Step 7: Check compression ratio - WARN instead of FAIL (matches TypeScript)
+        // Step 8: Check compression ratio - WARN instead of FAIL
         let mut warnings = Vec::new();
         if !metrics.meets_threshold(self.min_compression_ratio) {
             warnings.push(format!(
@@ -198,77 +205,138 @@ impl ContextCompactor {
         })
     }
 
-    /// Generate template-based summary (matches TypeScript WeightedSummaryProvider.generateWeightedSummary)
+    /// Generate LLM summary of turns being compacted with retry logic
     ///
-    /// This is a fast, synchronous, template-based summary - NO LLM CALL.
-    /// CTX-001 Rule [9]: Uses dynamic PreservationContext.format_for_summary() - NO hardcoded text.
-    ///
-    /// # Arguments
-    /// * `summarized_turns` - Turns being compressed into outcomes (older turns)
-    /// * `anchors` - Detected anchor points
-    /// * `kept_turns` - Recent turns being preserved (used for context extraction)
-    fn generate_weighted_summary(
+    /// Implements exponential backoff retry (0ms, 1000ms, 2000ms) and fallback behavior.
+    async fn generate_llm_summary<F, Fut>(
+        &self,
+        summarized_turns: &[&ConversationTurn],
+        anchors: &[AnchorPoint],
+        kept_turns: &[ConversationTurn],
+        llm_prompt: &F,
+    ) -> String
+    where
+        F: Fn(String) -> Fut,
+        Fut: std::future::Future<Output = Result<String>>,
+    {
+        // Build the summarization prompt
+        let prompt = self.build_summary_prompt(summarized_turns, anchors, kept_turns);
+
+        // Retry logic with exponential backoff
+        let mut last_error = None;
+
+        for (attempt, &delay_ms) in RETRY_DELAYS_MS.iter().enumerate() {
+            // Apply delay before retry (skip delay on first attempt)
+            if delay_ms > 0 {
+                tokio::time::sleep(tokio::time::Duration::from_millis(delay_ms)).await;
+            }
+
+            match llm_prompt(prompt.clone()).await {
+                Ok(response) => {
+                    return response;
+                }
+                Err(e) => {
+                    warn!(
+                        attempt = attempt + 1,
+                        max_attempts = RETRY_DELAYS_MS.len(),
+                        error = %e,
+                        "LLM summary generation failed, will retry"
+                    );
+                    last_error = Some(e);
+                }
+            }
+        }
+
+        // All retries failed - use fallback summary
+        if let Some(e) = last_error {
+            warn!(
+                error = %e,
+                "All LLM summary retries failed, using fallback summary"
+            );
+        }
+
+        FALLBACK_SUMMARY.to_string()
+    }
+
+    /// Build the LLM prompt for summarization
+    fn build_summary_prompt(
         &self,
         summarized_turns: &[&ConversationTurn],
         anchors: &[AnchorPoint],
         kept_turns: &[ConversationTurn],
     ) -> String {
-        // Transform summarized turns to outcome descriptions (matches TypeScript turnToOutcome)
-        let outcomes: Vec<String> = summarized_turns
-            .iter()
-            .map(|turn| self.turn_to_outcome(turn, anchors))
-            .collect();
-
-        // Extract context from KEPT turns only - prevents completed tasks from appearing as current goals
+        // Extract preservation context from kept turns
         let preservation_context = PreservationContext::extract_from_turns(kept_turns);
-        let context_summary = preservation_context.format_for_summary();
 
-        format!(
-            "{}\n\nKey outcomes:\n{}",
-            context_summary,
-            outcomes.join("\n")
-        )
-    }
+        let mut prompt = String::from(
+            r#"Summarize the following conversation turns concisely, preserving key information about what was accomplished.
 
-    /// Convert turn to outcome description (matches TypeScript turnToOutcome)
-    fn turn_to_outcome(&self, turn: &ConversationTurn, anchors: &[AnchorPoint]) -> String {
-        // Check if this turn is an anchor point
-        let is_anchor = anchors.iter().any(|a| {
-            // Compare by timestamp (TypeScript uses timestamp comparison)
-            a.timestamp == turn.timestamp
-        });
+CONTEXT TO PRESERVE:
+"#,
+        );
 
-        if is_anchor {
-            // Anchor points get detailed preservation
-            return format!("[ANCHOR] {}", turn.assistant_response);
+        // Add active files if any
+        if !preservation_context.active_files.is_empty() {
+            prompt.push_str(&format!(
+                "Active files: {}\n",
+                preservation_context.active_files.join(", ")
+            ));
         }
 
-        // Regular turns get compressed to outcomes
-        // Extract modified files (matches TypeScript extractFilesFromTurn)
-        let files: Vec<String> = turn
-            .tool_calls
-            .iter()
-            .filter(|call| call.tool == "Edit" || call.tool == "Write")
-            .filter_map(ToolCall::filename)
-            .collect();
+        // Add current goals if any
+        if !preservation_context.current_goals.is_empty() {
+            prompt.push_str(&format!(
+                "Current goals: {}\n",
+                preservation_context.current_goals.join("; ")
+            ));
+        }
 
-        let success = turn.tool_results.iter().any(|r| r.success);
-        let success_marker = if success { "✓" } else { "✗" };
+        // Add build status
+        prompt.push_str(&format!("Build status: {}\n\n", preservation_context.build_status));
 
-        let file_info = if !files.is_empty() {
-            format!("Modified {}: ", files.join(", "))
-        } else {
-            String::new()
-        };
+        prompt.push_str("TURNS TO SUMMARIZE:\n\n");
 
-        // Get first sentence of assistant response
-        let first_sentence = turn
-            .assistant_response
-            .split('.')
-            .next()
-            .unwrap_or(&turn.assistant_response);
+        for (idx, turn) in summarized_turns.iter().enumerate() {
+            // Check if this turn is an anchor point
+            let is_anchor = anchors.iter().any(|a| a.timestamp == turn.timestamp);
+            let anchor_marker = if is_anchor { " [ANCHOR]" } else { "" };
 
-        format!("{success_marker} {file_info}{first_sentence}")
+            prompt.push_str(&format!("--- Turn {}{} ---\n", idx + 1, anchor_marker));
+            prompt.push_str(&format!("User: {}\n", turn.user_message));
+
+            if !turn.tool_calls.is_empty() {
+                let tools: Vec<String> = turn.tool_calls.iter().map(|tc| {
+                    let file_info = tc.filename().map(|f| format!(" on {f}")).unwrap_or_default();
+                    format!("{}{file_info}", tc.tool)
+                }).collect();
+                prompt.push_str(&format!("Tools used: {}\n", tools.join(", ")));
+            }
+
+            if !turn.tool_results.is_empty() {
+                let results: Vec<&str> = turn
+                    .tool_results
+                    .iter()
+                    .map(|r| if r.success { "success" } else { "failed" })
+                    .collect();
+                prompt.push_str(&format!("Results: {}\n", results.join(", ")));
+            }
+
+            prompt.push_str(&format!("Assistant: {}\n\n", turn.assistant_response));
+        }
+
+        prompt.push_str(
+            r#"INSTRUCTIONS:
+1. Provide a concise summary (2-3 paragraphs) that captures:
+   - What tasks were completed
+   - What files were modified and why
+   - Any errors that were resolved
+   - The current state of the work
+2. Preserve information about anchor points (marked with [ANCHOR])
+3. Focus on outcomes and decisions, not the back-and-forth conversation
+4. Be specific about file names, function names, and technical details"#,
+        );
+
+        prompt
     }
 }
 

@@ -4109,6 +4109,11 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                 })
             }
             StreamEvent::ToolResult(ref tr) => {
+                // REFAC-007: Persist accumulated assistant content BEFORE tool result
+                // This ensures correct message order: user → assistant(text+tool_use) → tool_result → assistant(final)
+                // Without this, the assistant message with tool_use would be combined with the final response.
+                self.persist_assistant_message();
+                
                 // REFAC-007: Persist tool result immediately
                 if let Err(e) = persist_tool_result_internal(
                     &self.session.id,

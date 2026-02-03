@@ -1,0 +1,38 @@
+{
+  "research_type": "ast",
+  "work_unit": "REFAC-007",
+  "timestamp": "2026-02-03T13:10:00Z",
+  "typescript_calls_to_remove": {
+    "persistenceStoreMessageEnvelope": [
+      {"file": "src/tui/components/AgentView.tsx", "line": 55, "type": "import"},
+      {"file": "src/tui/components/AgentView.tsx", "line": 2638, "type": "call", "context": "user message"},
+      {"file": "src/tui/components/AgentView.tsx", "line": 2917, "type": "call", "context": "assistant message"},
+      {"file": "src/tui/components/AgentView.tsx", "line": 2949, "type": "call", "context": "tool result"},
+      {"file": "src/tui/components/AgentView.tsx", "line": 3391, "type": "call", "context": "final assistant"}
+    ],
+    "persistTokenState": [
+      {"file": "src/tui/components/AgentView.tsx", "line": 41, "type": "import"},
+      {"file": "src/tui/components/AgentView.tsx", "line": 3121, "type": "call", "context": "on Done chunk"},
+      {"file": "src/tui/components/AgentView.tsx", "line": 4337, "type": "call", "context": "other"}
+    ]
+  },
+  "rust_persistence_functions": [
+    {"file": "codelet/napi/src/persistence/napi_bindings.rs", "line": 591, "name": "persistence_store_message_envelope"},
+    {"file": "codelet/napi/src/persistence/napi_bindings.rs", "line": 302, "name": "persistence_update_session_tokens"},
+    {"file": "codelet/napi/src/persistence/napi_bindings.rs", "line": 324, "name": "persistence_set_session_tokens"},
+    {"file": "codelet/napi/src/persistence/napi_bindings.rs", "line": 354, "name": "persistence_set_compaction_state"},
+    {"file": "codelet/napi/src/persistence/napi_bindings.rs", "line": 368, "name": "persistence_clear_compaction_state"}
+  ],
+  "execute_compaction_locations": [
+    {"file": "codelet/cli/src/interactive/repl_loop.rs", "line": 88, "type": "call", "pathway": "cli"},
+    {"file": "codelet/cli/src/interactive/stream_loop.rs", "line": 192, "type": "call", "pathway": "hook-triggered"},
+    {"file": "codelet/cli/src/interactive/stream_loop.rs", "line": 1172, "type": "call", "pathway": "hook-triggered"},
+    {"file": "codelet/cli/src/interactive_helpers.rs", "line": 171, "type": "definition", "pathway": "shared"},
+    {"file": "codelet/napi/src/session_manager.rs", "line": 4978, "type": "call", "pathway": "napi-manual"}
+  ],
+  "key_findings": {
+    "compaction_state_never_called": true,
+    "dry_violation": false,
+    "shared_function_exists": "codelet/cli/src/interactive_helpers.rs:execute_compaction"
+  }
+}

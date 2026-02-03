@@ -34,10 +34,7 @@ pub async fn call_fspec_command_via_napi(
     Err(ToolError::Execution {
         tool: "fspec",
         message: format!(
-            "NAPI bridge requires architectural decision: command '{}' with args '{}' in '{}'. Direct callFspecCommand works (see test-fspec-callback.js), but needs integration with agent tool system.",
-            command,
-            args_json,
-            project_root
+            "NAPI bridge requires architectural decision: command '{command}' with args '{args_json}' in '{project_root}'. Direct callFspecCommand works (see test-fspec-callback.js), but needs integration with agent tool system.",
         ),
     })
 }

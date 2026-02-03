@@ -475,27 +475,4 @@ impl PreservationContext {
             trimmed.to_string()
         }
     }
-
-    /// CTX-001 Rule [9]: Format PreservationContext for summary
-    ///
-    /// MUST NOT use hardcoded placeholder text like '[from conversation]',
-    /// 'Continue development', or 'unknown' when real data is available.
-    pub fn format_for_summary(&self) -> String {
-        let files = if self.active_files.is_empty() {
-            "none".to_string()
-        } else {
-            self.active_files.join(", ")
-        };
-
-        let goals = if self.current_goals.is_empty() {
-            "none".to_string()
-        } else {
-            self.current_goals.join("; ")
-        };
-
-        format!(
-            "Active files: {}\nGoals: {}\nBuild: {}",
-            files, goals, self.build_status
-        )
-    }
 }
