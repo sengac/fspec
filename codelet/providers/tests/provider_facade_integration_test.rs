@@ -27,7 +27,8 @@ async fn test_claude_provider_uses_web_search_facade() {
     cleanup_test_env();
     env::set_var("ANTHROPIC_API_KEY", "test-claude-key-12345");
 
-    let provider = ClaudeProvider::new();
+    // MODEL-001: new_with_model requires a model
+    let provider = ClaudeProvider::new_with_model(Some("claude-sonnet-4-20250514"));
     assert!(
         provider.is_ok(),
         "ClaudeProvider should initialize successfully"
@@ -61,6 +62,7 @@ async fn test_gemini_provider_includes_all_facade_wrapped_tools() {
     // @step Given a GeminiProvider with valid API credentials
     cleanup_test_env();
     env::set_var("GOOGLE_GENERATIVE_AI_API_KEY", "test-gemini-key-12345");
+    env::set_var("GEMINI_MODEL", "gemini-2.0-flash-exp");
 
     let provider = GeminiProvider::new();
     assert!(
@@ -142,7 +144,8 @@ async fn test_claude_provider_agent_creation_succeeds() {
     cleanup_test_env();
     env::set_var("ANTHROPIC_API_KEY", "test-claude-key-12345");
 
-    let provider = ClaudeProvider::new().expect("ClaudeProvider should initialize");
+    // MODEL-001: new_with_model requires a model
+    let provider = ClaudeProvider::new_with_model(Some("claude-sonnet-4-20250514")).expect("ClaudeProvider should initialize");
 
     // Agent creation should not panic
     let _agent = provider.create_rig_agent(Some("Test preamble"), None);
@@ -156,6 +159,7 @@ async fn test_gemini_provider_agent_creation_with_preamble() {
     // Verify agent creation with custom preamble
     cleanup_test_env();
     env::set_var("GOOGLE_GENERATIVE_AI_API_KEY", "test-gemini-key-12345");
+    env::set_var("GEMINI_MODEL", "gemini-2.0-flash-exp");
 
     let provider = GeminiProvider::new().expect("GeminiProvider should initialize");
 

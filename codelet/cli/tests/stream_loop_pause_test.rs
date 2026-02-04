@@ -8,11 +8,14 @@
 //! 1. set_pause_handler() sets the global handler
 //! 2. The handler captures session context for per-session isolation
 //! 3. The handler correctly sets session pause state and waits for response
+//!
+//! NOTE: All tests use #[serial] because they modify global PAUSE_HANDLER state.
 
 use codelet_tools::tool_pause::{
     has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
     PauseResponse, PauseState,
 };
+use serial_test::serial;
 use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::sync::{Arc, Condvar, Mutex, RwLock};
 
@@ -83,6 +86,7 @@ fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
 /// @step: Then the handler is invoked with the request
 /// @step: And the response is returned to the tool
 #[test]
+#[serial]
 fn test_handler_invoked_with_request_returns_response() {
     with_clean_handler(|| {
         let handler_invoked = Arc::new(AtomicBool::new(false));
@@ -114,6 +118,7 @@ fn test_handler_invoked_with_request_returns_response() {
 /// @step: When pause_for_user is called
 /// @step: Then the handler sets pause state on the session
 #[test]
+#[serial]
 fn test_handler_sets_session_pause_state() {
     with_clean_handler(|| {
         let session = Arc::new(MockSession::new());
@@ -160,6 +165,7 @@ fn test_handler_sets_session_pause_state() {
 /// @step: And a separate thread sends response
 /// @step: Then the handler unblocks and returns response
 #[test]
+#[serial]
 fn test_handler_blocks_until_response() {
     with_clean_handler(|| {
         let session = Arc::new(MockSession::new());
@@ -211,6 +217,7 @@ fn test_handler_blocks_until_response() {
 /// @step: When pause_for_user is called
 /// @step: Then it returns Resumed without blocking
 #[test]
+#[serial]
 fn test_no_handler_returns_resumed() {
     with_clean_handler(|| {
         let response = pause_for_user(PauseRequest {
@@ -229,6 +236,7 @@ fn test_no_handler_returns_resumed() {
 /// @step: When set_pause_handler(None) is called
 /// @step: Then has_pause_handler returns false
 #[test]
+#[serial]
 fn test_handler_can_be_cleared() {
     with_clean_handler(|| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Resumed);

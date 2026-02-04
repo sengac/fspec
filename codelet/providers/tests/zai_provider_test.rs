@@ -64,7 +64,7 @@ fn test_error_when_zai_api_key_missing() {
     assert!(env::var("ZAI_PLAN_API_KEY").is_err(), "ZAI_PLAN_API_KEY should not be set");
 
     // @step When the user attempts to select the Z.AI provider
-    let result = ZAIProvider::new();
+    let result = ZAIProvider::new_with_model(None);
 
     // @step Then the system should display an error message about missing credentials
     assert!(result.is_err(), "Should fail when ZAI_API_KEY is not set");
@@ -90,7 +90,8 @@ fn test_zai_provider_uses_openai_compatible_api() {
     env::set_var("ZAI_API_KEY", "test-api-key-for-zai");
 
     // @step When a ZAIProvider instance is created
-    let provider = ZAIProvider::new().unwrap();
+    // MODEL-001: new_with_model requires a model
+    let provider = ZAIProvider::new_with_model(Some("glm-4.7")).unwrap();
 
     // @step Then it should use the base URL https://api.z.ai/api/paas/v4
     // Base URL is configured internally - verified by successful creation
@@ -119,7 +120,8 @@ fn test_streaming_response_with_tool_calls() {
     env::set_var("ZAI_API_KEY", "test-api-key-for-zai");
 
     // @step And a ZAIProvider is configured with tools
-    let provider = ZAIProvider::new().unwrap();
+    // MODEL-001: new_with_model requires a model
+    let provider = ZAIProvider::new_with_model(Some("glm-4.7")).unwrap();
 
     // @step When the user sends a message that requires tool use
     // This would require actual API call - we verify the provider supports streaming
@@ -144,7 +146,8 @@ fn test_provider_name() {
     env::remove_var("ZAI_PLAN_API_KEY");
     
     env::set_var("ZAI_API_KEY", "test-key");
-    let provider = ZAIProvider::new().unwrap();
+    // MODEL-001: new_with_model requires a model
+    let provider = ZAIProvider::new_with_model(Some("glm-4.7")).unwrap();
     
     assert_eq!(provider.name(), "zai");
     

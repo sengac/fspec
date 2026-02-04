@@ -382,17 +382,16 @@ impl Tool for FspecToolFacadeWrapper {
         // Map provider-specific args to internal params via the facade
         let internal_params = self.facade.map_params(args.0)?;
 
-        // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-        // FspecTool requires special handling at the session layer due to JS-controlled invocation
-        
-        // Return params for session-level interception
-        Ok(format!(
-            "FSPEC_INTERCEPT: Command: '{}', Args: '{}', Root: '{}', Provider: '{}'",
-            internal_params.command,
-            internal_params.args,
-            internal_params.project_root,
-            self.facade.provider()
-        ))
+        // CODE-009: Return structured JSON for session-layer interception
+        // The session layer detects this marker and emits FspecCommandRequest StreamChunk
+        // NO string parsing required - fields are directly accessible in the JSON
+        Ok(serde_json::json!({
+            "__fspec_request__": true,
+            "command": internal_params.command,
+            "argsJson": internal_params.args,
+            "projectRoot": internal_params.project_root,
+            "provider": self.facade.provider()
+        }).to_string())
     }
 }
 ///

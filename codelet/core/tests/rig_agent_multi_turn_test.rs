@@ -25,7 +25,7 @@ fn test_replace_runner_with_rig_agent_for_automatic_tool_execution() {
 
     // @step Then the agent should automatically execute tools without manual loop handling
     // Create a provider
-    let _provider = ClaudeProvider::from_api_key("test-key").expect("Provider should be created");
+    let _provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Provider should be created");
 
     // Create tool registry (replaces Runner)
     let registry = ProviderToolRegistry::new();
@@ -52,7 +52,7 @@ fn test_replace_runner_with_rig_agent_for_automatic_tool_execution() {
 #[test]
 fn test_execute_multiple_tools_automatically_in_multi_turn_mode() {
     // @step Given I have an agent with max depth set to 5
-    let _provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let _provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
     let registry = ProviderToolRegistry::new();
 
     // @step When the agent needs 3 tool calls to complete a task
@@ -79,7 +79,7 @@ fn test_execute_multiple_tools_automatically_in_multi_turn_mode() {
 #[test]
 fn test_stream_tool_execution_with_multi_turn_stream_item() {
     // @step Given I have an agent in streaming mode
-    let _provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let _provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
     let _registry = ProviderToolRegistry::new();
 
     // @step When the agent executes a tool during streaming
@@ -105,7 +105,7 @@ fn test_stream_tool_execution_with_multi_turn_stream_item() {
 #[test]
 fn test_stop_when_max_depth_is_reached() {
     // @step Given I have an agent with max depth set to 10
-    let _provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let _provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
     let _registry = ProviderToolRegistry::new();
 
     // @step When the agent attempts to make 11 tool calls
@@ -171,7 +171,7 @@ fn test_all_tools_implement_rig_tool_trait() {
 #[test]
 fn test_non_streaming_mode_with_automatic_tool_execution() {
     // @step Given I have an agent in non-streaming mode
-    let _provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let _provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
     let _registry = ProviderToolRegistry::new();
 
     // @step When the agent needs to execute tools to complete a task

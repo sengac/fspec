@@ -38,6 +38,7 @@ once_cell.workspace = true
 [dev-dependencies]
 tempfile.workspace = true
 tokio-test.workspace = true
+serial_test.workspace = true
 
 [lints]
 workspace = true

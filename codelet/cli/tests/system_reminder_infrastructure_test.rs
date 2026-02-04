@@ -514,10 +514,10 @@ async fn test_system_reminders_persist_through_compaction() {
     );
 
     // @step When I perform compaction that summarizes user_msg_1 and assistant_msg_1
-    // Mock LLM summarizer - returns shorter summary to meet compression ratio
+    // Mock LLM summarizer - returns a template-style summary with "Key outcomes"
     let mock_summarizer = |_prompt: String| async move {
-        // Return brief summary to achieve >60% compression (10 chars vs ~2000 tokens)
-        Ok("Brief".to_string())
+        // Return a summary that includes "Key outcomes" as the compactor would generate
+        Ok("Active files: test.rs\nGoals: Testing\nBuild: passing\n\nKey outcomes:\n✓ Completed test task".to_string())
     };
 
     // Use Session.compact_messages() which automatically preserves system-reminders

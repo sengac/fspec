@@ -25,7 +25,7 @@ async fn test_complete_simple_user_message_with_valid_api_key() {
         return;
     }
 
-    let provider = ClaudeProvider::new().expect("Should create provider with valid API key");
+    let provider = ClaudeProvider::new_with_model(None).expect("Should create provider with valid API key");
 
     // @step When I send a user message 'Hello, Claude'
     let messages = vec![Message::user(
@@ -45,7 +45,7 @@ fn test_reject_provider_creation_when_api_key_missing() {
     // @step Given the ANTHROPIC_API_KEY environment variable is not set
     // We need to temporarily unset the API key for this test
     // This test uses a separate constructor that doesn't read from env
-    let result = ClaudeProvider::from_api_key("");
+    let result = ClaudeProvider::from_api_key_with_model("", "claude-sonnet-4-20250514");
 
     // @step When I attempt to create a ClaudeProvider
     // (constructor is called above)
@@ -65,7 +65,7 @@ fn test_reject_provider_creation_when_api_key_missing() {
 async fn test_handle_authentication_error_for_invalid_api_key() {
     // @step Given a ClaudeProvider is created with an invalid API key
     let provider =
-        ClaudeProvider::from_api_key("invalid-key-12345").expect("Should accept any non-empty key");
+        ClaudeProvider::from_api_key_with_model("invalid-key-12345", "claude-sonnet-4-20250514").expect("Should accept any non-empty key");
 
     // @step When I send a user message
     let messages = vec![Message::user("Hello")];
@@ -95,7 +95,7 @@ async fn test_format_system_and_user_messages_correctly() {
         return;
     }
 
-    let provider = ClaudeProvider::new().expect("Should create provider");
+    let provider = ClaudeProvider::new_with_model(None).expect("Should create provider");
 
     // @step When I send messages with system and user roles
     let messages = vec![
@@ -119,7 +119,7 @@ async fn test_format_system_and_user_messages_correctly() {
 #[test]
 fn test_return_correct_provider_name() {
     // @step Given a ClaudeProvider instance exists
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Should create provider");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Should create provider");
 
     // @step When I query the provider name
     let name = provider.name();
@@ -132,7 +132,7 @@ fn test_return_correct_provider_name() {
 #[test]
 fn test_return_correct_model_limits() {
     // @step Given a ClaudeProvider instance exists
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Should create provider");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Should create provider");
 
     // @step When I query the context window and max output tokens
     let context_window = provider.context_window();
@@ -154,7 +154,7 @@ fn test_return_correct_model_limits() {
 #[test]
 fn test_provider_model_name() {
     // @step Given a ClaudeProvider instance exists
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Should create provider");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Should create provider");
 
     // @step When I query the model name
     let model = provider.model();
@@ -170,7 +170,7 @@ fn test_provider_model_name() {
 #[test]
 fn test_provider_supports_caching() {
     // @step Given a ClaudeProvider instance exists
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Should create provider");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Should create provider");
 
     // @step When I check caching support
     let supports_caching = provider.supports_caching();
@@ -183,7 +183,7 @@ fn test_provider_supports_caching() {
 #[test]
 fn test_provider_streaming_support() {
     // @step Given a ClaudeProvider instance exists
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Should create provider");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Should create provider");
 
     // @step When I check streaming support
     let supports_streaming = provider.supports_streaming();

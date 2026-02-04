@@ -26,7 +26,7 @@ fn test_replace_claude_provider_with_rig_anthropic_provider() {
 
     // @step Then the ClaudeProvider should use rig's Anthropic client internally
     // Verify we can create a provider (will use rig internally after refactor)
-    let provider = ClaudeProvider::from_api_key("test-key");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514");
 
     // Provider should still work with the same interface
     assert!(provider.is_ok(), "Provider should be created successfully");
@@ -51,7 +51,7 @@ fn test_replace_claude_provider_with_rig_anthropic_provider() {
 #[test]
 fn test_stream_text_chunks_in_real_time() {
     // @step Given I have an agent using the rig Anthropic provider
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Provider should be created");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Provider should be created");
 
     // @step When I call stream() with a prompt
     // This will fail until stream() method is implemented
@@ -78,7 +78,7 @@ fn test_stream_text_chunks_in_real_time() {
 #[test]
 fn test_stream_tool_call_deltas_during_tool_execution() {
     // @step Given I have an agent that can use tools
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Provider should be created");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Provider should be created");
 
     // Create a simple tool definition
     let _tool = ToolDefinition {
@@ -125,7 +125,7 @@ fn test_authenticate_using_oauth_with_custom_headers() {
 
     // @step When I create a rig Anthropic provider
     use codelet_providers::AuthMode;
-    let provider = ClaudeProvider::from_api_key_with_mode("test-oauth-token", AuthMode::OAuth);
+    let provider = ClaudeProvider::from_api_key_with_mode_and_model("test-oauth-token", AuthMode::OAuth, "claude-sonnet-4-20250514");
 
     // @step Then the provider should use Bearer auth header with the OAuth token
     assert!(
@@ -168,7 +168,7 @@ fn test_authenticate_using_oauth_with_custom_headers() {
 #[test]
 fn test_support_extended_thinking_with_reasoning_chunks() {
     // @step Given I have an agent using the rig Anthropic provider with extended thinking enabled
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Provider should be created");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Provider should be created");
 
     // Extended thinking is enabled via beta header
     // (interleaved-thinking-2025-05-14 in anthropic-beta header)
@@ -217,7 +217,7 @@ fn test_rig_is_accessible_via_codelet_namespace() {
 #[test]
 fn test_backward_compatibility_with_existing_llm_provider_trait() {
     // Verify the refactored provider still implements LlmProvider
-    let provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
 
     // All LlmProvider methods should still work
     assert_eq!(provider.name(), "claude");

@@ -32,7 +32,7 @@ fn test_oauth_token_authentication_with_bearer_header() {
     env::remove_var("ANTHROPIC_API_KEY");
 
     // @step When the provider sends a request to the Claude API
-    let provider = ClaudeProvider::new();
+    let provider = ClaudeProvider::new_with_model(None);
 
     // @step Then the request should use Authorization: Bearer header instead of x-api-key
     // @step And the request should include anthropic-beta header with "oauth-2025-04-20,prompt-caching-2024-07-31"
@@ -69,7 +69,7 @@ fn test_api_key_takes_precedence_over_oauth_token() {
     env::set_var("CLAUDE_CODE_OAUTH_TOKEN", "sk-ant-oat01-test-token");
 
     // @step When the provider is initialized
-    let provider = ClaudeProvider::new();
+    let provider = ClaudeProvider::new_with_model(None);
 
     // @step Then the provider should use ANTHROPIC_API_KEY for authentication
     // @step And the request should use x-api-key header
@@ -100,7 +100,7 @@ fn test_oauth_request_includes_beta_headers() {
     env::remove_var("ANTHROPIC_API_KEY");
 
     // @step When a completion request is sent
-    let provider = ClaudeProvider::new().expect("Provider should initialize");
+    let provider = ClaudeProvider::new_with_model(None).expect("Provider should initialize");
 
     // @step Then the anthropic-beta header should include "oauth-2025-04-20"
     // @step And the anthropic-beta header should include "prompt-caching-2024-07-31"
@@ -139,7 +139,7 @@ fn test_oauth_client_headers() {
     env::remove_var("ANTHROPIC_API_KEY");
 
     // @step When the provider is initialized
-    let provider = ClaudeProvider::new().expect("Provider should initialize");
+    let provider = ClaudeProvider::new_with_model(None).expect("Provider should initialize");
     let client = provider.client();
     let headers = client.headers();
 
@@ -205,7 +205,7 @@ fn test_no_credentials_returns_error() {
     env::remove_var("ANTHROPIC_API_KEY");
     env::remove_var("CLAUDE_CODE_OAUTH_TOKEN");
 
-    let provider = ClaudeProvider::new();
+    let provider = ClaudeProvider::new_with_model(None);
     assert!(
         provider.is_err(),
         "Provider should fail without credentials"

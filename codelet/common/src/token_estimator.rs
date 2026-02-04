@@ -107,6 +107,7 @@ pub fn check_token_limit(content: &str) -> Option<(usize, usize)> {
 #[allow(clippy::unwrap_used, clippy::expect_used)]
 mod tests {
     use super::*;
+    use serial_test::serial;
 
     #[test]
     fn test_count_tokens_basic() {
@@ -131,10 +132,10 @@ mod tests {
     }
 
     // NOTE: These tests manipulate environment variables and must run serially.
-    // Use `cargo test --package codelet-common -- --test-threads=1` if tests fail intermittently.
     // The tests save/restore the original env var value to minimize interference.
 
     #[test]
+    #[serial]
     fn test_max_file_tokens_default() {
         // Save original value
         let original = std::env::var("CODELET_MAX_FILE_TOKENS").ok();
@@ -149,6 +150,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_max_file_tokens_custom() {
         // Save original value
         let original = std::env::var("CODELET_MAX_FILE_TOKENS").ok();
@@ -164,6 +166,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_check_token_limit_under() {
         // Save original value
         let original = std::env::var("CODELET_MAX_FILE_TOKENS").ok();
@@ -179,6 +182,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_check_token_limit_over() {
         // Save original value
         let original = std::env::var("CODELET_MAX_FILE_TOKENS").ok();

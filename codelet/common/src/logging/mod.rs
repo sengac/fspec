@@ -98,7 +98,7 @@ impl<'a> tracing::field::Visit for MessageVisitor<'a> {
 pub fn init_logging(verbose: bool) -> Result<()> {
     // Derive log directory from global data directory
     let log_dir = crate::get_data_dir()
-        .map_err(|e| anyhow::anyhow!("{}", e))?
+        .map_err(|e| anyhow::anyhow!("{e}"))?
         .join("logs");
 
     std::fs::create_dir_all(&log_dir)?;

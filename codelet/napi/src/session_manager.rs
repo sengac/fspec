@@ -825,6 +825,10 @@ pub struct BackgroundSession {
     pause_response_tx: std::sync::mpsc::Sender<PauseResponse>,
     pause_response_rx: std::sync::Mutex<std::sync::mpsc::Receiver<PauseResponse>>,
 
+    /// CODE-009: Channel to send fspec command result from TypeScript back to the blocking session
+    fspec_response_tx: std::sync::mpsc::Sender<crate::types::FspecResult>,
+    fspec_response_rx: std::sync::Mutex<std::sync::mpsc::Receiver<crate::types::FspecResult>>,
+
     /// TUI-054: Base thinking level for session (0=Off, 1=Low, 2=Medium, 3=High)
     /// This is the level set via /thinking command, persists for the session.
     /// Effective level = max(base_thinking_level, detected_level_from_text)
@@ -854,6 +858,9 @@ impl BackgroundSession {
         // PAUSE-001: Create pause response channel (std::sync for blocking receive)
         let (pause_response_tx, pause_response_rx) = std::sync::mpsc::channel::<PauseResponse>();
 
+        // CODE-009: Create fspec response channel (std::sync for blocking receive)
+        let (fspec_response_tx, fspec_response_rx) = std::sync::mpsc::channel::<crate::types::FspecResult>();
+
         Self {
             id,
             name: RwLock::new(name),
@@ -881,6 +888,8 @@ impl BackgroundSession {
             pause_state: RwLock::new(None),
             pause_response_tx,
             pause_response_rx: std::sync::Mutex::new(pause_response_rx),
+            fspec_response_tx,
+            fspec_response_rx: std::sync::Mutex::new(fspec_response_rx),
             base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
             anchor_points: std::sync::Mutex::new(Vec::new()), // TUI-056: Empty anchor points initially
             compaction_progress: RwLock::new(None), // PERF-002: No compaction in progress initially
@@ -1106,6 +1115,34 @@ impl BackgroundSession {
     /// Used by stream loop to create pause handler with session context.
     pub fn get_pause_response_tx(&self) -> std::sync::mpsc::Sender<PauseResponse> {
         self.pause_response_tx.clone()
+    }
+
+    // =========================================================================
+    // CODE-009: Fspec command response methods
+    // =========================================================================
+
+    /// Wait for fspec command response (CODE-009) - BLOCKS until TypeScript sends result
+    ///
+    /// Called by session loop when FspecTool is invoked. Blocks until TypeScript
+    /// executes the command and sends the result back via sessionSendFspecResult.
+    pub fn wait_for_fspec_response(&self) -> crate::types::FspecResult {
+        let rx = self.fspec_response_rx.lock().expect("fspec_response_rx lock poisoned");
+        // Block until we receive a response
+        rx.recv().unwrap_or_else(|_| crate::types::FspecResult {
+            success: false,
+            data: String::new(),
+            error: Some("Fspec response channel closed unexpectedly".to_string()),
+            system_reminder: None,
+            tool_call_id: String::new(),
+        })
+    }
+
+    /// Send fspec command result (CODE-009)
+    ///
+    /// Called by NAPI function (sessionSendFspecResult) when TypeScript
+    /// has finished executing the fspec command and wants to send the result back.
+    pub fn send_fspec_result(&self, result: crate::types::FspecResult) {
+        let _ = self.fspec_response_tx.send(result);
     }
 
     // =========================================================================
@@ -3648,8 +3685,13 @@ fn persist_tool_result_internal(
         .map_err(|e| format!("Failed to parse envelope as map: {e}"))?;
     
     // Store the message - use a truncated summary for the content field
+    // Use char boundary check to avoid panicking on multi-byte UTF-8 characters
     let summary = if content.len() > 200 {
-        format!("{}...", &content[..200])
+        let mut end = 200;
+        while !content.is_char_boundary(end) && end > 0 {
+            end -= 1;
+        }
+        format!("{}...", &content[..end])
     } else {
         content.to_string()
     };
@@ -4124,21 +4166,53 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     tracing::error!("REFAC-007: Failed to persist tool result: {}", e);
                 }
                 
-                // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-                // Check for FspecTool session-level execution requests and handle them
-                if tr.content.contains("FSPEC_INTERCEPT:") {
-                    // This is a FspecTool command that needs to be executed via JS callback
-                    // Try to execute it via synchronous JS implementation
-                    if let Some(actual_result) = handle_fspec_session_error(&tr.content) {
-                        // Successfully executed via JS callback - emit the result
+                // CODE-009: Check for FspecTool structured request marker
+                // The new format is JSON: {"__fspec_request__": true, "command": "...", ...}
+                if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&tr.content) {
+                    if json_value.get("__fspec_request__").and_then(|v| v.as_bool()) == Some(true) {
+                        // This is a structured FspecTool request - emit FspecCommandRequest chunk
+                        let command = json_value.get("command").and_then(|v| v.as_str()).unwrap_or("").to_string();
+                        let args_json = json_value.get("argsJson").and_then(|v| v.as_str()).unwrap_or("{}").to_string();
+                        let project_root = json_value.get("projectRoot").and_then(|v| v.as_str()).unwrap_or(".").to_string();
+                        let tool_call_id = tr.id.clone();
+                        
+                        // CODE-009: Emit FspecCommandRequest chunk for TypeScript to process
+                        let fspec_request = crate::types::FspecRequest {
+                            command: command.clone(),
+                            args_json: args_json.clone(),
+                            project_root: project_root.clone(),
+                            tool_call_id: tool_call_id.clone(),
+                        };
+                        self.session.handle_output(StreamChunk::fspec_command_request(fspec_request));
+                        
+                        // CODE-009: Wait for TypeScript to execute command and send result back
+                        // This blocks until sessionSendFspecResult is called from TypeScript
+                        tracing::debug!("[FSPEC_DEBUG] Waiting for TypeScript to execute fspec command: {}", command);
+                        let fspec_result = self.session.wait_for_fspec_response();
+                        tracing::debug!("[FSPEC_DEBUG] Received fspec result: success={}", fspec_result.success);
+                        
+                        // CODE-009: Emit FspecCommandResult chunk for UI to display
+                        self.session.handle_output(StreamChunk::fspec_command_result(fspec_result.clone()));
+                        
+                        // Build the tool result content from the fspec result
+                        let result_content = if fspec_result.success {
+                            // Include system reminder if present
+                            if let Some(ref reminder) = fspec_result.system_reminder {
+                                format!("{}\n\n{}", fspec_result.data, reminder)
+                            } else {
+                                fspec_result.data.clone()
+                            }
+                        } else {
+                            fspec_result.error.clone().unwrap_or_else(|| "Unknown error".to_string())
+                        };
+                        
                         StreamChunk::tool_result(ToolResultInfo {
-                            tool_call_id: tr.id.clone(),
-                            content: actual_result,
-                            is_error: false,
+                            tool_call_id: tool_call_id,
+                            content: result_content,
+                            is_error: !fspec_result.success,
                         })
                     } else {
-                        tracing::error!("[FSPEC_DEBUG] Failed to handle FspecTool command!");
-                        // If handling failed, emit the original content
+                        // Normal tool result - pass through
                         StreamChunk::tool_result(ToolResultInfo {
                             tool_call_id: tr.id.clone(),
                             content: tr.content.clone(),
@@ -4146,7 +4220,7 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                         })
                     }
                 } else {
-                    // Normal tool result - pass through
+                    // Not JSON - normal tool result, pass through
                     StreamChunk::tool_result(ToolResultInfo {
                         tool_call_id: tr.id.clone(),
                         content: tr.content.clone(),
@@ -4521,6 +4595,30 @@ pub fn session_pause_confirm(session_id: String, approved: bool) -> Result<()> {
         PauseResponse::Denied
     };
     session.send_pause_response(response);
+    Ok(())
+}
+
+// === CODE-009: Fspec command result NAPI function ===
+
+/// Send fspec command result back to Rust (CODE-009)
+///
+/// Called by TypeScript after executing an fspec command. The result is sent
+/// back to unblock the session that's waiting for it.
+///
+/// TypeScript usage:
+/// ```typescript
+/// sessionSendFspecResult(sessionId, {
+///   success: true,
+///   data: '{"id":"CODE-001"}',
+///   error: null,
+///   systemReminder: '<system-reminder>...</system-reminder>',
+///   toolCallId: 'tool-123'
+/// });
+/// ```
+#[napi]
+pub fn session_send_fspec_result(session_id: String, result: crate::types::FspecResult) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.send_fspec_result(result);
     Ok(())
 }
 
@@ -5380,156 +5478,9 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
     })
 }
 
-/// Handle FspecTool session-level execution by executing via synchronous JS implementation
-/// 
-/// CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-/// This function parses the FspecTool intercept message and executes the command
-/// using a basic synchronous implementation that reads/writes files directly.
-fn handle_fspec_session_error(intercept_message: &str) -> Option<String> {
-    // Parse the intercept message to extract command details
-    // Format: "FSPEC_INTERCEPT: Command: 'list-work-units', Args: '', Root: '.', Provider: 'claude'"
-    
-    let command = extract_field_from_fspec_error(intercept_message, "Command:")?;
-    let args = extract_field_from_fspec_error(intercept_message, "Args:")?;
-    let root = extract_field_from_fspec_error(intercept_message, "Root:")?;
-    
-    // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-    // Execute the command using basic synchronous logic
-    execute_fspec_command_sync(&command, &args, &root)
-}
-
-/// Extract a field value from FspecTool error message
-fn extract_field_from_fspec_error(error_message: &str, field_prefix: &str) -> Option<String> {
-    tracing::debug!("[FSPEC_DEBUG] Extracting field '{}' from error message", field_prefix);
-    
-    let start = error_message.find(field_prefix)? + field_prefix.len();
-    let after_prefix = error_message[start..].trim();
-    
-    tracing::debug!("[FSPEC_DEBUG] After prefix '{}': '{}'", field_prefix, after_prefix);
-    
-    // Handle quoted values: 'value' or "value"
-    let result = if after_prefix.starts_with('\'') {
-        let end = after_prefix[1..].find('\'')?;
-        Some(after_prefix[1..=end].to_string())
-    } else if after_prefix.starts_with('"') {
-        let end = after_prefix[1..].find('"')?;
-        Some(after_prefix[1..=end].to_string())
-    } else {
-        // Handle unquoted values - take until comma or end
-        let end = after_prefix.find(',').unwrap_or(after_prefix.len());
-        Some(after_prefix[..end].trim().to_string())
-    };
-    
-    tracing::debug!("[FSPEC_DEBUG] Extracted value for '{}': {:?}", field_prefix, result);
-    result
-}
-
-/// Execute FspecTool command synchronously 
-/// 
-/// CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-/// This is a basic implementation that reads/writes files directly.
-fn execute_fspec_command_sync(command: &str, args_json: &str, project_root: &str) -> Option<String> {
-    use std::collections::HashMap;
-    
-    if command == "list-work-units" {
-        // Parse arguments
-        let args: HashMap<String, serde_json::Value> = if args_json.is_empty() || args_json == "''" {
-            HashMap::new()
-        } else {
-            match serde_json::from_str(args_json) {
-                Ok(parsed) => parsed,
-                Err(e) => {
-                    tracing::error!("Failed to parse args JSON: {}", e);
-                    return Some(format!("{{\"success\": false, \"error\": true, \"message\": \"Failed to parse args JSON: {}\"}} ", e));
-                }
-            }
-        };
-        
-        // Read work units file directly
-        let work_units_path = std::path::Path::new(project_root).join("spec").join("work-units.json");
-        
-        // Check if file exists, if not create empty structure
-        let work_units_data: serde_json::Value = if work_units_path.exists() {
-            match std::fs::read_to_string(&work_units_path) {
-                Ok(content) => {
-                    serde_json::from_str(&content)
-                        .unwrap_or_else(|_| serde_json::json!({"workUnits": {}}))
-                },
-                Err(e) => {
-                    tracing::error!("Failed to read work units file: {}", e);
-                    return Some(format!("{{\"success\": false, \"error\": true, \"message\": \"Failed to read work units file: {}\"}} ", e));
-                }
-            }
-        } else {
-            // Ensure directory exists
-            if let Some(parent) = work_units_path.parent() {
-                if let Err(e) = std::fs::create_dir_all(parent) {
-                    tracing::error!("Failed to create spec directory: {}", e);
-                    return Some(format!("{{\"success\": false, \"error\": true, \"message\": \"Failed to create spec directory: {}\"}} ", e));
-                }
-            }
-            // Create empty work units file
-            let empty_data = serde_json::json!({"workUnits": {}});
-            let content = match serde_json::to_string_pretty(&empty_data) {
-                Ok(content) => content,
-                Err(e) => {
-                    tracing::error!("Failed to serialize empty data: {}", e);
-                    return Some(format!("{{\"success\": false, \"error\": true, \"message\": \"Failed to serialize empty data: {}\"}} ", e));
-                }
-            };
-            if let Err(e) = std::fs::write(&work_units_path, content) {
-                tracing::error!("Failed to write work units file: {}", e);
-                return Some(format!("{{\"success\": false, \"error\": true, \"message\": \"Failed to write work units file: {}\"}} ", e));
-            }
-            empty_data
-        };
-        
-        // Get all work units
-        let work_units = work_units_data.get("workUnits")
-            .and_then(|wu| wu.as_object())
-            .map(|obj| obj.values().collect::<Vec<_>>())
-            .unwrap_or_default();
-        
-        // Apply basic filters (simplified version)
-        let filtered_work_units: Vec<serde_json::Value> = work_units.into_iter()
-            .filter(|wu| {
-                if let Some(status_filter) = args.get("status") {
-                    if let (Some(wu_status), Some(filter_status)) = (wu.get("status"), status_filter.as_str()) {
-                        wu_status.as_str() == Some(filter_status)
-                    } else {
-                        false
-                    }
-                } else {
-                    true
-                }
-            })
-            .map(|wu| serde_json::json!({
-                "id": wu.get("id"),
-                "title": wu.get("title"),
-                "status": wu.get("status"),
-            }))
-            .collect();
-        
-        let result = serde_json::json!({
-            "success": true,
-            "data": {
-                "workUnits": filtered_work_units
-            },
-            "command": command,
-            "projectRoot": project_root,
-        });
-        
-        match serde_json::to_string(&result) {
-            Ok(serialized) => Some(serialized),
-            Err(e) => {
-                tracing::error!("Failed to serialize result: {}", e);
-                Some(format!("{{\"success\": false, \"error\": true, \"message\": \"Failed to serialize result: {}\"}} ", e))
-            }
-        }
-    } else {
-        Some(format!("{{\"success\": false, \"error\": true, \"message\": \"Command '{}' not implemented in synchronous execution\"}} ", command))
-    }
-}
+// CODE-009: The execute_fspec_command_sync function has been removed.
+// Fspec commands are now executed via TypeScript callback (fspecCallback) and
+// results are sent back via sessionSendFspecResult NAPI function.
 
 /// CONFIG-004: Test provider connection by validating credentials
 /// 

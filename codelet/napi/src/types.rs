@@ -332,6 +332,20 @@ pub enum StreamChunk {
         #[napi(js_name = "compactionResult")]
         compaction_result: CompactionResult,
     },
+
+    /// CODE-009: Fspec command request - sent when LLM invokes FspecTool
+    /// TypeScript must intercept this, execute the command, and call session_send_fspec_result()
+    FspecCommandRequest {
+        #[napi(js_name = "fspecRequest")]
+        fspec_request: FspecRequest,
+    },
+
+    /// CODE-009: Fspec command result - sent by TypeScript after executing command
+    /// This is emitted after session_send_fspec_result() is called
+    FspecCommandResult {
+        #[napi(js_name = "fspecResult")]
+        fspec_result: FspecResult,
+    },
 }
 
 impl StreamChunk {
@@ -459,6 +473,20 @@ impl StreamChunk {
             compaction_result: result,
         }
     }
+
+    /// CODE-009: Fspec command request - sent to TypeScript for execution
+    pub fn fspec_command_request(request: FspecRequest) -> Self {
+        Self::FspecCommandRequest {
+            fspec_request: request,
+        }
+    }
+
+    /// CODE-009: Fspec command result - sent after TypeScript executes command
+    pub fn fspec_command_result(result: FspecResult) -> Self {
+        Self::FspecCommandResult {
+            fspec_result: result,
+        }
+    }
 }
 
 /// Provider configuration for programmatic credential passing (CONFIG-004)
@@ -512,6 +540,43 @@ pub struct CompactionResult {
     pub turns_summarized: u32,
     /// Number of turns kept
     pub turns_kept: u32,
+}
+
+/// CODE-009: Fspec command request data
+/// Sent when LLM invokes FspecTool - TypeScript intercepts and executes
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FspecRequest {
+    /// The fspec command (e.g., "create-story", "show-work-unit")
+    pub command: String,
+    /// Command arguments as JSON string
+    #[napi(js_name = "argsJson")]
+    pub args_json: String,
+    /// Project root directory
+    #[napi(js_name = "projectRoot")]
+    pub project_root: String,
+    /// Tool call ID for correlation with response
+    #[napi(js_name = "toolCallId")]
+    pub tool_call_id: String,
+}
+
+/// CODE-009: Fspec command result data
+/// Sent by TypeScript after executing the fspec command
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FspecResult {
+    /// Whether the command succeeded
+    pub success: bool,
+    /// Command output (structured data as JSON or human-readable text)
+    pub data: String,
+    /// Error message if failed
+    pub error: Option<String>,
+    /// System reminder for workflow orchestration (to be injected into LLM context)
+    #[napi(js_name = "systemReminder")]
+    pub system_reminder: Option<String>,
+    /// Tool call ID for correlation
+    #[napi(js_name = "toolCallId")]
+    pub tool_call_id: String,
 }
 
 #[cfg(test)]

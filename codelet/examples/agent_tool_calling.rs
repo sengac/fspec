@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
     println!("=== RigAgent with Automatic Tool Calling ===\n");
 
     // Create provider and agent
-    let provider = ClaudeProvider::new()?;
+    let provider = ClaudeProvider::new_with_model(None)?;
     let rig_agent = provider.create_rig_agent(None, None);
     let agent = RigAgent::with_default_depth(rig_agent);
 

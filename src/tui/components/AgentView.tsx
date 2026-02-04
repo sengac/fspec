@@ -116,6 +116,8 @@ import {
   sessionGetTurnDetails,
   // UX-002: Compaction progress polling for automatic compaction
   sessionGetCompactionProgress,
+  // CODE-009: Fspec command result sending via NAPI
+  sessionSendFspecResult,
   type NapiAnchorPoint,
   type NapiTurnDetails,
   type SessionRoleInfo,
@@ -136,6 +138,7 @@ import {
   getProviderConfig,
   maskApiKey,
 } from '../../utils/credentials';
+import { fspecCallback } from '../../utils/fspec-callback';
 import {
   SUPPORTED_PROVIDERS,
   getProviderRegistryEntry,
@@ -4351,6 +4354,66 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         ...prev,
         { type: 'user-input', content: chunk.text! },
       ]);
+    } else if (chunk.type === 'FspecCommandRequest' && chunk.fspecRequest) {
+      // CODE-009: Handle fspec command request with type-safe field access
+      // TypeScript executes the command and sends result back to Rust
+      const command = chunk.fspecRequest.command;
+      const argsJson = chunk.fspecRequest.argsJson;
+      const projectRoot = chunk.fspecRequest.projectRoot;
+      const toolCallId = chunk.fspecRequest.toolCallId;
+      const sessionId = currentSessionIdRef.current;
+
+      if (!sessionId) {
+        logger.error('FspecCommandRequest received but no session ID available');
+        return;
+      }
+
+      // CODE-009: Execute fspec command asynchronously via TypeScript callback
+      // This runs the command and sends the result back to Rust which is blocking
+      (async () => {
+        try {
+          // Execute fspec command via TypeScript implementation
+          const resultJson = await fspecCallback(command, argsJson, projectRoot);
+          const parsed = JSON.parse(resultJson) as { 
+            success?: boolean; 
+            data?: string; 
+            error?: string; 
+            systemReminders?: string[];
+          };
+
+          // Build the system reminder from captured reminders
+          let systemReminder: string | null = null;
+          if (parsed.systemReminders && parsed.systemReminders.length > 0) {
+            systemReminder = parsed.systemReminders.map(r => 
+              `<system-reminder>\n${r}\n</system-reminder>`
+            ).join('\n');
+          }
+
+          // CODE-009: Send result back to Rust via NAPI
+          // This unblocks the session which is waiting for the result
+          sessionSendFspecResult(sessionId, {
+            success: parsed.success ?? true,
+            data: parsed.data ?? resultJson,
+            error: parsed.error ?? null,
+            systemReminder,
+            toolCallId,
+          });
+
+          logger.debug(`Fspec command ${command} completed:`, { success: parsed.success, toolCallId });
+        } catch (err) {
+          const error = err as Error;
+          logger.error(`Fspec command ${command} failed:`, error.message);
+          
+          // CODE-009: Send error result back to Rust
+          sessionSendFspecResult(sessionId, {
+            success: false,
+            data: '',
+            error: error.message,
+            systemReminder: null,
+            toolCallId,
+          });
+        }
+      })();
     }
   }, []);
 

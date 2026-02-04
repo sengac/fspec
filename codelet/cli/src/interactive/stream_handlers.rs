@@ -102,51 +102,6 @@ pub(super) fn handle_text_chunk<O: StreamOutput>(
     Ok(())
 }
 
-/// Handle FspecTool session-level execution error by executing via JS callback
-/// 
-/// CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-/// This function parses the FspecTool error message and executes the command
-/// using a basic synchronous JS implementation.
-fn handle_fspec_session_error(error_message: &str) -> Option<String> {
-    // Parse the intercept message to extract command details
-    // Format: "FSPEC_INTERCEPT: Command: 'list-work-units', Args: '', Root: '.', Provider: 'claude'"
-    
-    let command = extract_field_from_fspec_error(error_message, "Command:")?;
-    let args = extract_field_from_fspec_error(error_message, "Args:")?;
-    let root = extract_field_from_fspec_error(error_message, "Root:")?;
-    
-    // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-    // Execute the command using basic synchronous logic for now
-    match execute_fspec_command_sync(&command, &args, &root) {
-        Ok(result) => {
-            Some(result)
-        },
-        Err(e) => {
-            tracing::warn!("[FSPEC_DEBUG_CLI] Failed to execute FspecTool command: {}", e);
-            Some(format!("{{\"success\": false, \"error\": true, \"message\": \"FspecTool execution failed: {}\"}} ", e))
-        }
-    }
-}
-
-/// Extract a field value from FspecTool error message
-fn extract_field_from_fspec_error(error_message: &str, field_prefix: &str) -> Option<String> {
-    let start = error_message.find(field_prefix)? + field_prefix.len();
-    let after_prefix = error_message[start..].trim();
-    
-    // Handle quoted values: 'value' or "value"
-    if after_prefix.starts_with('\'') {
-        let end = after_prefix[1..].find('\'')?;
-        Some(after_prefix[1..=end].to_string())
-    } else if after_prefix.starts_with('"') {
-        let end = after_prefix[1..].find('"')?;
-        Some(after_prefix[1..=end].to_string())
-    } else {
-        // Handle unquoted values - take until comma or end
-        let end = after_prefix.find(',').unwrap_or(after_prefix.len());
-        Some(after_prefix[..end].trim().to_string())
-    }
-}
-
 /// Execute FspecTool command synchronously 
 /// 
 /// CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
@@ -341,31 +296,42 @@ pub(super) fn handle_tool_result<O: StreamOutput>(
     // which would cause false positives when file content contains "Error:" or "error:"
     let is_error = detect_tool_error(&result_parts.join("\n"));
 
-    // CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-    // Check for FspecTool session-level execution requests and handle them
-    if result_text.contains("FSPEC_INTERCEPT:") {
-        // This is a FspecTool command that needs to be executed via JS callback
-        if let Some(actual_result) = handle_fspec_session_error(&result_text) {
-            // Successfully executed via JS callback - emit the result instead
-            output.emit_tool_result(&tool_result.id, &actual_result, false);
+    // CODE-009: Check for FspecTool structured request marker
+    // The new format is JSON: {"__fspec_request__": true, "command": "...", ...}
+    if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&result_text) {
+        if json_value.get("__fspec_request__").and_then(|v| v.as_bool()) == Some(true) {
+            // This is a structured FspecTool request - execute via sync implementation
+            let command = json_value.get("command").and_then(|v| v.as_str()).unwrap_or("");
+            let args_json = json_value.get("argsJson").and_then(|v| v.as_str()).unwrap_or("{}");
+            let project_root = json_value.get("projectRoot").and_then(|v| v.as_str()).unwrap_or(".");
             
-            // CRITICAL: Also capture the debug event since we're returning early
-            if let Ok(manager_arc) = get_debug_capture_manager() {
-                if let Ok(mut manager) = manager_arc.lock() {
-                    if manager.is_enabled() {
-                        let data = serde_json::json!({
-                            "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
-                            "toolId": tool_result.id,
-                            "success": true,
-                        });
-                        manager.capture("tool.result", data, None);
+            match execute_fspec_command_sync(command, args_json, project_root) {
+                Ok(actual_result) => {
+                    // Successfully executed - emit the result instead
+                    output.emit_tool_result(&tool_result.id, &actual_result, false);
+                    
+                    // CRITICAL: Also capture the debug event since we're returning early
+                    if let Ok(manager_arc) = get_debug_capture_manager() {
+                        if let Ok(mut manager) = manager_arc.lock() {
+                            if manager.is_enabled() {
+                                let data = serde_json::json!({
+                                    "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
+                                    "toolId": tool_result.id,
+                                    "success": true,
+                                });
+                                manager.capture("tool.result", data, None);
+                            }
+                        }
                     }
+                    
+                    return Ok(());
+                }
+                Err(e) => {
+                    // Execution failed - log and fall through to emit original result
+                    tracing::warn!("[FSPEC_DEBUG_CLI] Failed to execute FspecTool command: {}", e);
                 }
             }
-            
-            return Ok(());
         }
-        // If handling failed, fall through to emit the original result
     }
 
     // CLI-022: Capture tool.result event (shared)

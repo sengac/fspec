@@ -13,7 +13,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 1. Create Claude provider (will use OAuth token from env)
     println!("1️⃣  Creating ClaudeProvider...");
-    let provider = ClaudeProvider::new()?;
+    let provider = ClaudeProvider::new_with_model(None)?;
     println!("   ✅ Provider created: {}", provider.name());
     println!("   ✅ Model: {}", provider.model());
     println!("   ✅ OAuth mode: {}", provider.is_oauth_mode());

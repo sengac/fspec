@@ -26,7 +26,7 @@ fn test_replace_runner_with_rig_agent_for_automatic_tool_execution() {
 
     // @step Then the agent should automatically execute tools without manual loop handling
     // Create a provider
-    let provider = ClaudeProvider::from_api_key("test-key").expect("Provider should be created");
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").expect("Provider should be created");
 
     // Create runner (will internally use rig::agent::Agent after refactor)
     let runner = Runner::with_provider(Box::new(provider));
@@ -51,7 +51,7 @@ fn test_replace_runner_with_rig_agent_for_automatic_tool_execution() {
 #[test]
 fn test_execute_multiple_tools_automatically_in_multi_turn_mode() {
     // @step Given I have an agent with max depth set to 5
-    let provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
     let runner = Runner::with_provider(Box::new(provider));
 
     // @step When the agent needs 3 tool calls to complete a task
@@ -77,7 +77,7 @@ fn test_execute_multiple_tools_automatically_in_multi_turn_mode() {
 #[test]
 fn test_stream_tool_execution_with_multi_turn_stream_item() {
     // @step Given I have an agent in streaming mode
-    let provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
     let _runner = Runner::with_provider(Box::new(provider));
 
     // @step When the agent executes a tool during streaming
@@ -103,7 +103,7 @@ fn test_stream_tool_execution_with_multi_turn_stream_item() {
 #[test]
 fn test_stop_when_max_depth_is_reached() {
     // @step Given I have an agent with max depth set to 10
-    let provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
     let _runner = Runner::with_provider(Box::new(provider));
 
     // @step When the agent attempts to make 11 tool calls
@@ -165,7 +165,7 @@ fn test_all_tools_implement_rig_tool_trait() {
 #[test]
 fn test_non_streaming_mode_with_automatic_tool_execution() {
     // @step Given I have an agent in non-streaming mode
-    let provider = ClaudeProvider::from_api_key("test-key").unwrap();
+    let provider = ClaudeProvider::from_api_key_with_model("test-key", "claude-sonnet-4-20250514").unwrap();
     let _runner = Runner::with_provider(Box::new(provider));
 
     // @step When the agent needs to execute tools to complete a task

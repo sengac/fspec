@@ -192,7 +192,8 @@ fn test_claude_provider_uses_caching_http_client() {
     // Set up a mock API key for testing
     std::env::set_var("ANTHROPIC_API_KEY", "test-api-key-for-integration-test");
 
-    let provider_result = ClaudeProvider::new();
+    // MODEL-001: new_with_model requires a model, use default claude-sonnet-4
+    let provider_result = ClaudeProvider::new_with_model(Some("claude-sonnet-4-20250514"));
 
     // @step When the provider's HTTP client configuration is inspected
     // @step Then the client should be a CachingHttpClient wrapper
@@ -231,9 +232,10 @@ fn test_claude_provider_oauth_uses_caching_http_client_oauth_mode() {
 
     // @step Given a ClaudeProvider is created with OAuth authentication
     // Use direct API to avoid env var race conditions in parallel tests
-    let provider_result = ClaudeProvider::from_api_key_with_mode(
+    let provider_result = ClaudeProvider::from_api_key_with_mode_and_model(
         "test-oauth-token-for-integration-test",
         AuthMode::OAuth,
+        "claude-sonnet-4-20250514",
     );
 
     // @step When the provider's HTTP client configuration is inspected

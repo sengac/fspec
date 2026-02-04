@@ -269,6 +269,38 @@ export declare function extractThinkingText(
 ): string | null;
 
 /**
+ * CODE-009: Fspec command request data
+ * Sent when LLM invokes FspecTool - TypeScript intercepts and executes
+ */
+export interface FspecRequest {
+  /** The fspec command (e.g., "create-story", "show-work-unit") */
+  command: string;
+  /** Command arguments as JSON string */
+  argsJson: string;
+  /** Project root directory */
+  projectRoot: string;
+  /** Tool call ID for correlation with response */
+  toolCallId: string;
+}
+
+/**
+ * CODE-009: Fspec command result data
+ * Sent by TypeScript after executing the fspec command
+ */
+export interface FspecResult {
+  /** Whether the command succeeded */
+  success: boolean;
+  /** Command output (structured data as JSON or human-readable text) */
+  data: string;
+  /** Error message if failed */
+  error?: string;
+  /** System reminder for workflow orchestration (to be injected into LLM context) */
+  systemReminder?: string;
+  /** Tool call ID for correlation */
+  toolCallId: string;
+}
+
+/**
  * Get thinking configuration JSON for a provider at a specific level.
  *
  * # Arguments
@@ -1172,6 +1204,28 @@ export interface SessionRoleInfo {
   authority: string;
 }
 
+/**
+ * Send fspec command result back to Rust (CODE-009)
+ *
+ * Called by TypeScript after executing an fspec command. The result is sent
+ * back to unblock the session that's waiting for it.
+ *
+ * TypeScript usage:
+ * ```typescript
+ * sessionSendFspecResult(sessionId, {
+ *   success: true,
+ *   data: '{"id":"CODE-001"}',
+ *   error: null,
+ *   systemReminder: '<system-reminder>...</system-reminder>',
+ *   toolCallId: 'tool-123'
+ * });
+ * ```
+ */
+export declare function sessionSendFspecResult(
+  sessionId: string,
+  result: FspecResult
+): void;
+
 /** Send input to a session with optional thinking config */
 export declare function sessionSendInput(
   sessionId: string,
@@ -1393,7 +1447,9 @@ export type StreamChunk =
       type: 'WatcherPendingInjection';
       watcherPendingInjection: WatcherPendingInjectionInfo;
     }
-  | { type: 'CompactionComplete'; compactionResult: CompactionResult };
+  | { type: 'CompactionComplete'; compactionResult: CompactionResult }
+  | { type: 'FspecCommandRequest'; fspecRequest: FspecRequest }
+  | { type: 'FspecCommandResult'; fspecResult: FspecResult };
 
 /** Simple test function to verify callback pattern works from TypeScript */
 export declare function testCallback(

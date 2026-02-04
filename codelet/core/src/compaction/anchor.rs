@@ -318,17 +318,17 @@ Previous Error State: {:?}
             ));
         }
 
-        prompt.push_str(&format!(
+        prompt.push_str(
             r#"
 RESPONSE FORMAT (JSON array):
 [
-  {{"turn_index": 0, "anchor_type": "TaskCompletion", "confidence": 0.92, "description": "Brief explanation"}},
-  {{"turn_index": 2, "anchor_type": null, "confidence": 0.0, "description": "No significant moment detected"}},
+  {"turn_index": 0, "anchor_type": "TaskCompletion", "confidence": 0.92, "description": "Brief explanation"},
+  {"turn_index": 2, "anchor_type": null, "confidence": 0.0, "description": "No significant moment detected"},
   ...
 ]
 
 Return one entry per turn analyzed. Use null for anchor_type when no meaningful anchor is detected."#
-        ));
+        );
 
         prompt
     }
