@@ -10,7 +10,7 @@ Feature: Dynamic Model Selection via models.dev
   LAYER ARCHITECTURE:
   1. User/CLI Layer: --model provider/model-id flag
   2. ModelRegistry: parse_model_string(), get_model(), list_providers(), list_models(), filter_by_capability()
-  3. ModelCache: get() returns cached data, refresh() forces API fetch, indefinite cache at ~/.fspec/cache/models.json (configurable via set_cache_directory)
+  3. ModelCache: get() returns cached data, refresh() forces API fetch, cache at {data_dir}/cache/models.json
   4. ProviderFacade: Defines HOW to talk to provider (api_format, auth_headers, thinking_facade, system_prompt_facade)
   5. Existing Facades: ThinkingConfigFacade, SystemPromptFacade, ToolFacade
 

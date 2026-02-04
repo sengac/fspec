@@ -5,11 +5,10 @@
 //! - Cache file is corrupted (invalid JSON)
 //! - User explicitly requests refresh
 //!
-//! MODEL-001: Directory is configurable via set_cache_directory()
-//! Default location: ~/.fspec/cache/models.json (matches fspec data directory)
+//! Cache location is derived from the global data directory:
+//! {data_dir}/cache/models.json
 
 use std::path::PathBuf;
-use std::sync::Mutex;
 use std::time::Duration;
 use tokio::fs;
 use tracing::{debug, info};
@@ -20,62 +19,11 @@ use crate::error::ProviderError;
 /// URL for models.dev API
 const MODELS_DEV_URL: &str = "https://models.dev/api.json";
 
-// REMOVED: No more hardcoded fallbacks - must fetch from models.dev or use cache
-// const FALLBACK_MODELS: &[u8] = include_bytes!("fallback_models.json");
-
-// MODEL-001: Global configurable cache directory (thread-safe)
-lazy_static::lazy_static! {
-    static ref CACHE_DIRECTORY: Mutex<Option<PathBuf>> = Mutex::new(None);
-}
-
-/// Set a custom cache directory for model data
+/// Get the cache directory for model data
 ///
-/// This should be called before any ModelCache operations if you want
-/// to use a directory other than the default ~/.fspec/cache
-///
-/// # Arguments
-/// * `dir` - The base directory for cache data (cache subdirectory is NOT added automatically)
-///
-/// # Example
-/// ```ignore
-/// // Use ~/.fspec/cache for fspec
-/// set_cache_directory(PathBuf::from(home_dir).join(".fspec").join("cache"));
-///
-/// // Use custom directory
-/// set_cache_directory(PathBuf::from("/tmp/cache"));
-/// ```
-pub fn set_cache_directory(dir: PathBuf) -> Result<(), String> {
-    let mut cache_dir = CACHE_DIRECTORY.lock().map_err(|e| e.to_string())?;
-    *cache_dir = Some(dir);
-    Ok(())
-}
-
-/// Get the base directory for cache data
-///
-/// Returns the custom directory if set via set_cache_directory(),
-/// otherwise returns ~/.fspec/cache as the default.
-///
-/// # Errors
-/// Returns an error if:
-/// - The directory mutex is poisoned (another thread panicked while holding it)
-/// - Home directory cannot be determined
+/// Derives from the global data directory: {data_dir}/cache
 pub fn get_cache_dir() -> Result<PathBuf, String> {
-    // Check for custom directory first - fail explicitly on poison
-    let guard = CACHE_DIRECTORY
-        .lock()
-        .map_err(|e| format!("Cache directory mutex poisoned: {e}"))?;
-
-    if let Some(ref dir) = *guard {
-        return Ok(dir.clone());
-    }
-
-    // Drop lock before potentially slow home_dir lookup
-    drop(guard);
-
-    // Default to ~/.fspec/cache (matches fspec data directory pattern)
-    dirs::home_dir()
-        .map(|home| home.join(".fspec").join("cache"))
-        .ok_or_else(|| "Could not determine home directory".to_string())
+    codelet_common::get_data_dir().map(|data_dir| data_dir.join("cache"))
 }
 
 /// Cache for models.dev API data
@@ -86,8 +34,7 @@ pub struct ModelCache {
 impl ModelCache {
     /// Create a new ModelCache with default cache path
     ///
-    /// Uses get_cache_dir() which defaults to ~/.fspec/cache/models.json
-    /// or the directory set via set_cache_directory()
+    /// Uses get_cache_dir() which derives from the global data directory
     pub fn new() -> Self {
         let cache_dir = get_cache_dir().unwrap_or_else(|_| PathBuf::from("."));
 
@@ -132,7 +79,7 @@ impl ModelCache {
         self.fetch_and_cache().await.map_err(|e| {
             ProviderError::api(
                 "models.dev",
-                format!("Failed to fetch models (cache miss/invalid, API unreachable): {e}")
+                format!("Failed to fetch models (cache miss/invalid, API unreachable): {e}"),
             )
         })
     }
@@ -188,12 +135,6 @@ impl ModelCache {
         serde_json::from_str(&data).map_err(|e| CacheError::ParseError(e.to_string()))
     }
 
-    // REMOVED: No more hardcoded fallbacks
-    // fn load_fallback(&self) -> Result<ModelsDevResponse, ProviderError> {
-    //     serde_json::from_slice(FALLBACK_MODELS)
-    //         .map_err(|e| ProviderError::api("models.dev", format!("Failed to parse fallback: {e}")))
-    // }
-
     /// Get the cache file path
     pub fn cache_path(&self) -> &PathBuf {
         &self.cache_path
@@ -226,7 +167,6 @@ impl std::fmt::Display for CacheError {
 #[allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 mod tests {
     use super::*;
-    use serial_test::serial;
     use tempfile::TempDir;
 
     fn test_cache_path() -> (TempDir, PathBuf) {
@@ -234,23 +174,6 @@ mod tests {
         let cache_path = temp_dir.path().join("models.json");
         (temp_dir, cache_path)
     }
-
-    /// Reset the global cache directory to None for test isolation
-    fn reset_cache_directory() {
-        if let Ok(mut guard) = CACHE_DIRECTORY.lock() {
-            *guard = None;
-        }
-    }
-
-    // REMOVED: No more fallback tests - cache must exist or API must be reachable
-    // #[tokio::test]
-    // async fn test_cache_miss_returns_fallback() {
-    //     let (_temp_dir, cache_path) = test_cache_path();
-    //     let cache = ModelCache::new_with_path(cache_path);
-    //     // Cache doesn't exist, should error (no fallback)
-    //     let result = cache.get().await;
-    //     assert!(result.is_err(), "Should error when cache missing and API unreachable");
-    // }
 
     #[tokio::test]
     async fn test_cache_hit() {
@@ -283,85 +206,10 @@ mod tests {
         assert!(models.providers.contains_key("anthropic"));
     }
 
-    // REMOVED: No more fallback - corrupted cache must error
-    // #[tokio::test]
-    // async fn test_corrupted_cache_uses_fallback() {
-    //     let (_temp_dir, cache_path) = test_cache_path();
-    //     // Write corrupted cache
-    //     std::fs::write(&cache_path, "{ this is not valid JSON {{{{")
-    //         .expect("Failed to write cache");
-    //     let cache = ModelCache::new_with_path(cache_path);
-    //     // This will try to read corrupted cache, fail, then error (no fallback)
-    //     let result = cache.get().await;
-    //     assert!(result.is_err(), "Should error when cache corrupted and API unreachable");
-    // }
-
-    // MODEL-001: Tests for set_cache_directory
     #[test]
-    #[serial]
-    fn test_set_cache_directory_changes_path() {
-        reset_cache_directory();
-
-        let custom_dir = PathBuf::from("/tmp/custom-cache");
-        set_cache_directory(custom_dir.clone()).expect("Should set directory");
-
-        let result = get_cache_dir().expect("Should get directory");
-        assert_eq!(result, custom_dir);
-
-        reset_cache_directory();
-    }
-
-    #[test]
-    #[serial]
-    fn test_get_cache_dir_returns_default_when_not_set() {
-        reset_cache_directory();
-
-        let result = get_cache_dir().expect("Should get default directory");
-
-        // Should end with .fspec/cache
-        assert!(
-            result.ends_with(".fspec/cache"),
-            "Default should be ~/.fspec/cache, got: {result:?}"
-        );
-
-        reset_cache_directory();
-    }
-
-    #[test]
-    #[serial]
-    fn test_model_cache_new_uses_configured_directory() {
-        reset_cache_directory();
-
-        let temp_dir = TempDir::new().expect("Failed to create temp dir");
-        let custom_dir = temp_dir.path().to_path_buf();
-        set_cache_directory(custom_dir.clone()).expect("Should set directory");
-
-        let cache = ModelCache::new();
-        let expected_path = custom_dir.join("models.json");
-
-        assert_eq!(
-            cache.cache_path(),
-            &expected_path,
-            "ModelCache should use configured directory"
-        );
-
-        reset_cache_directory();
-    }
-
-    #[test]
-    #[serial]
-    fn test_set_cache_directory_can_be_changed() {
-        reset_cache_directory();
-
-        let dir1 = PathBuf::from("/tmp/dir1");
-        let dir2 = PathBuf::from("/tmp/dir2");
-
-        set_cache_directory(dir1.clone()).expect("Should set first directory");
-        assert_eq!(get_cache_dir().unwrap(), dir1);
-
-        set_cache_directory(dir2.clone()).expect("Should set second directory");
-        assert_eq!(get_cache_dir().unwrap(), dir2);
-
-        reset_cache_directory();
+    fn test_new_with_path() {
+        let path = PathBuf::from("/tmp/test/models.json");
+        let cache = ModelCache::new_with_path(path.clone());
+        assert_eq!(cache.cache_path(), &path);
     }
 }

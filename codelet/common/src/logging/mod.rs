@@ -1,7 +1,7 @@
 //! Logging module - Rust port of codelet's Winston logging system
 //!
 //! Uses tracing + tracing-subscriber + tracing-appender for structured logging
-//! with daily file rotation to ~/.codelet/logs/
+//! with daily file rotation to {data_dir}/logs/
 
 use anyhow::Result;
 use tracing::Subscriber;
@@ -76,7 +76,7 @@ impl<'a> tracing::field::Visit for MessageVisitor<'a> {
 /// Initialize the logging system with file-based JSON output and daily rotation
 ///
 /// This mirrors codelet's Winston logging implementation:
-/// - Logs to ~/.codelet/logs/codelet-YYYY-MM-DD
+/// - Logs to {data_dir}/logs/codelet-YYYY-MM-DD
 /// - Daily rotation with retention of last 5 files
 /// - JSON format for machine parsing
 /// - File-only (no stdout) to avoid CLI interference
@@ -96,10 +96,9 @@ impl<'a> tracing::field::Visit for MessageVisitor<'a> {
 /// init_logging(true).expect("Failed to initialize logging");
 /// ```
 pub fn init_logging(verbose: bool) -> Result<()> {
-    // Create log directory ~/.codelet/logs/
-    let log_dir = dirs::home_dir()
-        .ok_or_else(|| anyhow::anyhow!("Could not determine home directory"))?
-        .join(".codelet")
+    // Derive log directory from global data directory
+    let log_dir = crate::get_data_dir()
+        .map_err(|e| anyhow::anyhow!("{}", e))?
         .join("logs");
 
     std::fs::create_dir_all(&log_dir)?;
@@ -130,8 +129,17 @@ pub fn init_logging(verbose: bool) -> Result<()> {
 mod tests {
     use super::*;
 
+    fn setup_test_data_dir() -> tempfile::TempDir {
+        let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+        crate::set_data_directory(temp_dir.path().to_path_buf())
+            .expect("Failed to set data directory");
+        temp_dir
+    }
+
     #[test]
     fn test_init_logging_basic() {
+        let _temp_dir = setup_test_data_dir();
+        
         // Note: Can only init once per process, so tests may interfere
         // This is a basic smoke test - we just verify it doesn't panic
         let _result = init_logging(false);

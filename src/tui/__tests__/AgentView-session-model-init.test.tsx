@@ -27,7 +27,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerCreateWithId: mockSessionManagerCreateWithId,
   modelsListAll: mockModelsListAll,
   persistenceSetDataDirectory: vi.fn(),
-  modelsSetCacheDirectory: vi.fn(),
   persistenceCreateSessionWithProvider: mockPersistenceCreateSessionWithProvider,
   sessionManagerList: vi.fn(() => []),
   persistenceListSessions: vi.fn(() => []),

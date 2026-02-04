@@ -259,14 +259,14 @@ fn create_test_response() -> ModelsDevResponse {
 // =============================================================================
 
 /// Scenario: First run fetches models from API and creates cache
-/// Given no models cache file exists at ~/.codelet/cache/models.json
+/// Given no models cache file exists
 /// When I run codelet
 /// Then models.dev API should be called to fetch model data
-/// And the cache file should be created at ~/.codelet/cache/models.json
+/// And the cache file should be created
 #[tokio::test]
 #[serial]
 async fn test_first_run_fetches_models_from_api_and_creates_cache() {
-    // @step Given no models cache file exists at ~/.codelet/cache/models.json
+    // @step Given no models cache file exists
     let temp_dir = test_cache_dir();
     let cache_path = temp_dir.path().join("models.json");
     assert!(
@@ -284,7 +284,7 @@ async fn test_first_run_fetches_models_from_api_and_creates_cache() {
     // (or fallback is used if network unavailable)
     assert!(result.is_ok(), "Should get models (from API or fallback)");
 
-    // @step And the cache file should be created at ~/.codelet/cache/models.json
+    // @step And the cache file should be created
     // Note: Cache is only written on successful API fetch, not fallback
     // For this test, we verify the data is available
     let models = result.unwrap();

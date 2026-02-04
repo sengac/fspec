@@ -154,12 +154,9 @@ impl ContextCompactor {
             .collect();
 
         // Step 6: Generate LLM summary with retry logic
-        let summary = if !summarized_turns.is_empty() {
-            self.generate_llm_summary(&summarized_turns, &anchors, &kept_turns, &llm_prompt)
-                .await
-        } else {
-            "No turns summarized.".to_string()
-        };
+        // ALWAYS call LLM - even when no turns to summarize, generate a state summary
+        let summary = self.generate_llm_summary(&summarized_turns, &anchors, &kept_turns, &llm_prompt)
+            .await;
 
         // Step 7: Calculate metrics
         let summary_tokens = count_tokens(&summary) as u64;
@@ -268,6 +265,11 @@ impl ContextCompactor {
         // Extract preservation context from kept turns
         let preservation_context = PreservationContext::extract_from_turns(kept_turns);
 
+        // When there are no turns to summarize, generate a state checkpoint summary instead
+        if summarized_turns.is_empty() {
+            return self.build_state_checkpoint_prompt(&preservation_context, kept_turns);
+        }
+
         let mut prompt = String::from(
             r#"Summarize the following conversation turns concisely, preserving key information about what was accomplished.
 
@@ -334,6 +336,81 @@ CONTEXT TO PRESERVE:
 2. Preserve information about anchor points (marked with [ANCHOR])
 3. Focus on outcomes and decisions, not the back-and-forth conversation
 4. Be specific about file names, function names, and technical details"#,
+        );
+
+        prompt
+    }
+
+    /// Build prompt for state checkpoint when there are no turns to summarize
+    /// This generates an LLM-based summary of the current conversation state
+    fn build_state_checkpoint_prompt(
+        &self,
+        preservation_context: &PreservationContext,
+        kept_turns: &[ConversationTurn],
+    ) -> String {
+        let mut prompt = String::from(
+            r#"Generate a brief state checkpoint summary for this conversation. The full conversation history is being preserved, but we need a concise summary of the current state.
+
+CURRENT CONTEXT:
+"#,
+        );
+
+        // Add active files
+        if !preservation_context.active_files.is_empty() {
+            prompt.push_str(&format!(
+                "Active files: {}\n",
+                preservation_context.active_files.join(", ")
+            ));
+        } else {
+            prompt.push_str("Active files: None\n");
+        }
+
+        // Add current goals
+        if !preservation_context.current_goals.is_empty() {
+            prompt.push_str(&format!(
+                "Current goals: {}\n",
+                preservation_context.current_goals.join("; ")
+            ));
+        } else {
+            prompt.push_str("Current goals: None identified\n");
+        }
+
+        // Add build status
+        prompt.push_str(&format!("Build status: {}\n\n", preservation_context.build_status));
+
+        // Add recent conversation context (last few turns for context)
+        if !kept_turns.is_empty() {
+            prompt.push_str("RECENT CONVERSATION:\n\n");
+            for (idx, turn) in kept_turns.iter().take(3).enumerate() {
+                prompt.push_str(&format!("--- Turn {} ---\n", idx + 1));
+                prompt.push_str(&format!("User: {}\n", turn.user_message));
+                
+                if !turn.tool_calls.is_empty() {
+                    let tools: Vec<String> = turn.tool_calls.iter().map(|tc| {
+                        let file_info = tc.filename().map(|f| format!(" on {f}")).unwrap_or_default();
+                        format!("{}{file_info}", tc.tool)
+                    }).collect();
+                    prompt.push_str(&format!("Tools used: {}\n", tools.join(", ")));
+                }
+
+                prompt.push_str(&format!("Assistant: {}\n\n", 
+                    if turn.assistant_response.len() > 200 {
+                        format!("{}...", &turn.assistant_response[..200])
+                    } else {
+                        turn.assistant_response.clone()
+                    }
+                ));
+            }
+        }
+
+        prompt.push_str(
+            r#"INSTRUCTIONS:
+Provide a brief (1-2 paragraph) state checkpoint summary that captures:
+1. What has been accomplished so far in this session
+2. What the current focus or task appears to be
+3. Any important context needed for continuing the work
+
+Keep it concise, factual, and focused on the current state."#,
         );
 
         prompt

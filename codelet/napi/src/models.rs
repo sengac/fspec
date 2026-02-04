@@ -1,19 +1,18 @@
 //! NAPI bindings for model cache and selection functions
 //!
-//! MODEL-001: Exposes models.dev cache configuration and model selection to TypeScript.
+//! MODEL-001: Exposes models.dev model listing to TypeScript.
 //!
 //! This enables fspec to:
-//! - Configure the cache directory to ~/.fspec/cache
 //! - List available models from models.dev
 //! - Get model information for display
 //!
-//! IMPORTANT: Call modelsSetCacheDirectory() BEFORE any other model operations
-//! if you need a custom cache location. The directory is captured at first use.
+//! NOTE: Cache directory is derived from the global data directory
+//! set via persistenceSetDataDirectory(). No separate cache directory
+//! configuration is needed.
 
 use chrono::Datelike;
-use codelet_providers::models::{get_cache_dir, set_cache_directory, ModelCache, ModelRegistry};
+use codelet_providers::models::{get_cache_dir, ModelCache, ModelRegistry};
 use napi::bindgen_prelude::*;
-use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::OnceCell;
 
@@ -39,29 +38,12 @@ async fn get_registry() -> Result<Arc<ModelRegistry>> {
 }
 
 // ============================================================================
-// Cache Directory Configuration
+// Cache Directory (Read-Only - derived from global data directory)
 // ============================================================================
-
-/// Set the cache directory for model data (e.g., ~/.fspec/cache)
-///
-/// IMPORTANT: This MUST be called BEFORE any other model operations.
-/// The directory setting is captured when the registry is first loaded.
-/// Calling this after other model functions will have no effect until
-/// modelsRefreshCache() is called.
-///
-/// # Arguments
-/// * `dir` - The directory path for cache data (models.json will be stored here)
-#[napi]
-pub fn models_set_cache_directory(dir: String) -> Result<()> {
-    let path = PathBuf::from(&dir);
-    set_cache_directory(path)
-        .map_err(|e| Error::from_reason(format!("Failed to set cache directory '{}': {}", dir, e)))
-}
 
 /// Get the current cache directory for model data
 ///
-/// Returns the custom directory if set via modelsSetCacheDirectory(),
-/// otherwise returns ~/.fspec/cache as the default.
+/// Returns {data_dir}/cache where data_dir is set via persistenceSetDataDirectory().
 #[napi]
 pub fn models_get_cache_directory() -> Result<String> {
     get_cache_dir()

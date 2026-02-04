@@ -99,8 +99,6 @@ export const createNapiMock = () => ({
     High: 3,
   },
   getThinkingConfig: vi.fn(() => null),
-  // TUI-034: Model selection mocks
-  modelsSetCacheDirectory: vi.fn(),
   modelsListAll: vi.fn(() =>
     Promise.resolve([mockModels.anthropic, mockModels.openai])
   ),

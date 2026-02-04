@@ -47,15 +47,16 @@ pub struct DebugCaptureManager {
     pub(super) warning_count: u32,
     pub(super) session_metadata: SessionMetadata,
     pub(super) debug_dir: PathBuf,
-    codelet_dir: PathBuf,
+    data_dir: PathBuf,
 }
 
 impl DebugCaptureManager {
     /// Create a new manager
     pub(super) fn new() -> Result<Self, DebugCaptureError> {
-        let home_dir = dirs::home_dir().ok_or(DebugCaptureError::NoHomeDirectory)?;
-        let codelet_dir = home_dir.join(".codelet");
-        let debug_dir = codelet_dir.join("debug");
+        // Derive debug directory from global data directory
+        let data_dir = crate::get_data_dir()
+            .map_err(|_| DebugCaptureError::NoHomeDirectory)?;
+        let debug_dir = data_dir.join("debug");
 
         Ok(Self {
             enabled: false,
@@ -70,16 +71,16 @@ impl DebugCaptureManager {
             warning_count: 0,
             session_metadata: SessionMetadata::default(),
             debug_dir,
-            codelet_dir,
+            data_dir,
         })
     }
 
     /// Set a custom debug directory
     ///
     /// This should be called before starting capture if you want to use
-    /// a directory other than the default ~/.codelet/debug/
+    /// a custom directory
     pub fn set_debug_directory(&mut self, base_dir: PathBuf) {
-        self.codelet_dir = base_dir.clone();
+        self.data_dir = base_dir.clone();
         self.debug_dir = base_dir.join("debug");
     }
 
@@ -106,10 +107,7 @@ impl DebugCaptureManager {
 
     /// Start a new debug capture session
     pub fn start_capture(&mut self) -> Result<String, DebugCaptureError> {
-        // Ensure directory exists with secure permissions
-        if !self.codelet_dir.exists() {
-            fs::create_dir_all(&self.codelet_dir)?;
-        }
+        // Ensure debug directory exists with secure permissions
         if !self.debug_dir.exists() {
             fs::create_dir_all(&self.debug_dir)?;
             // Set permissions to 0o700 on Unix

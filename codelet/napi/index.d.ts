@@ -372,8 +372,7 @@ export declare const enum MessageRole {
 /**
  * Get the current cache directory for model data
  *
- * Returns the custom directory if set via modelsSetCacheDirectory(),
- * otherwise returns ~/.fspec/cache as the default.
+ * Returns {data_dir}/cache where data_dir is set via persistenceSetDataDirectory().
  */
 export declare function modelsGetCacheDirectory(): string;
 
@@ -423,19 +422,6 @@ export declare function modelsListForProvider(
  * Returns the number of providers loaded.
  */
 export declare function modelsRefreshCache(): Promise<number>;
-
-/**
- * Set the cache directory for model data (e.g., ~/.fspec/cache)
- *
- * IMPORTANT: This MUST be called BEFORE any other model operations.
- * The directory setting is captured when the registry is first loaded.
- * Calling this after other model functions will have no effect until
- * modelsRefreshCache() is called.
- *
- * # Arguments
- * * `dir` - The directory path for cache data (models.json will be stored here)
- */
-export declare function modelsSetCacheDirectory(dir: string): void;
 
 /** TUI-056: Anchor point for NAPI */
 export interface NapiAnchorPoint {
@@ -847,10 +833,9 @@ export declare function persistenceSetCompactionState(
 ): NapiSessionManifest;
 
 /**
- * Set the data directory for persistence (e.g., ~/.fspec or ~/.codelet)
+ * Set the data directory for persistence (e.g., ~/.fspec)
  *
- * This must be called before any other persistence operations if you want
- * to use a custom directory instead of the default ~/.fspec.
+ * This must be called at startup before any other persistence operations.
  */
 export declare function persistenceSetDataDirectory(dir: string): void;
 

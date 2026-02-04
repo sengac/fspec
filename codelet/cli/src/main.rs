@@ -8,8 +8,15 @@ async fn main() -> Result<()> {
     // Silently ignore if .env doesn't exist
     let _ = dotenvy::dotenv();
 
+    // Set the data directory (required before any other operations)
+    let data_dir = dirs::home_dir()
+        .ok_or_else(|| anyhow::anyhow!("Could not determine home directory"))?
+        .join(".codelet");
+    codelet_common::set_data_directory(data_dir)
+        .map_err(|e| anyhow::anyhow!("{}", e))?;
+
     // Initialize unified tracing-based logging system
-    // Logs to ~/.codelet/logs/codelet-YYYY-MM-DD.log with JSON formatting
+    // Logs to {data_dir}/logs/codelet-YYYY-MM-DD.log with JSON formatting
     codelet_common::logging::init_logging(false)?;
 
     // Install browser cleanup handler for SIGINT/SIGTERM

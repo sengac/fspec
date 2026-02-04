@@ -8,26 +8,38 @@ use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
 
+fn setup_test_data_dir() -> TempDir {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+    codelet_common::set_data_directory(temp_dir.path().to_path_buf())
+        .expect("Failed to set data directory");
+    temp_dir
+}
+
+fn get_log_dir() -> PathBuf {
+    codelet_common::get_data_dir()
+        .expect("Data directory should be set")
+        .join("logs")
+}
+
 #[cfg(test)]
 mod logging_initialization_tests {
     use super::*;
 
     #[test]
     fn test_initialize_logging_module_with_daily_file_rotation() {
+        let _temp_dir = setup_test_data_dir();
+        
         // @step Given I create src/logging/mod.rs with init_logging() function
         // @step And I configure tracing_subscriber with JSON formatter
-        // @step And I set up tracing_appender::rolling::daily to ~/.codelet/logs/
+        // @step And I set up tracing_appender::rolling::daily to {data_dir}/logs/
         // @step When the logging system initializes in main.rs
 
-        // @step Then logs should be written to ~/.codelet/logs/codelet-YYYY-MM-DD.log
+        // @step Then logs should be written to {data_dir}/logs/codelet-YYYY-MM-DD.log
         // Note: tracing can only be initialized once per process
         // We catch the panic to allow multiple test runs
         let result = std::panic::catch_unwind(|| codelet::logging::init_logging(false));
 
-        let log_dir = dirs::home_dir()
-            .expect("Should have home directory")
-            .join(".codelet")
-            .join("logs");
+        let log_dir = get_log_dir();
 
         // Either init succeeds, OR it panics because already initialized (both are valid)
         assert!(
@@ -226,6 +238,8 @@ mod json_format_tests {
 
     #[test]
     fn test_log_files_use_json_format() {
+        let _temp_dir = setup_test_data_dir();
+        
         // @step Given I have the logging system configured
         // @step When I log an error with metadata: error!(user_id = 42, "Authentication failed")
         // @step Then the log file should contain a JSON entry like:
@@ -235,10 +249,7 @@ mod json_format_tests {
         // Note: tracing can only be initialized once per process
         // JSON format is configured in the init_logging() implementation
         // This test just verifies the module exists and is configured correctly
-        let log_dir = dirs::home_dir()
-            .expect("Should have home directory")
-            .join(".codelet")
-            .join("logs");
+        let log_dir = get_log_dir();
 
         // If logging has been initialized, the log directory should exist
         assert!(
@@ -285,6 +296,8 @@ mod log_rotation_tests {
 
     #[test]
     fn test_log_rotation_retains_last_5_files() {
+        let _temp_dir = setup_test_data_dir();
+        
         // @step Given I have daily log rotation configured
         // @step When 7 days pass and 7 log files are created
         // @step Then only the last 5 log files should be retained
@@ -295,10 +308,7 @@ mod log_rotation_tests {
         // Log rotation is configured in the init_logging() implementation using
         // tracing_appender::rolling::daily which automatically handles rotation
         // This test just verifies the configuration exists
-        let log_dir = dirs::home_dir()
-            .expect("Should have home directory")
-            .join(".codelet")
-            .join("logs");
+        let log_dir = get_log_dir();
 
         // Verify log directory structure is valid
         assert!(

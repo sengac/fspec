@@ -33,8 +33,8 @@ static DEBUG_CAPTURE_MANAGER: OnceLock<Arc<PoisonRecoveryMutex<DebugCaptureManag
 #[allow(clippy::expect_used)]
 pub fn get_debug_capture_manager(
 ) -> Result<Arc<PoisonRecoveryMutex<DebugCaptureManager>>, DebugCaptureError> {
-    // Note: get_or_init requires infallible initialization. If home directory
-    // cannot be determined, this is a fundamental system issue and panic is appropriate.
+    // Note: get_or_init requires infallible initialization. If the data directory
+    // is not set, this is a startup issue and panic is appropriate.
     let manager = DEBUG_CAPTURE_MANAGER.get_or_init(|| {
         let mgr = DebugCaptureManager::new().expect("Failed to create DebugCaptureManager");
         Arc::new(PoisonRecoveryMutex::new(mgr))
@@ -86,7 +86,6 @@ pub fn increment_debug_turn() {
 /// Handle the /debug command with a custom base directory
 ///
 /// If base_dir is provided, debug files will be written to `{base_dir}/debug/`
-/// instead of the default `~/.codelet/debug/`
 pub fn handle_debug_command_with_dir(base_dir: Option<&str>) -> DebugCommandResult {
     use std::path::PathBuf;
 
@@ -154,6 +153,13 @@ mod tests {
     use super::*;
     use manager::sanitize_headers;
 
+    fn setup_test_data_dir() -> tempfile::TempDir {
+        let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+        crate::set_data_directory(temp_dir.path().to_path_buf())
+            .expect("Failed to set data directory");
+        temp_dir
+    }
+
     #[test]
     fn test_sanitize_headers_redacts_sensitive() {
         let headers = serde_json::json!({
@@ -180,6 +186,7 @@ mod tests {
 
     #[test]
     fn test_format_duration() {
+        let _temp_dir = setup_test_data_dir();
         let manager = DebugCaptureManager::new().unwrap();
 
         assert_eq!(manager.format_duration(500), "0s");

@@ -11,10 +11,9 @@ use std::path::PathBuf;
 // Configuration
 // ============================================================================
 
-/// Set the data directory for persistence (e.g., ~/.fspec or ~/.codelet)
+/// Set the data directory for persistence (e.g., ~/.fspec)
 ///
-/// This must be called before any other persistence operations if you want
-/// to use a custom directory instead of the default ~/.fspec.
+/// This must be called at startup before any other persistence operations.
 #[napi]
 pub fn persistence_set_data_directory(dir: String) -> Result<()> {
     set_data_directory(PathBuf::from(dir)).map_err(Error::from_reason)

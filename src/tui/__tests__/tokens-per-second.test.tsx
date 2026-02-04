@@ -87,7 +87,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   },
   getThinkingConfig: vi.fn(() => null),
   // TUI-034: Model selection mocks
-  modelsSetCacheDirectory: vi.fn(),
   modelsListAll: vi.fn(() => Promise.resolve([mockModels.anthropic, mockModels.openai])),
   setRustLogCallback: vi.fn(),
   // Persistence NAPI bindings required by AgentView

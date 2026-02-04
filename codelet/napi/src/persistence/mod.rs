@@ -3,7 +3,7 @@
 //! Implements session management with git-like fork/merge operations.
 //! All persistence operations are in Rust, exposed to TypeScript via NAPI-RS bindings.
 //!
-//! File Layout (default ~/.fspec, configurable via set_data_directory):
+//! File Layout (set via codelet_common::set_data_directory):
 //! - {data_dir}/messages/    - Content-addressed message store (JSONL)
 //! - {data_dir}/sessions/    - Session manifests (JSON)
 //! - {data_dir}/blobs/       - Large content blob storage (SHA-256 addressed)
@@ -45,28 +45,18 @@ lazy_static::lazy_static! {
     static ref SESSION_STORE: Mutex<Option<SessionStore>> = Mutex::new(None);
     static ref BLOB_STORE: Mutex<Option<BlobStore>> = Mutex::new(None);
     static ref HISTORY_STORE: Mutex<Option<HistoryStore>> = Mutex::new(None);
-    static ref DATA_DIRECTORY: Mutex<Option<PathBuf>> = Mutex::new(None);
 }
 
-/// Set a custom data directory for persistence
+/// Set the data directory for the application
 ///
-/// This should be called before any other persistence operations if you want
-/// to use a directory other than the default ~/.fspec
+/// This MUST be called once at startup before any persistence operations.
+/// Delegates to codelet_common::set_data_directory which is the single source of truth.
 ///
 /// # Arguments
-/// * `dir` - The base directory for persistence data (e.g., ~/.fspec or ~/.codelet)
-///
-/// # Example
-/// ```ignore
-/// // Use ~/.fspec for fspec
-/// set_data_directory(PathBuf::from(home_dir).join(".fspec"));
-///
-/// // Use ~/.codelet for codelet REPL
-/// set_data_directory(PathBuf::from(home_dir).join(".codelet"));
-/// ```
+/// * `dir` - The base directory for all data (e.g., ~/.fspec)
 pub fn set_data_directory(dir: PathBuf) -> Result<(), String> {
-    let mut data_dir = DATA_DIRECTORY.lock().map_err(|e| e.to_string())?;
-    *data_dir = Some(dir);
+    // Set the global data directory (single source of truth)
+    codelet_common::set_data_directory(dir)?;
 
     // Reset stores so they reinitialize with the new directory
     let mut msg = MESSAGE_STORE.lock().map_err(|e| e.to_string())?;
@@ -89,20 +79,9 @@ pub fn set_data_directory(dir: PathBuf) -> Result<(), String> {
 
 /// Get the base directory for persistence data
 ///
-/// Returns the custom directory if set via set_data_directory(),
-/// otherwise returns ~/.fspec as the default.
+/// Delegates to codelet_common::get_data_dir which is the single source of truth.
 pub fn get_data_dir() -> Result<PathBuf, String> {
-    // Check for custom directory first
-    if let Ok(guard) = DATA_DIRECTORY.lock() {
-        if let Some(ref dir) = *guard {
-            return Ok(dir.clone());
-        }
-    }
-
-    // Default to ~/.fspec
-    dirs::home_dir()
-        .map(|home| home.join(".fspec"))
-        .ok_or_else(|| "Could not determine home directory".to_string())
+    codelet_common::get_data_dir()
 }
 
 /// Ensure all required directories exist

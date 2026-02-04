@@ -18,19 +18,34 @@ use serial_test::serial;
 // These imports will fail until implementation exists (red phase)
 use codelet::debug_capture::{get_debug_capture_manager, handle_debug_command, DebugEvent};
 
+fn setup_test_data_dir() -> tempfile::TempDir {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+    codelet_common::set_data_directory(temp_dir.path().to_path_buf())
+        .expect("Failed to set data directory");
+    temp_dir
+}
+
 fn get_test_debug_dir() -> PathBuf {
-    dirs::home_dir()
-        .expect("Could not determine home directory")
-        .join(".codelet")
+    codelet_common::get_data_dir()
+        .expect("Data directory should be set")
         .join("debug")
 }
 
-fn cleanup_manager() {
-    let manager_arc = get_debug_capture_manager().expect("Failed to get manager");
-    let mut manager = manager_arc.lock().expect("Failed to lock manager");
-    if manager.is_enabled() {
-        let _ = manager.stop_capture();
+fn setup_and_cleanup() -> tempfile::TempDir {
+    let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+    codelet_common::set_data_directory(temp_dir.path().to_path_buf())
+        .expect("Failed to set data directory");
+    
+    // Clean up any existing capture state
+    if let Ok(manager_arc) = get_debug_capture_manager() {
+        if let Ok(mut manager) = manager_arc.lock() {
+            if manager.is_enabled() {
+                let _ = manager.stop_capture();
+            }
+        }
     }
+    
+    temp_dir
 }
 
 // ============================================================================
@@ -39,7 +54,7 @@ fn cleanup_manager() {
 #[test]
 #[serial]
 fn test_enable_debug_capture_with_debug_command() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
     let test_debug_dir = get_test_debug_dir();
 
     // @step Given the agent is running
@@ -70,15 +85,11 @@ fn test_enable_debug_capture_with_debug_command() {
         "Session file should be defined"
     );
     assert!(
-        result
-            .session_file
-            .as_ref()
-            .unwrap()
-            .contains(".codelet/debug/session-"),
-        "Session file path should contain .codelet/debug/session-"
+        result.session_file.as_ref().unwrap().contains("debug/session-"),
+        "Session file path should contain debug/session-"
     );
 
-    // @step And the debug directory "~/.codelet/debug/" should exist
+    // @step And the debug directory should exist
     assert!(test_debug_dir.exists(), "Debug directory should exist");
 
     // @step And a new JSONL session file should be created
@@ -92,7 +103,7 @@ fn test_enable_debug_capture_with_debug_command() {
         "Session file should have .jsonl extension"
     );
 
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 }
 
 // ============================================================================
@@ -101,7 +112,7 @@ fn test_enable_debug_capture_with_debug_command() {
 #[test]
 #[serial]
 fn test_disable_debug_capture_with_debug_command() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given the agent is running
     // @step And debug capture is enabled with an active session
@@ -156,7 +167,7 @@ fn test_disable_debug_capture_with_debug_command() {
 #[test]
 #[serial]
 fn test_capture_api_request_with_correlation_id() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given debug capture is enabled
     handle_debug_command();
@@ -239,7 +250,7 @@ fn test_capture_api_request_with_correlation_id() {
 #[test]
 #[serial]
 fn test_capture_api_response_with_correlation_id() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given debug capture is enabled
     handle_debug_command();
@@ -333,7 +344,7 @@ fn test_capture_api_response_with_correlation_id() {
 #[test]
 #[serial]
 fn test_capture_tool_call_with_arguments() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given debug capture is enabled
     handle_debug_command();
@@ -397,7 +408,7 @@ fn test_capture_tool_call_with_arguments() {
 #[test]
 #[serial]
 fn test_capture_tool_result_with_timing() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given debug capture is enabled
     handle_debug_command();
@@ -475,7 +486,7 @@ fn test_capture_tool_result_with_timing() {
 #[test]
 #[serial]
 fn test_merge_tracing_log_entries_into_debug_stream() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given debug capture is enabled
     handle_debug_command();
@@ -535,7 +546,7 @@ fn test_merge_tracing_log_entries_into_debug_stream() {
 #[test]
 #[serial]
 fn test_generate_session_summary_on_capture_stop() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given debug capture is enabled
     handle_debug_command();
@@ -605,7 +616,7 @@ fn test_generate_session_summary_on_capture_stop() {
 #[test]
 #[serial]
 fn test_redact_sensitive_credentials_from_captured_headers() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given debug capture is enabled
     handle_debug_command();
@@ -666,7 +677,7 @@ fn test_redact_sensitive_credentials_from_captured_headers() {
 #[test]
 #[serial]
 fn test_zero_overhead_when_debug_capture_is_disabled() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
     let test_debug_dir = get_test_debug_dir();
 
     // @step Given debug capture is disabled
@@ -740,7 +751,7 @@ fn test_zero_overhead_when_debug_capture_is_disabled() {
 fn test_create_debug_directory_with_secure_permissions() {
     use std::os::unix::fs::PermissionsExt;
 
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
     let test_debug_dir = get_test_debug_dir();
 
     // @step Given the debug directory does not exist
@@ -752,7 +763,7 @@ fn test_create_debug_directory_with_secure_permissions() {
     // @step When debug capture is enabled for the first time
     handle_debug_command();
 
-    // @step Then the directory "~/.codelet/debug/" should be created
+    // @step Then the debug directory should be created
     assert!(test_debug_dir.exists(), "Debug directory should exist");
 
     // @step And the directory should have permissions 0o700
@@ -763,12 +774,11 @@ fn test_create_debug_directory_with_secure_permissions() {
         "Directory should have 0o700 permissions"
     );
 
-    // @step And the path should resolve correctly on macOS, Linux, and Windows
-    // This is implicitly tested by using dirs::home_dir() which is cross-platform
-    let home = dirs::home_dir().expect("Should get home dir");
+    // @step And the path should be under the configured data directory
+    let data_dir = codelet_common::get_data_dir().expect("Should get data dir");
     assert!(
-        test_debug_dir.starts_with(&home),
-        "Debug dir should be under home directory"
+        test_debug_dir.starts_with(&data_dir),
+        "Debug dir should be under data directory"
     );
 
     // Clean up
@@ -781,7 +791,7 @@ fn test_create_debug_directory_with_secure_permissions() {
 #[test]
 #[serial]
 fn test_record_session_start_metadata() {
-    cleanup_manager();
+    let _temp_dir = setup_and_cleanup();
 
     // @step Given the agent is running with provider "claude" and model "claude-sonnet-4"
     // (This is simulated - in real usage the provider would set this)

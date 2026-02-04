@@ -90,7 +90,6 @@ vi.mock('@sengac/codelet-napi', () => ({
     High: 3,
   },
   getThinkingConfig: vi.fn(() => null),
-  modelsSetCacheDirectory: vi.fn(),
   modelsListAll: vi.fn(() => Promise.resolve([mockModels.anthropic, mockModels.openai])),
   setRustLogCallback: vi.fn(),
   persistenceSetDataDirectory: vi.fn(),

@@ -52,7 +52,6 @@ vi.mock('@sengac/codelet-napi', () => ({
     High: 3,
   },
   getThinkingConfig: vi.fn(() => null),
-  modelsSetCacheDirectory: vi.fn(),
   modelsListAll: vi.fn(() => Promise.resolve([])),
   modelsRefreshCache: vi.fn(() => Promise.resolve()),
   setRustLogCallback: vi.fn(),

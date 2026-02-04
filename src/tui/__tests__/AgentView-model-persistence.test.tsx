@@ -127,7 +127,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   },
   getThinkingConfig: vi.fn(() => null),
   modelsListAll: () => mockState.modelsListAll(),
-  modelsSetCacheDirectory: vi.fn(),
   setRustLogCallback: vi.fn(),
   persistenceSetDataDirectory: vi.fn(),
   persistenceStoreMessageEnvelope: vi.fn(),

@@ -168,7 +168,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   // TUI-034: Model listing function
   modelsListAll: () => mockState.modelsListAll(),
   // TUI-034: Model cache directory setup
-  modelsSetCacheDirectory: vi.fn(),
   // Rust logging callback
   setRustLogCallback: vi.fn(),
   // Persistence NAPI bindings (using mockState for overridable mocks)

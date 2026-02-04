@@ -135,7 +135,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceListSessions: vi.fn(() => []),
   persistenceAppendMessage: vi.fn(),
   persistenceRenameSession: vi.fn(),
-  modelsSetCacheDirectory: vi.fn(),
   modelsListAll: vi.fn(() => Promise.resolve([{
     providerId: 'anthropic',
     providerName: 'Anthropic',

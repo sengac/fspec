@@ -71,7 +71,6 @@ import {
   JsThinkingLevel,
   modelsListAll,
   modelsRefreshCache,
-  modelsSetCacheDirectory,
   sessionToggleDebug,
   sessionUpdateDebugMetadata,
   sessionGetDebugEnabled,
@@ -1735,15 +1734,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   useEffect(() => {
     const initSession = async () => {
       try {
-        // NAPI-006: Set up persistence data directory
+        // NAPI-006: Set up data directory (single source of truth)
+        // All subdirectories (sessions, cache, blobs, etc.) derive from this
         const fspecDir = getFspecUserDir();
         try {
           persistenceSetDataDirectory(fspecDir);
-          // TUI-034: Set up model cache directory
-          modelsSetCacheDirectory(`${fspecDir}/cache`);
         } catch (err) {
-          // Failed to set up persistence directory or model cache - this is a critical error
-          logger.error('Failed to set up persistence directory or model cache:', err);
+          // Failed to set up data directory - this is a critical error
+          logger.error('Failed to set up data directory:', err);
         }
 
         // TUI-034: Load models and build provider sections
