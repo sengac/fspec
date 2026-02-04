@@ -339,6 +339,11 @@
       "prefix": "LINK",
       "description": "Link and URL handling features",
       "createdAt": "2026-01-29T04:32:43.847Z"
+    },
+    "BLOCK": {
+      "prefix": "BLOCK",
+      "description": "Command and file access blocklist/allowlist filtering system",
+      "createdAt": "2026-02-04T18:22:39.516Z"
     }
   }
 }

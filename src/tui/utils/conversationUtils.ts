@@ -10,7 +10,7 @@ import type {
   ConversationLine,
 } from '../types/conversation';
 import { wrapText } from '../utils/textWrap';
-import { normalizeEmojiWidth } from '../utils/stringWidth';
+import { normalizeEmojiWidth, sanitizeForTerminal } from '../utils/stringWidth';
 
 /**
  * Derive display role from message type (for coloring)
@@ -70,8 +70,10 @@ export const wrapMessageToLines = (
           ? '● '
           : '';
 
-  // Normalize emoji variation selectors for consistent width calculation
-  const normalizedContent = normalizeEmojiWidth(msg.content);
+  // Sanitize content to remove ANSI escape sequences and control characters,
+  // then normalize emoji variation selectors for consistent width calculation
+  const sanitizedContent = sanitizeForTerminal(msg.content);
+  const normalizedContent = normalizeEmojiWidth(sanitizedContent);
   const contentLines = normalizedContent.split('\n');
 
   // Propagate semantic flags from message

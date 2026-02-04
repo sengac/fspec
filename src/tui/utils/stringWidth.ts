@@ -23,6 +23,61 @@
 import stringWidth from 'string-width';
 
 /**
+ * Regex to match ANSI escape sequences.
+ * Covers:
+ * - SGR (Select Graphic Rendition) - colors, styles: \x1b[...m
+ * - CSI (Control Sequence Introducer) sequences: \x1b[...
+ * - OSC (Operating System Command) sequences: \x1b]...
+ * - Other escape sequences: \x1b followed by various characters
+ */
+// eslint-disable-next-line no-control-regex -- Intentionally matching ANSI escape sequences
+const ANSI_ESCAPE_REGEX = /\x1b(?:\[[0-9;]*[A-Za-z]|\][^\x07]*\x07|[^\x1b])/g;
+
+/**
+ * Regex to match control characters that can cause terminal issues.
+ * Matches ASCII control characters 0x00-0x1F except:
+ * - 0x09 (tab) - handled separately with space replacement
+ * - 0x0A (newline) - preserved for line splitting
+ * Also matches 0x7F (DEL) and other problematic characters.
+ */
+// eslint-disable-next-line no-control-regex -- Intentionally matching terminal control characters
+const CONTROL_CHAR_REGEX = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g;
+
+/**
+ * Sanitize text for safe terminal rendering.
+ *
+ * Removes/replaces characters that can cause terminal rendering issues:
+ * 1. ANSI escape sequences (colors, cursor movement, etc.)
+ * 2. Control characters (except newlines)
+ * 3. Tabs (replaced with spaces)
+ * 4. Carriage returns (removed)
+ *
+ * Use this function on any text that may contain raw output from
+ * external commands, tool results, or user input before displaying
+ * in the terminal.
+ *
+ * @param text - Text to sanitize
+ * @returns Sanitized text safe for terminal rendering
+ */
+export function sanitizeForTerminal(text: string): string {
+  if (!text) {
+    return text;
+  }
+
+  return (
+    text
+      // Strip ANSI escape sequences (colors, cursor movement, etc.)
+      .replace(ANSI_ESCAPE_REGEX, '')
+      // Replace tabs with 2 spaces (consistent width)
+      .replace(/\t/g, '  ')
+      // Remove carriage returns (can cause line overwriting)
+      .replace(/\r/g, '')
+      // Remove other control characters (can cause terminal issues)
+      .replace(CONTROL_CHAR_REGEX, '')
+  );
+}
+
+/**
  * Normalize emoji sequences for consistent terminal width calculation.
  *
  * Handles two major issues:

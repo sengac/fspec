@@ -19,7 +19,11 @@
  * 3. Pass the wrapped lines to VirtualList
  */
 
-import { normalizeEmojiWidth, getVisualWidth } from './stringWidth';
+import {
+  normalizeEmojiWidth,
+  getVisualWidth,
+  sanitizeForTerminal,
+} from './stringWidth';
 
 /**
  * A single wrapped line of text with metadata for VirtualList rendering
@@ -59,6 +63,7 @@ export interface WrapOptions {
  * - Word wrapping at word boundaries
  * - Long word breaking (when word > maxWidth)
  * - Unicode/emoji width via string-width
+ * - Sanitization of control characters and ANSI escape sequences
  *
  * @param text - The text to wrap
  * @param options - Wrapping options
@@ -77,8 +82,12 @@ export function wrapText(text: string, options: WrapOptions): string[] {
     return [];
   }
 
+  // Sanitize text first to remove ANSI escape sequences and control characters
+  // This prevents terminal rendering issues from raw command output
+  const sanitizedText = sanitizeForTerminal(text);
+
   // Normalize emoji for consistent width calculation
-  const normalizedText = normalizeEmojiWidth(text);
+  const normalizedText = normalizeEmojiWidth(sanitizedText);
 
   // Split on explicit newlines first
   const paragraphs = normalizedText.split('\n');
