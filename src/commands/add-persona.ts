@@ -3,6 +3,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import type { GenericFoundation } from '../types/foundation';
 
+import { output } from '../utils/output';
 /**
  * Check if a persona is a placeholder (contains [QUESTION:] or [DETECTED:] patterns)
  */
@@ -58,8 +59,8 @@ export async function addPersona(
   } catch (error: unknown) {
     const err = error as { code?: string; message: string };
     if (err.code === 'ENOENT') {
-      console.error(chalk.red('✗ foundation.json not found'));
-      console.error(
+      output.error(chalk.red('✗ foundation.json not found'));
+      output.error(
         chalk.yellow(
           '  Run: fspec discover-foundation to create foundation.json'
         )
@@ -95,11 +96,11 @@ export async function addPersona(
 
   // Show placeholder removal message if any were removed
   if (removedCount > 0) {
-    console.log(chalk.yellow(`Removed ${removedCount} placeholder persona(s)`));
+    output.log(chalk.yellow(`Removed ${removedCount} placeholder persona(s)`));
   }
 
-  console.log(chalk.green(`✓ Added persona to ${fileName}`));
-  console.log(chalk.dim(`  Name: ${name}`));
-  console.log(chalk.dim(`  Description: ${description}`));
-  console.log(chalk.dim(`  Goals: ${goals.join(', ')}`));
+  output.log(chalk.green(`✓ Added persona to ${fileName}`));
+  output.log(chalk.dim(`  Name: ${name}`));
+  output.log(chalk.dim(`  Description: ${description}`));
+  output.log(chalk.dim(`  Goals: ${goals.join(', ')}`));
 }

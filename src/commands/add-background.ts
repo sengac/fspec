@@ -6,6 +6,7 @@ import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 interface AddBackgroundOptions {
   feature: string;
   text: string;
@@ -245,14 +246,14 @@ export async function addBackgroundCommand(
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green('✓'), result.message);
+    output.log(chalk.green('✓'), result.message);
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

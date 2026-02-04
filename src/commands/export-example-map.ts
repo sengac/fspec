@@ -5,6 +5,7 @@ import { join, dirname } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface ExportExampleMapOptions {
   workUnitId: string;
   file: string;
@@ -78,9 +79,9 @@ export function registerExportExampleMapCommand(program: Command): void {
     .action(async (workUnitId: string, file: string) => {
       try {
         const result = await exportExampleMap({ workUnitId, file });
-        console.log(chalk.green(`✓ Exported to ${result.outputFile}`));
+        output.log(chalk.green(`✓ Exported to ${result.outputFile}`));
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to export example map:'),
           error.message
         );

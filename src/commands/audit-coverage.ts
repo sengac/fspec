@@ -12,6 +12,7 @@ import { existsSync } from 'fs';
 import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
 
+import { output } from '../utils/output';
 export interface AuditCoverageOptions {
   featureName: string;
   cwd?: string;
@@ -118,7 +119,7 @@ export async function auditCoverage(
 
 export async function auditCoverageCommand(featureName: string): Promise<void> {
   const result = await auditCoverage({ featureName });
-  console.log(result.output);
+  output.log(result.output);
   process.exit(result.exitCode);
 }
 

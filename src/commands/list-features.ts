@@ -6,6 +6,7 @@ import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 export interface FeatureInfo {
   file: string;
   name: string;
@@ -90,7 +91,7 @@ export async function listFeatures(
       }
     } catch (error) {
       // Skip files that fail to parse
-      console.warn(chalk.yellow(`Warning: Could not parse ${file}`));
+      output.warn(chalk.yellow(`Warning: Could not parse ${file}`));
     }
   }
 
@@ -107,7 +108,7 @@ export async function listFeaturesCommand(options?: {
     const result = await listFeatures({ tag: options?.tag });
 
     if (result.features.length === 0) {
-      console.log(chalk.yellow('No feature files found in spec/features/'));
+      output.log(chalk.yellow('No feature files found in spec/features/'));
       process.exit(0);
     }
 
@@ -115,35 +116,35 @@ export async function listFeaturesCommand(options?: {
     for (const feature of result.features) {
       const tagsStr =
         feature.tags.length > 0 ? ` [${feature.tags.join(' ')}]` : '';
-      console.log(
+      output.log(
         `  ${chalk.blue(feature.file)} - ${feature.name} ${chalk.gray(`(${feature.scenarioCount} scenarios)`)}${chalk.gray(tagsStr)}`
       );
     }
 
     // Summary
-    console.log('');
+    output.log('');
     if (options?.tag) {
-      console.log(
+      output.log(
         chalk.green(
           `Found ${result.features.length} feature files matching ${options.tag}`
         )
       );
     } else {
-      console.log(chalk.green(`Found ${result.features.length} feature files`));
+      output.log(chalk.green(`Found ${result.features.length} feature files`));
     }
 
     process.exit(0);
   } catch (error: any) {
     if (error.message.includes('Directory not found')) {
-      console.error(chalk.red(error.message));
-      console.log(
+      output.error(chalk.red(error.message));
+      output.log(
         chalk.gray(
           "  Suggestion: Run 'fspec create-feature' to create your first feature"
         )
       );
       process.exit(2);
     }
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

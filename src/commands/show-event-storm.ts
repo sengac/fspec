@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import { fileManager } from '../utils/file-manager';
 import type { WorkUnitsData, EventStormItem } from '../types';
 
+import { output } from '../utils/output';
 export interface ShowEventStormOptions {
   workUnitId: string;
   cwd?: string;
@@ -83,16 +84,16 @@ export async function showEventStormCommand(workUnitId: string): Promise<void> {
     const result = await showEventStorm({ workUnitId });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
     // Output JSON to stdout
-    console.log(JSON.stringify(result.data, null, 2));
+    output.log(JSON.stringify(result.data, null, 2));
 
     process.exit(0);
   } catch (error: unknown) {
-    console.error(
+    output.error(
       chalk.red('Error:'),
       error instanceof Error ? error.message : 'Unknown error'
     );

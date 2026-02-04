@@ -5,6 +5,7 @@ import { fileManager } from '../utils/file-manager';
 import type { WorkUnitsData, EpicsData, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile, ensureEpicsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface UpdateWorkUnitOptions {
   workUnitId: string;
   title?: string;
@@ -206,11 +207,11 @@ export function registerUpdateWorkUnitCommand(program: Command): void {
             workUnitId,
             ...options,
           });
-          console.log(
+          output.log(
             chalk.green(`✓ Work unit ${workUnitId} updated successfully`)
           );
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to update work unit:'),
             error.message
           );

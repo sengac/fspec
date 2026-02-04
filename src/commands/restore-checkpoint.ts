@@ -4,6 +4,7 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
+import { output } from '../utils/output';
 import {
   restoreCheckpoint as restoreCheckpointUtil,
   isWorkingDirectoryDirty,
@@ -81,10 +82,8 @@ export async function restoreCheckpoint(
         },
       ];
 
-      console.log(
-        chalk.yellow('⚠️  Working directory has uncommitted changes')
-      );
-      console.log(chalk.cyan('\nChoose how to proceed:'));
+      output.log(chalk.yellow('⚠️  Working directory has uncommitted changes'));
+      output.log(chalk.cyan('\nChoose how to proceed:'));
       promptOptions.forEach((opt, idx) => {
         const riskColor =
           opt.riskLevel === 'Low'
@@ -92,10 +91,10 @@ export async function restoreCheckpoint(
             : opt.riskLevel === 'Medium'
               ? chalk.yellow
               : chalk.red;
-        console.log(
+        output.log(
           `  ${idx + 1}. ${opt.name} ${riskColor(`[${opt.riskLevel} risk]`)}`
         );
-        console.log(chalk.gray(`     ${opt.description}`));
+        output.log(chalk.gray(`     ${opt.description}`));
       });
 
       return {
@@ -121,12 +120,12 @@ export async function restoreCheckpoint(
     });
 
     if (result.conflictsDetected) {
-      console.error(chalk.red('✗ Merge conflicts detected during restoration'));
-      console.log(chalk.yellow('\nConflicted files:'));
+      output.error(chalk.red('✗ Merge conflicts detected during restoration'));
+      output.log(chalk.yellow('\nConflicted files:'));
       result.conflictedFiles.forEach(file => {
-        console.log(chalk.yellow(`  - ${file}`));
+        output.log(chalk.yellow(`  - ${file}`));
       });
-      console.log(
+      output.log(
         chalk.cyan(
           '\n💡 Resolve conflicts using Read and Edit tools, then run tests'
         )
@@ -134,10 +133,10 @@ export async function restoreCheckpoint(
 
       // Emit system-reminder for AI
       if (result.systemReminder) {
-        console.log(result.systemReminder);
+        output.log(result.systemReminder);
       }
     } else {
-      console.log(
+      output.log(
         chalk.green(
           `✓ Restored checkpoint "${checkpointName}" for ${workUnitId}`
         )
@@ -153,7 +152,7 @@ export async function restoreCheckpoint(
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red(`✗ Failed to restore checkpoint: ${errorMessage}`));
+    output.error(chalk.red(`✗ Failed to restore checkpoint: ${errorMessage}`));
     throw error;
   }
 }
@@ -170,7 +169,7 @@ async function restoreCheckpointCommand(
     });
 
     if (result.requiresUserChoice) {
-      console.log(
+      output.log(
         chalk.cyan('\nRe-run with user choice to proceed with restoration')
       );
       process.exit(1);
@@ -183,9 +182,9 @@ async function restoreCheckpointCommand(
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(chalk.red('Error:'), error.message);
+      output.error(chalk.red('Error:'), error.message);
     } else {
-      console.error(chalk.red('Error: Unknown error occurred'));
+      output.error(chalk.red('Error: Unknown error occurred'));
     }
     process.exit(1);
   }

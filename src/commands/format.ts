@@ -7,6 +7,7 @@ import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import { formatGherkinDocument } from '../utils/gherkin-formatter';
 
+import { output } from '../utils/output';
 export interface FormatOptions {
   cwd?: string;
   file?: string;
@@ -82,18 +83,18 @@ export async function formatFeatures(
       } catch (parseError: any) {
         // Handle file system errors
         if (parseError.code === 'EACCES') {
-          console.error(chalk.yellow(`Warning: Permission denied for ${file}`));
+          output.error(chalk.yellow(`Warning: Permission denied for ${file}`));
           continue;
         }
         if (parseError.code === 'ENOENT') {
-          console.error(chalk.yellow(`Warning: File not found: ${file}`));
+          output.error(chalk.yellow(`Warning: File not found: ${file}`));
           continue;
         }
         // If parsing fails, skip this file and continue
-        console.error(
+        output.error(
           chalk.yellow(`Warning: Skipped ${file} due to parse error:`)
         );
-        console.error(chalk.gray(parseError.message));
+        output.error(chalk.gray(parseError.message));
       }
     }
 
@@ -108,21 +109,21 @@ export async function formatCommand(file?: string): Promise<void> {
     const result = await formatFeatures({ file });
 
     if (result.formattedCount === 0) {
-      console.log(chalk.yellow('No feature files found to format'));
+      output.log(chalk.yellow('No feature files found to format'));
       process.exit(0);
     }
 
     if (file) {
-      console.log(chalk.green(`✓ Formatted ${file}`));
+      output.log(chalk.green(`✓ Formatted ${file}`));
     } else {
-      console.log(
+      output.log(
         chalk.green(`✓ Formatted ${result.formattedCount} feature files`)
       );
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

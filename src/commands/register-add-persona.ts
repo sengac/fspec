@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 import { addPersona } from './add-persona';
 
+import { output } from '../utils/output';
 export function registerAddPersonaCommand(program: Command): void {
   program
     .command('add-persona')
@@ -26,7 +27,7 @@ export function registerAddPersonaCommand(program: Command): void {
           await addPersona(process.cwd(), name, description, options.goal);
         } catch (error: unknown) {
           const err = error as Error;
-          console.error(err.message);
+          output.error(err.message);
           process.exit(1);
         }
       }

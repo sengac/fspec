@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface DeleteWorkUnitOptions {
   workUnitId: string;
   force?: boolean;
@@ -160,16 +161,16 @@ export function registerDeleteWorkUnitCommand(program: Command): void {
             workUnitId,
             ...options,
           });
-          console.log(
+          output.log(
             chalk.green(`✓ Work unit ${workUnitId} deleted successfully`)
           );
           if (result.warnings && result.warnings.length > 0) {
             result.warnings.forEach((warning: string) =>
-              console.log(chalk.yellow(`⚠ ${warning}`))
+              output.log(chalk.yellow(`⚠ ${warning}`))
             );
           }
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to delete work unit:'),
             error.message
           );

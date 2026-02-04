@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RemoveDependencyOptions {
   workUnitId: string;
   blocks?: string;
@@ -187,9 +188,9 @@ export function registerRemoveDependencyCommand(program: Command): void {
             dependsOn: finalDependsOn,
             relatesTo: options.relatesTo,
           });
-          console.log(chalk.green(`✓ Dependency removed successfully`));
+          output.log(chalk.green(`✓ Dependency removed successfully`));
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to remove dependency:'),
             error.message
           );

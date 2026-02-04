@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 interface AddScenarioOptions {
   cwd?: string;
   dryRun?: boolean;
@@ -152,21 +153,21 @@ export async function addScenarioCommand(
     const result = await addScenario(featureIdentifier, scenarioName);
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       if (result.suggestion) {
-        console.log(chalk.yellow('Suggestion:'), result.suggestion);
+        output.log(chalk.yellow('Suggestion:'), result.suggestion);
       }
       process.exit(1);
     }
 
     if (result.warning) {
-      console.log(chalk.yellow('⚠'), result.warning);
+      output.log(chalk.yellow('⚠'), result.warning);
     }
 
-    console.log(chalk.green(`✓ Added scenario "${scenarioName}"`));
+    output.log(chalk.green(`✓ Added scenario "${scenarioName}"`));
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

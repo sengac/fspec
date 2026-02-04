@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface Bottleneck {
   id: string;
   title: string;
@@ -131,50 +132,48 @@ export function registerQueryBottlenecksCommand(program: Command): void {
         });
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(result, null, 2));
+          output.log(JSON.stringify(result, null, 2));
         } else {
           // Text output
           if (result.bottlenecks.length === 0) {
-            console.log(chalk.green('✓ No bottlenecks found'));
+            output.log(chalk.green('✓ No bottlenecks found'));
             return;
           }
 
-          console.log(
+          output.log(
             chalk.bold('Bottleneck Work Units (blocking 2+ work units):\n')
           );
 
           for (const bottleneck of result.bottlenecks) {
-            console.log(
+            output.log(
               chalk.bold(`${bottleneck.id}`) +
                 chalk.gray(` (${bottleneck.status})`) +
                 ` - ${bottleneck.title}`
             );
-            console.log(
-              chalk.yellow(`  Bottleneck Score: ${bottleneck.score}`)
-            );
-            console.log(
+            output.log(chalk.yellow(`  Bottleneck Score: ${bottleneck.score}`));
+            output.log(
               chalk.gray(
                 `  Direct Blocks: ${bottleneck.directBlocks.join(', ')}`
               )
             );
             if (bottleneck.transitiveBlocks.length > 0) {
-              console.log(
+              output.log(
                 chalk.gray(
                   `  Transitive Blocks: ${bottleneck.transitiveBlocks.join(', ')}`
                 )
               );
             }
-            console.log();
+            output.log();
           }
 
-          console.log(
+          output.log(
             chalk.bold(`\nTotal bottlenecks: ${result.bottlenecks.length}`)
           );
         }
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        console.error(chalk.red('✗ Query failed:'), errorMessage);
+        output.error(chalk.red('✗ Query failed:'), errorMessage);
         process.exit(1);
       }
     });

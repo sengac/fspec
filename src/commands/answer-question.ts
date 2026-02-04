@@ -5,6 +5,7 @@ import type { QuestionItem } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface AnswerQuestionOptions {
   workUnitId: string;
   index: number;
@@ -147,19 +148,19 @@ export function registerAnswerQuestionCommand(program: Command): void {
             answer: options.answer,
             addTo: options.addTo as 'rule' | 'assumption' | 'none',
           });
-          console.log(chalk.green(`✓ Answered question: "${result.question}"`));
+          output.log(chalk.green(`✓ Answered question: "${result.question}"`));
           if (options.answer) {
-            console.log(chalk.dim(`  Answer: "${options.answer}"`));
+            output.log(chalk.dim(`  Answer: "${options.answer}"`));
           }
           if (result.addedTo && result.addedContent) {
-            console.log(
+            output.log(
               chalk.cyan(
                 `  Added to ${result.addedTo}: "${result.addedContent}"`
               )
             );
           }
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to answer question:'),
             error.message
           );

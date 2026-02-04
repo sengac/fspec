@@ -4,6 +4,7 @@ import { join } from 'path';
 import { ensurePrefixesFile, ensureEpicsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface Prefix {
   prefix: string;
   description?: string;
@@ -83,9 +84,9 @@ export function registerUpdatePrefixCommand(program: Command): void {
           prefix,
           description: options.description,
         });
-        console.log(chalk.green(`✓ Prefix ${prefix} updated successfully`));
+        output.log(chalk.green(`✓ Prefix ${prefix} updated successfully`));
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to update prefix:'), error.message);
+        output.error(chalk.red('✗ Failed to update prefix:'), error.message);
         process.exit(1);
       }
     });

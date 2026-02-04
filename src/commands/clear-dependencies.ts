@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface ClearDependenciesOptions {
   workUnitId: string;
   confirm?: boolean;
@@ -109,11 +110,11 @@ export function registerClearDependenciesCommand(program: Command): void {
           workUnitId,
           confirm: options.confirm,
         });
-        console.log(
+        output.log(
           chalk.green(`✓ All dependencies cleared from ${workUnitId}`)
         );
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to clear dependencies:'),
           error.message
         );

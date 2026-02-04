@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   title?: string;
@@ -61,13 +62,13 @@ export function registerExportWorkUnitsCommand(program: Command): void {
             output,
             status: options.status as any,
           });
-          console.log(
+          output.log(
             chalk.green(
               `✓ Exported ${result.count} work units to ${result.outputFile}`
             )
           );
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to export work units:'),
             error.message
           );

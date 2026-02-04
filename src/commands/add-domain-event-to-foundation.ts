@@ -10,6 +10,7 @@ import { generateFoundationMdCommand } from './generate-foundation-md';
 import type { GenericFoundation } from '../types/generic-foundation';
 import type { EventStormItem } from '../types';
 
+import { output } from '../utils/output';
 export interface AddDomainEventToFoundationOptions {
   cwd?: string;
   description?: string;
@@ -116,14 +117,14 @@ export async function addDomainEventToFoundationCommand(
     );
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.message);
+      output.error(chalk.red('Error:'), result.message);
       process.exit(1);
     }
 
-    console.log(chalk.green('✓'), result.message);
+    output.log(chalk.green('✓'), result.message);
     process.exit(0);
   } catch (error: unknown) {
-    console.error(
+    output.error(
       chalk.red('Error:'),
       error instanceof Error ? error.message : 'Unknown error'
     );

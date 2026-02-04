@@ -10,6 +10,7 @@ import type {
 import type { EventStormBoundedContext } from '../types';
 import { generateFoundationMdCommand } from './generate-foundation-md';
 
+import { output } from '../utils/output';
 export interface AddFoundationBoundedContextOptions {
   cwd?: string;
 }
@@ -100,14 +101,14 @@ export async function addFoundationBoundedContextCommand(
     const result = await addFoundationBoundedContext(text);
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.message);
+      output.error(chalk.red('Error:'), result.message);
       process.exit(1);
     }
 
-    console.log(chalk.green('✓'), result.message);
+    output.log(chalk.green('✓'), result.message);
     process.exit(0);
   } catch (error: unknown) {
-    console.error(
+    output.error(
       chalk.red('Error:'),
       error instanceof Error ? error.message : 'Unknown error'
     );

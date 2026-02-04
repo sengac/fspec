@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import chalk from 'chalk';
 import Ajv from 'ajv';
 
+import { output } from '../utils/output';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -120,16 +121,16 @@ export async function validateFoundationSchemaCommand(): Promise<void> {
     const result = await validateFoundationSchema();
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green(result.output));
+    output.log(chalk.green(result.output));
     process.exit(0);
   } catch (error: unknown) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
-    console.error(chalk.red('Error:'), errorMessage);
+    output.error(chalk.red('Error:'), errorMessage);
     process.exit(1);
   }
 }

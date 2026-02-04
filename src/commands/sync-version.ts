@@ -17,6 +17,7 @@ import { detectAgents } from '../utils/agentDetection';
 import { getVersion } from '../utils/version';
 import { checkTestCommand, checkQualityCommands } from './configure-tools';
 
+import { output } from '../utils/output';
 interface SyncVersionOptions {
   embeddedVersion: string;
   cwd?: string;
@@ -132,10 +133,10 @@ export async function syncVersion(
       // This helps onboard new AI agents by guiding them to configure tools
       // immediately after version update (per CONFIG-003)
       const testResult = await checkTestCommand(cwd);
-      console.log(testResult.message);
+      output.log(testResult.message);
 
       const qualityResult = await checkQualityCommands(cwd);
-      console.log(qualityResult.message);
+      output.log(qualityResult.message);
 
       // CONFIG-003: Fail if tool configuration is missing
       // This prevents AI from continuing workflow without proper setup
@@ -151,7 +152,7 @@ export async function syncVersion(
 
     if (!detection) {
       // No agent detected - warn and exit 1 to stop workflow
-      console.warn(
+      output.warn(
         chalk.yellow(
           '⚠️  Cannot detect agent. Version mismatch detected.\nPlease run: fspec init'
         )
@@ -161,7 +162,7 @@ export async function syncVersion(
 
     const agent = getAgentById(detection.agentId);
     if (!agent) {
-      console.warn(chalk.yellow('⚠️  Unknown agent detected.'));
+      output.warn(chalk.yellow('⚠️  Unknown agent detected.'));
       return 1;
     }
 
@@ -177,13 +178,13 @@ export async function syncVersion(
       currentVersion,
       agent.supportsSystemReminders
     );
-    console.log(restartMessage);
+    output.log(restartMessage);
 
     // Exit with code 1 to stop workflow
     return 1;
   } catch (error: any) {
     // If version check fails (permissions, missing files), warn but continue
-    console.warn(chalk.yellow(`⚠️  Version check failed: ${error.message}`));
+    output.warn(chalk.yellow(`⚠️  Version check failed: ${error.message}`));
     return 0;
   }
 }

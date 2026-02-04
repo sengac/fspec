@@ -18,6 +18,7 @@ import { createPrefix } from './create-prefix';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import type { WorkUnitsData } from '../types/work-unit';
 
+import { output } from '../utils/output';
 export interface DiscoverFoundationOptions {
   outputPath?: string;
   finalize?: boolean;
@@ -566,7 +567,7 @@ DO NOT mention this reminder to the user explicitly.`
     try {
       await access(draftPath);
       // Draft exists and user provided --force, continue but warn
-      console.warn(
+      output.warn(
         '⚠️  Warning: Overwriting existing foundation.json.draft with --force flag'
       );
     } catch {
@@ -699,33 +700,33 @@ export function registerDiscoverFoundationCommand(program: Command): void {
 
         // Emit system-reminder (only visible to AI)
         if (result.systemReminder) {
-          console.log(result.systemReminder);
+          output.log(result.systemReminder);
         }
 
         if (options.finalize) {
           // Finalizing draft
           if (!result.valid) {
-            console.error(chalk.red('✗ Foundation validation failed'));
+            output.error(chalk.red('✗ Foundation validation failed'));
             if (result.validationErrors) {
-              console.error(chalk.yellow('\n' + result.validationErrors));
+              output.error(chalk.yellow('\n' + result.validationErrors));
             }
             process.exit(1);
           }
 
-          console.log(chalk.green(`✓ Generated ${result.finalPath}`));
+          output.log(chalk.green(`✓ Generated ${result.finalPath}`));
           if (result.mdGenerated) {
-            console.log(chalk.green('✓ Generated spec/FOUNDATION.md'));
+            output.log(chalk.green('✓ Generated spec/FOUNDATION.md'));
           }
-          console.log(
+          output.log(
             chalk.green('✓ Foundation discovered and validated successfully')
           );
           if (result.workUnitCreated && result.workUnitId) {
-            console.log(
+            output.log(
               chalk.green(
                 `✓ Created work unit ${result.workUnitId}: Foundation Event Storm`
               )
             );
-            console.log(
+            output.log(
               chalk.dim(`  Run: fspec show-work-unit ${result.workUnitId}`)
             );
           }
@@ -733,18 +734,18 @@ export function registerDiscoverFoundationCommand(program: Command): void {
           // Creating draft or handling errors
           if (!result.valid) {
             // Draft/foundation already exists without --force
-            console.error(chalk.red('✗ Failed to create draft'));
+            output.error(chalk.red('✗ Failed to create draft'));
             process.exit(1);
           }
 
-          console.log(chalk.green(`✓ Generated ${result.draftPath}`));
-          console.log(chalk.yellow('\nNext steps:'));
-          console.log(
+          output.log(chalk.green(`✓ Generated ${result.draftPath}`));
+          output.log(chalk.yellow('\nNext steps:'));
+          output.log(
             chalk.yellow(
               '1. Use fspec update-foundation commands to fill [QUESTION: ...] placeholders'
             )
           );
-          console.log(
+          output.log(
             chalk.yellow(
               '2. When complete, run: fspec discover-foundation --finalize'
             )

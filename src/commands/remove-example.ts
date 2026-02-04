@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RemoveExampleOptions {
   workUnitId: string;
   index: number;
@@ -96,11 +97,11 @@ export function registerRemoveExampleCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        console.log(
+        output.log(
           chalk.green(`✓ Removed example: "${result.removedExample}"`)
         );
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to remove example:'), error.message);
+        output.error(chalk.red('✗ Failed to remove example:'), error.message);
         process.exit(1);
       }
     });

@@ -3,6 +3,7 @@ import type { Command } from 'commander';
 import { join } from 'path';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface Epic {
   id: string;
   [key: string]: unknown;
@@ -100,9 +101,9 @@ export function registerDeleteEpicCommand(program: Command): void {
           epicId,
           force: options.force,
         });
-        console.log(chalk.green(`✓ Epic ${epicId} deleted successfully`));
+        output.log(chalk.green(`✓ Epic ${epicId} deleted successfully`));
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to delete epic:'), error.message);
+        output.error(chalk.red('✗ Failed to delete epic:'), error.message);
         process.exit(1);
       }
     });

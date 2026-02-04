@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RestoreExampleOptions {
   workUnitId: string;
   index: number;
@@ -96,14 +97,14 @@ export function registerRestoreExampleCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        console.log(
+        output.log(
           chalk.green(`✓ Restored example: "${result.restoredExample}"`)
         );
         if (result.message) {
-          console.log(chalk.dim(`  ${result.message}`));
+          output.log(chalk.dim(`  ${result.message}`));
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to restore example:'), error.message);
+        output.error(chalk.red('✗ Failed to restore example:'), error.message);
         process.exit(1);
       }
     });

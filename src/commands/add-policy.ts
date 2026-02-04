@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import type { EventStormPolicy } from '../types';
 import { addEventStormItem } from './event-storm-utils';
 
+import { output } from '../utils/output';
 export interface AddPolicyOptions {
   workUnitId: string;
   text: string;
@@ -98,17 +99,17 @@ export function registerAddPolicyCommand(program: Command): void {
           });
 
           if (!result.success) {
-            console.error(chalk.red('✗ Failed to add policy:'), result.error);
+            output.error(chalk.red('✗ Failed to add policy:'), result.error);
             process.exit(1);
           }
 
-          console.log(
+          output.log(
             chalk.green(
               `✓ Policy added to ${workUnitId} (id: ${result.policyId})`
             )
           );
         } catch (error: any) {
-          console.error(chalk.red('✗ Failed to add policy:'), error.message);
+          output.error(chalk.red('✗ Failed to add policy:'), error.message);
           process.exit(1);
         }
       }

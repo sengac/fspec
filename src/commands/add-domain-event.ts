@@ -10,6 +10,7 @@ import chalk from 'chalk';
 import type { WorkUnitsData, EventStormEvent } from '../types';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 export interface AddDomainEventOptions {
   workUnitId: string;
   text: string;
@@ -177,23 +178,20 @@ export function registerAddDomainEventCommand(program: Command): void {
         });
 
         if (!result.success) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to add domain event:'),
             result.error
           );
           process.exit(1);
         }
 
-        console.log(
+        output.log(
           chalk.green(
             `✓ Added domain event "${text}" to ${workUnitId} (ID: ${result.eventId})`
           )
         );
       } catch (error: any) {
-        console.error(
-          chalk.red('✗ Failed to add domain event:'),
-          error.message
-        );
+        output.error(chalk.red('✗ Failed to add domain event:'), error.message);
         process.exit(1);
       }
     });

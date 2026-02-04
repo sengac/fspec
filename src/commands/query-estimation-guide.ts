@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   estimate?: number;
@@ -102,10 +103,10 @@ export function registerQueryEstimationGuideCommand(program: Command): void {
           format: options.format as 'text' | 'json',
         });
         if (options.format === 'json') {
-          console.log(JSON.stringify(result, null, 2));
+          output.log(JSON.stringify(result, null, 2));
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Query failed:'), error.message);
+        output.error(chalk.red('✗ Query failed:'), error.message);
         process.exit(1);
       }
     });

@@ -20,6 +20,7 @@ import { ConfirmPrompt } from '../components/ConfirmPrompt';
 import { getActivationMessage } from '../utils/activationMessage';
 import { writeAgentConfig } from '../utils/agentRuntimeConfig';
 
+import { output } from '../utils/output';
 interface InstallOptions {
   shouldSwitch?: boolean;
   interactiveMode?: boolean;
@@ -353,19 +354,19 @@ export function registerInitCommand(program: Command): void {
 
         // Check if user cancelled
         if (result.cancelled) {
-          console.log(chalk.yellow('Init cancelled'));
+          output.log(chalk.yellow('Init cancelled'));
           process.exit(0);
         }
 
         // Success message (show for both CLI and interactive modes)
         if (result.success) {
           const agentNames = agentIds.join(', ');
-          console.log(chalk.green(`✓ Installed fspec for ${agentNames}`));
+          output.log(chalk.green(`✓ Installed fspec for ${agentNames}`));
 
           // Show detailed list of installed files
           if (result.filesInstalled.length > 0) {
             result.filesInstalled.forEach(file => {
-              console.log(chalk.dim(`  - ${file}`));
+              output.log(chalk.dim(`  - ${file}`));
             });
           }
 
@@ -373,11 +374,11 @@ export function registerInitCommand(program: Command): void {
           const activationMessage = agent
             ? getActivationMessage(agent)
             : 'Run /fspec in your AI agent to activate';
-          console.log(chalk.green(`\nNext steps:\n${activationMessage}`));
+          output.log(chalk.green(`\nNext steps:\n${activationMessage}`));
         }
         process.exit(0);
       } catch (error: any) {
-        console.error(chalk.red('✗ Init failed:'), error.message);
+        output.error(chalk.red('✗ Init failed:'), error.message);
         process.exit(1);
       }
     });

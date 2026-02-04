@@ -3,6 +3,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import type { GenericFoundation } from '../types/foundation';
 
+import { output } from '../utils/output';
 export async function removeCapability(
   cwd: string,
   name: string
@@ -30,8 +31,8 @@ export async function removeCapability(
   } catch (error: unknown) {
     const err = error as { code?: string; message: string };
     if (err.code === 'ENOENT') {
-      console.error(chalk.red('✗ foundation.json not found'));
-      console.error(
+      output.error(chalk.red('✗ foundation.json not found'));
+      output.error(
         chalk.yellow(
           '  Run: fspec discover-foundation to create foundation.json'
         )
@@ -46,8 +47,8 @@ export async function removeCapability(
     !foundation.solutionSpace.capabilities ||
     foundation.solutionSpace.capabilities.length === 0
   ) {
-    console.error(chalk.red(`✗ Capability "${name}" not found`));
-    console.error(chalk.yellow('  No capabilities exist in foundation'));
+    output.error(chalk.red(`✗ Capability "${name}" not found`));
+    output.error(chalk.yellow('  No capabilities exist in foundation'));
     throw new Error(`Capability "${name}" not found`);
   }
 
@@ -59,8 +60,8 @@ export async function removeCapability(
     const availableNames = foundation.solutionSpace.capabilities
       .map(c => c.name)
       .join(', ');
-    console.error(chalk.red(`✗ Capability "${name}" not found`));
-    console.error(chalk.yellow(`  Available capabilities: ${availableNames}`));
+    output.error(chalk.red(`✗ Capability "${name}" not found`));
+    output.error(chalk.yellow(`  Available capabilities: ${availableNames}`));
     throw new Error(`Capability "${name}" not found`);
   }
 
@@ -71,5 +72,5 @@ export async function removeCapability(
   await fs.writeFile(targetPath, JSON.stringify(foundation, null, 2) + '\n');
 
   const fileName = isDraft ? 'foundation.json.draft' : 'foundation.json';
-  console.log(chalk.green(`✓ Removed capability "${name}" from ${fileName}`));
+  output.log(chalk.green(`✓ Removed capability "${name}" from ${fileName}`));
 }

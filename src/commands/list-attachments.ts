@@ -5,6 +5,7 @@ import type { Command } from 'commander';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 export interface ListAttachmentsOptions {
   workUnitId: string;
   cwd?: string;
@@ -27,14 +28,14 @@ export async function listAttachments(
 
   // Check if attachments exist
   if (!workUnit.attachments || workUnit.attachments.length === 0) {
-    console.log(
+    output.log(
       chalk.yellow(`No attachments found for work unit ${options.workUnitId}`)
     );
     return;
   }
 
   // Display attachments
-  console.log(
+  output.log(
     chalk.bold(
       `\nAttachments for ${options.workUnitId} (${workUnit.attachments.length}):\n`
     )
@@ -47,13 +48,13 @@ export async function listAttachments(
       const stats = await stat(fullPath);
       const sizeKB = (stats.size / 1024).toFixed(2);
 
-      console.log(chalk.green('  ✓'), chalk.cyan(attachment));
-      console.log(chalk.dim(`    Size: ${sizeKB} KB`));
-      console.log(chalk.dim(`    Modified: ${stats.mtime.toLocaleString()}\n`));
+      output.log(chalk.green('  ✓'), chalk.cyan(attachment));
+      output.log(chalk.dim(`    Size: ${sizeKB} KB`));
+      output.log(chalk.dim(`    Modified: ${stats.mtime.toLocaleString()}\n`));
     } catch {
       // File doesn't exist on filesystem
-      console.log(chalk.red('  ✗'), chalk.red(attachment));
-      console.log(chalk.dim('    File not found on filesystem\n'));
+      output.log(chalk.red('  ✗'), chalk.red(attachment));
+      output.log(chalk.dim('    File not found on filesystem\n'));
     }
   }
 }
@@ -69,7 +70,7 @@ export function registerListAttachmentsCommand(program: Command): void {
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        console.error(chalk.red('Error:'), errorMessage);
+        output.error(chalk.red('Error:'), errorMessage);
         process.exit(1);
       }
     });

@@ -8,6 +8,7 @@ import { getFileNamingReminder } from '../utils/system-reminder';
 import { createCoverageFile } from '../utils/coverage-file';
 import { detectPrefill } from '../utils/prefill-detection';
 
+import { output } from '../utils/output';
 export interface CreateFeatureResult {
   filePath: string;
   prefillDetection: {
@@ -133,23 +134,23 @@ export async function createFeatureCommand(name: string): Promise<void> {
     const result = await createFeature(name);
     const fileName = result.filePath.split('/').slice(-2).join('/'); // spec/features/file.feature
 
-    console.log(chalk.green(`✓ Created ${fileName}`));
-    console.log(chalk.gray('  Edit the file to add your scenarios'));
+    output.log(chalk.green(`✓ Created ${fileName}`));
+    output.log(chalk.gray('  Edit the file to add your scenarios'));
 
     // Display coverage file creation result
     if (result.coverageFile.status === 'created') {
-      console.log(chalk.green(result.coverageFile.message));
+      output.log(chalk.green(result.coverageFile.message));
     } else if (result.coverageFile.status === 'skipped') {
-      console.log(chalk.yellow(result.coverageFile.message));
+      output.log(chalk.yellow(result.coverageFile.message));
     } else if (result.coverageFile.status === 'recreated') {
-      console.log(chalk.yellow(result.coverageFile.message));
+      output.log(chalk.yellow(result.coverageFile.message));
     } else if (result.coverageFile.status === 'error') {
-      console.log(chalk.red(result.coverageFile.message));
+      output.log(chalk.red(result.coverageFile.message));
     }
 
     // Display file naming reminder if anti-pattern detected
     if (result.fileNamingReminder) {
-      console.log('\n' + result.fileNamingReminder);
+      output.log('\n' + result.fileNamingReminder);
     }
 
     // Display prefill detection system-reminder
@@ -157,13 +158,13 @@ export async function createFeatureCommand(name: string): Promise<void> {
       result.prefillDetection.hasPrefill &&
       result.prefillDetection.systemReminder
     ) {
-      console.log('\n' + result.prefillDetection.systemReminder);
+      output.log('\n' + result.prefillDetection.systemReminder);
     }
 
     process.exit(0);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red('Error:'), errorMessage);
+    output.error(chalk.red('Error:'), errorMessage);
     process.exit(1);
   }
 }

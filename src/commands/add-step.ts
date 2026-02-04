@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 interface AddStepOptions {
   cwd?: string;
   dryRun?: boolean;
@@ -260,19 +261,19 @@ export async function addStepCommand(
     );
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       if (result.suggestion) {
-        console.log(chalk.yellow('Suggestion:'), result.suggestion);
+        output.log(chalk.yellow('Suggestion:'), result.suggestion);
       }
       process.exit(1);
     }
 
-    console.log(
+    output.log(
       chalk.green(`✓ Added ${stepType} step to scenario "${scenarioName}"`)
     );
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

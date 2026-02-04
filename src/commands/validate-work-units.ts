@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface ValidateWorkUnitsOptions {
   cwd?: string;
 }
@@ -318,18 +319,18 @@ export function registerValidateWorkUnitsCommand(program: Command): void {
       try {
         const result = await validateWorkUnits({});
         if (result.valid) {
-          console.log(chalk.green(`✓ All work units are valid`));
+          output.log(chalk.green(`✓ All work units are valid`));
         } else {
-          console.error(
+          output.error(
             chalk.red(`✗ Found ${result.errors.length} validation errors`)
           );
           result.errors.forEach((error: string) =>
-            console.error(chalk.red(`  - ${error}`))
+            output.error(chalk.red(`  - ${error}`))
           );
           process.exit(1);
         }
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to validate work units:'),
           error.message
         );

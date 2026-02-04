@@ -6,6 +6,7 @@ import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { cleanupVirtualHookScript } from '../hooks/script-generation';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface ClearVirtualHooksOptions {
   workUnitId: string;
   cwd?: string;
@@ -75,13 +76,13 @@ export function registerClearVirtualHooksCommand(program: Command): void {
     .action(async (workUnitId: string) => {
       try {
         const result = await clearVirtualHooks({ workUnitId });
-        console.log(
+        output.log(
           chalk.green(
             `✓ Cleared ${result.clearedCount} virtual hook(s) from ${workUnitId}`
           )
         );
       } catch (error: unknown) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to clear virtual hooks:'),
           error instanceof Error ? error.message : String(error)
         );

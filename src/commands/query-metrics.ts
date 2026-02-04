@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 
+import { output } from '../utils/output';
 interface StateHistoryEntry {
   state: string;
   timestamp: string;
@@ -196,34 +197,34 @@ export function registerQueryMetricsCommand(program: Command): void {
             type: options.type,
           });
           if (options.format === 'json') {
-            console.log(JSON.stringify(result, null, 2));
+            output.log(JSON.stringify(result, null, 2));
           } else {
             // Text output for aggregate metrics
             if (result.aggregateMetrics) {
-              console.log(chalk.bold('\nProject Metrics'));
-              console.log('');
-              console.log(
+              output.log(chalk.bold('\nProject Metrics'));
+              output.log('');
+              output.log(
                 `Total Work Units: ${result.aggregateMetrics.totalWorkUnits}`
               );
-              console.log(
+              output.log(
                 `Completed Work Units: ${result.aggregateMetrics.completedWorkUnits}`
               );
               if (result.aggregateMetrics.averageCycleTime) {
-                console.log(
+                output.log(
                   `Average Cycle Time: ${result.aggregateMetrics.averageCycleTime}`
                 );
               }
               if (result.aggregateMetrics.byType) {
-                console.log('');
-                console.log(chalk.bold('By Type:'));
+                output.log('');
+                output.log(chalk.bold('By Type:'));
                 for (const [type, data] of Object.entries(
                   result.aggregateMetrics.byType
                 )) {
-                  console.log(
+                  output.log(
                     `  ${type}: ${data.count} work unit${data.count !== 1 ? 's' : ''}`
                   );
                   if (data.averageCycleTime) {
-                    console.log(
+                    output.log(
                       `    Average Cycle Time: ${data.averageCycleTime}`
                     );
                   }
@@ -231,22 +232,22 @@ export function registerQueryMetricsCommand(program: Command): void {
               }
             } else if (result.cycleTime) {
               // Single work unit output
-              console.log(chalk.bold('\nWork Unit Metrics'));
-              console.log('');
-              console.log(`Cycle Time: ${result.cycleTime}`);
+              output.log(chalk.bold('\nWork Unit Metrics'));
+              output.log('');
+              output.log(`Cycle Time: ${result.cycleTime}`);
               if (result.timePerState) {
-                console.log('');
-                console.log(chalk.bold('Time Per State:'));
+                output.log('');
+                output.log(chalk.bold('Time Per State:'));
                 for (const [state, time] of Object.entries(
                   result.timePerState
                 )) {
-                  console.log(`  ${state}: ${time}`);
+                  output.log(`  ${state}: ${time}`);
                 }
               }
             }
           }
         } catch (error: any) {
-          console.error(chalk.red('✗ Query failed:'), error.message);
+          output.error(chalk.red('✗ Query failed:'), error.message);
           process.exit(1);
         }
       }

@@ -12,6 +12,7 @@ import chalk from 'chalk';
 import type { CoverageFile } from '../utils/coverage-file';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface UnlinkCoverageOptions {
   scenario: string;
   testFile?: string;
@@ -188,10 +189,10 @@ export async function unlinkCoverageCommand(
 ): Promise<void> {
   try {
     const result = await unlinkCoverage(featureName, options);
-    console.log(result.message);
+    output.log(result.message);
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

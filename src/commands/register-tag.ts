@@ -8,6 +8,7 @@ import { generateTagsMd } from '../generators/tags-md';
 import { ensureTagsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RegisterTagOptions {
   cwd?: string;
 }
@@ -144,23 +145,23 @@ export async function registerTagCommand(
     const result = await registerTag(tag, category, description);
 
     if (result.created) {
-      console.log(chalk.yellow('Created new tags.json and TAGS.md'));
+      output.log(chalk.yellow('Created new tags.json and TAGS.md'));
     }
 
     if (result.converted) {
-      console.log(
+      output.log(
         chalk.yellow(
           `Note: Tag converted to lowercase: ${tag} → ${tag.toLowerCase()}`
         )
       );
     }
 
-    console.log(chalk.green(`✓ ${result.message}`));
-    console.log(chalk.gray('  Updated: spec/tags.json'));
-    console.log(chalk.gray('  Regenerated: spec/TAGS.md'));
+    output.log(chalk.green(`✓ ${result.message}`));
+    output.log(chalk.gray('  Updated: spec/tags.json'));
+    output.log(chalk.gray('  Regenerated: spec/TAGS.md'));
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

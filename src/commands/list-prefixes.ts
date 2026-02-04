@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 
+import { output } from '../utils/output';
 interface Prefix {
   prefix: string;
   description: string;
@@ -105,29 +106,29 @@ export function registerListPrefixesCommand(program: Command): void {
       try {
         const result = await listPrefixes({});
         if (result.prefixes.length === 0) {
-          console.log(chalk.yellow('No prefixes found'));
+          output.log(chalk.yellow('No prefixes found'));
           process.exit(0);
         }
-        console.log(chalk.bold(`\nPrefixes (${result.prefixes.length})`));
-        console.log('');
+        output.log(chalk.bold(`\nPrefixes (${result.prefixes.length})`));
+        output.log('');
         for (const prefix of result.prefixes) {
-          console.log(chalk.cyan(prefix.prefix));
-          console.log(chalk.gray(`  ${prefix.description}`));
+          output.log(chalk.cyan(prefix.prefix));
+          output.log(chalk.gray(`  ${prefix.description}`));
           if (prefix.totalWorkUnits > 0) {
-            console.log(
+            output.log(
               chalk.gray(
                 `  Work Units: ${prefix.completedWorkUnits}/${prefix.totalWorkUnits} (${prefix.completionPercentage}%)`
               )
             );
           }
-          console.log('');
+          output.log('');
         }
         process.exit(0);
       } catch (error: unknown) {
         if (error instanceof Error) {
-          console.error(chalk.red('Error:'), error.message);
+          output.error(chalk.red('Error:'), error.message);
         } else {
-          console.error(chalk.red('Error: Unknown error occurred'));
+          output.error(chalk.red('Error: Unknown error occurred'));
         }
         process.exit(1);
       }

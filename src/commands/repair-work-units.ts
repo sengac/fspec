@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RepairWorkUnitsOptions {
   cwd?: string;
 }
@@ -134,14 +135,14 @@ export function registerRepairWorkUnitsCommand(program: Command): void {
         const result = await repairWorkUnits({
           dryRun: options.dryRun,
         });
-        console.log(chalk.green(`✓ Repaired ${result.repaired} issues`));
+        output.log(chalk.green(`✓ Repaired ${result.repaired} issues`));
         if (result.details && result.details.length > 0) {
           result.details.forEach((detail: string) =>
-            console.log(chalk.cyan(`  - ${detail}`))
+            output.log(chalk.cyan(`  - ${detail}`))
           );
         }
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to repair work units:'),
           error.message
         );

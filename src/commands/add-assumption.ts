@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface AddAssumptionOptions {
   workUnitId: string;
   assumption: string;
@@ -70,9 +71,9 @@ export function registerAddAssumptionCommand(program: Command): void {
     .action(async (workUnitId: string, assumption: string) => {
       try {
         await addAssumption({ workUnitId, assumption });
-        console.log(chalk.green(`✓ Assumption added successfully`));
+        output.log(chalk.green(`✓ Assumption added successfully`));
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to add assumption:'), error.message);
+        output.error(chalk.red('✗ Failed to add assumption:'), error.message);
         process.exit(1);
       }
     });

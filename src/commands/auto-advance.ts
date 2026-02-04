@@ -4,6 +4,7 @@ import type { Command } from 'commander';
 import { join } from 'path';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   status?: string;
@@ -120,14 +121,14 @@ export function registerAutoAdvanceCommand(program: Command): void {
     .action(async (options: { dryRun?: boolean }) => {
       try {
         const result = await autoAdvance({ dryRun: options.dryRun });
-        console.log(chalk.green(`✓ Advanced ${result.advanced} work units`));
+        output.log(chalk.green(`✓ Advanced ${result.advanced} work units`));
         if (result.details && result.details.length > 0) {
           result.details.forEach((detail: string) =>
-            console.log(chalk.cyan(`  - ${detail}`))
+            output.log(chalk.cyan(`  - ${detail}`))
           );
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to auto-advance:'), error.message);
+        output.error(chalk.red('✗ Failed to auto-advance:'), error.message);
         process.exit(1);
       }
     });

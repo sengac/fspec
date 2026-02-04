@@ -5,6 +5,7 @@
 
 import chalk from 'chalk';
 import type { Command } from 'commander';
+import { output } from '../utils/output';
 import {
   parseAllFeatures,
   searchScenarios as searchScenariosUtil,
@@ -79,9 +80,9 @@ export function registerSearchScenariosCommand(program: Command): void {
         try {
           const result = await searchScenarios(options);
           if (options.json) {
-            console.log(JSON.stringify(result, null, 2));
+            output.log(JSON.stringify(result, null, 2));
           } else {
-            console.log(
+            output.log(
               chalk.green(
                 `✓ Found ${result.scenarios.length} scenarios matching "${options.query}"`
               )
@@ -89,7 +90,7 @@ export function registerSearchScenariosCommand(program: Command): void {
           }
         } catch (error: unknown) {
           if (error instanceof Error) {
-            console.error(chalk.red('✗ Search failed:'), error.message);
+            output.error(chalk.red('✗ Search failed:'), error.message);
           }
           process.exit(1);
         }

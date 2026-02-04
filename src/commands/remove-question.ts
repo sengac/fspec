@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RemoveQuestionOptions {
   workUnitId: string;
   index: number;
@@ -96,11 +97,11 @@ export function registerRemoveQuestionCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        console.log(
+        output.log(
           chalk.green(`✓ Removed question: "${result.removedQuestion}"`)
         );
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to remove question:'), error.message);
+        output.error(chalk.red('✗ Failed to remove question:'), error.message);
         process.exit(1);
       }
     });

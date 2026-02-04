@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RestoreRuleOptions {
   workUnitId: string;
   index?: number;
@@ -130,12 +131,12 @@ export function registerRestoreRuleCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        console.log(chalk.green(`✓ Restored rule: "${result.restoredRule}"`));
+        output.log(chalk.green(`✓ Restored rule: "${result.restoredRule}"`));
         if (result.message) {
-          console.log(chalk.dim(`  ${result.message}`));
+          output.log(chalk.dim(`  ${result.message}`));
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to restore rule:'), error.message);
+        output.error(chalk.red('✗ Failed to restore rule:'), error.message);
         process.exit(1);
       }
     });

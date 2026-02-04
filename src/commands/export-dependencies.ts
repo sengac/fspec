@@ -5,6 +5,7 @@ import { dirname } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface ExportDependenciesOptions {
   format: 'mermaid' | 'json';
   output: string;
@@ -126,11 +127,11 @@ export function registerExportDependenciesCommand(program: Command): void {
           format: format as 'mermaid' | 'json',
           output,
         });
-        console.log(
+        output.log(
           chalk.green(`✓ Dependencies exported to ${result.outputFile}`)
         );
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to export dependencies:'),
           error.message
         );

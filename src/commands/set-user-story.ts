@@ -5,6 +5,7 @@ import type { WorkUnitsData, UserStory } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface SetUserStoryOptions {
   role: string;
   action: string;
@@ -50,13 +51,13 @@ export async function setUserStoryCommand(
 ): Promise<void> {
   try {
     await setUserStory(workUnitId, options);
-    console.log(chalk.green(`✓ User story set for ${workUnitId}`));
-    console.log(chalk.gray(`  As a ${options.role}`));
-    console.log(chalk.gray(`  I want to ${options.action}`));
-    console.log(chalk.gray(`  So that ${options.benefit}`));
+    output.log(chalk.green(`✓ User story set for ${workUnitId}`));
+    output.log(chalk.gray(`  As a ${options.role}`));
+    output.log(chalk.gray(`  I want to ${options.action}`));
+    output.log(chalk.gray(`  So that ${options.benefit}`));
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

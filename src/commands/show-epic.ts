@@ -3,6 +3,7 @@ import type { Command } from 'commander';
 import { join } from 'path';
 import chalk from 'chalk';
 
+import { output } from '../utils/output';
 interface Epic {
   id: string;
   title?: string;
@@ -102,31 +103,31 @@ export async function showEpicCommand(
     const result = await showEpic({ epicId });
 
     if (options.format === 'json') {
-      console.log(JSON.stringify(result, null, 2));
+      output.log(JSON.stringify(result, null, 2));
     } else {
-      console.log(chalk.bold(`\nEpic: ${result.epic.id}`));
-      console.log('');
-      console.log(chalk.cyan('Title:'), result.epic.title || 'N/A');
+      output.log(chalk.bold(`\nEpic: ${result.epic.id}`));
+      output.log('');
+      output.log(chalk.cyan('Title:'), result.epic.title || 'N/A');
 
       if (result.epic.description) {
-        console.log(chalk.cyan('Description:'), result.epic.description);
+        output.log(chalk.cyan('Description:'), result.epic.description);
       }
 
-      console.log('');
-      console.log(chalk.cyan('Progress:'));
-      console.log(`  Total work units: ${result.totalWorkUnits}`);
-      console.log(`  Completed: ${result.completedWorkUnits}`);
-      console.log(`  Completion: ${result.completionPercentage}%`);
-      console.log('');
+      output.log('');
+      output.log(chalk.cyan('Progress:'));
+      output.log(`  Total work units: ${result.totalWorkUnits}`);
+      output.log(`  Completed: ${result.completedWorkUnits}`);
+      output.log(`  Completion: ${result.completionPercentage}%`);
+      output.log('');
     }
 
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(chalk.red('✗'), error.message);
-      console.error(chalk.gray('\nTry: fspec list-epics'));
+      output.error(chalk.red('✗'), error.message);
+      output.error(chalk.gray('\nTry: fspec list-epics'));
     } else {
-      console.error(chalk.red('Error: Unknown error occurred'));
+      output.error(chalk.red('Error: Unknown error occurred'));
     }
     process.exit(1);
   }

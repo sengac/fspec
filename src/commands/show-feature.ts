@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import { output } from '../utils/output';
 import {
   extractWorkUnitTags,
   loadWorkUnitsData,
@@ -167,15 +168,15 @@ export async function showFeatureCommand(
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
     // Only output to stdout if no output file specified
     if (!options.output) {
-      console.log(result.content);
+      output.log(result.content);
     } else {
-      console.log(
+      output.log(
         chalk.green('✓'),
         `Feature content written to ${options.output}`
       );
@@ -183,7 +184,7 @@ export async function showFeatureCommand(
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

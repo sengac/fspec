@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import { checkFoundationExists } from '../utils/foundation-check';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   title?: string;
@@ -97,7 +98,7 @@ export function registerBoardCommand(program: Command): void {
         const result = await displayBoard({ cwd: process.cwd() });
 
         if (options.format === 'json') {
-          console.log(JSON.stringify(result, null, 2));
+          output.log(JSON.stringify(result, null, 2));
         } else {
           // Display text format board using Ink
           const limit = parseInt(options.limit || '25', 10);
@@ -120,7 +121,7 @@ export function registerBoardCommand(program: Command): void {
           );
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to display board:'), error.message);
+        output.error(chalk.red('✗ Failed to display board:'), error.message);
         process.exit(1);
       }
     });

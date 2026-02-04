@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   status?: string;
@@ -131,9 +132,9 @@ export function registerGenerateSummaryReportCommand(program: Command): void {
           format: options.format as 'markdown' | 'json',
           output: options.output,
         });
-        console.log(chalk.green(`✓ Report generated: ${result.outputFile}`));
+        output.log(chalk.green(`✓ Report generated: ${result.outputFile}`));
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to generate report:'), error.message);
+        output.error(chalk.red('✗ Failed to generate report:'), error.message);
         process.exit(1);
       }
     });

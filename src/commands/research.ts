@@ -5,6 +5,7 @@ import { listResearchTools, TOOL_REGISTRY } from './research-tool-list';
 import { getResearchTool } from '../research-tools/registry';
 import type { Command } from 'commander';
 
+import { output } from '../utils/output';
 export interface ResearchTool {
   name: string;
   path: string;
@@ -161,7 +162,7 @@ export async function research(
 
     // Output to console for CLI usage and test expectations
     if (!toolsWithStatus.length) {
-      console.log('No research tools found.');
+      output.log('No research tools found.');
       return {
         tools: [],
         executed: false,
@@ -171,32 +172,30 @@ export async function research(
 
     // List configured tools (or all tools if --all flag)
     for (const tool of toolsWithStatus) {
-      console.log(`  ${tool.statusIndicator} ${tool.name}`);
-      console.log(`    ${tool.description}`);
+      output.log(`  ${tool.statusIndicator} ${tool.name}`);
+      output.log(`    ${tool.description}`);
       if (tool.configured) {
-        console.log(`    Ready to use`);
+        output.log(`    Ready to use`);
       } else if (tool.configGuidance) {
-        console.log(
-          `    Setup required: ${tool.configGuidance.split('\n')[0]}`
-        );
+        output.log(`    Setup required: ${tool.configGuidance.split('\n')[0]}`);
 
         // Show JSON config example for unconfigured tools when using --all
         if (options.all) {
-          console.log(`    Add to spec/fspec-config.json:`);
-          console.log(`    {`);
-          console.log(`      "research": {`);
-          console.log(`        "${tool.name}": {`);
+          output.log(`    Add to spec/fspec-config.json:`);
+          output.log(`    {`);
+          output.log(`      "research": {`);
+          output.log(`        "${tool.name}": {`);
           // Show required fields as example
           const requiredFields = getRequiredFieldsForTool(tool.name);
           for (const field of requiredFields) {
-            console.log(`          "${field}": "your-${field}-value",`);
+            output.log(`          "${field}": "your-${field}-value",`);
           }
-          console.log(`        }`);
-          console.log(`      }`);
-          console.log(`    }`);
+          output.log(`        }`);
+          output.log(`      }`);
+          output.log(`    }`);
         }
       }
-      console.log();
+      output.log();
     }
 
     // Show footer if not showing all tools
@@ -210,10 +209,10 @@ export async function research(
       t => !t.configured
     ).length;
     if (!options.all && unconfiguredCount > 0) {
-      console.log(
+      output.log(
         `  ${unconfiguredCount} additional tool${unconfiguredCount > 1 ? 's' : ''} available.`
       );
-      console.log(`  Use --all to see all tools including setup instructions.`);
+      output.log(`  Use --all to see all tools including setup instructions.`);
     }
 
     return {
@@ -288,15 +287,15 @@ export function registerResearchCommand(program: Command): void {
         // If no tool specified, list available tools
         if (!options.tool) {
           const toolsWithStatus = listResearchTools(cwd, true); // Show all tools
-          console.log('Available Research Tools:\n');
+          output.log('Available Research Tools:\n');
           for (const tool of toolsWithStatus) {
-            console.log(`  ${tool.statusIndicator} ${tool.name}`);
-            console.log(`    ${tool.description}`);
-            console.log(`    Usage: fspec research --tool=${tool.name} <args>`);
+            output.log(`  ${tool.statusIndicator} ${tool.name}`);
+            output.log(`    ${tool.description}`);
+            output.log(`    Usage: fspec research --tool=${tool.name} <args>`);
             if (tool.configGuidance) {
-              console.log(`    Config: ${tool.configGuidance.split('\n')[0]}`);
+              output.log(`    Config: ${tool.configGuidance.split('\n')[0]}`);
             }
-            console.log();
+            output.log();
           }
           return;
         }
@@ -342,17 +341,17 @@ export function registerResearchCommand(program: Command): void {
           } catch {
             // If tool not found, show helpful error with available tools
             const chalk = (await import('chalk')).default;
-            console.error(
+            output.error(
               chalk.red(`Research tool '${options.tool}' not found\n`)
             );
-            console.error('Available research tools:');
+            output.error('Available research tools:');
             const toolsWithStatus = listResearchTools();
             for (const tool of toolsWithStatus) {
-              console.log(
+              output.log(
                 `  ${tool.statusIndicator} ${tool.name} - ${tool.description}`
               );
             }
-            console.error(`\nTry: fspec research --tool=<name> --help`);
+            output.error(`\nTry: fspec research --tool=<name> --help`);
             process.exit(1);
           }
         }
@@ -363,21 +362,21 @@ export function registerResearchCommand(program: Command): void {
         // Execute tool with forwarded arguments
         try {
           const output = await tool.execute(forwardedArgs);
-          console.log(output);
+          output.log(output);
         } catch (toolError: unknown) {
           // Wrap tool errors in system-reminder for AI visibility
-          console.error('<system-reminder>');
-          console.error('RESEARCH TOOL ERROR');
-          console.error('');
-          console.error(`Tool: ${tool.name}`);
-          console.error(
+          output.error('<system-reminder>');
+          output.error('RESEARCH TOOL ERROR');
+          output.error('');
+          output.error(`Tool: ${tool.name}`);
+          output.error(
             `Error: ${toolError instanceof Error ? toolError.message : String(toolError)}`
           );
-          console.error('</system-reminder>');
+          output.error('</system-reminder>');
           process.exit(1);
         }
       } catch (error: unknown) {
-        console.error(error instanceof Error ? error.message : String(error));
+        output.error(error instanceof Error ? error.message : String(error));
         process.exit(1);
       }
     });

@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RestoreQuestionOptions {
   workUnitId: string;
   index: number;
@@ -96,17 +97,14 @@ export function registerRestoreQuestionCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        console.log(
+        output.log(
           chalk.green(`✓ Restored question: "${result.restoredQuestion}"`)
         );
         if (result.message) {
-          console.log(chalk.dim(`  ${result.message}`));
+          output.log(chalk.dim(`  ${result.message}`));
         }
       } catch (error: any) {
-        console.error(
-          chalk.red('✗ Failed to restore question:'),
-          error.message
-        );
+        output.error(chalk.red('✗ Failed to restore question:'), error.message);
         process.exit(1);
       }
     });

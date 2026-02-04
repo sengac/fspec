@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   estimate?: number;
@@ -172,51 +173,51 @@ export function registerQueryEstimateAccuracyCommand(program: Command): void {
         });
 
         if (options.format === 'json') {
-          console.log(JSON.stringify(result, null, 2));
+          output.log(JSON.stringify(result, null, 2));
         } else {
           // Text format output
           const data = result as AllWorkUnitsAccuracy;
 
-          console.log(chalk.bold('\n📊 Estimation Accuracy Report\n'));
+          output.log(chalk.bold('\n📊 Estimation Accuracy Report\n'));
 
           // Check if there's any data
           if (Object.keys(data.byStoryPoints).length === 0) {
-            console.log(
+            output.log(
               chalk.yellow(
                 'No completed work units with estimates and actuals found.'
               )
             );
-            console.log(chalk.gray('\nTo track accuracy, work units need:'));
-            console.log(chalk.gray('  • Status: done'));
-            console.log(chalk.gray('  • estimate field (story points)'));
-            console.log(chalk.gray('  • iterations field\n'));
+            output.log(chalk.gray('\nTo track accuracy, work units need:'));
+            output.log(chalk.gray('  • Status: done'));
+            output.log(chalk.gray('  • estimate field (story points)'));
+            output.log(chalk.gray('  • iterations field\n'));
             return;
           }
 
-          console.log(chalk.bold('By Story Points:'));
+          output.log(chalk.bold('By Story Points:'));
           for (const [points, metrics] of Object.entries(data.byStoryPoints)) {
-            console.log(chalk.cyan(`\n  ${points} points:`));
-            console.log(
+            output.log(chalk.cyan(`\n  ${points} points:`));
+            output.log(
               chalk.gray(`    Average iterations: ${metrics.avgIterations}`)
             );
-            console.log(chalk.gray(`    Samples: ${metrics.samples}`));
+            output.log(chalk.gray(`    Samples: ${metrics.samples}`));
           }
 
           if (data.byPrefix) {
-            console.log(chalk.bold('\n\nBy Prefix:'));
+            output.log(chalk.bold('\n\nBy Prefix:'));
             for (const [prefix, accuracy] of Object.entries(data.byPrefix)) {
-              console.log(chalk.cyan(`\n  ${prefix}:`));
-              console.log(chalk.gray(`    Accuracy: ${accuracy.avgAccuracy}`));
-              console.log(
+              output.log(chalk.cyan(`\n  ${prefix}:`));
+              output.log(chalk.gray(`    Accuracy: ${accuracy.avgAccuracy}`));
+              output.log(
                 chalk.gray(`    Recommendation: ${accuracy.recommendation}`)
               );
             }
           }
 
-          console.log(); // Empty line at end
+          output.log(); // Empty line at end
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Query failed:'), error.message);
+        output.error(chalk.red('✗ Query failed:'), error.message);
         process.exit(1);
       }
     });

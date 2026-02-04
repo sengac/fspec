@@ -36,6 +36,7 @@ import { executeHooks } from '../hooks/executor';
 import type { HookDefinition } from '../hooks/types';
 import { performReviewValidation } from '../utils/review-validation';
 
+import { output } from '../utils/output';
 type WorkUnitStatus =
   | 'backlog'
   | 'specifying'
@@ -467,7 +468,7 @@ export async function updateWorkUnitStatus(
         includeUntracked: true,
       });
       checkpointCreated = true;
-      console.log(
+      output.log(
         chalk.gray(
           `🤖 Auto-checkpoint: "${checkpointName}" created before transition`
         )
@@ -481,7 +482,7 @@ export async function updateWorkUnitStatus(
     // This allows commands to work even without git repository
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (process.env.DEBUG) {
-      console.warn(chalk.yellow(`⚠️  Checkpoint skipped: ${errorMessage}`));
+      output.warn(chalk.yellow(`⚠️  Checkpoint skipped: ${errorMessage}`));
     }
   }
 
@@ -548,7 +549,7 @@ export async function updateWorkUnitStatus(
       );
 
       if (cleanupResult.deletedCount > 0) {
-        console.log(
+        output.log(
           chalk.gray(
             `🧹 Auto-cleanup: ${cleanupResult.deletedCount} auto-checkpoint(s) deleted`
           )
@@ -563,7 +564,7 @@ export async function updateWorkUnitStatus(
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       if (process.env.DEBUG) {
-        console.warn(
+        output.warn(
           chalk.yellow(`⚠️ Checkpoint cleanup skipped: ${errorMessage}`)
         );
       }
@@ -606,7 +607,7 @@ export async function updateWorkUnitStatus(
       if (hook?.blocking && !result.success) {
         // Wrap error in <system-reminder> tags for AI visibility
         const errorMessage = `<system-reminder>\nBLOCKING HOOK FAILURE: Virtual hook '${result.hookName}' for ${options.workUnitId} failed.\n\nStderr:\n${result.stderr || '(no stderr)'}\n\nThis is a BLOCKING hook. Fix the errors before proceeding.\n</system-reminder>`;
-        console.error(errorMessage);
+        output.error(errorMessage);
         throw new Error(
           `Blocking virtual hook '${result.hookName}' failed with exit code ${result.exitCode}`
         );
@@ -809,10 +810,10 @@ This is optional but recommended to catch issues early.
   // Check for tool configuration when moving to validating state
   if (newStatus === 'validating') {
     const testCheck = await checkTestCommand(cwd);
-    console.log(testCheck.message);
+    output.log(testCheck.message);
 
     const qualityCheck = await checkQualityCommands(cwd);
-    console.log(qualityCheck.message);
+    output.log(qualityCheck.message);
   }
 
   // Build output string
@@ -1362,33 +1363,33 @@ export function registerUpdateWorkUnitStatusCommand(program: Command): void {
 
           // Check if operation failed
           if (result.success === false) {
-            console.error(
+            output.error(
               chalk.red('✗ Failed to update work unit status:'),
               result.error || result.message || 'Unknown error'
             );
 
             // Show system reminder if present
             if (result.systemReminder) {
-              console.error(result.systemReminder);
+              output.error(result.systemReminder);
             }
 
             process.exit(1);
           }
 
-          console.log(
+          output.log(
             chalk.green(`✓ Work unit ${workUnitId} status updated to ${status}`)
           );
           if (result.warnings && result.warnings.length > 0) {
             result.warnings.forEach((warning: string) =>
-              console.log(chalk.yellow(`⚠ ${warning}`))
+              output.log(chalk.yellow(`⚠ ${warning}`))
             );
           }
           // Output system reminder (visible to AI, invisible to users)
           if (result.systemReminder) {
-            console.log('\n' + result.systemReminder);
+            output.log('\n' + result.systemReminder);
           }
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to update work unit status:'),
             error.message
           );

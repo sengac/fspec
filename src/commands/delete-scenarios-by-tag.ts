@@ -6,6 +6,7 @@ import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 interface DeleteScenariosByTagOptions {
   tags: string[];
   dryRun?: boolean;
@@ -283,7 +284,7 @@ export async function deleteScenariosByTagCommand(options: {
     } else if (options.tag) {
       tags = [options.tag];
     } else {
-      console.error(chalk.red('Error:'), 'At least one --tag is required');
+      output.error(chalk.red('Error:'), 'At least one --tag is required');
       process.exit(1);
     }
 
@@ -293,13 +294,13 @@ export async function deleteScenariosByTagCommand(options: {
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
     if (options.dryRun && result.scenarios) {
-      console.log(chalk.yellow('Dry run mode - no files modified'));
-      console.log(
+      output.log(chalk.yellow('Dry run mode - no files modified'));
+      output.log(
         chalk.cyan(
           `\nWould delete ${result.deletedCount} scenario(s) from ${result.fileCount} file(s):\n`
         )
@@ -315,20 +316,20 @@ export async function deleteScenariosByTagCommand(options: {
       }
 
       for (const [file, scenarios] of byFile.entries()) {
-        console.log(chalk.white(`\n${file}:`));
+        output.log(chalk.white(`\n${file}:`));
         for (const scenario of scenarios) {
-          console.log(
+          output.log(
             chalk.gray(`  - ${scenario.name} (${scenario.tags.join(' ')})`)
           );
         }
       }
     } else {
-      console.log(chalk.green(`✓ ${result.message}`));
+      output.log(chalk.green(`✓ ${result.message}`));
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

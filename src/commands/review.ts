@@ -8,6 +8,7 @@ import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import { getAgentConfig, formatAgentOutput } from '../utils/agentRuntimeConfig';
 
+import { output } from '../utils/output';
 interface ReviewOptions {
   cwd?: string;
 }
@@ -574,10 +575,10 @@ export function registerReviewCommand(program: Command): void {
     .action(async (workUnitId: string) => {
       try {
         const result = await review(workUnitId);
-        console.log(result.output);
+        output.log(result.output);
       } catch (error) {
         if (error instanceof Error) {
-          console.error(chalk.red('Error:'), error.message);
+          output.error(chalk.red('Error:'), error.message);
           process.exit(1);
         }
         throw error;

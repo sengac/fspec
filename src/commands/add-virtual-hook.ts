@@ -6,6 +6,7 @@ import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { generateVirtualHookScript } from '../hooks/script-generation';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface AddVirtualHookOptions {
   workUnitId: string;
   event: string;
@@ -122,10 +123,10 @@ export function registerAddVirtualHookCommand(program: Command): void {
             blocking: opts.blocking,
             gitContext: opts.gitContext,
           });
-          console.log(chalk.green(`✓ Virtual hook added to ${workUnitId}`));
-          console.log(chalk.gray(`  Total virtual hooks: ${result.hookCount}`));
+          output.log(chalk.green(`✓ Virtual hook added to ${workUnitId}`));
+          output.log(chalk.gray(`  Total virtual hooks: ${result.hookCount}`));
         } catch (error: unknown) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to add virtual hook:'),
             error instanceof Error ? error.message : String(error)
           );

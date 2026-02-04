@@ -8,6 +8,7 @@ import { generateFoundationMd } from '../generators/foundation-md';
 import { ensureFoundationFile } from '../utils/ensure-files';
 import { discoverFoundation } from './discover-foundation';
 
+import { output } from '../utils/output';
 interface UpdateFoundationOptions {
   section: string;
   content: string;
@@ -224,15 +225,15 @@ export async function updateFoundationCommand(
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green('✓'), result.message);
+    output.log(chalk.green('✓'), result.message);
 
     // Show different output based on whether we updated draft or final
     if (result.message?.includes('draft')) {
-      console.log(chalk.gray('  Updated: spec/foundation.json.draft'));
+      output.log(chalk.gray('  Updated: spec/foundation.json.draft'));
 
       // IMPORTANT: Chain to next field during draft-driven discovery
       // Scan draft for next field
@@ -243,16 +244,16 @@ export async function updateFoundationCommand(
 
       // Emit system-reminder for next field (visible to AI, stripped from user output)
       if (scanResult.systemReminder) {
-        console.log(scanResult.systemReminder);
+        output.log(scanResult.systemReminder);
       }
     } else {
-      console.log(chalk.gray('  Updated: spec/foundation.json'));
-      console.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
+      output.log(chalk.gray('  Updated: spec/foundation.json'));
+      output.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

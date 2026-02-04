@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import type { EventStormHotspot } from '../types';
 import { addEventStormItem } from './event-storm-utils';
 
+import { output } from '../utils/output';
 export interface AddHotspotOptions {
   workUnitId: string;
   text: string;
@@ -95,17 +96,17 @@ export function registerAddHotspotCommand(program: Command): void {
           });
 
           if (!result.success) {
-            console.error(chalk.red('✗ Failed to add hotspot:'), result.error);
+            output.error(chalk.red('✗ Failed to add hotspot:'), result.error);
             process.exit(1);
           }
 
-          console.log(
+          output.log(
             chalk.green(
               `✓ Hotspot added to ${workUnitId} (id: ${result.hotspotId})`
             )
           );
         } catch (error: any) {
-          console.error(chalk.red('✗ Failed to add hotspot:'), error.message);
+          output.error(chalk.red('✗ Failed to add hotspot:'), error.message);
           process.exit(1);
         }
       }

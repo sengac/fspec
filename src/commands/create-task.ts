@@ -11,6 +11,7 @@ import {
 } from '../utils/ensure-files';
 import { checkFoundationExists } from '../utils/foundation-check';
 
+import { output } from '../utils/output';
 const MAX_NESTING_DEPTH = 3;
 
 interface CreateTaskOptions {
@@ -231,33 +232,33 @@ export async function createTaskCommand(
     });
 
     if (result.success && result.workUnitId) {
-      console.log(chalk.green(`✓ Created task ${result.workUnitId}`));
-      console.log(chalk.gray(`  Title: ${title}`));
+      output.log(chalk.green(`✓ Created task ${result.workUnitId}`));
+      output.log(chalk.gray(`  Title: ${title}`));
       if (options.description) {
-        console.log(chalk.gray(`  Description: ${options.description}`));
+        output.log(chalk.gray(`  Description: ${options.description}`));
       }
       if (options.epic) {
-        console.log(chalk.gray(`  Epic: ${options.epic}`));
+        output.log(chalk.gray(`  Epic: ${options.epic}`));
       }
       if (options.parent) {
-        console.log(chalk.gray(`  Parent: ${options.parent}`));
+        output.log(chalk.gray(`  Parent: ${options.parent}`));
       }
 
       // Emit system-reminder to stderr for AI agents
       if (result.systemReminder) {
-        console.error(result.systemReminder);
+        output.error(result.systemReminder);
       }
 
       process.exit(0);
     } else {
-      console.error(chalk.red('✗ Failed to create task'));
+      output.error(chalk.red('✗ Failed to create task'));
       process.exit(1);
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(chalk.red('Error:'), error.message);
+      output.error(chalk.red('Error:'), error.message);
     } else {
-      console.error(chalk.red('Error: Unknown error occurred'));
+      output.error(chalk.red('Error: Unknown error occurred'));
     }
     process.exit(1);
   }

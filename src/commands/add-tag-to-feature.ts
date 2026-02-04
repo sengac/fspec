@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import { isWorkUnitTag } from '../utils/work-unit-tags';
+import { output } from '../utils/output';
 import {
   getUnregisteredTagReminder,
   getMissingRequiredTagsReminder,
@@ -302,22 +303,22 @@ export async function addTagToFeatureCommand(
     const result = await addTagToFeature(featureFilePath, tags, options);
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green(`✓ ${result.message}`));
+    output.log(chalk.green(`✓ ${result.message}`));
 
     // Display system reminders if any
     if (result.systemReminders && result.systemReminders.length > 0) {
       for (const reminder of result.systemReminders) {
-        console.log('\n' + reminder);
+        output.log('\n' + reminder);
       }
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

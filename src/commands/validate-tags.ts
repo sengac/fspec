@@ -15,6 +15,7 @@ import {
 import type { WorkUnitsData } from '../types';
 import { ensureTagsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface TagValidationResult {
   file: string;
   valid: boolean;
@@ -75,13 +76,13 @@ export async function validateTagsCommand(file?: string): Promise<void> {
     // Display results
     for (const result of results) {
       if (result.valid) {
-        console.log(chalk.green(`✓ All tags in ${result.file} are registered`));
+        output.log(chalk.green(`✓ All tags in ${result.file} are registered`));
       } else {
-        console.log(chalk.red(`✗ ${result.file} has tag violations:`));
+        output.log(chalk.red(`✗ ${result.file} has tag violations:`));
         for (const error of result.errors) {
-          console.log(chalk.red(`  ${error.message}`));
+          output.log(chalk.red(`  ${error.message}`));
           if (error.suggestion) {
-            console.log(chalk.yellow(`  Suggestion: ${error.suggestion}`));
+            output.log(chalk.yellow(`  Suggestion: ${error.suggestion}`));
           }
         }
       }
@@ -89,12 +90,12 @@ export async function validateTagsCommand(file?: string): Promise<void> {
 
     // Summary
     if (results.length > 1) {
-      console.log('');
+      output.log('');
       if (invalidCount === 0) {
-        console.log(chalk.green(`✓ ${validCount} files passed`));
+        output.log(chalk.green(`✓ ${validCount} files passed`));
       } else {
-        console.log(chalk.green(`✓ ${validCount} files passed`));
-        console.log(chalk.red(`✗ ${invalidCount} files have tag violations`));
+        output.log(chalk.green(`✓ ${validCount} files passed`));
+        output.log(chalk.red(`✗ ${invalidCount} files have tag violations`));
       }
     }
 
@@ -104,7 +105,7 @@ export async function validateTagsCommand(file?: string): Promise<void> {
       process.exit(0);
     }
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(2);
   }
 }

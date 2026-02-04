@@ -9,6 +9,7 @@ import { validateTagsJson } from '../validators/validate-json-schema';
 import { generateTagsMd } from '../generators/tags-md';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface DeleteTagOptions {
   tag: string;
   force?: boolean;
@@ -173,24 +174,24 @@ export async function deleteTagCommand(
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
     if (result.warning) {
-      console.log(chalk.yellow(result.warning));
+      output.log(chalk.yellow(result.warning));
     }
 
-    console.log(chalk.green(`✓ ${result.message}`));
+    output.log(chalk.green(`✓ ${result.message}`));
 
     if (!options.dryRun) {
-      console.log(chalk.gray('  Updated: spec/tags.json'));
-      console.log(chalk.gray('  Regenerated: spec/TAGS.md'));
+      output.log(chalk.gray('  Updated: spec/tags.json'));
+      output.log(chalk.gray('  Regenerated: spec/TAGS.md'));
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

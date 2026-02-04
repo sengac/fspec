@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 export interface RestoreArchitectureNoteOptions {
   workUnitId: string;
   index: number;
@@ -93,14 +94,14 @@ export function registerRestoreArchitectureNoteCommand(program: Command): void {
     .action(async (workUnitId: string, index: number) => {
       try {
         const result = await restoreArchitectureNote({ workUnitId, index });
-        console.log(chalk.green('✓ Architecture note restored successfully'));
+        output.log(chalk.green('✓ Architecture note restored successfully'));
         if (result.message) {
-          console.log(chalk.dim(`  ${result.message}`));
+          output.log(chalk.dim(`  ${result.message}`));
         }
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        console.error(chalk.red('Error:'), errorMessage);
+        output.error(chalk.red('Error:'), errorMessage);
         process.exit(1);
       }
     });

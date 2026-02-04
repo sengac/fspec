@@ -7,6 +7,7 @@ import type { Command } from 'commander';
 import { cleanupCheckpoints as cleanupCheckpointsUtil } from '../utils/git-checkpoint';
 import { sendIPCMessage } from '../utils/ipc';
 
+import { output } from '../utils/output';
 export interface CleanupCheckpointsOptions {
   workUnitId: string;
   keepLast: number;
@@ -28,31 +29,31 @@ export async function cleanupCheckpoints(
   try {
     const result = await cleanupCheckpointsUtil(workUnitId, cwd, keepLast);
 
-    console.log(
+    output.log(
       chalk.cyan(
         `\nCleaning up checkpoints for ${workUnitId} (keeping last ${keepLast})...\n`
       )
     );
 
     if (result.deletedCount > 0) {
-      console.log(chalk.red(`Deleted ${result.deletedCount} checkpoint(s):`));
+      output.log(chalk.red(`Deleted ${result.deletedCount} checkpoint(s):`));
       result.deleted.forEach(cp => {
-        console.log(chalk.gray(`  - ${cp.name} (${cp.timestamp})`));
+        output.log(chalk.gray(`  - ${cp.name} (${cp.timestamp})`));
       });
-      console.log('');
+      output.log('');
     }
 
     if (result.preservedCount > 0) {
-      console.log(
+      output.log(
         chalk.green(`Preserved ${result.preservedCount} checkpoint(s):`)
       );
       result.preserved.forEach(cp => {
-        console.log(chalk.gray(`  - ${cp.name} (${cp.timestamp})`));
+        output.log(chalk.gray(`  - ${cp.name} (${cp.timestamp})`));
       });
-      console.log('');
+      output.log('');
     }
 
-    console.log(
+    output.log(
       chalk.green(
         `✓ Cleanup complete: ${result.deletedCount} deleted, ${result.preservedCount} preserved`
       )
@@ -77,9 +78,7 @@ export async function cleanupCheckpoints(
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error(
-      chalk.red(`✗ Failed to cleanup checkpoints: ${errorMessage}`)
-    );
+    output.error(chalk.red(`✗ Failed to cleanup checkpoints: ${errorMessage}`));
     throw error;
   }
 }
@@ -104,9 +103,9 @@ async function cleanupCheckpointsCommand(
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(chalk.red('Error:'), error.message);
+      output.error(chalk.red('Error:'), error.message);
     } else {
-      console.error(chalk.red('Error: Unknown error occurred'));
+      output.error(chalk.red('Error: Unknown error occurred'));
     }
     process.exit(1);
   }

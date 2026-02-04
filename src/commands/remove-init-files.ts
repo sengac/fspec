@@ -10,6 +10,7 @@ import { getAgentById } from '../utils/agentRegistry';
 import { detectAgents } from '../utils/agentDetection';
 import { ConfirmPrompt } from '../components/ConfirmPrompt';
 
+import { output } from '../utils/output';
 interface RemoveOptions {
   keepConfig: boolean;
 }
@@ -182,16 +183,16 @@ export function registerRemoveInitFilesCommand(program: Command): void {
         });
 
         // Show success message with details
-        console.log(chalk.green('✓ Successfully removed fspec init files'));
+        output.log(chalk.green('✓ Successfully removed fspec init files'));
         if (result.filesRemoved.length > 0) {
           result.filesRemoved.forEach(file => {
-            console.log(chalk.dim(`  - ${file}`));
+            output.log(chalk.dim(`  - ${file}`));
           });
         }
 
         process.exit(0);
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to remove init files:'),
           error.message
         );

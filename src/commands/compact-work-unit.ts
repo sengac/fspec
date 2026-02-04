@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface CompactWorkUnitOptions {
   workUnitId: string;
   force?: boolean;
@@ -167,25 +168,25 @@ export function registerCompactWorkUnitCommand(program: Command): void {
           result.removedCounts.architectureNotes;
 
         if (totalRemoved === 0) {
-          console.log(chalk.dim('No deleted items to remove'));
+          output.log(chalk.dim('No deleted items to remove'));
         } else {
-          console.log(chalk.green(`✓ Compacted work unit ${workUnitId}`));
-          console.log(chalk.dim('  Removed items:'));
+          output.log(chalk.green(`✓ Compacted work unit ${workUnitId}`));
+          output.log(chalk.dim('  Removed items:'));
           if (result.removedCounts.rules > 0) {
-            console.log(chalk.dim(`    Rules: ${result.removedCounts.rules}`));
+            output.log(chalk.dim(`    Rules: ${result.removedCounts.rules}`));
           }
           if (result.removedCounts.examples > 0) {
-            console.log(
+            output.log(
               chalk.dim(`    Examples: ${result.removedCounts.examples}`)
             );
           }
           if (result.removedCounts.questions > 0) {
-            console.log(
+            output.log(
               chalk.dim(`    Questions: ${result.removedCounts.questions}`)
             );
           }
           if (result.removedCounts.architectureNotes > 0) {
-            console.log(
+            output.log(
               chalk.dim(
                 `    Architecture Notes: ${result.removedCounts.architectureNotes}`
               )
@@ -193,7 +194,7 @@ export function registerCompactWorkUnitCommand(program: Command): void {
           }
         }
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to compact work unit:'),
           error.message
         );

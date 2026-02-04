@@ -6,6 +6,7 @@ import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 import { wrapInSystemReminder } from '../utils/system-reminder';
 
+import { output } from '../utils/output';
 interface AddExampleOptions {
   workUnitId: string;
   example: string;
@@ -103,12 +104,12 @@ export function registerAddExampleCommand(program: Command): void {
     .action(async (workUnitId: string, example: string) => {
       try {
         const result = await addExample({ workUnitId, example });
-        console.log(chalk.green(`✓ Example added successfully`));
+        output.log(chalk.green(`✓ Example added successfully`));
         if (result.systemReminder) {
-          console.log('\n' + result.systemReminder);
+          output.log('\n' + result.systemReminder);
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to add example:'), error.message);
+        output.error(chalk.red('✗ Failed to add example:'), error.message);
         process.exit(1);
       }
     });

@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import type { EventStormExternalSystem } from '../types';
 import { addEventStormItem } from './event-storm-utils';
 
+import { output } from '../utils/output';
 export interface AddExternalSystemOptions {
   workUnitId: string;
   text: string;
@@ -105,20 +106,20 @@ export function registerAddExternalSystemCommand(program: Command): void {
           });
 
           if (!result.success) {
-            console.error(
+            output.error(
               chalk.red('✗ Failed to add external system:'),
               result.error
             );
             process.exit(1);
           }
 
-          console.log(
+          output.log(
             chalk.green(
               `✓ External system added to ${workUnitId} (id: ${result.externalSystemId})`
             )
           );
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to add external system:'),
             error.message
           );

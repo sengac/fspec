@@ -12,6 +12,7 @@ import {
 } from '../utils/coverage-reader';
 import { parseAllFeatures } from '../utils/feature-parser';
 
+import { output } from '../utils/output';
 interface ShowTestPatternsOptions {
   tag: string;
   includeCoverage?: boolean;
@@ -93,9 +94,9 @@ export function registerShowTestPatternsCommand(program: Command): void {
         try {
           const result = await showTestPatterns(options);
           if (options.json) {
-            console.log(JSON.stringify(result, null, 2));
+            output.log(JSON.stringify(result, null, 2));
           } else {
-            console.log(
+            output.log(
               chalk.green(
                 `✓ Analyzed testing patterns for ${result.workUnits.length} work units tagged with ${options.tag}`
               )
@@ -103,7 +104,7 @@ export function registerShowTestPatternsCommand(program: Command): void {
           }
         } catch (error: unknown) {
           if (error instanceof Error) {
-            console.error(chalk.red('✗ Analysis failed:'), error.message);
+            output.error(chalk.red('✗ Analysis failed:'), error.message);
           }
           process.exit(1);
         }

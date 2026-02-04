@@ -3,6 +3,7 @@ import { join } from 'path';
 import type { Command } from 'commander';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   title?: string;
@@ -1041,13 +1042,13 @@ export function registerDependenciesCommand(program: Command): void {
             { graph: options.graph },
             { cwd }
           );
-          console.log(output);
+          output.log(output);
         } catch (error: unknown) {
           const err = error as Error;
 
           // AI-friendly error with suggestions
           if (err.message.includes('does not exist')) {
-            console.error(`<system-reminder>
+            output.error(`<system-reminder>
 DEPENDENCY QUERY FAILED: Work unit '${workUnitId}' not found.
 
 Common causes:
@@ -1068,7 +1069,7 @@ Error: Work unit '${workUnitId}' does not exist. Use 'fspec list-work-units' to 
           }
 
           // Generic error fallback
-          console.error(`<system-reminder>
+          output.error(`<system-reminder>
 DEPENDENCY COMMAND ERROR: ${err.message}
 
 The 'fspec dependencies' command failed unexpectedly.

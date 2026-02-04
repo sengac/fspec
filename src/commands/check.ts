@@ -8,6 +8,7 @@ import { join } from 'path';
 import { formatGherkinDocument } from '../utils/gherkin-formatter';
 import { validateTags } from './validate-tags';
 
+import { output } from '../utils/output';
 interface CheckOptions {
   verbose?: boolean;
   cwd?: string;
@@ -165,10 +166,10 @@ export async function checkCommand(
     });
 
     // Display results
-    console.log(chalk.bold('\nRunning validation checks...\n'));
+    output.log(chalk.bold('\nRunning validation checks...\n'));
 
     if (result.fileCount !== undefined && result.fileCount > 0) {
-      console.log(chalk.gray(`Checked ${result.fileCount} feature file(s)\n`));
+      output.log(chalk.gray(`Checked ${result.fileCount} feature file(s)\n`));
     }
 
     // Show status of each check
@@ -179,7 +180,7 @@ export async function checkCommand(
           : result.gherkinStatus === 'FAIL'
             ? chalk.red('FAIL')
             : chalk.yellow('SKIP');
-      console.log(`Gherkin syntax: ${status}`);
+      output.log(`Gherkin syntax: ${status}`);
     }
 
     if (result.tagStatus) {
@@ -189,7 +190,7 @@ export async function checkCommand(
           : result.tagStatus === 'FAIL'
             ? chalk.red('FAIL')
             : chalk.yellow('SKIP');
-      console.log(`Tag validation: ${status}`);
+      output.log(`Tag validation: ${status}`);
     }
 
     if (result.formatStatus) {
@@ -199,28 +200,28 @@ export async function checkCommand(
           : result.formatStatus === 'FAIL'
             ? chalk.red('FAIL')
             : chalk.yellow('SKIP');
-      console.log(`Formatting: ${status}`);
+      output.log(`Formatting: ${status}`);
     }
 
     // Show errors if any
     if (result.errors && result.errors.length > 0) {
-      console.log(chalk.red('\nErrors:'));
+      output.log(chalk.red('\nErrors:'));
       for (const error of result.errors) {
-        console.log(chalk.red(`  - ${error}`));
+        output.log(chalk.red(`  - ${error}`));
       }
     }
 
     // Show final message
-    console.log();
+    output.log();
     if (result.success) {
-      console.log(chalk.green('✓'), result.message);
+      output.log(chalk.green('✓'), result.message);
     } else {
-      console.log(chalk.red('✗'), 'Some checks failed');
+      output.log(chalk.red('✗'), 'Some checks failed');
     }
 
     process.exit(result.success ? 0 : 1);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

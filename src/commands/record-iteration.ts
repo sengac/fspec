@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { join } from 'path';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   title?: string;
@@ -68,12 +69,9 @@ export function registerRecordIterationCommand(program: Command): void {
           start: options.start,
           end: options.end,
         });
-        console.log(chalk.green(`✓ Iteration recorded successfully`));
+        output.log(chalk.green(`✓ Iteration recorded successfully`));
       } catch (error: any) {
-        console.error(
-          chalk.red('✗ Failed to record iteration:'),
-          error.message
-        );
+        output.error(chalk.red('✗ Failed to record iteration:'), error.message);
         process.exit(1);
       }
     });

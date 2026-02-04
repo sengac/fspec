@@ -4,6 +4,7 @@ import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface ShowDeletedOptions {
   workUnitId: string;
   cwd?: string;
@@ -78,11 +79,11 @@ export function registerShowDeletedCommand(program: Command): void {
         const result = await showDeleted({ workUnitId });
 
         if (result.totalDeleted === 0) {
-          console.log(chalk.dim('No deleted items found'));
+          output.log(chalk.dim('No deleted items found'));
           return;
         }
 
-        console.log(
+        output.log(
           chalk.bold(
             `\nDeleted items in ${workUnitId} (${result.totalDeleted} total):`
           )
@@ -93,12 +94,12 @@ export function registerShowDeletedCommand(program: Command): void {
           const timestamp = item.deletedAt
             ? chalk.dim(` (deleted: ${item.deletedAt})`)
             : '';
-          console.log(chalk.red(`  [${item.id}] ${item.text}${timestamp}`));
+          output.log(chalk.red(`  [${item.id}] ${item.text}${timestamp}`));
         });
 
-        console.log(''); // Empty line for spacing
+        output.log(''); // Empty line for spacing
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to show deleted items:'),
           error.message
         );

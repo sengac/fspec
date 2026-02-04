@@ -4,6 +4,7 @@ import { join } from 'path';
 import { checkWorkUnitFeatureForPrefill } from '../utils/prefill-detection';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   type?: 'story' | 'bug' | 'task';
@@ -148,11 +149,11 @@ export function registerUpdateWorkUnitEstimateCommand(program: Command): void {
           workUnitId,
           estimate: parseInt(estimate, 10),
         });
-        console.log(
+        output.log(
           chalk.green(`✓ Work unit ${workUnitId} estimate set to ${estimate}`)
         );
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to update estimate:'), error.message);
+        output.error(chalk.red('✗ Failed to update estimate:'), error.message);
         process.exit(1);
       }
     });

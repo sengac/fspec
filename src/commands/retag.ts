@@ -6,6 +6,7 @@ import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 interface RetagOptions {
   from: string;
   to: string;
@@ -178,34 +179,34 @@ export async function retagCommand(options: {
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
     if (options.dryRun && result.files) {
-      console.log(chalk.yellow('Dry run mode - no files modified'));
-      console.log(
+      output.log(chalk.yellow('Dry run mode - no files modified'));
+      output.log(
         chalk.cyan(
           `\nWould rename ${options.from} to ${options.to} in ${result.fileCount} file(s) (${result.occurrenceCount} occurrence(s)):\n`
         )
       );
 
       for (const file of result.files) {
-        console.log(chalk.gray(`  - ${file}`));
+        output.log(chalk.gray(`  - ${file}`));
       }
     } else if (result.files && result.files.length > 0) {
-      console.log(chalk.green(`✓ ${result.message}`));
-      console.log(chalk.gray('\nModified files:'));
+      output.log(chalk.green(`✓ ${result.message}`));
+      output.log(chalk.gray('\nModified files:'));
       for (const file of result.files) {
-        console.log(chalk.gray(`  - ${file}`));
+        output.log(chalk.gray(`  - ${file}`));
       }
     } else {
-      console.log(chalk.yellow(result.message));
+      output.log(chalk.yellow(result.message));
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

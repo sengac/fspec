@@ -23,6 +23,7 @@ import { join } from 'path';
 import { existsSync } from 'fs';
 import { wrapInSystemReminder } from '../utils/system-reminder';
 
+import { output } from '../utils/output';
 interface BootstrapOptions {
   cwd?: string;
 }
@@ -252,12 +253,12 @@ export function registerBootstrapCommand(program: Command): void {
     .action(async () => {
       try {
         const output = await bootstrap();
-        console.log(output);
+        output.log(output);
         process.exit(0);
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Unknown error';
-        console.error(`Error running bootstrap: ${message}`);
+        output.error(`Error running bootstrap: ${message}`);
         process.exit(1);
       }
     });
@@ -266,7 +267,7 @@ export function registerBootstrapCommand(program: Command): void {
   cmd.on('--help', () => {
     Promise.all([import('./bootstrap-help'), import('../utils/help-formatter')])
       .then(([helpModule, formatterModule]) => {
-        console.log(formatterModule.formatCommandHelp(helpModule.default));
+        output.log(formatterModule.formatCommandHelp(helpModule.default));
       })
       .catch(() => {
         // Graceful fallback if help not available

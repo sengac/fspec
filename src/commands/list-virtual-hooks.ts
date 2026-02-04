@@ -4,6 +4,7 @@ import { join } from 'path';
 import type { WorkUnitsData, VirtualHook } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface ListVirtualHooksOptions {
   workUnitId: string;
   cwd?: string;
@@ -55,17 +56,17 @@ export function registerListVirtualHooksCommand(program: Command): void {
         const result = await listVirtualHooks({ workUnitId });
 
         if (result.hooks.length === 0) {
-          console.log(
+          output.log(
             chalk.yellow(`No virtual hooks configured for ${workUnitId}`)
           );
           return;
         }
 
-        console.log(chalk.bold(`\nVirtual Hooks for ${workUnitId}:\n`));
+        output.log(chalk.bold(`\nVirtual Hooks for ${workUnitId}:\n`));
 
         // Display hooks grouped by event
         for (const [event, hooks] of Object.entries(result.hooksByEvent)) {
-          console.log(chalk.cyan(`  ${event}:`));
+          output.log(chalk.cyan(`  ${event}:`));
           for (const hook of hooks) {
             const blockingBadge = hook.blocking
               ? chalk.red('[blocking]')
@@ -73,15 +74,15 @@ export function registerListVirtualHooksCommand(program: Command): void {
             const gitContextBadge = hook.gitContext
               ? chalk.blue('[git-context]')
               : '';
-            console.log(
+            output.log(
               `    • ${hook.name} ${blockingBadge} ${gitContextBadge}`
             );
-            console.log(chalk.gray(`      ${hook.command}`));
+            output.log(chalk.gray(`      ${hook.command}`));
           }
         }
-        console.log();
+        output.log();
       } catch (error: unknown) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to list virtual hooks:'),
           error instanceof Error ? error.message : String(error)
         );

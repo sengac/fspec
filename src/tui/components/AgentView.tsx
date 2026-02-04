@@ -48,8 +48,6 @@ import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelect
 import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
-// Initialize FspecTool callbacks before importing NAPI functions
-import { ensureFspecCallbacksInitialized } from '../../utils/fspec-init';
 import {
   testProviderConnection,
   // REFAC-007: persistenceStoreMessageEnvelope removed - now handled by Rust
@@ -3908,9 +3906,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       message: 'Testing...',
     });
     try {
-      // Ensure FspecTool callbacks are initialized before testing
-      await ensureFspecCallbacksInitialized();
-      
       // Get the internal name for the provider
       const internalName = mapProviderIdToInternal(providerId);
 

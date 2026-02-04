@@ -8,6 +8,7 @@ import chalk from 'chalk';
 import type { EventStormBoundedContext } from '../types';
 import { addEventStormItem } from './event-storm-utils';
 
+import { output } from '../utils/output';
 export interface AddBoundedContextOptions {
   workUnitId: string;
   text: string;
@@ -98,20 +99,20 @@ export function registerAddBoundedContextCommand(program: Command): void {
           });
 
           if (!result.success) {
-            console.error(
+            output.error(
               chalk.red('✗ Failed to add bounded context:'),
               result.error
             );
             process.exit(1);
           }
 
-          console.log(
+          output.log(
             chalk.green(
               `✓ Bounded context added to ${workUnitId} (id: ${result.boundedContextId})`
             )
           );
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to add bounded context:'),
             error.message
           );

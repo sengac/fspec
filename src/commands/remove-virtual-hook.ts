@@ -6,6 +6,7 @@ import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { cleanupVirtualHookScript } from '../hooks/script-generation';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RemoveVirtualHookOptions {
   workUnitId: string;
   hookName: string;
@@ -85,14 +86,14 @@ export function registerRemoveVirtualHookCommand(program: Command): void {
     .action(async (workUnitId: string, hookName: string) => {
       try {
         const result = await removeVirtualHook({ workUnitId, hookName });
-        console.log(
+        output.log(
           chalk.green(`✓ Removed virtual hook '${hookName}' from ${workUnitId}`)
         );
-        console.log(
+        output.log(
           chalk.gray(`  Remaining virtual hooks: ${result.remainingCount}`)
         );
       } catch (error: unknown) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to remove virtual hook:'),
           error instanceof Error ? error.message : String(error)
         );

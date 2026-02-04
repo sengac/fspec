@@ -14,6 +14,7 @@ import {
 } from '../utils/coverage-reader';
 import { parseAllFeatures } from '../utils/feature-parser';
 
+import { output } from '../utils/output';
 interface CompareImplementationsOptions {
   tag: string;
   showCoverage?: boolean;
@@ -109,9 +110,9 @@ export function registerCompareImplementationsCommand(program: Command): void {
         try {
           const result = await compareImplementations(options);
           if (options.json) {
-            console.log(JSON.stringify(result, null, 2));
+            output.log(JSON.stringify(result, null, 2));
           } else {
-            console.log(
+            output.log(
               chalk.green(
                 `✓ Compared ${result.workUnits.length} work units tagged with ${options.tag}`
               )
@@ -119,7 +120,7 @@ export function registerCompareImplementationsCommand(program: Command): void {
           }
         } catch (error: unknown) {
           if (error instanceof Error) {
-            console.error(chalk.red('✗ Comparison failed:'), error.message);
+            output.error(chalk.red('✗ Comparison failed:'), error.message);
           }
           process.exit(1);
         }

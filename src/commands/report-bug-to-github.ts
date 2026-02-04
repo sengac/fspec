@@ -23,6 +23,7 @@ import { getCurrentBranch, getGitStatus } from '../git/status';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import type { WorkUnitsData } from '../types/index';
 
+import { output } from '../utils/output';
 export interface BugReportContext {
   fspecVersion: string;
   nodeVersion: string;
@@ -380,7 +381,7 @@ export function registerReportBugToGitHubCommand(program: Command): void {
         interactive?: boolean;
       }) => {
         try {
-          console.log(chalk.cyan('\nGathering system context...\n'));
+          output.log(chalk.cyan('\nGathering system context...\n'));
 
           const result = await reportBugToGitHub({
             projectRoot: cmdOptions.projectRoot,
@@ -391,22 +392,22 @@ export function registerReportBugToGitHubCommand(program: Command): void {
           });
 
           if (result.cancelled) {
-            console.log(chalk.yellow('\n✗ Bug report cancelled\n'));
+            output.log(chalk.yellow('\n✗ Bug report cancelled\n'));
             return;
           }
 
           if (result.browserOpened) {
-            console.log(
+            output.log(
               chalk.green('\n✓ Browser opened with pre-filled issue\n')
             );
-            console.log(
+            output.log(
               chalk.dim('Review and submit the issue in your browser.\n')
             );
           }
         } catch (error: unknown) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
-          console.error(chalk.red('Error:'), errorMessage);
+          output.error(chalk.red('Error:'), errorMessage);
           process.exit(1);
         }
       }

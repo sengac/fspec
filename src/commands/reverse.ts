@@ -5,6 +5,7 @@
 
 import { promises as fs } from 'fs';
 import { join } from 'path';
+import { output } from '../utils/output';
 import type {
   ReverseCommandOptions,
   ReverseCommandResult,
@@ -631,24 +632,24 @@ async function reverseCommand(options: ReverseCommandOptions): Promise<void> {
 
     // Display system-reminder if present
     if (result.systemReminder) {
-      console.log(result.systemReminder);
+      output.log(result.systemReminder);
     }
 
     // Display message if present
     if (result.message) {
-      console.log(result.message);
+      output.log(result.message);
     }
 
     // Display guidance if present
     if (result.guidance) {
-      console.log(result.guidance);
+      output.log(result.guidance);
     }
 
     // Display suggestions if present
     if (result.suggestions && result.suggestions.length > 0) {
-      console.log('\nNext steps:');
+      output.log('\nNext steps:');
       result.suggestions.forEach(suggestion => {
-        console.log(`  - ${suggestion}`);
+        output.log(`  - ${suggestion}`);
       });
     }
 
@@ -657,7 +658,7 @@ async function reverseCommand(options: ReverseCommandOptions): Promise<void> {
     process.exit(exitCode);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    console.error('Error:', errorMessage);
+    output.error('Error:', errorMessage);
     process.exit(1);
   }
 }

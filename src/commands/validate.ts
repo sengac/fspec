@@ -6,6 +6,7 @@ import type { Command } from 'commander';
 import chalk from 'chalk';
 import { glob } from 'tinyglobby';
 
+import { output } from '../utils/output';
 export interface ValidationResult {
   file: string;
   valid: boolean;
@@ -24,7 +25,7 @@ export async function validateCommand(
     const files = file ? [file] : await findAllFeatureFiles();
 
     if (files.length === 0) {
-      console.error(chalk.red('No feature files found in spec/features/'));
+      output.error(chalk.red('No feature files found in spec/features/'));
       process.exit(2);
     }
 
@@ -35,13 +36,13 @@ export async function validateCommand(
     // Display results
     for (const result of results) {
       if (result.valid) {
-        console.log(chalk.green(`✓ ${result.file} is valid`));
+        output.log(chalk.green(`✓ ${result.file} is valid`));
       } else {
-        console.log(chalk.red(`✗ ${result.file} has syntax errors:`));
+        output.log(chalk.red(`✗ ${result.file} has syntax errors:`));
         for (const error of result.errors) {
-          console.log(chalk.red(`  Line ${error.line}: ${error.message}`));
+          output.log(chalk.red(`  Line ${error.line}: ${error.message}`));
           if (error.suggestion) {
-            console.log(chalk.yellow(`  Suggestion: ${error.suggestion}`));
+            output.log(chalk.yellow(`  Suggestion: ${error.suggestion}`));
           }
         }
       }
@@ -52,13 +53,13 @@ export async function validateCommand(
     const invalidCount = results.length - validCount;
 
     if (results.length > 1) {
-      console.log('');
+      output.log('');
       if (invalidCount === 0) {
-        console.log(
+        output.log(
           chalk.green(`✓ All ${results.length} feature files are valid`)
         );
       } else {
-        console.log(
+        output.log(
           chalk.yellow(
             `Validated ${results.length} files: ${validCount} valid, ${invalidCount} invalid`
           )
@@ -71,7 +72,7 @@ export async function validateCommand(
       process.exit(1);
     }
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(2);
   }
 }
@@ -92,7 +93,7 @@ export async function validateFile(
     const content = await readFile(resolvedPath, 'utf-8');
 
     if (verbose) {
-      console.log(chalk.blue(`Parsing ${filePath}...`));
+      output.log(chalk.blue(`Parsing ${filePath}...`));
     }
 
     // Parse with @cucumber/gherkin
@@ -123,10 +124,10 @@ export async function validateFile(
 
     // Validation successful
     if (verbose) {
-      console.log(chalk.blue('  AST generated successfully'));
+      output.log(chalk.blue('  AST generated successfully'));
       if (gherkinDocument.feature) {
-        console.log(chalk.blue(`  Feature: ${gherkinDocument.feature.name}`));
-        console.log(
+        output.log(chalk.blue(`  Feature: ${gherkinDocument.feature.name}`));
+        output.log(
           chalk.blue(`  Scenarios: ${gherkinDocument.feature.children.length}`)
         );
       }

@@ -4,6 +4,7 @@ import { join } from 'path';
 import { ensurePrefixesFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface Prefix {
   prefix: string;
   description: string;
@@ -77,9 +78,9 @@ export function registerCreatePrefixCommand(program: Command): void {
           prefix,
           description,
         });
-        console.log(chalk.green(`✓ Prefix ${prefix} created successfully`));
+        output.log(chalk.green(`✓ Prefix ${prefix} created successfully`));
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to create prefix:'), error.message);
+        output.error(chalk.red('✗ Failed to create prefix:'), error.message);
         process.exit(1);
       }
     });

@@ -5,6 +5,7 @@ import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 interface ListScenarioTagsOptions {
   cwd?: string;
   showCategories?: boolean;
@@ -145,35 +146,35 @@ export async function listScenarioTagsCommand(
     );
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
     if (result.message) {
-      console.log(chalk.yellow(result.message));
+      output.log(chalk.yellow(result.message));
       process.exit(0);
     }
 
     if (options.showCategories && result.categorizedTags) {
-      console.log(chalk.bold(`Tags on scenario '${scenarioName}':\n`));
-      console.log(
+      output.log(chalk.bold(`Tags on scenario '${scenarioName}':\n`));
+      output.log(
         chalk.gray(`${chalk.bold('Tag').padEnd(20)} ${chalk.bold('Category')}`)
       );
-      console.log(chalk.gray('─'.repeat(50)));
+      output.log(chalk.gray('─'.repeat(50)));
 
       for (const { tag, category } of result.categorizedTags) {
-        console.log(`${chalk.cyan(tag.padEnd(20))} ${chalk.gray(category)}`);
+        output.log(`${chalk.cyan(tag.padEnd(20))} ${chalk.gray(category)}`);
       }
     } else {
-      console.log(chalk.bold(`Tags on scenario '${scenarioName}':\n`));
+      output.log(chalk.bold(`Tags on scenario '${scenarioName}':\n`));
       for (const tag of result.tags) {
-        console.log(chalk.cyan(`  ${tag}`));
+        output.log(chalk.cyan(`  ${tag}`));
       }
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

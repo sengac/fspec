@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import type { Foundation } from '../types/foundation';
 import { ensureFoundationFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface ShowFoundationOptions {
   section?: string;
   format?: 'text' | 'json';
@@ -195,19 +196,19 @@ export async function showFoundationCommand(
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
     if (!options?.output) {
-      console.log(result.output);
+      output.log(result.output);
     } else {
-      console.log(chalk.green('✓'), `Output written to ${options.output}`);
+      output.log(chalk.green('✓'), `Output written to ${options.output}`);
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

@@ -6,6 +6,7 @@ import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import { isWorkUnitTag } from '../utils/work-unit-tags';
 
+import { output } from '../utils/output';
 interface AddTagToScenarioOptions {
   cwd?: string;
   validateRegistry?: boolean;
@@ -245,14 +246,14 @@ export async function addTagToScenarioCommand(
     );
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green(`✓ ${result.message}`));
+    output.log(chalk.green(`✓ ${result.message}`));
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

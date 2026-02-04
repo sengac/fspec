@@ -5,6 +5,7 @@ import { join } from 'path';
 import type { WorkUnitsData, WorkUnitType } from '../types';
 import { ensureWorkUnitsFile, ensurePrefixesFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface ListWorkUnitsOptions {
   status?: string;
   prefix?: string;
@@ -91,33 +92,33 @@ export async function listWorkUnitsCommand(options: {
 
     // JSON output for programmatic access
     if (options.format === 'json') {
-      console.log(JSON.stringify(result, null, 2));
+      output.log(JSON.stringify(result, null, 2));
       return;
     }
 
     if (result.workUnits.length === 0) {
-      console.log(chalk.yellow('No work units found'));
+      output.log(chalk.yellow('No work units found'));
       process.exit(0);
     }
 
-    console.log(chalk.bold(`\nWork Units (${result.workUnits.length})`));
-    console.log('');
+    output.log(chalk.bold(`\nWork Units (${result.workUnits.length})`));
+    output.log('');
 
     for (const wu of result.workUnits) {
-      console.log(chalk.cyan(wu.id) + chalk.gray(` [${wu.status}]`));
-      console.log(`  ${wu.title}`);
+      output.log(chalk.cyan(wu.id) + chalk.gray(` [${wu.status}]`));
+      output.log(`  ${wu.title}`);
       if (wu.epic) {
-        console.log(chalk.gray(`  Epic: ${wu.epic}`));
+        output.log(chalk.gray(`  Epic: ${wu.epic}`));
       }
-      console.log('');
+      output.log('');
     }
 
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(chalk.red('Error:'), error.message);
+      output.error(chalk.red('Error:'), error.message);
     } else {
-      console.error(chalk.red('Error: Unknown error occurred'));
+      output.error(chalk.red('Error: Unknown error occurred'));
     }
     process.exit(1);
   }

@@ -5,6 +5,7 @@ import type { WorkUnitsData, VirtualHook } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface CopyVirtualHooksOptions {
   from: string;
   to: string;
@@ -114,13 +115,13 @@ export function registerCopyVirtualHooksCommand(program: Command): void {
           hookName: opts.hookName,
         });
 
-        console.log(
+        output.log(
           chalk.green(
             `✓ Copied ${result.copiedCount} virtual hook(s) from ${opts.from} to ${opts.to}`
           )
         );
       } catch (error: unknown) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to copy virtual hooks:'),
           error instanceof Error ? error.message : String(error)
         );

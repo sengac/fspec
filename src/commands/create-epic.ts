@@ -4,6 +4,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface Epic {
   id: string;
   title: string;
@@ -91,21 +92,21 @@ export async function createEpicCommand(
     });
 
     if (result.success) {
-      console.log(chalk.green(`✓ Created epic ${epicId}`));
-      console.log(chalk.gray(`  Title: ${title}`));
+      output.log(chalk.green(`✓ Created epic ${epicId}`));
+      output.log(chalk.gray(`  Title: ${title}`));
       if (options.description) {
-        console.log(chalk.gray(`  Description: ${options.description}`));
+        output.log(chalk.gray(`  Description: ${options.description}`));
       }
       process.exit(0);
     } else {
-      console.error(chalk.red('✗ Failed to create epic'));
+      output.error(chalk.red('✗ Failed to create epic'));
       process.exit(1);
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(chalk.red('Error:'), error.message);
+      output.error(chalk.red('Error:'), error.message);
     } else {
-      console.error(chalk.red('Error: Unknown error occurred'));
+      output.error(chalk.red('Error: Unknown error occurred'));
     }
     process.exit(1);
   }

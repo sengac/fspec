@@ -6,6 +6,7 @@ import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 interface ScenarioInfo {
   feature: string;
   name: string;
@@ -169,23 +170,23 @@ export async function getScenariosCommand(options: {
     const result = await getScenarios({ tags, format });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
     if (result.warnings && result.warnings.length > 0) {
       for (const warning of result.warnings) {
-        console.warn(chalk.yellow('⚠'), warning);
+        output.warn(chalk.yellow('⚠'), warning);
       }
     }
 
     if (format === 'json') {
-      console.log(JSON.stringify(result.scenarios, null, 2));
+      output.log(JSON.stringify(result.scenarios, null, 2));
     } else {
-      console.log(chalk.blue(result.message));
+      output.log(chalk.blue(result.message));
 
       if (result.scenarios.length > 0) {
-        console.log('');
+        output.log('');
 
         // Group by feature
         const byFeature = new Map<string, ScenarioInfo[]>();
@@ -197,24 +198,24 @@ export async function getScenariosCommand(options: {
         }
 
         for (const [feature, scenarios] of byFeature.entries()) {
-          console.log(chalk.bold.green(feature));
+          output.log(chalk.bold.green(feature));
           for (const scenario of scenarios) {
             const tagsDisplay = scenario.tags
               ? chalk.cyan(` [${scenario.tags.join(' ')}]`)
               : '';
-            console.log(
+            output.log(
               chalk.gray(`  ${scenario.line}:`),
               scenario.name + tagsDisplay
             );
           }
-          console.log('');
+          output.log('');
         }
       }
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

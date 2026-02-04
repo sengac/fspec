@@ -10,6 +10,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import { output } from '../utils/output';
 import {
   calculateScenarioSimilarity,
   extractTokens,
@@ -94,7 +95,7 @@ export async function auditScenarios(
       }
     } catch (error) {
       // Skip invalid feature files
-      console.error(
+      output.error(
         chalk.yellow(`⚠ Skipping ${featureFile}: ${(error as Error).message}`)
       );
     }
@@ -166,46 +167,46 @@ export async function auditScenarios(
  * Display audit results
  */
 export function displayAuditResults(result: AuditResult): void {
-  console.log(chalk.bold(`\n📊 Scenario Audit Report\n${'='.repeat(50)}\n`));
+  output.log(chalk.bold(`\n📊 Scenario Audit Report\n${'='.repeat(50)}\n`));
 
-  console.log(`Total scenarios scanned: ${chalk.cyan(result.totalScenarios)}`);
-  console.log(
+  output.log(`Total scenarios scanned: ${chalk.cyan(result.totalScenarios)}`);
+  output.log(
     `Duplicate groups found: ${chalk.yellow(result.duplicates.length)}`
   );
-  console.log(
+  output.log(
     `Total duplicate scenarios: ${chalk.yellow(result.duplicateCount)}\n`
   );
 
   if (result.duplicates.length === 0) {
-    console.log(
+    output.log(
       chalk.green('✓ No duplicates found! All scenarios are unique.\n')
     );
     return;
   }
 
-  console.log(chalk.bold('Duplicate Groups:\n'));
+  output.log(chalk.bold('Duplicate Groups:\n'));
 
   result.duplicates.forEach((group, index) => {
-    console.log(
+    output.log(
       chalk.bold(
         `${index + 1}. Similarity: ${chalk.yellow((group.similarityScore * 100).toFixed(1) + '%')}`
       )
     );
-    console.log(
+    output.log(
       `   Keywords: ${chalk.cyan(group.keywords.slice(0, 5).join(', '))}`
     );
 
     group.files.forEach((file, i) => {
-      console.log(
+      output.log(
         `   ${chalk.gray('→')} ${chalk.white(file)}: "${chalk.yellow(group.scenarios[i])}"`
       );
     });
 
-    console.log();
+    output.log();
   });
 
   if (result.mergeable) {
-    console.log(
+    output.log(
       chalk.cyan(
         '💡 Tip: Review these duplicates and consider merging them to maintain consistency.\n'
       )
@@ -225,7 +226,7 @@ export async function command(options: AuditOptions = {}): Promise<void> {
       process.exit(1);
     }
   } catch (error) {
-    console.error(
+    output.error(
       chalk.red('Error auditing scenarios:'),
       (error as Error).message
     );

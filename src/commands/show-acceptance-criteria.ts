@@ -6,6 +6,7 @@ import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
+import { output } from '../utils/output';
 interface Step {
   keyword: string;
   text: string;
@@ -293,19 +294,19 @@ export async function showAcceptanceCriteriaCommand(options: {
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.blue(result.message));
+    output.log(chalk.blue(result.message));
 
     if (!options.output) {
-      console.log(result.output);
+      output.log(result.output);
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

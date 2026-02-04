@@ -10,6 +10,7 @@ import chalk from 'chalk';
 import type { WorkUnitsData, EventStormCommand } from '../types';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 export interface AddCommandOptions {
   workUnitId: string;
   text: string;
@@ -168,17 +169,17 @@ export function registerAddCommandCommand(program: Command): void {
         });
 
         if (!result.success) {
-          console.error(chalk.red('✗ Failed to add command:'), result.error);
+          output.error(chalk.red('✗ Failed to add command:'), result.error);
           process.exit(1);
         }
 
-        console.log(
+        output.log(
           chalk.green(
             `✓ Added command "${text}" to ${workUnitId} (ID: ${result.commandId})`
           )
         );
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to add command:'), error.message);
+        output.error(chalk.red('✗ Failed to add command:'), error.message);
         process.exit(1);
       }
     });

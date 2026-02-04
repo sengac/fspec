@@ -3,6 +3,7 @@ import { join } from 'path';
 import type { Command } from 'commander';
 import { formatAgentOutput, getAgentConfig } from '../utils/agentRuntimeConfig';
 
+import { output } from '../utils/output';
 interface ToolsConfig {
   test?: {
     command: string;
@@ -222,7 +223,7 @@ export async function registerConfigureToolsCommand(
         });
 
         if (!options.reconfigure) {
-          console.log('✓ Tool configuration saved to spec/fspec-config.json');
+          output.log('✓ Tool configuration saved to spec/fspec-config.json');
         }
       }
     );
@@ -234,7 +235,7 @@ export async function registerConfigureToolsCommand(
       import('../utils/help-formatter'),
     ])
       .then(([helpModule, formatterModule]) => {
-        console.log(formatterModule.formatCommandHelp(helpModule.default));
+        output.log(formatterModule.formatCommandHelp(helpModule.default));
       })
       .catch(() => {
         // Graceful fallback if help not available

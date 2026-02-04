@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface RemoveRuleOptions {
   workUnitId: string;
   index: number;
@@ -96,9 +97,9 @@ export function registerRemoveRuleCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        console.log(chalk.green(`✓ Removed rule: "${result.removedRule}"`));
+        output.log(chalk.green(`✓ Removed rule: "${result.removedRule}"`));
       } catch (error: any) {
-        console.error(chalk.red('✗ Failed to remove rule:'), error.message);
+        output.error(chalk.red('✗ Failed to remove rule:'), error.message);
         process.exit(1);
       }
     });

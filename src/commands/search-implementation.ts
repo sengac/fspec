@@ -12,6 +12,7 @@ import {
 } from '../utils/coverage-reader';
 import { queryWorkUnits } from './query-work-units';
 
+import { output } from '../utils/output';
 interface SearchImplementationOptions {
   function: string;
   showWorkUnits?: boolean;
@@ -107,9 +108,9 @@ export function registerSearchImplementationCommand(program: Command): void {
         try {
           const result = await searchImplementation(options);
           if (options.json) {
-            console.log(JSON.stringify(result, null, 2));
+            output.log(JSON.stringify(result, null, 2));
           } else {
-            console.log(
+            output.log(
               chalk.green(
                 `✓ Found "${options.function}" in ${result.files.length} file(s)`
               )
@@ -117,7 +118,7 @@ export function registerSearchImplementationCommand(program: Command): void {
           }
         } catch (error: unknown) {
           if (error instanceof Error) {
-            console.error(chalk.red('✗ Search failed:'), error.message);
+            output.error(chalk.red('✗ Search failed:'), error.message);
           }
           process.exit(1);
         }

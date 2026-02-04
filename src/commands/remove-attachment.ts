@@ -6,6 +6,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 export interface RemoveAttachmentOptions {
   workUnitId: string;
   fileName: string;
@@ -57,21 +58,21 @@ export async function removeAttachment(
   if (!options.keepFile) {
     try {
       await unlink(fullPath);
-      console.log(
+      output.log(
         chalk.green('✓ Attachment removed from work unit and file deleted')
       );
     } catch (error: unknown) {
-      console.log(
+      output.log(
         chalk.yellow(
           '⚠ Attachment removed from work unit (file was already missing)'
         )
       );
     }
   } else {
-    console.log(chalk.green('✓ Attachment removed from work unit (file kept)'));
+    output.log(chalk.green('✓ Attachment removed from work unit (file kept)'));
   }
 
-  console.log(chalk.dim(`  File: ${attachmentPath}`));
+  output.log(chalk.dim(`  File: ${attachmentPath}`));
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();
@@ -112,7 +113,7 @@ export function registerRemoveAttachmentCommand(program: Command): void {
         } catch (error: unknown) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
-          console.error(chalk.red('Error:'), errorMessage);
+          output.error(chalk.red('Error:'), errorMessage);
           process.exit(1);
         }
       }

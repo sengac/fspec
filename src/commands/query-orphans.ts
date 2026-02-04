@@ -3,6 +3,7 @@ import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import type { WorkUnitsData, WorkUnit } from '../types';
 
+import { output } from '../utils/output';
 interface OrphanedWorkUnit {
   id: string;
   title: string;
@@ -93,12 +94,12 @@ export function registerQueryOrphansCommand(program: Command): void {
           });
 
           if (options.output === 'json') {
-            console.log(JSON.stringify(result, null, 2));
+            output.log(JSON.stringify(result, null, 2));
           } else {
             // Text output
             if (result.orphans.length === 0) {
-              console.log(chalk.green('✓ No orphaned work units found.'));
-              console.log(
+              output.log(chalk.green('✓ No orphaned work units found.'));
+              output.log(
                 chalk.dim(
                   'All work units have either an epic assignment or dependency relationships.'
                 )
@@ -106,39 +107,39 @@ export function registerQueryOrphansCommand(program: Command): void {
               return;
             }
 
-            console.log(
+            output.log(
               chalk.yellow(
                 `\nFound ${result.orphans.length} orphaned work unit(s):\n`
               )
             );
 
             result.orphans.forEach((orphan, index) => {
-              console.log(
+              output.log(
                 `${index + 1}. ${chalk.cyan(orphan.id)} - ${orphan.title} (${chalk.dim(orphan.status)})`
               );
-              console.log(
+              output.log(
                 `   ${chalk.red('⚠')} No epic or dependency relationships`
               );
-              console.log(`   ${chalk.bold('Suggested actions:')}`);
+              output.log(`   ${chalk.bold('Suggested actions:')}`);
               orphan.suggestedActions.forEach(action => {
-                console.log(`     • ${action}`);
+                output.log(`     • ${action}`);
               });
-              console.log('');
+              output.log('');
             });
 
-            console.log(chalk.dim('To fix orphaned work units:'));
-            console.log(
+            output.log(chalk.dim('To fix orphaned work units:'));
+            output.log(
               chalk.dim('  fspec update-work-unit <id> --epic=<epic-name>')
             );
-            console.log(
+            output.log(
               chalk.dim(
                 '  fspec add-dependency <id> --depends-on=<other-id>  (or --blocks, --relates-to)'
               )
             );
-            console.log(chalk.dim('  fspec delete-work-unit <id>'));
+            output.log(chalk.dim('  fspec delete-work-unit <id>'));
           }
         } catch (error: any) {
-          console.error(chalk.red('✗ Failed to query orphans:'), error.message);
+          output.error(chalk.red('✗ Failed to query orphans:'), error.message);
           process.exit(1);
         }
       }

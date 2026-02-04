@@ -3,6 +3,7 @@ import type { Command } from 'commander';
 import type { Tags } from '../types/tags';
 import { ensureTagsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface TagEntry {
   tag: string;
   description: string;
@@ -65,33 +66,33 @@ export async function listTagsCommand(
 
     // Display results
     for (const category of result.categories) {
-      console.log(
+      output.log(
         chalk.bold.blue(`\n${category.name}`) +
           chalk.gray(` (${category.tags.length} tags)`)
       );
 
       if (category.tags.length === 0) {
-        console.log(chalk.gray('  No tags registered'));
+        output.log(chalk.gray('  No tags registered'));
       } else {
         for (const tag of category.tags) {
-          console.log(`  ${chalk.green(tag.tag)} - ${tag.description}`);
+          output.log(`  ${chalk.green(tag.tag)} - ${tag.description}`);
         }
       }
     }
 
-    console.log('');
+    output.log('');
     process.exit(0);
   } catch (error: any) {
     if (error.message.includes('tags.json not found')) {
-      console.error(chalk.red(error.message));
-      console.log(
+      output.error(chalk.red(error.message));
+      output.log(
         chalk.yellow(
           '  Suggestion: Create spec/tags.json or use "fspec register-tag" to add tags'
         )
       );
       process.exit(2);
     }
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

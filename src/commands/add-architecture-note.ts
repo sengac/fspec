@@ -6,6 +6,7 @@ import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 import { wrapInSystemReminder } from '../utils/system-reminder';
 
+import { output } from '../utils/output';
 export interface AddArchitectureNoteOptions {
   workUnitId: string;
   note: string;
@@ -94,14 +95,14 @@ export function registerAddArchitectureNoteCommand(program: Command): void {
     .action(async (workUnitId: string, note: string) => {
       try {
         const result = await addArchitectureNote({ workUnitId, note });
-        console.log(chalk.green('✓ Architecture note added successfully'));
+        output.log(chalk.green('✓ Architecture note added successfully'));
         if (result.systemReminder) {
-          console.log('\n' + result.systemReminder);
+          output.log('\n' + result.systemReminder);
         }
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        console.error(chalk.red('Error:'), errorMessage);
+        output.error(chalk.red('Error:'), errorMessage);
         process.exit(1);
       }
     });

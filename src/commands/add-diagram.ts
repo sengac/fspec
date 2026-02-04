@@ -7,6 +7,7 @@ import { generateFoundationMd } from '../generators/foundation-md';
 import { validateMermaidSyntax } from '../utils/mermaid-validation';
 import { ensureFoundationFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface AddDiagramOptions {
   section: string;
   title: string;
@@ -142,16 +143,16 @@ export async function addDiagramCommand(
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green('✓'), result.message);
-    console.log(chalk.gray('  Updated: spec/foundation.json'));
-    console.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
+    output.log(chalk.green('✓'), result.message);
+    output.log(chalk.gray('  Updated: spec/foundation.json'));
+    output.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

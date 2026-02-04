@@ -5,6 +5,7 @@ import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface ExampleMapData {
   rules?: string[];
   examples?: string[];
@@ -120,13 +121,13 @@ export function registerImportExampleMapCommand(program: Command): void {
           result.examplesCount +
           result.questionsCount +
           result.assumptionsCount;
-        console.log(
+        output.log(
           chalk.green(
             `✓ Imported ${total} items: ${result.rulesCount} rules, ${result.examplesCount} examples, ${result.questionsCount} questions, ${result.assumptionsCount} assumptions`
           )
         );
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to import example map:'),
           error.message
         );

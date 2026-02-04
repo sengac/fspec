@@ -3,6 +3,11 @@
 // CODE-002/CODE-005: Support ALL fspec commands EXCEPT bootstrap and init
 
 import { createProgram } from '../cli/program';
+import {
+  createCaptureContext,
+  setOutputContext,
+  resetOutputContext,
+} from './output';
 
 // Commands that are excluded from FspecTool (must use CLI directly)
 const EXCLUDED_COMMANDS = ['bootstrap', 'init'];
@@ -26,41 +31,52 @@ The Fspec tool accepts three parameters:
 
 ## How Arguments Work
 
-The \`args\` parameter is a **JSON string**. Keys in the JSON become command-line flags:
-- camelCase keys become kebab-case flags: \`workUnit\` → \`--work-unit\`
-- Boolean \`true\` adds the flag: \`{"all": true}\` → \`--all\`
-- String/number values become flag values: \`{"status": "backlog"}\` → \`--status backlog\`
+The \`args\` parameter is a **JSON object**. 
+
+**Positional arguments** use the special \`_\` key (array):
+- \`{"_": ["AUTH-001"]}\` → \`fspec command AUTH-001\`
+- \`{"_": ["AUTH-001", "implementing"]}\` → \`fspec command AUTH-001 implementing\`
+
+**Named options** use camelCase keys (become kebab-case flags):
+- \`{"status": "backlog"}\` → \`--status backlog\`
+- \`{"skipValidation": true}\` → \`--skip-validation\`
 
 ## Example Tool Calls
 
 **List all work units:**
 \`\`\`
 command: "list-work-units"
-args: "{}"
+args: {}
 \`\`\`
 
 **List work units filtered by status:**
 \`\`\`
 command: "list-work-units"
-args: "{\\"status\\": \\"backlog\\"}"
+args: {"status": "backlog"}
 \`\`\`
 
 **Show a specific work unit:**
 \`\`\`
 command: "show-work-unit"
-args: "{\\"id\\": \\"STORY-001\\"}"
+args: {"_": ["STORY-001"]}
+\`\`\`
+
+**Update work unit status:**
+\`\`\`
+command: "update-work-unit-status"
+args: {"_": ["STORY-001", "implementing"]}
 \`\`\`
 
 **Add a rule to a work unit:**
 \`\`\`
 command: "add-rule"
-args: "{\\"workUnit\\": \\"STORY-001\\", \\"rule\\": \\"Users must be authenticated\\"}"
+args: {"_": ["STORY-001", "Users must be authenticated"]}
 \`\`\`
 
 **Execute research tool:**
 \`\`\`
 command: "research"
-args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"best practices for password hashing\\"}"
+args: {"tool": "perplexity", "query": "best practices for password hashing"}
 \`\`\`
 
 ---
@@ -69,131 +85,131 @@ args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"best practices for passwor
 
 ### Work Unit Management
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
 | list-work-units | - | status, type | List all work units |
-| show-work-unit | id | - | Show work unit details |
-| create-story | title | epic, description | Create user story |
-| create-bug | title | epic, description | Create bug report |
-| create-task | title | epic, description | Create task |
-| update-work-unit | id | title, description | Update work unit |
-| update-work-unit-status | id, status | - | Change workflow status |
-| update-work-unit-estimate | id, estimate | - | Set effort estimate |
-| delete-work-unit | id | - | Delete work unit |
-| prioritize-work-unit | id, priority | - | Set priority (1=highest) |
+| show-work-unit | [workUnitId] | - | Show work unit details |
+| create-story | [prefix, title] | epic, description | Create user story |
+| create-bug | [prefix, title] | epic, description | Create bug report |
+| create-task | [prefix, title] | epic, description | Create task |
+| update-work-unit | [workUnitId] | title, description | Update work unit |
+| update-work-unit-status | [workUnitId, status] | - | Change workflow status |
+| update-work-unit-estimate | [workUnitId, estimate] | - | Set effort estimate |
+| delete-work-unit | [workUnitId] | - | Delete work unit |
+| prioritize-work-unit | [workUnitId, priority] | - | Set priority (1=highest) |
 
 **Status values:** backlog, specifying, implementing, testing, validating, done, blocked
 
 ### Example Mapping (Specifying Phase)
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
-| add-rule | workUnit, rule | - | Add business rule |
-| add-example | workUnit, rule, example | - | Add example for rule |
-| add-question | workUnit, question | - | Add open question |
-| answer-question | workUnit, questionIndex, answer | - | Answer question |
-| remove-rule | workUnit, ruleIndex | - | Remove rule |
-| remove-example | workUnit, ruleIndex, exampleIndex | - | Remove example |
-| remove-question | workUnit, questionIndex | - | Remove question |
-| restore-rule | workUnit, ruleIndex | - | Restore deleted rule |
-| restore-example | workUnit, ruleIndex, exampleIndex | - | Restore deleted example |
-| restore-question | workUnit, questionIndex | - | Restore deleted question |
-| show-deleted | workUnit | - | Show deleted items |
-| compact-work-unit | workUnit | - | Permanently remove deleted items |
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
+| add-rule | [workUnitId, rule] | - | Add business rule |
+| add-example | [workUnitId, example] | rule | Add example for rule |
+| add-question | [workUnitId, question] | - | Add open question |
+| answer-question | [workUnitId, index, answer] | - | Answer question |
+| remove-rule | [workUnitId, index] | - | Remove rule |
+| remove-example | [workUnitId, index] | - | Remove example |
+| remove-question | [workUnitId, index] | - | Remove question |
+| restore-rule | [workUnitId, index] | - | Restore deleted rule |
+| restore-example | [workUnitId, index] | - | Restore deleted example |
+| restore-question | [workUnitId, index] | - | Restore deleted question |
+| show-deleted | [workUnitId] | - | Show deleted items |
+| compact-work-unit | [workUnitId] | - | Permanently remove deleted items |
 
 ### Feature Files (Gherkin)
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
 | list-features | - | workUnit | List feature files |
-| show-feature | feature | - | Show feature contents |
-| create-feature | workUnit, name | description | Create feature file |
-| add-scenario | feature, name | steps | Add scenario |
-| add-step | feature, scenario, step, type | - | Add step (type: Given/When/Then) |
-| update-scenario | feature, scenario | name | Update scenario |
-| delete-scenario | feature, scenario | - | Delete scenario |
-| get-scenarios | feature | - | Get all scenarios |
-| generate-scenarios | workUnit | - | Generate from example map |
+| show-feature | [feature] | - | Show feature contents |
+| create-feature | [name] | workUnit, description | Create feature file |
+| add-scenario | [scenario] | feature, steps | Add scenario |
+| add-step | [feature, scenario, type, text] | - | Add step (type: Given/When/Then) |
+| update-scenario | [feature, oldName, newName] | - | Update scenario |
+| delete-scenario | [scenario] | feature | Delete scenario |
+| get-scenarios | [feature] | - | Get all scenarios |
+| generate-scenarios | [workUnitId] | - | Generate from example map |
 
 ### Workflow & Board
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
 | board | - | - | Show kanban board |
-| auto-advance | id | - | Auto-advance to next state |
-| review | id | - | Review work unit readiness |
+| auto-advance | [workUnitId] | - | Auto-advance to next state |
+| review | [workUnitId] | - | Review work unit readiness |
 
 ### Research Tools
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
-| research | tool | workUnit, (tool-specific args) | Execute research tool |
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
+| research | - | tool, workUnit, query | Execute research tool |
 
 **Available research tools depend on project configuration.**
 
 To list available tools:
 \`\`\`
 command: "research"
-args: "{}"
+args: {}
 \`\`\`
 
 To use a tool (e.g., perplexity):
 \`\`\`
 command: "research"
-args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"your research question\\"}"
+args: {"tool": "perplexity", "query": "your research question"}
 \`\`\`
 
 ### Architecture & Foundation
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
 | show-foundation | - | - | Show foundation document |
-| update-foundation | section, content | - | Update foundation section |
-| add-architecture-note | workUnit, note | category | Add architecture decision |
-| show-event-storm | - | workUnit | Show event storm results |
-| discover-event-storm | workUnit | - | Run event storm discovery |
+| update-foundation | [section, content] | - | Update foundation section |
+| add-architecture-note | [workUnitId, note] | category | Add architecture decision |
+| show-event-storm | [workUnitId] | - | Show event storm results |
+| discover-event-storm | [workUnitId] | - | Run event storm discovery |
 
 ### Tags & Organization
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
 | list-tags | - | - | List registered tags |
-| register-tag | tag | description, color | Register new tag |
-| add-tag-to-feature | feature, tag | - | Add tag to feature |
-| add-tag-to-scenario | feature, scenario, tag | - | Add tag to scenario |
+| register-tag | [tag, category, description] | color | Register new tag |
+| add-tag-to-feature | [feature, tags...] | - | Add tag to feature |
+| add-tag-to-scenario | [feature, tags...] | scenario | Add tag to scenario |
 | tag-stats | - | - | Show tag statistics |
 
 ### Dependencies
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
 | dependencies | - | id | Show dependency graph |
-| add-dependency | from, to | type | Add dependency |
-| remove-dependency | from, to | - | Remove dependency |
-| suggest-dependencies | id | - | AI suggests dependencies |
+| add-dependency | [workUnitId] | dependsOn, type | Add dependency |
+| remove-dependency | [workUnitId] | dependsOn | Remove dependency |
+| suggest-dependencies | [workUnitId] | - | AI suggests dependencies |
 
 ### Epics
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
 | list-epics | - | - | List all epics |
-| show-epic | id | - | Show epic details |
-| create-epic | title | description | Create epic |
-| delete-epic | id | - | Delete epic |
+| show-epic | [epicId] | - | Show epic details |
+| create-epic | [title] | description | Create epic |
+| delete-epic | [epicId] | - | Delete epic |
 
 ### Validation & Quality
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
 | validate | - | - | Validate all specs |
 | validate-work-units | - | - | Validate work units |
 | check | - | id | Run quality checks |
 
 ### Queries & Reports
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
-| query-work-units | query | - | Search work units |
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
+| query-work-units | [query] | - | Search work units |
 | query-metrics | - | - | Show project metrics |
 | query-bottlenecks | - | - | Find bottlenecks |
 | query-orphans | - | - | Find orphaned items |
@@ -201,19 +217,20 @@ args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"your research question\\"}
 
 ### Checkpoints
 
-| Command | Required Args | Optional Args | Description |
-|---------|---------------|---------------|-------------|
-| checkpoint | - | message | Create checkpoint |
-| list-checkpoints | - | - | List checkpoints |
-| restore-checkpoint | id | - | Restore checkpoint |
+| Command | Positional Args (\`_\`) | Optional Args | Description |
+|---------|------------------------|---------------|-------------|
+| checkpoint | [workUnitId] | message | Create checkpoint |
+| list-checkpoints | [workUnitId] | - | List checkpoints |
+| restore-checkpoint | [workUnitId, checkpointName] | - | Restore checkpoint |
 
 ---
 
 ## Notes
 
 - **Excluded commands:** \`bootstrap\` and \`init\` must be run via CLI
-- **JSON escaping:** In the args string, escape quotes: \`"{\\"key\\": \\"value\\"}"\`
-- **Get command help:** Use \`command: "help", args: "{\\"command\\": \\"command-name\\"}"\`
+- **Positional args:** Use \`_\` key with array: \`{"_": ["arg1", "arg2"]}\`
+- **Named options:** Use camelCase keys: \`{"status": "backlog"}\`
+- **Get command help:** Use \`command: "help", args: {"command": "command-name"}\`
 `;
 
   return help;
@@ -232,12 +249,12 @@ List all work units in the project.
 ### Tool Call
 \`\`\`
 command: "list-work-units"
-args: "{}"                           // No filter
-args: "{\\"status\\": \\"backlog\\"}"     // Filter by status
-args: "{\\"type\\": \\"story\\"}"         // Filter by type
+args: {}                           // No filter
+args: {"status": "backlog"}        // Filter by status
+args: {"type": "story"}            // Filter by type
 \`\`\`
 
-### Args (all optional)
+### Args (all optional - these are named options, not positional)
 | Arg | Type | Values |
 |-----|------|--------|
 | status | string | backlog, specifying, implementing, testing, validating, done, blocked |
@@ -260,13 +277,13 @@ Show detailed information about a specific work unit including rules, examples, 
 ### Tool Call
 \`\`\`
 command: "show-work-unit"
-args: "{\\"id\\": \\"STORY-001\\"}"
+args: {"_": ["STORY-001"]}
 \`\`\`
 
 ### Args
 | Arg | Type | Required | Description |
 |-----|------|----------|-------------|
-| id | string | Yes | Work unit ID (e.g., "STORY-001") |
+| _ | array | Yes | Positional args: [workUnitId] |
 
 ### Returns
 Full work unit details including:
@@ -282,14 +299,14 @@ Create a new user story work unit.
 ### Tool Call
 \`\`\`
 command: "create-story"
-args: "{\\"title\\": \\"User can reset password\\"}"
-args: "{\\"title\\": \\"User can reset password\\", \\"epic\\": \\"EPIC-001\\"}"
+args: {"_": ["AUTH", "User can reset password"]}
+args: {"_": ["AUTH", "User can reset password"], "epic": "EPIC-001"}
 \`\`\`
 
 ### Args
 | Arg | Type | Required | Description |
 |-----|------|----------|-------------|
-| title | string | Yes | Story title |
+| _ | array | Yes | Positional args: [prefix, title] |
 | epic | string | No | Parent epic ID |
 | description | string | No | Story description |
 
@@ -297,7 +314,7 @@ args: "{\\"title\\": \\"User can reset password\\", \\"epic\\": \\"EPIC-001\\"}"
 \`\`\`json
 {
   "success": true,
-  "id": "STORY-XXX",
+  "id": "AUTH-001",
   "title": "User can reset password",
   "status": "backlog"
 }
@@ -310,14 +327,13 @@ Add a business rule to a work unit's example map during the specifying phase.
 ### Tool Call
 \`\`\`
 command: "add-rule"
-args: "{\\"workUnit\\": \\"STORY-001\\", \\"rule\\": \\"Password must be at least 8 characters\\"}"
+args: {"_": ["STORY-001", "Password must be at least 8 characters"]}
 \`\`\`
 
 ### Args
 | Arg | Type | Required | Description |
 |-----|------|----------|-------------|
-| workUnit | string | Yes | Work unit ID |
-| rule | string | Yes | Business rule text |
+| _ | array | Yes | Positional args: [workUnitId, rule] |
 
 ### Returns
 Updated work unit with the new rule added.`,
@@ -329,15 +345,14 @@ Add an example that illustrates a business rule.
 ### Tool Call
 \`\`\`
 command: "add-example"
-args: "{\\"workUnit\\": \\"STORY-001\\", \\"rule\\": \\"Password must be at least 8 characters\\", \\"example\\": \\"'hello' (5 chars) is rejected\\"}"
+args: {"_": ["STORY-001", "'hello' (5 chars) is rejected"], "rule": "Password must be at least 8 characters"}
 \`\`\`
 
 ### Args
 | Arg | Type | Required | Description |
 |-----|------|----------|-------------|
-| workUnit | string | Yes | Work unit ID |
+| _ | array | Yes | Positional args: [workUnitId, example] |
 | rule | string | Yes | The rule text (must match existing rule exactly) |
-| example | string | Yes | Example that illustrates the rule |
 
 ### Notes
 - The rule text must match an existing rule exactly
@@ -350,14 +365,13 @@ Add an open question during example mapping to capture uncertainties.
 ### Tool Call
 \`\`\`
 command: "add-question"
-args: "{\\"workUnit\\": \\"STORY-001\\", \\"question\\": \\"Should we allow special characters in passwords?\\"}"
+args: {"_": ["STORY-001", "Should we allow special characters in passwords?"]}
 \`\`\`
 
 ### Args
 | Arg | Type | Required | Description |
 |-----|------|----------|-------------|
-| workUnit | string | Yes | Work unit ID |
-| question | string | Yes | Question text |
+| _ | array | Yes | Positional args: [workUnitId, question] |
 
 ### Notes
 Questions capture things that need clarification before implementation.`,
@@ -369,14 +383,13 @@ Change the workflow status of a work unit.
 ### Tool Call
 \`\`\`
 command: "update-work-unit-status"
-args: "{\\"id\\": \\"STORY-001\\", \\"status\\": \\"implementing\\"}"
+args: {"_": ["STORY-001", "implementing"]}
 \`\`\`
 
 ### Args
 | Arg | Type | Required | Description |
 |-----|------|----------|-------------|
-| id | string | Yes | Work unit ID |
-| status | string | Yes | New status |
+| _ | array | Yes | Positional args: [workUnitId, status] |
 
 ### Status Values
 - **backlog** - Not yet started
@@ -394,7 +407,7 @@ Show the kanban board with work units organized by workflow status.
 ### Tool Call
 \`\`\`
 command: "board"
-args: "{}"
+args: {}
 \`\`\`
 
 ### Args
@@ -410,13 +423,13 @@ Generate Gherkin scenarios from a work unit's example map (rules and examples).
 ### Tool Call
 \`\`\`
 command: "generate-scenarios"
-args: "{\\"workUnit\\": \\"STORY-001\\"}"
+args: {"_": ["STORY-001"]}
 \`\`\`
 
 ### Args
 | Arg | Type | Required | Description |
 |-----|------|----------|-------------|
-| workUnit | string | Yes | Work unit ID |
+| _ | array | Yes | Positional args: [workUnitId] |
 
 ### Notes
 - Requires the work unit to have rules and examples defined
@@ -429,13 +442,13 @@ Execute a research tool to gather information. Research tools are configured per
 ### List Available Tools
 \`\`\`
 command: "research"
-args: "{}"
+args: {}
 \`\`\`
 
 ### Execute a Research Tool
 \`\`\`
 command: "research"
-args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"best practices for password hashing\\"}"
+args: {"tool": "perplexity", "query": "best practices for password hashing"}
 \`\`\`
 
 ### Args
@@ -461,13 +474,13 @@ Get help for the Fspec tool or a specific command.
 ### General Help
 \`\`\`
 command: "help"
-args: "{}"
+args: {}
 \`\`\`
 
 ### Command-Specific Help
 \`\`\`
 command: "help"
-args: "{\\"command\\": \\"add-rule\\"}"
+args: {"command": "add-rule"}
 \`\`\`
 
 ### Args
@@ -551,53 +564,58 @@ export async function fspecCallback(
     });
   }
 
-  // Capture stdout/stderr - must capture BOTH console.* AND process.stdout/stderr
-  // because Commander.js writes help directly to process.stdout.write()
-  let capturedOutput = '';
-  let capturedError = '';
+  // Set up output capture context
+  // Commands now use output.log/error/warn which route through this context
+  const {
+    context: captureContext,
+    stdout: capturedStdout,
+    stderr: capturedStderr,
+  } = createCaptureContext();
 
-  // Capture console methods
-  const originalLog = console.log;
-  const originalError = console.error;
-  const originalWarn = console.warn;
+  // We still need a string for Commander.js help output (uses configureOutput)
+  let commanderOutput = '';
+  let commanderError = '';
 
-  console.log = (...args: unknown[]) => {
-    capturedOutput +=
-      args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ') +
-      '\n';
-  };
-  console.error = (...args: unknown[]) => {
-    capturedError +=
-      args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ') +
-      '\n';
-  };
-  console.warn = (...args: unknown[]) => {
-    capturedError +=
-      args.map(a => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ') +
-      '\n';
-  };
-
-  // Capture process.stdout/stderr.write (Commander.js uses these directly for help)
+  // Capture process.stdout.write directly for Commander help that bypasses configureOutput
+  let processStdoutCapture = '';
   const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+  process.stdout.write = ((
+    chunk: string | Uint8Array,
+    encodingOrCallback?: string | ((err?: Error) => void),
+    callback?: (err?: Error) => void
+  ): boolean => {
+    const str = typeof chunk === 'string' ? chunk : chunk.toString();
+    processStdoutCapture += str;
+    // Don't write to actual stdout - just capture
+    // Call the callback if provided
+    if (typeof encodingOrCallback === 'function') {
+      encodingOrCallback();
+    } else if (callback) {
+      callback();
+    }
+    return true;
+  }) as typeof process.stdout.write;
+
+  // Capture process.stderr.write directly for Commander errors that bypass configureOutput
+  // Commander.js writes "error: unknown option" directly to process.stderr
+  let processStderrCapture = '';
   const originalStderrWrite = process.stderr.write.bind(process.stderr);
-
-  process.stdout.write = (chunk: unknown, ..._rest: unknown[]): boolean => {
-    if (typeof chunk === 'string') {
-      capturedOutput += chunk;
-    } else if (Buffer.isBuffer(chunk)) {
-      capturedOutput += chunk.toString();
+  process.stderr.write = ((
+    chunk: string | Uint8Array,
+    encodingOrCallback?: string | ((err?: Error) => void),
+    callback?: (err?: Error) => void
+  ): boolean => {
+    const str = typeof chunk === 'string' ? chunk : chunk.toString();
+    processStderrCapture += str;
+    // Don't write to actual stderr - just capture
+    // Call the callback if provided
+    if (typeof encodingOrCallback === 'function') {
+      encodingOrCallback();
+    } else if (callback) {
+      callback();
     }
     return true;
-  };
-
-  process.stderr.write = (chunk: unknown, ..._rest: unknown[]): boolean => {
-    if (typeof chunk === 'string') {
-      capturedError += chunk;
-    } else if (Buffer.isBuffer(chunk)) {
-      capturedError += chunk.toString();
-    }
-    return true;
-  };
+  }) as typeof process.stderr.write;
 
   // Override process.exit to prevent Commander and command handlers from exiting
   // This is necessary because many commands call process.exit() directly
@@ -619,26 +637,46 @@ export async function fspecCallback(
     // Configure to not exit on error - throws CommanderError instead
     program.exitOverride();
 
-    // Configure output to go through our capture (belt + suspenders with process.stdout/stderr)
+    // Configure output to capture Commander.js help output (which doesn't use our output abstraction)
     program.configureOutput({
       writeOut: (str: string) => {
-        capturedOutput += str;
+        commanderOutput += str;
       },
       writeErr: (str: string) => {
-        capturedError += str;
+        commanderError += str;
       },
       outputError: (str: string) => {
-        capturedError += str;
+        commanderError += str;
       },
     });
 
     // Build argv array: ['node', 'fspec', command, ...options]
     // Always request JSON format when available for structured output
-    const argv = ['node', 'fspec', command, '--format', 'json'];
+    const argv = ['node', 'fspec', command];
 
-    // Convert args object to CLI flags
+    // Handle positional arguments via special '_' key (array of positional args in order)
+    // This follows the convention used by minimist/yargs
+    const positionalArgs = args._ as unknown[] | undefined;
+    if (Array.isArray(positionalArgs)) {
+      for (const arg of positionalArgs) {
+        if (arg !== undefined && arg !== null) {
+          argv.push(String(arg));
+        }
+      }
+    }
+
+    // Dynamically check if the command supports --format option
+    const cmd = program.commands.find(c => c.name() === command);
+    const hasFormatOption = cmd?.options.some(
+      opt => opt.long === '--format' || opt.short === '-f'
+    );
+    if (hasFormatOption) {
+      argv.push('--format', 'json');
+    }
+
+    // Convert remaining args object to CLI flags
     for (const [key, value] of Object.entries(args)) {
-      if (key === 'cwd' || key === 'format') continue; // Skip cwd and format (we handle them)
+      if (key === '_' || key === 'cwd' || key === 'format') continue; // Skip special keys
 
       const flagName =
         key.length === 1
@@ -652,8 +690,27 @@ export async function fspecCallback(
       }
     }
 
+    // Set the output context to capture command output
+    setOutputContext(captureContext);
+
     // Execute command via Commander.js
     await program.parseAsync(argv, { from: 'node' });
+
+    // Reset output context immediately after execution
+    resetOutputContext();
+
+    // Combine captured output from both sources:
+    // - capturedStdout/capturedStderr: output from commands using output.log/error/warn
+    // - commanderOutput/commanderError: output from Commander.js help/errors
+    // - processStdoutCapture/processStderrCapture: direct process.stdout/stderr.write
+    const capturedOutput =
+      capturedStdout.join('\n') +
+      (commanderOutput ? '\n' + commanderOutput : '') +
+      (processStdoutCapture ? '\n' + processStdoutCapture : '');
+    const capturedError =
+      capturedStderr.join('\n') +
+      (commanderError ? '\n' + commanderError : '') +
+      (processStderrCapture ? '\n' + processStderrCapture : '');
 
     // Parse system reminders from captured stderr
     const systemReminders = parseSystemReminders(capturedError);
@@ -697,6 +754,19 @@ export async function fspecCallback(
 
     return JSON.stringify(result);
   } catch (error) {
+    // Reset output context before processing error
+    resetOutputContext();
+
+    // Combine captured output from all sources
+    const capturedOutput =
+      capturedStdout.join('\n') +
+      (commanderOutput ? '\n' + commanderOutput : '') +
+      (processStdoutCapture ? '\n' + processStdoutCapture : '');
+    const capturedError =
+      capturedStderr.join('\n') +
+      (commanderError ? '\n' + commanderError : '') +
+      (processStderrCapture ? '\n' + processStderrCapture : '');
+
     const errorMessage = error instanceof Error ? error.message : String(error);
 
     // Check for our exit override (commands that called process.exit)
@@ -706,19 +776,57 @@ export async function fspecCallback(
 
       // Exit code 0 is success (e.g., help display)
       if (code === 0) {
+        // Filter out any leaked __FSPEC_EXIT_OVERRIDE__ messages from captured output
+        // This can happen when Commander.js logs the thrown error before we catch it
+        const cleanOutput = trimmedOutput
+          .replace(
+            // eslint-disable-next-line no-control-regex
+            /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
+            ''
+          )
+          .trim();
+        const cleanError = capturedError
+          .replace(
+            // eslint-disable-next-line no-control-regex
+            /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
+            ''
+          )
+          .replace(/Error: __FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
+          .trim();
+
         return JSON.stringify({
           success: true,
-          data: trimmedOutput || capturedError.trim(),
+          data: cleanOutput || cleanError,
         });
       }
 
       // Non-zero exit code indicates error
+      // Filter out internal __FSPEC_EXIT_OVERRIDE__ messages and provide clean errors
+      const cleanStdout = trimmedOutput
+        .replace(
+          // eslint-disable-next-line no-control-regex
+          /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
+          ''
+        )
+        .replace(/Error: __FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
+        .trim();
+      const cleanStderr = capturedError
+        .replace(
+          // eslint-disable-next-line no-control-regex
+          /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
+          ''
+        )
+        .replace(/Error: __FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
+        .trim();
+
+      const errorDetail = cleanStderr || cleanStdout || `Exit code ${code}`;
       return JSON.stringify({
         success: false,
-        error: `Command exited with code ${code}`,
-        errorType: 'ExitCode',
-        data: trimmedOutput,
-        stderr: capturedError.trim(),
+        error: errorDetail,
+        errorType: 'CommandError',
+        exitCode: code,
+        stdout: cleanStdout,
+        stderr: cleanStderr,
       });
     }
 
@@ -781,17 +889,15 @@ export async function fspecCallback(
       stderr: capturedError.trim(),
     });
   } finally {
-    // Restore console
-    console.log = originalLog;
-    console.error = originalError;
-    console.warn = originalWarn;
-
-    // Restore process.stdout/stderr.write
-    process.stdout.write = originalStdoutWrite;
-    process.stderr.write = originalStderrWrite;
+    // Ensure output context is reset (in case of unexpected errors)
+    resetOutputContext();
 
     // Restore process.exit
     process.exit = originalExit;
+
+    // Restore process.stdout.write and process.stderr.write
+    process.stdout.write = originalStdoutWrite;
+    process.stderr.write = originalStderrWrite;
 
     // Restore cwd
     process.chdir(originalCwd);

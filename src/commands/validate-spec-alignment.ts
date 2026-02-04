@@ -4,6 +4,7 @@ import type { Command } from 'commander';
 import { join } from 'path';
 import { glob } from 'tinyglobby';
 
+import { output } from '../utils/output';
 interface WorkUnit {
   id: string;
   [key: string]: unknown;
@@ -83,20 +84,20 @@ export function registerValidateSpecAlignmentCommand(program: Command): void {
       try {
         const result = await validateSpecAlignment({ fix: options.fix });
         if (result.aligned) {
-          console.log(
+          output.log(
             chalk.green(`✓ All specs are aligned with tests and implementation`)
           );
         } else {
-          console.error(
+          output.error(
             chalk.red(`✗ Found ${result.issues.length} alignment issues`)
           );
           result.issues.forEach((issue: string) =>
-            console.error(chalk.red(`  - ${issue}`))
+            output.error(chalk.red(`  - ${issue}`))
           );
           process.exit(1);
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Validation failed:'), error.message);
+        output.error(chalk.red('✗ Validation failed:'), error.message);
         process.exit(1);
       }
     });

@@ -3,6 +3,7 @@ import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import type { WorkUnitsData } from '../types';
 
+import { output } from '../utils/output';
 interface DependencySuggestion {
   from: string;
   to: string;
@@ -218,12 +219,12 @@ export function registerSuggestDependenciesCommand(program: Command): void {
         const result = await suggestDependencies({ output: options.output });
 
         if (options.output === 'json') {
-          console.log(JSON.stringify(result, null, 2));
+          output.log(JSON.stringify(result, null, 2));
         } else {
           // Text output
           if (result.suggestions.length === 0) {
-            console.log(chalk.yellow('No dependency suggestions found.'));
-            console.log(
+            output.log(chalk.yellow('No dependency suggestions found.'));
+            output.log(
               chalk.dim(
                 'Suggestions are based on sequential IDs, build/test pairs, and infrastructure patterns.'
               )
@@ -231,7 +232,7 @@ export function registerSuggestDependenciesCommand(program: Command): void {
             return;
           }
 
-          console.log(
+          output.log(
             chalk.bold(
               `\nFound ${result.suggestions.length} dependency suggestion(s):\n`
             )
@@ -240,23 +241,23 @@ export function registerSuggestDependenciesCommand(program: Command): void {
           result.suggestions.forEach((suggestion, index) => {
             const confidenceColor =
               suggestion.confidence === 'high' ? chalk.green : chalk.yellow;
-            console.log(
+            output.log(
               `${index + 1}. ${chalk.cyan(suggestion.from)} → ${chalk.cyan(suggestion.to)} (${suggestion.type})`
             );
-            console.log(`   ${confidenceColor('●')} ${suggestion.reason}`);
-            console.log(
+            output.log(`   ${confidenceColor('●')} ${suggestion.reason}`);
+            output.log(
               `   Confidence: ${confidenceColor(suggestion.confidence.toUpperCase())}\n`
             );
           });
 
-          console.log(
+          output.log(
             chalk.dim(
               'To apply a suggestion: fspec add-dependency <from-id> --depends-on=<to-id>'
             )
           );
         }
       } catch (error: any) {
-        console.error(
+        output.error(
           chalk.red('✗ Failed to suggest dependencies:'),
           error.message
         );

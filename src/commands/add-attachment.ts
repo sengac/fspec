@@ -5,6 +5,7 @@ import type { Command } from 'commander';
 import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
+import { output } from '../utils/output';
 import {
   shouldValidateMermaid,
   validateMermaidAttachment,
@@ -110,10 +111,10 @@ export async function addAttachment(
     Object.assign(fileData, data);
   });
 
-  console.log(chalk.green('✓ Attachment added successfully'));
-  console.log(chalk.dim(`  File: ${relativePath}`));
+  output.log(chalk.green('✓ Attachment added successfully'));
+  output.log(chalk.dim(`  File: ${relativePath}`));
   if (options.description) {
-    console.log(chalk.dim(`  Description: ${options.description}`));
+    output.log(chalk.dim(`  Description: ${options.description}`));
   }
 }
 
@@ -144,7 +145,7 @@ export function registerAddAttachmentCommand(program: Command): void {
         } catch (error: unknown) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
-          console.error(chalk.red('Error:'), errorMessage);
+          output.error(chalk.red('Error:'), errorMessage);
           process.exit(1);
         }
       }

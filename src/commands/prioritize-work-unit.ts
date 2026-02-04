@@ -5,6 +5,7 @@ import type { WorkUnitsData } from '../types';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface PrioritizeWorkUnitOptions {
   workUnitId: string;
   position?: 'top' | 'bottom' | number;
@@ -157,11 +158,11 @@ export function registerPrioritizeWorkUnitCommand(program: Command): void {
             before: options.before,
             after: options.after,
           });
-          console.log(
+          output.log(
             chalk.green(`✓ Work unit ${workUnitId} prioritized successfully`)
           );
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to prioritize work unit:'),
             error.message
           );

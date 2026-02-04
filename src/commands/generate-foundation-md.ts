@@ -8,6 +8,7 @@ import { validateFoundationJson } from '../validators/json-schema';
 import { generateFoundationMd } from '../generators/foundation-md';
 import { validateMermaidSyntax } from '../utils/mermaid-validation';
 
+import { output } from '../utils/output';
 interface GenerateFoundationMdOptions {
   cwd?: string;
   output?: string;
@@ -125,14 +126,14 @@ export async function generateFoundationMdCommandCLI(options: {
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green('✓'), result.message);
+    output.log(chalk.green('✓'), result.message);
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

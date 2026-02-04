@@ -7,6 +7,7 @@ import type { Tags } from '../types/tags';
 import { validateTagsJson } from '../validators/json-schema';
 import { generateTagsMd } from '../generators/tags-md';
 
+import { output } from '../utils/output';
 interface GenerateTagsMdOptions {
   cwd?: string;
   output?: string;
@@ -78,14 +79,14 @@ export async function generateTagsMdCommandCLI(options: {
     const result = await generateTagsMdCommand({ output: options.output });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green('✓'), result.message);
+    output.log(chalk.green('✓'), result.message);
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

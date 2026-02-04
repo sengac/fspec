@@ -7,6 +7,7 @@ import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 import type { WorkUnitsData, QuestionItem, WorkUnitType } from '../types';
 import { extractWorkUnitTags } from '../utils/work-unit-tags';
+import { output } from '../utils/output';
 import {
   getMissingEstimateReminder,
   getEmptyExampleMappingReminder,
@@ -321,86 +322,86 @@ export async function showWorkUnitCommand(
     const result = await showWorkUnit({ workUnitId, format: options.format });
 
     if (options.format === 'json') {
-      console.log(JSON.stringify(result, null, 2));
+      output.log(JSON.stringify(result, null, 2));
     } else {
-      console.log(chalk.bold(`\n${result.id}`));
-      console.log(chalk.gray(`Type: ${result.type}`));
-      console.log(chalk.gray(`Status: ${result.status}`));
-      console.log('');
-      console.log(chalk.bold(result.title));
+      output.log(chalk.bold(`\n${result.id}`));
+      output.log(chalk.gray(`Type: ${result.type}`));
+      output.log(chalk.gray(`Status: ${result.status}`));
+      output.log('');
+      output.log(chalk.bold(result.title));
       if (result.description) {
-        console.log(chalk.gray(result.description));
+        output.log(chalk.gray(result.description));
       }
-      console.log('');
+      output.log('');
 
       if (result.epic) {
-        console.log(chalk.gray('Epic:'), result.epic);
+        output.log(chalk.gray('Epic:'), result.epic);
       }
       if (result.parent) {
-        console.log(chalk.gray('Parent:'), result.parent);
+        output.log(chalk.gray('Parent:'), result.parent);
       }
       if (result.children && result.children.length > 0) {
-        console.log(chalk.gray('Children:'), result.children.join(', '));
+        output.log(chalk.gray('Children:'), result.children.join(', '));
       }
 
       // Display dependencies
       if (result.blocks && result.blocks.length > 0) {
-        console.log(chalk.gray('Blocks:'), result.blocks.join(', '));
+        output.log(chalk.gray('Blocks:'), result.blocks.join(', '));
       }
       if (result.blockedBy && result.blockedBy.length > 0) {
-        console.log(chalk.gray('Blocked By:'), result.blockedBy.join(', '));
+        output.log(chalk.gray('Blocked By:'), result.blockedBy.join(', '));
       }
       if (result.dependsOn && result.dependsOn.length > 0) {
-        console.log(chalk.gray('Depends On:'), result.dependsOn.join(', '));
+        output.log(chalk.gray('Depends On:'), result.dependsOn.join(', '));
       }
       if (result.relatesTo && result.relatesTo.length > 0) {
-        console.log(chalk.gray('Related To:'), result.relatesTo.join(', '));
+        output.log(chalk.gray('Related To:'), result.relatesTo.join(', '));
       }
 
       if (result.rules && result.rules.length > 0) {
-        console.log(chalk.cyan('\nRules:'));
+        output.log(chalk.cyan('\nRules:'));
         result.rules.forEach(rule => {
-          console.log(`  ${rule}`);
+          output.log(`  ${rule}`);
         });
       }
 
       if (result.examples && result.examples.length > 0) {
-        console.log(chalk.cyan('\nExamples:'));
+        output.log(chalk.cyan('\nExamples:'));
         result.examples.forEach(example => {
-          console.log(`  ${example}`);
+          output.log(`  ${example}`);
         });
       }
 
       if (result.questions && result.questions.length > 0) {
-        console.log(chalk.cyan('\nQuestions:'));
+        output.log(chalk.cyan('\nQuestions:'));
         result.questions.forEach(question => {
-          console.log(`  ${question}`);
+          output.log(`  ${question}`);
         });
       }
 
       if (result.assumptions && result.assumptions.length > 0) {
-        console.log(chalk.cyan('\nAssumptions:'));
+        output.log(chalk.cyan('\nAssumptions:'));
         result.assumptions.forEach((assumption, idx) => {
-          console.log(`  ${idx + 1}. ${assumption}`);
+          output.log(`  ${idx + 1}. ${assumption}`);
         });
       }
 
       if (result.architectureNotes && result.architectureNotes.length > 0) {
-        console.log(chalk.cyan('\nArchitecture Notes:'));
+        output.log(chalk.cyan('\nArchitecture Notes:'));
         result.architectureNotes.forEach(note => {
-          console.log(`  ${note}`);
+          output.log(`  ${note}`);
         });
       }
 
       if (result.attachments && result.attachments.length > 0) {
-        console.log(chalk.cyan('\nAttachments:'));
+        output.log(chalk.cyan('\nAttachments:'));
         result.attachments.forEach((attachment, idx) => {
-          console.log(`  ${idx + 1}. ${attachment}`);
+          output.log(`  ${idx + 1}. ${attachment}`);
         });
       }
 
       if (result.virtualHooks && result.virtualHooks.length > 0) {
-        console.log(chalk.cyan('\nVirtual Hooks:'));
+        output.log(chalk.cyan('\nVirtual Hooks:'));
         const hooksByEvent: Record<string, any[]> = {};
         for (const hook of result.virtualHooks) {
           if (!hooksByEvent[hook.event]) {
@@ -409,7 +410,7 @@ export async function showWorkUnitCommand(
           hooksByEvent[hook.event].push(hook);
         }
         for (const [event, hooks] of Object.entries(hooksByEvent)) {
-          console.log(`  ${chalk.yellow(event)}:`);
+          output.log(`  ${chalk.yellow(event)}:`);
           for (const hook of hooks) {
             const blockingBadge = hook.blocking
               ? chalk.red('(blocking)')
@@ -417,42 +418,42 @@ export async function showWorkUnitCommand(
             const gitContextBadge = hook.gitContext
               ? chalk.blue('[git-context]')
               : '';
-            console.log(
+            output.log(
               `    • ${hook.name} ${blockingBadge} ${gitContextBadge}`
             );
-            console.log(chalk.gray(`      ${hook.command}`));
+            output.log(chalk.gray(`      ${hook.command}`));
           }
         }
       }
 
       if (result.linkedFeatures && result.linkedFeatures.length > 0) {
-        console.log(chalk.cyan('\nLinked Features:'));
+        output.log(chalk.cyan('\nLinked Features:'));
         for (const feature of result.linkedFeatures) {
-          console.log(`\n  ${chalk.bold(feature.file)}`);
+          output.log(`\n  ${chalk.bold(feature.file)}`);
           for (const scenario of feature.scenarios) {
-            console.log(
+            output.log(
               `    ${chalk.gray(`${scenario.file}:${scenario.line}`)} - ${scenario.name}`
             );
           }
         }
       }
 
-      console.log('');
-      console.log(
+      output.log('');
+      output.log(
         chalk.gray('Created:'),
         new Date(result.createdAt).toLocaleString()
       );
-      console.log(
+      output.log(
         chalk.gray('Updated:'),
         new Date(result.updatedAt).toLocaleString()
       );
-      console.log('');
+      output.log('');
 
       // Display system reminders if any
       if (result.systemReminders && result.systemReminders.length > 0) {
         for (const reminder of result.systemReminders) {
-          console.log(reminder);
-          console.log('');
+          output.log(reminder);
+          output.log('');
         }
       }
     }
@@ -460,9 +461,9 @@ export async function showWorkUnitCommand(
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error(chalk.red('Error:'), error.message);
+      output.error(chalk.red('Error:'), error.message);
     } else {
-      console.error(chalk.red('Error: Unknown error occurred'));
+      output.error(chalk.red('Error: Unknown error occurred'));
     }
     process.exit(1);
   }

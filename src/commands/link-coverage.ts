@@ -24,6 +24,7 @@ import {
 } from './link-coverage/mapping-ops';
 import { updateStats } from './link-coverage/stats-updater';
 
+import { output } from '../utils/output';
 interface LinkCoverageResult {
   success: boolean;
   message: string;
@@ -209,15 +210,15 @@ export async function linkCoverageCommand(
   try {
     const result = await linkCoverage(featureName, options);
 
-    console.log(result.message);
+    output.log(result.message);
 
     if (result.warnings) {
-      console.log('\n' + chalk.yellow(result.warnings));
+      output.log('\n' + chalk.yellow(result.warnings));
     }
 
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

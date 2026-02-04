@@ -4,6 +4,7 @@ import { join } from 'path';
 import chalk from 'chalk';
 import type { CoverageFile, CoverageStats } from '../utils/coverage-file';
 
+import { output } from '../utils/output';
 interface ShowCoverageOptions {
   format?: 'markdown' | 'json';
   cwd?: string;
@@ -477,11 +478,11 @@ export async function showCoverageCommand(
 ): Promise<void> {
   try {
     const output = await showCoverage(featureFile);
-    console.log(output);
+    output.log(output);
     process.exit(0);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red('Error:'), message);
+    output.error(chalk.red('Error:'), message);
     process.exit(1);
   }
 }

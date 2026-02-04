@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import type { Command } from 'commander';
 import { ensureWorkUnitsFile } from '../utils/ensure-files';
 
+import { output } from '../utils/output';
 interface QueryExampleMappingStatsOptions {
   workUnitId?: string;
   hasQuestions?: boolean;
@@ -168,10 +169,10 @@ export function registerQueryExampleMappingStatsCommand(
           format: options.format as 'text' | 'json',
         });
         if (options.format === 'json') {
-          console.log(JSON.stringify(result, null, 2));
+          output.log(JSON.stringify(result, null, 2));
         }
       } catch (error: any) {
-        console.error(chalk.red('✗ Query failed:'), error.message);
+        output.error(chalk.red('✗ Query failed:'), error.message);
         process.exit(1);
       }
     });

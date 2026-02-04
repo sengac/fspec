@@ -8,6 +8,7 @@ import { validateTagsJson } from '../validators/json-schema';
 import { generateTagsMd } from '../generators/tags-md';
 import { fileManager } from '../utils/file-manager';
 
+import { output } from '../utils/output';
 interface UpdateTagOptions {
   tag: string;
   category?: string;
@@ -147,16 +148,16 @@ export async function updateTagCommand(
     });
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.error);
+      output.error(chalk.red('Error:'), result.error);
       process.exit(1);
     }
 
-    console.log(chalk.green(`✓ ${result.message}`));
-    console.log(chalk.gray('  Updated: spec/tags.json'));
-    console.log(chalk.gray('  Regenerated: spec/TAGS.md'));
+    output.log(chalk.green(`✓ ${result.message}`));
+    output.log(chalk.gray('  Updated: spec/tags.json'));
+    output.log(chalk.gray('  Regenerated: spec/TAGS.md'));
     process.exit(0);
   } catch (error: any) {
-    console.error(chalk.red('Error:'), error.message);
+    output.error(chalk.red('Error:'), error.message);
     process.exit(1);
   }
 }

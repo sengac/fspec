@@ -478,4 +478,25 @@ describe('Integration: Full Fspec Tool Session Flow', () => {
     expect(fspecResult.success).toBe(false);
     expect(fspecResult.error).toContain('not found');
   });
+
+  it('should capture error message when command throws and calls process.exit(1)', async () => {
+    // Test that when a command throws an error and calls process.exit(1),
+    // the error message is properly captured and returned (not just "Exit code 1")
+    // Note: add-rule doesn't support --format json, so we get a Commander error
+    // But show-work-unit DOES support --format json, so we can test actual command errors
+    const resultJson = await fspecCallback(
+      'show-work-unit',
+      JSON.stringify({ _: ['NONEXISTENT-999'] }),
+      testDir
+    );
+
+    const result = JSON.parse(resultJson);
+
+    // Should fail with proper error message
+    expect(result.success).toBe(false);
+    expect(result.errorType).toBe('CommandError');
+    // The error should contain the actual error message, not just "Exit code 1"
+    expect(result.error).toContain('does not exist');
+    expect(result.error).not.toBe('Exit code 1');
+  });
 });

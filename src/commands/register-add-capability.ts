@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
 import { addCapability } from './add-capability';
 
+import { output } from '../utils/output';
 export function registerAddCapabilityCommand(program: Command): void {
   program
     .command('add-capability')
@@ -12,7 +13,7 @@ export function registerAddCapabilityCommand(program: Command): void {
         await addCapability(process.cwd(), name, description);
       } catch (error: unknown) {
         const err = error as Error;
-        console.error(err.message);
+        output.error(err.message);
         process.exit(1);
       }
     });

@@ -5,6 +5,7 @@ import { join } from 'path';
 import type { WorkUnitsData } from '../types';
 import { addDependency } from './add-dependency';
 
+import { output } from '../utils/output';
 interface AddDependenciesOptions {
   workUnitId: string;
   dependencies: {
@@ -110,11 +111,11 @@ export function registerAddDependenciesCommand(program: Command): void {
               relatesTo: options.relatesTo,
             },
           });
-          console.log(
+          output.log(
             chalk.green(`✓ Added ${result.added} dependencies successfully`)
           );
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to add dependencies:'),
             error.message
           );

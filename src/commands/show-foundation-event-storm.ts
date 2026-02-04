@@ -6,6 +6,7 @@ import { fileManager } from '../utils/file-manager';
 import type { GenericFoundation } from '../types/generic-foundation';
 import type { EventStormItem } from '../types';
 
+import { output } from '../utils/output';
 export interface ShowFoundationEventStormOptions {
   type?: string;
   context?: string;
@@ -109,15 +110,15 @@ export async function showFoundationEventStormCommand(options: {
     const result = await showFoundationEventStorm(options);
 
     if (!result.success) {
-      console.error(chalk.red('Error:'), result.message);
+      output.error(chalk.red('Error:'), result.message);
       process.exit(1);
     }
 
     // Output JSON to stdout
-    console.log(JSON.stringify(result.data, null, 2));
+    output.log(JSON.stringify(result.data, null, 2));
     process.exit(0);
   } catch (error: unknown) {
-    console.error(
+    output.error(
       chalk.red('Error:'),
       error instanceof Error ? error.message : 'Unknown error'
     );

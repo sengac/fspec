@@ -13,6 +13,7 @@ import { getEventStormSection } from '../utils/slashCommandSections/eventStorm';
 import type { WorkUnitsData } from '../types';
 import chalk from 'chalk';
 
+import { output } from '../utils/output';
 export interface DiscoverEventStormOptions {
   workUnitId: string;
   cwd?: string;
@@ -30,7 +31,7 @@ export async function discoverEventStormCommand(
   const workUnitsPath = join(cwd, 'spec', 'work-units.json');
 
   if (!existsSync(workUnitsPath)) {
-    console.error(
+    output.error(
       chalk.red('✗ spec/work-units.json not found. Run fspec init first.')
     );
     process.exit(1);
@@ -41,7 +42,7 @@ export async function discoverEventStormCommand(
   ) as WorkUnitsData;
 
   if (!workUnitsData.workUnits[options.workUnitId]) {
-    console.error(chalk.red(`✗ Work unit ${options.workUnitId} not found`));
+    output.error(chalk.red(`✗ Work unit ${options.workUnitId} not found`));
     process.exit(1);
   }
 
@@ -49,12 +50,12 @@ export async function discoverEventStormCommand(
 
   // Check work unit is in specifying status
   if (workUnit.status !== 'specifying') {
-    console.error(
+    output.error(
       chalk.red(
         `✗ Work unit ${options.workUnitId} must be in specifying status (currently: ${workUnit.status})`
       )
     );
-    console.error(
+    output.error(
       chalk.yellow(
         `  Run: fspec update-work-unit-status ${options.workUnitId} specifying`
       )
@@ -68,12 +69,12 @@ export async function discoverEventStormCommand(
     `EVENT STORM DISCOVERY - ${options.workUnitId}\n\n${guidance}\n\nWork unit: ${options.workUnitId}\n\nUse the commands listed above to capture Event Storm artifacts.\nWhen done, run: fspec generate-example-mapping-from-event-storm ${options.workUnitId}`
   );
 
-  console.log(
+  output.log(
     chalk.green(
       `✓ Event Storm discovery session started for ${options.workUnitId}`
     )
   );
-  console.log(reminder);
+  output.log(reminder);
 }
 
 /**

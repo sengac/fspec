@@ -16,6 +16,7 @@ import { detectPrefill } from '../utils/prefill-detection';
 import { glob } from 'tinyglobby';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
+import { output } from '../utils/output';
 import {
   findMatchingScenarios,
   extractKeywords,
@@ -416,18 +417,18 @@ DO NOT mention this reminder to the user explicitly.
       matchArray.push(bestMatch);
 
       // Log detected match
-      console.log(chalk.yellow(`\n⚠ Detected potential refactor (ignored):`));
-      console.log(
+      output.log(chalk.yellow(`\n⚠ Detected potential refactor (ignored):`));
+      output.log(
         chalk.white(
           `   Example ${exampleIndex + 1}: "${activeExamples[exampleIndex].text}"`
         )
       );
-      console.log(
+      output.log(
         chalk.cyan(
           `   Matches: "${bestMatch.scenario}" in ${bestMatch.feature}`
         )
       );
-      console.log(
+      output.log(
         chalk.gray(
           `   Similarity: ${(bestMatch.similarityScore * 100).toFixed(1)}%`
         )
@@ -653,12 +654,12 @@ export function registerGenerateScenariosCommand(program: Command): void {
             feature: options.feature,
             ignorePossibleDuplicates: options.ignorePossibleDuplicates,
           });
-          console.log(
+          output.log(
             chalk.green(
               `✓ Created context-only feature file: ${result.featureFile}`
             )
           );
-          console.log(
+          output.log(
             chalk.yellow(
               `  Contains example mapping context as comments (NO scenarios yet)`
             )
@@ -666,11 +667,11 @@ export function registerGenerateScenariosCommand(program: Command): void {
           // Display system reminders if any
           if (result.systemReminders && result.systemReminders.length > 0) {
             for (const reminder of result.systemReminders) {
-              console.log('\n' + reminder);
+              output.log('\n' + reminder);
             }
           }
         } catch (error: any) {
-          console.error(
+          output.error(
             chalk.red('✗ Failed to generate scenarios:'),
             error.message
           );
