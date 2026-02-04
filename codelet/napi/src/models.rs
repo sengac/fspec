@@ -27,7 +27,8 @@ static REGISTRY_CACHE: OnceCell<Arc<ModelRegistry>> = OnceCell::const_new();
 async fn get_registry() -> Result<Arc<ModelRegistry>> {
     REGISTRY_CACHE
         .get_or_try_init(|| async {
-            let cache = ModelCache::new();
+            let cache = ModelCache::new()
+                .map_err(|e| Error::from_reason(format!("Failed to initialize model cache: {}", e)))?;
             let registry = ModelRegistry::new(&cache)
                 .await
                 .map_err(|e| Error::from_reason(format!("Failed to load model registry: {}", e)))?;
@@ -246,7 +247,8 @@ pub async fn models_get_info(provider_id: String, model_id: String) -> Result<Na
 /// Returns the number of providers loaded.
 #[napi]
 pub async fn models_refresh_cache() -> Result<u32> {
-    let cache = ModelCache::new();
+    let cache = ModelCache::new()
+        .map_err(|e| Error::from_reason(format!("Failed to initialize model cache: {}", e)))?;
     let response = cache.refresh().await.map_err(|e| {
         Error::from_reason(format!(
             "Failed to refresh model cache from models.dev: {}",

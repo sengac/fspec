@@ -160,7 +160,7 @@ impl ProviderManager {
         let current_provider = Self::detect_default_provider(&credentials)?;
 
         // Initialize model cache and registry
-        let cache = ModelCache::new();
+        let cache = ModelCache::new()?;
         let registry = ModelRegistry::new(&cache).await?;
 
         Ok(Self {

@@ -34,13 +34,21 @@ pub struct ModelCache {
 impl ModelCache {
     /// Create a new ModelCache with default cache path
     ///
-    /// Uses get_cache_dir() which derives from the global data directory
-    pub fn new() -> Self {
-        let cache_dir = get_cache_dir().unwrap_or_else(|_| PathBuf::from("."));
+    /// Uses get_cache_dir() which derives from the global data directory.
+    /// Returns an error if the data directory has not been initialized.
+    pub fn new() -> Result<Self, ProviderError> {
+        let cache_dir = get_cache_dir().map_err(|e| {
+            ProviderError::config(
+                "models",
+                format!(
+                    "Data directory not initialized. Call set_data_directory() at startup. Error: {e}"
+                ),
+            )
+        })?;
 
-        Self {
+        Ok(Self {
             cache_path: cache_dir.join("models.json"),
-        }
+        })
     }
 
     /// Create a new ModelCache with a custom cache path (for testing)
@@ -138,12 +146,6 @@ impl ModelCache {
     /// Get the cache file path
     pub fn cache_path(&self) -> &PathBuf {
         &self.cache_path
-    }
-}
-
-impl Default for ModelCache {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
