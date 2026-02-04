@@ -493,40 +493,72 @@ interface PendingToolCallInfo {
 /**
  * Extract args display string from tool input object.
  * DRY: Centralizes the logic for displaying tool arguments in headers.
+ * Shows ALL parameters for full visibility into tool calls.
+ * Exception: Edit/Write tools only show file_path (content is shown as diff).
  */
 const extractToolArgsDisplay = (toolName: string, inputObj: Record<string, unknown>): string => {
   const toolNameLower = toolName.toLowerCase();
   
-  // Handle web_search specially - show action_type and key param
-  if (toolNameLower === 'web_search') {
-    const parts: string[] = [];
-    if (inputObj.action_type) {
-      parts.push(`${inputObj.action_type}`);
+  // Edit/Write tools: only show file_path (content displayed as diff in result)
+  if (toolNameLower === 'edit' || toolNameLower === 'replace' || 
+      toolNameLower === 'write' || toolNameLower === 'write_file') {
+    if (inputObj.file_path) {
+      return String(inputObj.file_path);
     }
-    // Show the relevant parameter based on action
-    if (inputObj.query) {
-      parts.push(`query: "${inputObj.query}"`);
-    } else if (inputObj.url) {
-      parts.push(`url: "${inputObj.url}"`);
-    } else if (inputObj.pattern) {
-      parts.push(`pattern: "${inputObj.pattern}"`);
-    }
-    return parts.join(', ');
+    return '';
   }
   
-  // Standard tool args extraction
-  if (inputObj.command) return String(inputObj.command);
-  if (inputObj.file_path) return String(inputObj.file_path);
-  if (inputObj.pattern) return String(inputObj.pattern);
+  // Tools with command/action_type: show it first, then remaining params
+  // (Fspec uses 'command', WebSearch uses 'action_type')
+  const commandKey = inputObj.command ? 'command' : inputObj.action_type ? 'action_type' : null;
+  if (commandKey) {
+    const command = String(inputObj[commandKey]);
+    const otherEntries = Object.entries(inputObj).filter(([key]) => key !== commandKey);
+    
+    if (otherEntries.length === 0) {
+      return command;
+    }
+    
+    // Format remaining parameters
+    const parts = otherEntries.map(([key, value]) => {
+      if (typeof value === 'string') {
+        const displayValue = value.length > 100 ? `${value.slice(0, 100)}...` : value;
+        return `${key}: '${displayValue}'`;
+      } else if (value === null || value === undefined) {
+        return `${key}: ${value}`;
+      } else {
+        const jsonStr = JSON.stringify(value);
+        const displayValue = jsonStr.length > 100 ? `${jsonStr.slice(0, 100)}...` : jsonStr;
+        return `${key}: ${displayValue}`;
+      }
+    });
+    
+    return `${command}, { ${parts.join(', ')} }`;
+  }
   
-  // Fallback: first entry
+  // Show ALL parameters as JSON-like object for full visibility
   const entries = Object.entries(inputObj);
-  if (entries.length > 0) {
-    const [key, value] = entries[0];
-    return typeof value === 'string' ? value : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
+  if (entries.length === 0) {
+    return '';
   }
   
-  return '';
+  // Format all parameters
+  const parts = entries.map(([key, value]) => {
+    if (typeof value === 'string') {
+      // Truncate very long strings but show key
+      const displayValue = value.length > 100 ? `${value.slice(0, 100)}...` : value;
+      return `${key}: '${displayValue}'`;
+    } else if (value === null || value === undefined) {
+      return `${key}: ${value}`;
+    } else {
+      // Objects, arrays, numbers, booleans
+      const jsonStr = JSON.stringify(value);
+      const displayValue = jsonStr.length > 100 ? `${jsonStr.slice(0, 100)}...` : jsonStr;
+      return `${key}: ${displayValue}`;
+    }
+  });
+  
+  return `{ ${parts.join(', ')} }`;
 };
 
 /**
@@ -2807,44 +2839,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             }
 
             // TUI-037: Format tool header in Claude Code style: ● ToolName(args)
+            // Show ALL parameters for full visibility into tool calls
             let argsDisplay = '';
             if (typeof parsedInput === 'object' && parsedInput !== null) {
               const inputObj = parsedInput as Record<string, unknown>;
-              const toolNameLower = toolCall.name.toLowerCase();
-              
-              // Handle web_search specially - show action_type and key param
-              if (toolNameLower === 'web_search') {
-                const parts: string[] = [];
-                if (inputObj.action_type) {
-                  parts.push(`${inputObj.action_type}`);
-                }
-                // Show the relevant parameter based on action
-                if (inputObj.query) {
-                  parts.push(`query: "${inputObj.query}"`);
-                } else if (inputObj.url) {
-                  parts.push(`url: "${inputObj.url}"`);
-                } else if (inputObj.pattern) {
-                  parts.push(`pattern: "${inputObj.pattern}"`);
-                }
-                argsDisplay = parts.join(', ');
-              } else if (inputObj.command) {
-                // For Bash tool, show command
-                argsDisplay = String(inputObj.command);
-              } else if (inputObj.file_path) {
-                argsDisplay = String(inputObj.file_path);
-              } else if (inputObj.pattern) {
-                argsDisplay = String(inputObj.pattern);
-              } else {
-                // Show first key-value or JSON summary
-                const entries = Object.entries(inputObj);
-                if (entries.length > 0) {
-                  const [key, value] = entries[0];
-                  argsDisplay =
-                    typeof value === 'string'
-                      ? value
-                      : `${key}: ${JSON.stringify(value).slice(0, 50)}`;
-                }
-              }
+              argsDisplay = extractToolArgsDisplay(toolCall.name, inputObj);
             } else if (toolCall.input) {
               argsDisplay = toolCall.input;
             }
@@ -4213,19 +4212,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         const parsedInput = JSON.parse(toolCall.input);
         if (typeof parsedInput === 'object' && parsedInput !== null) {
           const inputObj = parsedInput as Record<string, unknown>;
-          if (inputObj.command) {
-            argsDisplay = String(inputObj.command);
-          } else if (inputObj.file_path) {
-            argsDisplay = String(inputObj.file_path);
-          } else if (inputObj.pattern) {
-            argsDisplay = String(inputObj.pattern);
-          } else {
-            const entries = Object.entries(inputObj);
-            if (entries.length > 0) {
-              const [, value] = entries[0];
-              argsDisplay = typeof value === 'string' ? value : JSON.stringify(value).slice(0, 50);
-            }
-          }
+          argsDisplay = extractToolArgsDisplay(toolCall.name, inputObj);
         }
       } catch (err) {
         // Failed to parse tool call input JSON for display - indicates malformed data from backend
