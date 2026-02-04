@@ -15,6 +15,7 @@ pub mod facade;
 pub mod file_type;
 pub mod fspec;
 pub mod fspec_handler;
+pub mod fspec_workflow_guidance;
 pub mod napi_bridge;
 pub mod glob;
 pub mod grep;
@@ -57,6 +58,7 @@ pub use fspec_handler::{
     execute_fspec_command, has_fspec_handler, set_fspec_handler,
     FspecHandler, FspecRequest as FspecHandlerRequest, FspecResult as FspecHandlerResult,
 };
+pub use fspec_workflow_guidance::{get_fspec_workflow_guidance, FSPEC_WORKFLOW_GUIDANCE};
 pub use tool_progress::{emit_tool_progress, set_tool_progress_callback, ToolProgressCallback};
 pub use web_search::{install_browser_cleanup_handler, shutdown_browser, WebSearchTool};
 pub use write::WriteTool;

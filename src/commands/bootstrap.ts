@@ -252,8 +252,8 @@ export function registerBootstrapCommand(program: Command): void {
     )
     .action(async () => {
       try {
-        const output = await bootstrap();
-        output.log(output);
+        const result = await bootstrap();
+        output.log(result);
         process.exit(0);
       } catch (error) {
         const message =

@@ -8,8 +8,37 @@
 //! - **Claude OAuth**: Requires "You are Claude Code..." prefix, uses array format with cache_control
 //! - **Claude API Key**: No prefix, but uses array format with cache_control
 //! - **Gemini/OpenAI**: Use plain string format, no special transformation
+//!
+//! # fspec Workflow Guidance
+//!
+//! When fspec tooling is available, workflow guidance is automatically injected
+//! BEFORE project-specific content (like AGENTS.md). This teaches the LLM how to
+//! use fspec for ACDD workflow management.
 
+use crate::fspec_workflow_guidance::FSPEC_WORKFLOW_GUIDANCE;
 use serde_json::{json, Value};
+
+// ============================================================================
+// fspec Workflow Guidance Injection
+// ============================================================================
+
+/// Prepend fspec workflow guidance to a preamble
+///
+/// This injects the ACDD workflow guidance BEFORE any project-specific content
+/// like AGENTS.md, ensuring the LLM always knows how to use fspec tools.
+///
+/// # Arguments
+/// * `preamble` - The original preamble (e.g., AGENTS.md content)
+///
+/// # Returns
+/// The preamble with fspec workflow guidance prepended
+pub fn prepend_fspec_guidance(preamble: &str) -> String {
+    if preamble.trim().is_empty() {
+        FSPEC_WORKFLOW_GUIDANCE.to_string()
+    } else {
+        format!("{FSPEC_WORKFLOW_GUIDANCE}\n\n{preamble}")
+    }
+}
 
 /// Claude Code system prompt prefix (required for OAuth authentication)
 pub const CLAUDE_CODE_PROMPT_PREFIX: &str =
@@ -122,7 +151,8 @@ pub const GEMINI_3_TOOL_INSTRUCTION: &str =
 /// Combines:
 /// 1. Base Gemini system prompt (from opencode) with examples teaching when NOT to use tools
 /// 2. Gemini 3 specific instruction (from gemini-cli) if model is Gemini 3
-/// 3. Optional user preamble (e.g., AGENTS.md content)
+/// 3. fspec workflow guidance (ACDD process)
+/// 4. Optional user preamble (e.g., AGENTS.md content)
 ///
 /// # Arguments
 /// * `model_name` - The Gemini model name (e.g., "gemini-2.0-flash-exp", "gemini-3-pro-preview")
@@ -143,6 +173,10 @@ pub fn build_gemini_system_prompt(model_name: &str, user_preamble: Option<&str>)
             &format!("{GEMINI_3_TOOL_INSTRUCTION}\n- **Do Not revert changes:**"),
         );
     }
+
+    // Add fspec workflow guidance (before user preamble)
+    prompt.push_str("\n\n");
+    prompt.push_str(FSPEC_WORKFLOW_GUIDANCE);
 
     // Append user preamble if provided
     if let Some(preamble) = user_preamble {
@@ -223,26 +257,24 @@ impl SystemPromptFacade for ClaudeOAuthSystemPromptFacade {
     }
 
     fn transform_preamble(&self, preamble: &str) -> String {
-        format!("{CLAUDE_CODE_PROMPT_PREFIX}\n\n{preamble}")
+        // Prepend fspec guidance, then add Claude Code prefix
+        let with_fspec = prepend_fspec_guidance(preamble);
+        format!("{CLAUDE_CODE_PROMPT_PREFIX}\n\n{with_fspec}")
     }
 
     fn format_for_api(&self, preamble: &str) -> Value {
+        // Prepend fspec guidance to preamble
+        let with_fspec = prepend_fspec_guidance(preamble);
+        
         // OAuth mode: Handle empty preamble case (PROV-006)
         // Anthropic API rejects: "cache_control cannot be set for empty text blocks"
-        let trimmed = preamble.trim();
-        if trimmed.is_empty() {
-            // Only prefix - put cache_control on the prefix itself
-            json!([
-                {
-                    "type": "text",
-                    "text": CLAUDE_CODE_PROMPT_PREFIX,
-                    "cache_control": { "type": "ephemeral" }
-                }
-            ])
-        } else {
-            // 2 blocks:
-            // 1. Claude Code prefix WITHOUT cache_control (static, always same)
-            // 2. Preamble WITH cache_control (variable content to cache)
+        // Note: with_fspec is never empty because fspec guidance is always added
+        // 3 blocks:
+        // 1. Claude Code prefix WITHOUT cache_control (static, always same)
+        // 2. fspec guidance WITH cache_control (static but needs caching)
+        // 3. Project preamble WITH cache_control (variable content to cache)
+        if preamble.trim().is_empty() {
+            // Only fspec guidance (no project preamble)
             json!([
                 {
                     "type": "text",
@@ -250,7 +282,20 @@ impl SystemPromptFacade for ClaudeOAuthSystemPromptFacade {
                 },
                 {
                     "type": "text",
-                    "text": preamble,
+                    "text": FSPEC_WORKFLOW_GUIDANCE,
+                    "cache_control": { "type": "ephemeral" }
+                }
+            ])
+        } else {
+            // Full: prefix + fspec guidance + project preamble
+            json!([
+                {
+                    "type": "text",
+                    "text": CLAUDE_CODE_PROMPT_PREFIX
+                },
+                {
+                    "type": "text",
+                    "text": with_fspec,
                     "cache_control": { "type": "ephemeral" }
                 }
             ])
@@ -279,15 +324,19 @@ impl SystemPromptFacade for ClaudeApiKeySystemPromptFacade {
     }
 
     fn transform_preamble(&self, preamble: &str) -> String {
-        preamble.to_string()
+        // Prepend fspec guidance
+        prepend_fspec_guidance(preamble)
     }
 
     fn format_for_api(&self, preamble: &str) -> Value {
+        // Prepend fspec guidance to preamble
+        let with_fspec = prepend_fspec_guidance(preamble);
+        
         // API key mode: single block with cache_control
         json!([
             {
                 "type": "text",
-                "text": preamble,
+                "text": with_fspec,
                 "cache_control": { "type": "ephemeral" }
             }
         ])
@@ -316,12 +365,13 @@ impl SystemPromptFacade for GeminiSystemPromptFacade {
     }
 
     fn transform_preamble(&self, preamble: &str) -> String {
-        // Append web tool guidance to help Gemini use web tools effectively
-        format!("{preamble}\n{GEMINI_WEB_TOOL_GUIDANCE}")
+        // Prepend fspec guidance, then append web tool guidance
+        let with_fspec = prepend_fspec_guidance(preamble);
+        format!("{with_fspec}\n{GEMINI_WEB_TOOL_GUIDANCE}")
     }
 
     fn format_for_api(&self, preamble: &str) -> Value {
-        // Gemini uses plain string format with web tool guidance appended
+        // Gemini uses plain string format with fspec guidance prepended and web tool guidance appended
         Value::String(self.transform_preamble(preamble))
     }
 }
@@ -347,12 +397,13 @@ impl SystemPromptFacade for OpenAISystemPromptFacade {
     }
 
     fn transform_preamble(&self, preamble: &str) -> String {
-        preamble.to_string()
+        // Prepend fspec guidance
+        prepend_fspec_guidance(preamble)
     }
 
     fn format_for_api(&self, preamble: &str) -> Value {
-        // OpenAI uses plain string format
-        Value::String(preamble.to_string())
+        // OpenAI uses plain string format with fspec guidance prepended
+        Value::String(prepend_fspec_guidance(preamble))
     }
 }
 

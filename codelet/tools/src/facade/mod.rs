@@ -59,7 +59,7 @@ pub use zai::{
 pub use registry::ProviderToolRegistry;
 pub use search::{GeminiGlobFacade, GeminiSearchFileContentFacade};
 pub use system_prompt::{
-    build_gemini_system_prompt, select_claude_facade, BoxedSystemPromptFacade,
+    build_gemini_system_prompt, prepend_fspec_guidance, select_claude_facade, BoxedSystemPromptFacade,
     ClaudeApiKeySystemPromptFacade, ClaudeOAuthSystemPromptFacade, GeminiSystemPromptFacade,
     OpenAISystemPromptFacade, SystemPromptFacade, CLAUDE_CODE_PROMPT_PREFIX,
     GEMINI_3_TOOL_INSTRUCTION, GEMINI_BASE_SYSTEM_PROMPT,
