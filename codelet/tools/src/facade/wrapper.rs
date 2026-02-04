@@ -336,7 +336,21 @@ pub struct BashOperationResult {
 ///
 /// This enables provider-specific fspec facades to be used with rig's agent builder
 /// while maintaining the facade's custom tool name, schema, and parameter mapping.
-/// Uses JS-controlled invocation pattern where callback is provided at execution time.
+///
+/// ## Execution Flow
+///
+/// Unlike other tool wrappers that execute directly, FspecToolFacadeWrapper uses
+/// the global fspec_handler mechanism to route commands through TypeScript:
+///
+/// 1. LLM calls Fspec tool with command args
+/// 2. Wrapper calls `execute_fspec_command()` with request
+/// 3. Handler (set by session_manager) emits FspecCommandRequest to TypeScript
+/// 4. Handler blocks waiting for TypeScript response
+/// 5. TypeScript executes command via fspecCallback and calls sessionSendFspecResult
+/// 6. Handler receives result and returns to wrapper
+/// 7. Wrapper returns actual result (not marker) to LLM
+///
+/// This is similar to the pause mechanism used for user confirmation prompts.
 pub struct FspecToolFacadeWrapper {
     /// The underlying facade providing name, schema, and param mapping
     facade: BoxedFspecToolFacade,
@@ -344,8 +358,6 @@ pub struct FspecToolFacadeWrapper {
 
 impl FspecToolFacadeWrapper {
     /// Create a new wrapper for the given fspec facade
-    /// 
-    /// NO CLI FALLBACKS - This will error when used until JS-controlled invocation is implemented.
     pub fn new(facade: BoxedFspecToolFacade) -> Self {
         Self { facade }
     }
@@ -379,19 +391,54 @@ impl Tool for FspecToolFacadeWrapper {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        use crate::fspec_handler::{execute_fspec_command, FspecRequest, has_fspec_handler};
+
+        tracing::warn!("[FSPEC_WRAPPER] FspecToolFacadeWrapper.call invoked with args: {:?}", args.0);
+
         // Map provider-specific args to internal params via the facade
         let internal_params = self.facade.map_params(args.0)?;
 
-        // CODE-009: Return structured JSON for session-layer interception
-        // The session layer detects this marker and emits FspecCommandRequest StreamChunk
-        // NO string parsing required - fields are directly accessible in the JSON
-        Ok(serde_json::json!({
-            "__fspec_request__": true,
-            "command": internal_params.command,
-            "argsJson": internal_params.args,
-            "projectRoot": internal_params.project_root,
-            "provider": self.facade.provider()
-        }).to_string())
+        tracing::warn!("[FSPEC_WRAPPER] Mapped to internal params: command={}, project_root={}", 
+            internal_params.command, internal_params.project_root);
+
+        // Check if fspec handler is configured (required for TypeScript integration)
+        let has_handler = has_fspec_handler();
+        tracing::warn!("[FSPEC_WRAPPER] has_fspec_handler() = {}", has_handler);
+        
+        if !has_handler {
+            return Err(ToolError::Execution {
+                tool: "fspec",
+                message: "Fspec handler not configured. FspecTool requires session context with TypeScript integration.".to_string(),
+            });
+        }
+
+        tracing::warn!("[FSPEC_WRAPPER] About to call execute_fspec_command...");
+        
+        // Execute command via the global handler
+        // This blocks until TypeScript executes the command and sends the result back
+        let result = execute_fspec_command(FspecRequest {
+            command: internal_params.command.clone(),
+            args_json: internal_params.args.clone(),
+            project_root: internal_params.project_root.clone(),
+            provider: self.facade.provider().to_string(),
+        });
+
+        tracing::warn!("[FSPEC_WRAPPER] execute_fspec_command returned: success={}", result.success);
+
+        // Return the actual result (not a marker)
+        if result.success {
+            // Include system reminder if present
+            if let Some(ref reminder) = result.system_reminder {
+                Ok(format!("{}\n\n{}", result.data, reminder))
+            } else {
+                Ok(result.data)
+            }
+        } else {
+            Err(ToolError::Execution {
+                tool: "fspec",
+                message: result.error.unwrap_or_else(|| "Unknown fspec error".to_string()),
+            })
+        }
     }
 }
 ///

@@ -102,92 +102,6 @@ pub(super) fn handle_text_chunk<O: StreamOutput>(
     Ok(())
 }
 
-/// Execute FspecTool command synchronously 
-/// 
-/// CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
-/// This is a basic implementation that reads/writes files directly.
-fn execute_fspec_command_sync(command: &str, args_json: &str, project_root: &str) -> Result<String, anyhow::Error> {
-    use std::collections::HashMap;
-    
-    if command == "list-work-units" {
-        // Parse arguments
-        let args: HashMap<String, serde_json::Value> = if args_json.is_empty() || args_json == "''" {
-            HashMap::new()
-        } else {
-            serde_json::from_str(args_json).unwrap_or_default()
-        };
-        
-        // Read work units file directly
-        let work_units_path = std::path::Path::new(project_root).join("spec").join("work-units.json");
-        
-        // Check if file exists, if not create empty structure
-        let work_units_data: serde_json::Value = if work_units_path.exists() {
-            let content = std::fs::read_to_string(&work_units_path)?;
-            serde_json::from_str(&content).unwrap_or_else(|_| serde_json::json!({"workUnits": {}}))
-        } else {
-            // Ensure directory exists
-            if let Some(parent) = work_units_path.parent() {
-                std::fs::create_dir_all(parent)?;
-            }
-            // Create empty work units file
-            let empty_data = serde_json::json!({"workUnits": {}});
-            std::fs::write(&work_units_path, serde_json::to_string_pretty(&empty_data)?)?;
-            empty_data
-        };
-        
-        // Get all work units
-        let work_units = work_units_data.get("workUnits")
-            .and_then(|wu| wu.as_object())
-            .map(|obj| obj.values().collect::<Vec<_>>())
-            .unwrap_or_default();
-        
-        // Apply basic filters (simplified version)
-        let filtered_work_units: Vec<serde_json::Value> = work_units.into_iter()
-            .filter(|wu| {
-                if let Some(status_filter) = args.get("status") {
-                    if let (Some(wu_status), Some(filter_status)) = (wu.get("status"), status_filter.as_str()) {
-                        wu_status.as_str() == Some(filter_status)  // FIXED: was != (inverted logic)
-                    } else {
-                        false
-                    }
-                } else {
-                    true
-                }
-            })
-            .map(|wu| serde_json::json!({
-                "id": wu.get("id"),
-                "title": wu.get("title"),
-                "status": wu.get("status"),
-            }))
-            .collect();
-        
-        // Format output like the real CLI command
-        let mut output = String::new();
-        
-        // Add header
-        output.push_str(&format!("Work Units ({})\n\n", filtered_work_units.len()));
-        
-        // Add each work unit in CLI format
-        for wu in &filtered_work_units {
-            if let (Some(id), Some(title), Some(status)) = (
-                wu.get("id").and_then(|v| v.as_str()),
-                wu.get("title").and_then(|v| v.as_str()), 
-                wu.get("status").and_then(|v| v.as_str())
-            ) {
-                output.push_str(&format!("{} [{}]\n", id, status));
-                output.push_str(&format!("  {}\n", title));
-                if wu != filtered_work_units.last().unwrap() {
-                    output.push('\n');
-                }
-            }
-        }
-        
-        Ok(output)
-    } else {
-        Err(anyhow::anyhow!("Command '{}' not implemented in synchronous execution", command))
-    }
-}
-
 /// Handle tool call - flushes text, buffers tool call, emits via output
 pub(super) fn handle_tool_call<O: StreamOutput>(
     tool_call: &rig::message::ToolCall,
@@ -295,44 +209,6 @@ pub(super) fn handle_tool_result<O: StreamOutput>(
     // We check for success=false in the JSON structure rather than string matching
     // which would cause false positives when file content contains "Error:" or "error:"
     let is_error = detect_tool_error(&result_parts.join("\n"));
-
-    // CODE-009: Check for FspecTool structured request marker
-    // The new format is JSON: {"__fspec_request__": true, "command": "...", ...}
-    if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&result_text) {
-        if json_value.get("__fspec_request__").and_then(|v| v.as_bool()) == Some(true) {
-            // This is a structured FspecTool request - execute via sync implementation
-            let command = json_value.get("command").and_then(|v| v.as_str()).unwrap_or("");
-            let args_json = json_value.get("argsJson").and_then(|v| v.as_str()).unwrap_or("{}");
-            let project_root = json_value.get("projectRoot").and_then(|v| v.as_str()).unwrap_or(".");
-            
-            match execute_fspec_command_sync(command, args_json, project_root) {
-                Ok(actual_result) => {
-                    // Successfully executed - emit the result instead
-                    output.emit_tool_result(&tool_result.id, &actual_result, false);
-                    
-                    // CRITICAL: Also capture the debug event since we're returning early
-                    if let Ok(manager_arc) = get_debug_capture_manager() {
-                        if let Ok(mut manager) = manager_arc.lock() {
-                            if manager.is_enabled() {
-                                let data = serde_json::json!({
-                                    "toolName": last_tool_name.as_deref().unwrap_or("unknown"),
-                                    "toolId": tool_result.id,
-                                    "success": true,
-                                });
-                                manager.capture("tool.result", data, None);
-                            }
-                        }
-                    }
-                    
-                    return Ok(());
-                }
-                Err(e) => {
-                    // Execution failed - log and fall through to emit original result
-                    tracing::warn!("[FSPEC_DEBUG_CLI] Failed to execute FspecTool command: {}", e);
-                }
-            }
-        }
-    }
 
     // CLI-022: Capture tool.result event (shared)
     if let Ok(manager_arc) = get_debug_capture_manager() {

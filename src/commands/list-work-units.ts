@@ -78,6 +78,7 @@ export async function listWorkUnitsCommand(options: {
   prefix?: string;
   epic?: string;
   type?: WorkUnitType;
+  format?: string;
 }): Promise<void> {
   const chalk = await import('chalk').then(m => m.default);
   try {
@@ -87,6 +88,12 @@ export async function listWorkUnitsCommand(options: {
       epic: options.epic,
       type: options.type,
     });
+
+    // JSON output for programmatic access
+    if (options.format === 'json') {
+      console.log(JSON.stringify(result, null, 2));
+      return;
+    }
 
     if (result.workUnits.length === 0) {
       console.log(chalk.yellow('No work units found'));
@@ -127,6 +134,7 @@ export function registerListWorkUnitsCommand(program: Command): void {
       '-t, --type <type>',
       'Filter by work unit type: story, task, or bug'
     )
+    .option('--format <format>', 'Output format: text or json', 'text')
     .action(async (options: any) => {
       await listWorkUnitsCommand(options);
     });

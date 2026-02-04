@@ -1126,15 +1126,22 @@ impl BackgroundSession {
     /// Called by session loop when FspecTool is invoked. Blocks until TypeScript
     /// executes the command and sends the result back via sessionSendFspecResult.
     pub fn wait_for_fspec_response(&self) -> crate::types::FspecResult {
+        tracing::warn!("[FSPEC_SESSION] wait_for_fspec_response called, about to block on recv()...");
         let rx = self.fspec_response_rx.lock().expect("fspec_response_rx lock poisoned");
+        tracing::warn!("[FSPEC_SESSION] Got lock on fspec_response_rx, calling recv()...");
         // Block until we receive a response
-        rx.recv().unwrap_or_else(|_| crate::types::FspecResult {
-            success: false,
-            data: String::new(),
-            error: Some("Fspec response channel closed unexpectedly".to_string()),
-            system_reminder: None,
-            tool_call_id: String::new(),
-        })
+        let result = rx.recv().unwrap_or_else(|e| {
+            tracing::warn!("[FSPEC_SESSION] recv() failed with error: {:?}", e);
+            crate::types::FspecResult {
+                success: false,
+                data: String::new(),
+                error: Some("Fspec response channel closed unexpectedly".to_string()),
+                system_reminder: None,
+                tool_call_id: String::new(),
+            }
+        });
+        tracing::warn!("[FSPEC_SESSION] recv() returned, success={}", result.success);
+        result
     }
 
     /// Send fspec command result (CODE-009)
@@ -1142,7 +1149,12 @@ impl BackgroundSession {
     /// Called by NAPI function (sessionSendFspecResult) when TypeScript
     /// has finished executing the fspec command and wants to send the result back.
     pub fn send_fspec_result(&self, result: crate::types::FspecResult) {
-        let _ = self.fspec_response_tx.send(result);
+        tracing::warn!("[FSPEC_SESSION] send_fspec_result called, success={}, tool_call_id={}", 
+            result.success, result.tool_call_id);
+        match self.fspec_response_tx.send(result) {
+            Ok(_) => tracing::warn!("[FSPEC_SESSION] Successfully sent fspec result to channel"),
+            Err(e) => tracing::warn!("[FSPEC_SESSION] Failed to send fspec result: {:?}", e),
+        }
     }
 
     // =========================================================================
@@ -3861,6 +3873,51 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             });
 
             set_pause_handler(Some(pause_handler));
+
+            // CODE-009: Set fspec handler for TypeScript command execution
+            // Similar to pause handler - blocks until TypeScript executes and responds
+            let session_for_fspec = session.clone();
+            let fspec_handler: codelet_tools::FspecHandler = std::sync::Arc::new(move |request: codelet_tools::FspecHandlerRequest| {
+                tracing::warn!("[FSPEC_HANDLER_CLOSURE] Handler invoked for command: {}", request.command);
+                tracing::warn!("[FSPEC_HANDLER_CLOSURE] Session is_attached: {}", session_for_fspec.is_attached());
+                
+                // Generate a unique tool call ID for correlation
+                let tool_call_id = uuid::Uuid::new_v4().to_string();
+                
+                tracing::warn!("[FSPEC_HANDLER_CLOSURE] Generated tool_call_id: {}", tool_call_id);
+                
+                // Emit FspecCommandRequest chunk for TypeScript to process
+                let fspec_request = crate::types::FspecRequest {
+                    command: request.command.clone(),
+                    args_json: request.args_json.clone(),
+                    project_root: request.project_root.clone(),
+                    tool_call_id: tool_call_id.clone(),
+                };
+                
+                tracing::warn!("[FSPEC_HANDLER_CLOSURE] Emitting FspecCommandRequest chunk via handle_output...");
+                session_for_fspec.handle_output(StreamChunk::fspec_command_request(fspec_request));
+                tracing::warn!("[FSPEC_HANDLER_CLOSURE] FspecCommandRequest chunk emitted (NonBlocking)");
+                
+                tracing::warn!("[FSPEC_HANDLER_CLOSURE] About to call wait_for_fspec_response() - THIS WILL BLOCK");
+                
+                // Block until TypeScript executes and calls sessionSendFspecResult
+                let fspec_result = session_for_fspec.wait_for_fspec_response();
+                
+                tracing::warn!("[FSPEC_HANDLER_CLOSURE] wait_for_fspec_response() returned: success={}", fspec_result.success);
+                
+                // Emit FspecCommandResult chunk for UI display
+                session_for_fspec.handle_output(StreamChunk::fspec_command_result(fspec_result.clone()));
+                
+                // Convert NAPI FspecResult to tools FspecHandlerResult
+                codelet_tools::FspecHandlerResult {
+                    success: fspec_result.success,
+                    data: fspec_result.data,
+                    error: fspec_result.error,
+                    system_reminder: fspec_result.system_reminder,
+                }
+            });
+
+            codelet_tools::set_fspec_handler(Some(fspec_handler));
             
             let result = match current_provider.as_str() {
                 "claude" => run_with_provider!(&mut inner_session, get_claude, &input, session, &output, thinking_config_value),
@@ -3874,6 +3931,7 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             };
             
             set_pause_handler(None);
+            codelet_tools::set_fspec_handler(None);
 
             // Handle result
             // Note: run_agent_stream emits StreamEvent::Done on successful completion,
@@ -4166,67 +4224,15 @@ impl codelet_cli::interactive::StreamOutput for BackgroundOutput {
                     tracing::error!("REFAC-007: Failed to persist tool result: {}", e);
                 }
                 
-                // CODE-009: Check for FspecTool structured request marker
-                // The new format is JSON: {"__fspec_request__": true, "command": "...", ...}
-                if let Ok(json_value) = serde_json::from_str::<serde_json::Value>(&tr.content) {
-                    if json_value.get("__fspec_request__").and_then(|v| v.as_bool()) == Some(true) {
-                        // This is a structured FspecTool request - emit FspecCommandRequest chunk
-                        let command = json_value.get("command").and_then(|v| v.as_str()).unwrap_or("").to_string();
-                        let args_json = json_value.get("argsJson").and_then(|v| v.as_str()).unwrap_or("{}").to_string();
-                        let project_root = json_value.get("projectRoot").and_then(|v| v.as_str()).unwrap_or(".").to_string();
-                        let tool_call_id = tr.id.clone();
-                        
-                        // CODE-009: Emit FspecCommandRequest chunk for TypeScript to process
-                        let fspec_request = crate::types::FspecRequest {
-                            command: command.clone(),
-                            args_json: args_json.clone(),
-                            project_root: project_root.clone(),
-                            tool_call_id: tool_call_id.clone(),
-                        };
-                        self.session.handle_output(StreamChunk::fspec_command_request(fspec_request));
-                        
-                        // CODE-009: Wait for TypeScript to execute command and send result back
-                        // This blocks until sessionSendFspecResult is called from TypeScript
-                        tracing::debug!("[FSPEC_DEBUG] Waiting for TypeScript to execute fspec command: {}", command);
-                        let fspec_result = self.session.wait_for_fspec_response();
-                        tracing::debug!("[FSPEC_DEBUG] Received fspec result: success={}", fspec_result.success);
-                        
-                        // CODE-009: Emit FspecCommandResult chunk for UI to display
-                        self.session.handle_output(StreamChunk::fspec_command_result(fspec_result.clone()));
-                        
-                        // Build the tool result content from the fspec result
-                        let result_content = if fspec_result.success {
-                            // Include system reminder if present
-                            if let Some(ref reminder) = fspec_result.system_reminder {
-                                format!("{}\n\n{}", fspec_result.data, reminder)
-                            } else {
-                                fspec_result.data.clone()
-                            }
-                        } else {
-                            fspec_result.error.clone().unwrap_or_else(|| "Unknown error".to_string())
-                        };
-                        
-                        StreamChunk::tool_result(ToolResultInfo {
-                            tool_call_id: tool_call_id,
-                            content: result_content,
-                            is_error: !fspec_result.success,
-                        })
-                    } else {
-                        // Normal tool result - pass through
-                        StreamChunk::tool_result(ToolResultInfo {
-                            tool_call_id: tr.id.clone(),
-                            content: tr.content.clone(),
-                            is_error: tr.is_error,
-                        })
-                    }
-                } else {
-                    // Not JSON - normal tool result, pass through
-                    StreamChunk::tool_result(ToolResultInfo {
-                        tool_call_id: tr.id.clone(),
-                        content: tr.content.clone(),
-                        is_error: tr.is_error,
-                    })
-                }
+                // CODE-009: FspecTool now uses fspec_handler (like pause_handler)
+                // The handler executes before the tool returns, so tool results
+                // contain actual command output, not __fspec_request__ markers.
+                // No special handling needed here anymore.
+                StreamChunk::tool_result(ToolResultInfo {
+                    tool_call_id: tr.id.clone(),
+                    content: tr.content.clone(),
+                    is_error: tr.is_error,
+                })
             }
             StreamEvent::ToolProgress(tp) => StreamChunk::tool_progress(ToolProgressInfo {
                 tool_call_id: tp.tool_call_id,
@@ -4617,8 +4623,12 @@ pub fn session_pause_confirm(session_id: String, approved: bool) -> Result<()> {
 /// ```
 #[napi]
 pub fn session_send_fspec_result(session_id: String, result: crate::types::FspecResult) -> Result<()> {
+    tracing::warn!("[FSPEC_NAPI] session_send_fspec_result called: session_id={}, success={}, tool_call_id={}", 
+        session_id, result.success, result.tool_call_id);
     let session = SessionManager::instance().get_session(&session_id)?;
+    tracing::warn!("[FSPEC_NAPI] Got session, calling send_fspec_result...");
     session.send_fspec_result(result);
+    tracing::warn!("[FSPEC_NAPI] send_fspec_result completed");
     Ok(())
 }
 

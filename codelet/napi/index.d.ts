@@ -181,7 +181,8 @@ export interface AstGrepTransform {
  * Following rust-controlled.md pattern: JS explicitly passes the callback function
  * to Rust, which calls it immediately and returns the result.
  *
- * TypeScript signature:
+ * ## TypeScript signature
+ *
  * ```typescript
  * function callFspecCommand(
  *   command: string,
@@ -190,6 +191,25 @@ export interface AstGrepTransform {
  *   callback: (cmd: string, args: string, root: string) => string
  * ): string
  * ```
+ *
+ * ## Example
+ *
+ * ```typescript
+ * const result = callFspecCommand(
+ *   'list-work-units',
+ *   '{"status":"backlog"}',
+ *   '/path/to/project',
+ *   (command, argsJson, projectRoot) => {
+ *     // Execute command and return JSON result
+ *     return JSON.stringify({ success: true, data: { workUnits: [] } });
+ *   }
+ * );
+ * ```
+ *
+ * ## NAPI-RS Note
+ *
+ * For multiple callback arguments, we use `FnArgs<(...)>` wrapper and call with `.into()`
+ * to properly destructure the tuple into separate JavaScript function parameters.
  */
 export declare function callFspecCommand(
   command: string,

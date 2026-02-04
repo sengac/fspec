@@ -32,36 +32,31 @@ describe('CODE-002: Native Fspec Tool Integration via NAPI-RS', () => {
   // ============================================================================
 
   describe('Scenario: AI agent receives structured data and workflow guidance', () => {
-    it('should call TypeScript fspec modules directly without CLI spawning', () => {
+    it('should use Commander.js with statically imported commands', () => {
       // @step Given I have a codelet session with FspecTool available
-      // Verify fspecCallback uses dynamic import to call TypeScript modules
-      expect(fspecCallbackSource).toContain("await import(");
+      // CODE-002/CODE-005: Verify Commander.js integration with static imports
+      expect(fspecCallbackSource).toContain("createProgram");
+      expect(fspecCallbackSource).toContain("program.parseAsync");
       
       // @step When I call the Fspec tool with command "create-story" and arguments ["AUTH", "User Login"]
-      // Verify create-story command is implemented
-      expect(fspecCallbackSource).toContain("case 'create-story':");
-      expect(fspecCallbackSource).toContain("import('../commands/create-story')");
+      // Verify argv building for Commander.js
+      expect(fspecCallbackSource).toContain("['node', 'fspec', command");
       
       // @step Then I should receive structured data about the created work unit
-      // Verify the callback returns JSON with success/data fields
-      expect(fspecCallbackSource).toContain("return JSON.stringify(enhancedResponse)");
+      // Verify the callback returns JSON with success field
+      expect(fspecCallbackSource).toContain("return JSON.stringify(result)");
     });
 
     it('should capture and return system reminders for workflow orchestration', () => {
       // @step Given I have a codelet session with FspecTool available
       // @step When I call the Fspec tool with command "create-story" and arguments ["AUTH", "User Login"]
-      // Verify system reminder capture is implemented
-      expect(fspecCallbackSource).toContain("captureSystemReminders");
-      expect(fspecCallbackSource).toContain("captureSystemRemindersAsync");
+      // Verify system reminder parsing is implemented
+      expect(fspecCallbackSource).toContain("parseSystemReminders");
       
       // @step And I should receive a system reminder with next step guidance for example mapping
       // Verify system reminders are extracted from stderr
       expect(fspecCallbackSource).toContain("<system-reminder>");
       expect(fspecCallbackSource).toContain("systemReminders");
-      
-      // @step And the system reminder should be passed to the LLM for workflow orchestration
-      // Verify enhanced response includes system reminders
-      expect(fspecCallbackSource).toContain("addSystemReminders");
     });
 
     it('should integrate with FspecCommandRequest chunk handler in AgentView', () => {
@@ -95,44 +90,38 @@ describe('CODE-002: Native Fspec Tool Integration via NAPI-RS', () => {
       
       // @step Then each command should complete without process spawning overhead
       // @step And the total execution time should be significantly faster than bash tool equivalent
-      // Verify direct module import is used (no process spawning = faster execution)
-      expect(fspecCallbackSource).toContain("await import(");
+      // Verify Commander.js is used with all commands statically imported (no process spawning = faster execution)
+      expect(fspecCallbackSource).toContain("createProgram");
     });
 
-    it('should implement multiple fspec commands via direct TypeScript calls', () => {
+    it('should implement multiple fspec commands via Commander.js with static imports', () => {
       // @step Given I have a codelet session with FspecTool available
       // @step When I execute multiple fspec commands in sequence
-      // Verify common commands are implemented
-      const implementedCommands = [
-        "case 'list-work-units':",
-        "case 'create-story':",
-        "case 'show-work-unit':",
-        "case 'update-work-unit-status':",
-        "case 'add-rule':",
-        "case 'add-example':",
-        "case 'generate-scenarios':",
-      ];
+      // CODE-002/CODE-005: Commands are now executed via Commander.js with all commands statically imported
+      expect(fspecCallbackSource).toContain("program.parseAsync(argv");
+      expect(fspecCallbackSource).toContain("program.exitOverride()");
       
-      for (const cmd of implementedCommands) {
-        expect(fspecCallbackSource).toContain(cmd);
-      }
+      // Verify JSON format is requested for structured output
+      expect(fspecCallbackSource).toContain("--format");
+      expect(fspecCallbackSource).toContain("json");
       
       // @step And each command should preserve workflow orchestration through system reminders
-      // Each command result goes through captureSystemRemindersAsync
-      expect(fspecCallbackSource).toContain("captureSystemRemindersAsync(async () =>");
+      // System reminders are parsed from stderr
+      expect(fspecCallbackSource).toContain("parseSystemReminders");
     });
 
     it('should handle unsupported commands gracefully', () => {
       // @step Given I have a codelet session with FspecTool available
       // @step When I execute multiple fspec commands in sequence
-      // Verify bootstrap/init are marked as unsupported (CLI-only)
-      expect(fspecCallbackSource).toContain("case 'bootstrap':");
-      expect(fspecCallbackSource).toContain("case 'init':");
+      // CODE-002/CODE-005: Verify bootstrap/init are in excluded commands list
+      expect(fspecCallbackSource).toContain("EXCLUDED_COMMANDS");
+      expect(fspecCallbackSource).toContain("'bootstrap'");
+      expect(fspecCallbackSource).toContain("'init'");
       expect(fspecCallbackSource).toContain("not supported via FspecTool");
       
-      // Verify default case handles unknown commands
-      expect(fspecCallbackSource).toContain("default:");
-      expect(fspecCallbackSource).toContain("not implemented in TypeScript callback");
+      // Verify unknown commands are handled with CommandNotFound error
+      expect(fspecCallbackSource).toContain("CommandNotFound");
+      expect(fspecCallbackSource).toContain("not found");
     });
   });
 
@@ -209,13 +198,13 @@ describe('CODE-002: Native Fspec Tool Integration via NAPI-RS', () => {
 
   describe('Integration: fspecCallback functionality', () => {
     it('should handle errors gracefully and return structured error response', async () => {
-      // Test with an unimplemented command
+      // Test with a command that doesn't exist
       const result = await fspecCallback('nonexistent-command', '{}', '/tmp');
       const parsed = JSON.parse(result) as { success?: boolean; error?: string; errorType?: string };
       
       expect(parsed.success).toBe(false);
-      expect(parsed.error).toContain('not implemented');
-      expect(parsed.errorType).toBe('UnimplementedCommand');
+      expect(parsed.error).toContain('not found');
+      expect(parsed.errorType).toBe('CommandNotFound');
     });
 
     it('should handle invalid JSON args gracefully', async () => {

@@ -14,6 +14,7 @@ pub mod error;
 pub mod facade;
 pub mod file_type;
 pub mod fspec;
+pub mod fspec_handler;
 pub mod napi_bridge;
 pub mod glob;
 pub mod grep;
@@ -51,6 +52,10 @@ pub use search_engine::{SearchEngine, SearchResult};
 pub use tool_pause::{
     has_pause_handler, pause_for_user, set_pause_handler,
     PauseHandler, PauseKind, PauseRequest, PauseResponse, PauseState,
+};
+pub use fspec_handler::{
+    execute_fspec_command, has_fspec_handler, set_fspec_handler,
+    FspecHandler, FspecRequest as FspecHandlerRequest, FspecResult as FspecHandlerResult,
 };
 pub use tool_progress::{emit_tool_progress, set_tool_progress_callback, ToolProgressCallback};
 pub use web_search::{install_browser_cleanup_handler, shutdown_browser, WebSearchTool};

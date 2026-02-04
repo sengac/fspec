@@ -3253,6 +3253,65 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             });
             // NAPI-009: Reject the promise on error
             reject(new Error(chunk.error));
+          } else if (chunk.type === 'FspecCommandRequest' && chunk.fspecRequest) {
+            // CODE-009: Handle fspec command request - TypeScript executes and sends result back to Rust
+            const command = chunk.fspecRequest.command;
+            const argsJson = chunk.fspecRequest.argsJson;
+            const projectRoot = chunk.fspecRequest.projectRoot;
+            const toolCallId = chunk.fspecRequest.toolCallId;
+
+            logger.warn(`[FSPEC_TS] FspecCommandRequest received in handleSubmit callback: command=${command}`);
+
+            // CODE-009: Execute fspec command asynchronously via TypeScript callback
+            (async () => {
+              try {
+                logger.warn(`[FSPEC_TS] Calling fspecCallback(${command})...`);
+                const resultJson = await fspecCallback(command, argsJson, projectRoot);
+                logger.warn(`[FSPEC_TS] fspecCallback returned raw: ${resultJson}`);
+                
+                const parsed = JSON.parse(resultJson) as { 
+                  success?: boolean; 
+                  data?: string; 
+                  error?: string; 
+                  systemReminders?: string[];
+                };
+                logger.warn(`[FSPEC_TS] Parsed result: success=${parsed.success}, error=${parsed.error}`);
+
+
+                // Build the system reminder from captured reminders
+                let systemReminder: string | undefined = undefined;
+                if (parsed.systemReminders && parsed.systemReminders.length > 0) {
+                  systemReminder = parsed.systemReminders.map(r => 
+                    `<system-reminder>\n${r}\n</system-reminder>`
+                  ).join('\n');
+                }
+
+                logger.warn(`[FSPEC_TS] Calling sessionSendFspecResult: success=${parsed.success}`);
+
+                // CODE-009: Send result back to Rust via NAPI
+                // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
+                sessionSendFspecResult(activeSessionId, {
+                  success: parsed.success ?? true,
+                  data: parsed.data ?? resultJson,
+                  error: parsed.error ?? undefined,
+                  systemReminder,
+                  toolCallId,
+                });
+                logger.warn(`[FSPEC_TS] sessionSendFspecResult completed`);
+              } catch (err) {
+                const error = err as Error;
+                logger.error(`[FSPEC_TS] Fspec command ${command} failed:`, error.message);
+                
+                // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
+                sessionSendFspecResult(activeSessionId, {
+                  success: false,
+                  data: '',
+                  error: error.message,
+                  systemReminder: undefined,
+                  toolCallId,
+                });
+              }
+            })();
           }
         });
       });
@@ -4368,17 +4427,25 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       const toolCallId = chunk.fspecRequest.toolCallId;
       const sessionId = currentSessionIdRef.current;
 
+      logger.warn(`[FSPEC_TS] FspecCommandRequest received: command=${command}, toolCallId=${toolCallId}`);
+      logger.warn(`[FSPEC_TS] sessionId=${sessionId}, projectRoot=${projectRoot}`);
+
       if (!sessionId) {
-        logger.error('FspecCommandRequest received but no session ID available');
+        logger.error('[FSPEC_TS] FspecCommandRequest received but no session ID available');
         return;
       }
+
+      logger.warn(`[FSPEC_TS] About to call fspecCallback async...`);
 
       // CODE-009: Execute fspec command asynchronously via TypeScript callback
       // This runs the command and sends the result back to Rust which is blocking
       (async () => {
         try {
+          logger.warn(`[FSPEC_TS] Calling fspecCallback(${command}, ${argsJson}, ${projectRoot})...`);
           // Execute fspec command via TypeScript implementation
           const resultJson = await fspecCallback(command, argsJson, projectRoot);
+          logger.warn(`[FSPEC_TS] fspecCallback returned: ${resultJson.substring(0, 200)}...`);
+          
           const parsed = JSON.parse(resultJson) as { 
             success?: boolean; 
             data?: string; 
@@ -4387,36 +4454,42 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           };
 
           // Build the system reminder from captured reminders
-          let systemReminder: string | null = null;
+          let systemReminder: string | undefined = undefined;
           if (parsed.systemReminders && parsed.systemReminders.length > 0) {
             systemReminder = parsed.systemReminders.map(r => 
               `<system-reminder>\n${r}\n</system-reminder>`
             ).join('\n');
           }
 
+          logger.warn(`[FSPEC_TS] About to call sessionSendFspecResult: success=${parsed.success}, toolCallId=${toolCallId}`);
+
           // CODE-009: Send result back to Rust via NAPI
           // This unblocks the session which is waiting for the result
+          // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
           sessionSendFspecResult(sessionId, {
             success: parsed.success ?? true,
             data: parsed.data ?? resultJson,
-            error: parsed.error ?? null,
+            error: parsed.error ?? undefined,
             systemReminder,
             toolCallId,
           });
 
+          logger.warn(`[FSPEC_TS] sessionSendFspecResult called successfully`);
           logger.debug(`Fspec command ${command} completed:`, { success: parsed.success, toolCallId });
         } catch (err) {
           const error = err as Error;
-          logger.error(`Fspec command ${command} failed:`, error.message);
+          logger.error(`[FSPEC_TS] Fspec command ${command} failed:`, error.message);
           
           // CODE-009: Send error result back to Rust
+          // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
           sessionSendFspecResult(sessionId, {
             success: false,
             data: '',
             error: error.message,
-            systemReminder: null,
+            systemReminder: undefined,
             toolCallId,
           });
+          logger.warn(`[FSPEC_TS] sessionSendFspecResult called with error`);
         }
       })();
     }

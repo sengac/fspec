@@ -46,11 +46,15 @@ pub struct FspecArgs {
     /// The fspec command to execute
     pub command: String,
     /// JSON string containing command arguments
-    #[serde(default)]
+    #[serde(default = "default_args")]
     pub args: String,
     /// Project root directory path
     #[serde(default = "default_project_root")]
     pub project_root: String,
+}
+
+fn default_args() -> String {
+    "{}".to_string()
 }
 
 fn default_project_root() -> String {

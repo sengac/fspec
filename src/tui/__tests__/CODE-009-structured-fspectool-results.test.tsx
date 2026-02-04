@@ -374,20 +374,27 @@ describe('CODE-009: Structured FspecTool Results via StreamChunk Discriminated U
       expect(agentViewSource).not.toMatch(/Args:\s*'[^']*'/); // Old pattern
     });
 
-    it('should use JSON marker pattern instead of string pattern', () => {
+    it('should use fspec_handler pattern instead of marker-based interception', () => {
       // @step Given the structured StreamChunk flow is implemented for fspec commands
-      // Verify wrapper.rs uses the new __fspec_request__ JSON marker
+      // Verify wrapper.rs uses the fspec_handler pattern (similar to pause_handler)
       if (wrapperRsSource) {
-        expect(wrapperRsSource).toContain('__fspec_request__');
-        expect(wrapperRsSource).toContain('serde_json::json!');
+        // New architecture uses execute_fspec_command and has_fspec_handler
+        expect(wrapperRsSource).toContain('execute_fspec_command');
+        expect(wrapperRsSource).toContain('has_fspec_handler');
+        // Should NOT use the old __fspec_request__ marker pattern
+        expect(wrapperRsSource).not.toContain('__fspec_request__');
       }
 
       // @step When all fspec tool calls use FspecCommandRequest and FspecCommandResult
-      // Verify the session_manager.rs checks for the JSON marker
+      // Verify the session_manager.rs sets up the fspec_handler (like pause_handler)
       const sessionManagerPath = path.join(process.cwd(), 'codelet/napi/src/session_manager.rs');
       if (fs.existsSync(sessionManagerPath)) {
         const sessionManagerSource = fs.readFileSync(sessionManagerPath, 'utf-8');
-        expect(sessionManagerSource).toContain('__fspec_request__');
+        // New architecture sets fspec_handler in agent_loop
+        expect(sessionManagerSource).toContain('set_fspec_handler');
+        expect(sessionManagerSource).toContain('fspec_handler');
+        // The handler emits FspecCommandRequest directly from within the tool call
+        expect(sessionManagerSource).toContain('FspecCommandRequest');
       }
     });
   });
