@@ -1744,7 +1744,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           persistenceSetDataDirectory(fspecDir);
         } catch (err) {
           // Failed to set up data directory - this is a critical error
+          // Cannot continue without data directory - model cache and session storage depend on it
           logger.error('Failed to set up data directory:', err);
+          setError(
+            `Failed to initialize data directory: ${err instanceof Error ? err.message : String(err)}`
+          );
+          return; // Stop initialization - cannot proceed without data directory
         }
 
         // TUI-034: Load models and build provider sections
