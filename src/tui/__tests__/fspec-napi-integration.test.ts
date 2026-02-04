@@ -266,9 +266,9 @@ describe('REAL Integration: FspecTool NAPI Callback', () => {
       const parsed = JSON.parse(result);
 
       expect(parsed.success).toBe(true);
-      expect(parsed.data).toContain('# Fspec Tool - AI Reference Guide');
-      expect(parsed.data).toContain('list-work-units');
-      expect(parsed.data).toContain('camelCase');
+      expect(parsed.data).toContain('# Fspec Tool Reference');
+      expect(parsed.data).toContain('command');
+      expect(parsed.data).toContain('JSON string');
     });
 
     it('should return command-specific help when requested', async () => {
@@ -295,7 +295,7 @@ describe('REAL Integration: FspecTool NAPI Callback', () => {
 
       expect(parsed.success).toBe(true);
       expect(parsed.data).toContain('not found in quick reference');
-      expect(parsed.data).toContain('# Fspec Tool - AI Reference Guide');
+      expect(parsed.data).toContain('# Fspec Tool Reference');
     });
   });
 

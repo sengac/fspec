@@ -59,6 +59,7 @@ impl FspecToolFacade for ClaudeFspecFacade {
                 "Execute fspec commands for Acceptance Criteria Driven Development (ACDD). ",
                 "Manages Gherkin feature files, work units, and project specifications. ",
                 "Supports work unit creation, status updates, Example Mapping, and workflow automation. ",
+                "Use command=\"help\" to get detailed documentation on available commands and how to use them. ",
                 "Excludes setup commands (bootstrap, init) which should be run via CLI."
             ).to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(FspecArgs))
@@ -102,6 +103,7 @@ impl FspecToolFacade for GeminiFspecFacade {
             description: concat!(
                 "Execute fspec commands for ACDD workflow management. ",
                 "Handle work units, feature files, Example Mapping, and Gherkin specifications. ",
+                "Use command=\"help\" to get detailed documentation on available commands. ",
                 "Core commands: create-work-unit, update-work-unit-status, add-rule, add-example, generate-scenarios."
             ).to_string(),
             parameters: json!({
@@ -109,7 +111,7 @@ impl FspecToolFacade for GeminiFspecFacade {
                 "properties": {
                     "command": {
                         "type": "string",
-                        "description": "The fspec command to execute (e.g., 'create-work-unit', 'update-work-unit-status')"
+                        "description": "The fspec command to execute (e.g., 'help', 'create-work-unit', 'update-work-unit-status')"
                     },
                     "args": {
                         "type": "string", 
@@ -175,7 +177,8 @@ impl FspecToolFacade for OpenAIFspecFacade {
             description: concat!(
                 "Execute fspec commands for Acceptance Criteria Driven Development (ACDD). ",
                 "Manages Gherkin feature files, work units, and project specifications. ",
-                "Supports work unit creation, status updates, Example Mapping, and workflow automation."
+                "Supports work unit creation, status updates, Example Mapping, and workflow automation. ",
+                "Use command=\"help\" to get detailed documentation on available commands and how to use them."
             ).to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(FspecArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),
@@ -215,13 +218,16 @@ impl FspecToolFacade for ZAIFspecFacade {
     fn definition(&self) -> ToolDefinition {
         ToolDefinition {
             name: "run_fspec".to_string(),
-            description: "Execute fspec ACDD workflow commands. Manage work units, features, and specifications.".to_string(),
+            description: concat!(
+                "Execute fspec ACDD workflow commands. Manage work units, features, and specifications. ",
+                "Use command=\"help\" to get detailed documentation on available commands."
+            ).to_string(),
             parameters: json!({
                 "type": "object",
                 "properties": {
                     "command": {
                         "type": "string",
-                        "description": "fspec command to execute"
+                        "description": "fspec command to execute (use 'help' for documentation)"
                     },
                     "arguments": {
                         "type": "string",

@@ -43,7 +43,7 @@ impl Default for FspecTool {
 
 #[derive(Debug, Deserialize, Serialize, JsonSchema)]
 pub struct FspecArgs {
-    /// The fspec command to execute
+    /// The fspec command to execute (use "help" for documentation on available commands)
     pub command: String,
     /// JSON string containing command arguments
     #[serde(default = "default_args")]
@@ -75,6 +75,7 @@ impl Tool for FspecTool {
                 "Execute fspec commands for Acceptance Criteria Driven Development (ACDD). ",
                 "Manages Gherkin feature files, work units, and project specifications. ",
                 "Supports work unit creation, status updates, Example Mapping, and workflow automation. ",
+                "Use command=\"help\" to get detailed documentation on available commands and how to use them. ",
                 "Excludes setup commands (bootstrap, init) which should be run via CLI."
             ).to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(FspecArgs))

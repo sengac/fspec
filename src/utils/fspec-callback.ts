@@ -9,167 +9,211 @@ const EXCLUDED_COMMANDS = ['bootstrap', 'init'];
 
 /**
  * Generate AI-friendly help for the Fspec tool.
- * This explains how to use commands via the tool's JSON args format.
+ * This explains how to use commands via the tool's parameter format.
  */
 function generateFspecToolHelp(): string {
-  const help = `# Fspec Tool - AI Reference Guide
+  const help = `# Fspec Tool Reference
 
-The Fspec tool manages feature specifications, work units, and project workflow.
+## Tool Parameters
 
-## How to Use This Tool
+The Fspec tool accepts three parameters:
 
-Call the tool with:
-- \`command\`: The command name (e.g., "list-work-units")
-- \`args\`: JSON object with command arguments (e.g., {"status": "backlog"})
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| command | string | Yes | The fspec command name (e.g., "list-work-units") |
+| args | string | No | JSON string with command arguments (default: "{}") |
+| project_root | string | No | Project root directory (default: ".") |
 
-Arguments use camelCase in JSON (e.g., \`workUnit\` not \`--work-unit\`).
+## How Arguments Work
 
-## Command Categories
+The \`args\` parameter is a **JSON string**. Keys in the JSON become command-line flags:
+- camelCase keys become kebab-case flags: \`workUnit\` → \`--work-unit\`
+- Boolean \`true\` adds the flag: \`{"all": true}\` → \`--all\`
+- String/number values become flag values: \`{"status": "backlog"}\` → \`--status backlog\`
+
+## Example Tool Calls
+
+**List all work units:**
+\`\`\`
+command: "list-work-units"
+args: "{}"
+\`\`\`
+
+**List work units filtered by status:**
+\`\`\`
+command: "list-work-units"
+args: "{\\"status\\": \\"backlog\\"}"
+\`\`\`
+
+**Show a specific work unit:**
+\`\`\`
+command: "show-work-unit"
+args: "{\\"id\\": \\"STORY-001\\"}"
+\`\`\`
+
+**Add a rule to a work unit:**
+\`\`\`
+command: "add-rule"
+args: "{\\"workUnit\\": \\"STORY-001\\", \\"rule\\": \\"Users must be authenticated\\"}"
+\`\`\`
+
+**Execute research tool:**
+\`\`\`
+command: "research"
+args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"best practices for password hashing\\"}"
+\`\`\`
+
+---
+
+## Command Reference
 
 ### Work Unit Management
-| Command | Args | Description |
-|---------|------|-------------|
-| list-work-units | {status?, type?} | List all work units, optionally filtered |
-| show-work-unit | {id} | Show details of a specific work unit |
-| create-story | {title, epic?} | Create a new user story |
-| create-bug | {title, epic?} | Create a new bug report |
-| create-task | {title, epic?} | Create a new task |
-| create-epic | {title} | Create a new epic |
-| update-work-unit | {id, title?, description?} | Update work unit details |
-| update-work-unit-status | {id, status} | Change work unit status |
-| update-work-unit-estimate | {id, estimate} | Set effort estimate |
-| delete-work-unit | {id} | Delete a work unit |
-| prioritize-work-unit | {id, priority} | Set priority (1=highest) |
 
-### Workflow States
-Status values: backlog, specifying, implementing, testing, validating, done, blocked
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| list-work-units | - | status, type | List all work units |
+| show-work-unit | id | - | Show work unit details |
+| create-story | title | epic, description | Create user story |
+| create-bug | title | epic, description | Create bug report |
+| create-task | title | epic, description | Create task |
+| update-work-unit | id | title, description | Update work unit |
+| update-work-unit-status | id, status | - | Change workflow status |
+| update-work-unit-estimate | id, estimate | - | Set effort estimate |
+| delete-work-unit | id | - | Delete work unit |
+| prioritize-work-unit | id, priority | - | Set priority (1=highest) |
 
-| Command | Args | Description |
-|---------|------|-------------|
-| board | {} | Show kanban board overview |
-| auto-advance | {id} | Auto-advance work unit to next state |
+**Status values:** backlog, specifying, implementing, testing, validating, done, blocked
 
 ### Example Mapping (Specifying Phase)
-| Command | Args | Description |
-|---------|------|-------------|
-| add-rule | {workUnit, rule} | Add a business rule |
-| add-example | {workUnit, rule, example} | Add example for a rule |
-| add-question | {workUnit, question} | Add open question |
-| answer-question | {workUnit, questionIndex, answer} | Answer a question |
-| remove-rule | {workUnit, ruleIndex} | Remove a rule |
-| remove-example | {workUnit, ruleIndex, exampleIndex} | Remove an example |
-| remove-question | {workUnit, questionIndex} | Remove a question |
-| show-deleted | {workUnit} | Show deleted rules/examples/questions |
-| restore-rule | {workUnit, ruleIndex} | Restore a deleted rule |
-| restore-example | {workUnit, ruleIndex, exampleIndex} | Restore a deleted example |
-| restore-question | {workUnit, questionIndex} | Restore a deleted question |
+
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| add-rule | workUnit, rule | - | Add business rule |
+| add-example | workUnit, rule, example | - | Add example for rule |
+| add-question | workUnit, question | - | Add open question |
+| answer-question | workUnit, questionIndex, answer | - | Answer question |
+| remove-rule | workUnit, ruleIndex | - | Remove rule |
+| remove-example | workUnit, ruleIndex, exampleIndex | - | Remove example |
+| remove-question | workUnit, questionIndex | - | Remove question |
+| restore-rule | workUnit, ruleIndex | - | Restore deleted rule |
+| restore-example | workUnit, ruleIndex, exampleIndex | - | Restore deleted example |
+| restore-question | workUnit, questionIndex | - | Restore deleted question |
+| show-deleted | workUnit | - | Show deleted items |
+| compact-work-unit | workUnit | - | Permanently remove deleted items |
 
 ### Feature Files (Gherkin)
-| Command | Args | Description |
-|---------|------|-------------|
-| list-features | {workUnit?} | List feature files |
-| show-feature | {feature} | Show feature file contents |
-| create-feature | {workUnit, name, description?} | Create new feature file |
-| add-scenario | {feature, name, steps?} | Add scenario to feature |
-| add-step | {feature, scenario, step, type} | Add step (Given/When/Then) |
-| update-scenario | {feature, scenario, name?} | Update scenario |
-| delete-scenario | {feature, scenario} | Delete scenario |
-| get-scenarios | {feature} | Get all scenarios from feature |
-| generate-scenarios | {workUnit} | Generate scenarios from example map |
 
-### Architecture & Foundation
-| Command | Args | Description |
-|---------|------|-------------|
-| show-foundation | {} | Show project foundation document |
-| update-foundation | {section, content} | Update foundation section |
-| add-architecture-note | {workUnit, note, category?} | Add architecture decision |
-| show-event-storm | {workUnit?} | Show event storming results |
-| discover-event-storm | {workUnit} | Run event storm discovery |
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| list-features | - | workUnit | List feature files |
+| show-feature | feature | - | Show feature contents |
+| create-feature | workUnit, name | description | Create feature file |
+| add-scenario | feature, name | steps | Add scenario |
+| add-step | feature, scenario, step, type | - | Add step (type: Given/When/Then) |
+| update-scenario | feature, scenario | name | Update scenario |
+| delete-scenario | feature, scenario | - | Delete scenario |
+| get-scenarios | feature | - | Get all scenarios |
+| generate-scenarios | workUnit | - | Generate from example map |
 
-### Tags & Organization
-| Command | Args | Description |
-|---------|------|-------------|
-| list-tags | {} | List all registered tags |
-| register-tag | {tag, description?, color?} | Register a new tag |
-| add-tag-to-feature | {feature, tag} | Add tag to feature |
-| add-tag-to-scenario | {feature, scenario, tag} | Add tag to scenario |
-| tag-stats | {} | Show tag usage statistics |
+### Workflow & Board
 
-### Dependencies
-| Command | Args | Description |
-|---------|------|-------------|
-| dependencies | {id?} | Show dependency graph |
-| add-dependency | {from, to, type?} | Add dependency between work units |
-| remove-dependency | {from, to} | Remove dependency |
-| suggest-dependencies | {id} | AI suggests dependencies |
-
-### Epics
-| Command | Args | Description |
-|---------|------|-------------|
-| list-epics | {} | List all epics |
-| show-epic | {id} | Show epic details |
-| create-epic | {title, description?} | Create new epic |
-| delete-epic | {id} | Delete epic |
-
-### Validation & Quality
-| Command | Args | Description |
-|---------|------|-------------|
-| validate | {} | Validate all specifications |
-| validate-work-units | {} | Validate work unit consistency |
-| check | {id?} | Run quality checks |
-| review | {id} | Review work unit readiness |
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| board | - | - | Show kanban board |
+| auto-advance | id | - | Auto-advance to next state |
+| review | id | - | Review work unit readiness |
 
 ### Research Tools
-| Command | Args | Description |
-|---------|------|-------------|
-| research | {tool, query, workUnit?} | Execute research tool |
 
-Available research tools vary by configuration. Use \`configure-tools\` to see available tools.
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| research | tool | workUnit, (tool-specific args) | Execute research tool |
+
+**Available research tools depend on project configuration.**
+
+To list available tools:
+\`\`\`
+command: "research"
+args: "{}"
+\`\`\`
+
+To use a tool (e.g., perplexity):
+\`\`\`
+command: "research"
+args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"your research question\\"}"
+\`\`\`
+
+### Architecture & Foundation
+
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| show-foundation | - | - | Show foundation document |
+| update-foundation | section, content | - | Update foundation section |
+| add-architecture-note | workUnit, note | category | Add architecture decision |
+| show-event-storm | - | workUnit | Show event storm results |
+| discover-event-storm | workUnit | - | Run event storm discovery |
+
+### Tags & Organization
+
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| list-tags | - | - | List registered tags |
+| register-tag | tag | description, color | Register new tag |
+| add-tag-to-feature | feature, tag | - | Add tag to feature |
+| add-tag-to-scenario | feature, scenario, tag | - | Add tag to scenario |
+| tag-stats | - | - | Show tag statistics |
+
+### Dependencies
+
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| dependencies | - | id | Show dependency graph |
+| add-dependency | from, to | type | Add dependency |
+| remove-dependency | from, to | - | Remove dependency |
+| suggest-dependencies | id | - | AI suggests dependencies |
+
+### Epics
+
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| list-epics | - | - | List all epics |
+| show-epic | id | - | Show epic details |
+| create-epic | title | description | Create epic |
+| delete-epic | id | - | Delete epic |
+
+### Validation & Quality
+
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| validate | - | - | Validate all specs |
+| validate-work-units | - | - | Validate work units |
+| check | - | id | Run quality checks |
 
 ### Queries & Reports
-| Command | Args | Description |
-|---------|------|-------------|
-| query-work-units | {query} | Search work units |
-| query-metrics | {} | Show project metrics |
-| query-bottlenecks | {} | Find workflow bottlenecks |
-| query-orphans | {} | Find orphaned items |
-| show-coverage | {workUnit?} | Show test coverage |
+
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| query-work-units | query | - | Search work units |
+| query-metrics | - | - | Show project metrics |
+| query-bottlenecks | - | - | Find bottlenecks |
+| query-orphans | - | - | Find orphaned items |
+| show-coverage | - | workUnit | Show test coverage |
 
 ### Checkpoints
-| Command | Args | Description |
-|---------|------|-------------|
-| checkpoint | {message?} | Create spec checkpoint |
-| list-checkpoints | {} | List available checkpoints |
-| restore-checkpoint | {id} | Restore to checkpoint |
 
-### Hooks (Automation)
-| Command | Args | Description |
-|---------|------|-------------|
-| list-hooks | {} | List registered hooks |
-| add-hook | {event, action} | Add automation hook |
-| remove-hook | {id} | Remove hook |
+| Command | Required Args | Optional Args | Description |
+|---------|---------------|---------------|-------------|
+| checkpoint | - | message | Create checkpoint |
+| list-checkpoints | - | - | List checkpoints |
+| restore-checkpoint | id | - | Restore checkpoint |
 
-## Common Workflows
-
-### Starting Work on a Story
-1. \`list-work-units\` with {status: "backlog"} - find work to do
-2. \`show-work-unit\` with {id: "STORY-001"} - understand the story
-3. \`update-work-unit-status\` with {id: "STORY-001", status: "specifying"} - start specifying
-
-### Example Mapping Session
-1. \`add-rule\` with {workUnit: "STORY-001", rule: "Users must be authenticated"}
-2. \`add-example\` with {workUnit: "STORY-001", rule: "Users must be authenticated", example: "Valid JWT token allows access"}
-3. \`add-question\` with {workUnit: "STORY-001", question: "What about API keys?"}
-4. \`generate-scenarios\` with {workUnit: "STORY-001"} - create Gherkin from rules
-
-### Moving to Implementation
-1. \`review\` with {id: "STORY-001"} - check readiness
-2. \`update-work-unit-status\` with {id: "STORY-001", status: "implementing"}
+---
 
 ## Notes
-- Commands return JSON with \`success: true/false\`
-- Use \`help\` command with {command: "command-name"} for specific command help
-- \`bootstrap\` and \`init\` commands are not available via this tool (use CLI)
+
+- **Excluded commands:** \`bootstrap\` and \`init\` must be run via CLI
+- **JSON escaping:** In the args string, escape quotes: \`"{\\"key\\": \\"value\\"}"\`
+- **Get command help:** Use \`command: "help", args: "{\\"command\\": \\"command-name\\"}"\`
 `;
 
   return help;
@@ -185,115 +229,251 @@ function generateCommandHelp(commandName: string): string | null {
 
 List all work units in the project.
 
-**Args:**
-- \`status\` (optional): Filter by status - "backlog", "specifying", "implementing", "testing", "validating", "done", "blocked"
-- \`type\` (optional): Filter by type - "story", "bug", "task", "epic"
+### Tool Call
+\`\`\`
+command: "list-work-units"
+args: "{}"                           // No filter
+args: "{\\"status\\": \\"backlog\\"}"     // Filter by status
+args: "{\\"type\\": \\"story\\"}"         // Filter by type
+\`\`\`
 
-**Examples:**
-- List all: {args: "{}"}
-- Backlog only: {args: "{\\"status\\": \\"backlog\\"}"}
-- All bugs: {args: "{\\"type\\": \\"bug\\"}"}
+### Args (all optional)
+| Arg | Type | Values |
+|-----|------|--------|
+| status | string | backlog, specifying, implementing, testing, validating, done, blocked |
+| type | string | story, bug, task, epic |
 
-**Returns:** {workUnits: [{id, title, status, type, ...}]}`,
+### Returns
+\`\`\`json
+{
+  "success": true,
+  "workUnits": [
+    {"id": "STORY-001", "title": "...", "status": "backlog", "type": "story", ...}
+  ]
+}
+\`\`\``,
 
     'show-work-unit': `## show-work-unit
 
-Show detailed information about a specific work unit.
+Show detailed information about a specific work unit including rules, examples, and questions.
 
-**Args:**
-- \`id\` (required): Work unit ID (e.g., "STORY-001")
+### Tool Call
+\`\`\`
+command: "show-work-unit"
+args: "{\\"id\\": \\"STORY-001\\"}"
+\`\`\`
 
-**Example:** {args: "{\\"id\\": \\"STORY-001\\"}"}
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| id | string | Yes | Work unit ID (e.g., "STORY-001") |
 
-**Returns:** Full work unit details including rules, examples, questions, scenarios`,
+### Returns
+Full work unit details including:
+- Basic info (title, status, type, description)
+- Example map (rules, examples, questions)
+- Linked features and scenarios
+- Dependencies`,
 
     'create-story': `## create-story
 
-Create a new user story.
+Create a new user story work unit.
 
-**Args:**
-- \`title\` (required): Story title
-- \`epic\` (optional): Parent epic ID
-- \`description\` (optional): Story description
+### Tool Call
+\`\`\`
+command: "create-story"
+args: "{\\"title\\": \\"User can reset password\\"}"
+args: "{\\"title\\": \\"User can reset password\\", \\"epic\\": \\"EPIC-001\\"}"
+\`\`\`
 
-**Example:** {args: "{\\"title\\": \\"User can reset password\\", \\"epic\\": \\"EPIC-001\\"}"}
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| title | string | Yes | Story title |
+| epic | string | No | Parent epic ID |
+| description | string | No | Story description |
 
-**Returns:** {id: "STORY-XXX", ...}`,
+### Returns
+\`\`\`json
+{
+  "success": true,
+  "id": "STORY-XXX",
+  "title": "User can reset password",
+  "status": "backlog"
+}
+\`\`\``,
 
     'add-rule': `## add-rule
 
-Add a business rule to a work unit's example map.
+Add a business rule to a work unit's example map during the specifying phase.
 
-**Args:**
-- \`workUnit\` (required): Work unit ID
-- \`rule\` (required): The business rule text
+### Tool Call
+\`\`\`
+command: "add-rule"
+args: "{\\"workUnit\\": \\"STORY-001\\", \\"rule\\": \\"Password must be at least 8 characters\\"}"
+\`\`\`
 
-**Example:** {args: "{\\"workUnit\\": \\"STORY-001\\", \\"rule\\": \\"Password must be at least 8 characters\\"}"}
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| workUnit | string | Yes | Work unit ID |
+| rule | string | Yes | Business rule text |
 
-**Returns:** Updated work unit with new rule`,
+### Returns
+Updated work unit with the new rule added.`,
 
     'add-example': `## add-example
 
-Add an example to illustrate a business rule.
+Add an example that illustrates a business rule.
 
-**Args:**
-- \`workUnit\` (required): Work unit ID
-- \`rule\` (required): The rule text (must match existing rule)
-- \`example\` (required): Example that illustrates the rule
+### Tool Call
+\`\`\`
+command: "add-example"
+args: "{\\"workUnit\\": \\"STORY-001\\", \\"rule\\": \\"Password must be at least 8 characters\\", \\"example\\": \\"'hello' (5 chars) is rejected\\"}"
+\`\`\`
 
-**Example:** {args: "{\\"workUnit\\": \\"STORY-001\\", \\"rule\\": \\"Password must be at least 8 characters\\", \\"example\\": \\"'hello' is rejected as too short\\"}"}`,
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| workUnit | string | Yes | Work unit ID |
+| rule | string | Yes | The rule text (must match existing rule exactly) |
+| example | string | Yes | Example that illustrates the rule |
+
+### Notes
+- The rule text must match an existing rule exactly
+- Examples help clarify edge cases and expected behavior`,
 
     'add-question': `## add-question
 
-Add an open question during example mapping.
+Add an open question during example mapping to capture uncertainties.
 
-**Args:**
-- \`workUnit\` (required): Work unit ID
-- \`question\` (required): The question text
+### Tool Call
+\`\`\`
+command: "add-question"
+args: "{\\"workUnit\\": \\"STORY-001\\", \\"question\\": \\"Should we allow special characters in passwords?\\"}"
+\`\`\`
 
-**Example:** {args: "{\\"workUnit\\": \\"STORY-001\\", \\"question\\": \\"Should we allow special characters in passwords?\\"}"}`,
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| workUnit | string | Yes | Work unit ID |
+| question | string | Yes | Question text |
+
+### Notes
+Questions capture things that need clarification before implementation.`,
 
     'update-work-unit-status': `## update-work-unit-status
 
 Change the workflow status of a work unit.
 
-**Args:**
-- \`id\` (required): Work unit ID
-- \`status\` (required): New status - "backlog", "specifying", "implementing", "testing", "validating", "done", "blocked"
+### Tool Call
+\`\`\`
+command: "update-work-unit-status"
+args: "{\\"id\\": \\"STORY-001\\", \\"status\\": \\"implementing\\"}"
+\`\`\`
 
-**Example:** {args: "{\\"id\\": \\"STORY-001\\", \\"status\\": \\"implementing\\"}"}`,
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| id | string | Yes | Work unit ID |
+| status | string | Yes | New status |
+
+### Status Values
+- **backlog** - Not yet started
+- **specifying** - Example mapping in progress
+- **implementing** - Code being written
+- **testing** - Tests being written/run
+- **validating** - Final validation
+- **done** - Complete
+- **blocked** - Blocked by dependency/issue`,
 
     board: `## board
 
-Show the kanban board with work units organized by status.
+Show the kanban board with work units organized by workflow status.
 
-**Args:** None required
+### Tool Call
+\`\`\`
+command: "board"
+args: "{}"
+\`\`\`
 
-**Example:** {args: "{}"}
+### Args
+None required.
 
-**Returns:** Board data with columns for each workflow state`,
+### Returns
+Board data showing work units in each column (backlog, specifying, implementing, etc.)`,
 
     'generate-scenarios': `## generate-scenarios
 
-Generate Gherkin scenarios from a work unit's example map.
+Generate Gherkin scenarios from a work unit's example map (rules and examples).
 
-**Args:**
-- \`workUnit\` (required): Work unit ID
+### Tool Call
+\`\`\`
+command: "generate-scenarios"
+args: "{\\"workUnit\\": \\"STORY-001\\"}"
+\`\`\`
 
-**Example:** {args: "{\\"workUnit\\": \\"STORY-001\\"}"}
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| workUnit | string | Yes | Work unit ID |
 
-**Returns:** Generated feature file with scenarios based on rules and examples`,
+### Notes
+- Requires the work unit to have rules and examples defined
+- Creates a feature file with scenarios based on the example map`,
 
     research: `## research
 
-Execute a research tool to gather information.
+Execute a research tool to gather information. Research tools are configured per-project.
 
-**Args:**
-- \`tool\` (required): Research tool name (e.g., "perplexity")
-- \`query\` (required): Research query
-- \`workUnit\` (optional): Attach results to work unit
+### List Available Tools
+\`\`\`
+command: "research"
+args: "{}"
+\`\`\`
 
-**Example:** {args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"best practices for password validation\\", \\"workUnit\\": \\"STORY-001\\"}"}`,
+### Execute a Research Tool
+\`\`\`
+command: "research"
+args: "{\\"tool\\": \\"perplexity\\", \\"query\\": \\"best practices for password hashing\\"}"
+\`\`\`
+
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| tool | string | Yes* | Research tool name (* No if just listing tools) |
+| query | string | Depends | Query for the tool (required for most tools) |
+| workUnit | string | No | Attach results to this work unit |
+
+### Common Research Tools
+- **perplexity** - AI-powered web search
+- **tavily** - Search API
+- **github** - GitHub code search
+
+### Notes
+- Available tools depend on project configuration in spec/fspec-config.json
+- Each tool may have additional specific arguments`,
+
+    help: `## help
+
+Get help for the Fspec tool or a specific command.
+
+### General Help
+\`\`\`
+command: "help"
+args: "{}"
+\`\`\`
+
+### Command-Specific Help
+\`\`\`
+command: "help"
+args: "{\\"command\\": \\"add-rule\\"}"
+\`\`\`
+
+### Args
+| Arg | Type | Required | Description |
+|-----|------|----------|-------------|
+| command | string | No | Get help for specific command |`,
   };
 
   return commandDocs[commandName] || null;
@@ -401,7 +581,7 @@ export async function fspecCallback(
   const originalStdoutWrite = process.stdout.write.bind(process.stdout);
   const originalStderrWrite = process.stderr.write.bind(process.stderr);
 
-  process.stdout.write = (chunk: unknown, ...rest: unknown[]): boolean => {
+  process.stdout.write = (chunk: unknown, ..._rest: unknown[]): boolean => {
     if (typeof chunk === 'string') {
       capturedOutput += chunk;
     } else if (Buffer.isBuffer(chunk)) {
@@ -410,7 +590,7 @@ export async function fspecCallback(
     return true;
   };
 
-  process.stderr.write = (chunk: unknown, ...rest: unknown[]): boolean => {
+  process.stderr.write = (chunk: unknown, ..._rest: unknown[]): boolean => {
     if (typeof chunk === 'string') {
       capturedError += chunk;
     } else if (Buffer.isBuffer(chunk)) {
@@ -422,10 +602,8 @@ export async function fspecCallback(
   // Override process.exit to prevent Commander and command handlers from exiting
   // This is necessary because many commands call process.exit() directly
   const originalExit = process.exit;
-  let exitCode: number | undefined;
   process.exit = ((code?: number): never => {
-    exitCode = code ?? 0;
-    throw new Error(`__FSPEC_EXIT_OVERRIDE__:${exitCode}`);
+    throw new Error(`__FSPEC_EXIT_OVERRIDE__:${code ?? 0}`);
   }) as typeof process.exit;
 
   // Save and change cwd
