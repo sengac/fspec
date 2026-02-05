@@ -159,6 +159,10 @@ import { ErrorDialog } from '../../components/ErrorDialog';
 import { NotificationDialog } from '../../components/NotificationDialog';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
 import { ThinkingLevelDialog } from './ThinkingLevelDialog';
+import {
+  loadDefaultThinkingLevel,
+  saveDefaultThinkingLevel,
+} from '../config/defaultThinkingLevelConfig';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import { useFspecStore } from '../store/fspecStore';
 import {
@@ -1274,6 +1278,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
   // TUI-054: Thinking level dialog state
   const [showThinkingLevelDialog, setShowThinkingLevelDialog] = useState(false);
+  // TUI-058: Default thinking level for new sessions
+  const [defaultThinkingLevel, setDefaultThinkingLevel] = useState<JsThinkingLevel | null>(null);
+
+  // TUI-058: Load default thinking level from config on mount
+  useEffect(() => {
+    const loadDefault = async () => {
+      const level = await loadDefaultThinkingLevel();
+      setDefaultThinkingLevel(level);
+    };
+    void loadDefault();
+  }, []);
 
   // TUI-056: Anchor viewer dialog state
   const [showAnchorViewer, setShowAnchorViewer] = useState(false);
@@ -4538,6 +4553,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     }
   }, [handleStreamChunk, currentProvider, providerSections, activateSession]);
 
+  // TUI-058: Helper to apply default thinking level to a new session
+  // Extracted to avoid duplication between handleCreateSessionConfirm and auto-create effect
+  const applyDefaultThinkingLevel = useCallback((sessionId: string) => {
+    if (defaultThinkingLevel !== null) {
+      getRustStateSource().setBaseThinkingLevel(sessionId, defaultThinkingLevel);
+      refreshRustState();
+    }
+  }, [defaultThinkingLevel, refreshRustState]);
+
   // VIEWNV-001: Handle create session dialog confirmation
   // Creates session immediately so /thinking and other commands work right away
   const handleCreateSessionConfirm = useCallback(async () => {
@@ -4582,6 +4606,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // Activate the session in the store
       activateSession(result.sessionId);
 
+      // TUI-058: Apply default thinking level to new session
+      applyDefaultThinkingLevel(result.sessionId);
+
       // SESS-001: Only auto-attach session to work unit when creating from board context
       // If we were in a session, we're creating via navigation (Shift+Right) and shouldn't auto-attach
       if (workUnitId && !wasInSession) {
@@ -4607,7 +4634,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setInputValue('');
       closeCreateSessionDialog();
     }
-  }, [currentSessionId, currentModel, modelsInitialized, activateSession, closeCreateSessionDialog, prepareForNewSession, workUnitId, attachSessionToWorkUnit]);
+  }, [currentSessionId, currentModel, modelsInitialized, activateSession, closeCreateSessionDialog, prepareForNewSession, workUnitId, attachSessionToWorkUnit, applyDefaultThinkingLevel]);
 
   // VIEWNV-001: Unified session navigation hook for Shift+Arrow navigation
   // This provides the navigation logic that determines targets based on the session tree
@@ -4729,6 +4756,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         });
 
         activateSession(result.sessionId);
+
+        // TUI-058: Apply default thinking level to new session
+        applyDefaultThinkingLevel(result.sessionId);
         
         // SESS-001: Auto-attach session to work unit when auto-creating
         if (workUnitId) {
@@ -4745,7 +4775,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     };
 
     void autoCreateSession();
-  }, [shouldAutoCreateSession, currentSessionId, currentModel, modelsInitialized, activateSession, clearAutoCreateRequest, workUnitId, attachSessionToWorkUnit, getAttachedSession]);
+  }, [shouldAutoCreateSession, currentSessionId, currentModel, modelsInitialized, activateSession, clearAutoCreateRequest, workUnitId, attachSessionToWorkUnit, getAttachedSession, applyDefaultThinkingLevel]);
 
   // NAPI-003 + TUI-047: Enter resume mode (show session selection overlay)
   // Now queries both persistence and background sessions, merging results
@@ -7555,12 +7585,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       {showThinkingLevelDialog && currentSessionId && (
         <ThinkingLevelDialog
           currentLevel={rustSnapshot.baseThinkingLevel as JsThinkingLevel}
+          defaultLevel={defaultThinkingLevel}
           onSelect={(level) => {
             // Update base thinking level in Rust
             getRustStateSource().setBaseThinkingLevel(currentSessionId, level);
             // Refresh snapshot to pick up the change
             refreshRustState();
             setShowThinkingLevelDialog(false);
+          }}
+          onSetDefault={async (level) => {
+            // TUI-058: Save default thinking level to config
+            await saveDefaultThinkingLevel(level);
+            // Update local state so indicator moves immediately
+            setDefaultThinkingLevel(level);
           }}
           onClose={() => setShowThinkingLevelDialog(false)}
         />

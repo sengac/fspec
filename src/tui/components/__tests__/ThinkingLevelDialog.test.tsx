@@ -75,7 +75,9 @@ describe('Feature: ThinkingLevelDialog for /thinking command', () => {
         <Box width={60} height={15}>
           <ThinkingLevelDialog
             currentLevel={currentLevel}
+            defaultLevel={null}
             onSelect={onSelect}
+            onSetDefault={() => {}}
             onClose={onClose}
           />
         </Box>
@@ -110,7 +112,9 @@ describe('Feature: ThinkingLevelDialog for /thinking command', () => {
       const { stdin, lastFrame, unmount } = render(
         <ThinkingLevelDialog
           currentLevel={JsThinkingLevel.Off}
+          defaultLevel={null}
           onSelect={onSelect}
+          onSetDefault={() => {}}
           onClose={onClose}
         />
       );
@@ -148,7 +152,9 @@ describe('Feature: ThinkingLevelDialog for /thinking command', () => {
       const { stdin, lastFrame, unmount } = render(
         <ThinkingLevelDialog
           currentLevel={JsThinkingLevel.Off}
+          defaultLevel={null}
           onSelect={onSelect}
+          onSetDefault={() => {}}
           onClose={onClose}
         />
       );
@@ -177,7 +183,9 @@ describe('Feature: ThinkingLevelDialog for /thinking command', () => {
       const { stdin, unmount } = render(
         <ThinkingLevelDialog
           currentLevel={JsThinkingLevel.Medium}
+          defaultLevel={null}
           onSelect={onSelect}
+          onSetDefault={() => {}}
           onClose={onClose}
         />
       );
@@ -256,7 +264,9 @@ describe('Feature: ThinkingLevelDialog for /thinking command', () => {
       const { lastFrame, unmount } = render(
         <ThinkingLevelDialog
           currentLevel={JsThinkingLevel.Off}
+          defaultLevel={null}
           onSelect={onSelect}
+          onSetDefault={() => {}}
           onClose={onClose}
         />
       );
@@ -280,7 +290,9 @@ describe('Feature: ThinkingLevelDialog for /thinking command', () => {
       const { lastFrame, unmount } = render(
         <ThinkingLevelDialog
           currentLevel={JsThinkingLevel.Off}
+          defaultLevel={null}
           onSelect={onSelect}
+          onSetDefault={() => {}}
           onClose={onClose}
         />
       );
@@ -326,7 +338,9 @@ describe('Feature: ThinkingLevelDialog for /thinking command', () => {
       const { stdin, unmount } = render(
         <ThinkingLevelDialog
           currentLevel={JsThinkingLevel.Off}
+          defaultLevel={null}
           onSelect={onSelect}
+          onSetDefault={() => {}}
           onClose={vi.fn()}
         />
       );
@@ -357,7 +371,9 @@ describe('Feature: ThinkingLevelDialog for /thinking command', () => {
       const { lastFrame, unmount } = render(
         <ThinkingLevelDialog
           currentLevel={currentLevel}
+          defaultLevel={null}
           onSelect={vi.fn()}
+          onSetDefault={() => {}}
           onClose={vi.fn()}
         />
       );

@@ -51,15 +51,21 @@ const THINKING_LEVELS: ThinkingLevelOption[] = [
 export interface ThinkingLevelDialogProps {
   /** Current base thinking level (used as initial selection) */
   currentLevel: JsThinkingLevel;
+  /** Default thinking level for new sessions (null if not set) */
+  defaultLevel: JsThinkingLevel | null;
   /** Called when user selects a level (Enter key) */
   onSelect: (level: JsThinkingLevel) => void;
+  /** Called when user sets a default level (D key) */
+  onSetDefault: (level: JsThinkingLevel) => void;
   /** Called when user cancels (Escape key) */
   onClose: () => void;
 }
 
 export const ThinkingLevelDialog: React.FC<ThinkingLevelDialogProps> = ({
   currentLevel,
+  defaultLevel,
   onSelect,
+  onSetDefault,
   onClose,
 }) => {
   // Initialize selection to current level
@@ -71,7 +77,7 @@ export const ThinkingLevelDialog: React.FC<ThinkingLevelDialogProps> = ({
     id: 'thinking-level-dialog',
     priority: InputPriority.CRITICAL,
     description: 'Thinking level selection dialog',
-    handler: (_input, key) => {
+    handler: (input, key) => {
       if (key.escape) {
         onClose();
         return true; // Consumed
@@ -83,15 +89,23 @@ export const ThinkingLevelDialog: React.FC<ThinkingLevelDialogProps> = ({
         return true; // Consumed
       }
 
+      // Handle D key - set current selection as default
+      if (input.toLowerCase() === 'd') {
+        onSetDefault(selectedIndex as JsThinkingLevel);
+        return true; // Consumed (dialog stays open)
+      }
+
       if (key.upArrow) {
-        // Wrap around: Off (0) -> High (3)
-        setSelectedIndex(prev => (prev === 0 ? 3 : prev - 1));
+        // Wrap around: Off (0) -> High (last)
+        const lastIndex = THINKING_LEVELS.length - 1;
+        setSelectedIndex(prev => (prev === 0 ? lastIndex : prev - 1));
         return true; // Consumed
       }
 
       if (key.downArrow) {
-        // Wrap around: High (3) -> Off (0)
-        setSelectedIndex(prev => (prev === 3 ? 0 : prev + 1));
+        // Wrap around: High (last) -> Off (0)
+        const lastIndex = THINKING_LEVELS.length - 1;
+        setSelectedIndex(prev => (prev === lastIndex ? 0 : prev + 1));
         return true; // Consumed
       }
 
@@ -112,6 +126,7 @@ export const ThinkingLevelDialog: React.FC<ThinkingLevelDialogProps> = ({
         <Box flexDirection="column">
           {THINKING_LEVELS.map((option, index) => {
             const isSelected = index === selectedIndex;
+            const isDefault = defaultLevel !== null && index === defaultLevel;
 
             return (
               <Box key={option.level}>
@@ -125,6 +140,7 @@ export const ThinkingLevelDialog: React.FC<ThinkingLevelDialogProps> = ({
                 <Text dimColor={!isSelected}>
                   {' - '}
                   {option.description}
+                  {isDefault ? ' (default)' : ''}
                 </Text>
               </Box>
             );
@@ -132,7 +148,7 @@ export const ThinkingLevelDialog: React.FC<ThinkingLevelDialogProps> = ({
         </Box>
 
         <Box marginTop={1} justifyContent="center">
-          <Text dimColor>↑↓ Navigate │ Enter Select │ Esc Close</Text>
+          <Text dimColor>↑↓ Navigate │ Enter Select │ D Set Default │ Esc Close</Text>
         </Box>
       </Box>
     </Dialog>
