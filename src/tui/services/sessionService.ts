@@ -15,6 +15,7 @@ import {
   sessionManagerList,
   sessionRestoreMessages,
   sessionRestoreTokenState,
+  sessionRestoreAnchorPoints,
   sessionAttach,
   persistenceCreateSessionWithProvider,
   persistenceLoadSession,
@@ -235,6 +236,23 @@ export async function restoreSession(
   // Restore messages from persistence
   const envelopes: string[] = persistenceGetSessionMessageEnvelopes(sessionId);
   await sessionRestoreMessages(sessionId, envelopes);
+
+  // TUI-056: Restore anchor points from persistence
+  // This ensures /anchors shows correct history after session resume
+  try {
+    const restoredAnchors = sessionRestoreAnchorPoints(sessionId);
+    if (restoredAnchors > 0) {
+      logger.debug(
+        `[SessionService] Restored ${restoredAnchors} anchor points for session ${sessionId}`
+      );
+    }
+  } catch (err) {
+    // Don't fail session restore if anchor restore fails - it's not critical
+    logger.warn(
+      `[SessionService] Failed to restore anchor points for ${sessionId}:`,
+      err
+    );
+  }
 
   // Restore token state if available
   if (sessionManifest?.tokenUsage) {

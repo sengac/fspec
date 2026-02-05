@@ -142,6 +142,39 @@ impl ProviderManager {
         })
     }
 
+    /// Create ProviderManager with explicit provider and model selection
+    ///
+    /// This is used for internal operations (like compaction) where we need to
+    /// recreate a provider manager with the same settings without async model registry.
+    /// The model_id is stored directly without registry validation.
+    pub fn with_provider_and_model(
+        provider_name: &str,
+        model_id: Option<&str>,
+    ) -> Result<Self, ProviderError> {
+        let credentials = ProviderCredentials::detect();
+        let requested_provider = ProviderType::from_str(provider_name)?;
+
+        // Validate requested provider has credentials
+        if !requested_provider.has_credentials(&credentials) {
+            let available = credentials.available_providers();
+            return Err(ProviderError::auth(
+                provider_name,
+                format!(
+                    "Provider {} not available. Available providers: {}",
+                    provider_name,
+                    available.join(", ")
+                ),
+            ));
+        }
+
+        Ok(Self {
+            credentials,
+            current_provider: requested_provider,
+            model_registry: None,
+            selected_model: model_id.map(String::from),
+        })
+    }
+
     /// MODEL-001: Create ProviderManager with model registry support
     ///
     /// This async constructor initializes the model cache and registry,
@@ -219,19 +252,25 @@ impl ProviderManager {
 
     /// Get the selected model ID (the actual API model ID)
     ///
-    /// Returns the model ID to use for API calls. Looks up the model in the registry
-    /// to get the actual API model ID.
+    /// Returns the model ID to use for API calls. If a model registry is available,
+    /// looks up the model to get the actual API model ID. Otherwise, returns the
+    /// stored model string directly (for cases like compaction where the model ID
+    /// is passed directly without registry lookup).
     pub fn selected_model_id(&self) -> Option<String> {
         let model_string = self.selected_model.as_ref()?;
-        let registry = self.model_registry.as_ref()?;
 
-        if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
-            if let Ok(model_info) = registry.get_model(&provider_id, &model_id) {
-                return Some(model_info.id.clone());
+        // If we have a registry, try to look up the model
+        if let Some(registry) = self.model_registry.as_ref() {
+            if let Ok((provider_id, model_id)) = registry.parse_model_string(model_string) {
+                if let Ok(model_info) = registry.get_model(&provider_id, &model_id) {
+                    return Some(model_info.id.clone());
+                }
             }
         }
 
-        None
+        // No registry or lookup failed - return the stored string directly
+        // This handles cases where the model ID is stored directly (e.g., with_provider_and_model)
+        Some(model_string.clone())
     }
 
     /// MODEL-001: Get model info for the selected model

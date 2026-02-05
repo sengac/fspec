@@ -5,6 +5,7 @@
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use std::time::SystemTime;
+use tracing::warn;
 
 use super::model::ConversationTurn;
 
@@ -22,6 +23,59 @@ struct LlmAnchorResponse {
 
 // Constants for timeout and JSON parsing
 const LLM_TIMEOUT_SECS: u64 = 15;
+
+/// Extract JSON content from an LLM response
+/// 
+/// LLMs often wrap JSON in markdown code blocks like:
+/// ```json
+/// [...]
+/// ```
+/// 
+/// This function extracts the actual JSON content.
+fn extract_json_from_response(response: &str) -> &str {
+    let trimmed = response.trim();
+    
+    // Check for markdown JSON code block
+    if trimmed.starts_with("```json") {
+        // Find the end of the opening line
+        if let Some(start) = trimmed.find('\n') {
+            let after_open = &trimmed[start + 1..];
+            // Find the closing ```
+            if let Some(end) = after_open.rfind("```") {
+                return after_open[..end].trim();
+            }
+        }
+    }
+    
+    // Check for generic code block
+    if trimmed.starts_with("```") {
+        if let Some(start) = trimmed.find('\n') {
+            let after_open = &trimmed[start + 1..];
+            if let Some(end) = after_open.rfind("```") {
+                return after_open[..end].trim();
+            }
+        }
+    }
+    
+    // Try to find JSON array or object boundaries
+    if let Some(start) = trimmed.find('[') {
+        if let Some(end) = trimmed.rfind(']') {
+            if end > start {
+                return &trimmed[start..=end];
+            }
+        }
+    }
+    if let Some(start) = trimmed.find('{') {
+        if let Some(end) = trimmed.rfind('}') {
+            if end > start {
+                return &trimmed[start..=end];
+            }
+        }
+    }
+    
+    // Return original if no extraction possible
+    trimmed
+}
 
 // ==========================================
 // ANCHOR POINTS
@@ -183,15 +237,27 @@ impl AnchorDetector {
                 // Parse batch LLM response for anchor detection
                 self.parse_batch_llm_anchor_response(&response, turns)
             }
-            Ok(Err(_)) | Err(_) => {
-                // LLM analysis failed or timed out - create synthetic anchor as fallback
-                // PERF-002: For batch failure, create one synthetic anchor at the last turn
+            Ok(Err(e)) => {
+                // LLM analysis failed - log the actual error
+                warn!("LLM anchor detection failed: {}", e);
                 let last_idx = turns.len() - 1;
                 let last_turn = &turns[last_idx];
                 Ok(vec![AnchorPoint::synthetic_checkpoint(
                     last_idx, 
                     last_turn, 
-                    "batch LLM analysis failed/timeout"
+                    &format!("LLM analysis failed: {}", e)
+                )])
+            }
+            Err(_) => {
+                // Timeout - create synthetic anchor as fallback
+                warn!("LLM anchor detection timed out after {} seconds", 
+                    LLM_TIMEOUT_SECS + (turns.len() as u64 * 2));
+                let last_idx = turns.len() - 1;
+                let last_turn = &turns[last_idx];
+                Ok(vec![AnchorPoint::synthetic_checkpoint(
+                    last_idx, 
+                    last_turn, 
+                    "LLM analysis timed out"
                 )])
             }
         }
@@ -239,10 +305,19 @@ If no meaningful anchor: {{"anchor_type": null, "confidence": 0.0, "description"
         turn_index: usize, 
         turn: &ConversationTurn
     ) -> Result<Option<AnchorPoint>> {
+        // Extract JSON from LLM response (handles markdown code blocks)
+        let json_content = extract_json_from_response(response);
+        
         // Use serde for secure JSON parsing instead of manual string matching
-        let parsed_response: LlmAnchorResponse = match serde_json::from_str(response) {
+        let parsed_response: LlmAnchorResponse = match serde_json::from_str(json_content) {
             Ok(response) => response,
-            Err(_) => {
+            Err(e) => {
+                // Log the JSON parsing error with details for debugging
+                warn!(
+                    "Failed to parse LLM anchor response as JSON: {}. Response preview: {}",
+                    e,
+                    &response.chars().take(200).collect::<String>()
+                );
                 // If JSON parsing fails, treat as no anchor detected
                 return Ok(None);
             }
@@ -348,10 +423,19 @@ Return one entry per turn analyzed. Use null for anchor_type when no meaningful 
             description: String,
         }
 
-        let parsed_responses: Vec<BatchLlmAnchorResponse> = match serde_json::from_str(response) {
+        // Extract JSON from LLM response (handles markdown code blocks)
+        let json_content = extract_json_from_response(response);
+        
+        let parsed_responses: Vec<BatchLlmAnchorResponse> = match serde_json::from_str(json_content) {
             Ok(responses) => responses,
-            Err(_) => {
-                // If JSON parsing fails, return empty vec (no anchors detected)
+            Err(e) => {
+                // Log the JSON parsing error with details for debugging
+                warn!(
+                    "Failed to parse LLM anchor response as JSON: {}. Response preview: {}",
+                    e,
+                    &response.chars().take(200).collect::<String>()
+                );
+                // Return empty vec (no anchors detected)
                 return Ok(Vec::new());
             }
         };

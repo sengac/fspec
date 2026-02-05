@@ -1184,6 +1184,15 @@ export declare function sessionPauseConfirm(
 export declare function sessionPauseResume(sessionId: string): void;
 
 /**
+ * TUI-056: Restore anchor points to a background session from persisted manifest.
+ *
+ * This is used when attaching to a session via /resume - it loads anchor points
+ * from the session manifest on disk into the BackgroundSession's memory so that
+ * /anchors command shows the correct anchor history.
+ */
+export declare function sessionRestoreAnchorPoints(sessionId: string): number;
+
+/**
  * Restore messages to a background session from persisted envelopes.
  *
  * This is used when attaching to a session via /resume - it restores the

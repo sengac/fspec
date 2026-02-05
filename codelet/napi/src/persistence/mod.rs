@@ -685,6 +685,32 @@ pub fn clear_compaction_state(session: &mut SessionManifest) -> Result<(), Strin
     Ok(())
 }
 
+/// Add an anchor point to a session (TUI-056 fix)
+/// 
+/// Anchor points are detected during compaction and need to be persisted
+/// so they survive session resume.
+pub fn add_anchor_point(
+    session: &mut SessionManifest,
+    anchor: PersistedAnchorPoint,
+) -> Result<(), String> {
+    session.anchor_points.push(anchor);
+    session.updated_at = chrono::Utc::now();
+
+    init_stores()?;
+    let mut store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
+    store
+        .as_mut()
+        .ok_or("Session store not initialized")?
+        .save(session)?;
+
+    Ok(())
+}
+
+/// Get anchor points for a session
+pub fn get_anchor_points(session: &SessionManifest) -> Vec<PersistedAnchorPoint> {
+    session.anchor_points.clone()
+}
+
 /// Get session lineage information
 pub fn get_session_lineage(session: &SessionManifest) -> SessionLineage {
     SessionLineage {

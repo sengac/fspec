@@ -124,6 +124,27 @@ pub struct CompactionState {
     pub compacted_at: DateTime<Utc>,
 }
 
+/// Persisted anchor point from compaction
+/// 
+/// Anchor points are detected during compaction to identify important
+/// conversation milestones. They are persisted so /anchors works after
+/// session resume.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PersistedAnchorPoint {
+    /// Turn index where anchor was detected
+    pub turn_index: usize,
+    /// Type of anchor: ErrorResolution, TaskCompletion, UserCheckpoint, FeatureMilestone
+    pub anchor_type: String,
+    /// Anchor weight (0.0-1.0)
+    pub weight: f64,
+    /// Detection confidence (0.0-1.0)
+    pub confidence: f64,
+    /// Human-readable description
+    pub description: String,
+    /// Timestamp in milliseconds since epoch (serialization-friendly)
+    pub timestamp_ms: i64,
+}
+
 /// A session manifest - ordered list of message references
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SessionManifest {
@@ -152,6 +173,10 @@ pub struct SessionManifest {
     /// Token usage statistics
     #[serde(default)]
     pub token_usage: TokenUsage,
+    /// Anchor points detected during compaction (TUI-056 fix)
+    /// Uses #[serde(default)] for backward compatibility with old manifests
+    #[serde(default)]
+    pub anchor_points: Vec<PersistedAnchorPoint>,
 }
 
 impl SessionManifest {
@@ -170,6 +195,7 @@ impl SessionManifest {
             merged_from: Vec::new(),
             compaction: None,
             token_usage: TokenUsage::default(),
+            anchor_points: Vec::new(),
         }
     }
 

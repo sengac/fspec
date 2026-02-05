@@ -3753,6 +3753,50 @@ fn persist_compaction_state(
     Ok(())
 }
 
+/// TUI-056: Persist an anchor point to the session manifest
+/// 
+/// This ensures anchor points survive session resume - they're stored on disk,
+/// not just in the BackgroundSession's memory.
+fn persist_anchor_point(
+    session_id: &uuid::Uuid,
+    anchor: &codelet_core::compaction::AnchorPoint,
+) -> std::result::Result<(), String> {
+    use crate::persistence::{add_anchor_point, PersistedAnchorPoint};
+    
+    // Load the session manifest
+    let mut session_manifest = load_session(*session_id)?;
+    
+    // Convert internal anchor type to persisted format
+    let anchor_type = match anchor.anchor_type {
+        codelet_core::compaction::AnchorType::ErrorResolution => "ErrorResolution",
+        codelet_core::compaction::AnchorType::TaskCompletion => "TaskCompletion",
+        codelet_core::compaction::AnchorType::UserCheckpoint => "UserCheckpoint",
+        codelet_core::compaction::AnchorType::FeatureMilestone => "FeatureMilestone",
+    };
+    
+    // Convert SystemTime to milliseconds for serialization
+    let timestamp_ms = anchor.timestamp
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_millis() as i64;
+    
+    let persisted_anchor = PersistedAnchorPoint {
+        turn_index: anchor.turn_index,
+        anchor_type: anchor_type.to_string(),
+        weight: anchor.weight,
+        confidence: anchor.confidence,
+        description: anchor.description.clone(),
+        timestamp_ms,
+    };
+    
+    // Add anchor point to manifest (this saves the manifest)
+    add_anchor_point(&mut session_manifest, persisted_anchor)?;
+    
+    tracing::warn!("TUI-056: Persisted anchor point to session {} (turn_index={}, type={})", 
+        session_id, anchor.turn_index, anchor_type);
+    Ok(())
+}
+
 /// Macro to reduce duplication in provider handling.
 /// Each provider returns a different concrete type, so we must match and call
 /// run_agent_stream in each branch. This macro eliminates the boilerplate.
@@ -4696,6 +4740,12 @@ pub fn session_get_anchor_points(session_id: String) -> Result<Vec<NapiAnchorPoi
     let session = SessionManager::instance().get_session(&session_id)?;
     let anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
     
+    tracing::warn!(
+        "TUI-056: /anchors called for session {} - found {} anchors in memory",
+        session_id,
+        anchor_points.len()
+    );
+    
     // Convert internal anchor points to NAPI types
     let napi_anchors: Vec<NapiAnchorPoint> = anchor_points.iter().map(|anchor| {
         let napi_type = match anchor.anchor_type {
@@ -5272,6 +5322,64 @@ pub async fn session_restore_token_state(
     Ok(())
 }
 
+/// TUI-056: Restore anchor points to a background session from persisted manifest.
+///
+/// This is used when attaching to a session via /resume - it loads anchor points
+/// from the session manifest on disk into the BackgroundSession's memory so that
+/// /anchors command shows the correct anchor history.
+#[napi]
+pub fn session_restore_anchor_points(session_id: String) -> Result<u32> {
+    let uuid = uuid::Uuid::parse_str(&session_id)
+        .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+    
+    // Load anchor points from the persisted session manifest
+    let session_manifest = load_session(uuid)
+        .map_err(|e| Error::from_reason(format!("Failed to load session manifest: {}", e)))?;
+    
+    // Get the BackgroundSession
+    let session = SessionManager::instance().get_session(&session_id)?;
+    
+    // Convert persisted anchors to internal format and store in BackgroundSession
+    let mut anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
+    
+    // Only restore if the memory anchors are empty (fresh session creation)
+    // Don't clear existing anchors if session was already active
+    if anchor_points.is_empty() {
+        let restored_count = session_manifest.anchor_points.len();
+        
+        for persisted in session_manifest.anchor_points {
+            let anchor_type = match persisted.anchor_type.as_str() {
+                "ErrorResolution" => codelet_core::compaction::AnchorType::ErrorResolution,
+                "TaskCompletion" => codelet_core::compaction::AnchorType::TaskCompletion,
+                "UserCheckpoint" => codelet_core::compaction::AnchorType::UserCheckpoint,
+                "FeatureMilestone" => codelet_core::compaction::AnchorType::FeatureMilestone,
+                _ => codelet_core::compaction::AnchorType::UserCheckpoint, // Default fallback
+            };
+            
+            // Convert milliseconds back to SystemTime
+            let timestamp = std::time::UNIX_EPOCH + std::time::Duration::from_millis(persisted.timestamp_ms as u64);
+            
+            anchor_points.push(codelet_core::compaction::AnchorPoint {
+                turn_index: persisted.turn_index,
+                anchor_type,
+                weight: persisted.weight,
+                confidence: persisted.confidence,
+                description: persisted.description,
+                timestamp,
+            });
+        }
+        
+        tracing::warn!("TUI-056: Restored {} anchor points for session {}", restored_count, session_id);
+        Ok(restored_count as u32)
+    } else {
+        // Anchors already present in memory - skip restore
+        let existing_count = anchor_points.len();
+        tracing::warn!("TUI-056: Skipping anchor restore - {} anchors already in memory for session {}", 
+            existing_count, session_id);
+        Ok(existing_count as u32)
+    }
+}
+
 /// Toggle debug capture mode without requiring a session.
 ///
 /// Can be called before a session exists. Session metadata will not be set.
@@ -5402,9 +5510,14 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
     session.update_compaction_progress("Generating summary".to_string(), total_messages, total_messages);
 
     // Execute compaction
+    tracing::warn!("TUI-056: About to call execute_compaction for session {}", session_id);
     let (metrics, anchor) = match execute_compaction(&mut inner).await {
-        Ok(result) => result,
+        Ok(result) => {
+            tracing::warn!("TUI-056: execute_compaction returned Ok, anchor={:?}", result.1.as_ref().map(|a| (&a.anchor_type, a.confidence)));
+            result
+        },
         Err(e) => {
+            tracing::warn!("TUI-056: execute_compaction returned Err: {}", e);
             // PERF-002: Clear progress and reset status on error
             session.set_compaction_progress(None);
             session.set_status(SessionStatus::Idle);
@@ -5427,6 +5540,8 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
             return Err(Error::from_reason(format!("Compaction failed: {e}")));
         }
     };
+
+    tracing::warn!("TUI-056: Post-compaction processing started for session {}", session_id);
 
     // PERF-002: Clear progress and reset status after successful completion
     session.set_compaction_progress(None);
@@ -5453,9 +5568,27 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
     }
 
     // TUI-056: Store anchor point if one was created during compaction
-    if let Some(anchor_point) = anchor {
+    if let Some(ref anchor_point) = anchor {
+        tracing::warn!(
+            "TUI-056: Compaction produced anchor (turn_index={}, type={:?}, confidence={})",
+            anchor_point.turn_index,
+            anchor_point.anchor_type,
+            anchor_point.confidence
+        );
+        
+        // Store in memory for immediate use
         let mut anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
-        anchor_points.push(anchor_point);
+        anchor_points.push(anchor_point.clone());
+        tracing::warn!("TUI-056: Session {} now has {} anchor points in memory", 
+            session_id, anchor_points.len());
+        
+        // Persist to disk so it survives session resume
+        if let Err(e) = persist_anchor_point(&session.id, anchor_point) {
+            tracing::warn!("TUI-056: Failed to persist anchor point: {}", e);
+            // Don't fail compaction if anchor persistence fails - it's not critical
+        }
+    } else {
+        tracing::warn!("TUI-056: Compaction completed but no anchor point was created - this should not happen");
     }
 
     // REFAC-007 Rule [32]: Persist compaction state to session manifest
@@ -5479,8 +5612,11 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
         String::new()
     };
     
-    // Calculate compaction boundary index (number of kept turns * 2 for user+assistant pairs)
-    let compaction_boundary_index = metrics.turns_kept * 2;
+    // Calculate compaction boundary index (number of summarized turns * 2 for user+assistant pairs)
+    // This is the index of the first KEPT message in the original message array.
+    // The boundary tells persistence how many messages to SKIP (the summarized ones).
+    // FIX: Was incorrectly using turns_kept, which caused loading too many messages on resume.
+    let compaction_boundary_index = metrics.turns_summarized * 2;
     
     // REFAC-007 Rule [34]: If persistence fails, the operation MUST fail
     if !compaction_summary.is_empty() {

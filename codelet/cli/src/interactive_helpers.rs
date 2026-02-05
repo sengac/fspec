@@ -177,13 +177,22 @@ pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetr
     
     // Step 2: Create LLM prompt function that uses the provider
     let provider_manager = session.provider_manager();
-    let provider_name = provider_manager.current_provider_name();
+    let provider_name = provider_manager.current_provider_name().to_string();
+    let model_id = provider_manager.selected_model_id();
 
     // Create a closure that prompts the LLM
     // PROV-006: Pass None for preamble - compaction uses separate summarization prompt
-    let llm_prompt = |prompt: String| async move {
-        let manager = codelet_providers::ProviderManager::with_provider(provider_name)?;
-        prompt_provider(&manager, &prompt).await
+    // MODEL-001: Pass model_id to ensure the provider is created with the correct model
+    let llm_prompt = move |prompt: String| {
+        let provider_name = provider_name.clone();
+        let model_id = model_id.clone();
+        async move {
+            let manager = codelet_providers::ProviderManager::with_provider_and_model(
+                &provider_name,
+                model_id.as_deref(),
+            )?;
+            prompt_provider(&manager, &prompt).await
+        }
     };
 
     // Step 3: Calculate summarization budget

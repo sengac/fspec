@@ -117,10 +117,13 @@ impl ContextCompactor {
 
         // Step 1: Detect anchor points using batch LLM analysis
         let detector = AnchorDetector::new(self.confidence_threshold);
+        warn!("TUI-056: Starting anchor detection for {} turns", turns.len());
         let anchors = detector.detect_batch(turns, &llm_prompt).await?;
+        warn!("TUI-056: Anchor detection returned {} anchors", anchors.len());
 
         // Step 1b: Create synthetic anchor if no natural anchors found
         let anchors = if anchors.is_empty() && !turns.is_empty() {
+            warn!("TUI-056: No natural anchors found, creating synthetic anchor");
             let last_idx = turns.len() - 1;
             let last_turn = &turns[last_idx];
             vec![AnchorPoint::synthetic_checkpoint(
@@ -131,6 +134,7 @@ impl ContextCompactor {
         } else {
             anchors
         };
+        warn!("TUI-056: Final anchor count: {}", anchors.len());
 
         // Step 2: Select turns using turn selector
         let selector = TurnSelector::new();
@@ -193,6 +197,9 @@ impl ContextCompactor {
             .preserved_anchor
             .or_else(|| anchors.last().cloned());
 
+        warn!("TUI-056: Compaction complete - result_anchor={:?}", 
+            result_anchor.as_ref().map(|a| (&a.anchor_type, a.confidence, a.turn_index)));
+
         Ok(CompactionResult {
             kept_turns,
             warnings,
@@ -234,10 +241,10 @@ impl ContextCompactor {
                 }
                 Err(e) => {
                     warn!(
-                        attempt = attempt + 1,
-                        max_attempts = RETRY_DELAYS_MS.len(),
-                        error = %e,
-                        "LLM summary generation failed, will retry"
+                        "LLM summary generation failed (attempt {}/{}): {}",
+                        attempt + 1,
+                        RETRY_DELAYS_MS.len(),
+                        e
                     );
                     last_error = Some(e);
                 }
@@ -247,8 +254,8 @@ impl ContextCompactor {
         // All retries failed - use fallback summary
         if let Some(e) = last_error {
             warn!(
-                error = %e,
-                "All LLM summary retries failed, using fallback summary"
+                "All LLM summary retries failed, using fallback summary: {}",
+                e
             );
         }
 
