@@ -139,15 +139,6 @@ Feature: Session attachment for work units with TUI resume integration
     Then "session-B" should replace "session-A" as the attachment for "AUTH-001"
     And "session-B" messages should be restored
 
-  @space-esc
-  Scenario: Space+ESC returns to board while keeping session attached
-    Given I am in the agent view for work unit "AUTH-001"
-    And "AUTH-001" has an attached session
-    When I press Space+ESC
-    Then I should return to the board view
-    And "AUTH-001" should still show the 🟢 indicator
-    And the session should continue running in the background
-
   @persistence
   Scenario: Session attachments are cleared when app closes
     Given work unit "AUTH-001" has an attached session

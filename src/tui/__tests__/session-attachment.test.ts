@@ -179,31 +179,6 @@ describe('Feature: Session attachment for work units with TUI resume integration
     });
   });
 
-  describe('Scenario: Space+ESC returns to board while keeping session attached', () => {
-    it('should keep session attached when pressing Space+ESC', () => {
-      // @step Given I am in the agent view for work unit "AUTH-001"
-      const store = useFspecStore.getState();
-      store.workUnits = [
-        { id: 'AUTH-001', title: 'Test', status: 'specifying', type: 'story' },
-      ];
-      store.setCurrentWorkUnitId?.('AUTH-001');
-
-      // @step And "AUTH-001" has an attached session
-      store.attachSession?.('AUTH-001', 'session-123');
-
-      // @step When I press Space+ESC
-      // Space+ESC returns to board but does NOT call detachSession
-      store.setCurrentWorkUnitId?.(null); // Clear current work unit (return to board)
-
-      // @step Then I should return to the board view
-      expect(store.getCurrentWorkUnitId?.()).toBeNull();
-
-      // @step And "AUTH-001" should still show the 🟢 indicator
-      // @step And the session should continue running in the background
-      expect(store.getAttachedSession?.('AUTH-001')).toBe('session-123');
-    });
-  });
-
   describe('Scenario: Session attachments are cleared when app closes', () => {
     it('should clear all session attachments when store is reset', () => {
       // @step Given work unit "AUTH-001" has an attached session

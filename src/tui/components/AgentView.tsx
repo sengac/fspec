@@ -1304,21 +1304,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog || showAnchorViewer,
   });
 
-  // TUI-048: Space+ESC detection for immediate detach
-  // Space is detected as a regular character, so we use a timeout to track if ESC comes shortly after Space
-  const spaceHeldRef = useRef<boolean>(false);
-  const spaceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const SPACE_TIMEOUT_MS = 1000; // Window to detect Space+ESC combo (1 second)
-
-  // Cleanup space timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (spaceTimeoutRef.current) {
-        clearTimeout(spaceTimeoutRef.current);
-      }
-    };
-  }, []);
-
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
   const [displayedTokPerSec, setDisplayedTokPerSec] = useState<number | null>(
     null
@@ -6268,44 +6253,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           sessionNavigation.handleShiftRight();
           return true;
         }
-      }
-
-      // TUI-048: Space+ESC for immediate detach (bypasses confirmation dialog)
-      // When Space is pressed, start a timeout window. If ESC is pressed within the window, detach.
-
-      // When Space is pressed, start the timeout window
-      if (input === ' ' && !key.escape) {
-        spaceHeldRef.current = true;
-        // Clear any existing timeout
-        if (spaceTimeoutRef.current) {
-          clearTimeout(spaceTimeoutRef.current);
-        }
-        // Set timeout to reset spaceHeldRef after the window expires
-        spaceTimeoutRef.current = setTimeout(() => {
-          spaceHeldRef.current = false;
-          spaceTimeoutRef.current = null;
-        }, SPACE_TIMEOUT_MS);
-        // Don't return - let Space be processed normally (adds to input)
-      }
-
-      // Check for ESC while within the Space timeout window
-      if (key.escape && spaceHeldRef.current) {
-        // Clear the timeout and reset state
-        if (spaceTimeoutRef.current) {
-          clearTimeout(spaceTimeoutRef.current);
-          spaceTimeoutRef.current = null;
-        }
-        spaceHeldRef.current = false;
-        if (currentSessionId) {
-          try {
-            sessionDetach(currentSessionId);
-          } catch (err) {
-            // Session detach failure could indicate backend issues, connection problems, etc.
-            logger.error('Failed to detach from session:', err);
-          }
-        }
-        onExit();
-        return true;
       }
 
       // TUI-045: Esc key handling with priority order:

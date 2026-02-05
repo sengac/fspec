@@ -562,7 +562,6 @@ Tags for test-related scenarios and requirements.
 | `@simple-command` | Simple command with minimal options |
 | `@single-message` | Single message edge case scenarios |
 | `@smoke` | Smoke tests - quick validation of critical functionality |
-| `@space-esc` | Scenarios testing Space+ESC key behavior |
 | `@test` | Test-related scenarios |
 | `@test-infrastructure` | Test infrastructure and framework code |
 | `@test-isolation` | Test isolation and concurrent execution |

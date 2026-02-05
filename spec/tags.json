@@ -2038,10 +2038,6 @@
           "description": "Smoke tests - quick validation of critical functionality"
         },
         {
-          "name": "@space-esc",
-          "description": "Scenarios testing Space+ESC key behavior"
-        },
-        {
           "name": "@test",
           "description": "Test-related scenarios"
         },
