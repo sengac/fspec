@@ -36,8 +36,17 @@ fn test_system_prompt_array_format_api_key_mode() {
     // @step And the first content block should have cache_control with type "ephemeral"
     assert_eq!(array[0]["cache_control"]["type"], "ephemeral");
 
-    // @step And the first content block text should be "You are a helpful coding assistant"
-    assert_eq!(array[0]["text"], preamble);
+    // @step And the first content block text should contain the preamble (with fspec guidance prepended)
+    let text = array[0]["text"].as_str().unwrap();
+    assert!(
+        text.contains(preamble),
+        "Text should contain the preamble"
+    );
+    // fspec guidance is prepended to all preambles
+    assert!(
+        text.contains("fspec"),
+        "Text should contain fspec workflow guidance"
+    );
 }
 
 /// Scenario: System prompt is sent with correct structure for OAuth mode
@@ -65,8 +74,17 @@ fn test_system_prompt_array_format_oauth_mode() {
     // @step And the second content block should have cache_control with type "ephemeral"
     assert_eq!(array[1]["cache_control"]["type"], "ephemeral");
 
-    // @step And the second content block text should be "Additional instructions here"
-    assert_eq!(array[1]["text"], preamble);
+    // @step And the second content block text should contain the preamble (with fspec guidance prepended)
+    let text = array[1]["text"].as_str().unwrap();
+    assert!(
+        text.contains(preamble),
+        "Text should contain the preamble"
+    );
+    // fspec guidance is prepended to all preambles
+    assert!(
+        text.contains("fspec"),
+        "Text should contain fspec workflow guidance"
+    );
 }
 
 /// Scenario: Additional params override plain string system field
@@ -174,8 +192,12 @@ fn test_transform_system_prompt_oauth_mode() {
     // @step And block 0 should be the OAuth prefix without cache_control
     assert!(array[0].get("cache_control").is_none());
 
-    // @step And block 1 should be the preamble with cache_control
-    assert_eq!(array[1]["text"], preamble);
+    // @step And block 1 should contain the preamble with cache_control (fspec guidance prepended)
+    let text = array[1]["text"].as_str().unwrap();
+    assert!(
+        text.contains(preamble),
+        "Text should contain the preamble"
+    );
     assert!(array[1].get("cache_control").is_some());
 }
 
@@ -219,9 +241,12 @@ fn test_empty_preamble_still_gets_cache_control() {
 fn test_oauth_mode_with_empty_preamble() {
     let result = transform_system_prompt("", true);
     let array = result.as_array().unwrap();
-    // PROV-006 FIX: When additional text is empty, only one block is created
-    // (Anthropic API rejects empty text blocks with cache_control)
-    assert_eq!(array.len(), 1);
+    // With fspec guidance injection: prefix + fspec guidance = 2 blocks
+    // Block 0: Claude Code prefix (no cache_control)
+    // Block 1: fspec workflow guidance (with cache_control)
+    assert_eq!(array.len(), 2);
+    assert!(array[0].get("cache_control").is_none(), "Prefix should not have cache_control");
+    assert!(array[1].get("cache_control").is_some(), "fspec guidance block should have cache_control");
 }
 
 #[test]

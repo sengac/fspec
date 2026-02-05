@@ -171,7 +171,10 @@ mod tests {
         let array = result.as_array().unwrap();
         assert_eq!(array.len(), 1);
         assert_eq!(array[0]["type"], "text");
-        assert_eq!(array[0]["text"], "You are helpful");
+        // fspec guidance is prepended to all preambles
+        let text = array[0]["text"].as_str().unwrap();
+        assert!(text.contains("You are helpful"), "Text should contain the preamble");
+        assert!(text.contains("fspec"), "fspec guidance should be prepended");
         assert_eq!(array[0]["cache_control"]["type"], "ephemeral");
     }
 
@@ -188,39 +191,45 @@ mod tests {
             .unwrap()
             .starts_with("You are Claude Code"));
         assert!(array[0].get("cache_control").is_none());
-        // Second block: additional text with cache_control
-        assert_eq!(array[1]["text"], "Additional text");
+        // Second block: additional text with fspec guidance prepended, with cache_control
+        let text = array[1]["text"].as_str().unwrap();
+        assert!(text.contains("Additional text"), "Text should contain the additional text");
+        assert!(text.contains("fspec"), "fspec guidance should be prepended");
         assert_eq!(array[1]["cache_control"]["type"], "ephemeral");
     }
 
     #[test]
     fn test_transform_system_oauth_mode_empty_additional_text() {
-        // PROV-006 FIX: When additional text is empty, don't create empty block
-        // Anthropic API rejects: "cache_control cannot be set for empty text blocks"
+        // With fspec guidance injection, empty additional text still produces 2 blocks:
+        // Block 0: Claude Code prefix (no cache_control)
+        // Block 1: fspec workflow guidance (with cache_control)
         let result = transform_system_prompt("", true);
         assert!(result.is_array());
         let array = result.as_array().unwrap();
-        // Should be single block with cache_control on prefix
-        assert_eq!(array.len(), 1);
+        assert_eq!(array.len(), 2);
         assert!(array[0]["text"]
             .as_str()
             .unwrap()
             .starts_with("You are Claude Code"));
-        assert_eq!(array[0]["cache_control"]["type"], "ephemeral");
+        assert!(array[0].get("cache_control").is_none());
+        assert!(array[1]["text"].as_str().unwrap().contains("fspec"));
+        assert_eq!(array[1]["cache_control"]["type"], "ephemeral");
     }
 
     #[test]
     fn test_transform_system_oauth_mode_whitespace_only_additional_text() {
-        // Whitespace-only additional text should also result in single block
+        // Whitespace-only additional text should also result in 2 blocks (prefix + fspec guidance)
         let result = transform_system_prompt("   ", true);
         assert!(result.is_array());
         let array = result.as_array().unwrap();
-        assert_eq!(array.len(), 1);
+        assert_eq!(array.len(), 2);
         assert!(array[0]["text"]
             .as_str()
             .unwrap()
             .starts_with("You are Claude Code"));
-        assert_eq!(array[0]["cache_control"]["type"], "ephemeral");
+        assert!(array[0].get("cache_control").is_none());
+        assert!(array[1]["text"].as_str().unwrap().contains("fspec"));
+        assert_eq!(array[1]["cache_control"]["type"], "ephemeral");
     }
 
     #[test]

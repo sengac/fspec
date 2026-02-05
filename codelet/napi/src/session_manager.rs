@@ -13,7 +13,7 @@ use crate::persistence::{
     load_session, append_message_with_metadata, update_session_tokens, set_compaction_state,
     MessageEnvelope, MessagePayload, UserMessage, UserContent, AssistantMessage, AssistantContent,
 };
-use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiTurnDetails};
+use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiTurnDetails, NapiToolCall, NapiFileModification};
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
@@ -4770,18 +4770,82 @@ pub fn session_get_anchor_points(session_id: String) -> Result<Vec<NapiAnchorPoi
     Ok(napi_anchors)
 }
 
-/// Get turn details for a session (TUI-056)
+/// Get turn details for a session (TUI-056, TUI-057)
 ///
 /// Returns detailed information about a specific conversation turn including
 /// user message, assistant response, tool calls, and file modifications.
+///
+/// The turn_index is 0-based and refers to the index in the session's turns vector.
 #[napi]
-pub fn session_get_turn_details(session_id: String, _turn_index: u32) -> Result<Option<NapiTurnDetails>> {
-    let _session = SessionManager::instance().get_session(&session_id)?;
+pub async fn session_get_turn_details(session_id: String, turn_index: u32) -> Result<Option<NapiTurnDetails>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let inner = session.inner.lock().await;
     
-    // Access session data to get turn details
-    // For now, return None since we need to implement the actual turn detail retrieval
-    // This would require storing conversation turns in BackgroundSession
-    Ok(None)
+    // Get the turns from the inner session
+    let turns = &inner.turns;
+    
+    // Find the turn at the given index
+    let turn_idx = turn_index as usize;
+    if turn_idx >= turns.len() {
+        return Ok(None);
+    }
+    
+    let turn = &turns[turn_idx];
+    
+    // Convert tool calls to NAPI format
+    let tool_calls: Vec<NapiToolCall> = turn.tool_calls.iter().map(|tc| {
+        NapiToolCall {
+            tool: tc.tool.clone(),
+            parameters: tc.parameters.to_string(),
+            success: turn.tool_results.iter().any(|tr| tr.success),
+        }
+    }).collect();
+    
+    // Extract file modifications from tool calls (Edit, Write operations)
+    let file_modifications: Vec<NapiFileModification> = turn.tool_calls.iter()
+        .filter_map(|tc| {
+            let file_path = tc.file_path()?;
+            let operation = match tc.tool.as_str() {
+                "Write" => "create",
+                "Edit" => "edit",
+                "Delete" | "Bash" => return None, // Bash may do many things, skip
+                _ => return None,
+            };
+            Some(NapiFileModification {
+                path: file_path,
+                operation: operation.to_string(),
+                summary: format!("{} operation", tc.tool),
+            })
+        })
+        .collect();
+    
+    // Determine overall status from tool results
+    let status = if turn.tool_results.iter().all(|tr| tr.success) {
+        "success"
+    } else if turn.tool_results.iter().any(|tr| tr.success) {
+        "partial"
+    } else if turn.tool_results.is_empty() {
+        "success" // No tools = success (just conversation)
+    } else {
+        "failed"
+    };
+    
+    // Build context summary
+    let context = if !turn.tool_calls.is_empty() {
+        format!("{} tool call(s)", turn.tool_calls.len())
+    } else {
+        "Conversation turn".to_string()
+    };
+    
+    Ok(Some(NapiTurnDetails {
+        turn_index,
+        user_message: turn.user_message.clone(),
+        assistant_response: turn.assistant_response.clone(),
+        tool_calls,
+        file_modifications,
+        status: status.to_string(),
+        context,
+    }))
 }
 
 #[napi]

@@ -2,6 +2,8 @@
 //
 // Tests for SystemPromptFacade trait and provider-specific implementations (TOOL-008).
 // Each test maps to a Gherkin scenario with @step comments.
+//
+// NOTE: All facades now prepend fspec workflow guidance to preambles.
 
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
@@ -56,7 +58,7 @@ fn test_claude_oauth_facade_prepends_identity_prefix_to_preamble() {
 }
 
 // ============================================================================
-// Scenario: Claude API key facade passes preamble through unchanged
+// Scenario: Claude API key facade passes preamble through with fspec guidance
 // ============================================================================
 
 #[test]
@@ -86,10 +88,14 @@ fn test_claude_api_key_facade_passes_preamble_through_unchanged() {
         "Text should NOT start with Claude Code prefix"
     );
 
-    // @step And the text should equal the original preamble exactly
-    assert_eq!(
-        text, preamble,
-        "Text should equal original preamble exactly"
+    // @step And the text should contain the original preamble (with fspec guidance prepended)
+    assert!(
+        text.contains(preamble),
+        "Text should contain original preamble"
+    );
+    assert!(
+        text.contains("fspec"),
+        "Text should contain fspec workflow guidance"
     );
 }
 
@@ -111,11 +117,15 @@ fn test_gemini_facade_formats_preamble_as_plain_string() {
     // @step Then the result should be a plain string
     assert!(result.is_string(), "Result should be a plain string");
 
-    // @step And the result should start with the preamble
+    // @step And the result should contain the preamble (with fspec guidance prepended)
     let text = result.as_str().unwrap();
     assert!(
-        text.starts_with(preamble),
-        "Result should start with the preamble"
+        text.contains(preamble),
+        "Result should contain the preamble"
+    );
+    assert!(
+        text.contains("fspec"),
+        "Result should contain fspec workflow guidance"
     );
 
     // @step And the result should contain web tool guidance
@@ -151,8 +161,16 @@ fn test_openai_facade_formats_preamble_as_plain_string() {
     // @step Then the result should be a plain string
     assert!(result.is_string(), "Result should be a plain string");
 
-    // @step And the result should equal "You are a helpful assistant"
-    assert_eq!(result.as_str().unwrap(), preamble);
+    // @step And the result should contain the preamble (with fspec guidance prepended)
+    let text = result.as_str().unwrap();
+    assert!(
+        text.contains(preamble),
+        "Result should contain the preamble"
+    );
+    assert!(
+        text.contains("fspec"),
+        "Result should contain fspec workflow guidance"
+    );
 }
 
 // ============================================================================
@@ -259,7 +277,10 @@ fn test_claude_provider_uses_api_key_facade_for_non_oauth_tokens() {
     let result = facade.format_for_api("test preamble");
     let arr = result.as_array().unwrap();
     assert_eq!(arr.len(), 1, "API key mode should produce 1 block");
-    assert_eq!(arr[0]["text"], "test preamble");
+    // The text contains fspec guidance prepended
+    let text = arr[0]["text"].as_str().unwrap();
+    assert!(text.contains("test preamble"), "Should contain the preamble");
+    assert!(text.contains("fspec"), "Should contain fspec guidance");
 }
 
 // ============================================================================
@@ -283,25 +304,31 @@ fn test_transform_preamble_applies_provider_specific_transformations() {
     assert!(transformed.contains("You are Claude Code"));
     assert!(transformed.contains("Hello"));
 
-    // Claude API key should pass through unchanged
+    // Claude API key should contain fspec guidance prepended to preamble
     let api_key = ClaudeApiKeySystemPromptFacade;
     let transformed = api_key.transform_preamble("Hello");
-    assert_eq!(transformed, "Hello");
+    assert!(transformed.contains("Hello"), "Should contain preamble");
+    assert!(transformed.contains("fspec"), "Should contain fspec guidance");
 
-    // Gemini should append web tool guidance
+    // Gemini should contain preamble, fspec guidance, and web tool guidance
     let gemini = GeminiSystemPromptFacade;
     let transformed = gemini.transform_preamble("Hello");
     assert!(
-        transformed.starts_with("Hello"),
-        "Gemini should start with original preamble"
+        transformed.contains("Hello"),
+        "Gemini should contain original preamble"
+    );
+    assert!(
+        transformed.contains("fspec"),
+        "Gemini should contain fspec guidance"
     );
     assert!(
         transformed.contains("Web Search and Browsing"),
-        "Gemini should append web tool guidance"
+        "Gemini should contain web tool guidance"
     );
 
-    // OpenAI should pass through unchanged
+    // OpenAI should contain fspec guidance prepended to preamble
     let openai = OpenAISystemPromptFacade;
     let transformed = openai.transform_preamble("Hello");
-    assert_eq!(transformed, "Hello");
+    assert!(transformed.contains("Hello"), "Should contain preamble");
+    assert!(transformed.contains("fspec"), "Should contain fspec guidance");
 }

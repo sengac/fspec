@@ -481,7 +481,9 @@ mod tests {
     fn test_claude_api_key_transform_preamble() {
         let facade = ClaudeApiKeySystemPromptFacade;
         let result = facade.transform_preamble("Hello");
-        assert_eq!(result, "Hello");
+        // fspec guidance is prepended to all preambles
+        assert!(result.contains("Hello"));
+        assert!(result.contains("fspec"), "fspec guidance should be prepended");
     }
 
     #[test]
@@ -490,7 +492,9 @@ mod tests {
         let result = facade.format_for_api("Hello");
         assert!(result.is_string());
         let text = result.as_str().unwrap();
-        assert!(text.starts_with("Hello"));
+        // fspec guidance is prepended, then preamble, then web tool guidance
+        assert!(text.contains("Hello"));
+        assert!(text.contains("fspec"), "fspec guidance should be prepended");
         assert!(text.contains("Web Search and Browsing"));
         assert!(text.contains("google_web_search"));
         assert!(text.contains("web_fetch"));
@@ -500,7 +504,9 @@ mod tests {
     fn test_gemini_transform_preamble_appends_web_guidance() {
         let facade = GeminiSystemPromptFacade;
         let result = facade.transform_preamble("Hello");
-        assert!(result.starts_with("Hello"));
+        // fspec guidance is prepended, then preamble, then web tool guidance
+        assert!(result.contains("Hello"));
+        assert!(result.contains("fspec"), "fspec guidance should be prepended");
         assert!(result.contains(GEMINI_WEB_TOOL_GUIDANCE));
     }
 
@@ -509,7 +515,10 @@ mod tests {
         let facade = OpenAISystemPromptFacade;
         let result = facade.format_for_api("Hello");
         assert!(result.is_string());
-        assert_eq!(result.as_str().unwrap(), "Hello");
+        let text = result.as_str().unwrap();
+        // fspec guidance is prepended to all preambles
+        assert!(text.contains("Hello"));
+        assert!(text.contains("fspec"), "fspec guidance should be prepended");
     }
 
     #[test]
@@ -525,8 +534,10 @@ mod tests {
             .unwrap()
             .starts_with("You are Claude Code"));
         assert!(arr[0].get("cache_control").is_none());
-        // Second block is preamble with cache_control
-        assert_eq!(arr[1]["text"].as_str().unwrap(), "Hello");
+        // Second block contains preamble with fspec guidance prepended, with cache_control
+        let text = arr[1]["text"].as_str().unwrap();
+        assert!(text.contains("Hello"), "Text should contain the preamble");
+        assert!(text.contains("fspec"), "fspec guidance should be prepended");
         assert!(arr[1].get("cache_control").is_some());
     }
 
@@ -537,7 +548,9 @@ mod tests {
         assert!(result.is_array());
         let arr = result.as_array().unwrap();
         assert_eq!(arr.len(), 1);
-        assert_eq!(arr[0]["text"].as_str().unwrap(), "Hello");
+        let text = arr[0]["text"].as_str().unwrap();
+        assert!(text.contains("Hello"), "Text should contain the preamble");
+        assert!(text.contains("fspec"), "fspec guidance should be prepended");
         assert!(arr[0].get("cache_control").is_some());
         assert_eq!(
             arr[0]["cache_control"]["type"].as_str().unwrap(),
@@ -547,38 +560,47 @@ mod tests {
 
     #[test]
     fn test_claude_oauth_format_for_api_empty_preamble() {
-        // PROV-006: Empty preamble should result in single block with cache_control on prefix
-        // Anthropic API rejects: "cache_control cannot be set for empty text blocks"
+        // With fspec guidance injection, empty preamble still produces 2 blocks:
+        // Block 0: Claude Code prefix (no cache_control)
+        // Block 1: fspec workflow guidance (with cache_control)
         let facade = ClaudeOAuthSystemPromptFacade;
         let result = facade.format_for_api("");
         assert!(result.is_array());
         let arr = result.as_array().unwrap();
-        assert_eq!(arr.len(), 1, "Empty preamble should produce single block");
+        assert_eq!(arr.len(), 2, "Empty preamble should produce two blocks (prefix + fspec guidance)");
         assert!(arr[0]["text"]
             .as_str()
             .unwrap()
             .starts_with("You are Claude Code"));
         assert!(
-            arr[0].get("cache_control").is_some(),
-            "Single block should have cache_control"
+            arr[0].get("cache_control").is_none(),
+            "Prefix block should not have cache_control"
+        );
+        assert!(
+            arr[1]["text"].as_str().unwrap().contains("fspec"),
+            "Second block should contain fspec guidance"
+        );
+        assert!(
+            arr[1].get("cache_control").is_some(),
+            "fspec guidance block should have cache_control"
         );
         assert_eq!(
-            arr[0]["cache_control"]["type"].as_str().unwrap(),
+            arr[1]["cache_control"]["type"].as_str().unwrap(),
             "ephemeral"
         );
     }
 
     #[test]
     fn test_claude_oauth_format_for_api_whitespace_preamble() {
-        // Whitespace-only preamble should also result in single block
+        // Whitespace-only preamble should also result in two blocks (prefix + fspec guidance)
         let facade = ClaudeOAuthSystemPromptFacade;
         let result = facade.format_for_api("   ");
         assert!(result.is_array());
         let arr = result.as_array().unwrap();
         assert_eq!(
             arr.len(),
-            1,
-            "Whitespace preamble should produce single block"
+            2,
+            "Whitespace preamble should produce two blocks (prefix + fspec guidance)"
         );
     }
 

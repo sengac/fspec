@@ -245,7 +245,7 @@ impl AnchorDetector {
                 Ok(vec![AnchorPoint::synthetic_checkpoint(
                     last_idx, 
                     last_turn, 
-                    &format!("LLM analysis failed: {}", e)
+                    &format!("LLM analysis failed: {e}")
                 )])
             }
             Err(_) => {

@@ -64,8 +64,10 @@ fn test_transform_system_prompt_oauth_mode() {
         .starts_with("You are Claude Code"));
     assert!(system_array[0].get("cache_control").is_none());
 
-    // @step And the second block should have cache_control with type 'ephemeral'
-    assert_eq!(system_array[1]["text"], additional_text);
+    // @step And the second block should contain the additional text (with fspec guidance prepended) with cache_control
+    let text = system_array[1]["text"].as_str().unwrap();
+    assert!(text.contains(additional_text), "Text should contain the additional instructions");
+    assert!(text.contains("fspec"), "fspec guidance should be prepended");
     assert_eq!(system_array[1]["cache_control"]["type"], "ephemeral");
 }
 
@@ -308,7 +310,10 @@ fn test_caching_http_client_transforms_request_body() {
     let system_array = transformed["system"].as_array().unwrap();
     assert_eq!(system_array.len(), 1);
     assert_eq!(system_array[0]["type"], "text");
-    assert_eq!(system_array[0]["text"], "You are helpful");
+    // fspec guidance is prepended to all preambles
+    let text = system_array[0]["text"].as_str().unwrap();
+    assert!(text.contains("You are helpful"), "Text should contain the original system prompt");
+    assert!(text.contains("fspec"), "fspec guidance should be prepended");
     assert_eq!(system_array[0]["cache_control"]["type"], "ephemeral");
 
     // Verify user message also has cache_control
@@ -482,7 +487,10 @@ fn test_system_text_gets_transformed() {
     // @step Then the system field should be an array with cache_control
     assert!(transformed.is_array());
     let array = transformed.as_array().unwrap();
-    assert_eq!(array[0]["text"], system_text);
+    // fspec guidance is prepended to all preambles
+    let text = array[0]["text"].as_str().unwrap();
+    assert!(text.contains(system_text), "Text should contain the original system text");
+    assert!(text.contains("fspec"), "fspec guidance should be prepended");
     assert_eq!(array[0]["cache_control"]["type"], "ephemeral");
 }
 

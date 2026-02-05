@@ -1095,15 +1095,17 @@ export declare function sessionGetStatus(sessionId: string): string;
 export declare function sessionGetTokens(sessionId: string): SessionTokens;
 
 /**
- * Get turn details for a session (TUI-056)
+ * Get turn details for a session (TUI-056, TUI-057)
  *
  * Returns detailed information about a specific conversation turn including
  * user message, assistant response, tool calls, and file modifications.
+ *
+ * The turn_index is 0-based and refers to the index in the session's turns vector.
  */
 export declare function sessionGetTurnDetails(
   sessionId: string,
   turnIndex: number
-): NapiTurnDetails | null;
+): Promise<NapiTurnDetails | null>;
 
 /**
  * Get all watcher session IDs for a parent session (WATCH-007)

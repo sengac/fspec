@@ -32,7 +32,7 @@ import { TurnContentModal } from './TurnContentModal';
 import { WatcherCreateView } from './WatcherCreateView';
 import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
-import { AnchorViewerDialog } from './AnchorViewerDialog';
+import { AnchorView } from './AnchorView';
 import { FileSearchPopup } from './FileSearchPopup';
 import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/conversationUtils';
 import {
@@ -3733,7 +3733,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     }
 
     try {
-      const napiTurnDetails: NapiTurnDetails | null = sessionGetTurnDetails(currentSessionId, turnIndex);
+      const napiTurnDetails: NapiTurnDetails | null = await sessionGetTurnDetails(currentSessionId, turnIndex);
       if (!napiTurnDetails) {
         return null;
       }
@@ -7175,6 +7175,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     );
   }
 
+  // TUI-057: Anchor view (full-screen - early return pattern like other full-screen views)
+  if (showAnchorViewer) {
+    return (
+      <AnchorView
+        isVisible={showAnchorViewer}
+        anchorPoints={anchorPoints}
+        onClose={() => setShowAnchorViewer(false)}
+        onGetTurnDetails={getAnchorTurnDetails}
+        _terminalWidth={terminalWidth}
+        _terminalHeight={terminalHeight}
+      />
+    );
+  }
+
   // WATCH-010: Watcher split view - shows parent conversation on left, watcher conversation on right
   // WATCH-018: Extracted to separate SplitSessionView component for isolation and debugging
   // WATCH-015: Pass model info and token stats to SplitSessionView for full header display
@@ -7584,16 +7598,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             setShowThinkingLevelDialog(false);
           }}
           onClose={() => setShowThinkingLevelDialog(false)}
-        />
-      )}
-
-      {/* TUI-056: Anchor viewer dialog */}
-      {showAnchorViewer && (
-        <AnchorViewerDialog
-          isVisible={showAnchorViewer}
-          anchorPoints={anchorPoints}
-          onClose={() => setShowAnchorViewer(false)}
-          onGetTurnDetails={getAnchorTurnDetails}
         />
       )}
 

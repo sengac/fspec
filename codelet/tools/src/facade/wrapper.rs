@@ -417,9 +417,9 @@ impl Tool for FspecToolFacadeWrapper {
         // Execute command via the global handler
         // This blocks until TypeScript executes the command and sends the result back
         let result = execute_fspec_command(FspecRequest {
-            command: internal_params.command.clone(),
-            args_json: internal_params.args.clone(),
-            project_root: internal_params.project_root.clone(),
+            command: internal_params.command,
+            args_json: internal_params.args,
+            project_root: internal_params.project_root,
             provider: self.facade.provider().to_string(),
         });
 
