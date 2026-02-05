@@ -824,12 +824,12 @@ This is optional but recommended to catch issues early.
   if (systemReminder) {
     outputParts.push(systemReminder);
   }
-  const output = outputParts.join('\n\n');
+  const resultOutput = outputParts.join('\n\n');
 
   return {
     success: true,
     message: `✓ Work unit ${options.workUnitId} status updated to ${newStatus}`,
-    output,
+    output: resultOutput,
     ...(warnings.length > 0 && { warnings }),
     ...(systemReminder && { systemReminder }),
     checkpointCreated,

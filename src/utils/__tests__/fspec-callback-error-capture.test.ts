@@ -43,9 +43,9 @@ describe('fspec-callback error capture', () => {
     }
   });
 
-  it('should capture Commander error about unknown option', async () => {
-    // The add-rule command doesn't support --format json, so Commander will fail
-    // This test verifies that we capture the Commander error message
+  it('should capture command error about non-existent work unit', async () => {
+    // The add-rule command validates that the work unit exists before proceeding
+    // This test verifies that we capture meaningful error messages (not just "Exit code 1")
     const resultJson = await fspecCallback(
       'add-rule',
       JSON.stringify({ _: ['NONEXISTENT-001', 'Test rule'] }),
@@ -55,10 +55,9 @@ describe('fspec-callback error capture', () => {
     const result = JSON.parse(resultJson);
 
     expect(result.success).toBe(false);
-    // Since add-rule doesn't support --format, we should get a Commander error
     // The error should NOT be just "Exit code 1" - it should have the actual message
     expect(result.error).not.toBe('Exit code 1');
-    expect(result.error).toContain('unknown option');
+    expect(result.error).toContain('does not exist');
   });
 
   it('should capture actual command error for show-work-unit (which supports --format)', async () => {

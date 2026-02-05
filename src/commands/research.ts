@@ -239,13 +239,13 @@ export async function research(
     throw new Error('Query is required when executing a research tool');
   }
 
-  const output = await executeResearchTool(tool.path, options.query);
+  const toolOutput = await executeResearchTool(tool.path, options.query);
 
   const result: ResearchResult = {
     executed: true,
     toolName: options.tool,
     query: options.query,
-    output,
+    output: toolOutput,
     promptForAttachment: !options.attach,
   };
 
@@ -361,8 +361,8 @@ export function registerResearchCommand(program: Command): void {
 
         // Execute tool with forwarded arguments
         try {
-          const output = await tool.execute(forwardedArgs);
-          output.log(output);
+          const toolResult = await tool.execute(forwardedArgs);
+          output.log(toolResult);
         } catch (toolError: unknown) {
           // Wrap tool errors in system-reminder for AI visibility
           output.error('<system-reminder>');

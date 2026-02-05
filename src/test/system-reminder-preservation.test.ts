@@ -72,7 +72,7 @@ describe('System Reminder Preservation', () => {
     test('should capture console.error output and include system reminders in FspecTool response', async () => {
       // @step Given a fspec command outputs system reminders to console.error during execution
       const mockCommand = 'create-story'; // Use a command that DOES emit system reminders
-      const mockArgs = JSON.stringify({ prefix: 'TEST', title: 'Test Story' });
+      const mockArgs = JSON.stringify({ _: ['TEST', 'Test Story'] });
 
       // @step When the TypeScript callback executes the command within fspecCallback
       const result = await fspecCallback(
@@ -110,7 +110,7 @@ describe('System Reminder Preservation', () => {
     test('should extract systemReminder from command result and include in response', async () => {
       // @step Given a fspec command returns a result with systemReminder property
       const mockCommand = 'create-story';
-      const mockArgs = JSON.stringify({ prefix: 'TEST', title: 'Test Story' });
+      const mockArgs = JSON.stringify({ _: ['TEST', 'Test Story'] });
 
       // Mock a command that would return systemReminder
       const originalConsoleError = console.error;
@@ -158,8 +158,7 @@ describe('System Reminder Preservation', () => {
       // Use create-story since we know it emits system reminders
       const mockCommand = 'create-story';
       const mockArgs = JSON.stringify({
-        prefix: 'TEST',
-        title: 'Test Story For XML Tags',
+        _: ['TEST', 'Test Story For XML Tags'],
       });
 
       // @step When the TypeScript callback captures the stderr output during execution
@@ -197,8 +196,7 @@ describe('System Reminder Preservation', () => {
       // Use create-story since it has both patterns
       const mockCommand = 'create-story';
       const mockArgs = JSON.stringify({
-        prefix: 'TEST',
-        title: 'Multi Reminder Test',
+        _: ['TEST', 'Multi Reminder Test'],
       });
 
       // @step When the TypeScript callback processes the command execution

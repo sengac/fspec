@@ -794,10 +794,19 @@ export async function fspecCallback(
           .replace(/Error: __FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
           .trim();
 
-        return JSON.stringify({
+        // Parse system reminders from captured stderr
+        const systemReminders = parseSystemReminders(cleanError);
+
+        const result: Record<string, unknown> = {
           success: true,
           data: cleanOutput || cleanError,
-        });
+        };
+
+        if (systemReminders.length > 0) {
+          result.systemReminders = systemReminders;
+        }
+
+        return JSON.stringify(result);
       }
 
       // Non-zero exit code indicates error

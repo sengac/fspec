@@ -260,6 +260,13 @@ export async function createBugCommand(
       process.exit(1);
     }
   } catch (error: unknown) {
+    // Re-throw exit override errors (they're used by fspec-callback to capture exit codes)
+    if (
+      error instanceof Error &&
+      error.message.startsWith('__FSPEC_EXIT_OVERRIDE__')
+    ) {
+      throw error;
+    }
     if (error instanceof Error) {
       output.error(chalk.red('Error:'), error.message);
     } else {
