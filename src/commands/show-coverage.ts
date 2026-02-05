@@ -482,7 +482,7 @@ export async function showCoverageCommand(
     process.exit(0);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    output.error(chalk.red('Error:'), message);
+    output.error('Error:', message);
     process.exit(1);
   }
 }

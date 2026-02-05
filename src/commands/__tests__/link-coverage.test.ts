@@ -9,7 +9,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFile, mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { CoverageFile } from '../../utils/coverage-file';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Link Coverage Command', () => {
   let setup: WorkUnitTestSetup;

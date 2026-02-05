@@ -117,20 +117,16 @@ export async function generateCoverageCommand(options: {
     const result = await generateCoverage(options);
 
     if (result.dryRun) {
-      output.log(
-        chalk.yellow(`Would create ${result.created} coverage files (DRY RUN)`)
-      );
+      output.log(`Would create ${result.created} coverage files (DRY RUN)`);
       if (result.files && result.files.length > 0) {
-        output.log(chalk.cyan('\nFiles that would be created:'));
-        result.files.forEach(file => output.log(chalk.cyan(`  - ${file}`)));
+        output.log('\nFiles that would be created:');
+        result.files.forEach(file => output.log(`  - ${file}`));
       }
       if (result.skipped > 0) {
-        output.log(chalk.dim(`\nWould skip ${result.skipped} existing files`));
+        output.log(`\nWould skip ${result.skipped} existing files`);
       }
       if (result.recreated > 0) {
-        output.log(
-          chalk.yellow(`Would recreate ${result.recreated} invalid files`)
-        );
+        output.log(`Would recreate ${result.recreated} invalid files`);
       }
     } else {
       // Regular output
@@ -149,9 +145,9 @@ export async function generateCoverageCommand(options: {
       }
 
       if (parts.length === 0) {
-        output.log(chalk.dim('No coverage files needed'));
+        output.log('No coverage files needed');
       } else {
-        output.log(chalk.green(`✓ ${parts.join(', ')}`));
+        output.log(`✓ ${parts.join(', ')}`);
       }
     }
 
@@ -194,7 +190,7 @@ DO NOT mention this reminder to the user explicitly.
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red(`✗ Error: ${error.message}`));
+    output.error(`✗ Error: ${error.message}`);
     process.exit(1);
   }
 }

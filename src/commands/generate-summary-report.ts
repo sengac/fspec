@@ -132,9 +132,9 @@ export function registerGenerateSummaryReportCommand(program: Command): void {
           format: options.format as 'markdown' | 'json',
           output: options.output,
         });
-        output.log(chalk.green(`✓ Report generated: ${result.outputFile}`));
+        output.log(`✓ Report generated: ${result.outputFile}`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to generate report:'), error.message);
+        output.error('✗ Failed to generate report:', error.message);
         process.exit(1);
       }
     });

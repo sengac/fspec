@@ -706,16 +706,16 @@ export function registerDiscoverFoundationCommand(program: Command): void {
         if (options.finalize) {
           // Finalizing draft
           if (!result.valid) {
-            output.error(chalk.red('✗ Foundation validation failed'));
+            output.error('✗ Foundation validation failed');
             if (result.validationErrors) {
-              output.error(chalk.yellow('\n' + result.validationErrors));
+              output.error('\n' + result.validationErrors);
             }
             process.exit(1);
           }
 
-          output.log(chalk.green(`✓ Generated ${result.finalPath}`));
+          output.log(`✓ Generated ${result.finalPath}`);
           if (result.mdGenerated) {
-            output.log(chalk.green('✓ Generated spec/FOUNDATION.md'));
+            output.log('✓ Generated spec/FOUNDATION.md');
           }
           output.log(
             chalk.green('✓ Foundation discovered and validated successfully')
@@ -734,12 +734,12 @@ export function registerDiscoverFoundationCommand(program: Command): void {
           // Creating draft or handling errors
           if (!result.valid) {
             // Draft/foundation already exists without --force
-            output.error(chalk.red('✗ Failed to create draft'));
+            output.error('✗ Failed to create draft');
             process.exit(1);
           }
 
-          output.log(chalk.green(`✓ Generated ${result.draftPath}`));
-          output.log(chalk.yellow('\nNext steps:'));
+          output.log(`✓ Generated ${result.draftPath}`);
+          output.log('\nNext steps:');
           output.log(
             chalk.yellow(
               '1. Use fspec update-foundation commands to fill [QUESTION: ...] placeholders'

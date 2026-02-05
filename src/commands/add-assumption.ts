@@ -71,9 +71,9 @@ export function registerAddAssumptionCommand(program: Command): void {
     .action(async (workUnitId: string, assumption: string) => {
       try {
         await addAssumption({ workUnitId, assumption });
-        output.log(chalk.green(`✓ Assumption added successfully`));
+        output.log(`✓ Assumption added successfully`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to add assumption:'), error.message);
+        output.error('✗ Failed to add assumption:', error.message);
         process.exit(1);
       }
     });

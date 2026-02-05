@@ -9,7 +9,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { generateScenarios } from '../generate-scenarios';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
   let setup: WorkUnitTestSetup;
@@ -47,7 +50,9 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
     it('should add work unit ID as feature-level tag and not on scenarios', async () => {
       // Given I have a work unit with ID "TEST-001" in specifying status
       // And the work unit has example mapping data (rules, examples, questions answered)
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['TEST-001'] = {
         id: 'TEST-001',
         title: 'Test Feature',

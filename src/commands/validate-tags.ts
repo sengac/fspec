@@ -76,13 +76,13 @@ export async function validateTagsCommand(file?: string): Promise<void> {
     // Display results
     for (const result of results) {
       if (result.valid) {
-        output.log(chalk.green(`✓ All tags in ${result.file} are registered`));
+        output.log(`✓ All tags in ${result.file} are registered`);
       } else {
-        output.log(chalk.red(`✗ ${result.file} has tag violations:`));
+        output.log(`✗ ${result.file} has tag violations:`);
         for (const error of result.errors) {
-          output.log(chalk.red(`  ${error.message}`));
+          output.log(`  ${error.message}`);
           if (error.suggestion) {
-            output.log(chalk.yellow(`  Suggestion: ${error.suggestion}`));
+            output.log(`  Suggestion: ${error.suggestion}`);
           }
         }
       }
@@ -92,10 +92,10 @@ export async function validateTagsCommand(file?: string): Promise<void> {
     if (results.length > 1) {
       output.log('');
       if (invalidCount === 0) {
-        output.log(chalk.green(`✓ ${validCount} files passed`));
+        output.log(`✓ ${validCount} files passed`);
       } else {
-        output.log(chalk.green(`✓ ${validCount} files passed`));
-        output.log(chalk.red(`✗ ${invalidCount} files have tag violations`));
+        output.log(`✓ ${validCount} files passed`);
+        output.log(`✗ ${invalidCount} files have tag violations`);
       }
     }
 
@@ -105,7 +105,7 @@ export async function validateTagsCommand(file?: string): Promise<void> {
       process.exit(0);
     }
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(2);
   }
 }

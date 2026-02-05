@@ -223,7 +223,7 @@ export function registerSuggestDependenciesCommand(program: Command): void {
         } else {
           // Text output
           if (result.suggestions.length === 0) {
-            output.log(chalk.yellow('No dependency suggestions found.'));
+            output.log('No dependency suggestions found.');
             output.log(
               chalk.dim(
                 'Suggestions are based on sequential IDs, build/test pairs, and infrastructure patterns.'

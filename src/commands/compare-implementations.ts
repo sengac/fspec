@@ -120,7 +120,7 @@ export function registerCompareImplementationsCommand(program: Command): void {
           }
         } catch (error: unknown) {
           if (error instanceof Error) {
-            output.error(chalk.red('✗ Comparison failed:'), error.message);
+            output.error('✗ Comparison failed:', error.message);
           }
           process.exit(1);
         }

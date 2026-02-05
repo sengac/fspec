@@ -166,7 +166,7 @@ export function registerDeleteWorkUnitCommand(program: Command): void {
           );
           if (result.warnings && result.warnings.length > 0) {
             result.warnings.forEach((warning: string) =>
-              output.log(chalk.yellow(`⚠ ${warning}`))
+              output.log(`⚠ ${warning}`)
             );
           }
         } catch (error: any) {

@@ -84,7 +84,7 @@ export async function showEventStormCommand(workUnitId: string): Promise<void> {
     const result = await showEventStorm({ workUnitId });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 

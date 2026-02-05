@@ -9,7 +9,10 @@ import { join } from 'path';
 import { createFeature } from '../create-feature';
 import { generateScenarios } from '../generate-scenarios';
 import type { WorkUnitsData } from '../../types';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
   let setup: TestDirectorySetup;
@@ -28,7 +31,10 @@ describe('Feature: Feature File Prefill Detection and CLI Enforcement', () => {
       await mkdir(join(setup.testDir, 'spec', 'features'), { recursive: true });
 
       // When I create a feature
-      const result = await createFeature('Test Feature with Prefill', setup.testDir);
+      const result = await createFeature(
+        'Test Feature with Prefill',
+        setup.testDir
+      );
 
       // Then the feature file should be created
       expect(result.filePath).toContain('test-feature-with-prefill.feature');

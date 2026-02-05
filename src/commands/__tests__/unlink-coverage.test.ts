@@ -64,7 +64,11 @@ describe('Feature: Unlink Coverage Mappings', () => {
       };
 
       const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await createTestFile(featuresDir, 'user-login.feature.coverage', JSON.stringify(coverageData, null, 2));
+      await createTestFile(
+        featuresDir,
+        'user-login.feature.coverage',
+        JSON.stringify(coverageData, null, 2)
+      );
 
       // When I run 'fspec unlink-coverage user-login --scenario "Login" --all'
       const result = await unlinkCoverage('user-login', {
@@ -127,7 +131,11 @@ describe('Feature: Unlink Coverage Mappings', () => {
       };
 
       const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await createTestFile(featuresDir, 'user-login.feature.coverage', JSON.stringify(coverageData, null, 2));
+      await createTestFile(
+        featuresDir,
+        'user-login.feature.coverage',
+        JSON.stringify(coverageData, null, 2)
+      );
 
       // When I run 'fspec unlink-coverage user-login --scenario "Login" --test-file src/__tests__/auth.test.ts'
       const result = await unlinkCoverage('user-login', {
@@ -185,7 +193,11 @@ describe('Feature: Unlink Coverage Mappings', () => {
       };
 
       const coverageFile = join(featuresDir, 'user-login.feature.coverage');
-      await createTestFile(featuresDir, 'user-login.feature.coverage', JSON.stringify(coverageData, null, 2));
+      await createTestFile(
+        featuresDir,
+        'user-login.feature.coverage',
+        JSON.stringify(coverageData, null, 2)
+      );
 
       // When I run 'fspec unlink-coverage user-login --scenario "Login" --test-file src/__tests__/auth.test.ts --impl-file src/auth/old.ts'
       const result = await unlinkCoverage('user-login', {

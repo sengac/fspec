@@ -118,7 +118,7 @@ export function registerSearchImplementationCommand(program: Command): void {
           }
         } catch (error: unknown) {
           if (error instanceof Error) {
-            output.error(chalk.red('✗ Search failed:'), error.message);
+            output.error('✗ Search failed:', error.message);
           }
           process.exit(1);
         }

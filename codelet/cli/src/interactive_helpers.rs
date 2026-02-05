@@ -169,7 +169,13 @@ fn collect_items<T: Clone>(content: &OneOrMany<T>) -> Vec<T> {
 
 /// Execute compaction and reconstruct messages
 pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetrics, Option<codelet_core::compaction::AnchorPoint>)> {
-    // Step 1: Create LLM prompt function that uses the provider
+    use crate::session::system_reminders::partition_for_compaction;
+    
+    // Step 1: Extract system reminders BEFORE any compaction
+    // CRITICAL: System reminders (environment, CLAUDE.md, fspec guidance) must persist through compaction
+    let (system_reminders, _compactable) = partition_for_compaction(&session.messages);
+    
+    // Step 2: Create LLM prompt function that uses the provider
     let provider_manager = session.provider_manager();
     let provider_name = provider_manager.current_provider_name();
 
@@ -180,27 +186,30 @@ pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetr
         prompt_provider(&manager, &prompt).await
     };
 
-    // Step 2: Calculate summarization budget
+    // Step 3: Calculate summarization budget
     // CLI-020: Matches TypeScript implementation in compaction.ts:calculateSummarizationBudget()
     use crate::compaction_threshold::calculate_summarization_budget;
     let context_window = provider_manager.context_window() as u64;
     let budget = calculate_summarization_budget(context_window);
 
-    // Step 3: Convert messages to turns using lazy approach (CTX-002)
+    // Step 4: Convert messages to turns using lazy approach (CTX-002)
     // This follows the TypeScript implementation - create turns during compaction, not after each interaction
     let turns = convert_messages_to_turns(&session.messages);
 
-    // Step 4: Create compactor and run compaction
+    // Step 5: Create compactor and run compaction
     let compactor = ContextCompactor::new();
     let result = compactor.compact(&turns, budget, llm_prompt).await?;
 
-    // Step 5: Reconstruct messages array
-    // Order matches TypeScript: [system] + [kept turns] + [summary] + [continuation]
+    // Step 6: Reconstruct messages array
+    // Order: [system-reminders] + [kept turns] + [summary] + [continuation]
+    // CRITICAL: System reminders FIRST to maintain stable prefix for prompt caching
     session.messages.clear();
 
-    // Note: rig Message doesn't have System variant - system messages handled separately by provider
+    // Add system reminders FIRST (maintains stable prefix for prompt caching)
+    // This preserves: environment info, CLAUDE.md content, fspec workflow guidance
+    session.messages.extend(system_reminders);
 
-    // Add kept turn messages FIRST (matching TypeScript order)
+    // Add kept turn messages (after system reminders)
     for turn in &result.kept_turns {
         // Add user message
         session.messages.push(Message::User {
@@ -217,22 +226,22 @@ pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetr
         });
     }
 
-    // Add summary as user message (after kept turns, matching TypeScript)
+    // Add summary as user message (after kept turns)
     session.messages.push(Message::User {
         content: OneOrMany::one(UserContent::text(&result.summary)),
     });
 
-    // Add continuation message (last, matching TypeScript)
+    // Add continuation message (last)
     session.messages.push(Message::User {
         content: OneOrMany::one(UserContent::text(
             "This session is being continued from a previous conversation that ran out of context.",
         )),
     });
 
-    // Step 6: Update session.turns to only contain kept turns
+    // Step 7: Update session.turns to only contain kept turns
     session.turns = result.kept_turns.clone();
 
-    // Step 7: Recalculate token tracker from ACTUAL messages (matches TypeScript)
+    // Step 8: Recalculate token tracker from ACTUAL messages (matches TypeScript)
     // TypeScript: newTotalTokens = messages.reduce(calculateMessageTokens, 0)
     // PROV-002: Use tiktoken-rs for accurate token counting
     let new_total_tokens: u64 = session

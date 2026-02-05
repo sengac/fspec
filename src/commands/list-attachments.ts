@@ -48,13 +48,13 @@ export async function listAttachments(
       const stats = await stat(fullPath);
       const sizeKB = (stats.size / 1024).toFixed(2);
 
-      output.log(chalk.green('  ✓'), chalk.cyan(attachment));
-      output.log(chalk.dim(`    Size: ${sizeKB} KB`));
-      output.log(chalk.dim(`    Modified: ${stats.mtime.toLocaleString()}\n`));
+      output.log('  ✓', attachment);
+      output.log(`    Size: ${sizeKB} KB`);
+      output.log(`    Modified: ${stats.mtime.toLocaleString()}\n`);
     } catch {
       // File doesn't exist on filesystem
-      output.log(chalk.red('  ✗'), chalk.red(attachment));
-      output.log(chalk.dim('    File not found on filesystem\n'));
+      output.log('  ✗', attachment);
+      output.log('    File not found on filesystem\n');
     }
   }
 }
@@ -70,7 +70,7 @@ export function registerListAttachmentsCommand(program: Command): void {
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        output.error(chalk.red('Error:'), errorMessage);
+        output.error('Error:', errorMessage);
         process.exit(1);
       }
     });

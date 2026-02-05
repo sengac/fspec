@@ -179,12 +179,12 @@ export async function retagCommand(options: {
     });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
     if (options.dryRun && result.files) {
-      output.log(chalk.yellow('Dry run mode - no files modified'));
+      output.log('Dry run mode - no files modified');
       output.log(
         chalk.cyan(
           `\nWould rename ${options.from} to ${options.to} in ${result.fileCount} file(s) (${result.occurrenceCount} occurrence(s)):\n`
@@ -192,21 +192,21 @@ export async function retagCommand(options: {
       );
 
       for (const file of result.files) {
-        output.log(chalk.gray(`  - ${file}`));
+        output.log(`  - ${file}`);
       }
     } else if (result.files && result.files.length > 0) {
-      output.log(chalk.green(`✓ ${result.message}`));
-      output.log(chalk.gray('\nModified files:'));
+      output.log(`✓ ${result.message}`);
+      output.log('\nModified files:');
       for (const file of result.files) {
-        output.log(chalk.gray(`  - ${file}`));
+        output.log(`  - ${file}`);
       }
     } else {
-      output.log(chalk.yellow(result.message));
+      output.log(result.message);
     }
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

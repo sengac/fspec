@@ -84,9 +84,9 @@ export function registerAddRuleCommand(program: Command): void {
     .action(async (workUnitId: string, rule: string) => {
       try {
         await addRule({ workUnitId, rule });
-        output.log(chalk.green(`✓ Rule added successfully`));
+        output.log(`✓ Rule added successfully`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to add rule:'), error.message);
+        output.error('✗ Failed to add rule:', error.message);
         process.exit(1);
       }
     });

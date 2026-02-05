@@ -10,7 +10,10 @@ import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { removeQuestion } from '../remove-question';
 import type { WorkUnitsData } from '../../types';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: remove-question command shows "[object Object]" instead of question text', () => {
   let setup: WorkUnitTestSetup;

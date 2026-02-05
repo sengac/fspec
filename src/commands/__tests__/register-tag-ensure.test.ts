@@ -11,9 +11,7 @@ import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import {
-  ensureTestDirectory,
-} from '../../test-helpers/test-file-operations';
+import { ensureTestDirectory } from '../../test-helpers/test-file-operations';
 
 describe('Feature: Automatic JSON File Initialization', () => {
   let setup: TestDirectorySetup;

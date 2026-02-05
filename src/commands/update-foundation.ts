@@ -225,15 +225,15 @@ export async function updateFoundationCommand(
     });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
-    output.log(chalk.green('✓'), result.message);
+    output.log('✓', result.message);
 
     // Show different output based on whether we updated draft or final
     if (result.message?.includes('draft')) {
-      output.log(chalk.gray('  Updated: spec/foundation.json.draft'));
+      output.log('  Updated: spec/foundation.json.draft');
 
       // IMPORTANT: Chain to next field during draft-driven discovery
       // Scan draft for next field
@@ -247,13 +247,13 @@ export async function updateFoundationCommand(
         output.log(scanResult.systemReminder);
       }
     } else {
-      output.log(chalk.gray('  Updated: spec/foundation.json'));
-      output.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
+      output.log('  Updated: spec/foundation.json');
+      output.log('  Regenerated: spec/FOUNDATION.md');
     }
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

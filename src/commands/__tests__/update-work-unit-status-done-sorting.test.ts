@@ -9,8 +9,14 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
-import { writeJsonTestFile, readJsonTestFile } from '../../test-helpers/test-file-operations';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 import type { WorkUnitsData } from '../../types';
 
 describe('Feature: Work unit details panel shows incorrect work unit after reordering', () => {

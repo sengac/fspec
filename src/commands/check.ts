@@ -166,10 +166,10 @@ export async function checkCommand(
     });
 
     // Display results
-    output.log(chalk.bold('\nRunning validation checks...\n'));
+    output.log('\nRunning validation checks...\n');
 
     if (result.fileCount !== undefined && result.fileCount > 0) {
-      output.log(chalk.gray(`Checked ${result.fileCount} feature file(s)\n`));
+      output.log(`Checked ${result.fileCount} feature file(s)\n`);
     }
 
     // Show status of each check
@@ -205,23 +205,23 @@ export async function checkCommand(
 
     // Show errors if any
     if (result.errors && result.errors.length > 0) {
-      output.log(chalk.red('\nErrors:'));
+      output.log('\nErrors:');
       for (const error of result.errors) {
-        output.log(chalk.red(`  - ${error}`));
+        output.log(`  - ${error}`);
       }
     }
 
     // Show final message
     output.log();
     if (result.success) {
-      output.log(chalk.green('✓'), result.message);
+      output.log('✓', result.message);
     } else {
-      output.log(chalk.red('✗'), 'Some checks failed');
+      output.log('✗', 'Some checks failed');
     }
 
     process.exit(result.success ? 0 : 1);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

@@ -12,7 +12,10 @@ import * as git from 'isomorphic-git';
 import fs from 'fs';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import { listCheckpoints } from '../list-checkpoints';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Auto-checkpoints not working - lazy import fails in bundled dist', () => {
   let setup: TestDirectorySetup;
@@ -121,7 +124,10 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
       });
 
       // Add uncommitted changes
-      await writeFile(join(setup.testDir, 'test-file.txt'), 'Uncommitted changes');
+      await writeFile(
+        join(setup.testDir, 'test-file.txt'),
+        'Uncommitted changes'
+      );
 
       // Verify working directory is dirty
       const statusBefore = await git.statusMatrix({ fs, dir: setup.testDir });
@@ -187,7 +193,11 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
         dir: setup.testDir,
         filepath: 'spec/features/test.feature',
       });
-      await git.add({ fs, dir: setup.testDir, filepath: 'spec/work-units.json' });
+      await git.add({
+        fs,
+        dir: setup.testDir,
+        filepath: 'spec/work-units.json',
+      });
       await git.commit({
         fs,
         dir: setup.testDir,
@@ -225,7 +235,10 @@ describe('Feature: Auto-checkpoints not working - lazy import fails in bundled d
 
     it('should NOT create auto-checkpoint when transitioning FROM backlog state', async () => {
       // Given: a work unit in 'backlog' status with uncommitted file changes
-      await writeFile(join(setup.testDir, 'test-file.txt'), 'Uncommitted changes');
+      await writeFile(
+        join(setup.testDir, 'test-file.txt'),
+        'Uncommitted changes'
+      );
 
       // When: the user runs 'fspec update-work-unit-status TEST-001 specifying'
       // (transitioning FROM backlog, which is excluded from auto-checkpoint)

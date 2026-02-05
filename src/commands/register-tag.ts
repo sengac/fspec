@@ -145,7 +145,7 @@ export async function registerTagCommand(
     const result = await registerTag(tag, category, description);
 
     if (result.created) {
-      output.log(chalk.yellow('Created new tags.json and TAGS.md'));
+      output.log('Created new tags.json and TAGS.md');
     }
 
     if (result.converted) {
@@ -156,12 +156,12 @@ export async function registerTagCommand(
       );
     }
 
-    output.log(chalk.green(`✓ ${result.message}`));
-    output.log(chalk.gray('  Updated: spec/tags.json'));
-    output.log(chalk.gray('  Regenerated: spec/TAGS.md'));
+    output.log(`✓ ${result.message}`);
+    output.log('  Updated: spec/tags.json');
+    output.log('  Regenerated: spec/TAGS.md');
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

@@ -7,7 +7,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { writeFile } from 'fs/promises';
 import type { WorkUnit } from '../../types/work-unit';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
   let setup: WorkUnitTestSetup;
@@ -74,7 +77,10 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(setup.workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeFile(
+        setup.workUnitsFile,
+        JSON.stringify(workUnitsData, null, 2)
+      );
 
       // When I run "fspec suggest-dependencies --output=json"
       const { suggestDependencies } = await import(

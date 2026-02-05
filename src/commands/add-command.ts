@@ -169,7 +169,7 @@ export function registerAddCommandCommand(program: Command): void {
         });
 
         if (!result.success) {
-          output.error(chalk.red('✗ Failed to add command:'), result.error);
+          output.error('✗ Failed to add command:', result.error);
           process.exit(1);
         }
 
@@ -179,7 +179,7 @@ export function registerAddCommandCommand(program: Command): void {
           )
         );
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to add command:'), error.message);
+        output.error('✗ Failed to add command:', error.message);
         process.exit(1);
       }
     });

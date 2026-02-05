@@ -4,11 +4,15 @@ import { deleteStep } from '../delete-step';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
-import { 
+import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
+import {
+  ensureTestDirectory,
+  writeTextFile,
+  readTextFile,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Delete Step from Scenario', () => {
   let setup: TestDirectorySetup;
 

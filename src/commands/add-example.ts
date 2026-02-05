@@ -104,12 +104,12 @@ export function registerAddExampleCommand(program: Command): void {
     .action(async (workUnitId: string, example: string) => {
       try {
         const result = await addExample({ workUnitId, example });
-        output.log(chalk.green(`✓ Example added successfully`));
+        output.log(`✓ Example added successfully`);
         if (result.systemReminder) {
           output.log('\n' + result.systemReminder);
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to add example:'), error.message);
+        output.error('✗ Failed to add example:', error.message);
         process.exit(1);
       }
     });

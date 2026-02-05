@@ -269,7 +269,7 @@ export function registerQueryWorkUnitsCommand(program: Command): void {
           }
         } catch (error: unknown) {
           if (error instanceof Error) {
-            output.error(chalk.red('✗ Query failed:'), error.message);
+            output.error('✗ Query failed:', error.message);
           }
           process.exit(1);
         }

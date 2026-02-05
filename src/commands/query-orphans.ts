@@ -98,7 +98,7 @@ export function registerQueryOrphansCommand(program: Command): void {
           } else {
             // Text output
             if (result.orphans.length === 0) {
-              output.log(chalk.green('✓ No orphaned work units found.'));
+              output.log('✓ No orphaned work units found.');
               output.log(
                 chalk.dim(
                   'All work units have either an epic assignment or dependency relationships.'
@@ -127,7 +127,7 @@ export function registerQueryOrphansCommand(program: Command): void {
               output.log('');
             });
 
-            output.log(chalk.dim('To fix orphaned work units:'));
+            output.log('To fix orphaned work units:');
             output.log(
               chalk.dim('  fspec update-work-unit <id> --epic=<epic-name>')
             );
@@ -136,10 +136,10 @@ export function registerQueryOrphansCommand(program: Command): void {
                 '  fspec add-dependency <id> --depends-on=<other-id>  (or --blocks, --relates-to)'
               )
             );
-            output.log(chalk.dim('  fspec delete-work-unit <id>'));
+            output.log('  fspec delete-work-unit <id>');
           }
         } catch (error: any) {
-          output.error(chalk.red('✗ Failed to query orphans:'), error.message);
+          output.error('✗ Failed to query orphans:', error.message);
           process.exit(1);
         }
       }

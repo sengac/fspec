@@ -482,7 +482,7 @@ export async function updateWorkUnitStatus(
     // This allows commands to work even without git repository
     const errorMessage = error instanceof Error ? error.message : String(error);
     if (process.env.DEBUG) {
-      output.warn(chalk.yellow(`⚠️  Checkpoint skipped: ${errorMessage}`));
+      output.warn(`⚠️  Checkpoint skipped: ${errorMessage}`);
     }
   }
 
@@ -1381,7 +1381,7 @@ export function registerUpdateWorkUnitStatusCommand(program: Command): void {
           );
           if (result.warnings && result.warnings.length > 0) {
             result.warnings.forEach((warning: string) =>
-              output.log(chalk.yellow(`⚠ ${warning}`))
+              output.log(`⚠ ${warning}`)
             );
           }
           // Output system reminder (visible to AI, invisible to users)

@@ -7,7 +7,10 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 
@@ -15,7 +18,9 @@ describe('Feature: Multiple test files mapped to single feature file causes vali
   let setup: WorkUnitTestSetup;
 
   beforeEach(async () => {
-    setup = await setupWorkUnitTest('update-work-unit-status-one-to-one-enforcement');
+    setup = await setupWorkUnitTest(
+      'update-work-unit-status-one-to-one-enforcement'
+    );
   });
 
   afterEach(async () => {
@@ -68,11 +73,14 @@ describe('Test scenario', () => {
   });
 });
 `;
-      
+
       // Ensure tests directory exists
       await mkdir(join(setup.testDir, 'src/__tests__'), { recursive: true });
-      
-      await writeFile(join(setup.testDir, 'src/__tests__', 'test.test.ts'), testContent);
+
+      await writeFile(
+        join(setup.testDir, 'src/__tests__', 'test.test.ts'),
+        testContent
+      );
 
       // Create work unit
       await writeFile(
@@ -184,10 +192,10 @@ describe('Scenario 1', () => {
   });
 });
 `;
-      
+
       // Ensure tests directory exists
       await mkdir(join(setup.testDir, 'src/__tests__'), { recursive: true });
-      
+
       await writeFile(
         join(setup.testDir, 'src/__tests__', 'test1.test.ts'),
         testContent1

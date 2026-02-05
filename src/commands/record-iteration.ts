@@ -69,9 +69,9 @@ export function registerRecordIterationCommand(program: Command): void {
           start: options.start,
           end: options.end,
         });
-        output.log(chalk.green(`✓ Iteration recorded successfully`));
+        output.log(`✓ Iteration recorded successfully`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to record iteration:'), error.message);
+        output.error('✗ Failed to record iteration:', error.message);
         process.exit(1);
       }
     });

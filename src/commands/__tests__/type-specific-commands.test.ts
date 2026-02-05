@@ -52,7 +52,10 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
         },
       },
     };
-    await writeJsonTestFile(join(setup.testDir, 'spec/prefixes.json'), prefixes);
+    await writeJsonTestFile(
+      join(setup.testDir, 'spec/prefixes.json'),
+      prefixes
+    );
 
     // Create empty work-units.json
     const workUnits: WorkUnitsData = {
@@ -195,18 +198,15 @@ describe('Feature: Replace generic create-work-unit with type-specific commands'
     it('should support --epic, --description, --parent options', async () => {
       // Given I have fspec installed
       // And epic exists
-      await writeJsonTestFile(
-        join(setup.testDir, 'spec/epics.json'),
-        {
-          epics: {
-            'user-management': {
-              name: 'user-management',
-              title: 'User Management',
-              createdAt: new Date().toISOString(),
-            },
+      await writeJsonTestFile(join(setup.testDir, 'spec/epics.json'), {
+        epics: {
+          'user-management': {
+            name: 'user-management',
+            title: 'User Management',
+            createdAt: new Date().toISOString(),
           },
-        }
-      );
+        },
+      });
 
       // And parent work unit exists
       const workUnitsData = await readJsonTestFile(

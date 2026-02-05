@@ -174,24 +174,24 @@ export async function deleteTagCommand(
     });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
     if (result.warning) {
-      output.log(chalk.yellow(result.warning));
+      output.log(result.warning);
     }
 
-    output.log(chalk.green(`✓ ${result.message}`));
+    output.log(`✓ ${result.message}`);
 
     if (!options.dryRun) {
-      output.log(chalk.gray('  Updated: spec/tags.json'));
-      output.log(chalk.gray('  Regenerated: spec/TAGS.md'));
+      output.log('  Updated: spec/tags.json');
+      output.log('  Regenerated: spec/TAGS.md');
     }
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

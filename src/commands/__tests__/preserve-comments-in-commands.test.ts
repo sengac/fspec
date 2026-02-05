@@ -20,8 +20,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
-import { createTestFile, ensureTestDirectory } from '../../test-helpers/test-file-operations';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  createTestFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 import { addScenario } from '../add-scenario';
 import { addBackground } from '../add-background';
 
@@ -72,7 +78,9 @@ Feature: Test Feature
       await writeFile(featureFile, featureContent);
 
       // When I run "fspec add-scenario" to manually add a scenario
-      await addScenario('test-feature', 'New test scenario', { cwd: setup.testDir });
+      await addScenario('test-feature', 'New test scenario', {
+        cwd: setup.testDir,
+      });
 
       // Then the new scenario should be appended at the end
       const updatedContent = await readFile(featureFile, 'utf-8');
@@ -181,7 +189,9 @@ Feature: Test Feature
       await addScenario('test-feature', 'User logs in with valid credentials', {
         cwd: setup.testDir,
       });
-      await addScenario('test-feature', 'User logs out', { cwd: setup.testDir });
+      await addScenario('test-feature', 'User logs out', {
+        cwd: setup.testDir,
+      });
       await addScenario('test-feature', 'User resets password', {
         cwd: setup.testDir,
       });

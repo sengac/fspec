@@ -58,21 +58,17 @@ export async function removeAttachment(
   if (!options.keepFile) {
     try {
       await unlink(fullPath);
-      output.log(
-        chalk.green('✓ Attachment removed from work unit and file deleted')
-      );
+      output.log('✓ Attachment removed from work unit and file deleted');
     } catch (error: unknown) {
       output.log(
-        chalk.yellow(
-          '⚠ Attachment removed from work unit (file was already missing)'
-        )
+        '⚠ Attachment removed from work unit (file was already missing)'
       );
     }
   } else {
-    output.log(chalk.green('✓ Attachment removed from work unit (file kept)'));
+    output.log('✓ Attachment removed from work unit (file kept)');
   }
 
-  output.log(chalk.dim(`  File: ${attachmentPath}`));
+  output.log(`  File: ${attachmentPath}`);
 
   // Update timestamp
   workUnit.updatedAt = new Date().toISOString();
@@ -113,7 +109,7 @@ export function registerRemoveAttachmentCommand(program: Command): void {
         } catch (error: unknown) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
-          output.error(chalk.red('Error:'), errorMessage);
+          output.error('Error:', errorMessage);
           process.exit(1);
         }
       }

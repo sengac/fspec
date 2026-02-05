@@ -131,12 +131,12 @@ export function registerRestoreRuleCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        output.log(chalk.green(`✓ Restored rule: "${result.restoredRule}"`));
+        output.log(`✓ Restored rule: "${result.restoredRule}"`);
         if (result.message) {
-          output.log(chalk.dim(`  ${result.message}`));
+          output.log(`  ${result.message}`);
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to restore rule:'), error.message);
+        output.error('✗ Failed to restore rule:', error.message);
         process.exit(1);
       }
     });

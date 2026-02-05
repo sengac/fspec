@@ -84,9 +84,9 @@ export function registerUpdatePrefixCommand(program: Command): void {
           prefix,
           description: options.description,
         });
-        output.log(chalk.green(`✓ Prefix ${prefix} updated successfully`));
+        output.log(`✓ Prefix ${prefix} updated successfully`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to update prefix:'), error.message);
+        output.error('✗ Failed to update prefix:', error.message);
         process.exit(1);
       }
     });

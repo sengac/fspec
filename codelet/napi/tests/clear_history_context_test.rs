@@ -233,6 +233,81 @@ fn test_clear_history_preserves_debug_mode() {
     assert!(session.messages.is_empty(), "Messages should be cleared");
 }
 
+/// Test that all system reminder types are reinjected after clear
+///
+/// This test verifies that environment info is present after reinjection,
+/// ensuring the LLM has access to platform, architecture, shell, user, and
+/// working directory information.
+///
+/// Scenario: All system reminder types restored after clear
+///
+/// @step Given I have a session with context reminders injected
+/// @step When I clear the history and reinject reminders
+/// @step Then environment reminder should be present with Working directory
+#[test]
+fn test_clear_history_restores_all_reminder_types() {
+    // Skip test if no provider configured
+    let session_result = Session::new(None);
+    if session_result.is_err() {
+        eprintln!("Skipping test - no provider configured");
+        return;
+    }
+    let mut session = session_result.unwrap();
+
+    // @step Given I have a session with context reminders injected
+    session.inject_context_reminders();
+
+    // Add conversation
+    session.messages.push(Message::User {
+        content: OneOrMany::one(UserContent::text("Test message")),
+    });
+    session.token_tracker.input_tokens = 1000;
+
+    // @step When I clear the history and reinject reminders
+    clear_session_state(&mut session);
+    session.inject_context_reminders();
+
+    // @step Then environment reminder should be present with Working directory
+    let has_environment = session.messages.iter().any(|msg| {
+        if let Message::User { content, .. } = msg {
+            content.iter().any(|item| {
+                if let UserContent::Text(text) = item {
+                    text.text.contains("<system-reminder>")
+                        && text.text.contains("<!-- type:environment -->")
+                        && text.text.contains("Working directory:")
+                } else {
+                    false
+                }
+            })
+        } else {
+            false
+        }
+    });
+    assert!(
+        has_environment,
+        "Environment reminder should be present with Working directory info"
+    );
+
+    // Environment reminder should contain platform info
+    let has_platform = session.messages.iter().any(|msg| {
+        if let Message::User { content, .. } = msg {
+            content.iter().any(|item| {
+                if let UserContent::Text(text) = item {
+                    text.text.contains("Platform:") && text.text.contains("Architecture:")
+                } else {
+                    false
+                }
+            })
+        } else {
+            false
+        }
+    });
+    assert!(
+        has_platform,
+        "Environment reminder should contain Platform and Architecture info"
+    );
+}
+
 /// Test that command history is preserved after clear
 ///
 /// Note: Command history (historyEntries) is managed at React layer, not Rust.

@@ -11,7 +11,10 @@ import { mkdir, writeFile, readFile, stat } from 'fs/promises';
 import { join } from 'path';
 import { discoverFoundation } from '../discover-foundation';
 import type { GenericFoundation } from '../../types/generic-foundation';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Implement draft-driven discovery workflow with AI chaining', () => {
   let setup: TestDirectorySetup;

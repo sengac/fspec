@@ -5195,6 +5195,12 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                         // Build rig message for LLM context (text only)
                         let joined_text = text_parts.join("");
                         if !joined_text.is_empty() {
+                            // Skip system reminders - they'll be re-injected fresh after restoration
+                            // System reminders have both <system-reminder> tag AND <!-- type: marker
+                            if joined_text.contains("<system-reminder>") && joined_text.contains("<!-- type:") {
+                                // Skip - will be re-injected with fresh content
+                                continue;
+                            }
                             rig_messages.push(rig::message::Message::User {
                                 content: rig::OneOrMany::one(rig::message::UserContent::text(joined_text)),
                             });
@@ -5202,6 +5208,11 @@ pub async fn session_restore_messages(session_id: String, envelopes: Vec<String>
                     } else if let Some(s) = content.as_str() {
                         // Simple string content
                         if !s.is_empty() {
+                            // Skip system reminders - they'll be re-injected fresh after restoration
+                            if s.contains("<system-reminder>") && s.contains("<!-- type:") {
+                                // Skip - will be re-injected with fresh content
+                                continue;
+                            }
                             stream_chunks.push(StreamChunk::user_input(s.to_string()));
                             rig_messages.push(rig::message::Message::User {
                                 content: rig::OneOrMany::one(rig::message::UserContent::text(s.to_string())),

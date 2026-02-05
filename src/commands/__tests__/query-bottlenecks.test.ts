@@ -7,7 +7,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { mkdir, writeFile } from 'fs/promises';
 import type { WorkUnit } from '../../types/work-unit';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
   let setup: WorkUnitTestSetup;
@@ -101,11 +104,17 @@ describe('Feature: Work Unit Dependency Management', () => {
         },
       };
 
-      await writeFile(setup.workUnitsFile, JSON.stringify(workUnitsData, null, 2));
+      await writeFile(
+        setup.workUnitsFile,
+        JSON.stringify(workUnitsData, null, 2)
+      );
 
       // When I run "fspec query bottlenecks --output=json"
       const { queryBottlenecks } = await import('../query-bottlenecks');
-      const result = await queryBottlenecks({ cwd: setup.testDir, output: 'json' });
+      const result = await queryBottlenecks({
+        cwd: setup.testDir,
+        output: 'json',
+      });
 
       // Then the output should list work units ranked by bottleneck score
       expect(result).toBeDefined();

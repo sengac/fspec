@@ -101,10 +101,10 @@ export function registerRestoreQuestionCommand(program: Command): void {
           chalk.green(`✓ Restored question: "${result.restoredQuestion}"`)
         );
         if (result.message) {
-          output.log(chalk.dim(`  ${result.message}`));
+          output.log(`  ${result.message}`);
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to restore question:'), error.message);
+        output.error('✗ Failed to restore question:', error.message);
         process.exit(1);
       }
     });

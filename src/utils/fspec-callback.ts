@@ -7,6 +7,8 @@ import {
   createCaptureContext,
   setOutputContext,
   resetOutputContext,
+  setFspecPositionalArgs,
+  clearFspecPositionalArgs,
 } from './output';
 
 // Commands that are excluded from FspecTool (must use CLI directly)
@@ -665,6 +667,15 @@ export async function fspecCallback(
       }
     }
 
+    // RES-022: Set positional args for commands that need them (like research)
+    // This allows commands to access the args without using process.argv
+    const positionalArgsStrings = Array.isArray(positionalArgs)
+      ? positionalArgs
+          .filter(a => a !== undefined && a !== null)
+          .map(a => String(a))
+      : [];
+    setFspecPositionalArgs(positionalArgsStrings);
+
     // Dynamically check if the command supports --format option
     const cmd = program.commands.find(c => c.name() === command);
     const hasFormatOption = cmd?.options.some(
@@ -774,28 +785,45 @@ export async function fspecCallback(
       const code = parseInt(errorMessage.split(':')[1], 10);
       const trimmedOutput = capturedOutput.trim();
 
-      // Exit code 0 is success (e.g., help display)
-      if (code === 0) {
-        // Filter out any leaked __FSPEC_EXIT_OVERRIDE__ messages from captured output
-        // This can happen when Commander.js logs the thrown error before we catch it
-        const cleanOutput = trimmedOutput
-          .replace(
-            // eslint-disable-next-line no-control-regex
-            /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
-            ''
-          )
-          .trim();
-        const cleanError = capturedError
-          .replace(
-            // eslint-disable-next-line no-control-regex
-            /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
-            ''
-          )
-          .replace(/Error: __FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
-          .trim();
+      // EXIT CASCADE FIX: Check if the ORIGINAL exit was successful (code 0)
+      // This happens when a command succeeds, calls process.exit(0), but the exception
+      // is caught by the command's own try/catch block which then calls process.exit(1).
+      // We detect this by checking if stderr contains __FSPEC_EXIT_OVERRIDE__:0
+      const originalExitWasSuccess = capturedError.includes(
+        '__FSPEC_EXIT_OVERRIDE__:0'
+      );
 
-        // Parse system reminders from captured stderr
-        const systemReminders = parseSystemReminders(cleanError);
+      // Helper function to clean up __FSPEC_EXIT_OVERRIDE__ artifacts from output
+      const cleanExitOverrideArtifacts = (text: string): string => {
+        return (
+          text
+            // Handle colored "Error: __FSPEC_EXIT_OVERRIDE__:N" patterns
+            .replace(
+              // eslint-disable-next-line no-control-regex
+              /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
+              ''
+            )
+            // Handle "Error: __FSPEC_EXIT_OVERRIDE__:N" patterns
+            .replace(/Error:\s*__FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
+            // Handle "✗ Error: __FSPEC_EXIT_OVERRIDE__:N" patterns (from command catch blocks)
+            .replace(
+              /✗\s*(Error:|Failed:)?\s*__FSPEC_EXIT_OVERRIDE__:\d+\n?/gi,
+              ''
+            )
+            // Handle any remaining bare "__FSPEC_EXIT_OVERRIDE__:N" patterns
+            .replace(/__FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
+            .trim()
+        );
+      };
+
+      // Exit code 0 is success (e.g., help display)
+      // OR if original exit was 0 but got cascaded to 1 by command's catch block
+      if (code === 0 || originalExitWasSuccess) {
+        const cleanOutput = cleanExitOverrideArtifacts(trimmedOutput);
+        const cleanError = cleanExitOverrideArtifacts(capturedError);
+
+        // Parse system reminders from captured stderr (before cleaning)
+        const systemReminders = parseSystemReminders(capturedError);
 
         const result: Record<string, unknown> = {
           success: true,
@@ -809,24 +837,9 @@ export async function fspecCallback(
         return JSON.stringify(result);
       }
 
-      // Non-zero exit code indicates error
-      // Filter out internal __FSPEC_EXIT_OVERRIDE__ messages and provide clean errors
-      const cleanStdout = trimmedOutput
-        .replace(
-          // eslint-disable-next-line no-control-regex
-          /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
-          ''
-        )
-        .replace(/Error: __FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
-        .trim();
-      const cleanStderr = capturedError
-        .replace(
-          // eslint-disable-next-line no-control-regex
-          /\x1b\[31mError:\x1b\[39m __FSPEC_EXIT_OVERRIDE__:\d+\n?/g,
-          ''
-        )
-        .replace(/Error: __FSPEC_EXIT_OVERRIDE__:\d+\n?/g, '')
-        .trim();
+      // Non-zero exit code indicates error (and it wasn't a cascade from success)
+      const cleanStdout = cleanExitOverrideArtifacts(trimmedOutput);
+      const cleanStderr = cleanExitOverrideArtifacts(capturedError);
 
       const errorDetail = cleanStderr || cleanStdout || `Exit code ${code}`;
       return JSON.stringify({
@@ -900,6 +913,9 @@ export async function fspecCallback(
   } finally {
     // Ensure output context is reset (in case of unexpected errors)
     resetOutputContext();
+
+    // RES-022: Clear fspec positional args
+    clearFspecPositionalArgs();
 
     // Restore process.exit
     process.exit = originalExit;

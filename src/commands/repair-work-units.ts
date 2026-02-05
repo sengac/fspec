@@ -135,10 +135,10 @@ export function registerRepairWorkUnitsCommand(program: Command): void {
         const result = await repairWorkUnits({
           dryRun: options.dryRun,
         });
-        output.log(chalk.green(`✓ Repaired ${result.repaired} issues`));
+        output.log(`✓ Repaired ${result.repaired} issues`);
         if (result.details && result.details.length > 0) {
           result.details.forEach((detail: string) =>
-            output.log(chalk.cyan(`  - ${detail}`))
+            output.log(`  - ${detail}`)
           );
         }
       } catch (error: any) {

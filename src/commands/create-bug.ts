@@ -237,16 +237,16 @@ export async function createBugCommand(
     });
 
     if (result.success && result.workUnitId) {
-      output.log(chalk.green(`✓ Created bug ${result.workUnitId}`));
-      output.log(chalk.gray(`  Title: ${title}`));
+      output.log(`✓ Created bug ${result.workUnitId}`);
+      output.log(`  Title: ${title}`);
       if (options.description) {
-        output.log(chalk.gray(`  Description: ${options.description}`));
+        output.log(`  Description: ${options.description}`);
       }
       if (options.epic) {
-        output.log(chalk.gray(`  Epic: ${options.epic}`));
+        output.log(`  Epic: ${options.epic}`);
       }
       if (options.parent) {
-        output.log(chalk.gray(`  Parent: ${options.parent}`));
+        output.log(`  Parent: ${options.parent}`);
       }
 
       // Emit system-reminder to stderr for AI agents
@@ -256,7 +256,7 @@ export async function createBugCommand(
 
       process.exit(0);
     } else {
-      output.error(chalk.red('✗ Failed to create bug'));
+      output.error('✗ Failed to create bug');
       process.exit(1);
     }
   } catch (error: unknown) {
@@ -268,9 +268,9 @@ export async function createBugCommand(
       throw error;
     }
     if (error instanceof Error) {
-      output.error(chalk.red('Error:'), error.message);
+      output.error('Error:', error.message);
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

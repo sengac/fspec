@@ -95,14 +95,14 @@ export function registerAddArchitectureNoteCommand(program: Command): void {
     .action(async (workUnitId: string, note: string) => {
       try {
         const result = await addArchitectureNote({ workUnitId, note });
-        output.log(chalk.green('✓ Architecture note added successfully'));
+        output.log('✓ Architecture note added successfully');
         if (result.systemReminder) {
           output.log('\n' + result.systemReminder);
         }
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        output.error(chalk.red('Error:'), errorMessage);
+        output.error('Error:', errorMessage);
         process.exit(1);
       }
     });

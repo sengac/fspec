@@ -10,7 +10,10 @@ import { readFile, mkdir, writeFile } from 'fs/promises';
 import { existsSync } from 'fs';
 import { join } from 'path';
 import { generateScenarios } from '../example-mapping';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Feature file naming for bug work units', () => {
   let setup: WorkUnitTestSetup;
@@ -49,7 +52,9 @@ describe('Feature: Feature file naming for bug work units', () => {
   describe('Scenario: Bug scenario added to existing matching feature file', () => {
     it('should add bug scenario to existing feature file when capability match found', async () => {
       // Given I have a bug work unit "BUG-001" with description "fspec help displays hardcoded version 0.0.1 instead of package.json version"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['BUG-001'] = {
         id: 'BUG-001',
         type: 'bug',
@@ -111,7 +116,9 @@ Feature: Help Command
   describe('Scenario: New capability-oriented feature file created when no match found', () => {
     it('should create capability-oriented feature file when no existing match', async () => {
       // Given I have a bug work unit "BUG-002" with description "fspec help displays hardcoded version 0.0.1 instead of package.json version"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['BUG-002'] = {
         id: 'BUG-002',
         type: 'bug',
@@ -173,7 +180,9 @@ Feature: Help Command
   describe('Scenario: Edge case scenario added to existing validation feature', () => {
     it('should add edge case scenario to existing validation feature', async () => {
       // Given I have a bug work unit "BUG-003" with description "validate command crashes on empty file"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['BUG-003'] = {
         id: 'BUG-003',
         type: 'bug',
@@ -230,7 +239,9 @@ Feature: Gherkin Syntax Validation
   describe('Scenario: Regression scenario added to existing formatting feature', () => {
     it('should add regression scenario to existing formatting feature', async () => {
       // Given I have a bug work unit "BUG-004" with description "format command removes valid doc strings"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['BUG-004'] = {
         id: 'BUG-004',
         type: 'bug',

@@ -96,7 +96,7 @@ export function registerAddHotspotCommand(program: Command): void {
           });
 
           if (!result.success) {
-            output.error(chalk.red('✗ Failed to add hotspot:'), result.error);
+            output.error('✗ Failed to add hotspot:', result.error);
             process.exit(1);
           }
 
@@ -106,7 +106,7 @@ export function registerAddHotspotCommand(program: Command): void {
             )
           );
         } catch (error: any) {
-          output.error(chalk.red('✗ Failed to add hotspot:'), error.message);
+          output.error('✗ Failed to add hotspot:', error.message);
           process.exit(1);
         }
       }

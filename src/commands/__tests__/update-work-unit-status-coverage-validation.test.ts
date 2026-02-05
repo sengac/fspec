@@ -7,7 +7,10 @@ import { writeFile, mkdir, readFile } from 'fs/promises';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import type { WorkUnitsData } from '../../types';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Coverage validation missing for implementing→validating transition', () => {
   let setup: TestDirectorySetup;
@@ -118,7 +121,12 @@ Feature: Test Feature
       };
 
       await writeFile(
-        join(setup.testDir, 'spec', 'features', 'test-feature.feature.coverage'),
+        join(
+          setup.testDir,
+          'spec',
+          'features',
+          'test-feature.feature.coverage'
+        ),
         JSON.stringify(coverageData, null, 2)
       );
 

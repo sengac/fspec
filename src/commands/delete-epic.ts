@@ -101,9 +101,9 @@ export function registerDeleteEpicCommand(program: Command): void {
           epicId,
           force: options.force,
         });
-        output.log(chalk.green(`✓ Epic ${epicId} deleted successfully`));
+        output.log(`✓ Epic ${epicId} deleted successfully`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to delete epic:'), error.message);
+        output.error('✗ Failed to delete epic:', error.message);
         process.exit(1);
       }
     });

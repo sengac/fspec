@@ -31,10 +31,8 @@ export async function checkpoint(options: CheckpointOptions): Promise<{
       includeUntracked: true,
     });
 
-    output.log(
-      chalk.green(`✓ Created checkpoint "${checkpointName}" for ${workUnitId}`)
-    );
-    output.log(chalk.gray(`  Captured ${result.capturedFiles.length} file(s)`));
+    output.log(`✓ Created checkpoint "${checkpointName}" for ${workUnitId}`);
+    output.log(`  Captured ${result.capturedFiles.length} file(s)`);
 
     // Notify TUI of checkpoint change via IPC
     await sendIPCMessage({ type: 'checkpoint-changed' });
@@ -48,7 +46,7 @@ export async function checkpoint(options: CheckpointOptions): Promise<{
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    output.error(chalk.red(`✗ Failed to create checkpoint: ${errorMessage}`));
+    output.error(`✗ Failed to create checkpoint: ${errorMessage}`);
     throw error;
   }
 }
@@ -71,9 +69,9 @@ async function checkpointCommand(
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      output.error(chalk.red('Error:'), error.message);
+      output.error('Error:', error.message);
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

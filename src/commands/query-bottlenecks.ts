@@ -136,7 +136,7 @@ export function registerQueryBottlenecksCommand(program: Command): void {
         } else {
           // Text output
           if (result.bottlenecks.length === 0) {
-            output.log(chalk.green('✓ No bottlenecks found'));
+            output.log('✓ No bottlenecks found');
             return;
           }
 
@@ -150,7 +150,7 @@ export function registerQueryBottlenecksCommand(program: Command): void {
                 chalk.gray(` (${bottleneck.status})`) +
                 ` - ${bottleneck.title}`
             );
-            output.log(chalk.yellow(`  Bottleneck Score: ${bottleneck.score}`));
+            output.log(`  Bottleneck Score: ${bottleneck.score}`);
             output.log(
               chalk.gray(
                 `  Direct Blocks: ${bottleneck.directBlocks.join(', ')}`
@@ -173,7 +173,7 @@ export function registerQueryBottlenecksCommand(program: Command): void {
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        output.error(chalk.red('✗ Query failed:'), errorMessage);
+        output.error('✗ Query failed:', errorMessage);
         process.exit(1);
       }
     });

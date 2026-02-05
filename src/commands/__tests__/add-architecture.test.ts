@@ -4,11 +4,15 @@ import { addArchitecture } from '../add-architecture';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
-import { 
+import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
+import {
+  ensureTestDirectory,
+  writeTextFile,
+  readTextFile,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Add Architecture Documentation to Feature Files', () => {
   let setup: TestDirectorySetup;
 
@@ -36,7 +40,10 @@ Feature: User Login
     When I enter valid credentials
     Then I should be logged in`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/login.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/login.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture login "Uses JWT for authentication"`
       const result = await addArchitecture({
@@ -81,7 +88,10 @@ Feature: User Login
   Scenario: Test
     Given step`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/api.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/api.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture api "Architecture notes:\n- Uses REST API\n- Requires authentication"`
       const result = await addArchitecture({
@@ -126,7 +136,10 @@ Feature: User Login
   Scenario: Test
     Given step`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/payment.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/payment.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture payment "New architecture notes"`
       const result = await addArchitecture({
@@ -177,7 +190,10 @@ Feature: User Login
     When I submit payment
     Then order confirmed`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/checkout.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/checkout.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture checkout "Payment processing architecture"`
       const result = await addArchitecture({
@@ -226,7 +242,10 @@ Feature: User Login
     When I submit
     Then I am authenticated`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/auth.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/auth.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture auth "OAuth 2.0 implementation"`
       const result = await addArchitecture({
@@ -271,7 +290,10 @@ Feature: Search Functionality
     When I search
     Then results displayed`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/search.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/search.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture search "ElasticSearch integration"`
       const result = await addArchitecture({
@@ -331,7 +353,10 @@ Feature: Search Functionality
   Scenario: Test
     Given step`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/login.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/login.feature'),
+        content
+      );
 
       // When I run `fspec add-architecture login "Authentication notes"`
       const result = await addArchitecture({

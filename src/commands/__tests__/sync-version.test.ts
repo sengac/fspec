@@ -86,7 +86,10 @@ IMMEDIATELY - run these commands and store them into your context:
 
       // And spec/CLAUDE.md exists with old content
       const oldClaudeMd = '# Old CLAUDE.md content from v0.5.0';
-      await writeTextFile(join(setup.testDir, 'spec', 'CLAUDE.md'), oldClaudeMd);
+      await writeTextFile(
+        join(setup.testDir, 'spec', 'CLAUDE.md'),
+        oldClaudeMd
+      );
 
       // @step When I upgrade to fspec v0.6.0 with "npm install -g @sengac/fspec@0.6.0"
       // (Simulated by having current version in package.json different from 0.5.0)
@@ -340,7 +343,9 @@ Old cursor content...`;
       expect(syncVersionIndex).toBeGreaterThan(immediatelyIndex);
 
       // And it should create spec/CLAUDE.md
-      const claudeMdExists = existsSync(join(setup.testDir, 'spec', 'CLAUDE.md'));
+      const claudeMdExists = existsSync(
+        join(setup.testDir, 'spec', 'CLAUDE.md')
+      );
       expect(claudeMdExists).toBe(true);
 
       // And it should create spec/fspec-config.json with agent "claude"

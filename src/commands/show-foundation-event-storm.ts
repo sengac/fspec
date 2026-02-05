@@ -110,7 +110,7 @@ export async function showFoundationEventStormCommand(options: {
     const result = await showFoundationEventStorm(options);
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.message);
+      output.error('Error:', result.message);
       process.exit(1);
     }
 

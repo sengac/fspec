@@ -13,7 +13,10 @@ import fs from 'fs';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 import { createCheckpoint } from '../../utils/git-checkpoint';
 import { existsSync } from 'fs';
-import { setupGitTest, type GitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupGitTest,
+  type GitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done', () => {
   let setup: GitTestSetup;
@@ -106,7 +109,10 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       });
 
       // And "AUTH-001" has automatic checkpoint "AUTH-001-auto-specifying"
-      await writeFile(join(setup.testDir, 'auto-spec.txt'), 'auto spec checkpoint');
+      await writeFile(
+        join(setup.testDir, 'auto-spec.txt'),
+        'auto spec checkpoint'
+      );
       await createCheckpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'AUTH-001-auto-specifying',
@@ -115,7 +121,10 @@ describe('Feature: Auto-checkpoints not cleaned up when work unit moves to done'
       });
 
       // And "AUTH-001" has automatic checkpoint "AUTH-001-auto-testing"
-      await writeFile(join(setup.testDir, 'auto-test.txt'), 'auto test checkpoint');
+      await writeFile(
+        join(setup.testDir, 'auto-test.txt'),
+        'auto test checkpoint'
+      );
       await createCheckpoint({
         workUnitId: 'AUTH-001',
         checkpointName: 'AUTH-001-auto-testing',

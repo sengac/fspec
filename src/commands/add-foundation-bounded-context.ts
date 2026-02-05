@@ -101,11 +101,11 @@ export async function addFoundationBoundedContextCommand(
     const result = await addFoundationBoundedContext(text);
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.message);
+      output.error('Error:', result.message);
       process.exit(1);
     }
 
-    output.log(chalk.green('✓'), result.message);
+    output.log('✓', result.message);
     process.exit(0);
   } catch (error: unknown) {
     output.error(

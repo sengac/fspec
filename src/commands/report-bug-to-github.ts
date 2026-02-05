@@ -381,7 +381,7 @@ export function registerReportBugToGitHubCommand(program: Command): void {
         interactive?: boolean;
       }) => {
         try {
-          output.log(chalk.cyan('\nGathering system context...\n'));
+          output.log('\nGathering system context...\n');
 
           const result = await reportBugToGitHub({
             projectRoot: cmdOptions.projectRoot,
@@ -392,7 +392,7 @@ export function registerReportBugToGitHubCommand(program: Command): void {
           });
 
           if (result.cancelled) {
-            output.log(chalk.yellow('\n✗ Bug report cancelled\n'));
+            output.log('\n✗ Bug report cancelled\n');
             return;
           }
 
@@ -407,7 +407,7 @@ export function registerReportBugToGitHubCommand(program: Command): void {
         } catch (error: unknown) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
-          output.error(chalk.red('Error:'), errorMessage);
+          output.error('Error:', errorMessage);
           process.exit(1);
         }
       }

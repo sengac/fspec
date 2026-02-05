@@ -106,19 +106,17 @@ export function registerListPrefixesCommand(program: Command): void {
       try {
         const result = await listPrefixes({});
         if (result.prefixes.length === 0) {
-          output.log(chalk.yellow('No prefixes found'));
+          output.log('No prefixes found');
           process.exit(0);
         }
-        output.log(chalk.bold(`\nPrefixes (${result.prefixes.length})`));
+        output.log(`\nPrefixes (${result.prefixes.length})`);
         output.log('');
         for (const prefix of result.prefixes) {
-          output.log(chalk.cyan(prefix.prefix));
-          output.log(chalk.gray(`  ${prefix.description}`));
+          output.log(prefix.prefix);
+          output.log(`  ${prefix.description}`);
           if (prefix.totalWorkUnits > 0) {
             output.log(
-              chalk.gray(
-                `  Work Units: ${prefix.completedWorkUnits}/${prefix.totalWorkUnits} (${prefix.completionPercentage}%)`
-              )
+              `  Work Units: ${prefix.completedWorkUnits}/${prefix.totalWorkUnits} (${prefix.completionPercentage}%)`
             );
           }
           output.log('');
@@ -126,9 +124,9 @@ export function registerListPrefixesCommand(program: Command): void {
         process.exit(0);
       } catch (error: unknown) {
         if (error instanceof Error) {
-          output.error(chalk.red('Error:'), error.message);
+          output.error('Error:', error.message);
         } else {
-          output.error(chalk.red('Error: Unknown error occurred'));
+          output.error('Error: Unknown error occurred');
         }
         process.exit(1);
       }

@@ -2,11 +2,15 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { addScenario } from '../add-scenario';
 
-import { 
+import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
+import {
+  ensureTestDirectory,
+  writeTextFile,
+  readTextFile,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Add Scenario to Existing Feature File', () => {
   let setup: TestDirectorySetup;
 
@@ -147,7 +151,9 @@ Feature: User Login
       );
 
       // When I run `fspec add-scenario payment "Credit card payment"`
-      await addScenario('payment', 'Credit card payment', { cwd: setup.testDir });
+      await addScenario('payment', 'Credit card payment', {
+        cwd: setup.testDir,
+      });
 
       // And I run `fspec add-scenario payment "PayPal payment"`
       await addScenario('payment', 'PayPal payment', { cwd: setup.testDir });

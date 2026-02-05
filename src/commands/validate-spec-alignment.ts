@@ -92,12 +92,12 @@ export function registerValidateSpecAlignmentCommand(program: Command): void {
             chalk.red(`✗ Found ${result.issues.length} alignment issues`)
           );
           result.issues.forEach((issue: string) =>
-            output.error(chalk.red(`  - ${issue}`))
+            output.error(`  - ${issue}`)
           );
           process.exit(1);
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Validation failed:'), error.message);
+        output.error('✗ Validation failed:', error.message);
         process.exit(1);
       }
     });

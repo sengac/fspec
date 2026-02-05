@@ -170,20 +170,20 @@ export async function getScenariosCommand(options: {
     const result = await getScenarios({ tags, format });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
     if (result.warnings && result.warnings.length > 0) {
       for (const warning of result.warnings) {
-        output.warn(chalk.yellow('⚠'), warning);
+        output.warn('⚠', warning);
       }
     }
 
     if (format === 'json') {
       output.log(JSON.stringify(result.scenarios, null, 2));
     } else {
-      output.log(chalk.blue(result.message));
+      output.log(result.message);
 
       if (result.scenarios.length > 0) {
         output.log('');
@@ -198,15 +198,12 @@ export async function getScenariosCommand(options: {
         }
 
         for (const [feature, scenarios] of byFeature.entries()) {
-          output.log(chalk.bold.green(feature));
+          output.log(feature);
           for (const scenario of scenarios) {
             const tagsDisplay = scenario.tags
-              ? chalk.cyan(` [${scenario.tags.join(' ')}]`)
+              ? ` [${scenario.tags.join(' ')}]`
               : '';
-            output.log(
-              chalk.gray(`  ${scenario.line}:`),
-              scenario.name + tagsDisplay
-            );
+            output.log(`  ${scenario.line}:`, scenario.name + tagsDisplay);
           }
           output.log('');
         }
@@ -215,7 +212,7 @@ export async function getScenariosCommand(options: {
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

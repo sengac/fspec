@@ -8,7 +8,10 @@ import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { calculateCriticalPath } from '../dependencies';
 import type { WorkUnitsData } from '../../types';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
   let setup: TestDirectorySetup;

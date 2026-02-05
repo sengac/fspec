@@ -354,19 +354,19 @@ export function registerInitCommand(program: Command): void {
 
         // Check if user cancelled
         if (result.cancelled) {
-          output.log(chalk.yellow('Init cancelled'));
+          output.log('Init cancelled');
           process.exit(0);
         }
 
         // Success message (show for both CLI and interactive modes)
         if (result.success) {
           const agentNames = agentIds.join(', ');
-          output.log(chalk.green(`✓ Installed fspec for ${agentNames}`));
+          output.log(`✓ Installed fspec for ${agentNames}`);
 
           // Show detailed list of installed files
           if (result.filesInstalled.length > 0) {
             result.filesInstalled.forEach(file => {
-              output.log(chalk.dim(`  - ${file}`));
+              output.log(`  - ${file}`);
             });
           }
 
@@ -374,11 +374,11 @@ export function registerInitCommand(program: Command): void {
           const activationMessage = agent
             ? getActivationMessage(agent)
             : 'Run /fspec in your AI agent to activate';
-          output.log(chalk.green(`\nNext steps:\n${activationMessage}`));
+          output.log(`\nNext steps:\n${activationMessage}`);
         }
         process.exit(0);
       } catch (error: any) {
-        output.error(chalk.red('✗ Init failed:'), error.message);
+        output.error('✗ Init failed:', error.message);
         process.exit(1);
       }
     });

@@ -9,7 +9,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import type { CoverageFile } from '../../utils/coverage-file';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Show Coverage Statistics', () => {
   let setup: WorkUnitTestSetup;
@@ -288,7 +291,10 @@ describe('Feature: Show Coverage Statistics', () => {
 
       // Then should throw error
       await expect(
-        showCoverage('missing.feature', { format: 'markdown', cwd: setup.testDir })
+        showCoverage('missing.feature', {
+          format: 'markdown',
+          cwd: setup.testDir,
+        })
       ).rejects.toThrow('Coverage file not found');
 
       // And error message should suggest creating coverage file
@@ -318,7 +324,10 @@ describe('Feature: Show Coverage Statistics', () => {
 
       // Then should throw error with parse details
       await expect(
-        showCoverage('invalid.feature', { format: 'markdown', cwd: setup.testDir })
+        showCoverage('invalid.feature', {
+          format: 'markdown',
+          cwd: setup.testDir,
+        })
       ).rejects.toThrow('Invalid JSON');
 
       // And error message should mention recreation

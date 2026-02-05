@@ -4,11 +4,15 @@ import { updateStep } from '../update-step';
 import * as Gherkin from '@cucumber/gherkin';
 import * as Messages from '@cucumber/messages';
 
-import { 
+import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
+import {
+  ensureTestDirectory,
+  writeTextFile,
+  readTextFile,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Update Step in Scenario', () => {
   let setup: TestDirectorySetup;
 

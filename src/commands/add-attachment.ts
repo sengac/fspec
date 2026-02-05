@@ -111,10 +111,10 @@ export async function addAttachment(
     Object.assign(fileData, data);
   });
 
-  output.log(chalk.green('✓ Attachment added successfully'));
-  output.log(chalk.dim(`  File: ${relativePath}`));
+  output.log('✓ Attachment added successfully');
+  output.log(`  File: ${relativePath}`);
   if (options.description) {
-    output.log(chalk.dim(`  Description: ${options.description}`));
+    output.log(`  Description: ${options.description}`);
   }
 }
 
@@ -145,7 +145,7 @@ export function registerAddAttachmentCommand(program: Command): void {
         } catch (error: unknown) {
           const errorMessage =
             error instanceof Error ? error.message : String(error);
-          output.error(chalk.red('Error:'), errorMessage);
+          output.error('Error:', errorMessage);
           process.exit(1);
         }
       }

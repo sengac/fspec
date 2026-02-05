@@ -123,35 +123,35 @@ export async function listFeatureTagsCommand(
     const result = await listFeatureTags(featureFilePath, options);
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
     if (result.message) {
-      output.log(chalk.yellow(result.message));
+      output.log(result.message);
       process.exit(0);
     }
 
     if (options.showCategories && result.categorizedTags) {
-      output.log(chalk.bold('Tags on this feature:\n'));
+      output.log('Tags on this feature:\n');
       output.log(
         chalk.gray(`${chalk.bold('Tag').padEnd(20)} ${chalk.bold('Category')}`)
       );
-      output.log(chalk.gray('─'.repeat(50)));
+      output.log('─'.repeat(50));
 
       for (const { tag, category } of result.categorizedTags) {
         output.log(`${chalk.cyan(tag.padEnd(20))} ${chalk.gray(category)}`);
       }
     } else {
-      output.log(chalk.bold('Tags on this feature:\n'));
+      output.log('Tags on this feature:\n');
       for (const tag of result.tags) {
-        output.log(chalk.cyan(`  ${tag}`));
+        output.log(`  ${tag}`);
       }
     }
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

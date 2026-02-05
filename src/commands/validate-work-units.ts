@@ -319,13 +319,13 @@ export function registerValidateWorkUnitsCommand(program: Command): void {
       try {
         const result = await validateWorkUnits({});
         if (result.valid) {
-          output.log(chalk.green(`✓ All work units are valid`));
+          output.log(`✓ All work units are valid`);
         } else {
           output.error(
             chalk.red(`✗ Found ${result.errors.length} validation errors`)
           );
           result.errors.forEach((error: string) =>
-            output.error(chalk.red(`  - ${error}`))
+            output.error(`  - ${error}`)
           );
           process.exit(1);
         }

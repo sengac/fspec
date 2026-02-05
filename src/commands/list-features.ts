@@ -91,7 +91,7 @@ export async function listFeatures(
       }
     } catch (error) {
       // Skip files that fail to parse
-      output.warn(chalk.yellow(`Warning: Could not parse ${file}`));
+      output.warn(`Warning: Could not parse ${file}`);
     }
   }
 
@@ -108,7 +108,7 @@ export async function listFeaturesCommand(options?: {
     const result = await listFeatures({ tag: options?.tag });
 
     if (result.features.length === 0) {
-      output.log(chalk.yellow('No feature files found in spec/features/'));
+      output.log('No feature files found in spec/features/');
       process.exit(0);
     }
 
@@ -130,13 +130,13 @@ export async function listFeaturesCommand(options?: {
         )
       );
     } else {
-      output.log(chalk.green(`Found ${result.features.length} feature files`));
+      output.log(`Found ${result.features.length} feature files`);
     }
 
     process.exit(0);
   } catch (error: any) {
     if (error.message.includes('Directory not found')) {
-      output.error(chalk.red(error.message));
+      output.error(error.message);
       output.log(
         chalk.gray(
           "  Suggestion: Run 'fspec create-feature' to create your first feature"
@@ -144,7 +144,7 @@ export async function listFeaturesCommand(options?: {
       );
       process.exit(2);
     }
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

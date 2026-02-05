@@ -72,7 +72,7 @@ export async function listTagsCommand(
       );
 
       if (category.tags.length === 0) {
-        output.log(chalk.gray('  No tags registered'));
+        output.log('  No tags registered');
       } else {
         for (const tag of category.tags) {
           output.log(`  ${chalk.green(tag.tag)} - ${tag.description}`);
@@ -84,7 +84,7 @@ export async function listTagsCommand(
     process.exit(0);
   } catch (error: any) {
     if (error.message.includes('tags.json not found')) {
-      output.error(chalk.red(error.message));
+      output.error(error.message);
       output.log(
         chalk.yellow(
           '  Suggestion: Create spec/tags.json or use "fspec register-tag" to add tags'
@@ -92,7 +92,7 @@ export async function listTagsCommand(
       );
       process.exit(2);
     }
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

@@ -42,7 +42,7 @@ export async function discoverEventStormCommand(
   ) as WorkUnitsData;
 
   if (!workUnitsData.workUnits[options.workUnitId]) {
-    output.error(chalk.red(`✗ Work unit ${options.workUnitId} not found`));
+    output.error(`✗ Work unit ${options.workUnitId} not found`);
     process.exit(1);
   }
 

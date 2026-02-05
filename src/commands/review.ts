@@ -578,7 +578,7 @@ export function registerReviewCommand(program: Command): void {
         output.log(result.output);
       } catch (error) {
         if (error instanceof Error) {
-          output.error(chalk.red('Error:'), error.message);
+          output.error('Error:', error.message);
           process.exit(1);
         }
         throw error;

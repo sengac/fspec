@@ -191,7 +191,7 @@ export function registerAddDomainEventCommand(program: Command): void {
           )
         );
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to add domain event:'), error.message);
+        output.error('✗ Failed to add domain event:', error.message);
         process.exit(1);
       }
     });

@@ -134,18 +134,18 @@ export async function createFeatureCommand(name: string): Promise<void> {
     const result = await createFeature(name);
     const fileName = result.filePath.split('/').slice(-2).join('/'); // spec/features/file.feature
 
-    output.log(chalk.green(`✓ Created ${fileName}`));
-    output.log(chalk.gray('  Edit the file to add your scenarios'));
+    output.log(`✓ Created ${fileName}`);
+    output.log('  Edit the file to add your scenarios');
 
     // Display coverage file creation result
     if (result.coverageFile.status === 'created') {
-      output.log(chalk.green(result.coverageFile.message));
+      output.log(result.coverageFile.message);
     } else if (result.coverageFile.status === 'skipped') {
-      output.log(chalk.yellow(result.coverageFile.message));
+      output.log(result.coverageFile.message);
     } else if (result.coverageFile.status === 'recreated') {
-      output.log(chalk.yellow(result.coverageFile.message));
+      output.log(result.coverageFile.message);
     } else if (result.coverageFile.status === 'error') {
-      output.log(chalk.red(result.coverageFile.message));
+      output.log(result.coverageFile.message);
     }
 
     // Display file naming reminder if anti-pattern detected
@@ -164,7 +164,7 @@ export async function createFeatureCommand(name: string): Promise<void> {
     process.exit(0);
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    output.error(chalk.red('Error:'), errorMessage);
+    output.error('Error:', errorMessage);
     process.exit(1);
   }
 }

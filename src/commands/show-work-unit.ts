@@ -324,84 +324,84 @@ export async function showWorkUnitCommand(
     if (options.format === 'json') {
       output.log(JSON.stringify(result, null, 2));
     } else {
-      output.log(chalk.bold(`\n${result.id}`));
-      output.log(chalk.gray(`Type: ${result.type}`));
-      output.log(chalk.gray(`Status: ${result.status}`));
+      output.log(`\n${result.id}`);
+      output.log(`Type: ${result.type}`);
+      output.log(`Status: ${result.status}`);
       output.log('');
-      output.log(chalk.bold(result.title));
+      output.log(result.title);
       if (result.description) {
-        output.log(chalk.gray(result.description));
+        output.log(result.description);
       }
       output.log('');
 
       if (result.epic) {
-        output.log(chalk.gray('Epic:'), result.epic);
+        output.log('Epic:', result.epic);
       }
       if (result.parent) {
-        output.log(chalk.gray('Parent:'), result.parent);
+        output.log('Parent:', result.parent);
       }
       if (result.children && result.children.length > 0) {
-        output.log(chalk.gray('Children:'), result.children.join(', '));
+        output.log('Children:', result.children.join(', '));
       }
 
       // Display dependencies
       if (result.blocks && result.blocks.length > 0) {
-        output.log(chalk.gray('Blocks:'), result.blocks.join(', '));
+        output.log('Blocks:', result.blocks.join(', '));
       }
       if (result.blockedBy && result.blockedBy.length > 0) {
-        output.log(chalk.gray('Blocked By:'), result.blockedBy.join(', '));
+        output.log('Blocked By:', result.blockedBy.join(', '));
       }
       if (result.dependsOn && result.dependsOn.length > 0) {
-        output.log(chalk.gray('Depends On:'), result.dependsOn.join(', '));
+        output.log('Depends On:', result.dependsOn.join(', '));
       }
       if (result.relatesTo && result.relatesTo.length > 0) {
-        output.log(chalk.gray('Related To:'), result.relatesTo.join(', '));
+        output.log('Related To:', result.relatesTo.join(', '));
       }
 
       if (result.rules && result.rules.length > 0) {
-        output.log(chalk.cyan('\nRules:'));
+        output.log('\nRules:');
         result.rules.forEach(rule => {
           output.log(`  ${rule}`);
         });
       }
 
       if (result.examples && result.examples.length > 0) {
-        output.log(chalk.cyan('\nExamples:'));
+        output.log('\nExamples:');
         result.examples.forEach(example => {
           output.log(`  ${example}`);
         });
       }
 
       if (result.questions && result.questions.length > 0) {
-        output.log(chalk.cyan('\nQuestions:'));
+        output.log('\nQuestions:');
         result.questions.forEach(question => {
           output.log(`  ${question}`);
         });
       }
 
       if (result.assumptions && result.assumptions.length > 0) {
-        output.log(chalk.cyan('\nAssumptions:'));
+        output.log('\nAssumptions:');
         result.assumptions.forEach((assumption, idx) => {
           output.log(`  ${idx + 1}. ${assumption}`);
         });
       }
 
       if (result.architectureNotes && result.architectureNotes.length > 0) {
-        output.log(chalk.cyan('\nArchitecture Notes:'));
+        output.log('\nArchitecture Notes:');
         result.architectureNotes.forEach(note => {
           output.log(`  ${note}`);
         });
       }
 
       if (result.attachments && result.attachments.length > 0) {
-        output.log(chalk.cyan('\nAttachments:'));
+        output.log('\nAttachments:');
         result.attachments.forEach((attachment, idx) => {
           output.log(`  ${idx + 1}. ${attachment}`);
         });
       }
 
       if (result.virtualHooks && result.virtualHooks.length > 0) {
-        output.log(chalk.cyan('\nVirtual Hooks:'));
+        output.log('\nVirtual Hooks:');
         const hooksByEvent: Record<string, any[]> = {};
         for (const hook of result.virtualHooks) {
           if (!hooksByEvent[hook.event]) {
@@ -421,13 +421,13 @@ export async function showWorkUnitCommand(
             output.log(
               `    • ${hook.name} ${blockingBadge} ${gitContextBadge}`
             );
-            output.log(chalk.gray(`      ${hook.command}`));
+            output.log(`      ${hook.command}`);
           }
         }
       }
 
       if (result.linkedFeatures && result.linkedFeatures.length > 0) {
-        output.log(chalk.cyan('\nLinked Features:'));
+        output.log('\nLinked Features:');
         for (const feature of result.linkedFeatures) {
           output.log(`\n  ${chalk.bold(feature.file)}`);
           for (const scenario of feature.scenarios) {
@@ -439,14 +439,8 @@ export async function showWorkUnitCommand(
       }
 
       output.log('');
-      output.log(
-        chalk.gray('Created:'),
-        new Date(result.createdAt).toLocaleString()
-      );
-      output.log(
-        chalk.gray('Updated:'),
-        new Date(result.updatedAt).toLocaleString()
-      );
+      output.log('Created:', new Date(result.createdAt).toLocaleString());
+      output.log('Updated:', new Date(result.updatedAt).toLocaleString());
       output.log('');
 
       // Display system reminders if any
@@ -461,9 +455,9 @@ export async function showWorkUnitCommand(
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      output.error(chalk.red('Error:'), error.message);
+      output.error('Error:', error.message);
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

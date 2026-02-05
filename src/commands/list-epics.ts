@@ -106,24 +106,22 @@ export async function listEpicsCommand(): Promise<void> {
     const result = await listEpics({});
 
     if (result.epics.length === 0) {
-      output.log(chalk.yellow('No epics found'));
+      output.log('No epics found');
       process.exit(0);
     }
 
-    output.log(chalk.bold(`\nEpics (${result.epics.length})`));
+    output.log(`\nEpics (${result.epics.length})`);
     output.log('');
 
     for (const epic of result.epics) {
-      output.log(chalk.cyan(epic.id));
+      output.log(epic.id);
       output.log(`  ${epic.title}`);
       if (epic.description) {
-        output.log(chalk.gray(`  ${epic.description}`));
+        output.log(`  ${epic.description}`);
       }
       if (epic.totalWorkUnits > 0) {
         output.log(
-          chalk.gray(
-            `  Work Units: ${epic.completedWorkUnits}/${epic.totalWorkUnits} (${epic.completionPercentage}%)`
-          )
+          `  Work Units: ${epic.completedWorkUnits}/${epic.totalWorkUnits} (${epic.completionPercentage}%)`
         );
       }
       output.log('');
@@ -132,9 +130,9 @@ export async function listEpicsCommand(): Promise<void> {
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      output.error(chalk.red('Error:'), error.message);
+      output.error('Error:', error.message);
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

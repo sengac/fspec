@@ -101,7 +101,7 @@ export function registerRemoveExampleCommand(program: Command): void {
           chalk.green(`✓ Removed example: "${result.removedExample}"`)
         );
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to remove example:'), error.message);
+        output.error('✗ Failed to remove example:', error.message);
         process.exit(1);
       }
     });

@@ -62,11 +62,11 @@ export function registerListVirtualHooksCommand(program: Command): void {
           return;
         }
 
-        output.log(chalk.bold(`\nVirtual Hooks for ${workUnitId}:\n`));
+        output.log(`\nVirtual Hooks for ${workUnitId}:\n`);
 
         // Display hooks grouped by event
         for (const [event, hooks] of Object.entries(result.hooksByEvent)) {
-          output.log(chalk.cyan(`  ${event}:`));
+          output.log(`  ${event}:`);
           for (const hook of hooks) {
             const blockingBadge = hook.blocking
               ? chalk.red('[blocking]')
@@ -77,7 +77,7 @@ export function registerListVirtualHooksCommand(program: Command): void {
             output.log(
               `    • ${hook.name} ${blockingBadge} ${gitContextBadge}`
             );
-            output.log(chalk.gray(`      ${hook.command}`));
+            output.log(`      ${hook.command}`);
           }
         }
         output.log();

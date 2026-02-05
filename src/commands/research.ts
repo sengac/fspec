@@ -5,7 +5,7 @@ import { listResearchTools, TOOL_REGISTRY } from './research-tool-list';
 import { getResearchTool } from '../research-tools/registry';
 import type { Command } from 'commander';
 
-import { output } from '../utils/output';
+import { output, getFspecPositionalArgs } from '../utils/output';
 export interface ResearchTool {
   name: string;
   path: string;
@@ -300,33 +300,58 @@ export function registerResearchCommand(program: Command): void {
           return;
         }
 
-        // Get all arguments after 'research --tool=<name>'
-        const allArgs = process.argv.slice(2);
-        const forwardedArgs: string[] = [];
-        let skipNext = false;
+        // Get all arguments to forward to the tool
+        // RES-022: Use fspec positional args when available (invoked via Fspec tool)
+        // Fall back to process.argv for CLI invocation
+        const fspecArgs = getFspecPositionalArgs();
+        let forwardedArgs: string[];
 
-        for (let i = 0; i < allArgs.length; i++) {
-          const arg = allArgs[i];
+        if (fspecArgs !== null) {
+          // Invoked via Fspec tool - use the positional args directly
+          // These have already been extracted by fspec-callback
+          forwardedArgs = fspecArgs.filter(arg => {
+            // Filter out any fspec-specific flags that shouldn't go to the tool
+            if (arg === '--tool' || arg.startsWith('--tool=')) {
+              return false;
+            }
+            if (arg === '--work-unit' || arg.startsWith('--work-unit=')) {
+              return false;
+            }
+            return true;
+          });
+        } else {
+          // CLI invocation - parse process.argv
+          const allArgs = process.argv.slice(2);
+          forwardedArgs = [];
+          let skipNext = false;
 
-          if (skipNext) {
-            skipNext = false;
-            continue;
+          for (let i = 0; i < allArgs.length; i++) {
+            const arg = allArgs[i];
+
+            if (skipNext) {
+              skipNext = false;
+              continue;
+            }
+
+            // Skip --tool and its value
+            if (arg === '--tool' || arg.startsWith('--tool=')) {
+              if (arg === '--tool') {
+                skipNext = true;
+              }
+              continue;
+            }
+
+            // Skip --work-unit and its value (fspec handles this)
+            if (arg === '--work-unit' || arg.startsWith('--work-unit=')) {
+              if (arg === '--work-unit') {
+                skipNext = true;
+              }
+              continue;
+            }
+
+            // Forward everything else to the tool
+            forwardedArgs.push(arg);
           }
-
-          // Skip --tool and its value
-          if (arg === '--tool' || arg.startsWith('--tool=')) {
-            if (arg === '--tool') skipNext = true;
-            continue;
-          }
-
-          // Skip --work-unit and its value (fspec handles this)
-          if (arg === '--work-unit' || arg.startsWith('--work-unit=')) {
-            if (arg === '--work-unit') skipNext = true;
-            continue;
-          }
-
-          // Forward everything else to the tool
-          forwardedArgs.push(arg);
         }
 
         // Check if --help is requested BEFORE loading tool (BUG-074 fix)

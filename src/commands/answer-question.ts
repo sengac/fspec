@@ -148,9 +148,9 @@ export function registerAnswerQuestionCommand(program: Command): void {
             answer: options.answer,
             addTo: options.addTo as 'rule' | 'assumption' | 'none',
           });
-          output.log(chalk.green(`✓ Answered question: "${result.question}"`));
+          output.log(`✓ Answered question: "${result.question}"`);
           if (options.answer) {
-            output.log(chalk.dim(`  Answer: "${options.answer}"`));
+            output.log(`  Answer: "${options.answer}"`);
           }
           if (result.addedTo && result.addedContent) {
             output.log(

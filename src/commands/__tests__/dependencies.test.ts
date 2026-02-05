@@ -56,7 +56,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: setup.testDir });
+      await addDependency(
+        'AUTH-001',
+        { blocks: 'API-001' },
+        { cwd: setup.testDir }
+      );
 
       const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
@@ -87,7 +91,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('UI-001', { blockedBy: 'API-001' }, { cwd: setup.testDir });
+      await addDependency(
+        'UI-001',
+        { blockedBy: 'API-001' },
+        { cwd: setup.testDir }
+      );
 
       const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].relationships.blockedBy).toContain(
@@ -265,7 +273,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
       await expect(
-        addDependency('AUTH-001', { blocks: 'AUTH-001' }, { cwd: setup.testDir })
+        addDependency(
+          'AUTH-001',
+          { blocks: 'AUTH-001' },
+          { cwd: setup.testDir }
+        )
       ).rejects.toThrow('Cannot create dependency to self');
     });
   });
@@ -316,7 +328,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       workUnits.states.implementing.push('API-001');
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('UI-001', { blockedBy: 'API-001' }, { cwd: setup.testDir });
+      await addDependency(
+        'UI-001',
+        { blockedBy: 'API-001' },
+        { cwd: setup.testDir }
+      );
 
       const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('blocked');
@@ -481,7 +497,9 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      const output = await queryDependencyChain('AUTH-001', { cwd: setup.testDir });
+      const output = await queryDependencyChain('AUTH-001', {
+        cwd: setup.testDir,
+      });
 
       expect(output).toContain('AUTH-001 → API-001 → UI-001 → MOBILE-001');
       expect(output).toContain('Chain depth: 4');
@@ -665,8 +683,16 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: setup.testDir });
-      await addDependency('AUTH-001', { blocks: 'UI-001' }, { cwd: setup.testDir });
+      await addDependency(
+        'AUTH-001',
+        { blocks: 'API-001' },
+        { cwd: setup.testDir }
+      );
+      await addDependency(
+        'AUTH-001',
+        { blocks: 'UI-001' },
+        { cwd: setup.testDir }
+      );
 
       const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['AUTH-001'].relationships.blocks).toContain(
@@ -714,7 +740,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       };
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await addDependency('AUTH-001', { blocks: 'API-001' }, { cwd: setup.testDir });
+      await addDependency(
+        'AUTH-001',
+        { blocks: 'API-001' },
+        { cwd: setup.testDir }
+      );
       await addDependency(
         'AUTH-001',
         { dependsOn: 'DB-001' },
@@ -839,7 +869,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       workUnits.states.validating.push('API-001');
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await updateWorkUnit('API-001', { status: 'done' }, { cwd: setup.testDir });
+      await updateWorkUnit(
+        'API-001',
+        { status: 'done' },
+        { cwd: setup.testDir }
+      );
 
       const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('backlog');
@@ -863,7 +897,11 @@ describe('Feature: Work Unit Dependency Management', () => {
       workUnits.states.blocked.push('UI-001');
       await writeJsonTestFile(setup.workUnitsFile, workUnits);
 
-      await updateWorkUnit('UI-001', { status: 'backlog' }, { cwd: setup.testDir });
+      await updateWorkUnit(
+        'UI-001',
+        { status: 'backlog' },
+        { cwd: setup.testDir }
+      );
 
       const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('backlog');
@@ -961,7 +999,11 @@ describe('Feature: Work Unit Dependency Management', () => {
 
       // Blocked can only transition to backlog/specifying/testing/implementing/validating
       // Should be able to move to backlog first
-      await updateWorkUnit('UI-001', { status: 'backlog' }, { cwd: setup.testDir });
+      await updateWorkUnit(
+        'UI-001',
+        { status: 'backlog' },
+        { cwd: setup.testDir }
+      );
 
       const updated = await readJsonTestFile(setup.workUnitsFile);
       expect(updated.workUnits['UI-001'].status).toBe('backlog');
@@ -1367,7 +1409,11 @@ describe('Feature: Work Unit Dependency Management', () => {
     describe('Scenario: Query dependencies for non-existent work unit', () => {
       it('should throw error with work unit not found message', async () => {
         await expect(
-          showDependencies('INVALID-999', { graph: false }, { cwd: setup.testDir })
+          showDependencies(
+            'INVALID-999',
+            { graph: false },
+            { cwd: setup.testDir }
+          )
         ).rejects.toThrow("Work unit 'INVALID-999' does not exist");
       });
     });

@@ -10,7 +10,10 @@ import { writeFile } from 'fs/promises';
 import { join } from 'path';
 import { setUserStory } from '../set-user-story';
 import type { WorkUnitsData } from '../../types';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: User Story Management in Work Units', () => {
   let setup: WorkUnitTestSetup;

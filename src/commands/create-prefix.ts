@@ -78,9 +78,9 @@ export function registerCreatePrefixCommand(program: Command): void {
           prefix,
           description,
         });
-        output.log(chalk.green(`✓ Prefix ${prefix} created successfully`));
+        output.log(`✓ Prefix ${prefix} created successfully`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to create prefix:'), error.message);
+        output.error('✗ Failed to create prefix:', error.message);
         process.exit(1);
       }
     });

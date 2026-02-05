@@ -11,7 +11,10 @@ import { join } from 'path';
 import { writeFile, readFile } from 'fs/promises';
 import { generateScenarios } from '../generate-scenarios';
 import { auditScenarios } from '../audit-scenarios';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Scenario deduplication and refactoring detection during generation', () => {
   let setup: WorkUnitTestSetup;

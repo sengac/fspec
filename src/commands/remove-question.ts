@@ -101,7 +101,7 @@ export function registerRemoveQuestionCommand(program: Command): void {
           chalk.green(`✓ Removed question: "${result.removedQuestion}"`)
         );
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to remove question:'), error.message);
+        output.error('✗ Failed to remove question:', error.message);
         process.exit(1);
       }
     });

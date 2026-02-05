@@ -41,9 +41,7 @@ export async function readJsonTestFile<T = unknown>(
 /**
  * Read text content from a file.
  */
-export async function readTextFile(
-  filePath: string
-): Promise<string> {
+export async function readTextFile(filePath: string): Promise<string> {
   return await readFile(filePath, 'utf-8');
 }
 

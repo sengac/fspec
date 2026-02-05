@@ -92,9 +92,9 @@ export function registerAddQuestionCommand(program: Command): void {
     .action(async (workUnitId: string, question: string) => {
       try {
         await addQuestion({ workUnitId, question });
-        output.log(chalk.green(`✓ Question added successfully`));
+        output.log(`✓ Question added successfully`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to add question:'), error.message);
+        output.error('✗ Failed to add question:', error.message);
         process.exit(1);
       }
     });

@@ -183,10 +183,10 @@ export function registerRemoveInitFilesCommand(program: Command): void {
         });
 
         // Show success message with details
-        output.log(chalk.green('✓ Successfully removed fspec init files'));
+        output.log('✓ Successfully removed fspec init files');
         if (result.filesRemoved.length > 0) {
           result.filesRemoved.forEach(file => {
-            output.log(chalk.dim(`  - ${file}`));
+            output.log(`  - ${file}`);
           });
         }
 

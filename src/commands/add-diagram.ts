@@ -143,16 +143,16 @@ export async function addDiagramCommand(
     });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
-    output.log(chalk.green('✓'), result.message);
-    output.log(chalk.gray('  Updated: spec/foundation.json'));
-    output.log(chalk.gray('  Regenerated: spec/FOUNDATION.md'));
+    output.log('✓', result.message);
+    output.log('  Updated: spec/foundation.json');
+    output.log('  Regenerated: spec/FOUNDATION.md');
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

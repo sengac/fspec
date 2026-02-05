@@ -9,7 +9,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { linkCoverage } from '../link-coverage';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: AI agents skip docstring step validation by using --skip-step-validation flag', () => {
   let setup: WorkUnitTestSetup;

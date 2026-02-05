@@ -62,10 +62,7 @@ describe('Feature: remove-capability command', () => {
         },
         personas: [],
       };
-      await writeJsonTestFile(
-        foundationPath,
-        foundation
-      );
+      await writeJsonTestFile(foundationPath, foundation);
 
       // When I run `fspec remove-capability "Mind Mapping"`
       await removeCapability(setup.testDir, 'Mind Mapping');

@@ -99,7 +99,7 @@ export function registerAddPolicyCommand(program: Command): void {
           });
 
           if (!result.success) {
-            output.error(chalk.red('✗ Failed to add policy:'), result.error);
+            output.error('✗ Failed to add policy:', result.error);
             process.exit(1);
           }
 
@@ -109,7 +109,7 @@ export function registerAddPolicyCommand(program: Command): void {
             )
           );
         } catch (error: any) {
-          output.error(chalk.red('✗ Failed to add policy:'), error.message);
+          output.error('✗ Failed to add policy:', error.message);
           process.exit(1);
         }
       }

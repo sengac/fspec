@@ -106,7 +106,7 @@ export function registerQueryEstimationGuideCommand(program: Command): void {
           output.log(JSON.stringify(result, null, 2));
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Query failed:'), error.message);
+        output.error('✗ Query failed:', error.message);
         process.exit(1);
       }
     });

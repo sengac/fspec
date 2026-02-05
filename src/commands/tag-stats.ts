@@ -190,63 +190,54 @@ export async function tagStatsCommand(): Promise<void> {
     const result = await tagStats();
 
     // Display overall statistics
-    output.log(chalk.bold.blue('\nTag Usage Statistics'));
-    output.log(chalk.gray('─'.repeat(50)));
-    output.log(`Total feature files: ${chalk.cyan(result.totalFiles)}`);
-    output.log(`Unique tags used: ${chalk.cyan(result.uniqueTags)}`);
-    output.log(`Total tag occurrences: ${chalk.cyan(result.totalOccurrences)}`);
+    output.log('\nTag Usage Statistics');
+    output.log('─'.repeat(50));
+    output.log(`Total feature files: ${result.totalFiles}`);
+    output.log(`Unique tags used: ${result.uniqueTags}`);
+    output.log(`Total tag occurrences: ${result.totalOccurrences}`);
 
     if (!result.tagsFileFound) {
-      output.log(chalk.yellow('\n⚠ Warning: spec/tags.json not found'));
+      output.log('\n⚠ Warning: spec/tags.json not found');
     }
 
     if (result.invalidFiles.length > 0) {
       output.log(
-        chalk.yellow(
-          `\n⚠ Warning: ${result.invalidFiles.length} file(s) with invalid syntax skipped:`
-        )
+        `\n⚠ Warning: ${result.invalidFiles.length} file(s) with invalid syntax skipped:`
       );
       for (const file of result.invalidFiles) {
-        output.log(chalk.yellow(`  - ${file}`));
+        output.log(`  - ${file}`);
       }
     }
 
     // Display per-category statistics
     if (result.categories.length > 0) {
-      output.log(chalk.bold.blue('\n\nTag Counts by Category'));
-      output.log(chalk.gray('─'.repeat(50)));
+      output.log('\n\nTag Counts by Category');
+      output.log('─'.repeat(50));
 
       for (const category of result.categories) {
-        output.log(
-          chalk.bold(`\n${category.name}`) +
-            chalk.gray(` (${category.tags.length} tags)`)
-        );
+        output.log(`\n${category.name} (${category.tags.length} tags)`);
         for (const tagCount of category.tags) {
-          output.log(
-            `  ${chalk.green(tagCount.tag.padEnd(30))} ${chalk.cyan(tagCount.count)}`
-          );
+          output.log(`  ${tagCount.tag.padEnd(30)} ${tagCount.count}`);
         }
       }
     }
 
     // Display unused tags
     if (result.unusedTags.length > 0) {
-      output.log(chalk.bold.blue('\n\nUnused Registered Tags'));
-      output.log(chalk.gray('─'.repeat(50)));
+      output.log('\n\nUnused Registered Tags');
+      output.log('─'.repeat(50));
       output.log(
-        chalk.yellow(
-          `${result.unusedTags.length} registered tag(s) not used in any feature file:\n`
-        )
+        `${result.unusedTags.length} registered tag(s) not used in any feature file:\n`
       );
       for (const tag of result.unusedTags) {
-        output.log(chalk.yellow(`  ${tag}`));
+        output.log(`  ${tag}`);
       }
     }
 
     output.log('');
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(2);
   }
 }

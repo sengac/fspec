@@ -92,21 +92,21 @@ export async function createEpicCommand(
     });
 
     if (result.success) {
-      output.log(chalk.green(`✓ Created epic ${epicId}`));
-      output.log(chalk.gray(`  Title: ${title}`));
+      output.log(`✓ Created epic ${epicId}`);
+      output.log(`  Title: ${title}`);
       if (options.description) {
-        output.log(chalk.gray(`  Description: ${options.description}`));
+        output.log(`  Description: ${options.description}`);
       }
       process.exit(0);
     } else {
-      output.error(chalk.red('✗ Failed to create epic'));
+      output.error('✗ Failed to create epic');
       process.exit(1);
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      output.error(chalk.red('Error:'), error.message);
+      output.error('Error:', error.message);
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

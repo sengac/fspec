@@ -162,7 +162,7 @@ export async function syncVersion(
 
     const agent = getAgentById(detection.agentId);
     if (!agent) {
-      output.warn(chalk.yellow('⚠️  Unknown agent detected.'));
+      output.warn('⚠️  Unknown agent detected.');
       return 1;
     }
 
@@ -184,7 +184,7 @@ export async function syncVersion(
     return 1;
   } catch (error: any) {
     // If version check fails (permissions, missing files), warn but continue
-    output.warn(chalk.yellow(`⚠️  Version check failed: ${error.message}`));
+    output.warn(`⚠️  Version check failed: ${error.message}`);
     return 0;
   }
 }

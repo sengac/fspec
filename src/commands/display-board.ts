@@ -121,7 +121,7 @@ export function registerBoardCommand(program: Command): void {
           );
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to display board:'), error.message);
+        output.error('✗ Failed to display board:', error.message);
         process.exit(1);
       }
     });

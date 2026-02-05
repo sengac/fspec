@@ -1,8 +1,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
-import { writeJsonTestFile, readJsonTestFile } from '../../test-helpers/test-file-operations';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 import { createWorkUnit } from '../work-unit';
 import { updateWorkUnit } from '../work-unit';
 import { deleteWorkUnit } from '../work-unit';
@@ -33,11 +39,15 @@ describe('Feature: Work Unit Management', () => {
       // (already initialized empty in beforeEach)
 
       // When I run "fspec create-story AUTH 'Implement OAuth login'"
-      await createWorkUnit('AUTH', 'Implement OAuth login', { cwd: setup.testDir });
+      await createWorkUnit('AUTH', 'Implement OAuth login', {
+        cwd: setup.testDir,
+      });
 
       // Then the command should succeed
       // And a work unit "AUTH-001" should be created in spec/work-units.json
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       expect(workUnits.workUnits['AUTH-001']).toBeDefined();
 
       // And the work unit should have title "Implement OAuth login"
@@ -71,7 +81,9 @@ describe('Feature: Work Unit Management', () => {
       await writeFile(setup.prefixesFile, JSON.stringify(prefixes, null, 2));
 
       // And a work unit "AUTH-001" exists
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'First work unit',
@@ -83,7 +95,9 @@ describe('Feature: Work Unit Management', () => {
       await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec create-story AUTH 'Add password reset'"
-      await createWorkUnit('AUTH', 'Add password reset', { cwd: setup.testDir });
+      await createWorkUnit('AUTH', 'Add password reset', {
+        cwd: setup.testDir,
+      });
 
       // Then the command should succeed
       // And a work unit "AUTH-002" should be created
@@ -125,7 +139,9 @@ describe('Feature: Work Unit Management', () => {
 
       // Then the command should succeed
       // And the work unit "AUTH-001" should have epic "epic-user-management"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       expect(workUnits.workUnits['AUTH-001'].epic).toBe('epic-user-management');
 
       // And the epic should reference work unit "AUTH-001"
@@ -152,7 +168,9 @@ describe('Feature: Work Unit Management', () => {
 
       // Then the command should succeed
       // And the work unit should have description "Add OAuth 2.0 with Google and GitHub"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       expect(workUnits.workUnits['AUTH-001'].description).toBe(
         'Add OAuth 2.0 with Google and GitHub'
       );
@@ -168,7 +186,9 @@ describe('Feature: Work Unit Management', () => {
       await writeFile(setup.prefixesFile, JSON.stringify(prefixes, null, 2));
 
       // And a work unit "AUTH-001" exists with title "OAuth integration"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth integration',
@@ -266,7 +286,9 @@ describe('Feature: Work Unit Management', () => {
     it('should update title and timestamp', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with title "Old title"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       const oldTimestamp = new Date('2024-01-01T00:00:00Z').toISOString();
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
@@ -306,7 +328,9 @@ describe('Feature: Work Unit Management', () => {
     it('should update description field', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -339,7 +363,9 @@ describe('Feature: Work Unit Management', () => {
     it('should update epic reference and bidirectional link', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -385,7 +411,9 @@ describe('Feature: Work Unit Management', () => {
     it('should fail with epic validation error', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -416,7 +444,9 @@ describe('Feature: Work Unit Management', () => {
     it('should display work unit with all fields', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with detailed data
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth integration',
@@ -444,7 +474,9 @@ describe('Feature: Work Unit Management', () => {
     it('should output valid JSON with all fields', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -474,7 +506,9 @@ describe('Feature: Work Unit Management', () => {
     it('should display all work units', async () => {
       // Given I have a project with spec directory
       // And work units exist
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -516,7 +550,9 @@ describe('Feature: Work Unit Management', () => {
     it('should only display work units with matching status', async () => {
       // Given I have a project with spec directory
       // And work units exist with different statuses
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         status: 'backlog',
@@ -543,7 +579,10 @@ describe('Feature: Work Unit Management', () => {
       await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec list-work-units --status=backlog"
-      const output = await listWorkUnits({ cwd: setup.testDir, status: 'backlog' });
+      const output = await listWorkUnits({
+        cwd: setup.testDir,
+        status: 'backlog',
+      });
 
       // Then the command should succeed
       // And the output should contain work units in backlog
@@ -559,7 +598,9 @@ describe('Feature: Work Unit Management', () => {
     it('should only display work units with matching prefix', async () => {
       // Given I have a project with spec directory
       // And work units exist with different prefixes
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth work',
@@ -585,7 +626,10 @@ describe('Feature: Work Unit Management', () => {
       await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec list-work-units --prefix=AUTH"
-      const output = await listWorkUnits({ cwd: setup.testDir, prefix: 'AUTH' });
+      const output = await listWorkUnits({
+        cwd: setup.testDir,
+        prefix: 'AUTH',
+      });
 
       // Then the command should succeed
       // And the output should contain AUTH work units
@@ -601,7 +645,9 @@ describe('Feature: Work Unit Management', () => {
     it('should only display work units with matching epic', async () => {
       // Given I have a project with spec directory
       // And an epic exists with work units
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth 1',
@@ -649,7 +695,9 @@ describe('Feature: Work Unit Management', () => {
     it('should delete work unit after confirmation', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with no dependencies
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -680,7 +728,9 @@ describe('Feature: Work Unit Management', () => {
     it('should delete without prompting', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -707,7 +757,9 @@ describe('Feature: Work Unit Management', () => {
     it('should fail with helpful error message', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" has child "AUTH-002"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Parent',
@@ -749,7 +801,9 @@ describe('Feature: Work Unit Management', () => {
     it('should fail with blocking relationship error', async () => {
       // Given I have a project with spec directory
       // And work unit "AUTH-001" is blockedBy "API-001"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['API-001'] = {
         id: 'API-001',
         title: 'API work',
@@ -818,7 +872,9 @@ describe('Feature: Work Unit Management', () => {
       });
 
       // Then work unit "AUTH-001" should have 3 children
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       expect(workUnits.workUnits['AUTH-001'].children).toHaveLength(3);
       expect(workUnits.workUnits['AUTH-001'].children).toEqual([
         'AUTH-002',
@@ -837,7 +893,9 @@ describe('Feature: Work Unit Management', () => {
     it('should detect and prevent circular relationships', async () => {
       // Given I have a project with spec directory
       // And work unit "AUTH-002" has parent "AUTH-001"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Parent',
@@ -860,7 +918,11 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec update-work-unit AUTH-001 --parent=AUTH-002"
       // Then the command should fail with circular relationship error
       await expect(
-        updateWorkUnit('AUTH-001', { parent: 'AUTH-002' }, { cwd: setup.testDir })
+        updateWorkUnit(
+          'AUTH-001',
+          { parent: 'AUTH-002' },
+          { cwd: setup.testDir }
+        )
       ).rejects.toThrow('Circular parent relationship detected');
     });
   });
@@ -873,7 +935,9 @@ describe('Feature: Work Unit Management', () => {
       prefixes.prefixes.AUTH = { description: 'Authentication features' };
       await writeFile(setup.prefixesFile, JSON.stringify(prefixes, null, 2));
 
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Level 1',
@@ -906,7 +970,10 @@ describe('Feature: Work Unit Management', () => {
       // When I run "fspec create-story AUTH 'Too deep' --parent=AUTH-003"
       // Then the command should fail
       await expect(
-        createWorkUnit('AUTH', 'Too deep', { cwd: setup.testDir, parent: 'AUTH-003' })
+        createWorkUnit('AUTH', 'Too deep', {
+          cwd: setup.testDir,
+          parent: 'AUTH-003',
+        })
       ).rejects.toThrow('Maximum nesting depth (3) exceeded');
     });
   });
@@ -915,7 +982,9 @@ describe('Feature: Work Unit Management', () => {
     it('should validate JSON schema and consistency', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -946,9 +1015,9 @@ describe('Feature: Work Unit Management', () => {
 
       // When I run "fspec show-work-unit AUTH-999"
       // Then the command should fail
-      await expect(showWorkUnit('AUTH-999', { cwd: setup.testDir })).rejects.toThrow(
-        "Work unit 'AUTH-999' does not exist"
-      );
+      await expect(
+        showWorkUnit('AUTH-999', { cwd: setup.testDir })
+      ).rejects.toThrow("Work unit 'AUTH-999' does not exist");
     });
   });
 });

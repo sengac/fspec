@@ -97,9 +97,9 @@ export function registerRemoveRuleCommand(program: Command): void {
           workUnitId,
           index: parseInt(index, 10),
         });
-        output.log(chalk.green(`✓ Removed rule: "${result.removedRule}"`));
+        output.log(`✓ Removed rule: "${result.removedRule}"`);
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to remove rule:'), error.message);
+        output.error('✗ Failed to remove rule:', error.message);
         process.exit(1);
       }
     });

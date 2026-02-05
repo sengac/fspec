@@ -1,0 +1,112 @@
+{
+  "scenarios": [
+    {
+      "name": "Detect absolute file path in conversation message",
+      "testMappings": []
+    },
+    {
+      "name": "Detect relative file path in conversation message",
+      "testMappings": []
+    },
+    {
+      "name": "Detect HTTP URL in conversation message",
+      "testMappings": []
+    },
+    {
+      "name": "Detect file path with line and column notation",
+      "testMappings": []
+    },
+    {
+      "name": "Detect Windows file path in conversation message",
+      "testMappings": []
+    },
+    {
+      "name": "Detect VS Code URI scheme in conversation message",
+      "testMappings": []
+    },
+    {
+      "name": "Open file at specific line and column",
+      "testMappings": []
+    },
+    {
+      "name": "Open file in VS Code when running in VS Code terminal",
+      "testMappings": []
+    },
+    {
+      "name": "Open URL in system default browser",
+      "testMappings": []
+    },
+    {
+      "name": "Open VS Code URI directly",
+      "testMappings": []
+    },
+    {
+      "name": "Open directory in file manager",
+      "testMappings": []
+    },
+    {
+      "name": "Open mailto link in email client",
+      "testMappings": []
+    },
+    {
+      "name": "Show error for non-existent file path",
+      "testMappings": []
+    },
+    {
+      "name": "Show error for invalid URL",
+      "testMappings": []
+    },
+    {
+      "name": "File links displayed in blue color",
+      "testMappings": []
+    },
+    {
+      "name": "URL links displayed in cyan color",
+      "testMappings": []
+    },
+    {
+      "name": "Display relative path instead of absolute path",
+      "testMappings": []
+    },
+    {
+      "name": "Show tooltip on link hover",
+      "testMappings": []
+    },
+    {
+      "name": "Long URL preserves link boundary across line wrap",
+      "testMappings": []
+    },
+    {
+      "name": "Tab navigates between links",
+      "testMappings": []
+    },
+    {
+      "name": "Enter activates focused link",
+      "testMappings": []
+    },
+    {
+      "name": "Limit maximum clickable links per message",
+      "testMappings": []
+    },
+    {
+      "name": "Links work in AgentView component",
+      "testMappings": []
+    },
+    {
+      "name": "Links work in SplitSessionView component",
+      "testMappings": []
+    },
+    {
+      "name": "Links work in tool output messages",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 25,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

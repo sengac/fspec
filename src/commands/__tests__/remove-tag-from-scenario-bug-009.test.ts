@@ -9,11 +9,15 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { removeTagFromScenario } from '../remove-tag-from-scenario';
 
-import { 
+import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
+import {
+  ensureTestDirectory,
+  writeTextFile,
+  readTextFile,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Scenario Tag Removal (BUG-009)', () => {
   let setup: TestDirectorySetup;
 

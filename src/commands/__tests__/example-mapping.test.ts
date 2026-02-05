@@ -1,8 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFile, writeFile } from 'fs/promises';
 import { join } from 'path';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
-import { writeJsonTestFile, readJsonTestFile, createTestFile } from '../../test-helpers/test-file-operations';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  readJsonTestFile,
+  createTestFile,
+} from '../../test-helpers/test-file-operations';
 import {
   addRule,
   addExample,
@@ -36,7 +43,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should add rule to work unit in specifying state', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "specifying"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth login',
@@ -73,7 +82,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should accumulate rules in order', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "specifying"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -117,7 +128,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should add example to work unit', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "specifying"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -150,7 +163,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should accumulate multiple examples', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "specifying"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -188,7 +203,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should add question to work unit', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "specifying"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -222,7 +239,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should preserve @mention syntax for notifications', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "specifying"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -260,7 +279,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should add assumption to work unit', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "specifying"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -295,7 +316,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should support all four example mapping artifact types', async () => {
       // Given I have a project with spec directory
       // And a work unit "AUTH-001" exists with status "specifying"
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -349,7 +372,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should display all four artifact types grouped', async () => {
       // Given I have a project with spec directory
       // And a work unit with example mapping data
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -389,7 +414,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should remove rule at specified index', async () => {
       // Given I have a project with spec directory
       // And a work unit has 3 rules
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -426,7 +453,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should remove example at specified index', async () => {
       // Given I have a project with spec directory
       // And a work unit has 3 examples
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -463,7 +492,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should remove question at specified index', async () => {
       // Given I have a project with spec directory
       // And a work unit has 2 questions
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -494,7 +525,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should fail with helpful error message', async () => {
       // Given I have a project with spec directory
       // And a work unit has 2 rules
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -508,14 +541,14 @@ describe('Feature: Example Mapping Integration', () => {
 
       // When I run "fspec remove-rule AUTH-001 5"
       // Then the command should fail
-      await expect(removeRule('AUTH-001', 5, { cwd: setup.testDir })).rejects.toThrow(
-        'Index 5 out of range'
-      );
+      await expect(
+        removeRule('AUTH-001', 5, { cwd: setup.testDir })
+      ).rejects.toThrow('Index 5 out of range');
 
       // And the error should show valid range
-      await expect(removeRule('AUTH-001', 5, { cwd: setup.testDir })).rejects.toThrow(
-        'Valid indices: 0-1'
-      );
+      await expect(
+        removeRule('AUTH-001', 5, { cwd: setup.testDir })
+      ).rejects.toThrow('Valid indices: 0-1');
     });
   });
 
@@ -523,7 +556,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should remove question and add assumption', async () => {
       // Given I have a project with spec directory
       // And a work unit has 1 question
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -570,7 +605,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should remove question and add rule', async () => {
       // Given I have a project with spec directory
       // And a work unit has 1 question
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -612,7 +649,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should just remove question', async () => {
       // Given I have a project with spec directory
       // And a work unit has 1 question
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -653,7 +692,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should create scenarios from examples with auto-tagging', async () => {
       // Given I have a project with spec directory
       // And a work unit has examples
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -670,7 +711,9 @@ describe('Feature: Example Mapping Integration', () => {
       await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec generate-scenarios AUTH-001"
-      const result = await generateScenarios('AUTH-001', { cwd: setup.testDir });
+      const result = await generateScenarios('AUTH-001', {
+        cwd: setup.testDir,
+      });
 
       // Then the command should succeed
       expect(result.success).toBe(true);
@@ -699,7 +742,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should create scenario with placeholder steps', async () => {
       // Given I have a project with spec directory
       // And a work unit has 1 example
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -712,7 +757,9 @@ describe('Feature: Example Mapping Integration', () => {
       await writeFile(setup.workUnitsFile, JSON.stringify(workUnits, null, 2));
 
       // When I run "fspec generate-scenarios AUTH-001"
-      const result = await generateScenarios('AUTH-001', { cwd: setup.testDir });
+      const result = await generateScenarios('AUTH-001', {
+        cwd: setup.testDir,
+      });
 
       // Then the generated scenario should have Given/When/Then structure
       const featureContent = await readFile(
@@ -740,7 +787,9 @@ describe('Feature: Example Mapping Integration', () => {
       );
 
       // And a work unit has examples
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -774,7 +823,9 @@ describe('Feature: Example Mapping Integration', () => {
       // Given I have a project with spec directory
       // And no feature file exists for "oauth-login"
       // And a work unit has examples
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -806,7 +857,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should block transition with unanswered questions', async () => {
       // Given I have a project with spec directory
       // And a work unit exists with unanswered questions
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -826,17 +879,29 @@ describe('Feature: Example Mapping Integration', () => {
       // When I run "fspec update-work-unit AUTH-001 --status=testing"
       // Then the command should fail
       await expect(
-        updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: setup.testDir })
+        updateWorkUnit(
+          'AUTH-001',
+          { status: 'testing' },
+          { cwd: setup.testDir }
+        )
       ).rejects.toThrow('Unanswered questions prevent state transition');
 
       // And the error should list the question
       await expect(
-        updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: setup.testDir })
+        updateWorkUnit(
+          'AUTH-001',
+          { status: 'testing' },
+          { cwd: setup.testDir }
+        )
       ).rejects.toThrow('@bob: Should we support OAuth 2.0?');
 
       // And the error should suggest solution
       await expect(
-        updateWorkUnit('AUTH-001', { status: 'testing' }, { cwd: setup.testDir })
+        updateWorkUnit(
+          'AUTH-001',
+          { status: 'testing' },
+          { cwd: setup.testDir }
+        )
       ).rejects.toThrow(
         "Answer questions with 'fspec answer-question' or remove them"
       );
@@ -847,7 +912,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should warn but allow transition without examples', async () => {
       // Given I have a project with spec directory
       // And a work unit has no examples
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -887,7 +954,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should import all four artifact types from JSON', async () => {
       // Given I have a project with spec directory
       // And a work unit exists
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -938,7 +1007,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should export all artifacts to JSON file', async () => {
       // Given I have a project with spec directory
       // And a work unit has example mapping data
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -955,7 +1026,10 @@ describe('Feature: Example Mapping Integration', () => {
 
       // When I run "fspec export-example-map AUTH-001 --output=auth-example-map.json"
       const outputPath = join(setup.testDir, 'auth-example-map.json');
-      await exportExampleMap('AUTH-001', { cwd: setup.testDir, output: outputPath });
+      await exportExampleMap('AUTH-001', {
+        cwd: setup.testDir,
+        output: outputPath,
+      });
 
       // Then the file should contain valid JSON
       const exportedData = JSON.parse(await readFile(outputPath, 'utf-8'));
@@ -972,7 +1046,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should query work units that have questions', async () => {
       // Given I have a project with spec directory
       // And work units exist with varying questions
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth 1',
@@ -1029,7 +1105,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should filter by @mention in questions', async () => {
       // Given I have a project with spec directory
       // And work units have questions with different mentions
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth 1',
@@ -1078,7 +1156,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should validate all arrays contain valid strings', async () => {
       // Given I have a project with spec directory
       // And a work unit exists with example mapping data
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'OAuth',
@@ -1108,7 +1188,9 @@ describe('Feature: Example Mapping Integration', () => {
     it('should calculate statistics across work units', async () => {
       // Given I have a project with spec directory
       // And work units exist with varying example mapping data
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['AUTH-001'] = {
         id: 'AUTH-001',
         title: 'Auth 1',

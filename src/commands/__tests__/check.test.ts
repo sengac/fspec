@@ -42,10 +42,7 @@ describe('Feature: Run All Validations', () => {
         ],
       };
 
-      await writeJsonTestFile(
-        join(setup.testDir, 'spec/tags.json'),
-        tagsData
-      );
+      await writeJsonTestFile(join(setup.testDir, 'spec/tags.json'), tagsData);
 
       const feature1 = `@critical
 @cli
@@ -151,17 +148,17 @@ Feature: Broken
         ],
       };
 
-      await writeJsonTestFile(
-        join(setup.testDir, 'spec/tags.json'),
-        tagsData
-      );
+      await writeJsonTestFile(join(setup.testDir, 'spec/tags.json'), tagsData);
 
       const feature = `@unknown-tag
 Feature: Test Feature
   Scenario: Test
     Given step`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/test.feature'), feature);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
+        feature
+      );
 
       // When I run `fspec check`
       const result = await check({
@@ -231,17 +228,17 @@ Feature: Broken
         ],
       };
 
-      await writeJsonTestFile(
-        join(setup.testDir, 'spec/tags.json'),
-        tagsData
-      );
+      await writeJsonTestFile(join(setup.testDir, 'spec/tags.json'), tagsData);
 
       const badTag = `@bad-tag
 Feature: Bad Tag
   Scenario: Test
     Given step`;
 
-      await writeTextFile(join(setup.testDir, 'spec/features/badtag.feature'), badTag);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/badtag.feature'),
+        badTag
+      );
 
       // And I have a feature file with incorrect formatting
       const unformatted = `Feature: Unformatted
@@ -315,10 +312,7 @@ Given step`;
         ],
       };
 
-      await writeJsonTestFile(
-        join(setup.testDir, 'spec/tags.json'),
-        tagsData
-      );
+      await writeJsonTestFile(join(setup.testDir, 'spec/tags.json'), tagsData);
 
       for (let i = 1; i <= 10; i++) {
         const feature = `@critical
@@ -408,10 +402,7 @@ Feature: Feature 5
         ],
       };
 
-      await writeJsonTestFile(
-        join(setup.testDir, 'spec/tags.json'),
-        tagsData
-      );
+      await writeJsonTestFile(join(setup.testDir, 'spec/tags.json'), tagsData);
 
       for (let i = 1; i <= 3; i++) {
         const feature = `@critical
@@ -465,10 +456,7 @@ Feature: Feature ${i}
         ],
       };
 
-      await writeJsonTestFile(
-        join(setup.testDir, 'spec/tags.json'),
-        tagsData
-      );
+      await writeJsonTestFile(join(setup.testDir, 'spec/tags.json'), tagsData);
 
       for (let i = 1; i <= 100; i++) {
         const feature = `@critical

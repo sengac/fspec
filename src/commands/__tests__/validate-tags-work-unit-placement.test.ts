@@ -9,7 +9,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { validateTags } from '../validate-tags';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
   let setup: WorkUnitTestSetup;
@@ -50,7 +53,7 @@ describe('Feature: Remove work unit ID tags from generate-scenarios', () => {
 
     // Create tags.json with required tags
     await writeFile(
-      join(setup.specDir, "tags.json"),
+      join(setup.specDir, 'tags.json'),
       JSON.stringify(
         {
           categories: [

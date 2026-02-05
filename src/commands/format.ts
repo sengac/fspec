@@ -83,18 +83,16 @@ export async function formatFeatures(
       } catch (parseError: any) {
         // Handle file system errors
         if (parseError.code === 'EACCES') {
-          output.error(chalk.yellow(`Warning: Permission denied for ${file}`));
+          output.error(`Warning: Permission denied for ${file}`);
           continue;
         }
         if (parseError.code === 'ENOENT') {
-          output.error(chalk.yellow(`Warning: File not found: ${file}`));
+          output.error(`Warning: File not found: ${file}`);
           continue;
         }
         // If parsing fails, skip this file and continue
-        output.error(
-          chalk.yellow(`Warning: Skipped ${file} due to parse error:`)
-        );
-        output.error(chalk.gray(parseError.message));
+        output.error(`Warning: Skipped ${file} due to parse error:`);
+        output.error(parseError.message);
       }
     }
 
@@ -109,12 +107,12 @@ export async function formatCommand(file?: string): Promise<void> {
     const result = await formatFeatures({ file });
 
     if (result.formattedCount === 0) {
-      output.log(chalk.yellow('No feature files found to format'));
+      output.log('No feature files found to format');
       process.exit(0);
     }
 
     if (file) {
-      output.log(chalk.green(`✓ Formatted ${file}`));
+      output.log(`✓ Formatted ${file}`);
     } else {
       output.log(
         chalk.green(`✓ Formatted ${result.formattedCount} feature files`)
@@ -123,7 +121,7 @@ export async function formatCommand(file?: string): Promise<void> {
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

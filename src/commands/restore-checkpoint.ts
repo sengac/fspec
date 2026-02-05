@@ -82,8 +82,8 @@ export async function restoreCheckpoint(
         },
       ];
 
-      output.log(chalk.yellow('⚠️  Working directory has uncommitted changes'));
-      output.log(chalk.cyan('\nChoose how to proceed:'));
+      output.log('⚠️  Working directory has uncommitted changes');
+      output.log('\nChoose how to proceed:');
       promptOptions.forEach((opt, idx) => {
         const riskColor =
           opt.riskLevel === 'Low'
@@ -94,7 +94,7 @@ export async function restoreCheckpoint(
         output.log(
           `  ${idx + 1}. ${opt.name} ${riskColor(`[${opt.riskLevel} risk]`)}`
         );
-        output.log(chalk.gray(`     ${opt.description}`));
+        output.log(`     ${opt.description}`);
       });
 
       return {
@@ -120,10 +120,10 @@ export async function restoreCheckpoint(
     });
 
     if (result.conflictsDetected) {
-      output.error(chalk.red('✗ Merge conflicts detected during restoration'));
-      output.log(chalk.yellow('\nConflicted files:'));
+      output.error('✗ Merge conflicts detected during restoration');
+      output.log('\nConflicted files:');
       result.conflictedFiles.forEach(file => {
-        output.log(chalk.yellow(`  - ${file}`));
+        output.log(`  - ${file}`);
       });
       output.log(
         chalk.cyan(
@@ -152,7 +152,7 @@ export async function restoreCheckpoint(
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    output.error(chalk.red(`✗ Failed to restore checkpoint: ${errorMessage}`));
+    output.error(`✗ Failed to restore checkpoint: ${errorMessage}`);
     throw error;
   }
 }
@@ -182,9 +182,9 @@ async function restoreCheckpointCommand(
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      output.error(chalk.red('Error:'), error.message);
+      output.error('Error:', error.message);
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

@@ -6,11 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import {
-  readFile,
-  access,
-  readdir,
-} from 'fs/promises';
+import { readFile, access, readdir } from 'fs/promises';
 import { join } from 'path';
 import { generateCoverage } from '../generate-coverage';
 import {
@@ -38,7 +34,7 @@ describe('Feature: Generate Coverage Files for Existing Features', () => {
     it('should create coverage files for all .feature files without .coverage files', async () => {
       // Given I have a project with spec/features/ directory
       const featuresDir = join(setup.testDir, 'spec', 'features');
-      await ensureTestDirectory(featuresDir, );
+      await ensureTestDirectory(featuresDir);
 
       // And there are 3 .feature files with no .coverage files
       const featureContent = `@critical
@@ -72,7 +68,7 @@ Feature: Test Feature
     it('should create coverage files only for features without coverage', async () => {
       // Given I have 5 .feature files
       const featuresDir = join(setup.testDir, 'spec', 'features');
-      await ensureTestDirectory(featuresDir, );
+      await ensureTestDirectory(featuresDir);
 
       const featureContent = `@critical
 Feature: Test Feature
@@ -142,7 +138,7 @@ Feature: Test Feature
     it('should overwrite coverage files with invalid JSON', async () => {
       // Given I have a .feature file user-login.feature
       const featuresDir = join(setup.testDir, 'spec', 'features');
-      await ensureTestDirectory(featuresDir, );
+      await ensureTestDirectory(featuresDir);
 
       const featureContent = `@critical
 Feature: User Login
@@ -185,7 +181,7 @@ Feature: User Login
     it('should preview what would be created without actually creating files', async () => {
       // Given I have 3 .feature files with no .coverage files
       const featuresDir = join(setup.testDir, 'spec', 'features');
-      await ensureTestDirectory(featuresDir, );
+      await ensureTestDirectory(featuresDir);
 
       const featureContent = `@critical
 Feature: Test Feature
@@ -200,7 +196,10 @@ Feature: Test Feature
       await createTestFile(featuresDir, 'feature3.feature', featureContent);
 
       // When I run 'fspec generate-coverage --dry-run'
-      const result = await generateCoverage({ cwd: setup.testDir, dryRun: true });
+      const result = await generateCoverage({
+        cwd: setup.testDir,
+        dryRun: true,
+      });
 
       // Then no .coverage files should be created
       const files = await readdir(featuresDir);

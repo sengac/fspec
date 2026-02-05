@@ -9,11 +9,15 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
 
-import { 
+import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import { ensureTestDirectory, writeTextFile, writeJsonTestFile } from '../../test-helpers/test-file-operations';
+import {
+  ensureTestDirectory,
+  writeTextFile,
+  writeJsonTestFile,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Enhance fspec review with architecture alignment and AST verification', () => {
   let setup: TestDirectorySetup;
 
@@ -176,7 +180,9 @@ Feature: Test Feature
       );
 
       // Create AST research attachment
-      await ensureTestDirectory(join(setup.testDir, 'spec', 'attachments', 'WORK-001'));
+      await ensureTestDirectory(
+        join(setup.testDir, 'spec', 'attachments', 'WORK-001')
+      );
       const astData = {
         functions: [
           { name: 'validateFeature', file: 'src/utils/validation.ts' },
@@ -184,7 +190,13 @@ Feature: Test Feature
         ],
       };
       await writeTextFile(
-        join(setup.testDir, 'spec', 'attachments', 'WORK-001', 'ast-research.json'),
+        join(
+          setup.testDir,
+          'spec',
+          'attachments',
+          'WORK-001',
+          'ast-research.json'
+        ),
         JSON.stringify(astData, null, 2)
       );
 
@@ -258,7 +270,9 @@ Feature: Test Feature
       );
 
       // @step And the work unit has AST research attachments showing 3 copies of validation pattern
-      await ensureTestDirectory(join(setup.testDir, 'spec', 'attachments', 'WORK-001'));
+      await ensureTestDirectory(
+        join(setup.testDir, 'spec', 'attachments', 'WORK-001')
+      );
       const astData = {
         duplicatePatterns: [
           { file: 'src/commands/create.ts', lines: [45, 60] },
@@ -267,7 +281,13 @@ Feature: Test Feature
         ],
       };
       await writeTextFile(
-        join(setup.testDir, 'spec', 'attachments', 'WORK-001', 'ast-research.json'),
+        join(
+          setup.testDir,
+          'spec',
+          'attachments',
+          'WORK-001',
+          'ast-research.json'
+        ),
         JSON.stringify(astData, null, 2)
       );
 
@@ -287,7 +307,12 @@ Feature: Extract Validation Utility
 `;
 
       await writeTextFile(
-        join(setup.testDir, 'spec', 'features', 'extract-validation-utility.feature'),
+        join(
+          setup.testDir,
+          'spec',
+          'features',
+          'extract-validation-utility.feature'
+        ),
         featureContent
       );
 

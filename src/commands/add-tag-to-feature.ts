@@ -303,11 +303,11 @@ export async function addTagToFeatureCommand(
     const result = await addTagToFeature(featureFilePath, tags, options);
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
-    output.log(chalk.green(`✓ ${result.message}`));
+    output.log(`✓ ${result.message}`);
 
     // Display system reminders if any
     if (result.systemReminders && result.systemReminders.length > 0) {
@@ -318,7 +318,7 @@ export async function addTagToFeatureCommand(
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

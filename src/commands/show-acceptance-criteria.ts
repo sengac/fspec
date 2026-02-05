@@ -294,11 +294,11 @@ export async function showAcceptanceCriteriaCommand(options: {
     });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
-    output.log(chalk.blue(result.message));
+    output.log(result.message);
 
     if (!options.output) {
       output.log(result.output);
@@ -306,7 +306,7 @@ export async function showAcceptanceCriteriaCommand(options: {
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

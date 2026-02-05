@@ -2,11 +2,15 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { showAcceptanceCriteria } from '../show-acceptance-criteria';
 
-import { 
+import {
   setupTestDirectory,
   type TestDirectorySetup,
 } from '../../test-helpers/universal-test-setup';
-import { ensureTestDirectory, writeTextFile, readTextFile } from '../../test-helpers/test-file-operations';
+import {
+  ensureTestDirectory,
+  writeTextFile,
+  readTextFile,
+} from '../../test-helpers/test-file-operations';
 describe('Feature: Show Acceptance Criteria by Tag', () => {
   let setup: TestDirectorySetup;
 
@@ -35,7 +39,10 @@ Feature: Test Feature
     When an action
     Then an outcome
 `;
-      await writeTextFile(join(setup.testDir, 'spec/features/test.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/test.feature'),
+        content
+      );
 
       // When I run `fspec show-acceptance-criteria --tag=@critical`
       const result = await showAcceptanceCriteria({
@@ -116,7 +123,10 @@ Feature: Login
     When I enter valid credentials
     Then I should be logged in
 `;
-      await writeTextFile(join(setup.testDir, 'spec/features/login.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/login.feature'),
+        content
+      );
 
       // When I run `fspec show-acceptance-criteria --tag=@auth --format=markdown`
       const result = await showAcceptanceCriteria({
@@ -386,7 +396,10 @@ Feature: Step Indentation Test
     And I should see another outcome
     But I should not see an error
 `;
-      await writeTextFile(join(setup.testDir, 'spec/features/steps.feature'), content);
+      await writeTextFile(
+        join(setup.testDir, 'spec/features/steps.feature'),
+        content
+      );
 
       // When I run `fspec show-acceptance-criteria --format=text`
       const result = await showAcceptanceCriteria({

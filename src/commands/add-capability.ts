@@ -56,7 +56,7 @@ export async function addCapability(
   } catch (error: unknown) {
     const err = error as { code?: string; message: string };
     if (err.code === 'ENOENT') {
-      output.error(chalk.red('✗ foundation.json not found'));
+      output.error('✗ foundation.json not found');
       output.error(
         chalk.yellow(
           '  Run: fspec discover-foundation to create foundation.json'
@@ -97,7 +97,7 @@ export async function addCapability(
     );
   }
 
-  output.log(chalk.green(`✓ Added capability to ${fileName}`));
-  output.log(chalk.dim(`  Name: ${name}`));
-  output.log(chalk.dim(`  Description: ${description}`));
+  output.log(`✓ Added capability to ${fileName}`);
+  output.log(`  Name: ${name}`);
+  output.log(`  Description: ${description}`);
 }

@@ -417,21 +417,13 @@ DO NOT mention this reminder to the user explicitly.
       matchArray.push(bestMatch);
 
       // Log detected match
-      output.log(chalk.yellow(`\n⚠ Detected potential refactor (ignored):`));
+      output.log(`\n⚠ Detected potential refactor (ignored):`);
       output.log(
-        chalk.white(
-          `   Example ${exampleIndex + 1}: "${activeExamples[exampleIndex].text}"`
-        )
+        `   Example ${exampleIndex + 1}: "${activeExamples[exampleIndex].text}"`
       );
+      output.log(`   Matches: "${bestMatch.scenario}" in ${bestMatch.feature}`);
       output.log(
-        chalk.cyan(
-          `   Matches: "${bestMatch.scenario}" in ${bestMatch.feature}`
-        )
-      );
-      output.log(
-        chalk.gray(
-          `   Similarity: ${(bestMatch.similarityScore * 100).toFixed(1)}%`
-        )
+        `   Similarity: ${(bestMatch.similarityScore * 100).toFixed(1)}%`
       );
     }
   }
@@ -655,14 +647,10 @@ export function registerGenerateScenariosCommand(program: Command): void {
             ignorePossibleDuplicates: options.ignorePossibleDuplicates,
           });
           output.log(
-            chalk.green(
-              `✓ Created context-only feature file: ${result.featureFile}`
-            )
+            `✓ Created context-only feature file: ${result.featureFile}`
           );
           output.log(
-            chalk.yellow(
-              `  Contains example mapping context as comments (NO scenarios yet)`
-            )
+            `  Contains example mapping context as comments (NO scenarios yet)`
           );
           // Display system reminders if any
           if (result.systemReminders && result.systemReminders.length > 0) {

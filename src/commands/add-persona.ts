@@ -59,7 +59,7 @@ export async function addPersona(
   } catch (error: unknown) {
     const err = error as { code?: string; message: string };
     if (err.code === 'ENOENT') {
-      output.error(chalk.red('✗ foundation.json not found'));
+      output.error('✗ foundation.json not found');
       output.error(
         chalk.yellow(
           '  Run: fspec discover-foundation to create foundation.json'
@@ -96,11 +96,11 @@ export async function addPersona(
 
   // Show placeholder removal message if any were removed
   if (removedCount > 0) {
-    output.log(chalk.yellow(`Removed ${removedCount} placeholder persona(s)`));
+    output.log(`Removed ${removedCount} placeholder persona(s)`);
   }
 
-  output.log(chalk.green(`✓ Added persona to ${fileName}`));
-  output.log(chalk.dim(`  Name: ${name}`));
-  output.log(chalk.dim(`  Description: ${description}`));
-  output.log(chalk.dim(`  Goals: ${goals.join(', ')}`));
+  output.log(`✓ Added persona to ${fileName}`);
+  output.log(`  Name: ${name}`);
+  output.log(`  Description: ${description}`);
+  output.log(`  Goals: ${goals.join(', ')}`);
 }

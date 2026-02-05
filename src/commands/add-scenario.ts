@@ -153,21 +153,21 @@ export async function addScenarioCommand(
     const result = await addScenario(featureIdentifier, scenarioName);
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       if (result.suggestion) {
-        output.log(chalk.yellow('Suggestion:'), result.suggestion);
+        output.log('Suggestion:', result.suggestion);
       }
       process.exit(1);
     }
 
     if (result.warning) {
-      output.log(chalk.yellow('⚠'), result.warning);
+      output.log('⚠', result.warning);
     }
 
-    output.log(chalk.green(`✓ Added scenario "${scenarioName}"`));
+    output.log(`✓ Added scenario "${scenarioName}"`);
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

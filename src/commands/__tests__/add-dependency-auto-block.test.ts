@@ -8,7 +8,10 @@ import { mkdir, writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 import { addDependency } from '../add-dependency';
 import type { WorkUnitsData } from '../../types';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Work Unit Dependency Management', () => {
   let setup: WorkUnitTestSetup;
@@ -24,7 +27,6 @@ describe('Feature: Work Unit Dependency Management', () => {
   describe('Scenario: Adding blockedBy dependency auto-sets work unit to blocked state', () => {
     it('should auto-transition work unit to blocked when adding blockedBy dependency', async () => {
       // Given I have a project with spec directory
-      
 
       // And work unit "UI-001" exists with status "backlog"
       // And work unit "API-001" exists with status "implementing"

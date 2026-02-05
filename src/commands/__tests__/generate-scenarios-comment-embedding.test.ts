@@ -31,7 +31,11 @@ describe('Feature: Preserve example mapping context as comments', () => {
   beforeEach(async () => {
     setup = await setupTestDirectory('generate-scenarios-comment-embedding');
     await ensureTestDirectory(join(setup.testDir, 'spec', 'features'));
-    await createTestFile(join(setup.testDir, 'spec', 'features'), '.gitkeep', '');
+    await createTestFile(
+      join(setup.testDir, 'spec', 'features'),
+      '.gitkeep',
+      ''
+    );
   });
 
   afterEach(async () => {

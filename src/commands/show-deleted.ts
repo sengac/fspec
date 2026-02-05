@@ -79,7 +79,7 @@ export function registerShowDeletedCommand(program: Command): void {
         const result = await showDeleted({ workUnitId });
 
         if (result.totalDeleted === 0) {
-          output.log(chalk.dim('No deleted items found'));
+          output.log('No deleted items found');
           return;
         }
 
@@ -94,7 +94,7 @@ export function registerShowDeletedCommand(program: Command): void {
           const timestamp = item.deletedAt
             ? chalk.dim(` (deleted: ${item.deletedAt})`)
             : '';
-          output.log(chalk.red(`  [${item.id}] ${item.text}${timestamp}`));
+          output.log(`  [${item.id}] ${item.text}${timestamp}`);
         });
 
         output.log(''); // Empty line for spacing

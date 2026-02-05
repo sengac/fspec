@@ -311,9 +311,9 @@ export function registerAddDependencyCommand(program: Command): void {
             dependsOn: finalDependsOn,
             relatesTo: options.relatesTo,
           });
-          output.log(chalk.green(`✓ Dependency added successfully`));
+          output.log(`✓ Dependency added successfully`);
         } catch (error: any) {
-          output.error(chalk.red('✗ Failed to add dependency:'), error.message);
+          output.error('✗ Failed to add dependency:', error.message);
           process.exit(1);
         }
       }

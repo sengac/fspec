@@ -3,8 +3,14 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
 import { readFileSync } from 'fs';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
-import { writeJsonTestFile, ensureTestDirectory } from '../../test-helpers/test-file-operations';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
+import {
+  writeJsonTestFile,
+  ensureTestDirectory,
+} from '../../test-helpers/test-file-operations';
 import type { WorkUnitsData } from '../../types';
 import { generateExampleMappingFromEventStorm } from '../generate-example-mapping-from-event-storm';
 
@@ -12,7 +18,9 @@ describe('Feature: Generate Example Mapping from Event Storm', () => {
   let setup: TestDirectorySetup;
 
   beforeEach(async () => {
-    setup = await setupTestDirectory('generate-example-mapping-from-event-storm');
+    setup = await setupTestDirectory(
+      'generate-example-mapping-from-event-storm'
+    );
   });
 
   afterEach(async () => {

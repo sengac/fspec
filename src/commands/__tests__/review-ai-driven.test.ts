@@ -9,7 +9,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { review } from '../review';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: AI-Driven Deep Code Review', () => {
   let setup: TestDirectorySetup;
@@ -77,7 +80,10 @@ Feature: User Login
 }`;
 
       await mkdir(join(setup.testDir, 'src', 'auth'), { recursive: true });
-      await writeFile(join(setup.testDir, 'src', 'auth', 'login.ts'), implContent);
+      await writeFile(
+        join(setup.testDir, 'src', 'auth', 'login.ts'),
+        implContent
+      );
 
       // Create coverage file with implementation mapping
       const coverageData = {
@@ -181,7 +187,9 @@ Feature: Data Validation
       );
 
       // @step And all 3 files contain similar validation logic
-      await mkdir(join(setup.testDir, 'src', 'validators'), { recursive: true });
+      await mkdir(join(setup.testDir, 'src', 'validators'), {
+        recursive: true,
+      });
       await writeFile(
         join(setup.testDir, 'src', 'validators', 'user.ts'),
         'export function validateUser() { /* duplicated */ }'
@@ -216,7 +224,12 @@ Feature: Data Validation
       };
 
       await writeFile(
-        join(setup.testDir, 'spec', 'features', 'data-validation.feature.coverage'),
+        join(
+          setup.testDir,
+          'spec',
+          'features',
+          'data-validation.feature.coverage'
+        ),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -317,7 +330,12 @@ Feature: File Operations
       };
 
       await writeFile(
-        join(setup.testDir, 'spec', 'features', 'file-operations.feature.coverage'),
+        join(
+          setup.testDir,
+          'spec',
+          'features',
+          'file-operations.feature.coverage'
+        ),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -389,7 +407,9 @@ ${Array(500)
   .join('\n')}
 }`;
 
-      await mkdir(join(setup.testDir, 'src', 'processing'), { recursive: true });
+      await mkdir(join(setup.testDir, 'src', 'processing'), {
+        recursive: true,
+      });
       await writeFile(
         join(setup.testDir, 'src', 'processing', 'processor.ts'),
         godFunction
@@ -417,7 +437,12 @@ ${Array(500)
       };
 
       await writeFile(
-        join(setup.testDir, 'spec', 'features', 'data-processing.feature.coverage'),
+        join(
+          setup.testDir,
+          'spec',
+          'features',
+          'data-processing.feature.coverage'
+        ),
         JSON.stringify(coverageData, null, 2)
       );
 
@@ -488,7 +513,10 @@ Feature: Large File Feature
         .join('\n');
 
       await mkdir(join(setup.testDir, 'src', 'large'), { recursive: true });
-      await writeFile(join(setup.testDir, 'src', 'large', 'big-file.ts'), bigFile);
+      await writeFile(
+        join(setup.testDir, 'src', 'large', 'big-file.ts'),
+        bigFile
+      );
 
       // @step And FOUNDATION.md states "keep files under 300 lines"
       await writeFile(
@@ -630,7 +658,12 @@ Feature: Test Feature
       };
 
       await writeFile(
-        join(setup.testDir, 'spec', 'features', 'test-feature.feature.coverage'),
+        join(
+          setup.testDir,
+          'spec',
+          'features',
+          'test-feature.feature.coverage'
+        ),
         JSON.stringify(coverageData, null, 2)
       );
 

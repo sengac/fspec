@@ -25,7 +25,7 @@ export async function validateCommand(
     const files = file ? [file] : await findAllFeatureFiles();
 
     if (files.length === 0) {
-      output.error(chalk.red('No feature files found in spec/features/'));
+      output.error('No feature files found in spec/features/');
       process.exit(2);
     }
 
@@ -36,13 +36,13 @@ export async function validateCommand(
     // Display results
     for (const result of results) {
       if (result.valid) {
-        output.log(chalk.green(`✓ ${result.file} is valid`));
+        output.log(`✓ ${result.file} is valid`);
       } else {
-        output.log(chalk.red(`✗ ${result.file} has syntax errors:`));
+        output.log(`✗ ${result.file} has syntax errors:`);
         for (const error of result.errors) {
-          output.log(chalk.red(`  Line ${error.line}: ${error.message}`));
+          output.log(`  Line ${error.line}: ${error.message}`);
           if (error.suggestion) {
-            output.log(chalk.yellow(`  Suggestion: ${error.suggestion}`));
+            output.log(`  Suggestion: ${error.suggestion}`);
           }
         }
       }
@@ -72,7 +72,7 @@ export async function validateCommand(
       process.exit(1);
     }
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(2);
   }
 }
@@ -93,7 +93,7 @@ export async function validateFile(
     const content = await readFile(resolvedPath, 'utf-8');
 
     if (verbose) {
-      output.log(chalk.blue(`Parsing ${filePath}...`));
+      output.log(`Parsing ${filePath}...`);
     }
 
     // Parse with @cucumber/gherkin
@@ -124,9 +124,9 @@ export async function validateFile(
 
     // Validation successful
     if (verbose) {
-      output.log(chalk.blue('  AST generated successfully'));
+      output.log('  AST generated successfully');
       if (gherkinDocument.feature) {
-        output.log(chalk.blue(`  Feature: ${gherkinDocument.feature.name}`));
+        output.log(`  Feature: ${gherkinDocument.feature.name}`);
         output.log(
           chalk.blue(`  Scenarios: ${gherkinDocument.feature.children.length}`)
         );

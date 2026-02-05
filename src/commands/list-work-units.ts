@@ -97,18 +97,18 @@ export async function listWorkUnitsCommand(options: {
     }
 
     if (result.workUnits.length === 0) {
-      output.log(chalk.yellow('No work units found'));
+      output.log('No work units found');
       process.exit(0);
     }
 
-    output.log(chalk.bold(`\nWork Units (${result.workUnits.length})`));
+    output.log(`\nWork Units (${result.workUnits.length})`);
     output.log('');
 
     for (const wu of result.workUnits) {
-      output.log(chalk.cyan(wu.id) + chalk.gray(` [${wu.status}]`));
+      output.log(`${wu.id} [${wu.status}]`);
       output.log(`  ${wu.title}`);
       if (wu.epic) {
-        output.log(chalk.gray(`  Epic: ${wu.epic}`));
+        output.log(`  Epic: ${wu.epic}`);
       }
       output.log('');
     }
@@ -116,9 +116,9 @@ export async function listWorkUnitsCommand(options: {
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      output.error(chalk.red('Error:'), error.message);
+      output.error('Error:', error.message);
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

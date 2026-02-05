@@ -105,16 +105,16 @@ export async function showEpicCommand(
     if (options.format === 'json') {
       output.log(JSON.stringify(result, null, 2));
     } else {
-      output.log(chalk.bold(`\nEpic: ${result.epic.id}`));
+      output.log(`\nEpic: ${result.epic.id}`);
       output.log('');
-      output.log(chalk.cyan('Title:'), result.epic.title || 'N/A');
+      output.log('Title:', result.epic.title || 'N/A');
 
       if (result.epic.description) {
-        output.log(chalk.cyan('Description:'), result.epic.description);
+        output.log('Description:', result.epic.description);
       }
 
       output.log('');
-      output.log(chalk.cyan('Progress:'));
+      output.log('Progress:');
       output.log(`  Total work units: ${result.totalWorkUnits}`);
       output.log(`  Completed: ${result.completedWorkUnits}`);
       output.log(`  Completion: ${result.completionPercentage}%`);
@@ -124,10 +124,10 @@ export async function showEpicCommand(
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      output.error(chalk.red('✗'), error.message);
-      output.error(chalk.gray('\nTry: fspec list-epics'));
+      output.error('✗', error.message);
+      output.error('\nTry: fspec list-epics');
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

@@ -121,16 +121,16 @@ export async function validateFoundationSchemaCommand(): Promise<void> {
     const result = await validateFoundationSchema();
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
-    output.log(chalk.green(result.output));
+    output.log(result.output);
     process.exit(0);
   } catch (error: unknown) {
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
-    output.error(chalk.red('Error:'), errorMessage);
+    output.error('Error:', errorMessage);
     process.exit(1);
   }
 }

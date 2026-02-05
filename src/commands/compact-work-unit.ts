@@ -168,12 +168,12 @@ export function registerCompactWorkUnitCommand(program: Command): void {
           result.removedCounts.architectureNotes;
 
         if (totalRemoved === 0) {
-          output.log(chalk.dim('No deleted items to remove'));
+          output.log('No deleted items to remove');
         } else {
-          output.log(chalk.green(`✓ Compacted work unit ${workUnitId}`));
-          output.log(chalk.dim('  Removed items:'));
+          output.log(`✓ Compacted work unit ${workUnitId}`);
+          output.log('  Removed items:');
           if (result.removedCounts.rules > 0) {
-            output.log(chalk.dim(`    Rules: ${result.removedCounts.rules}`));
+            output.log(`    Rules: ${result.removedCounts.rules}`);
           }
           if (result.removedCounts.examples > 0) {
             output.log(

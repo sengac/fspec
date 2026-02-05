@@ -104,7 +104,7 @@ export function registerShowTestPatternsCommand(program: Command): void {
           }
         } catch (error: unknown) {
           if (error instanceof Error) {
-            output.error(chalk.red('✗ Analysis failed:'), error.message);
+            output.error('✗ Analysis failed:', error.message);
           }
           process.exit(1);
         }

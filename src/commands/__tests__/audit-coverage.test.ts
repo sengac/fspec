@@ -193,7 +193,11 @@ describe('Feature: Audit Coverage Command', () => {
       );
 
       // And the test file exists but implementation file doesn't
-      await createTestFile(testsDir, 'placeholder.test.ts', '// placeholder test');
+      await createTestFile(
+        testsDir,
+        'placeholder.test.ts',
+        '// placeholder test'
+      );
       // (implementation file "src/auth/deleted.ts" not created, so it doesn't exist)
 
       // When I run `fspec audit-coverage user-login`

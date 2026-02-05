@@ -101,10 +101,10 @@ export function registerRestoreExampleCommand(program: Command): void {
           chalk.green(`✓ Restored example: "${result.restoredExample}"`)
         );
         if (result.message) {
-          output.log(chalk.dim(`  ${result.message}`));
+          output.log(`  ${result.message}`);
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to restore example:'), error.message);
+        output.error('✗ Failed to restore example:', error.message);
         process.exit(1);
       }
     });

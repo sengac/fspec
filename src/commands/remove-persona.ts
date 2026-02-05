@@ -28,11 +28,9 @@ export async function removePersona(cwd: string, name: string): Promise<void> {
   } catch (error: unknown) {
     const err = error as { code?: string; message: string };
     if (err.code === 'ENOENT') {
-      output.error(chalk.red('✗ foundation.json not found'));
+      output.error('✗ foundation.json not found');
       output.error(
-        chalk.yellow(
-          '  Run: fspec discover-foundation to create foundation.json'
-        )
+        '  Run: fspec discover-foundation to create foundation.json'
       );
       throw new Error('foundation.json not found');
     }
@@ -41,8 +39,8 @@ export async function removePersona(cwd: string, name: string): Promise<void> {
 
   // Ensure personas array exists
   if (!foundation.personas || foundation.personas.length === 0) {
-    output.error(chalk.red(`✗ Persona "${name}" not found`));
-    output.error(chalk.yellow('  No personas exist in foundation'));
+    output.error(`✗ Persona "${name}" not found`);
+    output.error('  No personas exist in foundation');
     throw new Error(`Persona "${name}" not found`);
   }
 
@@ -50,8 +48,8 @@ export async function removePersona(cwd: string, name: string): Promise<void> {
   const index = foundation.personas.findIndex(p => p.name === name);
   if (index === -1) {
     const availableNames = foundation.personas.map(p => p.name).join(', ');
-    output.error(chalk.red(`✗ Persona "${name}" not found`));
-    output.error(chalk.yellow(`  Available personas: ${availableNames}`));
+    output.error(`✗ Persona "${name}" not found`);
+    output.error(`  Available personas: ${availableNames}`);
     throw new Error(`Persona "${name}" not found`);
   }
 
@@ -62,5 +60,5 @@ export async function removePersona(cwd: string, name: string): Promise<void> {
   await fs.writeFile(targetPath, JSON.stringify(foundation, null, 2) + '\n');
 
   const fileName = isDraft ? 'foundation.json.draft' : 'foundation.json';
-  output.log(chalk.green(`✓ Removed persona "${name}" from ${fileName}`));
+  output.log(`✓ Removed persona "${name}" from ${fileName}`);
 }

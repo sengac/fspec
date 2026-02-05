@@ -31,11 +31,9 @@ export async function removeCapability(
   } catch (error: unknown) {
     const err = error as { code?: string; message: string };
     if (err.code === 'ENOENT') {
-      output.error(chalk.red('✗ foundation.json not found'));
+      output.error('✗ foundation.json not found');
       output.error(
-        chalk.yellow(
-          '  Run: fspec discover-foundation to create foundation.json'
-        )
+        '  Run: fspec discover-foundation to create foundation.json'
       );
       throw new Error('foundation.json not found');
     }
@@ -47,8 +45,8 @@ export async function removeCapability(
     !foundation.solutionSpace.capabilities ||
     foundation.solutionSpace.capabilities.length === 0
   ) {
-    output.error(chalk.red(`✗ Capability "${name}" not found`));
-    output.error(chalk.yellow('  No capabilities exist in foundation'));
+    output.error(`✗ Capability "${name}" not found`);
+    output.error('  No capabilities exist in foundation');
     throw new Error(`Capability "${name}" not found`);
   }
 
@@ -60,8 +58,8 @@ export async function removeCapability(
     const availableNames = foundation.solutionSpace.capabilities
       .map(c => c.name)
       .join(', ');
-    output.error(chalk.red(`✗ Capability "${name}" not found`));
-    output.error(chalk.yellow(`  Available capabilities: ${availableNames}`));
+    output.error(`✗ Capability "${name}" not found`);
+    output.error(`  Available capabilities: ${availableNames}`);
     throw new Error(`Capability "${name}" not found`);
   }
 
@@ -72,5 +70,5 @@ export async function removeCapability(
   await fs.writeFile(targetPath, JSON.stringify(foundation, null, 2) + '\n');
 
   const fileName = isDraft ? 'foundation.json.draft' : 'foundation.json';
-  output.log(chalk.green(`✓ Removed capability "${name}" from ${fileName}`));
+  output.log(`✓ Removed capability "${name}" from ${fileName}`);
 }

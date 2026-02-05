@@ -148,16 +148,16 @@ export async function updateTagCommand(
     });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
-    output.log(chalk.green(`✓ ${result.message}`));
-    output.log(chalk.gray('  Updated: spec/tags.json'));
-    output.log(chalk.gray('  Regenerated: spec/TAGS.md'));
+    output.log(`✓ ${result.message}`);
+    output.log('  Updated: spec/tags.json');
+    output.log('  Regenerated: spec/TAGS.md');
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

@@ -153,7 +153,7 @@ export function registerUpdateWorkUnitEstimateCommand(program: Command): void {
           chalk.green(`✓ Work unit ${workUnitId} estimate set to ${estimate}`)
         );
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to update estimate:'), error.message);
+        output.error('✗ Failed to update estimate:', error.message);
         process.exit(1);
       }
     });

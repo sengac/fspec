@@ -121,14 +121,14 @@ export function registerAutoAdvanceCommand(program: Command): void {
     .action(async (options: { dryRun?: boolean }) => {
       try {
         const result = await autoAdvance({ dryRun: options.dryRun });
-        output.log(chalk.green(`✓ Advanced ${result.advanced} work units`));
+        output.log(`✓ Advanced ${result.advanced} work units`);
         if (result.details && result.details.length > 0) {
           result.details.forEach((detail: string) =>
-            output.log(chalk.cyan(`  - ${detail}`))
+            output.log(`  - ${detail}`)
           );
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Failed to auto-advance:'), error.message);
+        output.error('✗ Failed to auto-advance:', error.message);
         process.exit(1);
       }
     });

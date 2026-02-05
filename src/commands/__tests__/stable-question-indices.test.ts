@@ -15,7 +15,10 @@ import { addQuestion } from '../example-mapping';
 import { answerQuestion } from '../answer-question';
 import { showWorkUnit } from '../work-unit';
 import { updateWorkUnitStatus } from '../update-work-unit-status';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Stable Question Indices for Concurrent Answers', () => {
   let setup: WorkUnitTestSetup;
@@ -52,7 +55,9 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
   describe('Scenario: Add questions as objects with selected flag', () => {
     it('should add question as object with selected: false', async () => {
       // Given I have a work unit in specifying status
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -88,7 +93,9 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
     it('should mark question as selected and preserve all indices', async () => {
       // Given I have a work unit with 3 questions at indices 0, 1, 2
       // And all questions have selected: false
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -144,7 +151,9 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
     it('should handle parallel answers without data loss', async () => {
       // Given I have a work unit with 3 questions at indices 0, 1, 2
       // And all questions have selected: false
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -238,7 +247,9 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
     it('should show only questions with selected: false', async () => {
       // Given I have a work unit with 5 questions
       // And questions at indices 1 and 3 have selected: true
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -276,7 +287,9 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
       // And the work unit has 3 questions
       // And question at index 1 has selected: true
       // And questions at indices 0 and 2 have selected: false
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',
@@ -322,7 +335,9 @@ describe('Feature: Stable Question Indices for Concurrent Answers', () => {
     it('should allow re-answering with last write wins', async () => {
       // Given I have a work unit with a question at index 0
       // And question 0 has selected: false
-      const workUnits = JSON.parse(await readFile(setup.workUnitsFile, 'utf-8'));
+      const workUnits = JSON.parse(
+        await readFile(setup.workUnitsFile, 'utf-8')
+      );
       workUnits.workUnits['WORK-001'] = {
         id: 'WORK-001',
         title: 'Test work unit',

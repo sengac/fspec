@@ -94,14 +94,14 @@ export function registerRestoreArchitectureNoteCommand(program: Command): void {
     .action(async (workUnitId: string, index: number) => {
       try {
         const result = await restoreArchitectureNote({ workUnitId, index });
-        output.log(chalk.green('✓ Architecture note restored successfully'));
+        output.log('✓ Architecture note restored successfully');
         if (result.message) {
-          output.log(chalk.dim(`  ${result.message}`));
+          output.log(`  ${result.message}`);
         }
       } catch (error: unknown) {
         const errorMessage =
           error instanceof Error ? error.message : String(error);
-        output.error(chalk.red('Error:'), errorMessage);
+        output.error('Error:', errorMessage);
         process.exit(1);
       }
     });

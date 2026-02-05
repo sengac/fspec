@@ -6,7 +6,10 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { access } from 'fs/promises';
 import { join } from 'path';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 import { ensureTestDirectory } from '../../test-helpers/test-file-operations';
 import { listWorkUnits } from '../list-work-units';
 

@@ -201,7 +201,7 @@ export function registerQueryMetricsCommand(program: Command): void {
           } else {
             // Text output for aggregate metrics
             if (result.aggregateMetrics) {
-              output.log(chalk.bold('\nProject Metrics'));
+              output.log('\nProject Metrics');
               output.log('');
               output.log(
                 `Total Work Units: ${result.aggregateMetrics.totalWorkUnits}`
@@ -216,7 +216,7 @@ export function registerQueryMetricsCommand(program: Command): void {
               }
               if (result.aggregateMetrics.byType) {
                 output.log('');
-                output.log(chalk.bold('By Type:'));
+                output.log('By Type:');
                 for (const [type, data] of Object.entries(
                   result.aggregateMetrics.byType
                 )) {
@@ -232,12 +232,12 @@ export function registerQueryMetricsCommand(program: Command): void {
               }
             } else if (result.cycleTime) {
               // Single work unit output
-              output.log(chalk.bold('\nWork Unit Metrics'));
+              output.log('\nWork Unit Metrics');
               output.log('');
               output.log(`Cycle Time: ${result.cycleTime}`);
               if (result.timePerState) {
                 output.log('');
-                output.log(chalk.bold('Time Per State:'));
+                output.log('Time Per State:');
                 for (const [state, time] of Object.entries(
                   result.timePerState
                 )) {
@@ -247,7 +247,7 @@ export function registerQueryMetricsCommand(program: Command): void {
             }
           }
         } catch (error: any) {
-          output.error(chalk.red('✗ Query failed:'), error.message);
+          output.error('✗ Query failed:', error.message);
           process.exit(1);
         }
       }

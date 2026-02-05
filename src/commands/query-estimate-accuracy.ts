@@ -178,46 +178,40 @@ export function registerQueryEstimateAccuracyCommand(program: Command): void {
           // Text format output
           const data = result as AllWorkUnitsAccuracy;
 
-          output.log(chalk.bold('\n📊 Estimation Accuracy Report\n'));
+          output.log('\n📊 Estimation Accuracy Report\n');
 
           // Check if there's any data
           if (Object.keys(data.byStoryPoints).length === 0) {
             output.log(
-              chalk.yellow(
-                'No completed work units with estimates and actuals found.'
-              )
+              'No completed work units with estimates and actuals found.'
             );
-            output.log(chalk.gray('\nTo track accuracy, work units need:'));
-            output.log(chalk.gray('  • Status: done'));
-            output.log(chalk.gray('  • estimate field (story points)'));
-            output.log(chalk.gray('  • iterations field\n'));
+            output.log('\nTo track accuracy, work units need:');
+            output.log('  • Status: done');
+            output.log('  • estimate field (story points)');
+            output.log('  • iterations field\n');
             return;
           }
 
-          output.log(chalk.bold('By Story Points:'));
+          output.log('By Story Points:');
           for (const [points, metrics] of Object.entries(data.byStoryPoints)) {
-            output.log(chalk.cyan(`\n  ${points} points:`));
-            output.log(
-              chalk.gray(`    Average iterations: ${metrics.avgIterations}`)
-            );
-            output.log(chalk.gray(`    Samples: ${metrics.samples}`));
+            output.log(`\n  ${points} points:`);
+            output.log(`    Average iterations: ${metrics.avgIterations}`);
+            output.log(`    Samples: ${metrics.samples}`);
           }
 
           if (data.byPrefix) {
-            output.log(chalk.bold('\n\nBy Prefix:'));
+            output.log('\n\nBy Prefix:');
             for (const [prefix, accuracy] of Object.entries(data.byPrefix)) {
-              output.log(chalk.cyan(`\n  ${prefix}:`));
-              output.log(chalk.gray(`    Accuracy: ${accuracy.avgAccuracy}`));
-              output.log(
-                chalk.gray(`    Recommendation: ${accuracy.recommendation}`)
-              );
+              output.log(`\n  ${prefix}:`);
+              output.log(`    Accuracy: ${accuracy.avgAccuracy}`);
+              output.log(`    Recommendation: ${accuracy.recommendation}`);
             }
           }
 
           output.log(); // Empty line at end
         }
       } catch (error: any) {
-        output.error(chalk.red('✗ Query failed:'), error.message);
+        output.error('✗ Query failed:', error.message);
         process.exit(1);
       }
     });

@@ -12,14 +12,17 @@ import { discoverFoundation } from '../discover-foundation';
 import { createStory } from '../create-story';
 import { createBug } from '../create-bug';
 import { createTask } from '../create-task';
-import { setupFoundationTest, type FoundationTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupFoundationTest,
+  type FoundationTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: discover-foundation --finalize creates work unit without adding to states array', () => {
   let setup: FoundationTestSetup;
 
   beforeEach(async () => {
     setup = await setupFoundationTest('bug-078');
-    
+
     // The foundation.json is already created by setupFoundationTest
     // but we need to overwrite it with a simpler structure for this test
     const foundationPath = join(setup.testDir, 'spec', 'foundation.json');
@@ -165,7 +168,11 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       );
 
       // @step When I run `fspec create-story TEST "Test Story"`
-      await createStory({ prefix: 'TEST', title: 'Test Story', cwd: setup.testDir });
+      await createStory({
+        prefix: 'TEST',
+        title: 'Test Story',
+        cwd: setup.testDir,
+      });
 
       let workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       let workUnitsData = JSON.parse(workUnitsContent);
@@ -195,7 +202,11 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       expect(workUnitsData.states.backlog).toContain('BUG-001');
 
       // @step When I run `fspec create-task TASK "Test Task"`
-      await createTask({ prefix: 'TASK', title: 'Test Task', cwd: setup.testDir });
+      await createTask({
+        prefix: 'TASK',
+        title: 'Test Task',
+        cwd: setup.testDir,
+      });
 
       workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       workUnitsData = JSON.parse(workUnitsContent);
@@ -250,7 +261,11 @@ describe('Feature: discover-foundation --finalize creates work unit without addi
       );
 
       // Create work unit via create-story (which should use createWorkUnit)
-      await createStory({ prefix: 'TEST', title: 'Test Story', cwd: setup.testDir });
+      await createStory({
+        prefix: 'TEST',
+        title: 'Test Story',
+        cwd: setup.testDir,
+      });
 
       const workUnitsContent = await readFile(workUnitsPath, 'utf-8');
       const workUnitsData = JSON.parse(workUnitsContent);

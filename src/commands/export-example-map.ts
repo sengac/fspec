@@ -79,7 +79,7 @@ export function registerExportExampleMapCommand(program: Command): void {
     .action(async (workUnitId: string, file: string) => {
       try {
         const result = await exportExampleMap({ workUnitId, file });
-        output.log(chalk.green(`✓ Exported to ${result.outputFile}`));
+        output.log(`✓ Exported to ${result.outputFile}`);
       } catch (error: any) {
         output.error(
           chalk.red('✗ Failed to export example map:'),

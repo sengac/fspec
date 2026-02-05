@@ -2,7 +2,10 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { mkdir, writeFile, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { registerTag } from '../register-tag';
-import { setupTestDirectory, type TestDirectorySetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupTestDirectory,
+  type TestDirectorySetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Register New Tag in Tag Registry', () => {
   let setup: TestDirectorySetup;
@@ -122,7 +125,9 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       // Given I have tags.json with tag @cli registered
       // When I run `fspec register-tag @cli "Component Tags" "CLI component"`
       await expect(
-        registerTag('@cli', 'Component Tags', 'CLI component', { cwd: setup.testDir })
+        registerTag('@cli', 'Component Tags', 'CLI component', {
+          cwd: setup.testDir,
+        })
       ).rejects.toThrow();
 
       // Then the error message should indicate @cli is already registered
@@ -380,7 +385,10 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       });
 
       // Then the tag should be added to Component Tags section
-      tagsContent = await readFile(join(setup.testDir, 'spec', 'TAGS.md'), 'utf-8');
+      tagsContent = await readFile(
+        join(setup.testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(tagsContent).toContain('`@new-component`');
 
       // When I run `fspec register-tag @new-group "Feature Group Tags" "New feature group"`
@@ -392,7 +400,10 @@ describe('Feature: Register New Tag in Tag Registry', () => {
       );
 
       // Then the tag should be added to Feature Group Tags section
-      tagsContent = await readFile(join(setup.testDir, 'spec', 'TAGS.md'), 'utf-8');
+      tagsContent = await readFile(
+        join(setup.testDir, 'spec', 'TAGS.md'),
+        'utf-8'
+      );
       expect(tagsContent).toContain('`@new-group`');
 
       // And all registrations should maintain proper formatting

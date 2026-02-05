@@ -9,10 +9,10 @@ import {
   type TestDirectorySetup,
   createTestFile,
 } from '../../test-helpers/universal-test-setup';
-import { 
+import {
   ensureTestDirectory,
   writeJsonTestFile,
-  readJsonTestFile 
+  readJsonTestFile,
 } from '../../test-helpers/test-file-operations';
 
 describe('discover-foundation workflow clarity', () => {

@@ -284,7 +284,7 @@ export async function deleteScenariosByTagCommand(options: {
     } else if (options.tag) {
       tags = [options.tag];
     } else {
-      output.error(chalk.red('Error:'), 'At least one --tag is required');
+      output.error('Error:', 'At least one --tag is required');
       process.exit(1);
     }
 
@@ -294,12 +294,12 @@ export async function deleteScenariosByTagCommand(options: {
     });
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       process.exit(1);
     }
 
     if (options.dryRun && result.scenarios) {
-      output.log(chalk.yellow('Dry run mode - no files modified'));
+      output.log('Dry run mode - no files modified');
       output.log(
         chalk.cyan(
           `\nWould delete ${result.deletedCount} scenario(s) from ${result.fileCount} file(s):\n`
@@ -316,7 +316,7 @@ export async function deleteScenariosByTagCommand(options: {
       }
 
       for (const [file, scenarios] of byFile.entries()) {
-        output.log(chalk.white(`\n${file}:`));
+        output.log(`\n${file}:`);
         for (const scenario of scenarios) {
           output.log(
             chalk.gray(`  - ${scenario.name} (${scenario.tags.join(' ')})`)
@@ -324,12 +324,12 @@ export async function deleteScenariosByTagCommand(options: {
         }
       }
     } else {
-      output.log(chalk.green(`✓ ${result.message}`));
+      output.log(`✓ ${result.message}`);
     }
 
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

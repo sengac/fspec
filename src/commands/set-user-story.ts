@@ -51,13 +51,13 @@ export async function setUserStoryCommand(
 ): Promise<void> {
   try {
     await setUserStory(workUnitId, options);
-    output.log(chalk.green(`✓ User story set for ${workUnitId}`));
-    output.log(chalk.gray(`  As a ${options.role}`));
-    output.log(chalk.gray(`  I want to ${options.action}`));
-    output.log(chalk.gray(`  So that ${options.benefit}`));
+    output.log(`✓ User story set for ${workUnitId}`);
+    output.log(`  As a ${options.role}`);
+    output.log(`  I want to ${options.action}`);
+    output.log(`  So that ${options.benefit}`);
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

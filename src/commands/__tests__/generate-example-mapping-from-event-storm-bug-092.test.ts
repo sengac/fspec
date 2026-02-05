@@ -2,15 +2,14 @@
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { join } from 'path';
-import {
-  mkdirSync,
-  writeFileSync,
-  readFileSync,
-} from 'fs';
+import { mkdirSync, writeFileSync, readFileSync } from 'fs';
 import type { WorkUnitsData } from '../../types';
 import { generateExampleMappingFromEventStorm } from '../generate-example-mapping-from-event-storm';
 import { addQuestion } from '../add-question';
-import { setupWorkUnitTest, type WorkUnitTestSetup } from '../../test-helpers/universal-test-setup';
+import {
+  setupWorkUnitTest,
+  type WorkUnitTestSetup,
+} from '../../test-helpers/universal-test-setup';
 
 describe('Feature: Duplicate question IDs from generate-example-mapping-from-event-storm', () => {
   let setup: WorkUnitTestSetup;

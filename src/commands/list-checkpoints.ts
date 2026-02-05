@@ -30,11 +30,11 @@ export async function listCheckpoints(
     const checkpoints = await listCheckpointsUtil(workUnitId, cwd);
 
     if (checkpoints.length === 0) {
-      output.log(chalk.yellow(`No checkpoints found for ${workUnitId}`));
+      output.log(`No checkpoints found for ${workUnitId}`);
       return { checkpoints: [] };
     }
 
-    output.log(chalk.cyan(`\nCheckpoints for ${workUnitId}:\n`));
+    output.log(`\nCheckpoints for ${workUnitId}:\n`);
 
     const displayCheckpoints = checkpoints.map(cp => {
       const icon = cp.isAutomatic ? '🤖' : '📌';
@@ -43,7 +43,7 @@ export async function listCheckpoints(
         : chalk.blue('(manual)');
 
       output.log(`${icon}  ${chalk.bold(cp.name)} ${typeLabel}`);
-      output.log(chalk.gray(`   Created: ${cp.timestamp}`));
+      output.log(`   Created: ${cp.timestamp}`);
       output.log('');
 
       return {
@@ -57,7 +57,7 @@ export async function listCheckpoints(
     return { checkpoints: displayCheckpoints };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    output.error(chalk.red(`✗ Failed to list checkpoints: ${errorMessage}`));
+    output.error(`✗ Failed to list checkpoints: ${errorMessage}`);
     throw error;
   }
 }
@@ -72,9 +72,9 @@ async function listCheckpointsCommand(workUnitId: string): Promise<void> {
     process.exit(0);
   } catch (error: unknown) {
     if (error instanceof Error) {
-      output.error(chalk.red('Error:'), error.message);
+      output.error('Error:', error.message);
     } else {
-      output.error(chalk.red('Error: Unknown error occurred'));
+      output.error('Error: Unknown error occurred');
     }
     process.exit(1);
   }

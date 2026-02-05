@@ -188,7 +188,7 @@ export function registerRemoveDependencyCommand(program: Command): void {
             dependsOn: finalDependsOn,
             relatesTo: options.relatesTo,
           });
-          output.log(chalk.green(`✓ Dependency removed successfully`));
+          output.log(`✓ Dependency removed successfully`);
         } catch (error: any) {
           output.error(
             chalk.red('✗ Failed to remove dependency:'),

@@ -167,7 +167,7 @@ export async function auditScenarios(
  * Display audit results
  */
 export function displayAuditResults(result: AuditResult): void {
-  output.log(chalk.bold(`\n📊 Scenario Audit Report\n${'='.repeat(50)}\n`));
+  output.log(`\n📊 Scenario Audit Report\n${'='.repeat(50)}\n`);
 
   output.log(`Total scenarios scanned: ${chalk.cyan(result.totalScenarios)}`);
   output.log(
@@ -178,19 +178,15 @@ export function displayAuditResults(result: AuditResult): void {
   );
 
   if (result.duplicates.length === 0) {
-    output.log(
-      chalk.green('✓ No duplicates found! All scenarios are unique.\n')
-    );
+    output.log('✓ No duplicates found! All scenarios are unique.\n');
     return;
   }
 
-  output.log(chalk.bold('Duplicate Groups:\n'));
+  output.log('Duplicate Groups:\n');
 
   result.duplicates.forEach((group, index) => {
     output.log(
-      chalk.bold(
-        `${index + 1}. Similarity: ${chalk.yellow((group.similarityScore * 100).toFixed(1) + '%')}`
-      )
+      `${index + 1}. Similarity: ${chalk.yellow((group.similarityScore * 100).toFixed(1) + '%')}`
     );
     output.log(
       `   Keywords: ${chalk.cyan(group.keywords.slice(0, 5).join(', '))}`
@@ -207,9 +203,7 @@ export function displayAuditResults(result: AuditResult): void {
 
   if (result.mergeable) {
     output.log(
-      chalk.cyan(
-        '💡 Tip: Review these duplicates and consider merging them to maintain consistency.\n'
-      )
+      '💡 Tip: Review these duplicates and consider merging them to maintain consistency.\n'
     );
   }
 }

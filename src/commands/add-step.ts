@@ -261,9 +261,9 @@ export async function addStepCommand(
     );
 
     if (!result.success) {
-      output.error(chalk.red('Error:'), result.error);
+      output.error('Error:', result.error);
       if (result.suggestion) {
-        output.log(chalk.yellow('Suggestion:'), result.suggestion);
+        output.log('Suggestion:', result.suggestion);
       }
       process.exit(1);
     }
@@ -273,7 +273,7 @@ export async function addStepCommand(
     );
     process.exit(0);
   } catch (error: any) {
-    output.error(chalk.red('Error:'), error.message);
+    output.error('Error:', error.message);
     process.exit(1);
   }
 }

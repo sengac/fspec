@@ -123,8 +123,8 @@ export function registerAddVirtualHookCommand(program: Command): void {
             blocking: opts.blocking,
             gitContext: opts.gitContext,
           });
-          output.log(chalk.green(`✓ Virtual hook added to ${workUnitId}`));
-          output.log(chalk.gray(`  Total virtual hooks: ${result.hookCount}`));
+          output.log(`✓ Virtual hook added to ${workUnitId}`);
+          output.log(`  Total virtual hooks: ${result.hookCount}`);
         } catch (error: unknown) {
           output.error(
             chalk.red('✗ Failed to add virtual hook:'),
