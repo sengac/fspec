@@ -2,23 +2,219 @@
   "scenarios": [
     {
       "name": "Research tool receives correct arguments when invoked via Fspec tool",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-fspec-tool-args.test.ts",
+          "lines": "61-87",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "Research tool throws error for missing required arguments via Fspec tool",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-fspec-tool-args.test.ts",
+          "lines": "89-113",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ]
+            }
+          ]
+        }
+      ]
     },
     {
       "name": "CLI invocation continues to work after fix",
-      "testMappings": []
+      "testMappings": [
+        {
+          "file": "src/commands/__tests__/research-fspec-tool-args.test.ts",
+          "lines": "115-142",
+          "implMappings": [
+            {
+              "file": "src/commands/research.ts",
+              "lines": [
+                304,
+                305,
+                306,
+                307,
+                308,
+                309,
+                310,
+                311,
+                312,
+                313,
+                314,
+                315,
+                316,
+                317,
+                318,
+                319,
+                320,
+                321,
+                322,
+                323,
+                324,
+                325,
+                326,
+                327,
+                328,
+                329,
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345,
+                346,
+                347,
+                348,
+                349,
+                350,
+                351,
+                352,
+                353,
+                354,
+                355
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
     "totalScenarios": 3,
-    "coveredScenarios": 0,
-    "coveragePercent": 0,
-    "testFiles": [],
-    "implFiles": [],
-    "totalLinesCovered": 0
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/commands/__tests__/research-fspec-tool-args.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/research.ts"
+    ],
+    "totalLinesCovered": 236
   }
 }
