@@ -14,7 +14,7 @@
 use codelet_napi::persistence::{
     set_data_directory, create_session, load_session, 
     append_message_with_metadata, set_compaction_state,
-    add_anchor_point, get_anchor_points, PersistedAnchorPoint,
+    add_anchor_point, get_anchor_points, PersistedAnchorPoint, PersistedAnchorToolCall,
     SessionManifest,
 };
 use std::collections::HashMap;
@@ -60,6 +60,9 @@ pub fn create_error_resolution_anchor(turn_index: usize) -> PersistedAnchorPoint
         confidence: 0.95,
         description: format!("Build error fixed at turn {}", turn_index),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some(format!("Fix the build error at turn {}", turn_index)),
+        assistant_response: Some(format!("I fixed the build error at turn {}", turn_index)),
+        tool_calls: vec![PersistedAnchorToolCall { tool: "Edit".to_string(), success: true }],
     }
 }
 
@@ -72,6 +75,9 @@ pub fn create_task_completion_anchor(turn_index: usize) -> PersistedAnchorPoint 
         confidence: 0.92,
         description: format!("Task completed at turn {}", turn_index),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some(format!("Complete the task at turn {}", turn_index)),
+        assistant_response: Some(format!("I completed the task at turn {}", turn_index)),
+        tool_calls: vec![PersistedAnchorToolCall { tool: "Write".to_string(), success: true }],
     }
 }
 
@@ -84,6 +90,9 @@ pub fn create_user_checkpoint_anchor(turn_index: usize) -> PersistedAnchorPoint 
         confidence: 0.88,
         description: format!("User checkpoint at turn {}", turn_index),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some(format!("Create checkpoint at turn {}", turn_index)),
+        assistant_response: Some(format!("Checkpoint created at turn {}", turn_index)),
+        tool_calls: vec![],
     }
 }
 
@@ -96,6 +105,9 @@ pub fn create_feature_milestone_anchor(turn_index: usize) -> PersistedAnchorPoin
         confidence: 0.9,
         description: format!("Feature milestone at turn {}", turn_index),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some(format!("Reach milestone at turn {}", turn_index)),
+        assistant_response: Some(format!("Milestone reached at turn {}", turn_index)),
+        tool_calls: vec![],
     }
 }
 
@@ -108,6 +120,9 @@ pub fn create_synthetic_anchor(turn_index: usize, reason: &str) -> PersistedAnch
         confidence: 1.0,
         description: format!("Synthetic anchor - {}", reason),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: None,
+        assistant_response: None,
+        tool_calls: vec![],
     }
 }
 
@@ -124,6 +139,9 @@ pub fn create_anchor_with_timestamp(
         confidence: 0.9,
         description: format!("{} at turn {}", anchor_type, turn_index),
         timestamp_ms,
+        user_message: Some(format!("User message for {} at turn {}", anchor_type, turn_index)),
+        assistant_response: Some(format!("Response for {} at turn {}", anchor_type, turn_index)),
+        tool_calls: vec![],
     }
 }
 

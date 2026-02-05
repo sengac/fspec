@@ -81,6 +81,9 @@ fn test_anchor_points_should_survive_session_reload() {
         confidence: 0.95,
         description: "Build error fixed and tests pass".to_string(),
         timestamp_ms: 1738713600000,
+        user_message: Some("Fix the build error".to_string()),
+        assistant_response: Some("I fixed the build error".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add anchor");
     
@@ -127,6 +130,9 @@ fn test_compaction_should_persist_anchor_to_manifest() {
         confidence: 0.92,
         description: "Task completed successfully".to_string(),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some("Complete the task".to_string()),
+        assistant_response: Some("Task completed".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add anchor");
     
@@ -168,6 +174,9 @@ fn test_session_restore_should_populate_background_session_anchors() {
         confidence: 0.9,
         description: "Feature milestone reached".to_string(),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some("Reach milestone".to_string()),
+        assistant_response: Some("Milestone reached".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add anchor");
     
@@ -209,6 +218,9 @@ fn test_multiple_anchor_points_should_be_preserved() {
             confidence: 0.95,
             description: "First error fixed".to_string(),
             timestamp_ms: 1738713600000,
+            user_message: Some("Fix the error".to_string()),
+            assistant_response: Some("Error fixed".to_string()),
+            tool_calls: vec![],
         },
         PersistedAnchorPoint {
             turn_index: 20,
@@ -217,6 +229,9 @@ fn test_multiple_anchor_points_should_be_preserved() {
             confidence: 0.92,
             description: "Task completed".to_string(),
             timestamp_ms: 1738713700000,
+            user_message: Some("Complete task".to_string()),
+            assistant_response: Some("Task done".to_string()),
+            tool_calls: vec![],
         },
         PersistedAnchorPoint {
             turn_index: 35,
@@ -225,6 +240,9 @@ fn test_multiple_anchor_points_should_be_preserved() {
             confidence: 0.88,
             description: "User checkpoint".to_string(),
             timestamp_ms: 1738713800000,
+            user_message: Some("Checkpoint".to_string()),
+            assistant_response: Some("Saved".to_string()),
+            tool_calls: vec![],
         },
     ];
     
@@ -266,6 +284,9 @@ fn test_anchor_timestamp_should_be_preserved() {
         confidence: 0.92,
         description: "Task completed".to_string(),
         timestamp_ms,
+        user_message: Some("Test message".to_string()),
+        assistant_response: Some("Test response".to_string()),
+        tool_calls: vec![],
     };
     
     add_anchor_point(&mut session, anchor).expect("add anchor");
@@ -371,6 +392,9 @@ fn test_full_compaction_persist_resume_verify_cycle() {
         confidence: 0.95,
         description: "Build error resolved".to_string(),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some("Fix the build error".to_string()),
+        assistant_response: Some("Build error resolved".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add anchor");
     

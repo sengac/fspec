@@ -219,6 +219,9 @@ fn test_anchor_data_integrity_through_full_flow() {
         confidence: 0.8891,
         description: "Complex description: \"quotes\", <tags>, 日本語".to_string(),
         timestamp_ms: 1738713654321,
+        user_message: Some("Test message".to_string()),
+        assistant_response: Some("Test response".to_string()),
+        tool_calls: vec![],
     };
     
     add_anchor_point(&mut session, original.clone()).expect("add");

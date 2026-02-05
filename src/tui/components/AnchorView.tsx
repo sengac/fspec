@@ -10,7 +10,7 @@
  *
  * Composed of:
  * - AnchorListPane: Left pane with anchor list
- * - AnchorPreviewPane: Right pane with turn details
+ * - AnchorPreviewPane: Right pane with turn content
  * - AnchorListItem: Individual anchor item rendering
  */
 
@@ -20,7 +20,7 @@ import { AnchorListPane } from './AnchorListPane';
 import { AnchorPreviewPane } from './AnchorPreviewPane';
 import { useInputCompat, InputPriority } from '../input/index';
 import { useTerminalSize } from '../hooks/useTerminalSize';
-import type { AnchorPoint, AnchorTurnDetails } from '../types/anchor';
+import type { AnchorPoint } from '../types/anchor';
 
 export interface AnchorViewProps {
   /** Whether the view is visible */
@@ -29,8 +29,6 @@ export interface AnchorViewProps {
   anchorPoints: AnchorPoint[];
   /** Callback to close the view */
   onClose: () => void;
-  /** Callback to get turn details for a specific turn index */
-  onGetTurnDetails: (turnIndex: number) => Promise<AnchorTurnDetails | null>;
   /** For testing: override terminal width */
   _terminalWidth?: number;
   /** For testing: override terminal height */
@@ -46,7 +44,6 @@ export function AnchorView({
   isVisible,
   anchorPoints,
   onClose,
-  onGetTurnDetails,
   _terminalWidth,
   _terminalHeight,
 }: AnchorViewProps): React.ReactElement | null {
@@ -57,34 +54,13 @@ export function AnchorView({
   const [selectedAnchor, setSelectedAnchor] = useState<AnchorPoint | null>(
     anchorPoints.length > 0 ? anchorPoints[0] : null
   );
-  const [turnDetails, setTurnDetails] = useState<AnchorTurnDetails | null>(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   // Reset selection when view becomes visible
   useEffect(() => {
     if (isVisible && anchorPoints.length > 0) {
       setSelectedAnchor(anchorPoints[0]);
-      setTurnDetails(null);
     }
   }, [isVisible, anchorPoints]);
-
-  // Load turn details when selection changes
-  useEffect(() => {
-    if (!isVisible || !selectedAnchor) {
-      return;
-    }
-
-    setIsLoadingDetails(true);
-    onGetTurnDetails(selectedAnchor.turnIndex)
-      .then(details => {
-        setTurnDetails(details);
-        setIsLoadingDetails(false);
-      })
-      .catch(() => {
-        setTurnDetails(null);
-        setIsLoadingDetails(false);
-      });
-  }, [isVisible, selectedAnchor, onGetTurnDetails]);
 
   // Handler for anchor selection from AnchorListPane
   const handleAnchorSelect = useCallback((anchor: AnchorPoint) => {
@@ -134,11 +110,11 @@ export function AnchorView({
       {/* Header */}
       <Box paddingX={1} justifyContent="space-between">
         <Text bold color="cyan">
-          Conversation Anchors
+          Conversation Anchor Points
         </Text>
         <Text dimColor>
           {anchorPoints.length > 0
-            ? `${anchorPoints.length} anchor${anchorPoints.length === 1 ? '' : 's'}`
+            ? `${anchorPoints.length} anchors found`
             : ''}
         </Text>
         <Text dimColor>ESC</Text>
@@ -166,8 +142,6 @@ export function AnchorView({
           />
           <AnchorPreviewPane
             selectedAnchor={selectedAnchor}
-            turnDetails={turnDetails}
-            isLoading={isLoadingDetails}
             width={rightPaneWidth}
             contentHeight={contentHeight}
           />

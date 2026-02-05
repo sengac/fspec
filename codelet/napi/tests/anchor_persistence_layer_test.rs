@@ -100,6 +100,9 @@ fn test_add_anchor_point_preserves_all_fields() {
         confidence: 0.88,
         description: "Test description with special chars: <>&\"'".to_string(),
         timestamp_ms,
+        user_message: Some("Test message".to_string()),
+        assistant_response: Some("Test response".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add_anchor_point");
     
@@ -268,6 +271,9 @@ fn test_anchor_numeric_precision_survives_save_load() {
         confidence: 0.9123456,
         description: "Precision test".to_string(),
         timestamp_ms: 1738713654321,
+        user_message: Some("Test message".to_string()),
+        assistant_response: Some("Test response".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add");
     
@@ -298,6 +304,9 @@ fn test_anchor_special_characters_survive_save_load() {
         confidence: 0.85,
         description: special_desc.to_string(),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some("Test message".to_string()),
+        assistant_response: Some("Test response".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add");
     
@@ -426,6 +435,9 @@ fn test_anchor_with_very_large_turn_index() {
         confidence: 0.9,
         description: "Large index test".to_string(),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some("Test message".to_string()),
+        assistant_response: Some("Test response".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add");
     

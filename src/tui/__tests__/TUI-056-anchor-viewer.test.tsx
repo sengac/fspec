@@ -8,6 +8,20 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, RenderResult } from 'ink-testing-library';
 import { AgentView } from '../components/AgentView';
+
+// Mock Ink's Box to strip position="absolute" which doesn't work in ink-testing-library
+vi.mock('ink', async () => {
+  const actual = await vi.importActual<typeof import('ink')>('ink');
+  return {
+    ...actual,
+    Box: (props: Record<string, unknown>) => {
+      // Strip position="absolute" as ink-testing-library can't render it
+      const { position, ...rest } = props;
+      return <actual.Box {...rest} />;
+    },
+  };
+});
+
 import { 
   useSessionStore, 
   useCurrentSessionId,
@@ -445,7 +459,10 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
         weight: 0.9,
         confidence: 0.95,
         description: 'Build error fixed',
-        timestamp: Date.now() - 3000
+        timestamp: Date.now() - 3000,
+        userMessage: 'There is a build error',
+        assistantResponse: 'I fixed the build error',
+        toolCalls: [{ tool: 'Edit', success: true }],
       },
       {
         turnIndex: 3,
@@ -453,7 +470,10 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
         weight: 0.8,
         confidence: 0.92,
         description: 'Feature implemented',
-        timestamp: Date.now() - 2000
+        timestamp: Date.now() - 2000,
+        userMessage: 'Please implement the feature',
+        assistantResponse: 'Feature implemented successfully',
+        toolCalls: [{ tool: 'Write', success: true }],
       },
       {
         turnIndex: 5,
@@ -461,7 +481,10 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
         weight: 0.7,
         confidence: 0.88,
         description: 'Manual checkpoint',
-        timestamp: Date.now() - 1000
+        timestamp: Date.now() - 1000,
+        userMessage: 'Save checkpoint',
+        assistantResponse: 'Checkpoint saved',
+        toolCalls: [],
       }
     ];
 
@@ -506,27 +529,15 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
         weight: 0.8,
         confidence: 0.92,
         description: 'Feature implemented',
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        userMessage: 'Please implement the login feature',
+        assistantResponse: 'I have implemented the login feature with proper validation',
+        toolCalls: [{ tool: 'Edit', success: true }],
       }
     ];
 
-    const mockTurnDetails = {
-      turnIndex: 3,
-      userMessage: 'Please implement the login feature',
-      assistantResponse: 'I have implemented the login feature with proper validation',
-      toolCalls: [
-        { tool: 'Edit', parameters: '{"file_path": "/src/login.ts"}', success: true }
-      ],
-      fileModifications: [
-        { path: '/src/login.ts', operation: 'edit' as const, summary: 'Added login validation' }
-      ],
-      status: 'success' as const,
-      context: 'User requested login feature implementation'
-    };
-
     // @step Given I have anchor points displayed in the modal dialog
     mockSessionGetAnchorPoints.mockReturnValue(mockAnchorPoints);
-    mockSessionGetTurnDetails.mockReturnValue(mockTurnDetails);
     
     renderResult = render(
       <AgentView 
@@ -551,10 +562,10 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
     await waitForFrame();
     
     // @step Then I should see turn details showing file modifications and test results
-    // Check that the anchor viewer was called and turn details modal is now displayed
+    // Check that the anchor viewer was called and content is displayed in preview pane
     expect(mockSessionGetAnchorPoints).toHaveBeenCalledWith('test-session');
-    expect(mockSessionGetTurnDetails).toHaveBeenCalledWith('test-session', 3);
-    expect(renderResult.lastFrame()).toContain('Content'); // TurnContentModal is showing
+    // Content is now embedded in anchor, displayed in preview pane
+    expect(renderResult.lastFrame()).toContain('login feature');
   });
 
   it('Scenario: Access anchors with simple command only', async () => {
@@ -595,7 +606,10 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
         weight: 0.9,
         confidence: 0.95,
         description: 'Error fixed',
-        timestamp: Date.now() - 4000
+        timestamp: Date.now() - 4000,
+        userMessage: 'Fix the error',
+        assistantResponse: 'Error has been fixed',
+        toolCalls: [{ tool: 'Edit', success: true }],
       },
       {
         turnIndex: 2,
@@ -603,7 +617,10 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
         weight: 0.8,
         confidence: 0.92,
         description: 'Task completed',
-        timestamp: Date.now() - 3000
+        timestamp: Date.now() - 3000,
+        userMessage: 'Complete the task',
+        assistantResponse: 'Task completed successfully',
+        toolCalls: [{ tool: 'Write', success: true }],
       },
       {
         turnIndex: 3,
@@ -611,7 +628,10 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
         weight: 0.75,
         confidence: 0.90,
         description: 'Feature milestone',
-        timestamp: Date.now() - 2000
+        timestamp: Date.now() - 2000,
+        userMessage: 'Reach milestone',
+        assistantResponse: 'Milestone reached',
+        toolCalls: [],
       },
       {
         turnIndex: 4,
@@ -619,7 +639,10 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
         weight: 0.7,
         confidence: 0.88,
         description: 'User checkpoint',
-        timestamp: Date.now() - 1000
+        timestamp: Date.now() - 1000,
+        userMessage: 'Create checkpoint',
+        assistantResponse: 'Checkpoint created',
+        toolCalls: [],
       }
     ];
 

@@ -1,26 +1,23 @@
 /**
  * AnchorPreviewPane - Renders the preview for a selected anchor
  *
- * Displays:
- * - Header with turn number
- * - Scrollable content using VirtualList
- * - Turn details (user message, assistant response, tool calls)
- * - Fallback to anchor metadata when turn details unavailable
+ * Displays the actual turn content embedded in the anchor:
+ * - User message from that turn
+ * - Assistant response from that turn
+ * - Tool calls made in that turn
+ *
+ * Uses VirtualList for scrollable content display.
+ * NO METADATA, NO FALLBACKS - only actual turn content.
  */
 
 import React, { useMemo } from 'react';
 import { Box, Text } from 'ink';
 import { VirtualList } from './VirtualList';
-import { turnDetailsToLines, ANCHOR_TYPE_LABELS, formatRelativeTime } from '../utils/anchorUtils';
-import type { AnchorPoint, AnchorTurnDetails } from '../types/anchor';
+import type { AnchorPoint } from '../types/anchor';
 
 export interface AnchorPreviewPaneProps {
-  /** Selected anchor to display info for */
+  /** Selected anchor to display content for */
   selectedAnchor: AnchorPoint | null;
-  /** Turn details to display (null if not loaded) */
-  turnDetails: AnchorTurnDetails | null;
-  /** Whether details are currently loading */
-  isLoading: boolean;
   /** Width of the pane */
   width: number;
   /** Height available for content */
@@ -28,73 +25,90 @@ export interface AnchorPreviewPaneProps {
 }
 
 /**
- * Convert anchor info to display lines
+ * Convert anchor's embedded turn content to display lines
  */
-function anchorInfoToLines(anchor: AnchorPoint): string[] {
+function anchorContentToLines(anchor: AnchorPoint, width: number): string[] {
   const lines: string[] = [];
-  
-  lines.push(`TURN ${anchor.turnIndex}`);
-  lines.push('─'.repeat(40));
-  lines.push('');
-  
-  // Type
-  const typeLabel = ANCHOR_TYPE_LABELS[anchor.anchorType] || anchor.anchorType;
-  lines.push(`Type: ${typeLabel} ${anchor.anchorType}`);
-  lines.push('');
-  
-  // Confidence and Weight
-  lines.push(`Confidence: ${(anchor.confidence * 100).toFixed(0)}%`);
-  lines.push(`Weight: ${anchor.weight.toFixed(2)}`);
-  lines.push('');
-  
-  // Timestamp
-  lines.push(`Created: ${formatRelativeTime(anchor.timestamp)}`);
-  lines.push('');
-  
-  // Description (wrap long lines)
-  lines.push('Description:');
-  const descWords = anchor.description.split(' ');
-  let currentLine = '  ';
-  for (const word of descWords) {
-    if (currentLine.length + word.length + 1 > 60) {
-      lines.push(currentLine);
-      currentLine = '  ' + word;
-    } else {
-      currentLine += (currentLine.length > 2 ? ' ' : '') + word;
+  const contentWidth = Math.max(20, width - 4); // Account for padding
+
+  // Helper to wrap text
+  const wrapText = (text: string, indent: string = ''): void => {
+    const words = text.split(/\s+/);
+    let currentLine = indent;
+    const maxLen = contentWidth - indent.length;
+
+    for (const word of words) {
+      if (currentLine.length + word.length + 1 > maxLen && currentLine.length > indent.length) {
+        lines.push(currentLine);
+        currentLine = indent + word;
+      } else {
+        currentLine += (currentLine.length > indent.length ? ' ' : '') + word;
+      }
     }
+    if (currentLine.length > indent.length) {
+      lines.push(currentLine);
+    }
+  };
+
+  // User message
+  if (anchor.userMessage) {
+    lines.push('USER:');
+    lines.push('');
+    wrapText(anchor.userMessage, '');
+    lines.push('');
   }
-  if (currentLine.length > 2) {
-    lines.push(currentLine);
+
+  // Assistant response
+  if (anchor.assistantResponse) {
+    lines.push('ASSISTANT:');
+    lines.push('');
+    // Split by newlines first to preserve formatting
+    const responseLines = anchor.assistantResponse.split('\n');
+    for (const line of responseLines) {
+      if (line.trim()) {
+        wrapText(line, '');
+      } else {
+        lines.push('');
+      }
+    }
+    lines.push('');
   }
-  
+
+  // Tool calls
+  if (anchor.toolCalls && anchor.toolCalls.length > 0) {
+    lines.push('TOOLS:');
+    lines.push('');
+    for (const tc of anchor.toolCalls) {
+      const status = tc.success ? '+' : '-';
+      lines.push(`  [${status}] ${tc.tool}`);
+    }
+    lines.push('');
+  }
+
+  // If no content at all, show a message
+  if (lines.length === 0) {
+    lines.push('No turn content available for this anchor.');
+    lines.push('');
+    lines.push('This anchor may have been created before');
+    lines.push('turn content capture was implemented.');
+  }
+
   return lines;
 }
 
 export function AnchorPreviewPane({
   selectedAnchor,
-  turnDetails,
-  isLoading,
   width,
   contentHeight,
 }: AnchorPreviewPaneProps): React.ReactElement {
-  // Convert anchor/turn details to lines for VirtualList
+  // Convert anchor content to lines for VirtualList
   const previewLines = useMemo(() => {
     if (!selectedAnchor) {
-      return ['Select an anchor to view details'];
+      return ['Select an anchor to view content'];
     }
-    
-    if (isLoading) {
-      return ['Loading...'];
-    }
-    
-    // If we have turn details, show them
-    if (turnDetails) {
-      return turnDetailsToLines(turnDetails);
-    }
-    
-    // Otherwise show anchor info
-    return anchorInfoToLines(selectedAnchor);
-  }, [selectedAnchor, turnDetails, isLoading]);
+
+    return anchorContentToLines(selectedAnchor, width);
+  }, [selectedAnchor, width]);
 
   const renderPreviewLine = (
     line: string,
@@ -115,7 +129,7 @@ export function AnchorPreviewPane({
     >
       <Box marginBottom={1}>
         <Text bold color="cyan">
-          {selectedAnchor ? `TURN ${selectedAnchor.turnIndex}` : 'DETAILS'}
+          {selectedAnchor ? `TURN ${selectedAnchor.turnIndex}` : 'CONTENT'}
         </Text>
       </Box>
       <Box flexGrow={1}>

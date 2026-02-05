@@ -9,7 +9,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from 'ink-testing-library';
 import { AnchorView } from '../AnchorView';
-import type { AnchorPoint, AnchorTurnDetails } from '../../types/anchor';
+import type { AnchorPoint } from '../../types/anchor';
 
 // Mock Ink's Box to strip position="absolute" which doesn't work in ink-testing-library
 vi.mock('ink', async () => {
@@ -24,7 +24,7 @@ vi.mock('ink', async () => {
   };
 });
 
-// Mock anchor points for testing
+// Mock anchor points for testing - now include embedded turn content
 const createMockAnchorPoints = (): AnchorPoint[] => [
   {
     anchorType: 'TaskCompletion',
@@ -33,6 +33,12 @@ const createMockAnchorPoints = (): AnchorPoint[] => [
     weight: 0.91,
     confidence: 0.91,
     description: 'Completed refactoring task',
+    userMessage: 'Can you analyze the compaction logs?',
+    assistantResponse: 'I found the issue in the buffer management and fixed it.',
+    toolCalls: [
+      { tool: 'Read', success: true },
+      { tool: 'Edit', success: true },
+    ],
   },
   {
     anchorType: 'ErrorResolution',
@@ -41,6 +47,11 @@ const createMockAnchorPoints = (): AnchorPoint[] => [
     weight: 0.85,
     confidence: 0.85,
     description: 'Fixed compilation error',
+    userMessage: 'There is a type error in the session manager.',
+    assistantResponse: 'I see the issue - the return type was incorrect. Fixed it.',
+    toolCalls: [
+      { tool: 'Edit', success: true },
+    ],
   },
   {
     anchorType: 'FeatureMilestone',
@@ -49,24 +60,11 @@ const createMockAnchorPoints = (): AnchorPoint[] => [
     weight: 0.78,
     confidence: 0.78,
     description: 'Architecture decision made',
+    userMessage: 'What architecture should we use?',
+    assistantResponse: 'I recommend using a modular architecture with clear boundaries.',
+    toolCalls: [],
   },
 ];
-
-// Mock turn details
-const createMockTurnDetails = (turnIndex: number): AnchorTurnDetails => ({
-  turnIndex,
-  userMessage: 'Can you analyze the compaction logs?',
-  assistantResponse: 'I found the issue in the buffer management...',
-  toolCalls: [
-    { tool: 'Read', parameters: {}, success: true },
-    { tool: 'Edit', parameters: {}, success: true },
-  ],
-  fileModifications: [
-    { path: 'src/buffer.ts', operation: 'edit', summary: 'Updated buffer' },
-  ],
-  status: 'success',
-  context: 'Debugging session',
-});
 
 // Test dimensions for consistent rendering
 const TEST_WIDTH = 120;
@@ -74,17 +72,13 @@ const TEST_HEIGHT = 40;
 
 describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () => {
   let mockOnClose: ReturnType<typeof vi.fn>;
-  let mockOnGetTurnDetails: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockOnClose = vi.fn();
-    mockOnGetTurnDetails = vi.fn().mockImplementation((turnIndex: number) =>
-      Promise.resolve(createMockTurnDetails(turnIndex))
-    );
   });
 
   describe('Scenario: Open anchor view with /anchors command', () => {
-    it('should display full-screen anchor view with split pane layout', async () => {
+    it('should display full-screen anchor view with split pane layout', () => {
       const anchorPoints = createMockAnchorPoints();
 
       // @step Given I have an active session with anchor points
@@ -97,7 +91,6 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
           isVisible={true}
           anchorPoints={anchorPoints}
           onClose={mockOnClose}
-          onGetTurnDetails={mockOnGetTurnDetails}
           _terminalWidth={TEST_WIDTH}
           _terminalHeight={TEST_HEIGHT}
         />
@@ -114,11 +107,11 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
       expect(output).toContain('0.91');
 
       // @step And the right pane shows the selected anchor's turn content
-      // First anchor is selected by default, turn details should be fetched
-      expect(mockOnGetTurnDetails).toHaveBeenCalledWith(14);
+      // First anchor is selected by default, its content should be displayed
+      expect(output).toContain('Can you analyze');
 
-      // @step And the view has a header showing "Conversation Anchors"
-      expect(output).toContain('Conversation Anchors');
+      // @step And the view has a header showing "Conversation Anchor Points"
+      expect(output).toContain('Conversation Anchor Points');
 
       // @step And the footer shows available keyboard shortcuts
       expect(output).toMatch(/Up.*Down.*Navigate|Navigate/i);
@@ -136,19 +129,15 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
           isVisible={true}
           anchorPoints={anchorPoints}
           onClose={mockOnClose}
-          onGetTurnDetails={mockOnGetTurnDetails}
           _terminalWidth={TEST_WIDTH}
           _terminalHeight={TEST_HEIGHT}
         />
       );
 
-      // Initial state - first anchor selected
-      expect(lastFrame()).toContain('TaskCompletion');
-
-      // Wait for initial turn details fetch
-      await vi.waitFor(() => {
-        expect(mockOnGetTurnDetails).toHaveBeenCalledWith(14);
-      });
+      // Initial state - first anchor selected, shows its content
+      let output = lastFrame() ?? '';
+      expect(output).toContain('TaskCompletion');
+      expect(output).toContain('Can you analyze');
 
       // @step When I press the down arrow key
       stdin.write('\x1B[B'); // Down arrow
@@ -156,7 +145,9 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
       // @step Then the next anchor in the list is selected
       // @step And the right pane updates to show that anchor's turn content
       await vi.waitFor(() => {
-        expect(mockOnGetTurnDetails).toHaveBeenCalledWith(8); // ErrorResolution at turn 8
+        output = lastFrame() ?? '';
+        // Should now show ErrorResolution content
+        expect(output).toContain('type error');
       });
 
       // @step When I press the up arrow key
@@ -164,13 +155,10 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
 
       // @step Then the previous anchor in the list is selected
       // @step And the right pane updates to show that anchor's turn content
-      // Going back to first anchor should trigger another fetch for turn 14
       await vi.waitFor(() => {
-        // Count how many times turn 14 was fetched (should be at least 2)
-        const calls = mockOnGetTurnDetails.mock.calls.filter(
-          (call: number[]) => call[0] === 14
-        );
-        expect(calls.length).toBeGreaterThanOrEqual(2);
+        output = lastFrame() ?? '';
+        // Should be back to TaskCompletion content
+        expect(output).toContain('Can you analyze');
       });
     });
   });
@@ -185,7 +173,6 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
           isVisible={true}
           anchorPoints={anchorPoints}
           onClose={mockOnClose}
-          onGetTurnDetails={mockOnGetTurnDetails}
           _terminalWidth={TEST_WIDTH}
           _terminalHeight={TEST_HEIGHT}
         />
@@ -220,7 +207,7 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
   });
 
   describe('Scenario: Preview pane shows turn content', () => {
-    it('should display turn details in right pane', async () => {
+    it('should display turn details in right pane', () => {
       const anchorPoints = createMockAnchorPoints();
 
       // @step Given the anchor view is open with an anchor selected
@@ -229,29 +216,25 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
           isVisible={true}
           anchorPoints={anchorPoints}
           onClose={mockOnClose}
-          onGetTurnDetails={mockOnGetTurnDetails}
           _terminalWidth={TEST_WIDTH}
           _terminalHeight={TEST_HEIGHT}
         />
       );
 
-      // Wait for turn details to be fetched
-      await vi.waitFor(() => {
-        const output = lastFrame() ?? '';
+      const output = lastFrame() ?? '';
 
-        // @step Then the right pane shows the user message for that turn
-        expect(output).toContain('Can you analyze');
+      // @step Then the right pane shows the user message for that turn
+      expect(output).toContain('Can you analyze');
 
-        // @step And the right pane shows the assistant response for that turn
-        expect(output).toContain('found the issue');
+      // @step And the right pane shows the assistant response for that turn
+      expect(output).toContain('found the issue');
 
-        // @step And the right pane shows any tool calls made in that turn
-        expect(output).toMatch(/Read|Edit|Tools/i);
+      // @step And the right pane shows any tool calls made in that turn
+      expect(output).toMatch(/Read|Edit|TOOLS/i);
 
-        // @step And the content is scrollable with a scrollbar indicator
-        // VirtualList with showScrollbar=true provides scrollbar when content exceeds viewport
-        // The scrollbar indicator is rendered by VirtualList component
-      });
+      // @step And the content is scrollable with a scrollbar indicator
+      // VirtualList with showScrollbar=true provides scrollbar when content exceeds viewport
+      // The scrollbar indicator is rendered by VirtualList component
     });
   });
 
@@ -265,7 +248,6 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
           isVisible={true}
           anchorPoints={anchorPoints}
           onClose={mockOnClose}
-          onGetTurnDetails={mockOnGetTurnDetails}
           _terminalWidth={TEST_WIDTH}
           _terminalHeight={TEST_HEIGHT}
         />
@@ -290,14 +272,13 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
           isVisible={true}
           anchorPoints={anchorPoints}
           onClose={mockOnClose}
-          onGetTurnDetails={mockOnGetTurnDetails}
           _terminalWidth={TEST_WIDTH}
           _terminalHeight={TEST_HEIGHT}
         />
       );
 
       // Verify view is rendered
-      expect(lastFrame()).toContain('Conversation Anchors');
+      expect(lastFrame()).toContain('Conversation Anchor Points');
 
       // @step When I type random characters
       stdin.write('abc123!@#');
@@ -308,7 +289,7 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
       // We verify this by checking onClose wasn't called (Escape would trigger it)
       // and the view is still displayed unchanged
       expect(mockOnClose).not.toHaveBeenCalled();
-      expect(lastFrame()).toContain('Conversation Anchors');
+      expect(lastFrame()).toContain('Conversation Anchor Points');
     });
   });
 
@@ -323,7 +304,6 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
           isVisible={true}
           anchorPoints={emptyAnchorPoints}
           onClose={mockOnClose}
-          onGetTurnDetails={mockOnGetTurnDetails}
           _terminalWidth={TEST_WIDTH}
           _terminalHeight={TEST_HEIGHT}
         />
@@ -355,7 +335,6 @@ describe('Feature: Refactor Anchor Viewer from Dialog to Full-Screen View', () =
           isVisible={false}
           anchorPoints={[]}
           onClose={mockOnClose}
-          onGetTurnDetails={mockOnGetTurnDetails}
           _terminalWidth={TEST_WIDTH}
           _terminalHeight={TEST_HEIGHT}
         />

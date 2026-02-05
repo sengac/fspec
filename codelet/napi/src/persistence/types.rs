@@ -143,6 +143,27 @@ pub struct PersistedAnchorPoint {
     pub description: String,
     /// Timestamp in milliseconds since epoch (serialization-friendly)
     pub timestamp_ms: i64,
+    /// User message content at this turn (captured at anchor creation time)
+    /// Optional for backward compatibility with old manifests
+    #[serde(default)]
+    pub user_message: Option<String>,
+    /// Assistant response content at this turn (captured at anchor creation time)
+    /// Optional for backward compatibility with old manifests
+    #[serde(default)]
+    pub assistant_response: Option<String>,
+    /// Tool calls made in this turn (captured at anchor creation time)
+    /// Optional for backward compatibility with old manifests
+    #[serde(default)]
+    pub tool_calls: Vec<PersistedAnchorToolCall>,
+}
+
+/// Tool call info stored with anchor point
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct PersistedAnchorToolCall {
+    /// Tool name (e.g., "Edit", "Write", "Bash")
+    pub tool: String,
+    /// Whether the tool call succeeded
+    pub success: bool,
 }
 
 /// A session manifest - ordered list of message references

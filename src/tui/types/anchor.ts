@@ -8,6 +8,14 @@ export type AnchorType =
   | 'UserCheckpoint'
   | 'FeatureMilestone';
 
+/** Tool call info stored with anchor */
+export interface AnchorToolCall {
+  /** Tool name (e.g., "Edit", "Write", "Bash") */
+  tool: string;
+  /** Whether the tool call succeeded */
+  success: boolean;
+}
+
 export interface AnchorPoint {
   /** Index of turn in conversation history */
   turnIndex: number;
@@ -21,6 +29,12 @@ export interface AnchorPoint {
   description: string;
   /** Timestamp when anchor was created */
   timestamp: number;
+  /** User message content at this turn (captured at anchor creation time) */
+  userMessage?: string;
+  /** Assistant response content at this turn (captured at anchor creation time) */
+  assistantResponse?: string;
+  /** Tool calls made in this turn (captured at anchor creation time) */
+  toolCalls: AnchorToolCall[];
 }
 
 export interface AnchorTurnDetails {

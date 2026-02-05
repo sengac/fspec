@@ -1,3 +1,4 @@
+@done
 @TUI-057
 Feature: Refactor Anchor Viewer from Dialog to Full-Screen View
 

@@ -489,6 +489,26 @@ export interface NapiAnchorPoint {
   description: string;
   /** Timestamp when anchor was created (Unix timestamp in milliseconds) */
   timestamp: number;
+  /**
+   * User message content at this turn (captured at anchor creation time)
+   * None for old anchors that don't have this data
+   */
+  userMessage?: string;
+  /**
+   * Assistant response content at this turn (captured at anchor creation time)
+   * None for old anchors that don't have this data
+   */
+  assistantResponse?: string;
+  /** Tool calls made in this turn (captured at anchor creation time) */
+  toolCalls: Array<NapiAnchorToolCall>;
+}
+
+/** TUI-057: Tool call info stored with anchor point */
+export interface NapiAnchorToolCall {
+  /** Tool name (e.g., "Edit", "Write", "Bash") */
+  tool: string;
+  /** Whether the tool call succeeded */
+  success: boolean;
 }
 
 /** TUI-056: Anchor point types for NAPI */
@@ -990,6 +1010,9 @@ export declare function sessionDetach(sessionId: string): void;
  *
  * Returns anchor points that were detected during compaction operations.
  * Empty list if no compaction has been performed or no anchors were found.
+ *
+ * TUI-057: Now includes turn content (user message, assistant response, tool calls)
+ * which is loaded from persistence to ensure content survives compaction.
  */
 export declare function sessionGetAnchorPoints(
   sessionId: string

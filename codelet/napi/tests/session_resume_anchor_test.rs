@@ -153,6 +153,9 @@ fn test_resume_preserves_anchor_confidence_and_weight() {
         confidence: 0.88,
         description: "Custom weight/confidence test".to_string(),
         timestamp_ms: chrono::Utc::now().timestamp_millis(),
+        user_message: Some("Test message".to_string()),
+        assistant_response: Some("Test response".to_string()),
+        tool_calls: vec![],
     };
     add_anchor_point(&mut session, anchor).expect("add");
     
@@ -190,6 +193,9 @@ fn test_resume_preserves_anchor_descriptions() {
             confidence: 0.9,
             description: desc.to_string(),
             timestamp_ms: chrono::Utc::now().timestamp_millis(),
+            user_message: Some("Test message".to_string()),
+            assistant_response: Some("Test response".to_string()),
+            tool_calls: vec![],
         };
         add_anchor_point(&mut session, anchor).expect("add");
     }

@@ -111,13 +111,11 @@ import {
   sessionPauseConfirm,
   // TUI-056: Anchor point retrieval
   sessionGetAnchorPoints,
-  sessionGetTurnDetails,
   // UX-002: Compaction progress polling for automatic compaction
   sessionGetCompactionProgress,
   // CODE-009: Fspec command result sending via NAPI
   sessionSendFspecResult,
   type NapiAnchorPoint,
-  type NapiTurnDetails,
   type SessionRoleInfo,
   type NapiProviderModels,
   type NapiModelInfo,
@@ -149,7 +147,7 @@ import { WatcherTemplateForm } from './WatcherTemplateForm';
 import { SessionHeader } from './SessionHeader';
 import { formatContextWindow } from '../utils/sessionHeaderUtils';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
-import type { AnchorPoint, AnchorTurnDetails } from '../types/anchor';
+import type { AnchorPoint } from '../types/anchor';
 import {
   computeLineDiff,
   changesToDiffLines,
@@ -3649,6 +3647,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             confidence: napiAnchor.confidence,
             description: napiAnchor.description,
             timestamp: napiAnchor.timestamp,
+            userMessage: napiAnchor.userMessage ?? undefined,
+            assistantResponse: napiAnchor.assistantResponse ?? undefined,
+            toolCalls: napiAnchor.toolCalls?.map(tc => ({
+              tool: tc.tool,
+              success: tc.success,
+            })) ?? [],
           }));
 
           setAnchorPoints(convertedAnchors);
@@ -3725,44 +3729,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   useEffect(() => {
     executeSlashCommandRef.current = (cmd: string) => void handleSubmitWithCommand(cmd);
   }, [handleSubmitWithCommand]);
-
-  // TUI-056: Get turn details for anchor viewer
-  const getAnchorTurnDetails = useCallback(async (turnIndex: number): Promise<AnchorTurnDetails | null> => {
-    if (!currentSessionId) {
-      return null;
-    }
-
-    try {
-      const napiTurnDetails: NapiTurnDetails | null = await sessionGetTurnDetails(currentSessionId, turnIndex);
-      if (!napiTurnDetails) {
-        return null;
-      }
-
-      // Convert NAPI types to TUI types
-      const turnDetails: AnchorTurnDetails = {
-        turnIndex: napiTurnDetails.turnIndex,
-        userMessage: napiTurnDetails.userMessage,
-        assistantResponse: napiTurnDetails.assistantResponse,
-        toolCalls: napiTurnDetails.toolCalls.map(call => ({
-          tool: call.tool,
-          parameters: JSON.parse(call.parameters || '{}'),
-          success: call.success,
-        })),
-        fileModifications: napiTurnDetails.fileModifications.map(mod => ({
-          path: mod.path,
-          operation: mod.operation as 'create' | 'edit' | 'delete',
-          summary: mod.summary,
-        })),
-        status: napiTurnDetails.status as 'success' | 'partial' | 'failed',
-        context: napiTurnDetails.context,
-      };
-
-      return turnDetails;
-    } catch (error) {
-      console.error('Failed to get turn details:', error);
-      return null;
-    }
-  }, [currentSessionId]);
 
   // Handle provider switching - now just updates local state
   // Actual provider change happens on next session creation
@@ -7182,7 +7148,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         isVisible={showAnchorViewer}
         anchorPoints={anchorPoints}
         onClose={() => setShowAnchorViewer(false)}
-        onGetTurnDetails={getAnchorTurnDetails}
         _terminalWidth={terminalWidth}
         _terminalHeight={terminalHeight}
       />

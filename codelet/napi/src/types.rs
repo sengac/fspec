@@ -42,6 +42,24 @@ pub struct NapiAnchorPoint {
     pub description: String,
     /// Timestamp when anchor was created (Unix timestamp in milliseconds)
     pub timestamp: f64,
+    /// User message content at this turn (captured at anchor creation time)
+    /// None for old anchors that don't have this data
+    pub user_message: Option<String>,
+    /// Assistant response content at this turn (captured at anchor creation time)
+    /// None for old anchors that don't have this data
+    pub assistant_response: Option<String>,
+    /// Tool calls made in this turn (captured at anchor creation time)
+    pub tool_calls: Vec<NapiAnchorToolCall>,
+}
+
+/// TUI-057: Tool call info stored with anchor point
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NapiAnchorToolCall {
+    /// Tool name (e.g., "Edit", "Write", "Bash")
+    pub tool: String,
+    /// Whether the tool call succeeded
+    pub success: bool,
 }
 
 /// TUI-056: Tool call info for turn details

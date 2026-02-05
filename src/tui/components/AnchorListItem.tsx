@@ -4,7 +4,7 @@
  * Displays anchor metadata:
  * - Type label and anchor type code
  * - Turn number, weight score, and relative timestamp
- * - Optional description (truncated to fit)
+ * - Description (wrapped to fit pane width)
  */
 
 import React from 'react';
@@ -17,8 +17,31 @@ export interface AnchorListItemProps {
   anchor: AnchorPoint;
   /** Whether this item is currently selected */
   isSelected: boolean;
-  /** Maximum width for description truncation */
+  /** Maximum width for description wrapping */
   maxDescriptionWidth: number;
+}
+
+/**
+ * Wrap text to fit within a given width
+ */
+function wrapText(text: string, maxWidth: number): string[] {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    if (currentLine.length + word.length + 1 > maxWidth && currentLine.length > 0) {
+      lines.push(currentLine);
+      currentLine = word;
+    } else {
+      currentLine += (currentLine.length > 0 ? ' ' : '') + word;
+    }
+  }
+  if (currentLine.length > 0) {
+    lines.push(currentLine);
+  }
+
+  return lines;
 }
 
 export function AnchorListItem({
@@ -28,6 +51,11 @@ export function AnchorListItem({
 }: AnchorListItemProps): React.ReactElement {
   const typeLabel = ANCHOR_TYPE_LABELS[anchor.anchorType] || `[${anchor.anchorType}]`;
   const relativeTime = formatRelativeTime(anchor.timestamp);
+
+  // Wrap description to multiple lines
+  const descriptionLines = anchor.description 
+    ? wrapText(anchor.description, maxDescriptionWidth - 2) // -2 for margin
+    : [];
 
   return (
     <Box flexDirection="column">
@@ -44,13 +72,11 @@ export function AnchorListItem({
           Turn {anchor.turnIndex} | {anchor.weight.toFixed(2)} | {relativeTime}
         </Text>
       </Box>
-      {anchor.description && (
-        <Box marginLeft={2}>
-          <Text dimColor wrap="truncate">
-            {anchor.description.slice(0, maxDescriptionWidth)}
-          </Text>
+      {descriptionLines.map((line, idx) => (
+        <Box key={idx} marginLeft={2}>
+          <Text dimColor>{line}</Text>
         </Box>
-      )}
+      ))}
     </Box>
   );
 }

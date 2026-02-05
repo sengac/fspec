@@ -13,7 +13,7 @@ use crate::persistence::{
     load_session, append_message_with_metadata, update_session_tokens, set_compaction_state,
     MessageEnvelope, MessagePayload, UserMessage, UserContent, AssistantMessage, AssistantContent,
 };
-use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiTurnDetails, NapiToolCall, NapiFileModification};
+use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiAnchorToolCall, NapiTurnDetails, NapiToolCall, NapiFileModification};
 use codelet_cli::interactive_helpers::execute_compaction;
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
@@ -3760,8 +3760,9 @@ fn persist_compaction_state(
 fn persist_anchor_point(
     session_id: &uuid::Uuid,
     anchor: &codelet_core::compaction::AnchorPoint,
+    original_turns: &[codelet_core::compaction::ConversationTurn],
 ) -> std::result::Result<(), String> {
-    use crate::persistence::{add_anchor_point, PersistedAnchorPoint};
+    use crate::persistence::{add_anchor_point, PersistedAnchorPoint, PersistedAnchorToolCall};
     
     // Load the session manifest
     let mut session_manifest = load_session(*session_id)?;
@@ -3780,6 +3781,22 @@ fn persist_anchor_point(
         .unwrap_or_default()
         .as_millis() as i64;
     
+    // TUI-057: Capture turn content from original turns (before compaction modified indices)
+    let (user_message, assistant_response, tool_calls) = if anchor.turn_index < original_turns.len() {
+        let turn = &original_turns[anchor.turn_index];
+        let tools: Vec<PersistedAnchorToolCall> = turn.tool_calls.iter().map(|tc| {
+            PersistedAnchorToolCall {
+                tool: tc.tool.clone(),
+                success: turn.tool_results.iter().any(|tr| tr.success),
+            }
+        }).collect();
+        (Some(turn.user_message.clone()), Some(turn.assistant_response.clone()), tools)
+    } else {
+        tracing::warn!("TUI-057: Anchor turn_index {} out of bounds (turns len {}), cannot capture content",
+            anchor.turn_index, original_turns.len());
+        (None, None, Vec::new())
+    };
+    
     let persisted_anchor = PersistedAnchorPoint {
         turn_index: anchor.turn_index,
         anchor_type: anchor_type.to_string(),
@@ -3787,6 +3804,9 @@ fn persist_anchor_point(
         confidence: anchor.confidence,
         description: anchor.description.clone(),
         timestamp_ms,
+        user_message,
+        assistant_response,
+        tool_calls,
     };
     
     // Add anchor point to manifest (this saves the manifest)
@@ -4735,25 +4755,43 @@ pub fn session_clear_active() {
 ///
 /// Returns anchor points that were detected during compaction operations.
 /// Empty list if no compaction has been performed or no anchors were found.
+/// 
+/// TUI-057: Now includes turn content (user message, assistant response, tool calls)
+/// which is loaded from persistence to ensure content survives compaction.
 #[napi]
 pub fn session_get_anchor_points(session_id: String) -> Result<Vec<NapiAnchorPoint>> {
-    let session = SessionManager::instance().get_session(&session_id)?;
-    let anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
+    // Parse UUID from session_id
+    let uuid = uuid::Uuid::parse_str(&session_id)
+        .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+    
+    // Load from persistence to get turn content (TUI-057)
+    // This is necessary because in-memory AnchorPoint doesn't store turn content
+    let session_manifest = load_session(uuid)
+        .map_err(|e| Error::from_reason(format!("Failed to load session manifest: {}", e)))?;
     
     tracing::warn!(
-        "TUI-056: /anchors called for session {} - found {} anchors in memory",
+        "TUI-056: /anchors called for session {} - found {} anchors in persistence",
         session_id,
-        anchor_points.len()
+        session_manifest.anchor_points.len()
     );
     
-    // Convert internal anchor points to NAPI types
-    let napi_anchors: Vec<NapiAnchorPoint> = anchor_points.iter().map(|anchor| {
-        let napi_type = match anchor.anchor_type {
-            codelet_core::compaction::AnchorType::ErrorResolution => NapiAnchorType::ErrorResolution,
-            codelet_core::compaction::AnchorType::TaskCompletion => NapiAnchorType::TaskCompletion,
-            codelet_core::compaction::AnchorType::UserCheckpoint => NapiAnchorType::UserCheckpoint,
-            codelet_core::compaction::AnchorType::FeatureMilestone => NapiAnchorType::FeatureMilestone,
+    // Convert persisted anchor points to NAPI types
+    let napi_anchors: Vec<NapiAnchorPoint> = session_manifest.anchor_points.iter().map(|anchor| {
+        let napi_type = match anchor.anchor_type.as_str() {
+            "ErrorResolution" => NapiAnchorType::ErrorResolution,
+            "TaskCompletion" => NapiAnchorType::TaskCompletion,
+            "UserCheckpoint" => NapiAnchorType::UserCheckpoint,
+            "FeatureMilestone" => NapiAnchorType::FeatureMilestone,
+            _ => NapiAnchorType::UserCheckpoint, // Default fallback
         };
+        
+        // TUI-057: Convert tool calls to NAPI format
+        let tool_calls: Vec<NapiAnchorToolCall> = anchor.tool_calls.iter().map(|tc| {
+            NapiAnchorToolCall {
+                tool: tc.tool.clone(),
+                success: tc.success,
+            }
+        }).collect();
         
         NapiAnchorPoint {
             turn_index: anchor.turn_index as u32,
@@ -4761,9 +4799,10 @@ pub fn session_get_anchor_points(session_id: String) -> Result<Vec<NapiAnchorPoi
             weight: anchor.weight,
             confidence: anchor.confidence,
             description: anchor.description.clone(),
-            timestamp: anchor.timestamp.duration_since(std::time::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_millis() as f64,
+            timestamp: anchor.timestamp_ms as f64,
+            user_message: anchor.user_message.clone(),
+            assistant_response: anchor.assistant_response.clone(),
+            tool_calls,
         }
     }).collect();
     
@@ -5573,6 +5612,11 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
     // PERF-002: Update progress to generating summary phase
     session.update_compaction_progress("Generating summary".to_string(), total_messages, total_messages);
 
+    // TUI-057: Clone current turns BEFORE compaction so we can capture anchor turn content
+    // After execute_compaction, the turns will be replaced with only kept turns, making
+    // the anchor's original turn_index invalid. We need the original turns to look up content.
+    let original_turns = inner.turns.clone();
+
     // Execute compaction
     tracing::warn!("TUI-056: About to call execute_compaction for session {}", session_id);
     let (metrics, anchor) = match execute_compaction(&mut inner).await {
@@ -5647,7 +5691,7 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
             session_id, anchor_points.len());
         
         // Persist to disk so it survives session resume
-        if let Err(e) = persist_anchor_point(&session.id, anchor_point) {
+        if let Err(e) = persist_anchor_point(&session.id, anchor_point, &original_turns) {
             tracing::warn!("TUI-056: Failed to persist anchor point: {}", e);
             // Don't fail compaction if anchor persistence fails - it's not critical
         }
