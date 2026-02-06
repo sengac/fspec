@@ -265,6 +265,77 @@ async fn test_astgrep_nonexistent_path_returns_error() {
     }
 }
 
+/// Scenario: Handle multi-node patterns that would cause panic
+#[tokio::test]
+async fn test_astgrep_multi_node_pattern_returns_error() {
+    // @step Given a directory with TypeScript files
+    let temp_dir = TempDir::new().unwrap();
+    let file = temp_dir.path().join("app.tsx");
+    fs::write(
+        &file,
+        r#"
+import { useEffect } from 'react';
+
+function MyComponent() {
+    useEffect(() => {
+        console.log("mounted");
+    }, []);
+    return <div>Hello</div>;
+}
+"#,
+    )
+    .unwrap();
+
+    // @step When I execute the AstGrep tool with a pattern that parses to multiple AST nodes
+    // This pattern "useEffect($$$ARGS) { $$$BODY }" would parse as two separate nodes:
+    // 1. A call expression: useEffect($$$ARGS)
+    // 2. A block statement: { $$$BODY }
+    // This should return an error, not panic
+    let tool = AstGrepTool::new();
+    let result = tool
+        .call(AstGrepArgs {
+            pattern: "useEffect($$$ARGS) { $$$BODY }".to_string(),
+            language: "tsx".to_string(),
+            path: Some(temp_dir.path().to_string_lossy().to_string()),
+        })
+        .await;
+
+    // @step Then the result should be an error with a helpful message, not a panic
+    assert!(result.is_err(), "Multi-node pattern should return an error");
+    let error_msg = result.unwrap_err().to_string();
+    assert!(
+        error_msg.contains("MultipleNode") || error_msg.contains("Invalid AST pattern"),
+        "Error message should indicate the pattern is invalid. Got: {}",
+        error_msg
+    );
+}
+
+/// Scenario: Handle pattern with two separate statements (multi-node)
+#[tokio::test]
+async fn test_astgrep_multiple_statements_pattern_returns_error() {
+    // @step Given a directory with TypeScript files
+    let temp_dir = TempDir::new().unwrap();
+    let file = temp_dir.path().join("test.ts");
+    fs::write(&file, "const x = 1;\nconst y = 2;").unwrap();
+
+    // @step When I execute the AstGrep tool with a pattern that is two separate statements
+    let tool = AstGrepTool::new();
+    let result = tool
+        .call(AstGrepArgs {
+            pattern: "const x = 1; const y = 2;".to_string(),
+            language: "typescript".to_string(),
+            path: Some(temp_dir.path().to_string_lossy().to_string()),
+        })
+        .await;
+
+    // @step Then the result should be an error, not a panic
+    // Two separate const declarations parse as two AST nodes
+    assert!(
+        result.is_err(),
+        "Pattern with two statements should return an error"
+    );
+}
+
 // ==========================================
 // TOOL DEFINITION TESTS
 // ==========================================

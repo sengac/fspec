@@ -10,6 +10,7 @@ use crate::{
     ToolOutput,
 };
 use anyhow::Result;
+use ast_grep_core::matcher::Pattern;
 use ast_grep_language::{LanguageExt, SupportLang};
 use ignore::WalkBuilder;
 use schemars::JsonSchema;
@@ -139,6 +140,21 @@ impl AstGrepTool {
                 )))
             }
         };
+
+        // Validate pattern syntax BEFORE searching files
+        // This catches errors like MultipleNode early and provides a better error message
+        if let Err(e) = Pattern::try_new(pattern, lang) {
+            return Ok(ToolOutput::error(format!(
+                "Error: Invalid AST pattern '{pattern}' for {language_str}.\n\n\
+                Pattern error: {e}\n\n\
+                Pattern syntax guide:\n\
+                - Use $VAR for single AST node (e.g., 'function $NAME()')\n\
+                - Use $$$VAR for multiple nodes (e.g., 'function $NAME($$$ARGS)')\n\
+                - Pattern must be valid {language_str} syntax that parses to a SINGLE AST node\n\
+                - Multi-node patterns like 'expr1 expr2' or 'call() {{ block }}' are not supported\n\n\
+                Try the ast-grep playground: https://ast-grep.github.io/playground.html"
+            )));
+        }
 
         // Get search paths
         let search_paths: Vec<String> = if let Some(paths) = args.get("paths") {

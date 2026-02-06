@@ -8,6 +8,7 @@
 
 use crate::{error::ToolError, ToolOutput};
 use anyhow::Result;
+use ast_grep_core::matcher::Pattern;
 use ast_grep_core::meta_var::MetaVariable;
 use ast_grep_language::{LanguageExt, SupportLang};
 use regex::Regex;
@@ -229,6 +230,21 @@ impl AstGrepRefactorTool {
                 )))
             }
         };
+
+        // Validate pattern syntax BEFORE searching
+        // This catches errors like MultipleNode early and provides a better error message
+        if let Err(e) = Pattern::try_new(pattern, lang) {
+            return Ok(ToolOutput::error(format!(
+                "Error: Invalid AST pattern '{pattern}' for {language_str}.\n\n\
+                Pattern error: {e}\n\n\
+                Pattern syntax guide:\n\
+                - Use $VAR for single AST node (e.g., 'fn $NAME()')\n\
+                - Use $$$VAR for multiple nodes (e.g., 'fn $NAME($$$ARGS) {{ $$$BODY }}')\n\
+                - Pattern must be valid {language_str} syntax that parses to a SINGLE AST node\n\
+                - Multi-node patterns like 'expr1 expr2' or 'call() {{ block }}' are not supported\n\n\
+                Try the ast-grep playground: https://ast-grep.github.io/playground.html"
+            )));
+        }
 
         // Check source file exists
         let source_path = Path::new(source_file);

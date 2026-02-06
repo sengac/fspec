@@ -8,11 +8,11 @@
  * DRY: Shared between AgentView and SplitSessionView
  *
  * Normal mode (with session number):
- *   Agent #1: claude-sonnet-4 [R] [V] [200k]           1234↓ 567↑ [45%]
+ *   #1: claude-sonnet-4 [R] [V] [200k]           1234↓ 567↑ [45%]
  *   ─────────────────────────────────────────────────────────────────
  *
  * Watcher mode:
- *   Watcher: security-reviewer #1 | Agent #2: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
+ *   Watcher: security-reviewer #1 | #2: claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
  *   ──────────────────────────────────────────────────────────────────────────────────────────
  *
  * Badge Colors:
@@ -150,9 +150,9 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
               <Text> | </Text>
             </>
           )}
-          {/* Agent label and model - show session number if available */}
+          {/* Session number and model - show session number if available */}
           <Text color="cyan" bold>
-            Agent{sessionNumber !== undefined ? ` #${sessionNumber}` : ''}{workUnitId ? ` (${workUnitId})` : ''}: {modelId}
+            {sessionNumber !== undefined && `#${sessionNumber}`}{workUnitId && ` (${workUnitId})`}{(sessionNumber !== undefined || workUnitId) && ': '}{modelId}
           </Text>
           {/* Reasoning badge - magenta */}
           {hasReasoning && <Text color="magenta"> [R]</Text>}

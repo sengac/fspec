@@ -3,6 +3,7 @@
 //! Exposes ast-grep search and refactor functionality to TypeScript via NAPI-RS.
 //! Reuses the existing AstGrepTool implementation from codelet-tools.
 
+use ast_grep_core::matcher::Pattern;
 use ast_grep_core::meta_var::MetaVariable;
 use ast_grep_language::{LanguageExt, SupportLang};
 use napi_derive::napi;
@@ -191,6 +192,21 @@ pub async fn ast_grep_search(
         ))
     })?;
 
+    // Validate pattern syntax BEFORE searching
+    // This catches errors like MultipleNode early and provides a better error message
+    if let Err(e) = Pattern::try_new(&pattern, lang) {
+        return Err(napi::Error::from_reason(format!(
+            "Invalid AST pattern '{}' for {}.\n\nPattern error: {}\n\n\
+            Pattern syntax guide:\n\
+            - Use $VAR for single AST node (e.g., 'function $NAME()')\n\
+            - Use $$$VAR for multiple nodes (e.g., 'function $NAME($$$ARGS)')\n\
+            - Pattern must be valid {} syntax that parses to a SINGLE AST node\n\
+            - Multi-node patterns like 'expr1 expr2' or 'call() {{ block }}' are not supported\n\n\
+            Try the ast-grep playground: https://ast-grep.github.io/playground.html",
+            pattern, language, e, language
+        )));
+    }
+
     let extensions = get_extensions(lang);
     let mut all_matches = Vec::new();
 
@@ -289,6 +305,19 @@ pub async fn ast_grep_refactor(
     // Parse language
     let lang = parse_language(&language)
         .ok_or_else(|| napi::Error::from_reason(format!("Unsupported language '{}'", language)))?;
+
+    // Validate pattern syntax BEFORE searching
+    if let Err(e) = Pattern::try_new(&pattern, lang) {
+        return Err(napi::Error::from_reason(format!(
+            "Invalid AST pattern '{}' for {}.\n\nPattern error: {}\n\n\
+            Pattern syntax guide:\n\
+            - Use $VAR for single AST node\n\
+            - Use $$$VAR for multiple nodes\n\
+            - Pattern must parse to a SINGLE AST node\n\
+            - Multi-node patterns like 'call() {{ block }}' are not supported",
+            pattern, language, e
+        )));
+    }
 
     // Read source file
     let source_path = Path::new(&source_file);
@@ -401,6 +430,19 @@ pub async fn ast_grep_replace(
     // Parse language
     let lang = parse_language(&language)
         .ok_or_else(|| napi::Error::from_reason(format!("Unsupported language '{}'", language)))?;
+
+    // Validate pattern syntax BEFORE searching
+    if let Err(e) = Pattern::try_new(&pattern, lang) {
+        return Err(napi::Error::from_reason(format!(
+            "Invalid AST pattern '{}' for {}.\n\nPattern error: {}\n\n\
+            Pattern syntax guide:\n\
+            - Use $VAR for single AST node\n\
+            - Use $$$VAR for multiple nodes\n\
+            - Pattern must parse to a SINGLE AST node\n\
+            - Multi-node patterns like 'call() {{ block }}' are not supported",
+            pattern, language, e
+        )));
+    }
 
     // Validate transforms (check for cyclic dependencies and invalid regex)
     if let Some(ref t) = transforms {
