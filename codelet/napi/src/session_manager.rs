@@ -4278,6 +4278,19 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 tracing::warn!("[FSPEC_HANDLER_CLOSURE] Handler invoked for command: {}", request.command);
                 tracing::warn!("[FSPEC_HANDLER_CLOSURE] Session is_attached: {}", session_for_fspec.is_attached());
                 
+                // Check if session is attached before blocking
+                // If the session is detached, TypeScript won't receive the request and
+                // we'll block forever waiting for a response that will never come.
+                if !session_for_fspec.is_attached() {
+                    tracing::warn!("[FSPEC_HANDLER_CLOSURE] Session is detached, returning error immediately");
+                    return codelet_tools::FspecHandlerResult {
+                        success: false,
+                        data: String::new(),
+                        error: Some("Session is detached - cannot execute fspec command".to_string()),
+                        system_reminder: None,
+                    };
+                }
+                
                 // Generate a unique tool call ID for correlation
                 let tool_call_id = uuid::Uuid::new_v4().to_string();
                 
