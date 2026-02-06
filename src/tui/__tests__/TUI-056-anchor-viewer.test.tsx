@@ -208,6 +208,7 @@ describe('Feature: Fix Anchor Viewer Integration with Thinking Dialog System', (
     // Mock fspec store
     mockUseFspecStore.mockImplementation((selector) => {
       const mockState = {
+        cwd: '/tmp/test-project',
         workUnits: [],
         selectedWorkUnitId: null,
         setWorkUnits: vi.fn(),
@@ -416,6 +417,7 @@ describe('Feature: Interactive anchor point viewer with conversation navigation'
     // Mock fspec store
     mockUseFspecStore.mockImplementation((selector) => {
       const mockState = {
+        cwd: '/tmp/fspec-test-project',
         workUnits: [],
         selectedWorkUnitId: null,
         setWorkUnits: vi.fn(),

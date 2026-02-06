@@ -3952,7 +3952,11 @@ fn persist_assistant_message_internal(
         match c {
             AssistantContent::Text { text } => Some(text.clone()),
             AssistantContent::ToolUse { name, .. } => Some(format!("[Tool: {}]", name)),
-            AssistantContent::Thinking { thinking, .. } => Some(format!("[Thinking: {}...]", &thinking[..thinking.len().min(50)])),
+            AssistantContent::Thinking { thinking, .. } => {
+                // Truncate at character boundaries to avoid panicking on multi-byte UTF-8
+                let truncated: String = thinking.chars().take(50).collect();
+                Some(format!("[Thinking: {}...]", truncated))
+            }
         }
     }).collect::<Vec<_>>().join("\n");
     
@@ -4221,7 +4225,7 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
         if let Some((input, thinking_config)) = input_to_process {
             let thinking_config_ref = thinking_config.as_deref();
 
-            tracing::debug!("Session {} received input: {}", session.id, &input[..input.len().min(50)]);
+            tracing::debug!("Session {} received input: {}", session.id, input.chars().take(50).collect::<String>());
 
             // REFAC-007: Persist user message to Rust persistence layer
             // This replaces TypeScript's persistenceStoreMessageEnvelope call
@@ -4380,7 +4384,7 @@ async fn watcher_agent_loop(
                 "Watcher {} processing {}: {}",
                 session.id,
                 if is_user_prompt { "user prompt" } else { "observation evaluation" },
-                &prompt[..prompt.len().min(50)]
+                prompt.chars().take(50).collect::<String>()
             );
 
             // Set status to running
@@ -4466,7 +4470,7 @@ async fn watcher_agent_loop(
                                 tracing::info!(
                                     "Watcher {} has pending interjection (auto_inject=false): {:?}",
                                     watcher_id,
-                                    &interjection.content[..interjection.content.len().min(50)]
+                                    interjection.content.chars().take(50).collect::<String>()
                                 );
                                 
                                 // Emit a special chunk to notify UI of pending injection

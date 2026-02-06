@@ -1,3 +1,4 @@
+@status-display
 @tui
 @TUI-060
 Feature: Session Header Work Unit Status Display

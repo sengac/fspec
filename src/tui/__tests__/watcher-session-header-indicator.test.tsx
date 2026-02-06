@@ -223,11 +223,12 @@ describe('Watcher Session Header Indicator', () => {
 
   describe('Header format specification', () => {
     // These tests document the expected header format
+    // TUI-060: Removed "Agent" prefix - format is now just model name with optional session number and work unit
     
     it('should have correct watcher header format', () => {
-      // Expected format: "Watcher: {slug} #{n} | Agent: {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
+      // Expected format: "Watcher: {slug} #{n} | {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
       // With bottom border separator
-      // Watcher info in blue, separator | in white, Agent in cyan
+      // Watcher info in blue, separator | in white, model info in cyan
       const watcherInfo = { slug: 'security-reviewer', instanceNumber: 1 };
       const modelId = 'claude-sonnet-4-20250514';
       const hasReasoning = true;
@@ -239,7 +240,7 @@ describe('Watcher Session Header Indicator', () => {
 
       // Verify all components are correct
       expect(`Watcher: ${watcherInfo.slug} #${watcherInfo.instanceNumber}`).toBe('Watcher: security-reviewer #1');
-      expect(`Agent: ${modelId}`).toBe('Agent: claude-sonnet-4-20250514');
+      expect(modelId).toBe('claude-sonnet-4-20250514');
       expect(hasReasoning ? '[R]' : '').toBe('[R]');
       expect(hasVision ? '[V]' : '').toBe('[V]');
       expect(`[${formatContextWindow(contextWindow)}]`).toBe('[200k]');
@@ -247,22 +248,27 @@ describe('Watcher Session Header Indicator', () => {
       expect(`[${fillPercentage}%]`).toBe('[45%]');
     });
 
-    it('should use pipe separator between watcher and agent info', () => {
-      // Format: "Watcher: ... | Agent: ..."
+    it('should use pipe separator between watcher and model info', () => {
+      // Format: "Watcher: ... | {model}"
       // The pipe | is used as separator (white color)
       const separator = '|';
       expect(separator).toBe('|');
     });
 
     it('should have correct regular header format (no watcher prefix)', () => {
-      // Expected format: "Agent: {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
+      // Expected format: "#N (WORK-ID: status): {model} [R] [V] [{context}] {in}↓ {out}↑ [{fill}%]"
       // With bottom border separator
+      // TUI-060: No "Agent:" prefix - just session number, work unit, and model
+      const sessionNumber = 1;
+      const workUnitId = 'AUTH-001';
+      const workUnitStatus = 'implementing';
       const modelId = 'claude-sonnet-4-20250514';
 
-      expect(`Agent: ${modelId}`).toBe('Agent: claude-sonnet-4-20250514');
-      // Regular session header should NOT contain watcher info
-      const regularHeader = `Agent: ${modelId}`;
+      const regularHeader = `#${sessionNumber} (${workUnitId}: ${workUnitStatus}): ${modelId}`;
+      expect(regularHeader).toBe('#1 (AUTH-001: implementing): claude-sonnet-4-20250514');
+      // Regular session header should NOT contain watcher info or "Agent:" prefix
       expect(regularHeader).not.toContain('Watcher:');
+      expect(regularHeader).not.toContain('Agent:');
     });
   });
 });

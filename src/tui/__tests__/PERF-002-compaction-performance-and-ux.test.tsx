@@ -154,6 +154,31 @@ vi.mock('../../models.dev', () => ({
   default: mockModels,
 }));
 
+// Mock credentials utilities - required for provider filtering
+vi.mock('../../utils/credentials', () => ({
+  getProviderConfig: vi.fn((registryId: string) => {
+    const registryToAvailable: Record<string, string> = {
+      anthropic: 'claude',
+      openai: 'openai',
+    };
+    const availableName = registryToAvailable[registryId] || registryId;
+    if (mockState.session.availableProviders.includes(availableName)) {
+      return Promise.resolve({ apiKey: 'test-key', source: 'file' });
+    }
+    return Promise.resolve({ apiKey: null, source: null });
+  }),
+  saveCredential: vi.fn(),
+  deleteCredential: vi.fn(),
+  maskApiKey: vi.fn((key: string) => '***'),
+}));
+
+// Mock config module to prevent loading user's real config
+vi.mock('../../utils/config', () => ({
+  loadConfig: vi.fn(() => Promise.resolve({})),
+  writeConfig: vi.fn(() => Promise.resolve()),
+  getFspecUserDir: vi.fn(() => '/tmp/fspec-test'),
+}));
+
 // Import the component after mocks are set up
 import { AgentView } from '../components/AgentView';
 import { useSessionStore } from '../store/sessionStore';
@@ -264,7 +289,7 @@ describe('PERF-002: Optimize Context Compaction Performance and UX', () => {
       });
 
       // Verify view is open with high token count
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
       expect(lastFrame()).toContain('150000');
 
       // @step When I type '/compact' and press Enter
@@ -275,7 +300,7 @@ describe('PERF-002: Optimize Context Compaction Performance and UX', () => {
       expect(sessionCompact).toHaveBeenCalledWith('mock-session-id');
 
       // @step And the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
 
     it('should show error when trying to compact without a session', async () => {
@@ -293,7 +318,7 @@ describe('PERF-002: Optimize Context Compaction Performance and UX', () => {
       await waitForFrame();
 
       // Verify view is open with empty conversation
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
 
       // @step When I type '/compact' and press Enter (without sending a message first)
       await sendMessageToAgent(stdin, '/compact');
@@ -305,7 +330,7 @@ describe('PERF-002: Optimize Context Compaction Performance and UX', () => {
       expect(lastFrame()).toContain('No active session to compact');
 
       // @step And the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 });

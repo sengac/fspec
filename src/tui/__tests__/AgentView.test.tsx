@@ -334,7 +334,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame();
 
       // @step Then an agent modal overlay should appear
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
 
       // @step And the modal should show the current provider name
       expect(lastFrame()).toContain('Claude');
@@ -459,7 +459,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       // New session has empty messages array
 
       // @step And a fresh session should be initialized
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
       expect(lastFrame()).toContain('Claude');
 
       // @step And token usage should start at zero
@@ -518,7 +518,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame();
 
       // Verify view is open with provider
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
       expect(lastFrame()).toContain('Claude');
 
       // @step First send a message to create the session (NAPI-009: deferred session creation)
@@ -659,7 +659,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).not.toContain('[DEBUG]');
 
       // @step And debug can be enabled if needed
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -786,7 +786,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       // @step Then the debug session file should contain compaction events
       // Note: Compaction events are captured by the Rust compaction hook
       // This test verifies the TUI correctly handles high token scenarios
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -836,7 +836,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Verify view is open with high token count
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
       expect(lastFrame()).toContain('150000');
 
       // @step When I type '/compact' and press Enter
@@ -850,7 +850,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(sessionCompact).toHaveBeenCalledWith('mock-session-id');
 
       // @step And the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -870,7 +870,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame();
 
       // Verify view is open with empty conversation
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
 
       // @step When I type '/compact' and press Enter (without sending a message first)
       stdin.write('/compact');
@@ -885,7 +885,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(lastFrame()).toContain('No active session to compact');
 
       // @step And the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -924,7 +924,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Verify view is open with conversation
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
       expect(lastFrame()).toContain('100000');
 
       // @step When I type '/compact' and press Enter

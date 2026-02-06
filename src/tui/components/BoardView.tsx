@@ -37,6 +37,7 @@ import {
   useSessionActions,
 } from '../store/sessionStore';
 import { useInputCompat, InputPriority } from '../input/index';
+import { useWorkUnitsWatcher } from '../hooks/useWorkUnitsWatcher';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -131,36 +132,9 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Watch spec/work-units.json for changes and auto-refresh (BOARD-003, REFAC-004)
-  // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling
-  // Atomic renames from LockedFileManager (LOCK-002) are handled automatically by chokidar
-  useEffect(() => {
-    const workUnitsPath = path.join(storeCwd, 'spec', 'work-units.json');
-
-    // Check if file exists before watching
-    if (!fs.existsSync(workUnitsPath)) return;
-
-    // Chokidar watches specific file, handles atomic operations automatically
-    const watcher = chokidar.watch(workUnitsPath, {
-      ignoreInitial: true,  // Don't trigger on initial scan
-      persistent: false,
-    });
-
-    // Listen for all change events (chokidar normalizes across platforms)
-    watcher.on('change', () => {
-      void loadData();
-    });
-
-    // Add error handler to prevent silent failures
-    watcher.on('error', (error) => {
-      console.warn('Work units watcher error:', error.message);
-    });
-
-    // Cleanup watcher on unmount
-    return () => {
-      void watcher.close();
-    };
-  }, [storeCwd]);
+  // TUI-060: Use shared hook for watching work-units.json
+  // This replaces the inline chokidar setup that was here before
+  useWorkUnitsWatcher();
 
   // Watch .git/refs/stash for stash changes using chokidar (BOARD-018: Cross-platform file watching)
   // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling

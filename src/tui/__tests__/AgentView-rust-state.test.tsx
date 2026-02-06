@@ -331,10 +331,10 @@ describe('Rust State Integration for Model and Loading Status', () => {
       // The model info is fetched via useMemo that calls sessionGetModel
       // When there's no currentSessionId, it falls back to currentModel state
       const { lastFrame } = render(<AgentView onExit={() => {}} />);
-      await waitForCondition(lastFrame, (frame) => frame.includes('Agent:'));
+      await waitForCondition(lastFrame, (frame) => frame.includes('Claude'));
 
       // Default display when no session is active
-      expect(lastFrame()).toContain('Agent:');
+      expect(lastFrame()).toContain('Claude');
     });
   });
 

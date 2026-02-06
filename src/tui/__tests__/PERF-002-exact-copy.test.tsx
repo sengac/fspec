@@ -266,7 +266,7 @@ describe('PERF-002: Test exactly copied from working AgentView', () => {
       });
 
       // Verify view is open with high token count
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
       expect(lastFrame()).toContain('150000');
 
       // @step When I type '/compact' and press Enter
@@ -277,7 +277,7 @@ describe('PERF-002: Test exactly copied from working AgentView', () => {
       expect(sessionCompact).toHaveBeenCalledWith('mock-session-id');
 
       // @step And the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 });

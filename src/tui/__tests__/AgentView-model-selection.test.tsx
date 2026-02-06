@@ -645,8 +645,8 @@ describe('Feature: Agent Modal Model Selection', () => {
       // @step And the model has reasoning=true and contextWindow=200000
       // (mock data has these properties)
 
-      // @step Then the header should display "Agent: claude-sonnet-4 [R] [200k]"
-      expect(lastFrame()).toContain('Agent: Claude Sonnet 4');
+      // @step Then the header should display "Claude Sonnet 4 [R] [200k]"
+      expect(lastFrame()).toContain('Claude Sonnet 4');
       expect(lastFrame()).toContain('[R]');
       expect(lastFrame()).toContain('[200k]');
     });
@@ -900,7 +900,7 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForCondition(lastFrame, frame => !frame.includes('Resume Session') && !frame.includes('Slash Commands'), 100);
       await waitForFrame(200);
 
-      // @step Then the header should show "Agent: claude-opus-4"
+      // @step Then the header should show "Claude Opus 4"
       // NAPI-009: Model is restored via state management, reflected in header
       expect(lastFrame()).toContain('Claude Opus 4');
     });
@@ -961,8 +961,8 @@ describe('Feature: Agent Modal Model Selection', () => {
   // ERROR HANDLING
   // ========================================
 
-  describe('Scenario: Graceful fallback when model cache unavailable', () => {
-    it('should use embedded fallback when cache is unavailable', async () => {
+  describe('Scenario: Graceful handling when model cache unavailable', () => {
+    it('should render gracefully when cache is unavailable without fallback', async () => {
       // @step Given the models.dev cache is corrupted or unavailable
       resetMockSession();
       mockState.modelsListAll = vi.fn(() =>
@@ -976,15 +976,12 @@ describe('Feature: Agent Modal Model Selection', () => {
       await waitForFrame();
       await waitForFrame(); // Extra wait for error handling
 
-      // @step Then the embedded fallback models should be used
-      // AgentView should still render without crashing
-      expect(lastFrame()).toContain('Agent');
-
-      // @step And the UI should still be functional
-      // NAPI-009: When model cache fails, the component renders with default provider name
-      // shown in the header (currentProvider state fallback)
+      // @step Then the UI should still render without crashing
+      // No embedded fallback - the component renders but without model info
       const frame = lastFrame();
       expect(frame).toBeDefined();
+
+      // @step And the UI should still be functional
       // The component should not crash and should show the input placeholder
       expect(frame).toContain("Type a message");
     });

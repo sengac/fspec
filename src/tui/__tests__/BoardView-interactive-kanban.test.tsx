@@ -85,13 +85,11 @@ describe('Feature: Interactive Kanban board CLI', () => {
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // @step Then the agent view should open
-      const frame = frames.find(f => f.includes('Agent:')) || frames[frames.length - 1];
-
-      // @step And the agent view should show the Agent header
-      expect(frame).toContain('Agent:');
+      // Agent view shows tokens display in header
+      const frame = frames.find(f => f.includes('tokens:')) || frames[frames.length - 1];
 
       // @step And the agent view should show tokens display
-      expect(frame).toContain('tokens');
+      expect(frame).toContain('tokens:');
     });
   });
 
@@ -110,9 +108,9 @@ describe('Feature: Interactive Kanban board CLI', () => {
       stdin.write('\r'); // Enter key to open agent view
       await new Promise(resolve => setTimeout(resolve, 50));
 
-      // Verify we're in agent view
-      const agentFrame = frames.find(f => f.includes('Agent:')) || frames[frames.length - 1];
-      expect(agentFrame).toContain('Agent:');
+      // Verify we're in agent view (agent view shows tokens display)
+      const agentFrame = frames.find(f => f.includes('tokens:')) || frames[frames.length - 1];
+      expect(agentFrame).toContain('tokens:');
 
       // @step When the user presses the ESC key
       stdin.write('\x1B'); // ESC key
@@ -159,7 +157,7 @@ describe('Feature: Interactive Kanban board CLI', () => {
       // Verify we're back on the board (this works for both exit paths)
       const finalFrame = frames[frames.length - 1];
       expect(finalFrame).toMatch(/BACKLOG|SPECIFYIN|TESTING/);
-      expect(finalFrame).not.toContain('Agent:');
+      expect(finalFrame).not.toContain('Claude Sonnet 4');
     });
   });
 

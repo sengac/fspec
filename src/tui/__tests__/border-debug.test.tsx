@@ -93,7 +93,7 @@ describe('Border rendering with VirtualList', () => {
           paddingX={1}
         >
           <Box flexGrow={1}>
-            <Text bold>Agent: claude</Text>
+            <Text bold>Claude Sonnet 4</Text>
           </Box>
           <Box>
             <Text dimColor>tokens: 0↓ 0↑</Text>
@@ -403,7 +403,7 @@ describe('Border rendering with VirtualList', () => {
           paddingX={1}
         >
           <Box flexGrow={1}>
-            <Text bold>Agent: claude</Text>
+            <Text bold>Claude Sonnet 4</Text>
           </Box>
           <Box>
             <Text dimColor>tokens: 0↓ 0↑</Text>
@@ -643,7 +643,7 @@ describe('Border rendering with VirtualList', () => {
           paddingX={1}
         >
           <Box flexGrow={1}>
-            <Text bold>Agent: claude</Text>
+            <Text bold>Claude Sonnet 4</Text>
           </Box>
           <Box>
             <Text dimColor>tokens: 0↓ 0↑</Text>

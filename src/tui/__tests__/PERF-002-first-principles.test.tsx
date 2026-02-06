@@ -285,7 +285,7 @@ describe('PERF-002: First Principles', () => {
       
       if (frameContent) {
         console.log('SUCCESS! AgentView rendered something!');
-        expect(frameContent).toContain('Agent');
+        expect(frameContent).toContain('Claude Sonnet 4');
       } else {
         console.log('Still undefined - there must be more mocks needed');
         expect(frameContent).toBe(undefined);

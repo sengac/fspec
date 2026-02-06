@@ -81,6 +81,49 @@ export const mockState = {
   errorMessage: 'No AI provider credentials configured',
 };
 
+// Type for fspecStore state (matches FspecState in fspecStore.ts)
+// Only includes properties commonly used in AgentView tests
+export interface MockFspecState {
+  cwd: string;
+  workUnits: Array<{
+    id: string;
+    title: string;
+    status: string;
+    type: string;
+    description?: string;
+  }>;
+  selectedWorkUnitId: string | null;
+  setWorkUnits: ReturnType<typeof vi.fn>;
+  loadData: ReturnType<typeof vi.fn>;
+  getWorkUnitBySession: ReturnType<typeof vi.fn>;
+  detachSession: ReturnType<typeof vi.fn>;
+  getAttachedSession: ReturnType<typeof vi.fn>;
+  setCurrentWorkUnitId: ReturnType<typeof vi.fn>;
+}
+
+// Default fspecStore state for tests
+// Used by useWorkUnitsWatcher hook which requires cwd
+export const createFspecStoreMock = (
+  overrides: Partial<MockFspecState> = {}
+) => {
+  const defaultState: MockFspecState = {
+    cwd: '/tmp/fspec-test-project',
+    workUnits: [],
+    selectedWorkUnitId: null,
+    setWorkUnits: vi.fn(),
+    loadData: vi.fn(),
+    getWorkUnitBySession: vi.fn().mockReturnValue(undefined),
+    detachSession: vi.fn(),
+    getAttachedSession: vi.fn().mockReturnValue(null),
+    setCurrentWorkUnitId: vi.fn(),
+    ...overrides,
+  };
+
+  return (selector?: (state: MockFspecState) => unknown) => {
+    return selector ? selector(defaultState) : defaultState;
+  };
+};
+
 // Complete NAPI module mock - individual functions only
 export const createNapiMock = () => ({
   ChunkType: {

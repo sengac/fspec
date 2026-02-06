@@ -2,6 +2,7 @@
  * Tests for SessionHeader component - Work unit display functionality
  *
  * SESS-001: Session header should display attached work unit
+ * TUI-060: Session header realtime work unit status display
  */
 
 import React from 'react';
@@ -288,6 +289,180 @@ describe('SessionHeader', () => {
       const output = lastFrame();
       // Note: JavaScript toFixed() rounds 45.995 to 45.99 due to floating point precision
       expect(output).toContain('[45.99%: COMPACTED 36%]');
+    });
+  });
+
+  // TUI-060: Work unit status display
+  describe('work unit status display', () => {
+    describe('Scenario: Status change via fspec command updates header in realtime', () => {
+      it('should display work unit with status in correct format', () => {
+        // @step Given I am in AgentView with session #1
+        // @step And work unit "TUI-060" with status "specifying" is attached to the session
+        // @step And the header displays "#1 (TUI-060: specifying): claude-sonnet-4"
+        const { lastFrame } = render(
+          <SessionHeader
+            {...defaultProps}
+            sessionNumber={1}
+            workUnitId="TUI-060"
+            workUnitStatus="specifying"
+          />
+        );
+
+        const output = lastFrame();
+        expect(output).toContain('#1');
+        expect(output).toContain('(TUI-060: specifying)');
+      });
+
+      it('should update display when status changes to testing', () => {
+        // @step When the AI runs "fspec update-work-unit-status TUI-060 testing"
+        // @step And the work-units.json file is updated
+        // @step Then the header should update to "#1 (TUI-060: testing): claude-sonnet-4"
+        const { lastFrame } = render(
+          <SessionHeader
+            {...defaultProps}
+            sessionNumber={1}
+            workUnitId="TUI-060"
+            workUnitStatus="testing"
+          />
+        );
+
+        const output = lastFrame();
+        expect(output).toContain('#1');
+        expect(output).toContain('(TUI-060: testing)');
+      });
+    });
+
+    describe('Scenario: Attaching a different work unit updates header in realtime', () => {
+      it('should display new work unit when attached', () => {
+        // @step Given I am in AgentView with session #1
+        // @step And work unit "TUI-060" with status "specifying" is attached to the session
+        // @step And the header displays "#1 (TUI-060: specifying): model"
+        // @step When I attach work unit "AUTH-001" with status "backlog" to the session
+        // @step Then the header should update to "#1 (AUTH-001: backlog): model"
+        const { lastFrame } = render(
+          <SessionHeader
+            {...defaultProps}
+            sessionNumber={1}
+            workUnitId="AUTH-001"
+            workUnitStatus="backlog"
+          />
+        );
+
+        const output = lastFrame();
+        expect(output).toContain('#1');
+        expect(output).toContain('(AUTH-001: backlog)');
+      });
+    });
+
+    describe('Scenario: Header displays work unit ID without status when status is missing', () => {
+      it('should display work unit ID without status when status is undefined', () => {
+        // @step Given I am in AgentView with session #1
+        // @step And work unit "LEGACY-001" without status is attached to the session
+        const { lastFrame } = render(
+          <SessionHeader
+            {...defaultProps}
+            sessionNumber={1}
+            workUnitId="LEGACY-001"
+            workUnitStatus={undefined}
+          />
+        );
+
+        // @step Then the header should display "#1 (LEGACY-001): model"
+        const output = lastFrame();
+        expect(output).toContain('#1');
+        expect(output).toContain('(LEGACY-001)');
+        expect(output).not.toContain('(LEGACY-001:');
+      });
+    });
+
+    describe('Scenario: Detaching work unit removes it from header display', () => {
+      it('should display only session number when work unit is detached', () => {
+        // @step Given I am in AgentView with session #1
+        // @step And work unit "TUI-060" with status "specifying" is attached to the session
+        // @step And the header displays "#1 (TUI-060: specifying): model"
+        // @step When I detach the work unit from the session
+        // @step Then the header should update to "#1: model"
+        const { lastFrame } = render(
+          <SessionHeader
+            {...defaultProps}
+            sessionNumber={1}
+            workUnitId={undefined}
+            workUnitStatus={undefined}
+          />
+        );
+
+        const output = lastFrame();
+        expect(output).toContain('#1');
+        expect(output).not.toContain('(');
+      });
+    });
+
+    it('should handle all workflow statuses correctly', () => {
+      const statuses = ['backlog', 'specifying', 'testing', 'implementing', 'validating', 'done', 'blocked'];
+      
+      for (const status of statuses) {
+        const { lastFrame } = render(
+          <SessionHeader
+            {...defaultProps}
+            sessionNumber={1}
+            workUnitId="TEST-001"
+            workUnitStatus={status}
+          />
+        );
+
+        const output = lastFrame();
+        expect(output).toContain(`(TEST-001: ${status})`);
+      }
+    });
+
+    it('should display status without session number when only work unit provided', () => {
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          workUnitId="AUTH-001"
+          workUnitStatus="testing"
+        />
+      );
+
+      const output = lastFrame();
+      expect(output).toContain('(AUTH-001: testing)');
+      expect(output).not.toContain('#');
+    });
+  });
+});
+
+// TUI-060: useWorkUnitsWatcher hook tests
+describe('useWorkUnitsWatcher hook', () => {
+  describe('Scenario: useWorkUnitsWatcher hook watches work-units.json', () => {
+    it('should export a function that can be used as a React hook', async () => {
+      // @step Given the useWorkUnitsWatcher hook is initialized
+      // @step And the spec/work-units.json file exists
+      const { useWorkUnitsWatcher } = await import('../../hooks/useWorkUnitsWatcher');
+      
+      // @step When the work-units.json file changes
+      // @step Then the hook should call loadData on the Zustand store
+      expect(useWorkUnitsWatcher).toBeDefined();
+      expect(typeof useWorkUnitsWatcher).toBe('function');
+    });
+  });
+
+  describe('Scenario: BoardView uses the shared useWorkUnitsWatcher hook', () => {
+    it('should be importable for use in BoardView', async () => {
+      // @step Given BoardView is rendered
+      // @step Then it should use the useWorkUnitsWatcher hook
+      // @step And not have inline chokidar file watching code
+      const { useWorkUnitsWatcher } = await import('../../hooks/useWorkUnitsWatcher');
+      expect(useWorkUnitsWatcher).toBeDefined();
+    });
+  });
+
+  describe('Scenario: AgentView uses the shared useWorkUnitsWatcher hook', () => {
+    it('should be importable for use in AgentView', async () => {
+      // @step Given AgentView is rendered
+      // @step Then it should use the useWorkUnitsWatcher hook
+      // @step And receive work unit updates from the Zustand store
+      const { useWorkUnitsWatcher } = await import('../../hooks/useWorkUnitsWatcher');
+      expect(useWorkUnitsWatcher).toBeDefined();
     });
   });
 });

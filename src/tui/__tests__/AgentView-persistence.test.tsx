@@ -499,8 +499,8 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       // @step Then persistenceGetHistory should be called with null (all projects)
       expect(vi.mocked(persistenceGetHistory)).toHaveBeenCalledWith(null, 20);
 
-      // @step And the view should still show the agent header
-      expect(lastFrame()).toContain('Agent');
+      // @step And the view should still show the agent view (model name in header)
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -565,8 +565,8 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      // @step Then the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      // @step Then the view should show the agent view (model name in header)
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -597,8 +597,8 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      // @step Then the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      // @step Then the view should show the agent view (model name in header)
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -623,8 +623,8 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      // @step Then the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      // @step Then the view should show the agent view (model name in header)
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -654,8 +654,8 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      // @step Then the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      // @step Then the view should show the agent view (model name in header)
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 
@@ -685,8 +685,8 @@ describe('Feature: Session Persistence with Fork and Merge', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      // @step Then the view should show the agent header
-      expect(lastFrame()).toContain('Agent');
+      // @step Then the view should show the agent view (model name in header)
+      expect(lastFrame()).toContain('Claude Sonnet 4');
     });
   });
 

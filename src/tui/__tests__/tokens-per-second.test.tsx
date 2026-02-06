@@ -312,7 +312,7 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
 
       // Verify initial state - no tok/s shown
       let frame = lastFrame();
-      expect(frame).toContain('Agent: Claude');
+      expect(frame).toContain('Claude Sonnet 4');
       expect(frame).not.toContain('tok/s');
 
       // Type text first, wait for React to process
@@ -440,8 +440,8 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
       // @step When the header is rendered
       const frame = lastFrame();
 
-      // @step Then the header should show 'Agent: Claude' on the left
-      expect(frame).toContain('Agent: Claude');
+      // @step Then the header should show model name on the left
+      expect(frame).toContain('Claude Sonnet 4');
 
       // @step And the header should show tok/s during streaming
       // Note: "Thinking..." indicator only shows when thinking level is detected in prompt

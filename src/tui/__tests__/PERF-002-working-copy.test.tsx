@@ -263,7 +263,7 @@ describe('PERF-002: Optimize Context Compaction Performance and UX', () => {
     });
 
     // Verify that the AgentView is rendered and session is active
-    expect(lastFrame()).toContain('Agent');
+    expect(lastFrame()).toContain('Claude Sonnet 4');
 
     // When I enter the /compact command
     await sendMessageToAgent(stdin, '/compact');
@@ -276,6 +276,6 @@ describe('PERF-002: Optimize Context Compaction Performance and UX', () => {
     expect(sessionCompact).toHaveBeenCalledWith('mock-session-id');
 
     // And I should see completion message with detailed metrics
-    expect(lastFrame()).toContain('Agent');
+    expect(lastFrame()).toContain('Claude Sonnet 4');
   });
 });

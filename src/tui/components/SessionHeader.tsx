@@ -78,6 +78,8 @@ export interface SessionHeaderProps {
   sessionNumber?: number;
   /** Work unit ID attached to this session (e.g., "TEST-001") */
   workUnitId?: string;
+  /** TUI-060: Work unit status for realtime display (e.g., "implementing") */
+  workUnitStatus?: string;
 }
 
 /**
@@ -117,6 +119,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   watcherInfo,
   sessionNumber,
   workUnitId,
+  workUnitStatus,
 }) => {
   const { inputTokens, outputTokens } = getMaxTokens(tokenUsage, rustTokens);
 
@@ -152,7 +155,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
           )}
           {/* Session number and model - show session number if available */}
           <Text color="cyan" bold>
-            {sessionNumber !== undefined && `#${sessionNumber}`}{workUnitId && ` (${workUnitId})`}{(sessionNumber !== undefined || workUnitId) && ': '}{modelId}
+            {sessionNumber !== undefined && `#${sessionNumber}`}{workUnitId && ` (${workUnitId}${workUnitStatus ? `: ${workUnitStatus}` : ''})`}{(sessionNumber !== undefined || workUnitId) && ': '}{modelId}
           </Text>
           {/* Reasoning badge - magenta */}
           {hasReasoning && <Text color="magenta"> [R]</Text>}

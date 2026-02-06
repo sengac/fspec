@@ -147,7 +147,7 @@ async fn test_environment_reminder_contains_cwd() {
             assert!(
                 text.text.contains("Working directory:"),
                 "Environment reminder should contain 'Working directory:'. Got: {}",
-                &text.text[..text.text.len().min(500)]
+                text.text.chars().take(500).collect::<String>()
             );
             assert!(
                 text.text.contains("Platform:"),

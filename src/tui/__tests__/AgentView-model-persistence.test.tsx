@@ -357,7 +357,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
       const { lastFrame } = render(<AgentView onExit={() => {}} />);
 
       // @step Then the session should start with "anthropic/claude-opus-4-20250514"
-      // @step And the header should display "Agent: Claude Opus 4"
+      // @step And the header should display "Claude Opus 4"
       await vi.waitFor(
         () => {
           const frame = lastFrame();
@@ -415,7 +415,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
         () => {
           const frame = lastFrame();
           // Should fall back to first available model (claude-sonnet-4)
-          expect(frame).toContain('Agent:');
+          expect(frame).toContain('Claude');
         },
         { timeout: 3000 }
       );
@@ -441,7 +441,8 @@ describe('Feature: Persist Last Used Model Selection', () => {
       await vi.waitFor(
         () => {
           const frame = lastFrame();
-          expect(frame).toContain('Agent:');
+          // Falls back to Gemini since Anthropic has no credentials
+          expect(frame).toContain('Gemini');
         },
         { timeout: 3000 }
       );
@@ -464,7 +465,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
       await vi.waitFor(
         () => {
           const frame = lastFrame();
-          expect(frame).toContain('Agent:');
+          expect(frame).toContain('Claude');
           expect(frame).not.toContain('Error');
         },
         { timeout: 3000 }
@@ -488,7 +489,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
       await vi.waitFor(
         () => {
           const frame = lastFrame();
-          expect(frame).toContain('Agent:');
+          expect(frame).toContain('Claude');
           expect(frame).not.toContain('Invalid JSON');
         },
         { timeout: 3000 }
@@ -510,7 +511,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
 
       await vi.waitFor(
         () => {
-          expect(lastFrame()).toContain('Agent:');
+          expect(lastFrame()).toContain('Claude');
         },
         { timeout: 2000 }
       );
@@ -551,7 +552,7 @@ describe('Feature: Persist Last Used Model Selection', () => {
 
       await vi.waitFor(
         () => {
-          expect(lastFrame()).toContain('Agent:');
+          expect(lastFrame()).toContain('Claude');
         },
         { timeout: 2000 }
       );
