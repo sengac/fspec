@@ -360,16 +360,19 @@ impl rig::tool::Tool for AstGrepTool {
             description: "AST-based code search that finds code by syntax structure, not text. \
                 Far fewer false positives than grep for structural searches.\n\n\
                 PATTERN SYNTAX:\n\
-                - Pattern must be valid syntax in the target language\n\
+                - Pattern must match a COMPLETE AST node (not partial)\n\
                 - Use $NAME for single-node wildcard (matches one AST node)\n\
                 - Use $$$ARGS for multi-node wildcard (matches zero or more nodes)\n\n\
                 EXAMPLES:\n\
-                - Rust functions: pattern='fn $NAME($_)' language='rust'\n\
-                - Rust structs: pattern='struct $NAME' language='rust'\n\
-                - JS functions: pattern='function $NAME($$$ARGS)' language='javascript'\n\
-                - TS async: pattern='async function $NAME($$$ARGS)' language='typescript'\n\
-                - Python def: pattern='def $NAME($$$ARGS):' language='python'\n\
-                - Method calls: pattern='$OBJ.$METHOD($$$ARGS)' language='typescript'\n\n\
+                - JS/TS functions (must include body): pattern='function $NAME($$$ARGS) { $$$BODY }' language='typescript'\n\
+                - Arrow functions: pattern='($$$ARGS) => $BODY' language='typescript'\n\
+                - Rust functions: pattern='fn $NAME($$$ARGS) { $$$BODY }' language='rust'\n\
+                - Rust structs: pattern='struct $NAME { $$$FIELDS }' language='rust'\n\
+                - Python def: pattern='def $NAME($$$ARGS): $$$BODY' language='python'\n\
+                - Method calls: pattern='$OBJ.$METHOD($$$ARGS)' language='typescript'\n\
+                - Variable declarations: pattern='const $NAME = $VALUE' language='typescript'\n\n\
+                IMPORTANT: Patterns must match complete AST nodes. For example, 'function $NAME()' won't match \
+                because function declarations include the body in the AST. Use 'function $NAME() { $$$BODY }' instead.\n\n\
                 Returns file:line:column:matched_text format."
                 .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(AstGrepArgs))

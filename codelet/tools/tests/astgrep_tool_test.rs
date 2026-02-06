@@ -350,3 +350,47 @@ async fn test_astgrep_tool_has_correct_definition() {
     assert_eq!(def.name, "AstGrep");
     assert!(!def.description.is_empty());
 }
+
+/// Scenario: Find function definitions with complete pattern (must include body)
+#[tokio::test]
+async fn test_astgrep_find_function_with_complete_pattern() {
+    // @step Given a directory with TypeScript files containing function definitions
+    let temp_dir = TempDir::new().unwrap();
+    let file = temp_dir.path().join("utils.ts");
+    fs::write(
+        &file,
+        r#"
+function myFunction(arg1, arg2) {
+    console.log(arg1, arg2);
+}
+
+function anotherFunction(x) {
+    return !x;
+}
+"#,
+    )
+    .unwrap();
+
+    // @step When I execute the AstGrep tool with a complete function pattern
+    // NOTE: ast-grep requires the full AST node structure. For function_declaration,
+    // this means including the body: function $NAME($$$ARGS) { $$$BODY }
+    let tool = AstGrepTool::new();
+    let result = tool
+        .call(AstGrepArgs {
+            pattern: "function $NAME($$$ARGS) { $$$BODY }".to_string(),
+            language: "typescript".to_string(),
+            path: Some(temp_dir.path().to_string_lossy().to_string()),
+        })
+        .await
+        .unwrap();
+
+    // @step Then the result should find all function definitions
+    println!("Result:\n{}", result);
+    
+    // Should find at least the regular functions
+    assert!(
+        result.contains("myFunction") || result.contains("anotherFunction"),
+        "Should find function definitions. Got: {}",
+        result
+    );
+}

@@ -1012,12 +1012,14 @@ impl rig::tool::Tool for AstGrepRefactorTool {
                 PREVIEW MODE:\n\
                 - Set preview: true to see what would change WITHOUT modifying files\n\
                 - Returns match locations, original code, and proposed replacements\n\n\
-                PATTERN SYNTAX (matches PARTIAL code structure, not exact strings):\n\
+                PATTERN SYNTAX (must match COMPLETE AST nodes):\n\
                 - $NAME: Single-node wildcard (captures one AST node)\n\
                 - $$NAME: Unnamed single-node wildcard\n\
                 - $_: Dropped wildcard (matches but doesn't capture)\n\
                 - $$$ARGS: Multi-node wildcard (captures multiple nodes)\n\
                 - Meta-variable names: UPPERCASE letters, underscores, digits (after first char)\n\n\
+                IMPORTANT: Patterns must match complete AST nodes. For example, 'function $NAME()' won't match \
+                because function declarations include the body in the AST. Use 'function $NAME() { $$$BODY }' instead.\n\n\
                 TRANSFORMS (replace mode only, NOT supported in extract mode):\n\
                 Transforms modify captured variables before substitution in replacement template.\n\n\
                 1. Substring: Extract portion of text (Python-style indexing)\n\
@@ -1037,11 +1039,10 @@ impl rig::tool::Tool for AstGrepRefactorTool {
                 - Cyclic dependencies between transforms fail with error\n\
                 - Transform errors fail whole operation - no silent skipping\n\n\
                 EXAMPLES:\n\
-                - Extract function: pattern='fn $NAME($$$ARGS) { $$$BODY }' target_file='extracted.rs'\n\
-                - Replace function: pattern='fn old() { $$$BODY }' replacement='fn new() { }'\n\
-                - Rename to camelCase: pattern='fn $NAME()' transforms={NEW: convert $NAME to camelCase} replacement='fn $NEW()'\n\
+                - Extract JS function: pattern='function $NAME($$$ARGS) { $$$BODY }' target_file='extracted.js'\n\
+                - Replace Rust fn: pattern='fn old($$$ARGS) { $$$BODY }' replacement='fn new($$$ARGS) { $$$BODY }'\n\
                 - Batch replace calls: pattern='oldFunc($$$ARGS)' replacement='newFunc($$$ARGS)' batch=true\n\
-                - Preview changes: pattern='fn old()' replacement='fn new()' preview=true"
+                - Preview changes: pattern='fn old() { $$$BODY }' replacement='fn new() { $$$BODY }' preview=true"
                 .to_string(),
             parameters: serde_json::to_value(schemars::schema_for!(AstGrepRefactorArgs))
                 .unwrap_or_else(|_| json!({"type": "object"})),
