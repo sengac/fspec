@@ -408,6 +408,13 @@ export declare const enum JsThinkingLevel {
   High = 3,
 }
 
+/** TUI-059: Work unit context information returned to TypeScript */
+export interface JsWorkUnitContext {
+  id: string;
+  title: string;
+  status: string;
+}
+
 /** A conversation message (simplified for JS) */
 export interface Message {
   role: string;
@@ -1006,6 +1013,14 @@ export declare function sessionCreateWatcher(
 export declare function sessionDetach(sessionId: string): void;
 
 /**
+ * TUI-059: Get the currently active session ID
+ *
+ * Returns the session ID of the currently active session (for navigation),
+ * or null if no session is active.
+ */
+export declare function sessionGetActive(): string | null;
+
+/**
  * Get anchor points for a session (TUI-056)
  *
  * Returns anchor points that were detected during compaction operations.
@@ -1136,6 +1151,15 @@ export declare function sessionGetTurnDetails(
  * Returns a list of session IDs that are watching the specified parent.
  */
 export declare function sessionGetWatchers(sessionId: string): Array<string>;
+
+/**
+ * TUI-059: Get work unit context for a session
+ *
+ * Returns the work unit context if set, or null if no context is set.
+ */
+export declare function sessionGetWorkUnitContext(
+  sessionId: string
+): JsWorkUnitContext | null;
 
 /** Session info returned to TypeScript */
 export interface SessionInfo {
@@ -1359,6 +1383,20 @@ export declare function sessionSetRole(
   roleDescription: string | undefined | null,
   authority: string,
   autoInject?: boolean | undefined | null
+): void;
+
+/**
+ * TUI-059: Set work unit context for a session
+ *
+ * When a session is attached to a work unit (e.g., when entering AgentView
+ * from BoardView with a selected work unit), call this to set the context.
+ * Pass null for all parameters to clear the context.
+ */
+export declare function sessionSetWorkUnitContext(
+  sessionId: string,
+  id?: string | undefined | null,
+  title?: string | undefined | null,
+  status?: string | undefined | null
 ): void;
 
 /**

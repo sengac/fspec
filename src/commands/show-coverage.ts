@@ -315,7 +315,9 @@ function formatCoverageAsMarkdown(
 
         if (testMapping.implMappings.length > 0) {
           for (const implMapping of testMapping.implMappings) {
-            const implLines = implMapping.lines.join(',');
+            const implLines = Array.isArray(implMapping.lines)
+              ? implMapping.lines.join(',')
+              : implMapping.lines;
             lines.push(
               `- **Implementation**: \`${implMapping.file}:${implLines}\``
             );
@@ -459,9 +461,19 @@ function calculateLineCounts(coverage: CoverageFile): {
         testLines += end - start + 1;
       }
 
-      // Count implementation lines (array of line numbers)
+      // Count implementation lines (can be array or string range)
       for (const implMapping of testMapping.implMappings) {
-        implLines += implMapping.lines.length;
+        if (Array.isArray(implMapping.lines)) {
+          implLines += implMapping.lines.length;
+        } else if (typeof implMapping.lines === 'string') {
+          // Parse string range (e.g., "1-149" = 149 lines)
+          const implRange = implMapping.lines.split('-');
+          if (implRange.length === 2) {
+            const start = parseInt(implRange[0], 10);
+            const end = parseInt(implRange[1], 10);
+            implLines += end - start + 1;
+          }
+        }
       }
     }
   }
@@ -477,8 +489,8 @@ export async function showCoverageCommand(
   featureFile: string | undefined
 ): Promise<void> {
   try {
-    const output = await showCoverage(featureFile);
-    output.log(output);
+    const result = await showCoverage(featureFile);
+    output.log(result);
     process.exit(0);
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);

@@ -15,7 +15,7 @@ export interface TestMapping {
 
 export interface ImplMapping {
   file: string;
-  lines: number[];
+  lines: number[] | string;
 }
 
 export interface CoverageStats {

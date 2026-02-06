@@ -34,7 +34,11 @@ import { SplitSessionView } from './SplitSessionView';
 import { SlashCommandPalette } from './SlashCommandPalette';
 import { AnchorView } from './AnchorView';
 import { FileSearchPopup } from './FileSearchPopup';
-import { messagesToLines, wrapMessageToLines, getDisplayRole } from '../utils/conversationUtils';
+import {
+  messagesToLines,
+  wrapMessageToLines,
+  getDisplayRole,
+} from '../utils/conversationUtils';
 import {
   extractTokenStateFromChunks,
   calculateContextFillPercentage,
@@ -44,8 +48,15 @@ import { calculatePaneWidth } from '../utils/textWrap';
 import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
 import { useFileSearchInput } from '../hooks/useFileSearchInput';
 import { useInputCompat, InputPriority } from '../input/index';
-import { getSelectionSeparatorType, generateArrowBar } from '../utils/turnSelection';
-import type { ConversationMessage, ConversationLine, MessageType } from '../types/conversation';
+import {
+  getSelectionSeparatorType,
+  generateArrowBar,
+} from '../utils/turnSelection';
+import type {
+  ConversationMessage,
+  ConversationLine,
+  MessageType,
+} from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
 import { logger } from '../../utils/logger';
 import {
@@ -124,7 +135,6 @@ import {
 import {
   detectThinkingLevel,
   getThinkingLevelLabel,
-  JsThinkingLevel,
   computeEffectiveThinkingLevel,
   hasDisableKeywords,
 } from '../../utils/thinkingLevel';
@@ -140,20 +150,31 @@ import {
   getProviderRegistryEntry,
   type ProviderRegistryEntry,
 } from '../../utils/provider-config';
-import { findTemplateBySlug, loadWatcherTemplates, saveWatcherTemplates, createTemplate, updateTemplate, buildFlatWatcherList } from '../utils/watcherTemplateStorage';
-import type { WatcherTemplate, WatcherInstance } from '../types/watcherTemplate';
+import {
+  findTemplateBySlug,
+  loadWatcherTemplates,
+  saveWatcherTemplates,
+  createTemplate,
+  updateTemplate,
+  buildFlatWatcherList,
+} from '../utils/watcherTemplateStorage';
+import type {
+  WatcherTemplate,
+  WatcherInstance,
+} from '../types/watcherTemplate';
 import { WatcherTemplateList } from './WatcherTemplateList';
 import { WatcherTemplateForm } from './WatcherTemplateForm';
 import { SessionHeader } from './SessionHeader';
 import { formatContextWindow } from '../utils/sessionHeaderUtils';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
-import type { AnchorPoint } from '../types/anchor';
+import type { AnchorPoint, AnchorType } from '../types/anchor';
 import {
   computeLineDiff,
   changesToDiffLines,
   type DiffLine,
 } from '../../git/diff-parser';
 import { useCompaction } from '../hooks/useCompaction';
+import { useWorkUnitContext } from '../hooks/useWorkUnitContext';
 import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
 import { NotificationDialog } from '../../components/NotificationDialog';
@@ -178,7 +199,6 @@ import {
   manualAttach,
   manualDetach,
   getSessionChunks,
-  type CompactionProgress,
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
@@ -415,7 +435,9 @@ const appendThinkingContent = (
   const lastToolIdx = messages.findLastIndex(m => m.type === 'tool-call');
   const lastThinkingIdx = messages.findLastIndex(m => m.type === 'thinking');
   const lastUserIdx = messages.findLastIndex(m => m.type === 'user-input');
-  const streamingIdx = messages.findLastIndex(m => m.type === 'assistant-text' && m.isStreaming);
+  const streamingIdx = messages.findLastIndex(
+    m => m.type === 'assistant-text' && m.isStreaming
+  );
 
   // Can reuse existing thinking if:
   // 1. There is an existing thinking block
@@ -428,8 +450,12 @@ const appendThinkingContent = (
 
   if (canReuseThinking) {
     // Append to existing thinking block
-    const existingContent = messages[lastThinkingIdx].content.replace('[Thinking]\n', '');
-    const newContent = mode === 'replace' ? thinkingContent : existingContent + thinkingContent;
+    const existingContent = messages[lastThinkingIdx].content.replace(
+      '[Thinking]\n',
+      ''
+    );
+    const newContent =
+      mode === 'replace' ? thinkingContent : existingContent + thinkingContent;
     messages[lastThinkingIdx] = {
       ...messages[lastThinkingIdx],
       content: `[Thinking]\n${newContent}`,
@@ -454,7 +480,7 @@ const appendThinkingContent = (
 /**
  * Interface for parsed watcher information (WATCH-012)
  */
-interface WatcherInfo {
+interface ParsedWatcherInfo {
   role: string;
   authority: 'Supervisor' | 'Peer';
   sessionId: string;
@@ -470,8 +496,10 @@ interface WatcherInfo {
  * @param text - The raw message text
  * @returns WatcherInfo object if prefix found, null otherwise
  */
-const parseWatcherPrefix = (text: string): WatcherInfo | null => {
-  const match = text.match(/^\[WATCHER: ([^|]+) \| Authority: (Supervisor|Peer) \| Session: ([^\]]+)\]\n/);
+const parseWatcherPrefix = (text: string): ParsedWatcherInfo | null => {
+  const match = text.match(
+    /^\[WATCHER: ([^|]+) \| Authority: (Supervisor|Peer) \| Session: ([^\]]+)\]\n/
+  );
   if (match) {
     return {
       role: match[1].trim(),
@@ -498,68 +526,85 @@ interface PendingToolCallInfo {
  * Shows ALL parameters for full visibility into tool calls.
  * Exception: Edit/Write tools only show file_path (content is shown as diff).
  */
-const extractToolArgsDisplay = (toolName: string, inputObj: Record<string, unknown>): string => {
+const extractToolArgsDisplay = (
+  toolName: string,
+  inputObj: Record<string, unknown>
+): string => {
   const toolNameLower = toolName.toLowerCase();
-  
+
   // Edit/Write tools: only show file_path (content displayed as diff in result)
-  if (toolNameLower === 'edit' || toolNameLower === 'replace' || 
-      toolNameLower === 'write' || toolNameLower === 'write_file') {
+  if (
+    toolNameLower === 'edit' ||
+    toolNameLower === 'replace' ||
+    toolNameLower === 'write' ||
+    toolNameLower === 'write_file'
+  ) {
     if (inputObj.file_path) {
       return String(inputObj.file_path);
     }
     return '';
   }
-  
+
   // Tools with command/action_type: show it first, then remaining params
   // (Fspec uses 'command', WebSearch uses 'action_type')
-  const commandKey = inputObj.command ? 'command' : inputObj.action_type ? 'action_type' : null;
+  const commandKey = inputObj.command
+    ? 'command'
+    : inputObj.action_type
+      ? 'action_type'
+      : null;
   if (commandKey) {
     const command = String(inputObj[commandKey]);
-    const otherEntries = Object.entries(inputObj).filter(([key]) => key !== commandKey);
-    
+    const otherEntries = Object.entries(inputObj).filter(
+      ([key]) => key !== commandKey
+    );
+
     if (otherEntries.length === 0) {
       return command;
     }
-    
+
     // Format remaining parameters
     const parts = otherEntries.map(([key, value]) => {
       if (typeof value === 'string') {
-        const displayValue = value.length > 100 ? `${value.slice(0, 100)}...` : value;
+        const displayValue =
+          value.length > 100 ? `${value.slice(0, 100)}...` : value;
         return `${key}: '${displayValue}'`;
       } else if (value === null || value === undefined) {
         return `${key}: ${value}`;
       } else {
         const jsonStr = JSON.stringify(value);
-        const displayValue = jsonStr.length > 100 ? `${jsonStr.slice(0, 100)}...` : jsonStr;
+        const displayValue =
+          jsonStr.length > 100 ? `${jsonStr.slice(0, 100)}...` : jsonStr;
         return `${key}: ${displayValue}`;
       }
     });
-    
+
     return `${command}, { ${parts.join(', ')} }`;
   }
-  
+
   // Show ALL parameters as JSON-like object for full visibility
   const entries = Object.entries(inputObj);
   if (entries.length === 0) {
     return '';
   }
-  
+
   // Format all parameters
   const parts = entries.map(([key, value]) => {
     if (typeof value === 'string') {
       // Truncate very long strings but show key
-      const displayValue = value.length > 100 ? `${value.slice(0, 100)}...` : value;
+      const displayValue =
+        value.length > 100 ? `${value.slice(0, 100)}...` : value;
       return `${key}: '${displayValue}'`;
     } else if (value === null || value === undefined) {
       return `${key}: ${value}`;
     } else {
       // Objects, arrays, numbers, booleans
       const jsonStr = JSON.stringify(value);
-      const displayValue = jsonStr.length > 100 ? `${jsonStr.slice(0, 100)}...` : jsonStr;
+      const displayValue =
+        jsonStr.length > 100 ? `${jsonStr.slice(0, 100)}...` : jsonStr;
       return `${key}: ${displayValue}`;
     }
   });
-  
+
   return `{ ${parts.join(', ')} }`;
 };
 
@@ -569,7 +614,7 @@ const extractToolArgsDisplay = (toolName: string, inputObj: Record<string, unkno
  *
  * SOLID: Single source of truth for converting StreamChunks to ConversationMessages.
  * DRY: Unified code path for both background and persisted session resume.
- * 
+ *
  * Features:
  * - Tracks ToolCall inputs to regenerate diffs for Edit/Write tools
  * - Populates fullContent field for TUI-043 expansion
@@ -582,7 +627,7 @@ const processChunksToConversation = (
   formatCollapsedOutputFn: (content: string) => string
 ): ConversationMessage[] => {
   const messages: ConversationMessage[] = [];
-  
+
   // Track pending tool calls for Edit/Write diff regeneration
   const pendingToolCalls = new Map<string, PendingToolCallInfo>();
 
@@ -658,7 +703,7 @@ const processChunksToConversation = (
       const toolCall = chunk.toolCall;
       let argsDisplay = '';
       let parsedInput: Record<string, unknown> = {};
-      
+
       try {
         parsedInput = JSON.parse(toolCall.input) as Record<string, unknown>;
         argsDisplay = extractToolArgsDisplay(toolCall.name, parsedInput);
@@ -667,10 +712,13 @@ const processChunksToConversation = (
         logger.error('Failed to parse tool call input as JSON:', err);
         argsDisplay = toolCall.input;
       }
-      
+
       // Store for ToolResult processing (Edit/Write diff regeneration)
-      pendingToolCalls.set(toolCall.id, { name: toolCall.name, input: parsedInput });
-      
+      pendingToolCalls.set(toolCall.id, {
+        name: toolCall.name,
+        input: parsedInput,
+      });
+
       // Finalize streaming assistant message (remove if empty, or format and mark complete)
       const streamingIdx = messages.findLastIndex(m => m.isStreaming);
       if (streamingIdx >= 0) {
@@ -678,7 +726,9 @@ const processChunksToConversation = (
           messages.splice(streamingIdx, 1);
         } else {
           // TUI-044: Apply markdown table formatting when finalizing
-          messages[streamingIdx].content = formatMarkdownTables(messages[streamingIdx].content);
+          messages[streamingIdx].content = formatMarkdownTables(
+            messages[streamingIdx].content
+          );
           messages[streamingIdx].isStreaming = false;
         }
       }
@@ -692,15 +742,15 @@ const processChunksToConversation = (
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
       const result = chunk.toolResult;
       const sanitizedContent = result.content.replace(/\t/g, '  ');
-      
+
       // Look up pending tool call for Edit/Write diff regeneration
       const pendingTool = pendingToolCalls.get(result.toolCallId);
       const toolNameLower = pendingTool?.name?.toLowerCase() || '';
       const inputObj = pendingTool?.input || {};
-      
+
       let resultContent: string;
       let resultFullContent: string;
-      
+
       // TUI-038: Regenerate diff for Edit/Write tools
       if (
         (toolNameLower === 'edit' || toolNameLower === 'replace') &&
@@ -708,7 +758,10 @@ const processChunksToConversation = (
         typeof inputObj.new_string === 'string'
       ) {
         // Edit tool - generate diff from old/new strings
-        const diffLines = formatEditDiff(inputObj.old_string, inputObj.new_string);
+        const diffLines = formatEditDiff(
+          inputObj.old_string,
+          inputObj.new_string
+        );
         resultContent = formatDiffForDisplay(diffLines);
         resultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
       } else if (
@@ -724,16 +777,23 @@ const processChunksToConversation = (
         resultContent = formatCollapsedOutputFn(sanitizedContent);
         resultFullContent = formatFullOutput(sanitizedContent);
       }
-      
+
       // Find tool header and combine with result
       for (let i = messages.length - 1; i >= 0; i--) {
-        if (messages[i].type === 'tool-call' && messages[i].content.startsWith('●')) {
+        if (
+          messages[i].type === 'tool-call' &&
+          messages[i].content.startsWith('●')
+        ) {
           const headerLine = messages[i].content.split('\n')[0];
           // Don't add newline if result is empty
           const hasContent = resultContent && resultContent.trim();
-          messages[i].content = hasContent ? `${headerLine}\n${resultContent}` : headerLine;
+          messages[i].content = hasContent
+            ? `${headerLine}\n${resultContent}`
+            : headerLine;
           // TUI-043: Set fullContent for expansion
-          messages[i].fullContent = hasContent ? `${headerLine}\n${resultFullContent}` : headerLine;
+          messages[i].fullContent = hasContent
+            ? `${headerLine}\n${resultFullContent}`
+            : headerLine;
           messages[i].isError = result.isError;
           break;
         }
@@ -759,7 +819,9 @@ const processChunksToConversation = (
       const streamingIdx = messages.findLastIndex(m => m.isStreaming);
       if (streamingIdx >= 0) {
         // TUI-044: Apply markdown table formatting when finalizing on Done
-        messages[streamingIdx].content = formatMarkdownTables(messages[streamingIdx].content);
+        messages[streamingIdx].content = formatMarkdownTables(
+          messages[streamingIdx].content
+        );
         messages[streamingIdx].isStreaming = false;
       }
     } else if (chunk.type === 'Interrupted') {
@@ -770,7 +832,9 @@ const processChunksToConversation = (
           messages.splice(streamingIdx, 1);
         } else {
           // TUI-044: Apply markdown table formatting when finalizing on Interrupted
-          messages[streamingIdx].content = formatMarkdownTables(messages[streamingIdx].content);
+          messages[streamingIdx].content = formatMarkdownTables(
+            messages[streamingIdx].content
+          );
           messages[streamingIdx].isStreaming = false;
         }
       }
@@ -882,15 +946,13 @@ const createStreamingWindow = (
   content: string,
   windowSize: number = STREAMING_WINDOW_SIZE
 ): string => {
-  
   const lines = content.split('\n');
-  
+
   if (lines.length <= windowSize) {
-    
     return content;
   }
   const result = lines.slice(-windowSize).join('\n');
-  
+
   return result;
 };
 
@@ -942,17 +1004,17 @@ const formatWriteDiff = (content: string): DiffOutputLine[] => {
 
 /**
  * TUI-038: Convert diff output lines to display format with tree connectors
- * 
+ *
  * Shows only the changed lines and minimal context (3 lines before/after changes).
  * This provides a focused view of what actually changed, similar to unified diff format.
- * 
+ *
  * Format:
  * - Line numbers reflect actual position in the file (with startLine offset)
  * - Only shows context around actual changes
  * - "..." indicates skipped context lines
  * - Format: "2513 [R]- content" for removed, "2513 [A]+ content" for added
  * - Context lines: "2535   content" (all dim)
- * 
+ *
  * @param diffLines - Array of diff output lines
  * @param visibleLines - Maximum lines to show before collapsing
  * @param startLine - Starting line number in the original file (1-based, default 1)
@@ -982,7 +1044,9 @@ const formatDiffForDisplay = (
       return `${lineNum}   ${restOfLine}`;
     });
     if (diffLines.length > visibleLines) {
-      formattedLines.push(`... +${diffLines.length - visibleLines} lines (select turn to /expand)`);
+      formattedLines.push(
+        `... +${diffLines.length - visibleLines} lines (select turn to /expand)`
+      );
     }
     return formatWithTreeConnectors(formattedLines.join('\n'));
   }
@@ -990,7 +1054,7 @@ const formatDiffForDisplay = (
   // Build set of indices to show: changed lines + 3 lines of context around each change
   const CONTEXT_LINES = 3;
   const indicesToShow = new Set<number>();
-  
+
   changedIndices.forEach(idx => {
     // Add the changed line
     indicesToShow.add(idx);
@@ -999,7 +1063,11 @@ const formatDiffForDisplay = (
       indicesToShow.add(i);
     }
     // Add context after
-    for (let i = idx + 1; i <= Math.min(diffLines.length - 1, idx + CONTEXT_LINES); i++) {
+    for (
+      let i = idx + 1;
+      i <= Math.min(diffLines.length - 1, idx + CONTEXT_LINES);
+      i++
+    ) {
       indicesToShow.add(i);
     }
   });
@@ -1015,7 +1083,9 @@ const formatDiffForDisplay = (
     // Add "..." if there's a gap
     if (lastShownIdx >= 0 && idx > lastShownIdx + 1) {
       const skipped = idx - lastShownIdx - 1;
-      outputLines.push(`${''.padStart(lineNumWidth, ' ')} ... (${skipped} lines)`);
+      outputLines.push(
+        `${''.padStart(lineNumWidth, ' ')} ... (${skipped} lines)`
+      );
     }
 
     const line = diffLines[idx];
@@ -1036,7 +1106,9 @@ const formatDiffForDisplay = (
   // Add trailing "..." if there are more lines after
   if (lastShownIdx < diffLines.length - 1) {
     const remaining = diffLines.length - 1 - lastShownIdx;
-    outputLines.push(`${''.padStart(lineNumWidth, ' ')} ... (${remaining} lines)`);
+    outputLines.push(
+      `${''.padStart(lineNumWidth, ' ')} ... (${remaining} lines)`
+    );
   }
 
   // Apply collapse logic if still too many lines
@@ -1052,10 +1124,10 @@ const formatDiffForDisplay = (
 
 /**
  * Calculate the starting line number of an edit in a file.
- * 
+ *
  * Since the edit has already been applied by the time the TUI receives the event,
  * we search for new_string (which is now in the file) rather than old_string.
- * 
+ *
  * Returns 1 if file can't be read or string not found.
  */
 const calculateStartLine = (
@@ -1064,10 +1136,10 @@ const calculateStartLine = (
   newString: string | undefined
 ): number => {
   if (!filePath) return 1;
-  
+
   try {
     const fileContent = fs.readFileSync(filePath, 'utf-8');
-    
+
     // The edit has already been applied, so search for new_string first
     if (newString) {
       const idx = fileContent.indexOf(newString);
@@ -1077,7 +1149,7 @@ const calculateStartLine = (
         return lineNumber;
       }
     }
-    
+
     // Fallback: try old_string (in case edit hasn't been applied yet)
     if (oldString) {
       const idx = fileContent.indexOf(oldString);
@@ -1087,7 +1159,7 @@ const calculateStartLine = (
         return lineNumber;
       }
     }
-    
+
     return 1;
   } catch (err) {
     // Failed to read file or calculate line number - this indicates file system issues
@@ -1096,7 +1168,11 @@ const calculateStartLine = (
   }
 };
 
-export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initialSessionId }) => {
+export const AgentView: React.FC<AgentViewProps> = ({
+  onExit,
+  workUnitId,
+  initialSessionId,
+}) => {
   const { stdout } = useStdout();
 
   // NAPI-009: Removed session state - we use SessionManager background sessions exclusively
@@ -1121,8 +1197,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const [isTurnSelectMode, setIsTurnSelectMode] = useState(false); // TUI-042: Turn selection mode toggle (replaces TUI-041 line selection)
   // TUI-045: Modal state for full turn viewing (replaces expandedMessageIndices)
   const [showTurnModal, setShowTurnModal] = useState(false);
-  const [modalMessageIndex, setModalMessageIndex] = useState<number | null>(null);
-  const virtualListSelectionRef = useRef<{ selectedIndex: number }>({ selectedIndex: 0 }); // TUI-043: Ref to get selected index from VirtualList
+  const [modalMessageIndex, setModalMessageIndex] = useState<number | null>(
+    null
+  );
+  const virtualListSelectionRef = useRef<{ selectedIndex: number }>({
+    selectedIndex: 0,
+  }); // TUI-043: Ref to get selected index from VirtualList
   // NAPI-009: sessionRef removed - we use SessionManager exclusively now
 
   // TUI-038: Store pending Edit/Write tool inputs for diff display
@@ -1157,7 +1237,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // CONFIG-004: Settings tab state
   const [showSettingsTab, setShowSettingsTab] = useState(false);
   // TUI-050: Trigger state for provider status loading (avoids TDZ with loadProviderStatuses)
-  const [triggerProviderStatusLoad, setTriggerProviderStatusLoad] = useState(false);
+  const [triggerProviderStatusLoad, setTriggerProviderStatusLoad] =
+    useState(false);
   const [selectedSettingsIdx, setSelectedSettingsIdx] = useState(0);
   const [settingsScrollOffset, setSettingsScrollOffset] = useState(0);
   const [settingsFilter, setSettingsFilter] = useState('');
@@ -1180,12 +1261,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const attachSessionToWorkUnit = useFspecStore(state => state.attachSession);
   const detachSessionFromWorkUnit = useFspecStore(state => state.detachSession);
   const getAttachedSession = useFspecStore(state => state.getAttachedSession);
-  const setCurrentWorkUnitId = useFspecStore(state => state.setCurrentWorkUnitId);
-  const getWorkUnitBySession = useFspecStore(state => state.getWorkUnitBySession);
+  const setCurrentWorkUnitId = useFspecStore(
+    state => state.setCurrentWorkUnitId
+  );
+  const getWorkUnitBySession = useFspecStore(
+    state => state.getWorkUnitBySession
+  );
 
   // PERF-002: Compaction with retry logic hook
   const compaction = useCompaction();
-  
+
   // UX-002: Ref for compaction functions to avoid stale closures in stream callbacks
   // The useCompaction hook returns new function references on each render, but stream
   // callbacks (handleStreamChunk, handleSubmit's sessionAttach) capture the initial
@@ -1222,6 +1307,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const currentSessionIdRef = useRef<string | null>(null);
   const currentProjectRef = useRef<string>(process.cwd());
 
+  // TUI-059: Work unit context hook - sets context in Rust when entering AgentView
+  // This enables environment info to display "Current work unit: ID" and
+  // status change notifications when LLM updates a different work unit
+  // NOTE: Must be after useCurrentSessionId() since it depends on currentSessionId
+  useWorkUnitContext({
+    sessionId: currentSessionId,
+    workUnitId,
+  });
+
   // NAPI-003: Resume mode state (session selection overlay)
   const [isResumeMode, setIsResumeMode] = useState(false);
   // TUI-050: Trigger state for resume mode initialization (avoids TDZ with handleResumeMode)
@@ -1249,37 +1343,59 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // WATCH-009: Watcher creation view state
   const [isWatcherCreateMode, setIsWatcherCreateMode] = useState(false);
   // WATCH-023: Watcher template management state
-  const [watcherTemplates, setWatcherTemplates] = useState<WatcherTemplate[]>([]);
-  const [watcherInstances, setWatcherInstances] = useState<WatcherInstance[]>([]);
+  const [watcherTemplates, setWatcherTemplates] = useState<WatcherTemplate[]>(
+    []
+  );
+  const [watcherInstances, setWatcherInstances] = useState<WatcherInstance[]>(
+    []
+  );
   const [isTemplateFormMode, setIsTemplateFormMode] = useState(false);
-  const [templateFormMode, setTemplateFormMode] = useState<'create' | 'edit'>('create');
-  const [editingTemplate, setEditingTemplate] = useState<WatcherTemplate | undefined>(undefined);
-  const [showTemplateDeleteDialog, setShowTemplateDeleteDialog] = useState(false);
-  const [templateToDelete, setTemplateToDelete] = useState<{ template: WatcherTemplate; instances: WatcherInstance[] } | null>(null);
-  const [instanceToKill, setInstanceToKill] = useState<WatcherInstance | null>(null);
+  const [templateFormMode, setTemplateFormMode] = useState<'create' | 'edit'>(
+    'create'
+  );
+  const [editingTemplate, setEditingTemplate] = useState<
+    WatcherTemplate | undefined
+  >(undefined);
+  const [showTemplateDeleteDialog, setShowTemplateDeleteDialog] =
+    useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<{
+    template: WatcherTemplate;
+    instances: WatcherInstance[];
+  } | null>(null);
+  const [instanceToKill, setInstanceToKill] = useState<WatcherInstance | null>(
+    null
+  );
   const [showInstanceKillDialog, setShowInstanceKillDialog] = useState(false);
   // WATCH-023: Watcher notification/error dialog state
-  const [watcherNotification, setWatcherNotification] = useState<string | null>(null);
+  const [watcherNotification, setWatcherNotification] = useState<string | null>(
+    null
+  );
   const [watcherError, setWatcherError] = useState<string | null>(null);
   // WATCH-010: Watcher split view state
   const [isWatcherSessionView, setIsWatcherSessionView] = useState(false);
   const [activePane, setActivePane] = useState<'parent' | 'watcher'>('watcher');
   const [parentSessionId, setParentSessionId] = useState<string | null>(null);
   const [parentSessionName, setParentSessionName] = useState<string>('');
-  const [parentConversation, setParentConversation] = useState<ConversationLine[]>([]);
+  const [parentConversation, setParentConversation] = useState<
+    ConversationLine[]
+  >([]);
   const [isSplitViewSelectMode, setIsSplitViewSelectMode] = useState(false);
   const [splitViewSelectedIndex, setSplitViewSelectedIndex] = useState(0);
   // WATCH-016: Modal state for watcher pane turn viewing
   const [showWatcherTurnModal, setShowWatcherTurnModal] = useState(false);
-  const [watcherTurnModalContent, setWatcherTurnModalContent] = useState<string>('');
-  const [watcherTurnModalRole, setWatcherTurnModalRole] = useState<'user' | 'assistant' | 'watcher'>('assistant');
+  const [watcherTurnModalContent, setWatcherTurnModalContent] =
+    useState<string>('');
+  const [watcherTurnModalRole, setWatcherTurnModalRole] = useState<
+    'user' | 'assistant' | 'watcher'
+  >('assistant');
   // TUI-046: Exit confirmation modal state (Detach/Close Session/Cancel)
   const [showExitConfirmation, setShowExitConfirmation] = useState(false);
 
   // TUI-054: Thinking level dialog state
   const [showThinkingLevelDialog, setShowThinkingLevelDialog] = useState(false);
   // TUI-058: Default thinking level for new sessions
-  const [defaultThinkingLevel, setDefaultThinkingLevel] = useState<JsThinkingLevel | null>(null);
+  const [defaultThinkingLevel, setDefaultThinkingLevel] =
+    useState<JsThinkingLevel | null>(null);
 
   // TUI-058: Load default thinking level from config on mount
   useEffect(() => {
@@ -1299,9 +1415,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const slashCommand = useSlashCommandInput({
     inputValue,
     onInputChange: setInputValue,
-    onExecuteCommand: (cmd) => executeSlashCommandRef.current?.(cmd),
+    onExecuteCommand: cmd => executeSlashCommandRef.current?.(cmd),
     // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, TUI-056: add anchor viewer)
-    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog || showAnchorViewer,
+    disabled:
+      isResumeMode ||
+      isWatcherMode ||
+      isWatcherEditMode ||
+      showModelSelector ||
+      showSettingsTab ||
+      showThinkingLevelDialog ||
+      showAnchorViewer,
   });
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
@@ -1318,7 +1441,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const updateTokenStateFromChunk = useCallback((chunk: StreamChunk) => {
     if (chunk.type === 'TokenUpdate' && chunk.tokens) {
       setTokenUsage(chunk.tokens);
-      if (chunk.tokens.tokensPerSecond !== undefined && chunk.tokens.tokensPerSecond !== null) {
+      if (
+        chunk.tokens.tokensPerSecond !== undefined &&
+        chunk.tokens.tokensPerSecond !== null
+      ) {
         setDisplayedTokPerSec(chunk.tokens.tokensPerSecond);
         setLastChunkTime(Date.now());
       }
@@ -1329,16 +1455,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
   // Rust state subscription via useSyncExternalStore
   // CRITICAL: This must be declared BEFORE any useEffect hooks that use displayIsLoading
-  const { snapshot: rustSnapshot, refresh: refreshRustState } = useRustSessionState(currentSessionId);
+  const { snapshot: rustSnapshot, refresh: refreshRustState } =
+    useRustSessionState(currentSessionId);
 
   // Helper to find model details from provider sections (Single Responsibility Principle)
-  const findModelInProviders = useCallback((
-    providerId: string,
-    modelId: string
-  ) => {
-    const section = providerSections.find(s => s.providerId === providerId);
-    return section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
-  }, [providerSections]);
+  const findModelInProviders = useCallback(
+    (providerId: string, modelId: string) => {
+      const section = providerSections.find(s => s.providerId === providerId);
+      return section?.models.find(
+        m => extractModelIdForRegistry(m.id) === modelId
+      );
+    },
+    [providerSections]
+  );
 
   // Derive display values from Rust snapshot + local state fallbacks
   const rustModelInfo = useMemo(() => {
@@ -1351,7 +1480,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     ) => ({ modelId, reasoning, hasVision, contextWindow });
 
     // Get fallback model ID from local state
-    const localModelId = currentModel?.displayName || currentModel?.modelId || currentProvider;
+    const localModelId =
+      currentModel?.displayName || currentModel?.modelId || currentProvider;
 
     // No session - use local state with full model info if available
     if (!currentSessionId) {
@@ -1366,7 +1496,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     // Has session with Rust model data
     const rustModel = rustSnapshot.model;
     if (rustModel?.modelId) {
-      const model = findModelInProviders(rustModel.providerId, rustModel.modelId);
+      const model = findModelInProviders(
+        rustModel.providerId,
+        rustModel.modelId
+      );
       if (model) {
         return createModelInfo(
           model.name,
@@ -1438,7 +1571,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   const displayPauseInfo = rustSnapshot.pauseInfo;
 
   // TUI-044: Compaction notification indicator (shows in percentage indicator for 10 seconds)
-  const [compactionReduction, setCompactionReduction] = useState<number | null>(null);
+  const [compactionReduction, setCompactionReduction] = useState<number | null>(
+    null
+  );
 
   // TOOL-010: Detected thinking level (for UI indicator)
   const [detectedThinkingLevel, setDetectedThinkingLevel] = useState<
@@ -1475,7 +1610,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     onInputChange: setInputValue,
     terminalWidth,
     // Disable popup when other overlays/modes are active
-    disabled: isResumeMode || isWatcherMode || isWatcherEditMode || showModelSelector || showSettingsTab || showThinkingLevelDialog,
+    disabled:
+      isResumeMode ||
+      isWatcherMode ||
+      isWatcherEditMode ||
+      showModelSelector ||
+      showSettingsTab ||
+      showThinkingLevelDialog,
   });
 
   // Model selector scrolling: build flat list and manage scroll offset
@@ -1569,7 +1710,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   ); // Extra line for filter input
 
   // Resume mode scrolling (each session takes 2 lines: name + details)
-  const resumeVisibleHeight = Math.max(1, Math.floor((terminalHeight - 10) / 2));
+  const resumeVisibleHeight = Math.max(
+    1,
+    Math.floor((terminalHeight - 10) / 2)
+  );
 
   // Keep selected resume session visible by adjusting scroll offset
   useEffect(() => {
@@ -1579,7 +1723,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     } else if (resumeSessionIndex >= resumeScrollOffset + resumeVisibleHeight) {
       setResumeScrollOffset(resumeSessionIndex - resumeVisibleHeight + 1);
     }
-  }, [resumeSessionIndex, resumeScrollOffset, resumeVisibleHeight, isResumeMode]);
+  }, [
+    resumeSessionIndex,
+    resumeScrollOffset,
+    resumeVisibleHeight,
+    isResumeMode,
+  ]);
 
   // Reset scroll when resume mode opens
   useEffect(() => {
@@ -1589,7 +1738,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   }, [isResumeMode]);
 
   // WATCH-008: Watcher management overlay - calculate visible height for scroll logic
-  const watcherVisibleHeight = Math.max(1, Math.floor((terminalHeight - 6) / 2)); // 2 lines per watcher
+  const watcherVisibleHeight = Math.max(
+    1,
+    Math.floor((terminalHeight - 6) / 2)
+  ); // 2 lines per watcher
 
   // WATCH-008: Keep selected watcher visible by adjusting scroll offset
   useEffect(() => {
@@ -1613,17 +1765,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
     try {
       const parentId = sessionGetParent(currentSessionId);
-      
+
       if (parentId) {
         // This is a watcher session - enable split view
         setIsWatcherSessionView(true);
         setParentSessionId(parentId);
-        
+
         // Get parent session name from session list
         const sessions = sessionManagerList();
         const parentSession = sessions.find(s => s.id === parentId);
         setParentSessionName(parentSession?.name || 'Parent Session');
-        
+
         // Load parent session conversation
         const parentChunks = sessionGetMergedOutput(parentId);
         const parentMessages = processChunksToConversation(
@@ -1631,12 +1783,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           formatToolHeader,
           formatCollapsedOutput
         );
-        
+
         // Convert ConversationMessage[] to ConversationLine[] for display
         const parentPaneWidth = calculatePaneWidth(terminalWidth, 'split');
         const parentLines = messagesToLines(parentMessages, parentPaneWidth);
         setParentConversation(parentLines);
-        
+
         // VIEWNV-001: Subscribe to parent session for live updates WITHOUT changing active session
         // Use sessionSubscribe instead of sessionAttach to avoid corrupting navigation state
         sessionSubscribe(parentId, (_err: Error | null, chunk: StreamChunk) => {
@@ -1648,11 +1800,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               formatCollapsedOutput
             );
             const updatedPaneWidth = calculatePaneWidth(terminalWidth, 'split');
-            const updatedLines = messagesToLines(updatedMessages, updatedPaneWidth);
+            const updatedLines = messagesToLines(
+              updatedMessages,
+              updatedPaneWidth
+            );
             setParentConversation(updatedLines);
           }
         });
-        
+
         // Cleanup: unsubscribe from parent when effect re-runs or component unmounts
         // VIEWNV-001: Use sessionUnsubscribe to avoid clearing the active session
         return () => {
@@ -1872,15 +2027,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               defaultModelString = persistedModelString;
               defaultModelInfo = persistedModel;
               defaultSection = persistedSection;
-              
-            } else {
-              
             }
-          } else if (persistedSection && !persistedSection.hasCredentials) {
-            
-          } else {
-            
+            // else: no persisted model found, will fall through to use first available
           }
+          // else: section not found or no credentials, will fall through to use first available
         }
 
         // Use first available model if no persisted model was restored
@@ -2002,7 +2152,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       const attachedSessionId = getAttachedSession(workUnitId);
       if (attachedSessionId) {
         needsAutoResumeRef.current = attachedSessionId;
-        logger.debug(`SESS-001: Found attached session ${attachedSessionId} for work unit ${workUnitId}, will auto-resume`);
+        logger.debug(
+          `SESS-001: Found attached session ${attachedSessionId} for work unit ${workUnitId}, will auto-resume`
+        );
       }
     }
   }, [workUnitId, getAttachedSession]);
@@ -2010,7 +2162,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // Handle sending a prompt
   const handleSubmit = useCallback(async () => {
     const userMessage = inputValue.trim();
-    
+
     // TUI-050: Slash commands should be executed via handleSubmitWithCommand.
     // This handles the case where user types a command and presses Enter without
     // the palette being visible (e.g., after Tab completion closes the palette).
@@ -2018,7 +2170,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       executeSlashCommandRef.current?.(userMessage);
       return;
     }
-    
+
     // TUI-034: Handle /model command - open model selector view (doesn't require session)
     if (userMessage === '/model') {
       setInputValue('');
@@ -2037,8 +2189,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       }
       return;
     }
-    
-    
+
     // CONFIG-004: Handle /provider command - open provider settings view (doesn't require session)
     if (userMessage === '/provider') {
       setInputValue('');
@@ -2057,7 +2208,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     if (!currentProvider || !inputValue.trim() || displayIsLoading) {
       // TUI-DEBUG: Log why handleSubmit is blocked (debug level - these are expected conditions)
       if (!currentProvider) {
-        logger.debug(`[TUI-DEBUG] handleSubmit blocked: currentProvider is empty (currentSessionId=${currentSessionId})`);
+        logger.debug(
+          `[TUI-DEBUG] handleSubmit blocked: currentProvider is empty (currentSessionId=${currentSessionId})`
+        );
       }
       if (!inputValue.trim()) {
         logger.debug(`[TUI-DEBUG] handleSubmit blocked: inputValue is empty`);
@@ -2088,7 +2241,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           { type: 'status', content: result.message },
         ]);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         setConversation(prev => [
           ...prev,
           { type: 'status', content: `Debug toggle failed: ${errorMessage}` },
@@ -2120,7 +2274,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setInputValue('');
       const allProjects = userMessage.includes('--all-projects');
       try {
-        
         const history = persistenceGetHistory(
           allProjects ? null : currentProjectRef.current,
           20
@@ -2163,27 +2316,27 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     if (userMessage.startsWith('/watcher spawn ')) {
       setInputValue('');
       const slug = userMessage.slice('/watcher spawn '.length).trim();
-      
+
       if (!slug) {
         setWatcherError('Usage: /watcher spawn <slug>');
         return;
       }
-      
+
       if (!currentSessionId) {
         setWatcherError('No active session. Start a session first.');
         return;
       }
-      
+
       // Find template by slug
       void (async () => {
         try {
           const template = await findTemplateBySlug(slug);
-          
+
           if (!template) {
             setWatcherError(`No template found with slug: ${slug}`);
             return;
           }
-          
+
           // Create watcher from template
           const watcherId = await sessionCreateWatcher(
             currentSessionId,
@@ -2191,7 +2344,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             currentProjectRef.current,
             template.name
           );
-          
+
           // Set role with template settings
           sessionSetRole(
             watcherId,
@@ -2200,10 +2353,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             template.authority,
             template.autoInject
           );
-          
-          setWatcherNotification(`Spawned watcher "${template.name}" from template`);
+
+          setWatcherNotification(
+            `Spawned watcher "${template.name}" from template`
+          );
         } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to spawn watcher';
+          const errorMessage =
+            err instanceof Error ? err.message : 'Failed to spawn watcher';
           setWatcherError(`Spawn failed: ${errorMessage}`);
         }
       })();
@@ -2220,44 +2376,51 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     // WATCH-014: Handle /parent command - switch to parent session from watcher
     if (userMessage === '/parent') {
       setInputValue('');
-      
+
       if (!currentSessionId) {
         setConversation(prev => [
           ...prev,
-          { type: 'status', content: 'No active session. Start a session first.' },
+          {
+            type: 'status',
+            content: 'No active session. Start a session first.',
+          },
         ]);
         return;
       }
-      
+
       const parentId = sessionGetParent(currentSessionId);
-      
+
       if (!parentId) {
         setConversation(prev => [
           ...prev,
-          { type: 'status', content: 'This session has no parent. /parent only works from watcher sessions.' },
+          {
+            type: 'status',
+            content:
+              'This session has no parent. /parent only works from watcher sessions.',
+          },
         ]);
         return;
       }
-      
+
       try {
         // Look up parent session name for status message
         const sessions = sessionManagerList();
         const parentSession = sessions.find(s => s.id === parentId);
         const parentName = parentSession?.name || parentId;
-        
+
         // Detach from current watcher session
         sessionDetach(currentSessionId);
-        
+
         // Switch to parent session (atomic state transition via store)
         activateSession(parentId);
-        
+
         // Attach to parent session for live streaming
         sessionAttach(parentId, (_err: Error | null, chunk: StreamChunk) => {
           if (chunk) {
             handleStreamChunk(chunk);
           }
         });
-        
+
         // Get buffered output and display
         const mergedChunks = sessionGetMergedOutput(parentId);
         const restoredMessages = processChunksToConversation(
@@ -2267,7 +2430,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         );
         setConversation(restoredMessages);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to switch to parent';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to switch to parent';
         // Show error dialog instead of adding to conversation
         setWatcherError(`Switch failed: ${errorMessage}`);
       }
@@ -2285,11 +2449,21 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         setTokenUsage({ inputTokens: 0, outputTokens: 0 });
         // Reset session state (atomic transition via store)
         prepareForNewSession();
-        setConversation([{ type: 'status', content: 'Session detached from work unit. Ready for fresh session.' }]);
+        setConversation([
+          {
+            type: 'status',
+            content:
+              'Session detached from work unit. Ready for fresh session.',
+          },
+        ]);
       } else {
         setConversation(prev => [
           ...prev,
-          { type: 'status', content: '/detach only works when viewing a work unit from the board.' },
+          {
+            type: 'status',
+            content:
+              '/detach only works when viewing a work unit from the board.',
+          },
         ]);
       }
       return;
@@ -2308,7 +2482,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           activateSession(target.id);
           setConversation(prev => [
             ...prev,
-            { type: 'status', content: `Switched to session: "${target.name}"` },
+            {
+              type: 'status',
+              content: `Switched to session: "${target.name}"`,
+            },
           ]);
         } else {
           setConversation(prev => [
@@ -2376,7 +2553,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         return;
       }
       try {
-
         const forkedSession = persistenceForkSession(
           currentSessionId,
           index,
@@ -2573,10 +2749,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // Note: Using sessionManagerCreateWithId directly here because session is already created in persistence
         // and we only need the Rust background session (createSession service would duplicate persistence)
         try {
-          await sessionManagerCreateWithId(activeSessionId, modelPath, project, sessionName);
+          await sessionManagerCreateWithId(
+            activeSessionId,
+            modelPath,
+            project,
+            sessionName
+          );
         } catch (err) {
           logger.error('Failed to register session with SessionManager:', err);
-          throw new Error(`Session registration failed: ${err instanceof Error ? err.message : String(err)}`);
+          throw new Error(
+            `Session registration failed: ${err instanceof Error ? err.message : String(err)}`
+          );
         }
 
         // If debug was enabled before session was created, sync debug state to session
@@ -2586,14 +2769,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             // Set the debug state on the session (don't toggle - it's already enabled globally)
             sessionSetDebugEnabled(activeSessionId, true);
           } catch (err) {
-            logger.error('Failed to sync debug state to session', { error: err });
+            logger.error('Failed to sync debug state to session', {
+              error: err,
+            });
           }
         }
 
         // SESS-001: Auto-attach session to work unit on first message
         if (workUnitId) {
           attachSessionToWorkUnit(workUnitId, activeSessionId);
-          logger.debug(`SESS-001: Attached session ${activeSessionId} to work unit ${workUnitId}`);
+          logger.debug(
+            `SESS-001: Attached session ${activeSessionId} to work unit ${workUnitId}`
+          );
         }
         // Note: activateSession() already sets isReadyForNewSession=false atomically
       } catch (err) {
@@ -2611,7 +2798,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     // NAPI-006: Save command to history
     if (activeSessionId) {
       try {
-        
         persistenceAddHistory(
           userMessage,
           currentProjectRef.current,
@@ -2642,16 +2828,22 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     if (activeSessionId && sessionNeedsRenameRef.current) {
       sessionNeedsRenameRef.current = false;
       try {
-        const sessionName = userMessage.slice(0, 500) + (userMessage.length > 500 ? '...' : '');
+        const sessionName =
+          userMessage.slice(0, 500) + (userMessage.length > 500 ? '...' : '');
         persistenceRenameSession(activeSessionId, sessionName);
-        logger.debug(`VIEWNV-001: Renamed session ${activeSessionId} to: ${sessionName.slice(0, 50)}...`);
+        logger.debug(
+          `VIEWNV-001: Renamed session ${activeSessionId} to: ${sessionName.slice(0, 50)}...`
+        );
       } catch (err) {
         logger.error('Failed to rename session:', err);
       }
     }
 
     // Add user message to conversation
-    setConversation(prev => [...prev, { type: 'user-input', content: userMessage }]);
+    setConversation(prev => [
+      ...prev,
+      { type: 'user-input', content: userMessage },
+    ]);
 
     // REFAC-007: User message persistence now handled by Rust in agent_loop
     // (see persist_user_message in session_manager.rs)
@@ -2665,12 +2857,16 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     try {
       // TOOL-010: Detect thinking level from prompt keywords
       const detectedLevel = detectThinkingLevel(userMessage);
-      
+
       // TUI-054: Compute effective thinking level from base level and detected level
       // Base level comes from /thinking dialog, detected level from prompt keywords
       const baseLevel = rustSnapshot.baseThinkingLevel as JsThinkingLevel;
       const forceOff = hasDisableKeywords(userMessage);
-      const effectiveLevel = computeEffectiveThinkingLevel(baseLevel, detectedLevel, forceOff);
+      const effectiveLevel = computeEffectiveThinkingLevel(
+        baseLevel,
+        detectedLevel,
+        forceOff
+      );
       setDetectedThinkingLevel(effectiveLevel);
 
       // Get thinking config JSON if level is not Off
@@ -2679,7 +2875,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         thinkingConfig = getThinkingConfig(currentProvider, effectiveLevel);
         const label = getThinkingLevelLabel(effectiveLevel);
         if (label) {
-          logger.debug(`Thinking level: ${label} (base=${baseLevel}, detected=${detectedLevel}, forceOff=${forceOff})`);
+          logger.debug(
+            `Thinking level: ${label} (base=${baseLevel}, detected=${detectedLevel}, forceOff=${forceOff})`
+          );
         }
       }
 
@@ -2703,614 +2901,696 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
       // Track current turn's thinking message index (reset after tool calls)
       let currentThinkingIdx = -1;
-      
+
       // This enables detach/attach to work - the background session continues running
       // even when the UI is detached
 
       // Create a promise that resolves when the agent completes (Done chunk received)
       const promptComplete = new Promise<void>((resolve, reject) => {
         // Attach callback for streaming - this receives chunks from the background session
-        sessionAttach(activeSessionId, (_err: Error | null, chunk: StreamChunk) => {
-          if (!chunk) return;
+        sessionAttach(
+          activeSessionId,
+          (_err: Error | null, chunk: StreamChunk) => {
+            if (!chunk) return;
 
-          if (chunk.type === 'Text' && chunk.text) {
-            // Text chunks are batched in Rust for efficiency
-            currentSegment += chunk.text;
-            fullAssistantResponse += chunk.text; // Accumulate for display persistence
-            // Add to content blocks for envelope storage
-            const lastBlock =
-              assistantContentBlocks[assistantContentBlocks.length - 1];
-            if (lastBlock && lastBlock.type === 'text') {
-              lastBlock.text = (lastBlock.text || '') + chunk.text;
-            } else {
-              assistantContentBlocks.push({ type: 'text', text: chunk.text });
-            }
-            // Update streaming message content
-            const segmentSnapshot = currentSegment;
-            setConversation(prev => {
-              const updated = [...prev];
-              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-              if (streamingIdx >= 0) {
-                updated[streamingIdx] = {
-                  ...updated[streamingIdx],
-                  content: segmentSnapshot,
-                };
-              }
-              return updated;
-            });
-          } else if (chunk.type === 'Thinking' && chunk.thinking) {
-            // CLAUDE-THINK: Handle thinking/reasoning content from extended thinking
-            currentThinking += chunk.thinking;
-
-            // Store thinking block for envelope persistence
-            const lastBlock =
-              assistantContentBlocks[assistantContentBlocks.length - 1];
-            if (lastBlock && lastBlock.type === 'thinking') {
-              lastBlock.thinking = (lastBlock.thinking || '') + chunk.thinking;
-            } else {
-              assistantContentBlocks.push({ type: 'thinking', thinking: chunk.thinking });
-            }
-
-            // Update or create thinking message using tracked index
-            const thinkingSnapshot = currentThinking;
-            setConversation(prev => {
-              const updated = [...prev];
-              if (currentThinkingIdx >= 0 && currentThinkingIdx < updated.length) {
-                updated[currentThinkingIdx] = {
-                  ...updated[currentThinkingIdx],
-                  content: `[Thinking]\n${thinkingSnapshot}`,
-                };
+            if (chunk.type === 'Text' && chunk.text) {
+              // Text chunks are batched in Rust for efficiency
+              currentSegment += chunk.text;
+              fullAssistantResponse += chunk.text; // Accumulate for display persistence
+              // Add to content blocks for envelope storage
+              const lastBlock =
+                assistantContentBlocks[assistantContentBlocks.length - 1];
+              if (lastBlock && lastBlock.type === 'text') {
+                lastBlock.text = (lastBlock.text || '') + chunk.text;
               } else {
-                // Insert new thinking block before streaming message
+                assistantContentBlocks.push({ type: 'text', text: chunk.text });
+              }
+              // Update streaming message content
+              const segmentSnapshot = currentSegment;
+              setConversation(prev => {
+                const updated = [...prev];
                 const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-                const newThinking: ConversationMessage = {
-                  type: 'thinking',
-                  content: `[Thinking]\n${thinkingSnapshot}`,
-                };
                 if (streamingIdx >= 0) {
-                  updated.splice(streamingIdx, 0, newThinking);
-                  currentThinkingIdx = streamingIdx;
+                  updated[streamingIdx] = {
+                    ...updated[streamingIdx],
+                    content: segmentSnapshot,
+                  };
+                }
+                return updated;
+              });
+            } else if (chunk.type === 'Thinking' && chunk.thinking) {
+              // CLAUDE-THINK: Handle thinking/reasoning content from extended thinking
+              currentThinking += chunk.thinking;
+
+              // Store thinking block for envelope persistence
+              const lastBlock =
+                assistantContentBlocks[assistantContentBlocks.length - 1];
+              if (lastBlock && lastBlock.type === 'thinking') {
+                lastBlock.thinking =
+                  (lastBlock.thinking || '') + chunk.thinking;
+              } else {
+                assistantContentBlocks.push({
+                  type: 'thinking',
+                  thinking: chunk.thinking,
+                });
+              }
+
+              // Update or create thinking message using tracked index
+              const thinkingSnapshot = currentThinking;
+              setConversation(prev => {
+                const updated = [...prev];
+                if (
+                  currentThinkingIdx >= 0 &&
+                  currentThinkingIdx < updated.length
+                ) {
+                  updated[currentThinkingIdx] = {
+                    ...updated[currentThinkingIdx],
+                    content: `[Thinking]\n${thinkingSnapshot}`,
+                  };
                 } else {
-                  updated.push(newThinking);
-                  currentThinkingIdx = updated.length - 1;
+                  // Insert new thinking block before streaming message
+                  const streamingIdx = updated.findLastIndex(
+                    m => m.isStreaming
+                  );
+                  const newThinking: ConversationMessage = {
+                    type: 'thinking',
+                    content: `[Thinking]\n${thinkingSnapshot}`,
+                  };
+                  if (streamingIdx >= 0) {
+                    updated.splice(streamingIdx, 0, newThinking);
+                    currentThinkingIdx = streamingIdx;
+                  } else {
+                    updated.push(newThinking);
+                    currentThinkingIdx = updated.length - 1;
+                  }
+                }
+                return updated;
+              });
+            } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+              // Reset thinking state - new thinking after tool call needs new block
+              currentThinking = '';
+              currentThinkingIdx = -1;
+
+              // Finalize current streaming message and add tool call (match CLI format)
+              const toolCall = chunk.toolCall;
+
+              // Add tool_use block to content blocks for envelope storage
+              let parsedInput: unknown;
+              try {
+                parsedInput = JSON.parse(toolCall.input);
+              } catch (err) {
+                // Failed to parse tool call input as JSON - indicates malformed data from backend
+                logger.error('Failed to parse tool call input as JSON:', err);
+                parsedInput = toolCall.input;
+              }
+              assistantContentBlocks.push({
+                type: 'tool_use',
+                id: toolCall.id,
+                name: toolCall.name,
+                input: parsedInput,
+              });
+
+              // TUI-038: Store Edit/Write tool inputs for diff display
+              // Tool names are lowercase from the streaming API (edit, write, replace, write_file)
+              if (typeof parsedInput === 'object' && parsedInput !== null) {
+                const inputObj = parsedInput as Record<string, unknown>;
+                const toolNameLower = toolCall.name.toLowerCase();
+                // Handle both Claude (edit) and Gemini (replace) tool names
+                if (
+                  (toolNameLower === 'edit' || toolNameLower === 'replace') &&
+                  typeof inputObj.old_string === 'string' &&
+                  typeof inputObj.new_string === 'string'
+                ) {
+                  // Calculate start line (edit has already been applied, so we search for new_string)
+                  const filePath =
+                    typeof inputObj.file_path === 'string'
+                      ? inputObj.file_path
+                      : undefined;
+                  const startLine = calculateStartLine(
+                    filePath,
+                    inputObj.old_string,
+                    inputObj.new_string
+                  );
+                  pendingToolDiffsRef.current.set(toolCall.id, {
+                    toolName: 'Edit',
+                    toolCallId: toolCall.id,
+                    filePath,
+                    oldString: inputObj.old_string,
+                    newString: inputObj.new_string,
+                    startLine,
+                  });
+                  // Handle both Claude (write) and Gemini (write_file) tool names
+                } else if (
+                  (toolNameLower === 'write' ||
+                    toolNameLower === 'write_file') &&
+                  typeof inputObj.content === 'string'
+                ) {
+                  pendingToolDiffsRef.current.set(toolCall.id, {
+                    toolName: 'Write',
+                    toolCallId: toolCall.id,
+                    content: inputObj.content,
+                  });
                 }
               }
-              return updated;
-            });
-          } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
-            // Reset thinking state - new thinking after tool call needs new block
-            currentThinking = '';
-            currentThinkingIdx = -1;
 
-            // Finalize current streaming message and add tool call (match CLI format)
-            const toolCall = chunk.toolCall;
-
-            // Add tool_use block to content blocks for envelope storage
-            let parsedInput: unknown;
-            try {
-              parsedInput = JSON.parse(toolCall.input);
-            } catch (err) {
-              // Failed to parse tool call input as JSON - indicates malformed data from backend
-              logger.error('Failed to parse tool call input as JSON:', err);
-              parsedInput = toolCall.input;
-            }
-            assistantContentBlocks.push({
-              type: 'tool_use',
-              id: toolCall.id,
-              name: toolCall.name,
-              input: parsedInput,
-            });
-
-            // TUI-038: Store Edit/Write tool inputs for diff display
-            // Tool names are lowercase from the streaming API (edit, write, replace, write_file)
-            if (typeof parsedInput === 'object' && parsedInput !== null) {
-              const inputObj = parsedInput as Record<string, unknown>;
-              const toolNameLower = toolCall.name.toLowerCase();
-              // Handle both Claude (edit) and Gemini (replace) tool names
-              if (
-                (toolNameLower === 'edit' || toolNameLower === 'replace') &&
-                typeof inputObj.old_string === 'string' &&
-                typeof inputObj.new_string === 'string'
-              ) {
-                // Calculate start line (edit has already been applied, so we search for new_string)
-                const filePath = typeof inputObj.file_path === 'string' ? inputObj.file_path : undefined;
-                const startLine = calculateStartLine(filePath, inputObj.old_string, inputObj.new_string);
-                pendingToolDiffsRef.current.set(toolCall.id, {
-                  toolName: 'Edit',
+              // TUI-037: Format tool header in Claude Code style: ● ToolName(args)
+              // Show ALL parameters for full visibility into tool calls
+              let argsDisplay = '';
+              if (typeof parsedInput === 'object' && parsedInput !== null) {
+                const inputObj = parsedInput as Record<string, unknown>;
+                argsDisplay = extractToolArgsDisplay(toolCall.name, inputObj);
+              } else if (toolCall.input) {
+                argsDisplay = toolCall.input;
+              }
+              const toolContent = formatToolHeader(toolCall.name, argsDisplay);
+              const toolContentSnapshot = toolContent;
+              setConversation(prev => {
+                const updated = [...prev];
+                // TUI-037: Remove empty streaming assistant messages before adding tool call
+                while (
+                  updated.length > 0 &&
+                  updated[updated.length - 1].type === 'assistant-text' &&
+                  updated[updated.length - 1].isStreaming &&
+                  !updated[updated.length - 1].content
+                ) {
+                  updated.pop();
+                }
+                // Mark any remaining streaming message as complete
+                const streamingIdx = updated.findLastIndex(m => m.isStreaming);
+                if (streamingIdx >= 0) {
+                  updated[streamingIdx] = {
+                    ...updated[streamingIdx],
+                    isStreaming: false,
+                  };
+                }
+                // Add tool call message
+                updated.push({
+                  type: 'tool-call',
+                  content: toolContentSnapshot,
                   toolCallId: toolCall.id,
-                  filePath,
-                  oldString: inputObj.old_string,
-                  newString: inputObj.new_string,
-                  startLine,
                 });
-                // Handle both Claude (write) and Gemini (write_file) tool names
-              } else if (
-                (toolNameLower === 'write' || toolNameLower === 'write_file') &&
-                typeof inputObj.content === 'string'
-              ) {
-                pendingToolDiffsRef.current.set(toolCall.id, {
-                  toolName: 'Write',
-                  toolCallId: toolCall.id,
-                  content: inputObj.content,
-                });
-              }
-            }
-
-            // TUI-037: Format tool header in Claude Code style: ● ToolName(args)
-            // Show ALL parameters for full visibility into tool calls
-            let argsDisplay = '';
-            if (typeof parsedInput === 'object' && parsedInput !== null) {
-              const inputObj = parsedInput as Record<string, unknown>;
-              argsDisplay = extractToolArgsDisplay(toolCall.name, inputObj);
-            } else if (toolCall.input) {
-              argsDisplay = toolCall.input;
-            }
-            const toolContent = formatToolHeader(toolCall.name, argsDisplay);
-            const toolContentSnapshot = toolContent;
-            setConversation(prev => {
-              const updated = [...prev];
-              // TUI-037: Remove empty streaming assistant messages before adding tool call
-              while (
-                updated.length > 0 &&
-                updated[updated.length - 1].type === 'assistant-text' &&
-                updated[updated.length - 1].isStreaming &&
-                !updated[updated.length - 1].content
-              ) {
-                updated.pop();
-              }
-              // Mark any remaining streaming message as complete
-              const streamingIdx = updated.findLastIndex(m => m.isStreaming);
-              if (streamingIdx >= 0) {
-                updated[streamingIdx] = {
-                  ...updated[streamingIdx],
-                  isStreaming: false,
-                };
-              }
-              // Add tool call message
-              updated.push({
-                type: 'tool-call',
-                content: toolContentSnapshot,
-                toolCallId: toolCall.id,
+                return updated;
               });
-              return updated;
-            });
-          } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
-            // Show tool result in CLI format, then start new streaming message
-            const result = chunk.toolResult;
+            } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
+              // Show tool result in CLI format, then start new streaming message
+              const result = chunk.toolResult;
 
-            // REFAC-007: Assistant and tool_result persistence now handled by Rust
-            // - Assistant messages persisted on Done/Error/Interrupted in BackgroundOutput::emit()
-            // - Tool results persisted immediately in BackgroundOutput::emit()
-            // (see persist_assistant_message and persist_tool_result_internal in session_manager.rs)
-            
-            // Clear local accumulator (Rust now owns persistence)
-            assistantContentBlocks.length = 0;
+              // REFAC-007: Assistant and tool_result persistence now handled by Rust
+              // - Assistant messages persisted on Done/Error/Interrupted in BackgroundOutput::emit()
+              // - Tool results persisted immediately in BackgroundOutput::emit()
+              // (see persist_assistant_message and persist_tool_result_internal in session_manager.rs)
 
-            // REFAC-007: Tool result persistence now handled by Rust in BackgroundOutput::emit()
-            // (see persist_tool_result_internal in session_manager.rs)
+              // Clear local accumulator (Rust now owns persistence)
+              assistantContentBlocks.length = 0;
 
-            // TUI-037 + TUI-038: Sanitize and format with collapsed output style
-            // Check for Edit/Write tool diff display
-            const pendingDiff = pendingToolDiffsRef.current.get(
-              result.toolCallId
-            );
-            let toolResultContent: string;
-            let toolResultFullContent: string; // TUI-043: Full content for expansion
-            // Track if this is an error result for styling
-            const isErrorResult = result.isError;
+              // REFAC-007: Tool result persistence now handled by Rust in BackgroundOutput::emit()
+              // (see persist_tool_result_internal in session_manager.rs)
 
-            if (pendingDiff) {
-              // TUI-038: Format as diff for Edit/Write tools
-              pendingToolDiffsRef.current.delete(result.toolCallId); // Clean up
-              if (
-                pendingDiff.toolName === 'Edit' &&
-                pendingDiff.oldString !== undefined &&
-                pendingDiff.newString !== undefined
-              ) {
-                const diffLines = formatEditDiff(
-                  pendingDiff.oldString,
-                  pendingDiff.newString
-                );
-                // Use pre-calculated startLine (or fallback to 1)
-                const startLine = pendingDiff.startLine ?? 1;
-                toolResultContent = formatDiffForDisplay(diffLines, DIFF_COLLAPSED_LINES, startLine);
-                // TUI-043: Full content shows all diff lines
-                toolResultFullContent = formatDiffForDisplay(diffLines, diffLines.length, startLine);
-              } else if (
-                pendingDiff.toolName === 'Write' &&
-                pendingDiff.content !== undefined
-              ) {
-                const diffLines = formatWriteDiff(pendingDiff.content);
-                toolResultContent = formatDiffForDisplay(diffLines);
-                // TUI-043: Full content shows all diff lines
-                toolResultFullContent = formatDiffForDisplay(diffLines, diffLines.length);
+              // TUI-037 + TUI-038: Sanitize and format with collapsed output style
+              // Check for Edit/Write tool diff display
+              const pendingDiff = pendingToolDiffsRef.current.get(
+                result.toolCallId
+              );
+              let toolResultContent: string;
+              let toolResultFullContent: string; // TUI-043: Full content for expansion
+              // Track if this is an error result for styling
+              const isErrorResult = result.isError;
+
+              if (pendingDiff) {
+                // TUI-038: Format as diff for Edit/Write tools
+                pendingToolDiffsRef.current.delete(result.toolCallId); // Clean up
+                if (
+                  pendingDiff.toolName === 'Edit' &&
+                  pendingDiff.oldString !== undefined &&
+                  pendingDiff.newString !== undefined
+                ) {
+                  const diffLines = formatEditDiff(
+                    pendingDiff.oldString,
+                    pendingDiff.newString
+                  );
+                  // Use pre-calculated startLine (or fallback to 1)
+                  const startLine = pendingDiff.startLine ?? 1;
+                  toolResultContent = formatDiffForDisplay(
+                    diffLines,
+                    DIFF_COLLAPSED_LINES,
+                    startLine
+                  );
+                  // TUI-043: Full content shows all diff lines
+                  toolResultFullContent = formatDiffForDisplay(
+                    diffLines,
+                    diffLines.length,
+                    startLine
+                  );
+                } else if (
+                  pendingDiff.toolName === 'Write' &&
+                  pendingDiff.content !== undefined
+                ) {
+                  const diffLines = formatWriteDiff(pendingDiff.content);
+                  toolResultContent = formatDiffForDisplay(diffLines);
+                  // TUI-043: Full content shows all diff lines
+                  toolResultFullContent = formatDiffForDisplay(
+                    diffLines,
+                    diffLines.length
+                  );
+                } else {
+                  // Fallback to normal formatting
+                  const sanitizedContent = result.content.replace(/\t/g, '  ');
+                  toolResultContent = formatCollapsedOutput(sanitizedContent);
+                  // TUI-043: Full content without truncation
+                  toolResultFullContent = formatFullOutput(sanitizedContent);
+                }
               } else {
-                // Fallback to normal formatting
+                // Normal tool result formatting
                 const sanitizedContent = result.content.replace(/\t/g, '  ');
                 toolResultContent = formatCollapsedOutput(sanitizedContent);
                 // TUI-043: Full content without truncation
                 toolResultFullContent = formatFullOutput(sanitizedContent);
               }
-            } else {
-              // Normal tool result formatting
-              const sanitizedContent = result.content.replace(/\t/g, '  ');
-              toolResultContent = formatCollapsedOutput(sanitizedContent);
-              // TUI-043: Full content without truncation
-              toolResultFullContent = formatFullOutput(sanitizedContent);
-            }
-            currentSegment = ''; // Reset for next text segment
+              currentSegment = ''; // Reset for next text segment
 
-            // TOOL-011 + TUI-037: Combine tool header with result as ONE message
-            // First output line has NO L prefix (starts tree), subsequent lines have L prefix
-            // formatCollapsedOutput already applies this pattern via formatWithTreeConnectors
+              // TOOL-011 + TUI-037: Combine tool header with result as ONE message
+              // First output line has NO L prefix (starts tree), subsequent lines have L prefix
+              // formatCollapsedOutput already applies this pattern via formatWithTreeConnectors
 
-            if (hasStreamedToolProgress) {
-              hasStreamedToolProgress = false; // Reset for next tool call
-              setConversation(prev => {
-                const updated = [...prev];
-                // Find tool header and combine with result
-                for (let i = updated.length - 1; i >= 0; i--) {
-                  const msg = updated[i];
-                  // Remove [Tool output] messages (streaming placeholder)
-                  if (
-                    msg.type === 'tool-call' &&
-                    msg.content.includes('[Tool output]')
-                  ) {
-                    updated.splice(i, 1);
-                    continue;
+              if (hasStreamedToolProgress) {
+                hasStreamedToolProgress = false; // Reset for next tool call
+                setConversation(prev => {
+                  const updated = [...prev];
+                  // Find tool header and combine with result
+                  for (let i = updated.length - 1; i >= 0; i--) {
+                    const msg = updated[i];
+                    // Remove [Tool output] messages (streaming placeholder)
+                    if (
+                      msg.type === 'tool-call' &&
+                      msg.content.includes('[Tool output]')
+                    ) {
+                      updated.splice(i, 1);
+                      continue;
+                    }
+                    // TUI-037: Combine tool header with formatted result
+                    // TUI-043: Store both collapsed and full content
+                    if (
+                      msg.type === 'tool-call' &&
+                      msg.content.startsWith('●')
+                    ) {
+                      const headerLine = msg.content.split('\n')[0];
+                      // Don't add newline if result is empty
+                      const hasContent =
+                        toolResultContent && toolResultContent.trim();
+                      updated[i] = {
+                        ...msg,
+                        content: hasContent
+                          ? `${headerLine}\n${toolResultContent}`
+                          : headerLine,
+                        fullContent: hasContent
+                          ? `${headerLine}\n${toolResultFullContent}`
+                          : headerLine,
+                        isError: isErrorResult,
+                      };
+                      break;
+                    }
                   }
-                  // TUI-037: Combine tool header with formatted result
-                  // TUI-043: Store both collapsed and full content
-                  if (msg.type === 'tool-call' && msg.content.startsWith('●')) {
-                    const headerLine = msg.content.split('\n')[0];
-                    // Don't add newline if result is empty
-                    const hasContent = toolResultContent && toolResultContent.trim();
-                    updated[i] = {
-                      ...msg,
-                      content: hasContent ? `${headerLine}\n${toolResultContent}` : headerLine,
-                      fullContent: hasContent ? `${headerLine}\n${toolResultFullContent}` : headerLine,
-                      isError: isErrorResult,
-                    };
-                    break;
+                  return [
+                    ...updated,
+                    // Add new streaming placeholder for AI continuation
+                    {
+                      type: 'assistant-text' as const,
+                      content: '',
+                      isStreaming: true,
+                    },
+                  ];
+                });
+              } else {
+                // Non-streaming: find the last tool header and combine with result
+                setConversation(prev => {
+                  const updated = [...prev];
+                  // Find tool header (search backwards)
+                  for (let i = updated.length - 1; i >= 0; i--) {
+                    const msg = updated[i];
+                    // TUI-043: Store both collapsed and full content
+                    if (
+                      msg.type === 'tool-call' &&
+                      msg.content.startsWith('●')
+                    ) {
+                      const headerLine = msg.content.split('\n')[0];
+                      // Don't add newline if result is empty
+                      const hasContent =
+                        toolResultContent && toolResultContent.trim();
+                      updated[i] = {
+                        ...msg,
+                        content: hasContent
+                          ? `${headerLine}\n${toolResultContent}`
+                          : headerLine,
+                        fullContent: hasContent
+                          ? `${headerLine}\n${toolResultFullContent}`
+                          : headerLine,
+                        isError: isErrorResult,
+                      };
+                      break;
+                    }
                   }
-                }
-                return [
-                  ...updated,
-                  // Add new streaming placeholder for AI continuation
-                  {
-                    type: 'assistant-text' as const,
-                    content: '',
-                    isStreaming: true,
-                  },
-                ];
-              });
-            } else {
-              // Non-streaming: find the last tool header and combine with result
-              setConversation(prev => {
-                const updated = [...prev];
-                // Find tool header (search backwards)
-                for (let i = updated.length - 1; i >= 0; i--) {
-                  const msg = updated[i];
-                  // TUI-043: Store both collapsed and full content
-                  if (msg.type === 'tool-call' && msg.content.startsWith('●')) {
-                    const headerLine = msg.content.split('\n')[0];
-                    // Don't add newline if result is empty
-                    const hasContent = toolResultContent && toolResultContent.trim();
-                    updated[i] = {
-                      ...msg,
-                      content: hasContent ? `${headerLine}\n${toolResultContent}` : headerLine,
-                      fullContent: hasContent ? `${headerLine}\n${toolResultFullContent}` : headerLine,
-                      isError: isErrorResult,
-                    };
-                    break;
-                  }
-                }
-                return [
-                  ...updated,
-                  // Add new streaming placeholder for AI continuation
-                  {
-                    type: 'assistant-text' as const,
-                    content: '',
-                    isStreaming: true,
-                  },
-                ];
-              });
-            }
-          } else if (chunk.type === 'Done') {
-            // Mark streaming complete and remove empty trailing assistant messages
-            // TUI-044: Also apply markdown table formatting to completed assistant messages
-            setConversation(prev => {
-              const updated = [...prev];
-              // Remove empty streaming assistant messages at the end
-              while (
-                updated.length > 0 &&
-                updated[updated.length - 1].type === 'assistant-text' &&
-                updated[updated.length - 1].isStreaming &&
-                !updated[updated.length - 1].content
-              ) {
-                updated.pop();
-              }
-              // Mark any remaining streaming message as complete
-              // TUI-044: Apply markdown table formatting when marking complete
-              const lastAssistantIdx = updated.findLastIndex(
-                m => m.type === 'assistant-text' && m.isStreaming
-              );
-              if (lastAssistantIdx >= 0) {
-                const originalContent = updated[lastAssistantIdx].content;
-                const formattedContent = formatMarkdownTables(originalContent);
-                updated[lastAssistantIdx] = {
-                  ...updated[lastAssistantIdx],
-                  content: formattedContent,
-                  isStreaming: false,
-                };
-              }
-              return updated;
-            });
-            
-            refreshRustState(activeSessionId);
-
-            // REFAC-007: Token state persistence now handled by Rust
-            // (Rust persists token state when streaming completes - TODO: implement in session_manager.rs)
-
-            // NAPI-009: Resolve the promise when agent completes
-            resolve();
-          } else if (chunk.type === 'SessionStateChange') {
-            // NAPI-010: Internal state change - update state machine, do NOT add to conversation
-            
-            // UX-002: Use unified compaction hook for ALL compaction state
-            // This ensures consistent behavior across manual, hook-triggered, and emergency compaction
-            // NOTE: Use compactionRef.current to avoid stale closure issues in this callback
-            if (chunk.state === 'Compacting') {
-              const progress = sessionGetCompactionProgress(activeSessionId);
-              compactionRef.current.startCompaction('hook-triggered', activeSessionId, progress ?? undefined);
-            } else {
-              // Non-compacting state - end compaction tracking
-              compactionRef.current.endCompaction();
-            }
-            
-            refreshRustState(activeSessionId);
-          } else if (chunk.type === 'CompactionComplete') {
-            // UX-002: Structured compaction result - extract percentage directly, no string parsing!
-            const result = chunk.compactionResult;
-            setCompactionReduction(Math.round(result.compressionRatio));
-            // End compaction via unified hook (use ref for callback safety)
-            compactionRef.current.endCompaction();
-            // Don't add to conversation - compaction feedback is via input area indicator
-          } else if (chunk.type === 'UserNotification') {
-            // NAPI-010: User-facing notification - display in conversation
-            // UX-002: Compaction success messages now come via CompactionComplete chunk (above)
-            // Only failure messages come through UserNotification
-            const statusMessage = chunk.message;
-            // Filter compaction failure messages from conversation (they show in retry dialog)
-            const isCompactionFailure = /^Compaction failed:/.test(statusMessage);
-            if (!isCompactionFailure) {
-              setConversation(prev => [
-                ...prev,
-                { type: 'status', content: statusMessage },
-              ]);
-            }
-          } else if (chunk.type === 'Interrupted') {
-            // Agent was interrupted by user
-            // TUI-037: Only append to tool if it's still streaming (no collapse indicator)
-            // If tool has collapse indicator, it completed - interrupt is for AI continuation
-            setConversation(prev => {
-              const updated = [...prev];
-
-              // First, remove empty streaming assistant messages
-              while (
-                updated.length > 0 &&
-                updated[updated.length - 1].type === 'assistant-text' &&
-                updated[updated.length - 1].isStreaming &&
-                !updated[updated.length - 1].content
-              ) {
-                updated.pop();
-              }
-
-              // Find the last tool message
-              let handledInterrupt = false;
-              for (let i = updated.length - 1; i >= 0; i--) {
-                const msg = updated[i];
-                if (msg.type === 'tool-call' && msg.content.startsWith('●')) {
-                  // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
-                  if (!msg.content.includes('(select turn to /expand)')) {
-                    updated[i] = {
-                      ...msg,
-                      content: `${msg.content}\nL ⚠ Interrupted`,
-                    };
-                    handledInterrupt = true;
-                  }
-                  // If tool has collapse indicator, it completed - don't append
-                  break;
-                }
-              }
-
-              // If no tool was streaming, add interrupt as status (not appended to anything)
-              if (!handledInterrupt) {
-                updated.push({
-                  type: 'status' as const,
-                  content: '⚠ Interrupted',
+                  return [
+                    ...updated,
+                    // Add new streaming placeholder for AI continuation
+                    {
+                      type: 'assistant-text' as const,
+                      content: '',
+                      isStreaming: true,
+                    },
+                  ];
                 });
               }
+            } else if (chunk.type === 'Done') {
+              // Mark streaming complete and remove empty trailing assistant messages
+              // TUI-044: Also apply markdown table formatting to completed assistant messages
+              setConversation(prev => {
+                const updated = [...prev];
+                // Remove empty streaming assistant messages at the end
+                while (
+                  updated.length > 0 &&
+                  updated[updated.length - 1].type === 'assistant-text' &&
+                  updated[updated.length - 1].isStreaming &&
+                  !updated[updated.length - 1].content
+                ) {
+                  updated.pop();
+                }
+                // Mark any remaining streaming message as complete
+                // TUI-044: Apply markdown table formatting when marking complete
+                const lastAssistantIdx = updated.findLastIndex(
+                  m => m.type === 'assistant-text' && m.isStreaming
+                );
+                if (lastAssistantIdx >= 0) {
+                  const originalContent = updated[lastAssistantIdx].content;
+                  const formattedContent =
+                    formatMarkdownTables(originalContent);
+                  updated[lastAssistantIdx] = {
+                    ...updated[lastAssistantIdx],
+                    content: formattedContent,
+                    isStreaming: false,
+                  };
+                }
+                return updated;
+              });
 
-              // Mark any remaining streaming message as complete
-              const lastAssistantIdx = updated.findLastIndex(
-                m => m.type === 'assistant-text' && m.isStreaming
-              );
-              if (lastAssistantIdx >= 0) {
-                updated[lastAssistantIdx] = {
-                  ...updated[lastAssistantIdx],
-                  isStreaming: false,
-                };
+              refreshRustState(activeSessionId);
+
+              // REFAC-007: Token state persistence now handled by Rust
+              // (Rust persists token state when streaming completes - TODO: implement in session_manager.rs)
+
+              // NAPI-009: Resolve the promise when agent completes
+              resolve();
+            } else if (chunk.type === 'SessionStateChange') {
+              // NAPI-010: Internal state change - update state machine, do NOT add to conversation
+
+              // UX-002: Use unified compaction hook for ALL compaction state
+              // This ensures consistent behavior across manual, hook-triggered, and emergency compaction
+              // NOTE: Use compactionRef.current to avoid stale closure issues in this callback
+              if (chunk.state === 'Compacting') {
+                const progress = sessionGetCompactionProgress(activeSessionId);
+                compactionRef.current.startCompaction(
+                  'hook-triggered',
+                  activeSessionId,
+                  progress ?? undefined
+                );
+              } else {
+                // Non-compacting state - end compaction tracking
+                compactionRef.current.endCompaction();
               }
-              return updated;
-            });
-          } else if (chunk.type === 'TokenUpdate' || chunk.type === 'ContextFillUpdate') {
-            // TUI-049: Use centralized helper for token state updates (DRY)
-            updateTokenStateFromChunk(chunk);
-          } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
-            // TOOL-011 + TUI-037: Stream tool execution progress with rolling window
-            // Display the output chunk in a fixed-height window (last N lines)
-            hasStreamedToolProgress = true;
-            // Mark stderr output with special prefix for red rendering
-            const isStderr = chunk.toolProgress.isStderr;
-            const rawChunk = chunk.toolProgress.outputChunk;
-            // Prefix each line of stderr with marker for visual distinction
-            const outputChunk = isStderr
-              ? rawChunk.split('\n').map(line => line ? `⚠stderr⚠${line}` : line).join('\n')
-              : rawChunk;
-            setConversation(prev => {
-              const updated = [...prev];
-              const lastIdx = updated.length - 1;
-              if (lastIdx >= 0) {
-                const lastMsg = updated[lastIdx];
-                // TUI-037: If last message is a tool header (●), append streaming output with tree connectors
-                if (
-                  lastMsg.type === 'tool-call' &&
-                  lastMsg.content.startsWith('●')
+
+              refreshRustState(activeSessionId);
+            } else if (chunk.type === 'CompactionComplete') {
+              // UX-002: Structured compaction result - extract percentage directly, no string parsing!
+              const result = chunk.compactionResult;
+              setCompactionReduction(Math.round(result.compressionRatio));
+              // End compaction via unified hook (use ref for callback safety)
+              compactionRef.current.endCompaction();
+              // Don't add to conversation - compaction feedback is via input area indicator
+            } else if (chunk.type === 'UserNotification') {
+              // NAPI-010: User-facing notification - display in conversation
+              // UX-002: Compaction success messages now come via CompactionComplete chunk (above)
+              // Only failure messages come through UserNotification
+              const statusMessage = chunk.message;
+              // Filter compaction failure messages from conversation (they show in retry dialog)
+              const isCompactionFailure = /^Compaction failed:/.test(
+                statusMessage
+              );
+              if (!isCompactionFailure) {
+                setConversation(prev => [
+                  ...prev,
+                  { type: 'status', content: statusMessage },
+                ]);
+              }
+            } else if (chunk.type === 'Interrupted') {
+              // Agent was interrupted by user
+              // TUI-037: Only append to tool if it's still streaming (no collapse indicator)
+              // If tool has collapse indicator, it completed - interrupt is for AI continuation
+              setConversation(prev => {
+                const updated = [...prev];
+
+                // First, remove empty streaming assistant messages
+                while (
+                  updated.length > 0 &&
+                  updated[updated.length - 1].type === 'assistant-text' &&
+                  updated[updated.length - 1].isStreaming &&
+                  !updated[updated.length - 1].content
                 ) {
-                  // Separate header from streaming content
-                  const lines = lastMsg.content.split('\n');
-                  const header = lines[0]; // ● ToolName(args)
-                  // Extract raw output by removing tree prefixes (L or indent)
-                  const existingOutput = lines
-                    .slice(1)
-                    .map(l => {
-                      if (l.startsWith('L ')) return l.slice(2);
-                      if (l.startsWith('  ')) return l.slice(2);
-                      return l;
-                    })
-                    .join('\n');
-                  const newOutput = existingOutput + outputChunk;
-                  // Apply streaming window - keep only last N lines of output
-                  const windowedOutput = createStreamingWindow(newOutput);
-                  // Format with tree connectors: L on first line, indent on rest
-                  const windowedLines = windowedOutput.split('\n');
-                  const formattedOutput = windowedLines
-                    .map((l, i) => {
-                      if (i === 0) return `L ${l}`;
-                      return `  ${l}`;
-                    })
-                    .join('\n');
-                  updated[lastIdx] = {
-                    ...lastMsg,
-                    content: `${header}\n${formattedOutput}`,
-                  };
-                } else if (
-                  lastMsg.type === 'tool-call' &&
-                  lastMsg.content.includes('[Tool output]')
-                ) {
-                  // Already showing tool output, append and apply window
-                  const existingContent = lastMsg.content.replace(
-                    '[Tool output]\n',
-                    ''
-                  );
-                  const newOutput = existingContent + outputChunk;
-                  const windowedOutput = createStreamingWindow(newOutput);
-                  updated[lastIdx] = {
-                    ...lastMsg,
-                    content: `[Tool output]\n${windowedOutput}`,
-                  };
-                } else {
-                  // Create new tool output message
+                  updated.pop();
+                }
+
+                // Find the last tool message
+                let handledInterrupt = false;
+                for (let i = updated.length - 1; i >= 0; i--) {
+                  const msg = updated[i];
+                  if (msg.type === 'tool-call' && msg.content.startsWith('●')) {
+                    // Only append if tool is still streaming (no collapse indicator = no ToolResult yet)
+                    if (!msg.content.includes('(select turn to /expand)')) {
+                      updated[i] = {
+                        ...msg,
+                        content: `${msg.content}\nL ⚠ Interrupted`,
+                      };
+                      handledInterrupt = true;
+                    }
+                    // If tool has collapse indicator, it completed - don't append
+                    break;
+                  }
+                }
+
+                // If no tool was streaming, add interrupt as status (not appended to anything)
+                if (!handledInterrupt) {
                   updated.push({
-                    type: 'tool-call',
-                    content: `[Tool output]\n${outputChunk}`,
+                    type: 'status' as const,
+                    content: '⚠ Interrupted',
                   });
                 }
-              }
-              return updated;
-            });
-          } else if (chunk.type === 'Error' && chunk.error) {
-            // Log the error
-            logger.error(`Stream error: ${chunk.error}`);
 
-            // Show error in modal for user visibility
-            setError(chunk.error);
-
-            // API error occurred - clean up streaming placeholder and show error in conversation
-            setConversation(prev => {
-              const updated = [...prev];
-              // Remove empty streaming assistant messages at the end
-              while (
-                updated.length > 0 &&
-                updated[updated.length - 1].type === 'assistant-text' &&
-                updated[updated.length - 1].isStreaming &&
-                !updated[updated.length - 1].content
-              ) {
-                updated.pop();
-              }
-              // Add error as status message so it's visible in conversation
-              updated.push({
-                type: 'status',
-                content: `API Error: ${chunk.error}`,
-              });
-              return updated;
-            });
-            // NAPI-009: Reject the promise on error
-            reject(new Error(chunk.error));
-          } else if (chunk.type === 'FspecCommandRequest' && chunk.fspecRequest) {
-            // CODE-009: Handle fspec command request - TypeScript executes and sends result back to Rust
-            const command = chunk.fspecRequest.command;
-            const argsJson = chunk.fspecRequest.argsJson;
-            const projectRoot = chunk.fspecRequest.projectRoot;
-            const toolCallId = chunk.fspecRequest.toolCallId;
-
-            logger.warn(`[FSPEC_TS] FspecCommandRequest received in handleSubmit callback: command=${command}`);
-
-            // CODE-009: Execute fspec command asynchronously via TypeScript callback
-            (async () => {
-              try {
-                logger.warn(`[FSPEC_TS] Calling fspecCallback(${command})...`);
-                const resultJson = await fspecCallback(command, argsJson, projectRoot);
-                logger.warn(`[FSPEC_TS] fspecCallback returned raw: ${resultJson}`);
-                
-                const parsed = JSON.parse(resultJson) as { 
-                  success?: boolean; 
-                  data?: string; 
-                  error?: string; 
-                  systemReminders?: string[];
-                };
-                logger.warn(`[FSPEC_TS] Parsed result: success=${parsed.success}, error=${parsed.error}`);
-
-
-                // Build the system reminder from captured reminders
-                let systemReminder: string | undefined = undefined;
-                if (parsed.systemReminders && parsed.systemReminders.length > 0) {
-                  systemReminder = parsed.systemReminders.map(r => 
-                    `<system-reminder>\n${r}\n</system-reminder>`
-                  ).join('\n');
+                // Mark any remaining streaming message as complete
+                const lastAssistantIdx = updated.findLastIndex(
+                  m => m.type === 'assistant-text' && m.isStreaming
+                );
+                if (lastAssistantIdx >= 0) {
+                  updated[lastAssistantIdx] = {
+                    ...updated[lastAssistantIdx],
+                    isStreaming: false,
+                  };
                 }
+                return updated;
+              });
+            } else if (
+              chunk.type === 'TokenUpdate' ||
+              chunk.type === 'ContextFillUpdate'
+            ) {
+              // TUI-049: Use centralized helper for token state updates (DRY)
+              updateTokenStateFromChunk(chunk);
+            } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
+              // TOOL-011 + TUI-037: Stream tool execution progress with rolling window
+              // Display the output chunk in a fixed-height window (last N lines)
+              hasStreamedToolProgress = true;
+              // Mark stderr output with special prefix for red rendering
+              const isStderr = chunk.toolProgress.isStderr;
+              const rawChunk = chunk.toolProgress.outputChunk;
+              // Prefix each line of stderr with marker for visual distinction
+              const outputChunk = isStderr
+                ? rawChunk
+                    .split('\n')
+                    .map(line => (line ? `⚠stderr⚠${line}` : line))
+                    .join('\n')
+                : rawChunk;
+              setConversation(prev => {
+                const updated = [...prev];
+                const lastIdx = updated.length - 1;
+                if (lastIdx >= 0) {
+                  const lastMsg = updated[lastIdx];
+                  // TUI-037: If last message is a tool header (●), append streaming output with tree connectors
+                  if (
+                    lastMsg.type === 'tool-call' &&
+                    lastMsg.content.startsWith('●')
+                  ) {
+                    // Separate header from streaming content
+                    const lines = lastMsg.content.split('\n');
+                    const header = lines[0]; // ● ToolName(args)
+                    // Extract raw output by removing tree prefixes (L or indent)
+                    const existingOutput = lines
+                      .slice(1)
+                      .map(l => {
+                        if (l.startsWith('L ')) return l.slice(2);
+                        if (l.startsWith('  ')) return l.slice(2);
+                        return l;
+                      })
+                      .join('\n');
+                    const newOutput = existingOutput + outputChunk;
+                    // Apply streaming window - keep only last N lines of output
+                    const windowedOutput = createStreamingWindow(newOutput);
+                    // Format with tree connectors: L on first line, indent on rest
+                    const windowedLines = windowedOutput.split('\n');
+                    const formattedOutput = windowedLines
+                      .map((l, i) => {
+                        if (i === 0) return `L ${l}`;
+                        return `  ${l}`;
+                      })
+                      .join('\n');
+                    updated[lastIdx] = {
+                      ...lastMsg,
+                      content: `${header}\n${formattedOutput}`,
+                    };
+                  } else if (
+                    lastMsg.type === 'tool-call' &&
+                    lastMsg.content.includes('[Tool output]')
+                  ) {
+                    // Already showing tool output, append and apply window
+                    const existingContent = lastMsg.content.replace(
+                      '[Tool output]\n',
+                      ''
+                    );
+                    const newOutput = existingContent + outputChunk;
+                    const windowedOutput = createStreamingWindow(newOutput);
+                    updated[lastIdx] = {
+                      ...lastMsg,
+                      content: `[Tool output]\n${windowedOutput}`,
+                    };
+                  } else {
+                    // Create new tool output message
+                    updated.push({
+                      type: 'tool-call',
+                      content: `[Tool output]\n${outputChunk}`,
+                    });
+                  }
+                }
+                return updated;
+              });
+            } else if (chunk.type === 'Error' && chunk.error) {
+              // Log the error
+              logger.error(`Stream error: ${chunk.error}`);
 
-                logger.warn(`[FSPEC_TS] Calling sessionSendFspecResult: success=${parsed.success}`);
+              // Show error in modal for user visibility
+              setError(chunk.error);
 
-                // CODE-009: Send result back to Rust via NAPI
-                // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
-                sessionSendFspecResult(activeSessionId, {
-                  success: parsed.success ?? true,
-                  data: parsed.data ?? resultJson,
-                  error: parsed.error ?? undefined,
-                  systemReminder,
-                  toolCallId,
+              // API error occurred - clean up streaming placeholder and show error in conversation
+              setConversation(prev => {
+                const updated = [...prev];
+                // Remove empty streaming assistant messages at the end
+                while (
+                  updated.length > 0 &&
+                  updated[updated.length - 1].type === 'assistant-text' &&
+                  updated[updated.length - 1].isStreaming &&
+                  !updated[updated.length - 1].content
+                ) {
+                  updated.pop();
+                }
+                // Add error as status message so it's visible in conversation
+                updated.push({
+                  type: 'status',
+                  content: `API Error: ${chunk.error}`,
                 });
-                logger.warn(`[FSPEC_TS] sessionSendFspecResult completed`);
-              } catch (err) {
-                const error = err as Error;
-                logger.error(`[FSPEC_TS] Fspec command ${command} failed:`, error.message);
-                
-                // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
-                sessionSendFspecResult(activeSessionId, {
-                  success: false,
-                  data: '',
-                  error: error.message,
-                  systemReminder: undefined,
-                  toolCallId,
-                });
-              }
-            })();
+                return updated;
+              });
+              // NAPI-009: Reject the promise on error
+              reject(new Error(chunk.error));
+            } else if (
+              chunk.type === 'FspecCommandRequest' &&
+              chunk.fspecRequest
+            ) {
+              // CODE-009: Handle fspec command request - TypeScript executes and sends result back to Rust
+              const command = chunk.fspecRequest.command;
+              const argsJson = chunk.fspecRequest.argsJson;
+              const projectRoot = chunk.fspecRequest.projectRoot;
+              const toolCallId = chunk.fspecRequest.toolCallId;
+
+              logger.warn(
+                `[FSPEC_TS] FspecCommandRequest received in handleSubmit callback: command=${command}`
+              );
+
+              // CODE-009: Execute fspec command asynchronously via TypeScript callback
+              (async () => {
+                try {
+                  logger.warn(
+                    `[FSPEC_TS] Calling fspecCallback(${command})...`
+                  );
+                  const resultJson = await fspecCallback(
+                    command,
+                    argsJson,
+                    projectRoot
+                  );
+                  logger.warn(
+                    `[FSPEC_TS] fspecCallback returned raw: ${resultJson}`
+                  );
+
+                  const parsed = JSON.parse(resultJson) as {
+                    success?: boolean;
+                    data?: string;
+                    error?: string;
+                    systemReminders?: string[];
+                  };
+                  logger.warn(
+                    `[FSPEC_TS] Parsed result: success=${parsed.success}, error=${parsed.error}`
+                  );
+
+                  // Build the system reminder from captured reminders
+                  let systemReminder: string | undefined = undefined;
+                  if (
+                    parsed.systemReminders &&
+                    parsed.systemReminders.length > 0
+                  ) {
+                    systemReminder = parsed.systemReminders
+                      .map(r => `<system-reminder>\n${r}\n</system-reminder>`)
+                      .join('\n');
+                  }
+
+                  logger.warn(
+                    `[FSPEC_TS] Calling sessionSendFspecResult: success=${parsed.success}`
+                  );
+
+                  // CODE-009: Send result back to Rust via NAPI
+                  // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
+                  sessionSendFspecResult(activeSessionId, {
+                    success: parsed.success ?? true,
+                    data: parsed.data ?? resultJson,
+                    error: parsed.error ?? undefined,
+                    systemReminder,
+                    toolCallId,
+                  });
+                  logger.warn(`[FSPEC_TS] sessionSendFspecResult completed`);
+                } catch (err) {
+                  const error = err as Error;
+                  logger.error(
+                    `[FSPEC_TS] Fspec command ${command} failed:`,
+                    error.message
+                  );
+
+                  // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
+                  sessionSendFspecResult(activeSessionId, {
+                    success: false,
+                    data: '',
+                    error: error.message,
+                    systemReminder: undefined,
+                    toolCallId,
+                  });
+                }
+              })();
+            }
           }
-        });
+        );
       });
-      
+
       // WATCH-011: Set observed correlation IDs for watcher sessions
       // When a watcher sends input, tag its response with the parent chunks it has observed
       let isWatcherSession = false;
@@ -3324,7 +3604,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             const correlationIds = parentChunks
               .filter((chunk: StreamChunk) => chunk.correlationId)
               .map((chunk: StreamChunk) => chunk.correlationId as string);
-            
+
             if (correlationIds.length > 0) {
               // Tag watcher's response chunks with the observed parent chunk IDs
               sessionSetObservedCorrelationIds(activeSessionId, correlationIds);
@@ -3332,24 +3612,27 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           }
         } catch (err) {
           // Failed to get parent session or set correlation IDs - indicates session hierarchy issues
-          logger.error('Failed to process watcher session parent relationship:', err);
+          logger.error(
+            'Failed to process watcher session parent relationship:',
+            err
+          );
         }
       }
-      
+
       // NAPI-009: Send the input to the background session (non-blocking)
       // The background session's agent_loop will process it and emit chunks via the callback
       sessionSendInput(activeSessionId, userMessage, thinkingConfig);
-      
+
       // Refresh Rust state to pick up status change (running) after sending input
       // CRITICAL: Pass activeSessionId explicitly to handle race condition with Zustand state updates.
       // When creating a new session, activateSession() schedules a batched update that hasn't
       // taken effect yet, so the hook's captured sessionId is still null. Using the local variable
       // ensures we refresh the correct session immediately.
       refreshRustState(activeSessionId);
-      
+
       // Wait for the prompt to complete (Done chunk received)
       await promptComplete;
-      
+
       // WATCH-011: Clear observed correlation IDs after response completes
       if (isWatcherSession && activeSessionId) {
         try {
@@ -3386,348 +3669,422 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         return updated;
       });
     }
-  }, [inputValue, displayIsLoading, currentSessionId, currentProvider, currentModel, workUnitId, attachSessionToWorkUnit, detachSessionFromWorkUnit, isReadyForNewSession, activateSession, prepareForNewSession]);
+  }, [
+    inputValue,
+    displayIsLoading,
+    currentSessionId,
+    currentProvider,
+    currentModel,
+    workUnitId,
+    attachSessionToWorkUnit,
+    detachSessionFromWorkUnit,
+    isReadyForNewSession,
+    activateSession,
+    prepareForNewSession,
+  ]);
 
   // TUI-050: Handle submit with explicit command string (for slash command palette Enter)
   // This avoids race condition with setTimeout by passing the command directly
-  const handleSubmitWithCommand = useCallback(async (commandText: string) => {
-    const userMessage = commandText.trim();
-    
-    // Handle /model command
-    if (userMessage === '/model') {
-      setInputValue('');
-      if (providerSections.length > 0) {
-        setShowModelSelector(true);
-        const currentSectionIdx = providerSections.findIndex(
-          s => s.providerId === currentModel?.providerId
-        );
-        setSelectedSectionIdx(currentSectionIdx >= 0 ? currentSectionIdx : 0);
-        setSelectedModelIdx(-1);
-        if (currentModel?.providerId) {
-          setExpandedProviders(new Set([currentModel.providerId]));
+  const handleSubmitWithCommand = useCallback(
+    async (commandText: string) => {
+      const userMessage = commandText.trim();
+
+      // Handle /model command
+      if (userMessage === '/model') {
+        setInputValue('');
+        if (providerSections.length > 0) {
+          setShowModelSelector(true);
+          const currentSectionIdx = providerSections.findIndex(
+            s => s.providerId === currentModel?.providerId
+          );
+          setSelectedSectionIdx(currentSectionIdx >= 0 ? currentSectionIdx : 0);
+          setSelectedModelIdx(-1);
+          if (currentModel?.providerId) {
+            setExpandedProviders(new Set([currentModel.providerId]));
+          }
         }
-      }
-      return;
-    }
-    
-    // Handle /provider command - inline loadProviderStatuses to avoid TDZ
-    if (userMessage === '/provider') {
-      setInputValue('');
-      setShowSettingsTab(true);
-      setSelectedSettingsIdx(0);
-      setEditingProviderId(null);
-      setEditingApiKey('');
-      // Trigger provider status loading via state flag (avoiding TDZ with loadProviderStatuses)
-      setTriggerProviderStatusLoad(true);
-      return;
-    }
-    
-    // Handle /debug command
-    if (userMessage === '/debug') {
-      setInputValue('');
-      try {
-        const debugDir = getFspecUserDir();
-        let result;
-        if (currentSessionId) {
-          result = await sessionToggleDebug(currentSessionId, debugDir);
-        } else {
-          result = toggleDebug(debugDir);
-        }
-        setIsDebugEnabled(result.enabled);
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: result.message },
-        ]);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Debug toggle failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
-    
-    // Handle /compact command
-    if (userMessage === '/compact') {
-      setInputValue('');
-      // PERF-002: Check if there's an active session to compact
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'No active session to compact. Start a conversation first.' },
-        ]);
         return;
       }
-      
-      // PERF-002: Use the compaction hook for clean separation of concerns
-      try {
-        // UX-002: Don't add compaction messages to conversation
-        // All compaction feedback is shown in input area via isCompacting state
-        
-        const result = await compaction.performManualCompaction(currentSessionId);
-        
-        // Update token display from compaction result
-        setTokenUsage(prev => ({
-          ...prev,
-          inputTokens: result.compactedTokens,
-        }));
-        
-        // UX-002: Don't add success message to conversation
-        // Compaction completion is handled by state transition
-        
-        setCompactionReduction(result.compressionRatio);
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to compact';
-        // Error handling and retry dialog are managed by the hook
-        if (!compaction.retryState.isVisible) {
+
+      // Handle /provider command - inline loadProviderStatuses to avoid TDZ
+      if (userMessage === '/provider') {
+        setInputValue('');
+        setShowSettingsTab(true);
+        setSelectedSettingsIdx(0);
+        setEditingProviderId(null);
+        setEditingApiKey('');
+        // Trigger provider status loading via state flag (avoiding TDZ with loadProviderStatuses)
+        setTriggerProviderStatusLoad(true);
+        return;
+      }
+
+      // Handle /debug command
+      if (userMessage === '/debug') {
+        setInputValue('');
+        try {
+          const debugDir = getFspecUserDir();
+          let result;
+          if (currentSessionId) {
+            result = await sessionToggleDebug(currentSessionId, debugDir);
+          } else {
+            result = toggleDebug(debugDir);
+          }
+          setIsDebugEnabled(result.enabled);
           setConversation(prev => [
             ...prev,
-            { type: 'status', content: `Compaction failed: ${errorMessage}` },
+            { type: 'status', content: result.message },
           ]);
-        }
-      }
-      return;
-    }
-    
-    // Handle /search command - inline state changes to avoid TDZ
-    if (userMessage === '/search') {
-      setInputValue('');
-      setIsSearchMode(true);
-      setSearchQuery('');
-      setSearchResults([]);
-      setSearchResultIndex(0);
-      return;
-    }
-    
-    // Handle /clear command
-    if (userMessage === '/clear') {
-      setInputValue('');
-      setConversation([]);
-      setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-      setContextFillPercentage(0);
-      return;
-    }
-    
-    // Handle /history command
-    if (userMessage === '/history' || userMessage.startsWith('/history ')) {
-      setInputValue('');
-      const allProjects = userMessage.includes('--all-projects');
-      try {
-        const history = persistenceGetHistory(
-          allProjects ? null : currentProjectRef.current,
-          20
-        );
-        if (history.length === 0) {
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           setConversation(prev => [
             ...prev,
-            { type: 'status', content: 'No history entries found' },
-          ]);
-        } else {
-          const historyList = history
-            .map((h: { display: string; timestamp: string }) => `- ${h.display}`)
-            .join('\n');
-          setConversation(prev => [
-            ...prev,
-            { type: 'status', content: `Command history:\n${historyList}` },
+            { type: 'status', content: `Debug toggle failed: ${errorMessage}` },
           ]);
         }
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to get history';
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `History failed: ${errorMessage}` },
-        ]);
-      }
-      return;
-    }
-    
-    // Handle /resume command - trigger initialization (avoiding TDZ with handleResumeMode)
-    if (userMessage === '/resume') {
-      setInputValue('');
-      setTriggerResumeModeInit(true);  // Will trigger useEffect to call handleResumeMode
-      return;
-    }
-    
-    // Handle /watcher command - trigger initialization (avoiding TDZ with handleWatcherMode)
-    if (userMessage === '/watcher') {
-      setInputValue('');
-      setTriggerWatcherModeInit(true);  // Will trigger useEffect to call handleWatcherMode
-      return;
-    }
-    
-    // Handle /parent command
-    if (userMessage === '/parent') {
-      setInputValue('');
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'No active session. Start a session first.' },
-        ]);
         return;
       }
-      const parentId = sessionGetParent(currentSessionId);
-      if (!parentId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'This session has no parent. /parent only works from watcher sessions.' },
-        ]);
-        return;
-      }
-      // Handle parent session switching...
-      return;
-    }
-    
-    // Handle /detach command
-    if (userMessage === '/detach') {
-      setInputValue('');
-      if (workUnitId) {
-        detachSessionFromWorkUnit(workUnitId);
-        setConversation([]);
-        setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-        prepareForNewSession();
-        setConversation([{ type: 'status', content: 'Session detached from work unit. Ready for fresh session.' }]);
-      } else {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: '/detach only works when viewing a work unit from the board.' },
-        ]);
-      }
-      return;
-    }
-    
-    
-    // Handle /mcp command (just show status for now)
-    if (userMessage === '/mcp') {
-      setInputValue('');
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: 'MCP provider management not yet implemented.' },
-      ]);
-      return;
-    }
-    
-    // Handle /mode command (cycle through modes)
-    if (userMessage === '/mode') {
-      setInputValue('');
-      setConversation(prev => [
-        ...prev,
-        { type: 'status', content: 'Mode cycling not yet implemented.' },
-      ]);
-      return;
-    }
-    
-    // TUI-056: Handle /anchors command - show anchor points viewer
-    if (userMessage === '/anchors') {
-      setInputValue('');
-      
-      // Require an active session
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'Start a session first to view anchor points.' },
-        ]);
-        return;
-      }
-      
-      // Load anchor points from current session using direct NAPI function
-      try {
-        const napiAnchors = sessionGetAnchorPoints(currentSessionId);
-        
-        // Ensure we have a valid array before processing
-        if (!Array.isArray(napiAnchors)) {
-          console.warn('sessionGetAnchorPoints returned non-array:', napiAnchors);
-          setAnchorPoints([]);
-        } else {
-          // Convert NAPI types to TUI types
-          const convertedAnchors: AnchorPoint[] = napiAnchors.map(napiAnchor => ({
-            turnIndex: napiAnchor.turnIndex,
-            anchorType: napiAnchor.anchorType as AnchorType,
-            weight: napiAnchor.weight,
-            confidence: napiAnchor.confidence,
-            description: napiAnchor.description,
-            timestamp: napiAnchor.timestamp,
-            userMessage: napiAnchor.userMessage ?? undefined,
-            assistantResponse: napiAnchor.assistantResponse ?? undefined,
-            toolCalls: napiAnchor.toolCalls?.map(tc => ({
-              tool: tc.tool,
-              success: tc.success,
-            })) ?? [],
+
+      // Handle /compact command
+      if (userMessage === '/compact') {
+        setInputValue('');
+        // PERF-002: Check if there's an active session to compact
+        if (!currentSessionId) {
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content:
+                'No active session to compact. Start a conversation first.',
+            },
+          ]);
+          return;
+        }
+
+        // PERF-002: Use the compaction hook for clean separation of concerns
+        try {
+          // UX-002: Don't add compaction messages to conversation
+          // All compaction feedback is shown in input area via isCompacting state
+
+          const result =
+            await compaction.performManualCompaction(currentSessionId);
+
+          // Update token display from compaction result
+          setTokenUsage(prev => ({
+            ...prev,
+            inputTokens: result.compactedTokens,
           }));
 
-          setAnchorPoints(convertedAnchors);
+          // UX-002: Don't add success message to conversation
+          // Compaction completion is handled by state transition
+
+          setCompactionReduction(result.compressionRatio);
+        } catch (err) {
+          const errorMessage =
+            err instanceof Error ? err.message : 'Failed to compact';
+          // Error handling and retry dialog are managed by the hook
+          if (!compaction.retryState.isVisible) {
+            setConversation(prev => [
+              ...prev,
+              { type: 'status', content: `Compaction failed: ${errorMessage}` },
+            ]);
+          }
         }
-      } catch (error) {
-        console.error('Failed to load anchor points:', error);
+        return;
+      }
+
+      // Handle /search command - inline state changes to avoid TDZ
+      if (userMessage === '/search') {
+        setInputValue('');
+        setIsSearchMode(true);
+        setSearchQuery('');
+        setSearchResults([]);
+        setSearchResultIndex(0);
+        return;
+      }
+
+      // Handle /clear command
+      if (userMessage === '/clear') {
+        setInputValue('');
+        setConversation([]);
+        setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+        setContextFillPercentage(0);
+        return;
+      }
+
+      // Handle /history command
+      if (userMessage === '/history' || userMessage.startsWith('/history ')) {
+        setInputValue('');
+        const allProjects = userMessage.includes('--all-projects');
+        try {
+          const history = persistenceGetHistory(
+            allProjects ? null : currentProjectRef.current,
+            20
+          );
+          if (history.length === 0) {
+            setConversation(prev => [
+              ...prev,
+              { type: 'status', content: 'No history entries found' },
+            ]);
+          } else {
+            const historyList = history
+              .map(
+                (h: { display: string; timestamp: string }) => `- ${h.display}`
+              )
+              .join('\n');
+            setConversation(prev => [
+              ...prev,
+              { type: 'status', content: `Command history:\n${historyList}` },
+            ]);
+          }
+        } catch (err) {
+          const errorMessage =
+            err instanceof Error ? err.message : 'Failed to get history';
+          setConversation(prev => [
+            ...prev,
+            { type: 'status', content: `History failed: ${errorMessage}` },
+          ]);
+        }
+        return;
+      }
+
+      // Handle /resume command - trigger initialization (avoiding TDZ with handleResumeMode)
+      if (userMessage === '/resume') {
+        setInputValue('');
+        setTriggerResumeModeInit(true); // Will trigger useEffect to call handleResumeMode
+        return;
+      }
+
+      // Handle /watcher command - trigger initialization (avoiding TDZ with handleWatcherMode)
+      if (userMessage === '/watcher') {
+        setInputValue('');
+        setTriggerWatcherModeInit(true); // Will trigger useEffect to call handleWatcherMode
+        return;
+      }
+
+      // Handle /parent command
+      if (userMessage === '/parent') {
+        setInputValue('');
+        if (!currentSessionId) {
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content: 'No active session. Start a session first.',
+            },
+          ]);
+          return;
+        }
+        const parentId = sessionGetParent(currentSessionId);
+        if (!parentId) {
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content:
+                'This session has no parent. /parent only works from watcher sessions.',
+            },
+          ]);
+          return;
+        }
+        // Handle parent session switching...
+        return;
+      }
+
+      // Handle /detach command
+      if (userMessage === '/detach') {
+        setInputValue('');
+        if (workUnitId) {
+          detachSessionFromWorkUnit(workUnitId);
+          setConversation([]);
+          setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+          prepareForNewSession();
+          setConversation([
+            {
+              type: 'status',
+              content:
+                'Session detached from work unit. Ready for fresh session.',
+            },
+          ]);
+        } else {
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content:
+                '/detach only works when viewing a work unit from the board.',
+            },
+          ]);
+        }
+        return;
+      }
+
+      // Handle /mcp command (just show status for now)
+      if (userMessage === '/mcp') {
+        setInputValue('');
         setConversation(prev => [
           ...prev,
-          { type: 'status', content: 'Failed to load anchor points. This session may not have any compaction history.' },
+          {
+            type: 'status',
+            content: 'MCP provider management not yet implemented.',
+          },
         ]);
         return;
       }
-      setShowAnchorViewer(true);
-      return;
-    }
-    
-    // TUI-054: Handle /thinking command - set base thinking level
-    // Accepts: /thinking (opens dialog) or /thinking <level> (sets directly)
-    // Levels: off, low, med/medium, high (case insensitive)
-    if (userMessage === '/thinking' || userMessage.startsWith('/thinking ')) {
+
+      // Handle /mode command (cycle through modes)
+      if (userMessage === '/mode') {
+        setInputValue('');
+        setConversation(prev => [
+          ...prev,
+          { type: 'status', content: 'Mode cycling not yet implemented.' },
+        ]);
+        return;
+      }
+
+      // TUI-056: Handle /anchors command - show anchor points viewer
+      if (userMessage === '/anchors') {
+        setInputValue('');
+
+        // Require an active session
+        if (!currentSessionId) {
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content: 'Start a session first to view anchor points.',
+            },
+          ]);
+          return;
+        }
+
+        // Load anchor points from current session using direct NAPI function
+        try {
+          const napiAnchors = sessionGetAnchorPoints(currentSessionId);
+
+          // Ensure we have a valid array before processing
+          if (!Array.isArray(napiAnchors)) {
+            console.warn(
+              'sessionGetAnchorPoints returned non-array:',
+              napiAnchors
+            );
+            setAnchorPoints([]);
+          } else {
+            // Convert NAPI types to TUI types
+            const convertedAnchors: AnchorPoint[] = napiAnchors.map(
+              napiAnchor => ({
+                turnIndex: napiAnchor.turnIndex,
+                anchorType: napiAnchor.anchorType as AnchorType,
+                weight: napiAnchor.weight,
+                confidence: napiAnchor.confidence,
+                description: napiAnchor.description,
+                timestamp: napiAnchor.timestamp,
+                userMessage: napiAnchor.userMessage ?? undefined,
+                assistantResponse: napiAnchor.assistantResponse ?? undefined,
+                toolCalls:
+                  napiAnchor.toolCalls?.map(tc => ({
+                    tool: tc.tool,
+                    success: tc.success,
+                  })) ?? [],
+              })
+            );
+
+            setAnchorPoints(convertedAnchors);
+          }
+        } catch (error) {
+          console.error('Failed to load anchor points:', error);
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content:
+                'Failed to load anchor points. This session may not have any compaction history.',
+            },
+          ]);
+          return;
+        }
+        setShowAnchorViewer(true);
+        return;
+      }
+
+      // TUI-054: Handle /thinking command - set base thinking level
+      // Accepts: /thinking (opens dialog) or /thinking <level> (sets directly)
+      // Levels: off, low, med/medium, high (case insensitive)
+      if (userMessage === '/thinking' || userMessage.startsWith('/thinking ')) {
+        setInputValue('');
+
+        // Require an active session
+        if (!currentSessionId) {
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content: 'Start a session first to set the thinking level.',
+            },
+          ]);
+          return;
+        }
+
+        // Parse optional argument
+        const arg = userMessage.slice('/thinking'.length).trim().toLowerCase();
+
+        if (!arg) {
+          // No argument - open the dialog
+          setShowThinkingLevelDialog(true);
+          return;
+        }
+
+        // Parse level argument
+        let level: JsThinkingLevel | null = null;
+        if (arg === 'off') {
+          level = JsThinkingLevel.Off;
+        } else if (arg === 'low') {
+          level = JsThinkingLevel.Low;
+        } else if (arg === 'med' || arg === 'medium') {
+          level = JsThinkingLevel.Medium;
+        } else if (arg === 'high') {
+          level = JsThinkingLevel.High;
+        }
+
+        if (level !== null) {
+          getRustStateSource().setBaseThinkingLevel(currentSessionId, level);
+          const levelNames = ['Off', 'Low', 'Medium', 'High'];
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content: `Thinking level set to ${levelNames[level]}.`,
+            },
+          ]);
+        } else {
+          setConversation(prev => [
+            ...prev,
+            {
+              type: 'status',
+              content: `Invalid thinking level "${arg}". Use: off, low, med, medium, or high.`,
+            },
+          ]);
+        }
+        return;
+      }
+
+      // For any unrecognized command, just clear input (user typed incomplete command)
       setInputValue('');
-      
-      // Require an active session
-      if (!currentSessionId) {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: 'Start a session first to set the thinking level.' },
-        ]);
-        return;
-      }
-      
-      // Parse optional argument
-      const arg = userMessage.slice('/thinking'.length).trim().toLowerCase();
-      
-      if (!arg) {
-        // No argument - open the dialog
-        setShowThinkingLevelDialog(true);
-        return;
-      }
-      
-      // Parse level argument
-      let level: JsThinkingLevel | null = null;
-      if (arg === 'off') {
-        level = JsThinkingLevel.Off;
-      } else if (arg === 'low') {
-        level = JsThinkingLevel.Low;
-      } else if (arg === 'med' || arg === 'medium') {
-        level = JsThinkingLevel.Medium;
-      } else if (arg === 'high') {
-        level = JsThinkingLevel.High;
-      }
-      
-      if (level !== null) {
-        getRustStateSource().setBaseThinkingLevel(currentSessionId, level);
-        const levelNames = ['Off', 'Low', 'Medium', 'High'];
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Thinking level set to ${levelNames[level]}.` },
-        ]);
-      } else {
-        setConversation(prev => [
-          ...prev,
-          { type: 'status', content: `Invalid thinking level "${arg}". Use: off, low, med, medium, or high.` },
-        ]);
-      }
-      return;
-    }
-    
-    // For any unrecognized command, just clear input (user typed incomplete command)
-    setInputValue('');
-  }, [providerSections, currentModel, currentSessionId, workUnitId, detachSessionFromWorkUnit, prepareForNewSession]);
+    },
+    [
+      providerSections,
+      currentModel,
+      currentSessionId,
+      workUnitId,
+      detachSessionFromWorkUnit,
+      prepareForNewSession,
+    ]
+  );
 
   // TUI-050: Update slash command executor ref after handleSubmitWithCommand is defined
   useEffect(() => {
-    executeSlashCommandRef.current = (cmd: string) => void handleSubmitWithCommand(cmd);
+    executeSlashCommandRef.current = (cmd: string) =>
+      void handleSubmitWithCommand(cmd);
   }, [handleSubmitWithCommand]);
 
   // Handle provider switching - now just updates local state
@@ -3964,7 +4321,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           await sessionSetModel(currentSessionId, section.providerId, modelId);
           refreshRustState(currentSessionId);
         } catch (err) {
-          logger.error('Failed to update background session model', { error: err });
+          logger.error('Failed to update background session model', {
+            error: err,
+          });
         }
       } else {
         // No session yet - set local state directly (will be synced when session is created)
@@ -3994,7 +4353,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         await writeConfig('user', updatedConfig);
         logger.debug(`Persisted model selection: ${modelString}`);
       } catch (persistErr) {
-        logger.error('Failed to persist model selection', { error: persistErr });
+        logger.error('Failed to persist model selection', {
+          error: persistErr,
+        });
       }
     },
     [currentSessionId]
@@ -4061,7 +4422,6 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     }
 
     try {
-      
       const results = persistenceSearchHistory(
         query,
         currentProjectRef.current
@@ -4194,10 +4554,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (updated[streamingIdx].content.trim() === '') {
             updated.splice(streamingIdx, 1);
           } else {
-            updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
+            updated[streamingIdx] = {
+              ...updated[streamingIdx],
+              isStreaming: false,
+            };
           }
         }
-        updated.push({ type: 'tool-call', content: toolContent, toolCallId: toolCall.id });
+        updated.push({
+          type: 'tool-call',
+          content: toolContent,
+          toolCallId: toolCall.id,
+        });
         return updated;
       });
     } else if (chunk.type === 'ToolResult' && chunk.toolResult) {
@@ -4215,14 +4582,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             const hasContent = toolResultContent && toolResultContent.trim();
             updated[i] = {
               ...msg,
-              content: hasContent ? `${headerLine}\n${toolResultContent}` : headerLine,
+              content: hasContent
+                ? `${headerLine}\n${toolResultContent}`
+                : headerLine,
               isError: result.isError,
             };
             break;
           }
         }
         // Add streaming placeholder for continuation
-        updated.push({ type: 'assistant-text', content: '', isStreaming: true });
+        updated.push({
+          type: 'assistant-text',
+          content: '',
+          isStreaming: true,
+        });
         return updated;
       });
     } else if (chunk.type === 'Done') {
@@ -4250,7 +4623,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         }
         return updated;
       });
-      
+
       refreshRustState(currentSessionIdRef.current);
 
       // REFAC-007: Token state persistence now handled by Rust
@@ -4258,7 +4631,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     } else if (chunk.type === 'SessionStateChange') {
       // NAPI-010: Internal state change - update state machine, do NOT add to conversation
       // The state field tells us the new session state (Idle, Running, Paused, Compacting, Interrupted)
-      
+
       // UX-002: Use unified compaction hook for ALL compaction state
       // This ensures consistent behavior across manual, hook-triggered, and emergency compaction
       // NOTE: Use compactionRef.current to avoid stale closure issues in this callback
@@ -4266,13 +4639,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         const sessionId = currentSessionIdRef.current;
         if (sessionId) {
           const progress = sessionGetCompactionProgress(sessionId);
-          compactionRef.current.startCompaction('hook-triggered', sessionId, progress ?? undefined);
+          compactionRef.current.startCompaction(
+            'hook-triggered',
+            sessionId,
+            progress ?? undefined
+          );
         }
       } else {
         // Non-compacting state - end compaction tracking
         compactionRef.current.endCompaction();
       }
-      
+
       refreshRustState(currentSessionIdRef.current);
     } else if (chunk.type === 'CompactionComplete') {
       // UX-002: Structured compaction result - extract percentage directly, no string parsing!
@@ -4303,14 +4680,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (updated[streamingIdx].content.trim() === '') {
             updated.splice(streamingIdx, 1);
           } else {
-            updated[streamingIdx] = { ...updated[streamingIdx], isStreaming: false };
+            updated[streamingIdx] = {
+              ...updated[streamingIdx],
+              isStreaming: false,
+            };
           }
         }
         updated.push({ type: 'status', content: '⚠ Interrupted' });
         return updated;
       });
       refreshRustState(currentSessionIdRef.current);
-    } else if (chunk.type === 'TokenUpdate' || chunk.type === 'ContextFillUpdate') {
+    } else if (
+      chunk.type === 'TokenUpdate' ||
+      chunk.type === 'ContextFillUpdate'
+    ) {
       // TUI-049: Use centralized helper for token state updates (DRY)
       updateTokenStateFromChunk(chunk);
     } else if (chunk.type === 'ToolProgress' && chunk.toolProgress) {
@@ -4318,7 +4701,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       const isStderr = chunk.toolProgress.isStderr;
       const rawChunk = chunk.toolProgress.outputChunk;
       const outputChunk = isStderr
-        ? rawChunk.split('\n').map(line => line ? `⚠stderr⚠${line}` : line).join('\n')
+        ? rawChunk
+            .split('\n')
+            .map(line => (line ? `⚠stderr⚠${line}` : line))
+            .join('\n')
         : rawChunk;
       setConversation(prev => {
         const updated = [...prev];
@@ -4328,12 +4714,26 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           if (lastMsg.type === 'tool-call' && lastMsg.content.startsWith('●')) {
             const lines = lastMsg.content.split('\n');
             const header = lines[0];
-            const existingOutput = lines.slice(1).map(l => l.startsWith('L ') ? l.slice(2) : l.startsWith('  ') ? l.slice(2) : l).join('\n');
+            const existingOutput = lines
+              .slice(1)
+              .map(l =>
+                l.startsWith('L ')
+                  ? l.slice(2)
+                  : l.startsWith('  ')
+                    ? l.slice(2)
+                    : l
+              )
+              .join('\n');
             const newOutput = existingOutput + outputChunk;
             const windowedOutput = createStreamingWindow(newOutput);
             const windowedLines = windowedOutput.split('\n');
-            const formattedOutput = windowedLines.map((l, i) => i === 0 ? `L ${l}` : `  ${l}`).join('\n');
-            updated[lastIdx] = { ...lastMsg, content: `${header}\n${formattedOutput}` };
+            const formattedOutput = windowedLines
+              .map((l, i) => (i === 0 ? `L ${l}` : `  ${l}`))
+              .join('\n');
+            updated[lastIdx] = {
+              ...lastMsg,
+              content: `${header}\n${formattedOutput}`,
+            };
           }
         }
         return updated;
@@ -4375,11 +4775,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       const toolCallId = chunk.fspecRequest.toolCallId;
       const sessionId = currentSessionIdRef.current;
 
-      logger.warn(`[FSPEC_TS] FspecCommandRequest received: command=${command}, toolCallId=${toolCallId}`);
-      logger.warn(`[FSPEC_TS] sessionId=${sessionId}, projectRoot=${projectRoot}`);
+      logger.warn(
+        `[FSPEC_TS] FspecCommandRequest received: command=${command}, toolCallId=${toolCallId}`
+      );
+      logger.warn(
+        `[FSPEC_TS] sessionId=${sessionId}, projectRoot=${projectRoot}`
+      );
 
       if (!sessionId) {
-        logger.error('[FSPEC_TS] FspecCommandRequest received but no session ID available');
+        logger.error(
+          '[FSPEC_TS] FspecCommandRequest received but no session ID available'
+        );
         return;
       }
 
@@ -4389,27 +4795,37 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // This runs the command and sends the result back to Rust which is blocking
       (async () => {
         try {
-          logger.warn(`[FSPEC_TS] Calling fspecCallback(${command}, ${argsJson}, ${projectRoot})...`);
+          logger.warn(
+            `[FSPEC_TS] Calling fspecCallback(${command}, ${argsJson}, ${projectRoot})...`
+          );
           // Execute fspec command via TypeScript implementation
-          const resultJson = await fspecCallback(command, argsJson, projectRoot);
-          logger.warn(`[FSPEC_TS] fspecCallback returned: ${resultJson.substring(0, 200)}...`);
-          
-          const parsed = JSON.parse(resultJson) as { 
-            success?: boolean; 
-            data?: string; 
-            error?: string; 
+          const resultJson = await fspecCallback(
+            command,
+            argsJson,
+            projectRoot
+          );
+          logger.warn(
+            `[FSPEC_TS] fspecCallback returned: ${resultJson.substring(0, 200)}...`
+          );
+
+          const parsed = JSON.parse(resultJson) as {
+            success?: boolean;
+            data?: string;
+            error?: string;
             systemReminders?: string[];
           };
 
           // Build the system reminder from captured reminders
           let systemReminder: string | undefined = undefined;
           if (parsed.systemReminders && parsed.systemReminders.length > 0) {
-            systemReminder = parsed.systemReminders.map(r => 
-              `<system-reminder>\n${r}\n</system-reminder>`
-            ).join('\n');
+            systemReminder = parsed.systemReminders
+              .map(r => `<system-reminder>\n${r}\n</system-reminder>`)
+              .join('\n');
           }
 
-          logger.warn(`[FSPEC_TS] About to call sessionSendFspecResult: success=${parsed.success}, toolCallId=${toolCallId}`);
+          logger.warn(
+            `[FSPEC_TS] About to call sessionSendFspecResult: success=${parsed.success}, toolCallId=${toolCallId}`
+          );
 
           // CODE-009: Send result back to Rust via NAPI
           // This unblocks the session which is waiting for the result
@@ -4423,11 +4839,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           });
 
           logger.warn(`[FSPEC_TS] sessionSendFspecResult called successfully`);
-          logger.debug(`Fspec command ${command} completed:`, { success: parsed.success, toolCallId });
+          logger.debug(`Fspec command ${command} completed:`, {
+            success: parsed.success,
+            toolCallId,
+          });
         } catch (err) {
           const error = err as Error;
-          logger.error(`[FSPEC_TS] Fspec command ${command} failed:`, error.message);
-          
+          logger.error(
+            `[FSPEC_TS] Fspec command ${command} failed:`,
+            error.message
+          );
+
           // CODE-009: Send error result back to Rust
           // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
           sessionSendFspecResult(sessionId, {
@@ -4446,106 +4868,121 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // SESS-001: Shared function to resume a session by ID (used by /resume, auto-resume, and VIEWNV-001 navigation)
   // UNIFIED: Both background and persisted sessions use the same chunk-based restore flow.
   // NOTE: Defined before sessionNavigation to avoid closure issues with callback references
-  const resumeSessionById = useCallback(async (sessionId: string): Promise<boolean> => {
-    try {
-      // Use the session service to handle restoration
-      const result = await restoreSession({
-        sessionId,
-        fallbackModelPath: currentProvider,
-        fallbackProject: currentProjectRef.current,
-        // Note: We don't pass onStreamChunk here because we need to do UI setup first
-      });
-
-      logger.debug(
-        `SESS-001: ${result.wasBackgroundSession ? 'Resumed existing background' : 'Restored persisted'} session ${sessionId}`
-      );
-
-      // Update token state from service result if available
-      if (result.tokenUsage) {
-        setTokenUsage({
-          inputTokens: result.tokenUsage.currentContextTokens,
-          outputTokens: result.tokenUsage.cumulativeBilledOutput,
-          cacheReadInputTokens: result.tokenUsage.cacheReadTokens,
-          cacheCreationInputTokens: result.tokenUsage.cacheCreationTokens,
+  const resumeSessionById = useCallback(
+    async (sessionId: string): Promise<boolean> => {
+      try {
+        // Use the session service to handle restoration
+        const result = await restoreSession({
+          sessionId,
+          fallbackModelPath: currentProvider,
+          fallbackProject: currentProjectRef.current,
+          // Note: We don't pass onStreamChunk here because we need to do UI setup first
         });
-      }
 
-      // Update provider state if available
-      if (result.provider?.includes('/')) {
-        const [providerId, modelId] = result.provider.split('/');
-        const internalName = mapProviderIdToInternal(providerId);
-        setCurrentProvider(internalName);
-        // Find matching model info from provider sections
-        const section = providerSections.find(s => s.providerId === providerId);
-        const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
-        if (model && section) {
-          setCurrentModel({
-            providerId,
-            modelId,
-            apiModelId: model.id,
-            displayName: model.name,
-            reasoning: model.reasoning,
-            hasVision: model.hasVision,
-            contextWindow: model.contextWindow,
-            maxOutput: model.maxOutput,
+        logger.debug(
+          `SESS-001: ${result.wasBackgroundSession ? 'Resumed existing background' : 'Restored persisted'} session ${sessionId}`
+        );
+
+        // Update token state from service result if available
+        if (result.tokenUsage) {
+          setTokenUsage({
+            inputTokens: result.tokenUsage.currentContextTokens,
+            outputTokens: result.tokenUsage.cumulativeBilledOutput,
+            cacheReadInputTokens: result.tokenUsage.cacheReadTokens,
+            cacheCreationInputTokens: result.tokenUsage.cacheCreationTokens,
           });
         }
-      }
 
-      // UNIFIED: Get merged output and convert to conversation messages
-      const mergedChunks = sessionGetMergedOutput(sessionId);
-      const restoredMessages = processChunksToConversation(
-        mergedChunks,
-        formatToolHeader,
-        formatCollapsedOutput
-      );
-      setConversation(restoredMessages);
-
-      // For background sessions, extract token state from chunks
-      if (result.wasBackgroundSession) {
-        const extractedState = extractTokenStateFromChunks(mergedChunks);
-        if (extractedState.tokenUsage) {
-          setTokenUsage(extractedState.tokenUsage);
+        // Update provider state if available
+        if (result.provider?.includes('/')) {
+          const [providerId, modelId] = result.provider.split('/');
+          const internalName = mapProviderIdToInternal(providerId);
+          setCurrentProvider(internalName);
+          // Find matching model info from provider sections
+          const section = providerSections.find(
+            s => s.providerId === providerId
+          );
+          const model = section?.models.find(
+            m => extractModelIdForRegistry(m.id) === modelId
+          );
+          if (model && section) {
+            setCurrentModel({
+              providerId,
+              modelId,
+              apiModelId: model.id,
+              displayName: model.name,
+              reasoning: model.reasoning,
+              hasVision: model.hasVision,
+              contextWindow: model.contextWindow,
+              maxOutput: model.maxOutput,
+            });
+          }
         }
-        if (extractedState.contextFillPercentage !== null) {
-          setContextFillPercentage(extractedState.contextFillPercentage);
+
+        // UNIFIED: Get merged output and convert to conversation messages
+        const mergedChunks = sessionGetMergedOutput(sessionId);
+        const restoredMessages = processChunksToConversation(
+          mergedChunks,
+          formatToolHeader,
+          formatCollapsedOutput
+        );
+        setConversation(restoredMessages);
+
+        // For background sessions, extract token state from chunks
+        if (result.wasBackgroundSession) {
+          const extractedState = extractTokenStateFromChunks(mergedChunks);
+          if (extractedState.tokenUsage) {
+            setTokenUsage(extractedState.tokenUsage);
+          }
+          if (extractedState.contextFillPercentage !== null) {
+            setContextFillPercentage(extractedState.contextFillPercentage);
+          }
         }
-      }
 
-      // Attach for live streaming
-      sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
-        if (chunk) {
-          handleStreamChunk(chunk);
+        // Attach for live streaming
+        sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
+          if (chunk) {
+            handleStreamChunk(chunk);
+          }
+        });
+
+        // Update session state (atomic transition via store)
+        activateSession(sessionId);
+
+        // TUI-052: Restore pending input if available
+        try {
+          const pendingInput = sessionGetPendingInput(sessionId);
+          // Always restore input (even if empty) to avoid showing wrong session's input
+          setInputValue(pendingInput || '');
+        } catch (err) {
+          // Session may not have pending input, ignore
         }
-      });
 
-      // Update session state (atomic transition via store)
-      activateSession(sessionId);
-
-      // TUI-052: Restore pending input if available
-      try {
-        const pendingInput = sessionGetPendingInput(sessionId);
-        // Always restore input (even if empty) to avoid showing wrong session's input
-        setInputValue(pendingInput || '');
+        return true;
       } catch (err) {
-        // Session may not have pending input, ignore
+        logger.error(
+          `SESS-001: Failed to resume session: ${err instanceof Error ? err.message : String(err)}`
+        );
+        return false;
       }
-
-      return true;
-    } catch (err) {
-      logger.error(`SESS-001: Failed to resume session: ${err instanceof Error ? err.message : String(err)}`);
-      return false;
-    }
-  }, [handleStreamChunk, currentProvider, providerSections, activateSession]);
+    },
+    [handleStreamChunk, currentProvider, providerSections, activateSession]
+  );
 
   // TUI-058: Helper to apply default thinking level to a new session
   // Extracted to avoid duplication between handleCreateSessionConfirm and auto-create effect
-  const applyDefaultThinkingLevel = useCallback((sessionId: string) => {
-    if (defaultThinkingLevel !== null) {
-      getRustStateSource().setBaseThinkingLevel(sessionId, defaultThinkingLevel);
-      refreshRustState();
-    }
-  }, [defaultThinkingLevel, refreshRustState]);
+  const applyDefaultThinkingLevel = useCallback(
+    (sessionId: string) => {
+      if (defaultThinkingLevel !== null) {
+        getRustStateSource().setBaseThinkingLevel(
+          sessionId,
+          defaultThinkingLevel
+        );
+        refreshRustState();
+      }
+    },
+    [defaultThinkingLevel, refreshRustState]
+  );
 
   // VIEWNV-001: Handle create session dialog confirmation
   // Creates session immediately so /thinking and other commands work right away
@@ -4598,9 +5035,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // If we were in a session, we're creating via navigation (Shift+Right) and shouldn't auto-attach
       if (workUnitId && !wasInSession) {
         attachSessionToWorkUnit(workUnitId, result.sessionId);
-        logger.debug(`SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`);
+        logger.debug(
+          `SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`
+        );
       } else if (workUnitId && wasInSession) {
-        logger.debug(`SESS-001: Skipped auto-attach for navigation-created session ${result.sessionId} (created via Shift+Right)`);
+        logger.debug(
+          `SESS-001: Skipped auto-attach for navigation-created session ${result.sessionId} (created via Shift+Right)`
+        );
       }
 
       // Clear conversation and input for the new session
@@ -4619,7 +5060,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setInputValue('');
       closeCreateSessionDialog();
     }
-  }, [currentSessionId, currentModel, modelsInitialized, activateSession, closeCreateSessionDialog, prepareForNewSession, workUnitId, attachSessionToWorkUnit, applyDefaultThinkingLevel]);
+  }, [
+    currentSessionId,
+    currentModel,
+    modelsInitialized,
+    activateSession,
+    closeCreateSessionDialog,
+    prepareForNewSession,
+    workUnitId,
+    attachSessionToWorkUnit,
+    applyDefaultThinkingLevel,
+  ]);
 
   // VIEWNV-001: Unified session navigation hook for Shift+Arrow navigation
   // This provides the navigation logic that determines targets based on the session tree
@@ -4634,7 +5085,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           sessionSetPendingInput(currentSessionId, inputValue);
         } catch (err) {
           // Failed to set pending input before switching - indicates session management issues
-          logger.error('Failed to set pending input before session switch:', err);
+          logger.error(
+            'Failed to set pending input before session switch:',
+            err
+          );
         }
       }
 
@@ -4679,7 +5133,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
   // VIEWNV-001: Auto-resume session from navigation (initialSessionId prop)
   // Track if we need to auto-resume from initialSessionId
-  const needsInitialSessionResumeRef = useRef<string | null>(initialSessionId ?? null);
+  const needsInitialSessionResumeRef = useRef<string | null>(
+    initialSessionId ?? null
+  );
 
   // VIEWNV-001: Auto-resume initial session on mount
   useEffect(() => {
@@ -4706,7 +5162,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     // Wait for models to be initialized before creating session
     // This prevents race condition where session is created with incomplete model info
     if (!modelsInitialized) {
-      logger.debug('Waiting for models to initialize before auto-creating session');
+      logger.debug(
+        'Waiting for models to initialize before auto-creating session'
+      );
       return;
     }
 
@@ -4714,7 +5172,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     if (workUnitId) {
       const attachedSessionId = getAttachedSession(workUnitId);
       if (attachedSessionId) {
-        logger.debug(`SESS-001: Skipping auto-create because work unit ${workUnitId} has attached session ${attachedSessionId} that will be resumed`);
+        logger.debug(
+          `SESS-001: Skipping auto-create because work unit ${workUnitId} has attached session ${attachedSessionId} that will be resumed`
+        );
         clearAutoCreateRequest();
         return;
       }
@@ -4744,66 +5204,86 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
         // TUI-058: Apply default thinking level to new session
         applyDefaultThinkingLevel(result.sessionId);
-        
+
         // SESS-001: Auto-attach session to work unit when auto-creating
         if (workUnitId) {
           attachSessionToWorkUnit(workUnitId, result.sessionId);
-          logger.debug(`SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`);
+          logger.debug(
+            `SESS-001: Attached session ${result.sessionId} to work unit ${workUnitId}`
+          );
         }
 
         // Mark that this session needs renaming on first message
         sessionNeedsRenameRef.current = true;
-        logger.debug(`VIEWNV-001: Auto-created session ${result.sessionId} on AgentView mount`);
+        logger.debug(
+          `VIEWNV-001: Auto-created session ${result.sessionId} on AgentView mount`
+        );
       } catch (err) {
         logger.error('Failed to auto-create session:', err);
       }
     };
 
     void autoCreateSession();
-  }, [shouldAutoCreateSession, currentSessionId, currentModel, modelsInitialized, activateSession, clearAutoCreateRequest, workUnitId, attachSessionToWorkUnit, getAttachedSession, applyDefaultThinkingLevel]);
+  }, [
+    shouldAutoCreateSession,
+    currentSessionId,
+    currentModel,
+    modelsInitialized,
+    activateSession,
+    clearAutoCreateRequest,
+    workUnitId,
+    attachSessionToWorkUnit,
+    getAttachedSession,
+    applyDefaultThinkingLevel,
+  ]);
 
   // NAPI-003 + TUI-047: Enter resume mode (show session selection overlay)
   // Now queries both persistence and background sessions, merging results
   const handleResumeMode = useCallback(async () => {
     try {
       // Get persisted sessions
-      const persistedSessions = persistenceListSessions(currentProjectRef.current);
-      
+      const persistedSessions = persistenceListSessions(
+        currentProjectRef.current
+      );
+
       // TUI-047: Get background sessions
       const backgroundSessions = sessionManagerList();
-      
+
       // TUI-047: Merge sessions - background takes precedence
       const backgroundMap = new Map<string, { status: string }>();
       for (const bg of backgroundSessions) {
         backgroundMap.set(bg.id, { status: bg.status });
       }
-      
+
       // Convert persisted sessions to MergedSession, marking those with background processes
-      const mergedSessions: MergedSession[] = persistedSessions.map((session: SessionManifest) => {
-        const bgInfo = backgroundMap.get(session.id);
-        if (bgInfo) {
-          // Session exists in background - use background status
+      const mergedSessions: MergedSession[] = persistedSessions.map(
+        (session: SessionManifest) => {
+          const bgInfo = backgroundMap.get(session.id);
+          if (bgInfo) {
+            // Session exists in background - use background status
+            return {
+              ...session,
+              isBackgroundSession: true,
+              backgroundStatus: bgInfo.status as 'running' | 'idle',
+            };
+          }
+          // Persisted-only session
           return {
             ...session,
-            isBackgroundSession: true,
-            backgroundStatus: bgInfo.status as 'running' | 'idle',
+            isBackgroundSession: false,
+            backgroundStatus: null,
           };
         }
-        // Persisted-only session
-        return {
-          ...session,
-          isBackgroundSession: false,
-          backgroundStatus: null,
-        };
-      });
-      
+      );
+
       // Add any background sessions that aren't in persistence yet
       for (const bg of backgroundSessions) {
         if (!persistedSessions.find((p: SessionManifest) => p.id === bg.id)) {
           // Build provider string from background session's providerId/modelId
-          const providerString = bg.providerId && bg.modelId
-            ? `${bg.providerId}/${bg.modelId}`
-            : bg.providerId || 'unknown';
+          const providerString =
+            bg.providerId && bg.modelId
+              ? `${bg.providerId}/${bg.modelId}`
+              : bg.providerId || 'unknown';
           mergedSessions.push({
             id: bg.id,
             name: bg.name || 'Background Session',
@@ -4842,7 +5322,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
     if (!currentSessionId) {
       setConversation(prev => [
         ...prev,
-        { type: 'status', content: 'No active session. Start a session first.' },
+        {
+          type: 'status',
+          content: 'No active session. Start a session first.',
+        },
       ]);
       return;
     }
@@ -4854,11 +5337,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
       // Get watchers for current session and map to instances
       const watcherIds = sessionGetWatchers(currentSessionId);
-      
+
       // Build watcher info list (for backwards compatibility) and instances
       const watchers: WatcherInfo[] = [];
       const instances: WatcherInstance[] = [];
-      
+
       for (const id of watcherIds) {
         const role = sessionGetRole(id);
         const status = sessionGetStatus(id);
@@ -4868,7 +5351,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           role,
           status: status === 'running' ? 'running' : 'idle',
         });
-        
+
         // WATCH-023: Map watchers to template instances
         // Find matching template by name (templates store the "role name")
         const matchingTemplate = templates.find(t => t.name === role?.name);
@@ -4932,11 +5415,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setWatcherList([]);
 
       // Attach to watcher session for live streaming
-      sessionAttach(selectedWatcher.id, (_err: Error | null, chunk: StreamChunk) => {
-        if (chunk) {
-          handleStreamChunk(chunk);
+      sessionAttach(
+        selectedWatcher.id,
+        (_err: Error | null, chunk: StreamChunk) => {
+          if (chunk) {
+            handleStreamChunk(chunk);
+          }
         }
-      });
+      );
 
       // Get buffered output and display
       const mergedChunks = sessionGetMergedOutput(selectedWatcher.id);
@@ -4951,7 +5437,15 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         err instanceof Error ? err.message : 'Failed to switch to watcher';
       setWatcherError(`Switch failed: ${errorMessage}`);
     }
-  }, [watcherList, watcherIndex, handleStreamChunk, formatToolHeader, formatCollapsedOutput, processChunksToConversation, activateSession]);
+  }, [
+    watcherList,
+    watcherIndex,
+    handleStreamChunk,
+    formatToolHeader,
+    formatCollapsedOutput,
+    processChunksToConversation,
+    activateSession,
+  ]);
 
   // WATCH-008: Delete selected watcher
   const handleWatcherDelete = useCallback(async () => {
@@ -4968,7 +5462,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // Remove from list
       const newList = watcherList.filter((_, i) => i !== watcherIndex);
       setWatcherList(newList);
-      
+
       // Adjust selection index if needed
       if (watcherIndex >= newList.length && newList.length > 0) {
         setWatcherIndex(newList.length - 1);
@@ -4984,105 +5478,127 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   }, [watcherList, watcherIndex]);
 
   // WATCH-009: Create a new watcher session
-  const handleWatcherCreate = useCallback(async (
-    name: string,
-    authority: 'peer' | 'supervisor',
-    model: string,
-    brief: string,
-    autoInject: boolean // WATCH-021: Added autoInject parameter
-  ) => {
-    if (!currentSessionId || !name.trim()) {
-      return;
-    }
+  const handleWatcherCreate = useCallback(
+    async (
+      name: string,
+      authority: 'peer' | 'supervisor',
+      model: string,
+      brief: string,
+      autoInject: boolean // WATCH-021: Added autoInject parameter
+    ) => {
+      if (!currentSessionId || !name.trim()) {
+        return;
+      }
 
-    try {
-      // Create the watcher session using NAPI
-      const watcherId = await sessionCreateWatcher(
-        currentSessionId,
-        model,
-        currentProjectRef.current,
-        name.trim()
-      );
+      try {
+        // Create the watcher session using NAPI
+        const watcherId = await sessionCreateWatcher(
+          currentSessionId,
+          model,
+          currentProjectRef.current,
+          name.trim()
+        );
 
-      // Set the role information (name, brief, authority, autoInject)
-      // WATCH-021: Pass autoInject to sessionSetRole
-      sessionSetRole(
-        watcherId,
-        name.trim(),
-        brief.trim() || null,
-        authority,
-        autoInject
-      );
+        // Set the role information (name, brief, authority, autoInject)
+        // WATCH-021: Pass autoInject to sessionSetRole
+        sessionSetRole(
+          watcherId,
+          name.trim(),
+          brief.trim() || null,
+          authority,
+          autoInject
+        );
 
-      // Refresh the watcher list by re-calling handleWatcherMode
-      await handleWatcherMode();
+        // Refresh the watcher list by re-calling handleWatcherMode
+        await handleWatcherMode();
 
-      // Close the creation view
-      setIsWatcherCreateMode(false);
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to create watcher';
-      setWatcherError(`Watcher creation failed: ${errorMessage}`);
-      setIsWatcherCreateMode(false);
-    }
-  }, [currentSessionId, handleWatcherMode]);
+        // Close the creation view
+        setIsWatcherCreateMode(false);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to create watcher';
+        setWatcherError(`Watcher creation failed: ${errorMessage}`);
+        setIsWatcherCreateMode(false);
+      }
+    },
+    [currentSessionId, handleWatcherMode]
+  );
 
   // WATCH-023: Spawn watcher from template
-  const handleTemplateSpawn = useCallback(async (template: WatcherTemplate) => {
-    if (!currentSessionId) return;
+  const handleTemplateSpawn = useCallback(
+    async (template: WatcherTemplate) => {
+      if (!currentSessionId) return;
 
-    try {
-      const watcherId = await sessionCreateWatcher(
-        currentSessionId,
-        template.modelId,
-        currentProjectRef.current,
-        template.name
-      );
+      try {
+        const watcherId = await sessionCreateWatcher(
+          currentSessionId,
+          template.modelId,
+          currentProjectRef.current,
+          template.name
+        );
 
-      sessionSetRole(
-        watcherId,
-        template.name,
-        template.brief || null,
-        template.authority,
-        template.autoInject
-      );
+        sessionSetRole(
+          watcherId,
+          template.name,
+          template.brief || null,
+          template.authority,
+          template.autoInject
+        );
 
-      setWatcherNotification(`Spawned watcher "${template.name}" from template`);
+        setWatcherNotification(
+          `Spawned watcher "${template.name}" from template`
+        );
 
-      // Refresh the watcher list
-      await handleWatcherMode();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to spawn watcher';
-      setWatcherError(`Spawn failed: ${errorMessage}`);
-    }
-  }, [currentSessionId, handleWatcherMode]);
+        // Refresh the watcher list
+        await handleWatcherMode();
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to spawn watcher';
+        setWatcherError(`Spawn failed: ${errorMessage}`);
+      }
+    },
+    [currentSessionId, handleWatcherMode]
+  );
 
   // WATCH-023: Open existing watcher instance
-  const handleInstanceOpen = useCallback(async (instance: WatcherInstance) => {
-    try {
-      // Switch to watcher instance session (atomic transition via store)
-      activateSession(instance.sessionId);
-      setIsWatcherMode(false);
-      setWatcherList([]);
+  const handleInstanceOpen = useCallback(
+    async (instance: WatcherInstance) => {
+      try {
+        // Switch to watcher instance session (atomic transition via store)
+        activateSession(instance.sessionId);
+        setIsWatcherMode(false);
+        setWatcherList([]);
 
-      sessionAttach(instance.sessionId, (_err: Error | null, chunk: StreamChunk) => {
-        if (chunk) {
-          handleStreamChunk(chunk);
-        }
-      });
+        sessionAttach(
+          instance.sessionId,
+          (_err: Error | null, chunk: StreamChunk) => {
+            if (chunk) {
+              handleStreamChunk(chunk);
+            }
+          }
+        );
 
-      const mergedChunks = sessionGetMergedOutput(instance.sessionId);
-      const restoredMessages = processChunksToConversation(
-        mergedChunks,
-        formatToolHeader,
-        formatCollapsedOutput
-      );
-      setConversation(restoredMessages);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to switch to watcher';
-      setWatcherError(`Switch failed: ${errorMessage}`);
-    }
-  }, [watcherTemplates, handleStreamChunk, formatToolHeader, formatCollapsedOutput, activateSession]);
+        const mergedChunks = sessionGetMergedOutput(instance.sessionId);
+        const restoredMessages = processChunksToConversation(
+          mergedChunks,
+          formatToolHeader,
+          formatCollapsedOutput
+        );
+        setConversation(restoredMessages);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to switch to watcher';
+        setWatcherError(`Switch failed: ${errorMessage}`);
+      }
+    },
+    [
+      watcherTemplates,
+      handleStreamChunk,
+      formatToolHeader,
+      formatCollapsedOutput,
+      activateSession,
+    ]
+  );
 
   // WATCH-023: Edit template
   const handleTemplateEdit = useCallback((template: WatcherTemplate) => {
@@ -5092,10 +5608,13 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   }, []);
 
   // WATCH-023: Delete template (shows confirmation dialog)
-  const handleTemplateDelete = useCallback((template: WatcherTemplate, instances: WatcherInstance[]) => {
-    setTemplateToDelete({ template, instances });
-    setShowTemplateDeleteDialog(true);
-  }, []);
+  const handleTemplateDelete = useCallback(
+    (template: WatcherTemplate, instances: WatcherInstance[]) => {
+      setTemplateToDelete({ template, instances });
+      setShowTemplateDeleteDialog(true);
+    },
+    []
+  );
 
   // WATCH-023: Confirm template deletion
   const handleTemplateDeleteConfirm = useCallback(async () => {
@@ -5108,21 +5627,29 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           sessionManagerDestroy(instance.sessionId);
         } catch (err) {
           // Failed to destroy session manager instance - indicates backend issues
-          logger.error(`Failed to destroy session manager instance ${instance.sessionId}:`, err);
+          logger.error(
+            `Failed to destroy session manager instance ${instance.sessionId}:`,
+            err
+          );
         }
       }
 
       // Delete template from storage
-      const updatedTemplates = watcherTemplates.filter(t => t.id !== templateToDelete.template.id);
+      const updatedTemplates = watcherTemplates.filter(
+        t => t.id !== templateToDelete.template.id
+      );
       saveWatcherTemplates(updatedTemplates);
       setWatcherTemplates(updatedTemplates);
 
-      setWatcherNotification(`Deleted template "${templateToDelete.template.name}"`);
+      setWatcherNotification(
+        `Deleted template "${templateToDelete.template.name}"`
+      );
 
       // Refresh the watcher list
       await handleWatcherMode();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete template';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to delete template';
       setWatcherError(`Delete failed: ${errorMessage}`);
     } finally {
       setShowTemplateDeleteDialog(false);
@@ -5148,7 +5675,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // Refresh the watcher list
       await handleWatcherMode();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to kill instance';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to kill instance';
       setWatcherError(`Kill failed: ${errorMessage}`);
     } finally {
       setShowInstanceKillDialog(false);
@@ -5164,38 +5692,60 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   }, []);
 
   // WATCH-023: Save template (create or edit)
-  const handleTemplateSave = useCallback(async (
-    name: string,
-    authority: 'peer' | 'supervisor',
-    modelId: string,
-    brief: string,
-    autoInject: boolean
-  ) => {
-    try {
-      let updatedTemplates: WatcherTemplate[];
+  const handleTemplateSave = useCallback(
+    async (
+      name: string,
+      authority: 'peer' | 'supervisor',
+      modelId: string,
+      brief: string,
+      autoInject: boolean
+    ) => {
+      try {
+        let updatedTemplates: WatcherTemplate[];
 
-      if (templateFormMode === 'edit' && editingTemplate) {
-        // Update existing template
-        const updated = updateTemplate(editingTemplate, { name, authority, modelId, brief, autoInject });
-        updatedTemplates = watcherTemplates.map(t => t.id === updated.id ? updated : t);
-      } else {
-        // Create new template
-        const newTemplate = createTemplate(name, modelId, authority, brief, autoInject);
-        updatedTemplates = [...watcherTemplates, newTemplate];
+        if (templateFormMode === 'edit' && editingTemplate) {
+          // Update existing template
+          const updated = updateTemplate(editingTemplate, {
+            name,
+            authority,
+            modelId,
+            brief,
+            autoInject,
+          });
+          updatedTemplates = watcherTemplates.map(t =>
+            t.id === updated.id ? updated : t
+          );
+        } else {
+          // Create new template
+          const newTemplate = createTemplate(
+            name,
+            modelId,
+            authority,
+            brief,
+            autoInject
+          );
+          updatedTemplates = [...watcherTemplates, newTemplate];
+        }
+
+        saveWatcherTemplates(updatedTemplates);
+        setWatcherTemplates(updatedTemplates);
+
+        setWatcherNotification(
+          templateFormMode === 'edit'
+            ? `Updated template "${name}"`
+            : `Created template "${name}"`
+        );
+
+        setIsTemplateFormMode(false);
+        setEditingTemplate(undefined);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to save template';
+        setWatcherError(`Save failed: ${errorMessage}`);
       }
-
-      saveWatcherTemplates(updatedTemplates);
-      setWatcherTemplates(updatedTemplates);
-
-      setWatcherNotification(templateFormMode === 'edit' ? `Updated template "${name}"` : `Created template "${name}"`);
-
-      setIsTemplateFormMode(false);
-      setEditingTemplate(undefined);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to save template';
-      setWatcherError(`Save failed: ${errorMessage}`);
-    }
-  }, [templateFormMode, editingTemplate, watcherTemplates]);
+    },
+    [templateFormMode, editingTemplate, watcherTemplates]
+  );
 
   // WATCH-023: Cancel template form
   const handleTemplateFormCancel = useCallback(() => {
@@ -5243,7 +5793,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         setCurrentProvider(internalName);
         // Find matching model info from provider sections
         const section = providerSections.find(s => s.providerId === providerId);
-        const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+        const model = section?.models.find(
+          m => extractModelIdForRegistry(m.id) === modelId
+        );
         if (model && section) {
           setCurrentModel({
             providerId,
@@ -5293,8 +5845,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // Calculate context fill percentage from model info
         if (result.provider?.includes('/')) {
           const [providerId, modelId] = result.provider.split('/');
-          const section = providerSections.find(s => s.providerId === providerId);
-          const model = section?.models.find(m => extractModelIdForRegistry(m.id) === modelId);
+          const section = providerSections.find(
+            s => s.providerId === providerId
+          );
+          const model = section?.models.find(
+            m => extractModelIdForRegistry(m.id) === modelId
+          );
           if (model) {
             const fillPercentage = calculateContextFillPercentage(
               result.tokenUsage.currentContextTokens,
@@ -5307,11 +5863,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       }
 
       // Attach for live streaming
-      sessionAttach(selectedSession.id, (_err: Error | null, chunk: StreamChunk) => {
-        if (chunk) {
-          handleStreamChunk(chunk);
+      sessionAttach(
+        selectedSession.id,
+        (_err: Error | null, chunk: StreamChunk) => {
+          if (chunk) {
+            handleStreamChunk(chunk);
+          }
         }
-      });
+      );
 
       // Update session state (atomic transition via store)
       // Note: activateSession sets both currentSessionId and isReadyForNewSession=false atomically
@@ -5323,7 +5882,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // SESS-001: Attach resumed session to work unit
       if (workUnitId) {
         attachSessionToWorkUnit(workUnitId, selectedSession.id);
-        logger.debug(`SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`);
+        logger.debug(
+          `SESS-001: Attached resumed session ${selectedSession.id} to work unit ${workUnitId}`
+        );
       }
     } catch (err) {
       const errorMessage =
@@ -5336,7 +5897,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       setAvailableSessions([]);
       setResumeSessionIndex(0);
     }
-  }, [availableSessions, resumeSessionIndex, handleStreamChunk, activateSession]);
+  }, [
+    availableSessions,
+    resumeSessionIndex,
+    handleStreamChunk,
+    activateSession,
+  ]);
 
   // NAPI-003: Cancel resume mode
   const handleResumeCancel = useCallback(() => {
@@ -5439,7 +6005,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         // SESS-001: Clear session attachment when session is destroyed
         if (workUnitId) {
           detachSessionFromWorkUnit(workUnitId);
-          logger.debug(`SESS-001: Cleared session attachment for work unit ${workUnitId} (session destroyed)`);
+          logger.debug(
+            `SESS-001: Cleared session attachment for work unit ${workUnitId} (session destroyed)`
+          );
         }
         onExit();
       }
@@ -5543,10 +6111,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       const scrollAmount = resumeScrollVelocity.current * delta;
 
       setResumeSessionIndex(prev =>
-        Math.max(
-          0,
-          Math.min(availableSessions.length - 1, prev + scrollAmount)
-        )
+        Math.max(0, Math.min(availableSessions.length - 1, prev + scrollAmount))
       );
     },
     [availableSessions.length]
@@ -5556,7 +6121,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   useInputCompat({
     id: 'agent-view-pause',
     priority: InputPriority.HIGH,
-    description: 'Agent view pause keyboard handler (Enter to resume, Y/N for confirm)',
+    description:
+      'Agent view pause keyboard handler (Enter to resume, Y/N for confirm)',
     isActive: displayIsPaused && currentSessionId !== null,
     handler: (input, key) => {
       if (!currentSessionId || !displayPauseInfo) {
@@ -5723,18 +6289,26 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       if (slashCommand.handleInput(input, key)) {
         return true;
       }
-      
+
       // TUI-055: File search popup keyboard handling (exact same architecture as slash commands)
       if (fileSearch.handleInput(input, key)) {
         return true;
       }
-      
+
       // TUI-050: Handle Enter for slash commands even if palette wasn't shown yet
       // (e.g., user types "/debug" and presses Enter before palette could render)
       // IMPORTANT: Only do this when NOT in another mode (resume, watcher, etc.)
       // Otherwise Enter gets incorrectly captured when user is selecting from a list
-      if (key.return && inputValue.startsWith('/') && inputValue.trim().length > 1 &&
-          !isResumeMode && !isWatcherMode && !isWatcherEditMode && !showModelSelector && !showSettingsTab) {
+      if (
+        key.return &&
+        inputValue.startsWith('/') &&
+        inputValue.trim().length > 1 &&
+        !isResumeMode &&
+        !isWatcherMode &&
+        !isWatcherEditMode &&
+        !showModelSelector &&
+        !showSettingsTab
+      ) {
         void handleSubmitWithCommand(inputValue.trim());
         return true;
       }
@@ -5819,7 +6393,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
                 setWatcherList(updatedList);
               } catch (err) {
                 const errorMessage =
-                  err instanceof Error ? err.message : 'Failed to save watcher name';
+                  err instanceof Error
+                    ? err.message
+                    : 'Failed to save watcher name';
                 setConversation(prev => [
                   ...prev,
                   { type: 'status', content: `Edit failed: ${errorMessage}` },
@@ -5874,7 +6450,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
         // Up/Down navigation in select mode
         if (isSplitViewSelectMode) {
-          const targetConversation = activePane === 'parent' ? parentConversation : conversation;
+          const targetConversation =
+            activePane === 'parent' ? parentConversation : conversation;
           const maxIndex = Math.max(0, targetConversation.length - 1);
 
           if (key.upArrow) {
@@ -5891,7 +6468,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             const selectedLine = parentConversation[splitViewSelectedIndex];
             if (selectedLine) {
               const turnNum = splitViewSelectedIndex + 1;
-              const preview = selectedLine.content.slice(0, 100) + (selectedLine.content.length > 100 ? '...' : '');
+              const preview =
+                selectedLine.content.slice(0, 100) +
+                (selectedLine.content.length > 100 ? '...' : '');
               const prefill = `Regarding turn ${turnNum} in parent session:\n\`\`\`\n${preview}\n\`\`\`\n`;
               setInputValue(prefill);
               setIsSplitViewSelectMode(false);
@@ -6242,8 +6821,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       // Uses sessionNavigation hook which determines correct target based on position in tree
       // Check escape sequences first, then Ink key detection
       if (!isWatcherSessionView) {
-        const isShiftLeft = input.includes('[1;2D') || input.includes('\x1b[1;2D') || (key.shift && key.leftArrow);
-        const isShiftRight = input.includes('[1;2C') || input.includes('\x1b[1;2C') || (key.shift && key.rightArrow);
+        const isShiftLeft =
+          input.includes('[1;2D') ||
+          input.includes('\x1b[1;2D') ||
+          (key.shift && key.leftArrow);
+        const isShiftRight =
+          input.includes('[1;2C') ||
+          input.includes('\x1b[1;2C') ||
+          (key.shift && key.rightArrow);
 
         if (isShiftLeft) {
           sessionNavigation.handleShiftLeft();
@@ -6343,7 +6928,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
       // TUI-045: Always use collapsed content in main view (modal shows full content)
       const effectiveContent = msg.content;
-      
+
       // Create effective message for cache check
       const effectiveMsg = { ...msg, content: effectiveContent };
 
@@ -6363,7 +6948,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         lines.push(...cached.lines);
       } else {
         // Cache miss - compute lines and cache them
-        const messageLines = wrapMessageToLines(effectiveMsg, msgIndex, maxWidth);
+        const messageLines = wrapMessageToLines(
+          effectiveMsg,
+          msgIndex,
+          maxWidth
+        );
         cache.set(msgIndex, {
           content: effectiveContent,
           isStreaming: msg.isStreaming ?? false,
@@ -6505,11 +7094,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         width={terminalWidth}
         height={terminalHeight}
       >
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          backgroundColor="black"
-        >
+        <Box flexDirection="column" flexGrow={1} backgroundColor="black">
           <Box flexDirection="column" padding={2} flexGrow={1}>
             <Box marginBottom={1}>
               <Text bold color="cyan">
@@ -6552,7 +7137,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
                         selectedModelIdx === -1;
                       const sectionIcon = item.isExpanded ? '▼' : '▶';
                       return (
-                        <Box key={`section-${item.section.providerId}`} width={modelTextWidth}>
+                        <Box
+                          key={`section-${item.section.providerId}`}
+                          width={modelTextWidth}
+                        >
                           <Text
                             backgroundColor={
                               isSectionSelected ? 'cyan' : undefined
@@ -6574,7 +7162,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
                         currentModel?.apiModelId === item.model.id;
                       const modelId = extractModelIdForRegistry(item.model.id);
                       return (
-                        <Box key={`model-${item.model.id}`} width={modelTextWidth}>
+                        <Box
+                          key={`model-${item.model.id}`}
+                          width={modelTextWidth}
+                        >
                           <Text
                             backgroundColor={
                               isModelSelected ? 'cyan' : undefined
@@ -6667,11 +7258,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         width={terminalWidth}
         height={terminalHeight}
       >
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          backgroundColor="black"
-        >
+        <Box flexDirection="column" flexGrow={1} backgroundColor="black">
           <Box flexDirection="column" padding={2} flexGrow={1}>
             <Box marginBottom={1}>
               <Text bold color="yellow">
@@ -6738,7 +7325,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
                               <Text color="gray"> (not configured)</Text>
                             )}
                             {testResult && (
-                              <Text color={testResult.success ? 'green' : 'red'}>
+                              <Text
+                                color={testResult.success ? 'green' : 'red'}
+                              >
                                 {' '}
                                 {testResult.message}
                               </Text>
@@ -6814,11 +7403,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         width={terminalWidth}
         height={terminalHeight}
       >
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          backgroundColor="black"
-        >
+        <Box flexDirection="column" flexGrow={1} backgroundColor="black">
           <Box flexDirection="column" padding={2} flexGrow={1}>
             <Box marginBottom={1}>
               <Text bold color="magenta">
@@ -6832,7 +7417,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               </Box>
             )}
             {searchResults.slice(0, 10).map((entry, idx) => (
-              <Box key={`${entry.sessionId}-${entry.timestamp}`} width={searchTextWidth}>
+              <Box
+                key={`${entry.sessionId}-${entry.timestamp}`}
+                width={searchTextWidth}
+              >
                 <Text
                   backgroundColor={
                     idx === searchResultIndex ? 'magenta' : undefined
@@ -6863,11 +7451,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         width={terminalWidth}
         height={terminalHeight}
       >
-        <Box
-          flexDirection="column"
-          flexGrow={1}
-          backgroundColor="black"
-        >
+        <Box flexDirection="column" flexGrow={1} backgroundColor="black">
           <Box flexDirection="column" padding={2} flexGrow={1}>
             <Box marginBottom={1}>
               <Text bold color="blue">
@@ -6927,7 +7511,8 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
                             wrap="truncate"
                           >
                             {'    '}
-                            {session.messageCount} messages | {provider} | {timeAgo}
+                            {session.messageCount} messages | {provider} |{' '}
+                            {timeAgo}
                           </Text>
                         </Box>
                       </Box>,
@@ -6937,31 +7522,36 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               {/* Scrollbar - each session is 2 lines, so scrollbar needs 2x height */}
               {availableSessions.length > resumeVisibleHeight && (
                 <Box flexDirection="column" marginLeft={1}>
-                  {Array.from({ length: resumeVisibleHeight * 2 }).map((_, i) => {
-                    const scrollbarHeight = resumeVisibleHeight * 2;
-                    const thumbHeight = Math.max(
-                      2,
-                      Math.floor(
-                        (resumeVisibleHeight / availableSessions.length) *
+                  {Array.from({ length: resumeVisibleHeight * 2 }).map(
+                    (_, i) => {
+                      const scrollbarHeight = resumeVisibleHeight * 2;
+                      const thumbHeight = Math.max(
+                        2,
+                        Math.floor(
+                          (resumeVisibleHeight / availableSessions.length) *
+                            scrollbarHeight
+                        )
+                      );
+                      const thumbPos = Math.floor(
+                        (resumeScrollOffset / availableSessions.length) *
                           scrollbarHeight
-                      )
-                    );
-                    const thumbPos = Math.floor(
-                      (resumeScrollOffset / availableSessions.length) *
-                        scrollbarHeight
-                    );
-                    const isThumb = i >= thumbPos && i < thumbPos + thumbHeight;
-                    return (
-                      <Text key={i} dimColor>
-                        {isThumb ? '■' : '│'}
-                      </Text>
-                    );
-                  })}
+                      );
+                      const isThumb =
+                        i >= thumbPos && i < thumbPos + thumbHeight;
+                      return (
+                        <Text key={i} dimColor>
+                          {isThumb ? '■' : '│'}
+                        </Text>
+                      );
+                    }
+                  )}
                 </Box>
               )}
             </Box>
             <Box marginTop={1}>
-              <Text dimColor>Enter Select | ↑↓ Navigate | D Delete | Esc Cancel</Text>
+              <Text dimColor>
+                Enter Select | ↑↓ Navigate | D Delete | Esc Cancel
+              </Text>
             </Box>
           </Box>
         </Box>
@@ -6978,9 +7568,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         {showExitConfirmation && (
           <ThreeButtonDialog
             message="Exit Session?"
-            description={displayIsLoading
-              ? "The agent is currently running. Choose how to exit."
-              : "Choose how to exit the session."}
+            description={
+              displayIsLoading
+                ? 'The agent is currently running. Choose how to exit.'
+                : 'Choose how to exit the session.'
+            }
             options={['Detach', 'Close Session', 'Cancel']}
             defaultSelectedIndex={0}
             onSelect={handleExitChoice}
@@ -6999,14 +7591,17 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       section.models.map(model => `${section.providerId}/${model.id}`)
     );
     // Get current model ID for default selection (include provider prefix)
-    const currentModelId = currentProvider && (rustModelInfo.modelId || currentModel?.modelId)
-      ? `${currentProvider}/${rustModelInfo.modelId || currentModel?.modelId}`
-      : '';
+    const currentModelId =
+      currentProvider && (rustModelInfo.modelId || currentModel?.modelId)
+        ? `${currentProvider}/${rustModelInfo.modelId || currentModel?.modelId}`
+        : '';
 
     return (
       <WatcherCreateView
         currentModel={currentModelId}
-        availableModels={availableModelIds.length > 0 ? availableModelIds : [currentModelId]}
+        availableModels={
+          availableModelIds.length > 0 ? availableModelIds : [currentModelId]
+        }
         terminalWidth={terminalWidth}
         terminalHeight={terminalHeight}
         onCreate={handleWatcherCreate}
@@ -7022,16 +7617,19 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       section.models.map(model => `${section.providerId}/${model.id}`)
     );
     // Get current model ID for default selection (include provider prefix)
-    const currentModelId = currentProvider && (rustModelInfo.modelId || currentModel?.modelId)
-      ? `${currentProvider}/${rustModelInfo.modelId || currentModel?.modelId}`
-      : '';
+    const currentModelId =
+      currentProvider && (rustModelInfo.modelId || currentModel?.modelId)
+        ? `${currentProvider}/${rustModelInfo.modelId || currentModel?.modelId}`
+        : '';
 
     return (
       <WatcherTemplateForm
         mode={templateFormMode}
         template={editingTemplate}
         currentModel={currentModelId}
-        availableModels={availableModelIds.length > 0 ? availableModelIds : [currentModelId]}
+        availableModels={
+          availableModelIds.length > 0 ? availableModelIds : [currentModelId]
+        }
         terminalWidth={terminalWidth}
         terminalHeight={terminalHeight}
         onSave={handleTemplateSave}
@@ -7064,9 +7662,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         {showTemplateDeleteDialog && templateToDelete && (
           <ThreeButtonDialog
             message={`Delete template "${templateToDelete.template.name}"?`}
-            description={templateToDelete.instances.length > 0 
-              ? `This will kill ${templateToDelete.instances.length} active watcher${templateToDelete.instances.length !== 1 ? 's' : ''}.`
-              : undefined}
+            description={
+              templateToDelete.instances.length > 0
+                ? `This will kill ${templateToDelete.instances.length} active watcher${templateToDelete.instances.length !== 1 ? 's' : ''}.`
+                : undefined
+            }
             options={['Delete', 'Cancel']}
             onSelect={(index: number) => {
               if (index === 0) {
@@ -7105,9 +7705,11 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         {showExitConfirmation && (
           <ThreeButtonDialog
             message="Exit Session?"
-            description={displayIsLoading
-              ? "The agent is currently running. Choose how to exit."
-              : "Choose how to exit the session."}
+            description={
+              displayIsLoading
+                ? 'The agent is currently running. Choose how to exit.'
+                : 'Choose how to exit the session.'
+            }
             options={['Detach', 'Close Session', 'Cancel']}
             defaultSelectedIndex={0}
             onSelect={handleExitChoice}
@@ -7137,10 +7739,18 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // WATCH-016: Added onOpenTurnContent callback for opening TurnContentModal from watcher pane
   if (isWatcherSessionView) {
     // WATCH-016: Handler for opening turn content modal from watcher pane
-    const handleOpenWatcherTurnContent = (messageIndex: number, content: string) => {
+    const handleOpenWatcherTurnContent = (
+      messageIndex: number,
+      content: string
+    ) => {
       // Determine role from conversation (default to assistant for watcher responses)
-      const turnLines = conversationLines.filter(line => line.messageIndex === messageIndex);
-      const role = turnLines.length > 0 ? (turnLines[0].role as 'user' | 'assistant' | 'watcher') : 'assistant';
+      const turnLines = conversationLines.filter(
+        line => line.messageIndex === messageIndex
+      );
+      const role =
+        turnLines.length > 0
+          ? (turnLines[0].role as 'user' | 'assistant' | 'watcher')
+          : 'assistant';
       setWatcherTurnModalContent(content);
       setWatcherTurnModalRole(role);
       setShowWatcherTurnModal(true);
@@ -7175,7 +7785,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
                 sessionSetPendingInput(currentSessionId, inputValue);
               } catch (err) {
                 // Failed to set pending input before switching - indicates session management issues
-                logger.error('Failed to set pending input before session switch:', err);
+                logger.error(
+                  'Failed to set pending input before session switch:',
+                  err
+                );
               }
             }
             // Detach from current session
@@ -7221,10 +7834,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
   // Remove position="absolute" since FullScreenWrapper handles positioning
   // Removed outer border to maximize usable space and reduce rendering overhead
   return (
-    <Box
-      flexDirection="column"
-      flexGrow={1}
-    >
+    <Box flexDirection="column" flexGrow={1}>
       {/* TUI-034: Shared session header with model info, capabilities, and token usage */}
       <SessionHeader
         modelId={displayModelId}
@@ -7264,14 +7874,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
             // TUI-042: Render separator lines with selection indicator using shared utility
             const separatorType = getSelectionSeparatorType(
-              line, index, conversationLines, selectedIndex, isTurnSelectMode
+              line,
+              index,
+              conversationLines,
+              selectedIndex,
+              isTurnSelectMode
             );
             if (separatorType) {
               const lineWidth = terminalWidth - 4;
               const arrowBar = generateArrowBar(lineWidth, separatorType);
               return (
                 <Box flexGrow={1}>
-                  <Text backgroundColor="gray" color="white">{arrowBar}</Text>
+                  <Text backgroundColor="gray" color="white">
+                    {arrowBar}
+                  </Text>
                 </Box>
               );
             }
@@ -7330,7 +7946,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               // Error output (isError=true from tool result) - render in red
               // Also strip stderr marker since errors from bash tool include marked stderr
               if (line.isError) {
-                const cleanContent = content.replace(new RegExp(STDERR_MARKER, 'g'), '');
+                const cleanContent = content.replace(
+                  new RegExp(STDERR_MARKER, 'g'),
+                  ''
+                );
                 return (
                   <Box flexGrow={1}>
                     <Text color="red">{cleanContent}</Text>
@@ -7341,7 +7960,10 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
               // Stderr output (marked with ⚠stderr⚠ prefix during streaming) - render in red
               if (content.includes(STDERR_MARKER)) {
                 // Remove the marker and render in red
-                const cleanContent = content.replace(new RegExp(STDERR_MARKER, 'g'), '');
+                const cleanContent = content.replace(
+                  new RegExp(STDERR_MARKER, 'g'),
+                  ''
+                );
                 return (
                   <Box flexGrow={1}>
                     <Text color="red">{cleanContent}</Text>
@@ -7362,7 +7984,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
 
             // Default rendering for non-diff content
             // Tool output is white (not yellow), user input is green, watcher input is magenta (WATCH-012)
-            const baseColor = line.role === 'user' ? 'green' : line.role === 'watcher' ? 'magenta' : 'white';
+            const baseColor =
+              line.role === 'user'
+                ? 'green'
+                : line.role === 'watcher'
+                  ? 'magenta'
+                  : 'white';
             return (
               <Box flexGrow={1}>
                 <Text color={baseColor}>{content}</Text>
@@ -7372,18 +7999,29 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           keyExtractor={(_line, index) => `line-${index}`}
           emptyMessage=""
           showScrollbar={true}
-          isFocused={!showProviderSelector && !showModelSelector && !showSettingsTab && !isResumeMode && !isSearchMode && !showTurnModal}
+          isFocused={
+            !showProviderSelector &&
+            !showModelSelector &&
+            !showSettingsTab &&
+            !isResumeMode &&
+            !isSearchMode &&
+            !showTurnModal
+          }
           scrollToEnd={true}
           selectionMode={isTurnSelectMode ? 'item' : 'scroll'}
           // TUI-042/044: Group-based selection for turn navigation
           // Groups lines by messageIndex, navigates between groups
-          groupBy={isTurnSelectMode ? (line) => line.messageIndex : undefined}
+          groupBy={isTurnSelectMode ? line => line.messageIndex : undefined}
           groupPaddingBefore={isTurnSelectMode ? 1 : 0}
           // TUI-045: onSelect opens modal when Enter is pressed in select mode
-          onSelect={isTurnSelectMode ? (line) => {
-            setModalMessageIndex(line.messageIndex);
-            setShowTurnModal(true);
-          } : undefined}
+          onSelect={
+            isTurnSelectMode
+              ? line => {
+                  setModalMessageIndex(line.messageIndex);
+                  setShowTurnModal(true);
+                }
+              : undefined
+          }
           // TUI-043: Expose selection state to parent
           selectionRef={virtualListSelectionRef}
         />
@@ -7415,7 +8053,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
             maxVisibleLines={5}
             skipAnimation={skipInputAnimation}
             isActive={!showCreateSessionDialog}
-            suppressEnter={slashCommand.isVisible || fileSearch.isVisible || isTurnSelectMode || compaction.state.isActive}
+            suppressEnter={
+              slashCommand.isVisible ||
+              fileSearch.isVisible ||
+              isTurnSelectMode ||
+              compaction.state.isActive
+            }
           />
         </Box>
       </Box>
@@ -7444,23 +8087,30 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       )}
 
       {/* TUI-045: Full turn content modal */}
-      {showTurnModal && modalMessageIndex !== null && conversation[modalMessageIndex] && (
-        <TurnContentModal
-          content={conversation[modalMessageIndex].fullContent || conversation[modalMessageIndex].content}
-          role={conversation[modalMessageIndex].role}
-          terminalWidth={terminalWidth}
-          terminalHeight={terminalHeight}
-          isFocused={showTurnModal}
-        />
-      )}
+      {showTurnModal &&
+        modalMessageIndex !== null &&
+        conversation[modalMessageIndex] && (
+          <TurnContentModal
+            content={
+              conversation[modalMessageIndex].fullContent ||
+              conversation[modalMessageIndex].content
+            }
+            role={conversation[modalMessageIndex].role}
+            terminalWidth={terminalWidth}
+            terminalHeight={terminalHeight}
+            isFocused={showTurnModal}
+          />
+        )}
 
       {/* TUI-046: Exit confirmation dialog */}
       {showExitConfirmation && (
         <ThreeButtonDialog
           message="Exit Session?"
-          description={displayIsLoading
-            ? "The agent is currently running. Choose how to exit."
-            : "Choose how to exit the session."}
+          description={
+            displayIsLoading
+              ? 'The agent is currently running. Choose how to exit.'
+              : 'Choose how to exit the session.'
+          }
           options={['Detach', 'Close Session', 'Cancel']}
           defaultSelectedIndex={0}
           onSelect={handleExitChoice}
@@ -7476,26 +8126,36 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
           options={['Retry', 'Continue without compacting', 'Cancel']}
           defaultSelectedIndex={0}
           onSelect={(index, option) => {
-            const optionKey = ['retry', 'continue', 'cancel'][index] as 'retry' | 'continue' | 'cancel';
+            const optionKey = ['retry', 'continue', 'cancel'][index] as
+              | 'retry'
+              | 'continue'
+              | 'cancel';
             compaction.handleRetryOption(optionKey);
             if (optionKey === 'retry' && currentSessionId) {
               // Retry compaction
-              compaction.performManualCompaction(currentSessionId).then(result => {
-                // UX-002: Don't add success message to conversation on retry
-                setCompactionReduction(result.compressionRatio);
-                setTokenUsage(prev => ({
-                  ...prev,
-                  inputTokens: result.compactedTokens,
-                }));
-              }).catch(err => {
-                if (!compaction.retryState.isVisible) {
-                  const errorMessage = err instanceof Error ? err.message : 'Failed to compact';
-                  setConversation(prev => [
+              compaction
+                .performManualCompaction(currentSessionId)
+                .then(result => {
+                  // UX-002: Don't add success message to conversation on retry
+                  setCompactionReduction(result.compressionRatio);
+                  setTokenUsage(prev => ({
                     ...prev,
-                    { type: 'status', content: `Compaction failed: ${errorMessage}` },
-                  ]);
-                }
-              });
+                    inputTokens: result.compactedTokens,
+                  }));
+                })
+                .catch(err => {
+                  if (!compaction.retryState.isVisible) {
+                    const errorMessage =
+                      err instanceof Error ? err.message : 'Failed to compact';
+                    setConversation(prev => [
+                      ...prev,
+                      {
+                        type: 'status',
+                        content: `Compaction failed: ${errorMessage}`,
+                      },
+                    ]);
+                  }
+                });
             }
           }}
           onCancel={() => compaction.clearRetryState()}
@@ -7533,14 +8193,14 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
         <ThinkingLevelDialog
           currentLevel={rustSnapshot.baseThinkingLevel as JsThinkingLevel}
           defaultLevel={defaultThinkingLevel}
-          onSelect={(level) => {
+          onSelect={level => {
             // Update base thinking level in Rust
             getRustStateSource().setBaseThinkingLevel(currentSessionId, level);
             // Refresh snapshot to pick up the change
             refreshRustState();
             setShowThinkingLevelDialog(false);
           }}
-          onSetDefault={async (level) => {
+          onSetDefault={async level => {
             // TUI-058: Save default thinking level to config
             await saveDefaultThinkingLevel(level);
             // Update local state so indicator moves immediately
@@ -7551,12 +8211,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ onExit, workUnitId, initia
       )}
 
       {/* Error dialog for API/model errors */}
-      {error && (
-        <ErrorDialog
-          message={error}
-          onClose={() => setError(null)}
-        />
-      )}
+      {error && <ErrorDialog message={error} onClose={() => setError(null)} />}
     </Box>
   );
 };

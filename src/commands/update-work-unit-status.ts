@@ -35,6 +35,7 @@ import { sendIPCMessage } from '../utils/ipc';
 import { executeHooks } from '../hooks/executor';
 import type { HookDefinition } from '../hooks/types';
 import { performReviewValidation } from '../utils/review-validation';
+import { onWorkUnitStatusUpdated } from './hooks/workUnitStatusHook';
 
 import { output } from '../utils/output';
 type WorkUnitStatus =
@@ -790,6 +791,17 @@ This is optional but recommended to catch issues early.
 </system-reminder>`;
       reminders.push(reviewReminder);
     }
+  }
+
+  // TUI-059: Check for work unit context change and emit reminder
+  // This notifies the LLM when it's updating a different work unit than the one attached to the session
+  const workUnitContextResult = await onWorkUnitStatusUpdated(
+    options.workUnitId,
+    newStatus,
+    workUnit.title || options.workUnitId
+  );
+  if (workUnitContextResult.systemReminder) {
+    reminders.push(workUnitContextResult.systemReminder);
   }
 
   // Combine all reminders - strip wrappers first, then wrap once

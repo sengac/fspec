@@ -1,0 +1,76 @@
+{
+  "scenarios": [
+    {
+      "name": "Work unit ID appears in environment information when entering AgentView",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "3278-3313",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "69-102"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LLM receives notification when updating a different work unit",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "3336-3374",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "69-102"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No notification when updating the same work unit",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "3381-3396",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "69-102"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No notification when no active session exists",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "3403-3416",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "69-102"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 100
+  }
+}

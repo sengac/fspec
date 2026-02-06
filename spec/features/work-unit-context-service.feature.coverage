@@ -1,0 +1,93 @@
+{
+  "scenarios": [
+    {
+      "name": "Work unit context stored when entering AgentView",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/workUnitContextService.test.ts",
+          "lines": "52-90",
+          "implMappings": [
+            {
+              "file": "src/tui/hooks/useWorkUnitContext.ts",
+              "lines": "1-149"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "LLM receives notification when updating a different work unit",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/workUnitContextService.test.ts",
+          "lines": "96-122",
+          "implMappings": [
+            {
+              "file": "src/tui/services/workUnitContextService.ts",
+              "lines": "80-100"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System reminder formatted with previous and current work unit",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/workUnitContextService.test.ts",
+          "lines": "124-156",
+          "implMappings": [
+            {
+              "file": "src/tui/services/workUnitContextService.ts",
+              "lines": "108-125"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No notification when updating the same work unit",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/workUnitContextService.test.ts",
+          "lines": "162-200",
+          "implMappings": [
+            {
+              "file": "src/tui/services/workUnitContextService.ts",
+              "lines": "80-100"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "No notification when no active session exists",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/workUnitContextService.test.ts",
+          "lines": "206-243",
+          "implMappings": [
+            {
+              "file": "src/commands/hooks/workUnitStatusHook.ts",
+              "lines": "55-69"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/workUnitContextService.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/hooks/useWorkUnitContext.ts",
+      "src/tui/services/workUnitContextService.ts",
+      "src/commands/hooks/workUnitStatusHook.ts"
+    ],
+    "totalLinesCovered": 150
+  }
+}

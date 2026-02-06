@@ -31,6 +31,8 @@ pub enum SystemReminderType {
     GitStatus,
     /// Current token usage/capacity/remaining
     TokenStatus,
+    /// TUI-059: fspec workflow context (current work unit)
+    FspecWorkflow,
 }
 
 impl SystemReminderType {
@@ -41,6 +43,7 @@ impl SystemReminderType {
             Self::Environment => "environment",
             Self::GitStatus => "gitStatus",
             Self::TokenStatus => "tokenStatus",
+            Self::FspecWorkflow => "fspecWorkflow",
         }
     }
 
@@ -51,6 +54,7 @@ impl SystemReminderType {
             "environment" => Some(Self::Environment),
             "gitStatus" => Some(Self::GitStatus),
             "tokenStatus" => Some(Self::TokenStatus),
+            "fspecWorkflow" => Some(Self::FspecWorkflow),
             _ => None,
         }
     }

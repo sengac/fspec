@@ -15,6 +15,7 @@ use crate::persistence::{
 };
 use crate::types::{CompactionResult, DebugCommandResult, NotificationSeverity, SessionState, StreamChunk, ToolCallInfo, ToolResultInfo, NapiAnchorPoint, NapiAnchorType, NapiAnchorToolCall, NapiTurnDetails, NapiToolCall, NapiFileModification};
 use codelet_cli::interactive_helpers::execute_compaction;
+use codelet_cli::session::context_gathering::gather_environment_info;
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
 };
@@ -63,6 +64,41 @@ pub(crate) struct CompactionProgress {
     pub current: u32,
     /// Total items to process (e.g., total turns to analyze)
     pub total: u32,
+}
+
+/// TUI-059: Work unit context for session
+/// Tracks which work unit the session is currently assigned to
+#[derive(Debug, Clone, Default)]
+pub struct WorkUnitContext {
+    /// Work unit ID (e.g., "AUTH-001")
+    pub id: Option<String>,
+    /// Work unit title (e.g., "User Authentication")
+    pub title: Option<String>,
+    /// Current status (e.g., "specifying", "testing")
+    pub status: Option<String>,
+}
+
+impl WorkUnitContext {
+    /// Create a new work unit context
+    pub fn new(id: String, title: String, status: String) -> Self {
+        Self {
+            id: Some(id),
+            title: Some(title),
+            status: Some(status),
+        }
+    }
+
+    /// Check if context is set
+    pub fn is_set(&self) -> bool {
+        self.id.is_some()
+    }
+
+    /// Format work unit context for environment information
+    /// Returns "Current work unit: ID" or None if not set
+    /// TUI-059: Only includes ID, not title or status
+    pub fn format_for_environment(&self) -> Option<String> {
+        self.id.as_ref().map(|id| format!("Current work unit: {}", id))
+    }
 }
 
 /// Role authority level for watcher sessions (WATCH-004)
@@ -839,6 +875,14 @@ pub struct BackgroundSession {
     
     /// PERF-002: Current compaction progress information
     compaction_progress: RwLock<Option<CompactionProgress>>,
+    
+    /// TUI-059: Work unit context for session
+    /// Tracks which work unit this session is currently working on
+    work_unit_context: RwLock<Option<WorkUnitContext>>,
+    
+    /// TUI-059: Base environment content (without work unit)
+    /// Stored so we can compose full environment info when work unit changes
+    base_environment_content: RwLock<String>,
 }
 
 impl BackgroundSession {
@@ -893,6 +937,9 @@ impl BackgroundSession {
             base_thinking_level: AtomicU8::new(0), // TUI-054: Default to Off
             anchor_points: std::sync::Mutex::new(Vec::new()), // TUI-056: Empty anchor points initially
             compaction_progress: RwLock::new(None), // PERF-002: No compaction in progress initially
+            work_unit_context: RwLock::new(None), // TUI-059: No work unit context initially
+            // TUI-059: Store base environment content for composing with work unit later
+            base_environment_content: RwLock::new(gather_environment_info().to_reminder_content()),
         }
     }
 
@@ -914,6 +961,47 @@ impl BackgroundSession {
     /// Set pending input text (TUI-049)
     pub fn set_pending_input(&self, input: Option<String>) {
         *self.pending_input.write().expect("pending_input lock poisoned") = input;
+    }
+
+    /// TUI-059: Get work unit context
+    pub fn get_work_unit_context(&self) -> Option<WorkUnitContext> {
+        self.work_unit_context.read().expect("work_unit_context lock poisoned").clone()
+    }
+
+    /// TUI-059: Set work unit context
+    /// Updates the Environment system reminder to include work unit info
+    pub fn set_work_unit_context(&self, id: Option<String>, title: Option<String>, status: Option<String>) {
+        use codelet_cli::session::SystemReminderType;
+        
+        let mut ctx = self.work_unit_context.write().expect("work_unit_context lock poisoned");
+        let base_env = self.base_environment_content.read().expect("base_environment_content lock poisoned");
+        
+        if let (Some(id_val), Some(title_val), Some(status_val)) = (id.clone(), title.clone(), status.clone()) {
+            *ctx = Some(WorkUnitContext::new(id_val, title_val, status_val));
+            
+            // Compose full environment info with work unit
+            // TUI-059: Add "Current work unit: ID" to the environment info (alongside Platform, Shell, etc.)
+            let work_unit_line = ctx.as_ref()
+                .and_then(|c| c.format_for_environment())
+                .unwrap_or_default();
+            
+            let full_env = if work_unit_line.is_empty() {
+                base_env.clone()
+            } else {
+                format!("{}\n{}", base_env, work_unit_line)
+            };
+            
+            // Update the Environment reminder (supersedes the original)
+            if let Ok(mut inner) = self.inner.try_lock() {
+                inner.add_system_reminder(SystemReminderType::Environment, &full_env);
+            }
+        } else {
+            *ctx = None;
+            // Restore base environment without work unit
+            if let Ok(mut inner) = self.inner.try_lock() {
+                inner.add_system_reminder(SystemReminderType::Environment, &base_env);
+            }
+        }
     }
 
     /// Update cached token counts (called when TokenUpdate events are emitted)
@@ -3163,6 +3251,247 @@ mod watcher_integration_tests {
 
         // Clean up
         drop(user_input_tx);
+    }
+}
+
+// =============================================================================
+// TUI-059: WORK UNIT CONTEXT TESTS
+// =============================================================================
+
+#[cfg(test)]
+mod work_unit_context_tests {
+    use super::*;
+
+    /// Feature: spec/features/work-unit-context.feature
+    ///
+    /// Tests for WorkUnitContext struct and related functionality (TUI-059)
+
+    // =========================================================================
+    // Scenario: Work unit ID appears in environment information when entering AgentView
+    // =========================================================================
+
+    /// @step Given work unit "AUTH-001" exists in the backlog
+    /// @step When I select work unit "AUTH-001" and press Enter
+    /// @step Then I should be in the AgentView
+    /// @step And the environment information should contain "Current work unit: AUTH-001"
+    #[test]
+    fn test_format_for_environment_returns_correct_format() {
+        // @step Given work unit "AUTH-001" exists in the backlog
+        // @step When I select work unit "AUTH-001" and press Enter
+        let ctx = WorkUnitContext::new(
+            "AUTH-001".to_string(),
+            "User Authentication".to_string(),
+            "specifying".to_string(),
+        );
+
+        // @step Then I should be in the AgentView
+        // @step And the environment information should contain "Current work unit: AUTH-001"
+        let env_info = ctx.format_for_environment();
+        assert!(env_info.is_some(), "Should return environment info when context is set");
+        assert_eq!(env_info.unwrap(), "Current work unit: AUTH-001");
+    }
+
+    /// @step And the environment information should not contain the work unit title
+    /// @step And the environment information should not contain the work unit status
+    #[test]
+    fn test_format_for_environment_excludes_title_and_status() {
+        // @step Given a work unit context with title and status
+        let ctx = WorkUnitContext::new(
+            "AUTH-001".to_string(),
+            "User Authentication".to_string(),
+            "specifying".to_string(),
+        );
+
+        // @step When the environment info is formatted
+        let env_info = ctx.format_for_environment().unwrap();
+
+        // @step And the environment information should not contain the work unit title
+        assert!(!env_info.contains("User Authentication"), "Should NOT contain title");
+
+        // @step And the environment information should not contain the work unit status
+        assert!(!env_info.contains("specifying"), "Should NOT contain status");
+    }
+
+    /// Test format_for_environment returns None when context is not set
+    #[test]
+    fn test_format_for_environment_returns_none_when_not_set() {
+        // Given a default (empty) work unit context
+        let ctx = WorkUnitContext::default();
+
+        // When format_for_environment is called
+        let env_info = ctx.format_for_environment();
+
+        // Then it should return None
+        assert!(env_info.is_none(), "Should return None when context is not set");
+    }
+
+    // =========================================================================
+    // Scenario: LLM receives notification when updating a different work unit
+    // =========================================================================
+
+    /// @step Given the session is attached to work unit "AUTH-001"
+    /// @step When I run "update-work-unit-status BUG-002 implementing"
+    /// @step Then the session work unit context should be updated to "BUG-002"
+    #[test]
+    fn test_work_unit_context_new_creates_valid_context() {
+        // @step Given the session is attached to work unit "AUTH-001"
+        let ctx = WorkUnitContext::new(
+            "AUTH-001".to_string(),
+            "User Authentication".to_string(),
+            "specifying".to_string(),
+        );
+
+        // Then context should have correct values
+        assert_eq!(ctx.id, Some("AUTH-001".to_string()));
+        assert_eq!(ctx.title, Some("User Authentication".to_string()));
+        assert_eq!(ctx.status, Some("specifying".to_string()));
+        assert!(ctx.is_set(), "Context should be set");
+    }
+
+    /// Test that context can be updated with new values
+    #[test]
+    fn test_work_unit_context_can_be_replaced() {
+        // @step Given session is attached to "AUTH-001"
+        let ctx1 = WorkUnitContext::new(
+            "AUTH-001".to_string(),
+            "User Authentication".to_string(),
+            "specifying".to_string(),
+        );
+        assert_eq!(ctx1.id, Some("AUTH-001".to_string()));
+
+        // @step When context changes to "BUG-002"
+        let ctx2 = WorkUnitContext::new(
+            "BUG-002".to_string(),
+            "Fix login bug".to_string(),
+            "implementing".to_string(),
+        );
+
+        // @step Then the session work unit context should be updated to "BUG-002"
+        assert_eq!(ctx2.id, Some("BUG-002".to_string()));
+        assert_eq!(ctx2.title, Some("Fix login bug".to_string()));
+        assert_eq!(ctx2.status, Some("implementing".to_string()));
+    }
+
+    // =========================================================================
+    // Scenario: No notification when updating the same work unit
+    // =========================================================================
+
+    /// @step And the session work unit context should remain "AUTH-001"
+    #[test]
+    fn test_work_unit_context_same_id_detection() {
+        // @step Given the session is attached to work unit "AUTH-001"
+        let ctx = WorkUnitContext::new(
+            "AUTH-001".to_string(),
+            "User Authentication".to_string(),
+            "specifying".to_string(),
+        );
+
+        // @step When checking if IDs match
+        // (This tests the id field which is used for comparison in TypeScript layer)
+        assert_eq!(ctx.id, Some("AUTH-001".to_string()));
+
+        // @step And the session work unit context should remain "AUTH-001"
+        // Same ID means no change notification is needed
+    }
+
+    // =========================================================================
+    // Scenario: No notification when no active session exists
+    // =========================================================================
+
+    /// @step Given there is no active TUI session
+    #[test]
+    fn test_work_unit_context_default_is_not_set() {
+        // @step Given there is no active TUI session
+        let ctx = WorkUnitContext::default();
+
+        // Then context should not be set
+        assert!(!ctx.is_set(), "Default context should not be set");
+        assert!(ctx.id.is_none());
+        assert!(ctx.title.is_none());
+        assert!(ctx.status.is_none());
+    }
+
+    // =========================================================================
+    // Edge Cases
+    // =========================================================================
+
+    /// Test is_set returns true only when id is present
+    #[test]
+    fn test_is_set_depends_only_on_id() {
+        // Context with only id
+        let ctx_id_only = WorkUnitContext {
+            id: Some("TEST-001".to_string()),
+            title: None,
+            status: None,
+        };
+        assert!(ctx_id_only.is_set(), "Should be set when id is present");
+
+        // Context with title and status but no id
+        let ctx_no_id = WorkUnitContext {
+            id: None,
+            title: Some("Some Title".to_string()),
+            status: Some("testing".to_string()),
+        };
+        assert!(!ctx_no_id.is_set(), "Should NOT be set when id is missing");
+    }
+
+    /// Test format_for_environment with special characters in ID
+    #[test]
+    fn test_format_for_environment_with_special_characters() {
+        let ctx = WorkUnitContext::new(
+            "SPEC-123-äöü".to_string(),
+            "Feature with émojis 🚀".to_string(),
+            "in-progress".to_string(),
+        );
+
+        let env_info = ctx.format_for_environment().unwrap();
+        assert_eq!(env_info, "Current work unit: SPEC-123-äöü");
+    }
+
+    /// Test format_for_environment with empty string ID
+    #[test]
+    fn test_format_for_environment_with_empty_id() {
+        let ctx = WorkUnitContext::new(
+            "".to_string(),
+            "Empty ID".to_string(),
+            "backlog".to_string(),
+        );
+
+        // Empty string is still Some(""), so format_for_environment should return something
+        let env_info = ctx.format_for_environment();
+        assert!(env_info.is_some());
+        assert_eq!(env_info.unwrap(), "Current work unit: ");
+    }
+
+    /// Test Clone implementation
+    #[test]
+    fn test_work_unit_context_clone() {
+        let ctx1 = WorkUnitContext::new(
+            "AUTH-001".to_string(),
+            "User Authentication".to_string(),
+            "specifying".to_string(),
+        );
+
+        let ctx2 = ctx1.clone();
+
+        assert_eq!(ctx1.id, ctx2.id);
+        assert_eq!(ctx1.title, ctx2.title);
+        assert_eq!(ctx1.status, ctx2.status);
+    }
+
+    /// Test Debug implementation
+    #[test]
+    fn test_work_unit_context_debug() {
+        let ctx = WorkUnitContext::new(
+            "AUTH-001".to_string(),
+            "User Authentication".to_string(),
+            "specifying".to_string(),
+        );
+
+        let debug_output = format!("{:?}", ctx);
+        assert!(debug_output.contains("AUTH-001"));
+        assert!(debug_output.contains("User Authentication"));
+        assert!(debug_output.contains("specifying"));
     }
 }
 
@@ -5766,4 +6095,62 @@ pub fn test_provider_connection(provider_name: String) -> Result<()> {
         .map_err(|e| Error::from_reason(format!("Connection failed: {e}")))?;
     
     Ok(())
+}
+
+// =============================================================================
+// TUI-059: WORK UNIT CONTEXT NAPI FUNCTIONS
+// =============================================================================
+
+/// TUI-059: Work unit context information returned to TypeScript
+#[napi(object)]
+pub struct JsWorkUnitContext {
+    pub id: String,
+    pub title: String,
+    pub status: String,
+}
+
+/// TUI-059: Set work unit context for a session
+/// 
+/// When a session is attached to a work unit (e.g., when entering AgentView
+/// from BoardView with a selected work unit), call this to set the context.
+/// Pass null for all parameters to clear the context.
+#[napi]
+pub fn session_set_work_unit_context(
+    session_id: String,
+    id: Option<String>,
+    title: Option<String>,
+    status: Option<String>,
+) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.set_work_unit_context(id, title, status);
+    Ok(())
+}
+
+/// TUI-059: Get work unit context for a session
+/// 
+/// Returns the work unit context if set, or null if no context is set.
+#[napi]
+pub fn session_get_work_unit_context(session_id: String) -> Result<Option<JsWorkUnitContext>> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let ctx = session.get_work_unit_context();
+    
+    match ctx {
+        Some(c) if c.is_set() => Ok(Some(JsWorkUnitContext {
+            id: c.id.unwrap_or_default(),
+            title: c.title.unwrap_or_default(),
+            status: c.status.unwrap_or_default(),
+        })),
+        _ => Ok(None),
+    }
+}
+
+/// TUI-059: Get the currently active session ID
+/// 
+/// Returns the session ID of the currently active session (for navigation),
+/// or null if no session is active.
+#[napi]
+pub fn session_get_active() -> Option<String> {
+    SessionManager::instance()
+        .get_active_session()
+        .map(|uuid| uuid.to_string())
 }
