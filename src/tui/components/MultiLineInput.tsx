@@ -31,6 +31,11 @@ export interface MultiLineInputProps {
   onSubmit: () => void;
   placeholder?: string;
   isActive?: boolean;
+  /**
+   * Maximum logical lines to render at once (viewport size).
+   * Render optimization - limits DOM nodes, not terminal rows.
+   * Long lines can still wrap and exceed this visually.
+   */
   maxVisibleLines?: number;
   onHistoryPrev?: () => void;
   onHistoryNext?: () => void;
@@ -357,7 +362,7 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
     const displayPlaceholder = getDisplayPlaceholder();
     
     return (
-      <Box flexDirection="column">
+      <Box flexDirection="column" flexShrink={0} minHeight={1}>
         <Text>
           <Text dimColor>{displayPlaceholder}</Text>
           <Text inverse> </Text>
@@ -367,7 +372,7 @@ export const MultiLineInput: React.FC<MultiLineInputProps> = ({
   }
 
   return (
-    <Box flexDirection="column">
+    <Box flexDirection="column" flexShrink={0} minHeight={1}>
       {visibleLines.map((line, idx) => {
         const actualRow = scrollOffset + idx;
         return renderLineWithCursor(line, idx, actualRow);

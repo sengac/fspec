@@ -9,6 +9,11 @@ import { useState, useCallback, useMemo, useRef } from 'react';
 
 export interface UseMultiLineInputOptions {
   initialValue?: string;
+  /**
+   * Maximum logical lines to render at once (viewport size).
+   * This is a render optimization - limits DOM nodes, not terminal rows.
+   * Long lines can still wrap and exceed this visually.
+   */
   maxVisibleLines?: number;
   onHistoryPrev?: () => void;
   onHistoryNext?: () => void;
@@ -78,12 +83,22 @@ export function useMultiLineInput(
   // Computed value
   const value = useMemo(() => lines.join('\n'), [lines]);
 
-  // Visible lines based on scroll offset
+  // Visible lines - a render optimization that limits DOM nodes.
+  // This creates a "viewport window" into the full lines array.
+  //
+  // IMPORTANT: This limits LOGICAL lines rendered, NOT terminal rows.
+  // Long lines will still wrap and consume multiple terminal rows.
+  // e.g., 5 visible lines with text wrapping could be 15 terminal rows.
+  //
+  // The cursor navigates the FULL lines array. This slice only controls
+  // what gets rendered. ensureCursorVisible() keeps the viewport synced
+  // with cursor position so the active line is always visible.
   const visibleLines = useMemo(() => {
     return lines.slice(scrollOffset, scrollOffset + maxVisibleLines);
   }, [lines, scrollOffset, maxVisibleLines]);
 
-  // Ensure cursor is visible and adjust scroll
+  // Ensure cursor is visible by adjusting scroll offset.
+  // Called whenever cursor moves to keep it within the rendered viewport.
   const ensureCursorVisible = useCallback(
     (row: number) => {
       if (row < scrollOffset) {

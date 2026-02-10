@@ -91,6 +91,7 @@ export const ConversationInputArea: React.FC<ConversationInputAreaProps> = ({
       borderLeft={false}
       borderRight={false}
       paddingX={1}
+      flexShrink={0}
     >
       <Text color={promptColor}>{promptChar}</Text>
       <Box flexGrow={1}>
