@@ -320,6 +320,8 @@ export interface FspecResult {
   toolCallId: string;
 }
 
+export declare function getAllWorkUnits(): Array<WorkUnitInfo>;
+
 /**
  * Get thinking configuration JSON for a provider at a specific level.
  *
@@ -342,6 +344,10 @@ export declare function getThinkingConfig(
   provider: string,
   level: JsThinkingLevel
 ): string;
+
+export declare function getWorkUnit(workUnitId: string): WorkUnitInfo | null;
+
+export declare function getWorkUnitStatus(workUnitId: string): string | null;
 
 /** Result of a Glob tool search */
 export interface GlobResult {
@@ -395,6 +401,8 @@ export declare function isThinkingContent(
   provider: string,
   partJson: string
 ): boolean;
+
+export declare function isWorkUnitsWatcherActive(): boolean;
 
 /** TypeScript-friendly thinking level enum */
 export declare const enum JsThinkingLevel {
@@ -1481,6 +1489,13 @@ export declare function sessionUpdateDebugMetadata(
  */
 export declare function setRustLogCallback(callback: LogCallback): void;
 
+export declare function startWorkUnitsWatcher(
+  projectRoot: string,
+  callback: (chunk: import('./index').StreamChunk) => void
+): void;
+
+export declare function stopWorkUnitsWatcher(): void;
+
 /**
  * NAPI-010: Stream chunk - proper discriminated union
  *
@@ -1541,7 +1556,8 @@ export type StreamChunk =
     }
   | { type: 'CompactionComplete'; compactionResult: CompactionResult }
   | { type: 'FspecCommandRequest'; fspecRequest: FspecRequest }
-  | { type: 'FspecCommandResult'; fspecResult: FspecResult };
+  | { type: 'FspecCommandResult'; fspecResult: FspecResult }
+  | { type: 'WorkUnitsUpdate'; workUnits: Array<WorkUnitInfo> };
 
 /** Simple test function to verify callback pattern works from TypeScript */
 export declare function testCallback(
@@ -1633,4 +1649,15 @@ export interface WatcherPendingInjectionInfo {
   urgent: boolean;
   /** The message content that would be injected */
   content: string;
+}
+
+/** Work unit information for file watcher updates */
+export interface WorkUnitInfo {
+  id: string;
+  title: string;
+  workType: string;
+  status: string;
+  description?: string;
+  estimate?: number;
+  epic?: string;
 }

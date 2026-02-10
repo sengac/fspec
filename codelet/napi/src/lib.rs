@@ -28,9 +28,14 @@ mod thinking_config;
 mod types;
 #[cfg(not(feature = "noop"))]
 mod simple_test;
+#[cfg(not(feature = "noop"))]
+mod work_units_watcher;
 
 // Persistence module works in both modes (pure Rust with optional NAPI bindings)
 pub mod persistence;
+
+// Test support module for integration tests
+pub mod test_support;
 
 pub use persistence::*;
 
@@ -52,6 +57,8 @@ pub use thinking_config::{
 pub use types::*;
 #[cfg(not(feature = "noop"))]
 pub use simple_test::*;
+#[cfg(not(feature = "noop"))]
+pub use work_units_watcher::*;
 
 // Logging callback infrastructure for routing Rust tracing logs to TypeScript
 #[cfg(not(feature = "noop"))]

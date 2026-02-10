@@ -8,6 +8,7 @@ use codelet_tools::{
     has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
     PauseResponse, PauseState,
 };
+use serial_test::serial;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
 use std::thread;
@@ -29,6 +30,7 @@ fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
 /// @step When a tool calls pause_for_user
 /// @step Then it should return Resumed immediately (no-op)
 #[test]
+#[serial]
 fn test_no_handler_returns_resumed_immediately() {
     with_clean_handler(|| {
         let response = pause_for_user(PauseRequest {
@@ -55,6 +57,7 @@ fn test_no_handler_returns_resumed_immediately() {
 /// @step Then the handler should be invoked with the request
 /// @step And the handler's response should be returned
 #[test]
+#[serial]
 fn test_handler_is_invoked_with_request() {
     with_clean_handler(|| {
         let handler_called = Arc::new(AtomicBool::new(false));
@@ -96,6 +99,7 @@ fn test_handler_is_invoked_with_request() {
 /// @step When pause_for_user is called
 /// @step Then it should return Approved
 #[test]
+#[serial]
 fn test_handler_returns_approved() {
     with_clean_handler(|| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
@@ -116,6 +120,7 @@ fn test_handler_returns_approved() {
 /// @step When pause_for_user is called
 /// @step Then it should return Denied
 #[test]
+#[serial]
 fn test_handler_returns_denied() {
     with_clean_handler(|| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
@@ -136,6 +141,7 @@ fn test_handler_returns_denied() {
 /// @step When pause_for_user is called
 /// @step Then it should return Interrupted
 #[test]
+#[serial]
 fn test_handler_returns_interrupted() {
     with_clean_handler(|| {
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Interrupted);
@@ -161,6 +167,7 @@ fn test_handler_returns_interrupted() {
 /// @step And a background thread signals the condvar
 /// @step Then pause_for_user should unblock and return the response
 #[test]
+#[serial]
 fn test_handler_can_block_and_resume() {
     with_clean_handler(|| {
         // Simulate the session's condvar mechanism
@@ -215,6 +222,7 @@ fn test_handler_can_block_and_resume() {
 /// @step And the user signals Interrupted
 /// @step Then pause_for_user should return Interrupted
 #[test]
+#[serial]
 fn test_handler_can_be_interrupted() {
     with_clean_handler(|| {
         let response_signal: Arc<(Mutex<Option<PauseResponse>>, Condvar)> =
@@ -260,6 +268,7 @@ fn test_handler_can_be_interrupted() {
 // =============================================================================
 
 #[test]
+#[serial]
 fn test_has_pause_handler() {
     with_clean_handler(|| {
         // No handler set
@@ -308,6 +317,7 @@ fn test_pause_state_from_request() {
 // =============================================================================
 
 #[test]
+#[serial]
 fn test_confirm_pause_with_details() {
     with_clean_handler(|| {
         let captured_details = Arc::new(Mutex::new(None));
@@ -338,6 +348,7 @@ fn test_confirm_pause_with_details() {
 // =============================================================================
 
 #[test]
+#[serial]
 fn test_multiple_pause_calls() {
     with_clean_handler(|| {
         let call_count = Arc::new(AtomicU32::new(0));
@@ -370,6 +381,7 @@ fn test_multiple_pause_calls() {
 // =============================================================================
 
 #[test]
+#[serial]
 fn test_handler_replacement() {
     with_clean_handler(|| {
         let first_handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);

@@ -84,6 +84,19 @@ interface FspecState {
   moveWorkUnitUp: (workUnitId: string) => Promise<void>;
   moveWorkUnitDown: (workUnitId: string) => Promise<void>;
 
+  // TUI-060: Update work units directly from watcher data (avoids re-reading file)
+  updateWorkUnitsFromWatcher: (
+    workUnits: Array<{
+      id: string;
+      title: string;
+      workType: string;
+      status: string;
+      description?: string;
+      estimate?: number;
+      epic?: string;
+    }>
+  ) => void;
+
   // Session attachment actions (SESS-001)
   attachSession: (workUnitId: string, sessionId: string) => void;
   detachSession: (workUnitId: string) => void;
@@ -361,6 +374,48 @@ export const useFspecStore = create<FspecState>()(
       } catch (error) {
         console.error('Failed to persist work unit order:', error);
       }
+    },
+
+    // TUI-060: Update work units directly from watcher data (avoids re-reading file)
+    updateWorkUnitsFromWatcher: watcherUnits => {
+      set(state => {
+        // Convert watcher format to internal format and update existing work units
+        // We preserve the existing order from state.workUnits, just update the data
+        const updatedUnits = state.workUnits.map(existingUnit => {
+          const watcherUnit = watcherUnits.find(
+            wu => wu.id === existingUnit.id
+          );
+          if (watcherUnit) {
+            return {
+              ...existingUnit,
+              title: watcherUnit.title,
+              status: watcherUnit.status,
+              type: watcherUnit.workType,
+              description: watcherUnit.description,
+              estimate: watcherUnit.estimate,
+              epic: watcherUnit.epic,
+            };
+          }
+          return existingUnit;
+        });
+
+        // Add any new units that weren't in state.workUnits
+        const existingIds = new Set(state.workUnits.map(wu => wu.id));
+        const newUnits = watcherUnits
+          .filter(wu => !existingIds.has(wu.id))
+          .map(wu => ({
+            id: wu.id,
+            title: wu.title,
+            status: wu.status,
+            type: wu.workType,
+            description: wu.description,
+            estimate: wu.estimate,
+            epic: wu.epic,
+          }));
+
+        state.workUnits = [...updatedUnits, ...newUnits];
+        state.isLoaded = true;
+      });
     },
 
     // Session attachment actions (SESS-001)

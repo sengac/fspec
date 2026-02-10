@@ -118,6 +118,7 @@ pub fn has_fspec_handler() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
     use std::sync::atomic::{AtomicBool, Ordering};
 
     fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
@@ -128,6 +129,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_handler_returns_error() {
         with_clean_handler(|| {
             let result = execute_fspec_command(FspecRequest {
@@ -143,6 +145,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_handler_receives_request() {
         with_clean_handler(|| {
             let called = Arc::new(AtomicBool::new(false));
@@ -175,6 +178,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_has_fspec_handler() {
         with_clean_handler(|| {
             assert!(!has_fspec_handler());

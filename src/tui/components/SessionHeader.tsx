@@ -4,11 +4,10 @@
  * Displays model info, capability indicators, and token usage.
  * Used by both AgentView (normal mode) and SplitSessionView (watcher mode).
  *
- * SOLID: Single Responsibility - only header rendering
- * DRY: Shared between AgentView and SplitSessionView
+ * Work unit ID and status are read from Zustand sessionStore (not props).
  *
- * Normal mode (with session number):
- *   #1: claude-sonnet-4 [R] [V] [200k]           1234↓ 567↑ [45%]
+ * Normal mode (with session number and work unit):
+ *   #1 (AUTH-001: implementing): claude-sonnet-4 [R] [V] [200k]  1234↓ 567↑ [45%]
  *   ─────────────────────────────────────────────────────────────────
  *
  * Watcher mode:
@@ -21,10 +20,17 @@
  *   - [DEBUG] = red bold
  *   - [SELECT] = cyan
  *   - [T:*] = yellow (thinking level)
+ *
+ * IMPORTANT: The left side uses a SINGLE Text element with textWrap="truncate-end"
+ * to avoid Ink's flex layout issues with dynamic content. When multiple Text elements
+ * are used as flex children with overflow="hidden", position calculation can fail
+ * when content changes dynamically (e.g., from Zustand updates). Using a single
+ * Text element with chalk-styled content ensures proper truncation.
  */
 
 import React from 'react';
 import { Box, Text } from 'ink';
+import chalk from 'chalk';
 import {
   formatContextWindow,
   getContextFillColor,
@@ -32,6 +38,7 @@ import {
   TokenTracker,
 } from '../utils/sessionHeaderUtils';
 import { JsThinkingLevel } from '@sengac/codelet-napi';
+import { useCurrentWorkUnitId, useCurrentWorkUnitStatus } from '../store/sessionStore';
 
 /**
  * Watcher info for header display
@@ -76,10 +83,6 @@ export interface SessionHeaderProps {
   watcherInfo?: WatcherHeaderInfo;
   /** Session number (1-based index in session list) - helps identify session when switching */
   sessionNumber?: number;
-  /** Work unit ID attached to this session (e.g., "TEST-001") */
-  workUnitId?: string;
-  /** TUI-060: Work unit status for realtime display (e.g., "implementing") */
-  workUnitStatus?: string;
 }
 
 /**
@@ -118,9 +121,11 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   compactionReduction = null,
   watcherInfo,
   sessionNumber,
-  workUnitId,
-  workUnitStatus,
 }) => {
+  // TUI-060: Simple Zustand selectors for work unit info
+  const workUnitId = useCurrentWorkUnitId();
+  const workUnitStatus = useCurrentWorkUnitStatus();
+
   const { inputTokens, outputTokens } = getMaxTokens(tokenUsage, rustTokens);
 
   // Format percentage with 2 decimal places, removing trailing zeros
@@ -139,50 +144,58 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   const displayLevel = isLoading && thinkingLevel !== null ? thinkingLevel : baseThinkingLevel;
   const thinkingLabel = getThinkingLevelLabel(displayLevel);
 
+  // Build the session/work unit prefix text
+  const sessionPrefix = sessionNumber !== undefined ? `#${sessionNumber}` : '';
+  const workUnitText = workUnitId ? ` (${workUnitId}${workUnitStatus ? `: ${workUnitStatus}` : ''})` : '';
+  const separator = (sessionPrefix || workUnitId) ? ': ' : '';
+
+  // Build the left side as a single styled string to avoid Ink flex layout issues
+  // with multiple Text elements and overflow="hidden". Using chalk ensures ANSI
+  // codes are handled properly by cli-truncate when textWrap="truncate-end".
+  let leftContent = '';
+
+  // Watcher prefix (if applicable) - blue bold
+  if (watcherInfo) {
+    leftContent += chalk.blue.bold(`Watcher: ${watcherInfo.slug} #${watcherInfo.instanceNumber}`);
+    leftContent += ' | ';
+  }
+
+  // Session number, work unit, and model - cyan bold
+  leftContent += chalk.cyan.bold(`${sessionPrefix}${workUnitText}${separator}${modelId || 'Loading...'}`);
+
+  // Badges - each with their own color
+  if (hasReasoning) {
+    leftContent += chalk.magenta(' [R]');
+  }
+  if (hasVision) {
+    leftContent += chalk.blue(' [V]');
+  }
+  if (contextWindow > 0) {
+    leftContent += chalk.dim(` [${formatContextWindow(contextWindow)}]`);
+  }
+  if (isDebugEnabled) {
+    leftContent += chalk.red.bold(' [DEBUG]');
+  }
+  if (isSelectMode) {
+    leftContent += chalk.cyan(' [SELECT]');
+  }
+  if (thinkingLabel) {
+    leftContent += chalk.yellow(` ${thinkingLabel}`);
+  }
+
   return (
     <Box flexDirection="column" width="100%">
-      <Box height={1} width="100%" flexDirection="row" overflow="hidden">
-        {/* Left side: model info and badges with proper colors */}
-        <Box flexGrow={1} flexShrink={1} overflow="hidden">
-          {/* Watcher prefix (if applicable) - blue text */}
-          {watcherInfo && (
-            <>
-              <Text color="blue" bold>
-                Watcher: {watcherInfo.slug} #{watcherInfo.instanceNumber}
-              </Text>
-              <Text> | </Text>
-            </>
-          )}
-          {/* Session number and model - show session number if available */}
-          <Text color="cyan" bold>
-            {sessionNumber !== undefined && `#${sessionNumber}`}{workUnitId && ` (${workUnitId}${workUnitStatus ? `: ${workUnitStatus}` : ''})`}{(sessionNumber !== undefined || workUnitId) && ': '}{modelId}
-          </Text>
-          {/* Reasoning badge - magenta */}
-          {hasReasoning && <Text color="magenta"> [R]</Text>}
-          {/* Vision badge - blue */}
-          {hasVision && <Text color="blue"> [V]</Text>}
-          {/* Context window - dimColor */}
-          {contextWindow > 0 && (
-            <Text dimColor> [{formatContextWindow(contextWindow)}]</Text>
-          )}
-          {/* Debug badge - red bold */}
-          {isDebugEnabled && (
-            <Text color="red" bold>
-              {' '}
-              [DEBUG]
-            </Text>
-          )}
-          {/* Select mode badge - cyan */}
-          {isSelectMode && <Text color="cyan"> [SELECT]</Text>}
-          {/* TUI-054: Thinking level badge - yellow, only shown when level > Off */}
-          {thinkingLabel && <Text color="yellow"> {thinkingLabel}</Text>}
+      <Box height={1} width="100%" flexDirection="row">
+        {/* Left side: single Text element with truncation to avoid flex positioning issues */}
+        <Box flexGrow={1} flexShrink={1} minWidth={0}>
+          <Text wrap="truncate-end">{leftContent}</Text>
         </Box>
 
         {/* Spacer */}
         <Text> </Text>
 
         {/* Right side: never shrink, always visible */}
-        <Box flexShrink={0}>
+        <Box flexShrink={0} flexDirection="row">
           {/* Tokens per second - magenta, only shown when loading */}
           {isLoading && tokensPerSecond !== null && (
             <Text color="magenta">{tokensPerSecond.toFixed(1)} tok/s  </Text>

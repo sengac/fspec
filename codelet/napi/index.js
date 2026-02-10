@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, callFspecCommand, extractThinkingText, getThinkingConfig, globSearch, isThinkingContent, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, NapiAnchorType, NotificationSeverity, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionClearActive, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionDetach, sessionGetActive, sessionGetAnchorPoints, sessionGetBaseThinkingLevel, sessionGetBufferedOutput, sessionGetCompactionProgress, sessionGetDebugEnabled, sessionGetFirst, sessionGetMergedOutput, sessionGetModel, sessionGetNext, sessionGetParent, sessionGetPauseState, sessionGetPendingInput, sessionGetPrev, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetTurnDetails, sessionGetWatchers, sessionGetWorkUnitContext, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionPauseConfirm, sessionPauseResume, sessionRestoreAnchorPoints, sessionRestoreMessages, sessionRestoreTokenState, sessionSendFspecResult, sessionSendInput, sessionSetActive, sessionSetBaseThinkingLevel, sessionSetDebugEnabled, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, sessionSetWorkUnitContext, SessionState, sessionSubscribe, sessionToggleDebug, sessionUnsubscribe, sessionUpdateDebugMetadata, setRustLogCallback, testCallback, testProviderConnection, toggleDebug, watcherInject } = nativeBinding
+const { AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, callFspecCommand, extractThinkingText, getAllWorkUnits, getThinkingConfig, getWorkUnit, getWorkUnitStatus, globSearch, isThinkingContent, isWorkUnitsWatcherActive, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, NapiAnchorType, NotificationSeverity, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionClearActive, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionDetach, sessionGetActive, sessionGetAnchorPoints, sessionGetBaseThinkingLevel, sessionGetBufferedOutput, sessionGetCompactionProgress, sessionGetDebugEnabled, sessionGetFirst, sessionGetMergedOutput, sessionGetModel, sessionGetNext, sessionGetParent, sessionGetPauseState, sessionGetPendingInput, sessionGetPrev, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetTurnDetails, sessionGetWatchers, sessionGetWorkUnitContext, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionPauseConfirm, sessionPauseResume, sessionRestoreAnchorPoints, sessionRestoreMessages, sessionRestoreTokenState, sessionSendFspecResult, sessionSendInput, sessionSetActive, sessionSetBaseThinkingLevel, sessionSetDebugEnabled, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, sessionSetWorkUnitContext, SessionState, sessionSubscribe, sessionToggleDebug, sessionUnsubscribe, sessionUpdateDebugMetadata, setRustLogCallback, startWorkUnitsWatcher, stopWorkUnitsWatcher, testCallback, testProviderConnection, toggleDebug, watcherInject } = nativeBinding
 export { AstGrepCaseType }
 export { astGrepRefactor }
 export { astGrepReplace }
@@ -583,9 +583,13 @@ export { astGrepSearch }
 export { AstGrepSeparator }
 export { callFspecCommand }
 export { extractThinkingText }
+export { getAllWorkUnits }
 export { getThinkingConfig }
+export { getWorkUnit }
+export { getWorkUnitStatus }
 export { globSearch }
 export { isThinkingContent }
+export { isWorkUnitsWatcherActive }
 export { JsThinkingLevel }
 export { MessageRole }
 export { modelsGetCacheDirectory }
@@ -683,6 +687,8 @@ export { sessionToggleDebug }
 export { sessionUnsubscribe }
 export { sessionUpdateDebugMetadata }
 export { setRustLogCallback }
+export { startWorkUnitsWatcher }
+export { stopWorkUnitsWatcher }
 export { testCallback }
 export { testProviderConnection }
 export { toggleDebug }

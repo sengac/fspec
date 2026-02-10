@@ -1,14 +1,13 @@
 /**
  * sessionStore.ts - Zustand Store for Session State Management
  *
- * VIEWNV-001: This store manages session UI state for AgentView.
- *
  * Key Responsibilities:
  * 1. Track current session ID (for AgentView's session creation logic)
  * 2. Track if ready to create new session on first message
  * 3. Manage navigation target (BoardView → AgentView handoff)
  * 4. Manage create session dialog visibility
- * 5. VIEWNV-001: Track if session should be auto-created immediately
+ * 5. Track if session should be auto-created immediately
+ * 6. Track current work unit ID and status for SessionHeader display
  *
  * Note: Rust's SessionManager separately tracks the "active" session for
  * navigation purposes (via sessionAttach/sessionDetach). This store handles
@@ -48,6 +47,14 @@ interface SessionStoreState {
    */
   shouldAutoCreateSession: boolean;
 
+  // ===== Work Unit State =====
+
+  /** Current work unit ID attached to the active session */
+  currentWorkUnitId: string | null;
+
+  /** Current work unit status (e.g., "specifying", "implementing") */
+  currentWorkUnitStatus: string | null;
+
   // ===== Navigation State =====
 
   /**
@@ -86,6 +93,12 @@ interface SessionStoreState {
    * VIEWNV-001: Clear the auto-create request (after session is created).
    */
   clearAutoCreateRequest: () => void;
+
+  /** Set current work unit ID and status */
+  setCurrentWorkUnit: (
+    workUnitId: string | null,
+    workUnitStatus: string | null
+  ) => void;
 
   /**
    * Set navigation target (called by BoardView when navigating to a session).
@@ -129,6 +142,8 @@ const initialState = {
   currentSessionId: null,
   isReadyForNewSession: true,
   shouldAutoCreateSession: false,
+  currentWorkUnitId: null,
+  currentWorkUnitStatus: null,
   navigationTargetSessionId: null,
   showCreateSessionDialog: false,
 };
@@ -156,6 +171,8 @@ export const useSessionStore = create<SessionStoreState>()(
         state.currentSessionId = null;
         state.isReadyForNewSession = true;
         state.showCreateSessionDialog = false;
+        state.currentWorkUnitId = null;
+        state.currentWorkUnitStatus = null;
       });
     },
 
@@ -170,6 +187,19 @@ export const useSessionStore = create<SessionStoreState>()(
       logger.debug('[SessionStore] clearAutoCreateRequest');
       set(state => {
         state.shouldAutoCreateSession = false;
+      });
+    },
+
+    setCurrentWorkUnit: (
+      workUnitId: string | null,
+      workUnitStatus: string | null
+    ) => {
+      logger.debug(
+        `[SessionStore] setCurrentWorkUnit: ${workUnitId} (${workUnitStatus})`
+      );
+      set(state => {
+        state.currentWorkUnitId = workUnitId;
+        state.currentWorkUnitStatus = workUnitStatus;
       });
     },
 
@@ -207,6 +237,8 @@ export const useSessionStore = create<SessionStoreState>()(
         state.currentSessionId = null;
         state.isReadyForNewSession = true;
         state.shouldAutoCreateSession = false;
+        state.currentWorkUnitId = null;
+        state.currentWorkUnitStatus = null;
         state.navigationTargetSessionId = null;
         state.showCreateSessionDialog = false;
       });
@@ -215,12 +247,13 @@ export const useSessionStore = create<SessionStoreState>()(
     navigateToNewSession: () => {
       logger.debug('[SessionStore] navigateToNewSession');
       set(state => {
-        // ATOMIC: Prepare for new session + request auto-create together
         state.currentSessionId = null;
         state.isReadyForNewSession = true;
         state.shouldAutoCreateSession = true;
         state.showCreateSessionDialog = false;
         state.navigationTargetSessionId = null;
+        state.currentWorkUnitId = null;
+        state.currentWorkUnitStatus = null;
       });
     },
   }))
@@ -238,6 +271,12 @@ export const useIsReadyForNewSession = () =>
 export const useShouldAutoCreateSession = () =>
   useSessionStore(state => state.shouldAutoCreateSession);
 
+export const useCurrentWorkUnitId = () =>
+  useSessionStore(state => state.currentWorkUnitId);
+
+export const useCurrentWorkUnitStatus = () =>
+  useSessionStore(state => state.currentWorkUnitStatus);
+
 export const useNavigationTargetSessionId = () =>
   useSessionStore(state => state.navigationTargetSessionId);
 
@@ -254,6 +293,7 @@ export const useSessionActions = () =>
       prepareForNewSession: state.prepareForNewSession,
       requestAutoCreateSession: state.requestAutoCreateSession,
       clearAutoCreateRequest: state.clearAutoCreateRequest,
+      setCurrentWorkUnit: state.setCurrentWorkUnit,
       setNavigationTarget: state.setNavigationTarget,
       clearNavigationTarget: state.clearNavigationTarget,
       openCreateSessionDialog: state.openCreateSessionDialog,

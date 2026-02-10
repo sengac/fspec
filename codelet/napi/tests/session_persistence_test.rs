@@ -31,13 +31,16 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-mod persistence_test_fixtures;
-
 use codelet_napi::persistence::{
     append_message, append_message_with_metadata, create_session, get_session_messages,
     load_session, set_compaction_state, update_session_tokens,
 };
-use persistence_test_fixtures::*;
+use codelet_napi::test_support::{
+    add_alternating_messages, add_simple_alternating_messages, assert_content_block_count,
+    assert_content_block_type, count_content_blocks_of_type, create_assistant_multi_tool_envelope,
+    create_assistant_text_envelope, create_assistant_tool_use_envelope, create_tool_result_envelope,
+    create_user_envelope, setup_test_env,
+};
 use std::path::PathBuf;
 
 // ============================================================================

@@ -190,6 +190,7 @@ Tags that categorize features by functional area.
 | `@schema-design` | Schema design and data structure definition |
 | `@screenshot` | Screenshot capture functionality for web pages |
 | `@security` | Security-related features and bug fixes |
+| `@session-attachment` | Session attachment behavior and IPC |
 | `@session-cherry-pick` | Cherry-pick message scenarios |
 | `@session-delete` | Session deletion and cleanup |
 | `@session-fork` | Session forking scenarios |
@@ -814,7 +815,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-01-31T10:54:46.858Z_
+_Last updated: 2026-02-07T11:07:21.255Z_
 
 **Update Command**: `fspec tag-stats`
 

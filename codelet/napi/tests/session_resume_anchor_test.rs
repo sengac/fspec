@@ -11,14 +11,15 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-mod compaction_anchor_fixtures;
-
 use codelet_napi::persistence::{
-    create_session, load_session, add_anchor_point, get_anchor_points,
-    set_compaction_state, append_message_with_metadata,
-    get_session_messages,
+    add_anchor_point, append_message_with_metadata, create_session, get_anchor_points,
+    get_session_messages, load_session, set_compaction_state,
 };
-use compaction_anchor_fixtures::*;
+use codelet_napi::test_support::{
+    create_anchor_with_timestamp, create_assistant_text_envelope, create_error_resolution_anchor,
+    create_feature_milestone_anchor, create_synthetic_anchor, create_task_completion_anchor,
+    create_user_checkpoint_anchor, create_user_envelope, setup_test_env,
+};
 use std::path::PathBuf;
 
 // =============================================================================

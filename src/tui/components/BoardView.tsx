@@ -37,7 +37,6 @@ import {
   useSessionActions,
 } from '../store/sessionStore';
 import { useInputCompat, InputPriority } from '../input/index';
-import { useWorkUnitsWatcher } from '../hooks/useWorkUnitsWatcher';
 
 interface BoardViewProps {
   onExit?: () => void;
@@ -132,9 +131,8 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // TUI-060: Use shared hook for watching work-units.json
-  // This replaces the inline chokidar setup that was here before
-  useWorkUnitsWatcher();
+  // TUI-060: Work units watcher is now handled by globalStreamListener at TUI startup
+  // This ensures the watcher is active even before BoardView mounts
 
   // Watch .git/refs/stash for stash changes using chokidar (BOARD-018: Cross-platform file watching)
   // NOTE: Use chokidar instead of fs.watch for reliable cross-platform atomic operation handling
@@ -157,17 +155,15 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       void loadCheckpointCounts();
     });
 
-    // Add error handler to prevent silent failures (BOARD-018)
+    // Add error handler to prevent silent failures
     watcher.on('error', (error) => {
-      console.warn('Git refs watcher error:', error.message);
+      logger.warn(`Git refs watcher error: ${error.message}`);
     });
 
     return () => {
       void watcher.close();
     };
   }, [showStashPanel, storeCwd]);
-
-  // HEAD watcher removed (BOARD-018): Now handled by .git/ directory watcher above
 
   // Group work units by status
   const groupedWorkUnits = columns.map(status => {
@@ -198,6 +194,25 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       server = createIPCServer((message) => {
         if (message.type === 'checkpoint-changed') {
           void useFspecStore.getState().loadCheckpointCounts();
+        }
+        // TUI-060: Handle work-unit-changed IPC message to update session attachment
+        // When AI updates a different work unit via Fspec tool, the session should attach to it
+        if (message.type === 'work-unit-changed' && message.payload) {
+          // Runtime type validation for IPC payload safety
+          const payload = message.payload as Record<string, unknown>;
+          const workUnitId = typeof payload.workUnitId === 'string' ? payload.workUnitId : null;
+          const sessionId = typeof payload.sessionId === 'string' ? payload.sessionId : null;
+          
+          if (workUnitId && sessionId) {
+            logger.debug(
+              `[BoardView] IPC work-unit-changed: attaching session ${sessionId} to ${workUnitId}`
+            );
+            useFspecStore.getState().attachSession(workUnitId, sessionId);
+            // Reload work units data to update the board display
+            void useFspecStore.getState().loadData();
+          } else {
+            logger.warn('[BoardView] IPC work-unit-changed: invalid payload - missing workUnitId or sessionId');
+          }
         }
       });
 

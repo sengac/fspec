@@ -1,20 +1,37 @@
 /**
- * TUI-060: useWorkUnitsWatcher Hook
+ * useWorkUnitsWatcher Hook
  *
- * Reusable hook for watching spec/work-units.json and triggering store updates.
- * Follows DRY/SOLID/COMPOSABLE principles by extracting file watching logic
- * that was previously duplicated in BoardView.
- *
- * Used by:
- * - BoardView: Auto-refresh board when work units change
- * - AgentView: Realtime status updates in SessionHeader
+ * Singleton hook for watching spec/work-units.json and triggering store updates.
+ * Uses Rust-based file watcher (notify crate) for cross-platform reliability.
+ * Used by BoardView only - AgentView subscribes to the store directly.
  */
 
-import { useEffect } from 'react';
-import fs from 'fs';
-import path from 'path';
-import chokidar from 'chokidar';
+import { useEffect, useRef } from 'react';
 import { useFspecStore } from '../store/fspecStore';
+import { logger } from '../../utils/logger';
+import type { StreamChunk } from '@sengac/codelet-napi';
+
+// Lazy import for NAPI functions to avoid issues when module is not ready
+let napiModule: {
+  startWorkUnitsWatcher: (
+    projectRoot: string,
+    callback: (chunk: StreamChunk) => void
+  ) => void;
+  stopWorkUnitsWatcher: () => void;
+  isWorkUnitsWatcherActive: () => boolean;
+} | null = null;
+
+async function getNapiModule() {
+  if (!napiModule) {
+    const napi = await import('@sengac/codelet-napi');
+    napiModule = {
+      startWorkUnitsWatcher: napi.startWorkUnitsWatcher,
+      stopWorkUnitsWatcher: napi.stopWorkUnitsWatcher,
+      isWorkUnitsWatcherActive: napi.isWorkUnitsWatcherActive,
+    };
+  }
+  return napiModule;
+}
 
 interface WorkUnit {
   id: string;
@@ -33,7 +50,9 @@ interface UseWorkUnitsWatcherReturn {
 }
 
 /**
- * Hook that watches spec/work-units.json for changes and calls loadData on the store.
+ * Hook that watches spec/work-units.json for changes using Rust file watcher.
+ * When the file changes, the Rust watcher emits a WorkUnitsUpdate chunk,
+ * and we reload the full data from fspecStore.loadData().
  *
  * @returns Object with getWorkUnitById function for querying work units
  */
@@ -42,34 +61,88 @@ export function useWorkUnitsWatcher(): UseWorkUnitsWatcherReturn {
   const loadData = useFspecStore(state => state.loadData);
   const workUnits = useFspecStore(state => state.workUnits);
 
-  // Watch spec/work-units.json for changes
-  useEffect(() => {
-    const workUnitsPath = path.join(cwd, 'spec', 'work-units.json');
+  // Track mount state and watcher state via refs
+  const isMountedRef = useRef(true);
+  const isWatcherStartedRef = useRef(false);
 
-    // Check if file exists before watching
-    if (!fs.existsSync(workUnitsPath)) {
+  // Start Rust file watcher for spec/work-units.json
+  useEffect(() => {
+    // Skip in test environment - tests should mock the NAPI module
+    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
       return;
     }
 
-    // Chokidar watches specific file, handles atomic operations automatically
-    const watcher = chokidar.watch(workUnitsPath, {
-      ignoreInitial: true, // Don't trigger on initial scan
-      persistent: false,
-    });
+    // Reset mounted flag on each effect run
+    isMountedRef.current = true;
 
-    // Listen for all change events (chokidar normalizes across platforms)
-    watcher.on('change', () => {
-      void loadData();
-    });
+    if (!cwd || isWatcherStartedRef.current) {
+      return;
+    }
 
-    // Add error handler to prevent silent failures
-    watcher.on('error', error => {
-      console.warn('Work units watcher error:', error.message);
-    });
+    const startWatcher = async () => {
+      try {
+        const napi = await getNapiModule();
 
-    // Cleanup watcher on unmount
+        // Double-check we're still mounted after async import
+        if (!isMountedRef.current) {
+          return;
+        }
+
+        // Check if watcher is already active (from another component instance)
+        if (napi.isWorkUnitsWatcherActive()) {
+          logger.debug(
+            '[useWorkUnitsWatcher] Watcher already active, skipping start'
+          );
+          return;
+        }
+
+        logger.debug(`[useWorkUnitsWatcher] Starting Rust watcher for: ${cwd}`);
+
+        // Start the Rust file watcher with callback
+        napi.startWorkUnitsWatcher(cwd, (chunk: StreamChunk) => {
+          if (!chunk) {
+            return;
+          }
+
+          if (!isMountedRef.current) {
+            return;
+          }
+
+          if (chunk.type === 'WorkUnitsUpdate') {
+            void loadData();
+          }
+        });
+
+        isWatcherStartedRef.current = true;
+      } catch (e) {
+        logger.error(`[useWorkUnitsWatcher] Failed to start watcher: ${e}`);
+      }
+    };
+
+    void startWatcher();
+
+    // Cleanup function
     return () => {
-      void watcher.close();
+      isMountedRef.current = false;
+
+      if (isWatcherStartedRef.current) {
+        logger.debug('[useWorkUnitsWatcher] Stopping Rust watcher');
+        try {
+          // Only stop if we actually started it
+          getNapiModule()
+            .then(napi => {
+              if (napi.isWorkUnitsWatcherActive()) {
+                napi.stopWorkUnitsWatcher();
+              }
+            })
+            .catch(e => {
+              logger.warn(`[useWorkUnitsWatcher] Error stopping watcher: ${e}`);
+            });
+        } catch (e) {
+          logger.warn(`[useWorkUnitsWatcher] Error stopping watcher: ${e}`);
+        }
+        isWatcherStartedRef.current = false;
+      }
     };
   }, [cwd, loadData]);
 

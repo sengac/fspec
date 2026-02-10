@@ -11,6 +11,13 @@ import { render } from 'ink-testing-library';
 import { setupFullTest, type FullTestSetup } from '../../../test-helpers/universal-test-setup';
 import { writeJsonTestFile } from '../../../test-helpers/test-file-operations';
 
+// Mock codelet-napi to prevent real Rust watcher from starting
+vi.mock('@sengac/codelet-napi', () => ({
+  startWorkUnitsWatcher: vi.fn(),
+  stopWorkUnitsWatcher: vi.fn(),
+  isWorkUnitsWatcherActive: vi.fn(() => false),
+}));
+
 // Import the component
 import { BoardView } from '../BoardView';
 

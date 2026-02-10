@@ -202,7 +202,6 @@ import {
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
-import { useWorkUnitsWatcher } from '../hooks/useWorkUnitsWatcher';
 import { createSession, restoreSession } from '../services/sessionService';
 
 // TUI-034: Model selection types
@@ -1303,6 +1302,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     prepareForNewSession,
     clearAutoCreateRequest,
     closeCreateSessionDialog,
+    setCurrentWorkUnit,
   } = useSessionActions();
   // Ref to track current session ID for use in callbacks without stale closures
   const currentSessionIdRef = useRef<string | null>(null);
@@ -1556,26 +1556,21 @@ export const AgentView: React.FC<AgentViewProps> = ({
     return index >= 0 ? index + 1 : undefined;
   }, [currentSessionId]);
 
-  // Calculate work unit ID attached to current session
-  const attachedWorkUnitId = useMemo(() => {
-    if (!currentSessionId) {
-      return undefined;
+  // Sync work unit info to sessionStore for SessionHeader display
+  // TUI-060: Inline work unit lookup - don't use useMemo as a dependency
+  const workUnits = useFspecStore(state => state.workUnits);
+  useEffect(() => {
+    const attachedWorkUnitId = currentSessionId
+      ? getWorkUnitBySession(currentSessionId)
+      : null;
+    
+    if (attachedWorkUnitId) {
+      const workUnit = workUnits.find(wu => wu.id === attachedWorkUnitId);
+      setCurrentWorkUnit(attachedWorkUnitId, workUnit?.status ?? null);
+    } else {
+      setCurrentWorkUnit(null, null);
     }
-    return getWorkUnitBySession(currentSessionId);
-  }, [currentSessionId, getWorkUnitBySession]);
-
-  // TUI-060: Use shared hook for watching work-units.json
-  // This enables realtime status updates in SessionHeader
-  const { getWorkUnitById } = useWorkUnitsWatcher();
-
-  // TUI-060: Get the status of the attached work unit for realtime display
-  const attachedWorkUnitStatus = useMemo(() => {
-    if (!attachedWorkUnitId) {
-      return undefined;
-    }
-    const workUnit = getWorkUnitById(attachedWorkUnitId);
-    return workUnit?.status;
-  }, [attachedWorkUnitId, getWorkUnitById]);
+  }, [currentSessionId, getWorkUnitBySession, workUnits, setCurrentWorkUnit]);
 
   // Extract remaining display state from Rust snapshot
   const displayIsLoading = rustSnapshot.isLoading;
@@ -7866,8 +7861,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
         contextFillPercentage={contextFillPercentage}
         compactionReduction={compactionReduction}
         sessionNumber={sessionNumber}
-        workUnitId={attachedWorkUnitId}
-        workUnitStatus={attachedWorkUnitStatus}
       />
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}

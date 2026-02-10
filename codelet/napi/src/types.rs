@@ -208,6 +208,20 @@ pub struct WatcherPendingInjectionInfo {
     pub content: String,
 }
 
+/// Work unit information for file watcher updates
+#[napi(object)]
+#[derive(Debug, Clone)]
+pub struct WorkUnitInfo {
+    pub id: String,
+    pub title: String,
+    #[napi(js_name = "workType")]
+    pub work_type: String,
+    pub status: String,
+    pub description: Option<String>,
+    pub estimate: Option<i32>,
+    pub epic: Option<String>,
+}
+
 /// NAPI-010: Session state for internal state machine tracking
 /// NOT for conversation display - use SessionStateChange chunk variant
 #[napi(string_enum)]
@@ -364,6 +378,12 @@ pub enum StreamChunk {
         #[napi(js_name = "fspecResult")]
         fspec_result: FspecResult,
     },
+
+    /// Work units updated - emitted by global file watcher when work-units.json changes
+    WorkUnitsUpdate {
+        #[napi(js_name = "workUnits")]
+        work_units: Vec<WorkUnitInfo>,
+    },
 }
 
 impl StreamChunk {
@@ -504,6 +524,11 @@ impl StreamChunk {
         Self::FspecCommandResult {
             fspec_result: result,
         }
+    }
+
+    /// Work units updated - emitted by global file watcher
+    pub fn work_units_update(work_units: Vec<WorkUnitInfo>) -> Self {
+        Self::WorkUnitsUpdate { work_units }
     }
 }
 

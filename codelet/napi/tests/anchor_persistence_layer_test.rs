@@ -15,13 +15,15 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used, clippy::panic)]
 
-mod compaction_anchor_fixtures;
-
 use codelet_napi::persistence::{
-    create_session, load_session, add_anchor_point, get_anchor_points,
-    PersistedAnchorPoint, SessionManifest,
+    add_anchor_point, create_session, get_anchor_points, load_session, PersistedAnchorPoint,
+    SessionManifest,
 };
-use compaction_anchor_fixtures::*;
+use codelet_napi::test_support::{
+    create_compacted_session, create_error_resolution_anchor, create_feature_milestone_anchor,
+    create_synthetic_anchor, create_task_completion_anchor, create_user_checkpoint_anchor,
+    setup_test_env,
+};
 use std::path::PathBuf;
 
 // =============================================================================

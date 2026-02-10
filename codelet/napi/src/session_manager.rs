@@ -113,7 +113,7 @@ pub enum RoleAuthority {
 
 impl RoleAuthority {
     /// Parse authority from string (case-insensitive)
-    pub fn from_str(s: &str) -> Option<Self> {
+    pub fn parse_authority(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
             "peer" => Some(RoleAuthority::Peer),
             "supervisor" => Some(RoleAuthority::Supervisor),
@@ -1809,7 +1809,7 @@ mod session_role_tests {
         // (simulated with direct SessionRole construction)
 
         // @step When I call set_role with name "code-reviewer", description "Reviews code changes", and authority "peer"
-        let authority = RoleAuthority::from_str("peer").expect("valid authority");
+        let authority = RoleAuthority::parse_authority("peer").expect("valid authority");
         let role = SessionRole::new(
             "code-reviewer".to_string(),
             Some("Reviews code changes".to_string()),
@@ -1839,7 +1839,7 @@ mod session_role_tests {
         // (simulated with direct SessionRole construction)
 
         // @step When I call set_role with name "supervisor", no description, and authority "supervisor"
-        let authority = RoleAuthority::from_str("supervisor").expect("valid authority");
+        let authority = RoleAuthority::parse_authority("supervisor").expect("valid authority");
         let role = SessionRole::new(
             "supervisor".to_string(),
             None,
@@ -1912,7 +1912,7 @@ mod session_role_tests {
         // (simulated)
 
         // @step When I call set_role with name "test", description None, and authority "invalid"
-        let authority = RoleAuthority::from_str("invalid");
+        let authority = RoleAuthority::parse_authority("invalid");
 
         // @step Then it should return an error "Invalid authority: must be peer or supervisor"
         assert!(authority.is_none(), "invalid authority should return None");
@@ -3783,14 +3783,12 @@ impl SessionManager {
         let nav_list = build_navigation_list(&sessions, &self.watch_graph);
 
         // Get the next target
-        let result = match get_next_target(&nav_list, *active) {
+        match get_next_target(&nav_list, *active) {
             NavigationTarget::Session(id) => Some(id.to_string()),
             NavigationTarget::CreateDialog => None,
             NavigationTarget::Board => None, // Shouldn't happen on next
             NavigationTarget::None => None,
-        };
-
-        result
+        }
     }
     
     /// Get the previous session before the active one (VIEWNV-001)
@@ -3810,14 +3808,12 @@ impl SessionManager {
         let nav_list = build_navigation_list(&sessions, &self.watch_graph);
 
         // Get the previous target
-        let result = match get_prev_target(&nav_list, *active) {
+        match get_prev_target(&nav_list, *active) {
             NavigationTarget::Session(id) => Some(id.to_string()),
             NavigationTarget::Board => None, // Go to board
             NavigationTarget::CreateDialog => None, // Shouldn't happen on prev
             NavigationTarget::None => None,
-        };
-
-        result
+        }
     }
     
     /// Get the first session (VIEWNV-001)
@@ -3948,14 +3944,14 @@ fn persist_assistant_message_internal(
     let mut session_manifest = load_session(*session_id)?;
     
     // Create a simple text representation for the message content
-    let text_content: String = content.iter().filter_map(|c| {
+    let text_content: String = content.iter().map(|c| {
         match c {
-            AssistantContent::Text { text } => Some(text.clone()),
-            AssistantContent::ToolUse { name, .. } => Some(format!("[Tool: {}]", name)),
+            AssistantContent::Text { text } => text.clone(),
+            AssistantContent::ToolUse { name, .. } => format!("[Tool: {name}]"),
             AssistantContent::Thinking { thinking, .. } => {
                 // Truncate at character boundaries to avoid panicking on multi-byte UTF-8
                 let truncated: String = thinking.chars().take(50).collect();
-                Some(format!("[Thinking: {}...]", truncated))
+                format!("[Thinking: {truncated}...]")
             }
         }
     }).collect::<Vec<_>>().join("\n");
@@ -5341,7 +5337,7 @@ pub fn session_set_role(
 ) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
     
-    let auth = RoleAuthority::from_str(&authority)
+    let auth = RoleAuthority::parse_authority(&authority)
         .ok_or_else(|| Error::from_reason("Invalid authority: must be peer or supervisor"))?;
     
     // WATCH-021: Use new_with_auto_inject when auto_inject is specified
@@ -6152,11 +6148,13 @@ pub fn session_get_work_unit_context(session_id: String) -> Result<Option<JsWork
     let ctx = session.get_work_unit_context();
     
     match ctx {
-        Some(c) if c.is_set() => Ok(Some(JsWorkUnitContext {
-            id: c.id.unwrap_or_default(),
-            title: c.title.unwrap_or_default(),
-            status: c.status.unwrap_or_default(),
-        })),
+        Some(c) if c.is_set() => {
+            Ok(Some(JsWorkUnitContext {
+                id: c.id.unwrap_or_default(),
+                title: c.title.unwrap_or_default(),
+                status: c.status.unwrap_or_default(),
+            }))
+        },
         _ => Ok(None),
     }
 }

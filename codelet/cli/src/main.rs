@@ -13,7 +13,7 @@ async fn main() -> Result<()> {
         .ok_or_else(|| anyhow::anyhow!("Could not determine home directory"))?
         .join(".codelet");
     codelet_common::set_data_directory(data_dir)
-        .map_err(|e| anyhow::anyhow!("{}", e))?;
+        .map_err(|e| anyhow::anyhow!("{e}"))?;
 
     // Initialize unified tracing-based logging system
     // Logs to {data_dir}/logs/codelet-YYYY-MM-DD.log with JSON formatting

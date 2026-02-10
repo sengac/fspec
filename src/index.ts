@@ -103,12 +103,21 @@ async function main(): Promise<void> {
     );
     initializeRustLogCapture();
 
+    // TUI-060: Initialize global stream listener for work unit context updates
+    // This ensures work unit changes are reflected in SessionHeader regardless
+    // of which view is active (BoardView or AgentView)
+    const { initGlobalStreamListener, stopGlobalStreamListener } = await import(
+      './tui/store/globalStreamListener'
+    );
+    await initGlobalStreamListener(process.cwd());
+
     const { waitUntilExit } = render(
       React.createElement(
         InputProvider,
         null,
         React.createElement(BoardView, {
           onExit: () => {
+            stopGlobalStreamListener();
             process.exit(0);
           },
         })

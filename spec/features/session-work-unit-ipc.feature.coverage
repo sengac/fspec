@@ -1,0 +1,219 @@
+{
+  "scenarios": [
+    {
+      "name": "Fspec tool updates status on DIFFERENT work unit and session attaches to it",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-060-session-work-unit-ipc.test.ts",
+          "lines": "192-237",
+          "implMappings": [
+            {
+              "file": "src/commands/hooks/workUnitStatusHook.ts",
+              "lines": [
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fspec tool updates status on SAME work unit without changing attachment",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-060-session-work-unit-ipc.test.ts",
+          "lines": "118-143",
+          "implMappings": [
+            {
+              "file": "src/commands/hooks/workUnitStatusHook.ts",
+              "lines": [
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CLI command does NOT trigger session attachment change",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-060-session-work-unit-ipc.test.ts",
+          "lines": "149-172",
+          "implMappings": [
+            {
+              "file": "src/commands/hooks/workUnitStatusHook.ts",
+              "lines": [
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "workUnitStatusHook sends IPC message on context change",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-060-session-work-unit-ipc.test.ts",
+          "lines": "95-117",
+          "implMappings": [
+            {
+              "file": "src/commands/hooks/workUnitStatusHook.ts",
+              "lines": [
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "TUI IPC listener handles work-unit-changed message",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-060-session-work-unit-ipc.test.ts",
+          "lines": "178-190",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210,
+                211,
+                212,
+                213,
+                214,
+                215,
+                216,
+                217
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/TUI-060-session-work-unit-ipc.test.ts"
+    ],
+    "implFiles": [
+      "src/commands/hooks/workUnitStatusHook.ts",
+      "src/tui/components/BoardView.tsx"
+    ],
+    "totalLinesCovered": 254
+  }
+}

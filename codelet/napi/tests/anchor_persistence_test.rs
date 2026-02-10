@@ -13,25 +13,11 @@
 //! - Added session_restore_anchor_points() NAPI function to load anchors on resume
 
 use codelet_napi::persistence::{
-    create_session, load_session, set_data_directory, set_compaction_state,
-    add_anchor_point, get_anchor_points, PersistedAnchorPoint,
+    add_anchor_point, create_session, get_anchor_points, load_session, set_compaction_state,
+    PersistedAnchorPoint,
 };
+use codelet_napi::test_support::setup_test_env;
 use std::path::PathBuf;
-use std::sync::Mutex;
-use tempfile::tempdir;
-
-// Global mutex for sequential test execution (shared global state)
-lazy_static::lazy_static! {
-    static ref TEST_MUTEX: Mutex<()> = Mutex::new(());
-}
-
-/// Setup isolated test environment
-fn setup_test_env() -> (std::sync::MutexGuard<'static, ()>, tempfile::TempDir) {
-    let guard = TEST_MUTEX.lock().unwrap_or_else(|poisoned| poisoned.into_inner());
-    let temp_dir = tempdir().expect("Failed to create temp directory");
-    set_data_directory(temp_dir.path().to_path_buf()).expect("Failed to set data directory");
-    (guard, temp_dir)
-}
 
 // =============================================================================
 // Scenario: Anchor points should be persisted in SessionManifest
