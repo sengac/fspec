@@ -1199,12 +1199,17 @@ export declare function sessionManagerCreate(
  *
  * Note: This must be async because it uses tokio::spawn internally, which requires
  * a Tokio runtime context. NAPI-RS provides this context for async functions.
+ *
+ * CONFIG-004: Added optional api_key parameter. When provided, sets the appropriate
+ * environment variable before ProviderManager initialization so that credentials
+ * from ~/.fspec/credentials/credentials.json can be passed programmatically.
  */
 export declare function sessionManagerCreateWithId(
   sessionId: string,
   model: string,
   project: string,
-  name: string
+  name: string,
+  apiKey?: string | undefined | null
 ): Promise<void>;
 
 /** Destroy a background session */

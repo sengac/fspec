@@ -58,6 +58,7 @@ import type {
   MessageType,
 } from '../types/conversation';
 import { getFspecUserDir, loadConfig, writeConfig } from '../../utils/config';
+import { getProviderConfig } from '../../utils/credentials';
 import { logger } from '../../utils/logger';
 import {
   testProviderConnection,
@@ -2758,11 +2759,17 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Note: Using sessionManagerCreateWithId directly here because session is already created in persistence
         // and we only need the Rust background session (createSession service would duplicate persistence)
         try {
+          // CONFIG-004: Get credentials for this provider from credentials file
+          const providerId = modelPath.split('/')[0];
+          const providerConfig = await getProviderConfig(providerId);
+          const apiKey = providerConfig.apiKey;
+
           await sessionManagerCreateWithId(
             activeSessionId,
             modelPath,
             project,
-            sessionName
+            sessionName,
+            apiKey // CONFIG-004: Pass API key from credentials file
           );
         } catch (err) {
           logger.error('Failed to register session with SessionManager:', err);

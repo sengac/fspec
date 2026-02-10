@@ -114,10 +114,50 @@ Based on rig analysis, need to support 19 providers:
 - Priority chain verification
 - Provider fallback
 
-## 7. Implementation Order
+## 7. Thinking Configuration Integration
+
+The thinking/reasoning config system uses different provider identifiers than the provider registry.
+
+### Current State
+
+| File | Purpose |
+|------|---------|
+| `codelet/napi/src/thinking_config.rs` | NAPI bindings for thinking config |
+| `codelet/tools/src/facade/thinking_config.rs` | Rust facades for provider-specific thinking |
+| `src/utils/thinkingLevel.ts` | TypeScript thinking level detection |
+| `src/tui/components/ThinkingLevelDialog.tsx` | UI for `/thinking` command |
+
+### Provider Mapping Issue
+
+**Problem**: `getThinkingConfig(provider, level)` expects provider strings like:
+- `"claude"`, `"claude-3"`, `"claude-sonnet"` → `ClaudeThinkingFacade`
+- `"gemini-3"`, `"gemini-3-flash"` → `Gemini3ThinkingFacade`
+- `"gemini-2.5"`, `"gemini-2.5-pro"` → `Gemini25ThinkingFacade`
+
+**But**: `AgentView.tsx` passes `currentProvider` which is the provider ID like `"anthropic"`, `"google"`.
+
+### Required Changes
+
+| File | Change |
+|------|--------|
+| `src/utils/provider-config.ts` | Add `thinkingConfigProvider` field to registry |
+| `src/utils/provider-config.ts` | Add `getThinkingConfigProvider(providerId, modelId)` helper |
+| `src/tui/components/AgentView.tsx` | Map provider to thinking config provider before calling `getThinkingConfig()` |
+
+### Provider to Thinking Config Mapping
+
+| Provider ID | Model Pattern | Thinking Config Provider |
+|-------------|--------------|-------------------------|
+| `anthropic` | any | `claude` |
+| `google` | `gemini-3-*` | `gemini-3` |
+| `google` | `gemini-2.5-*`, `gemini-2.0-*` | `gemini-2.5` |
+| All others | any | `null` (not supported) |
+
+## 8. Implementation Order
 
 1. TypeScript credentials module
 2. Rust NAPI types
 3. Provider manager with_credentials()
 4. Session new_with_credentials()
-5. UI Settings tab
+5. Provider registry with thinking config mapping
+6. UI Settings tab

@@ -619,14 +619,147 @@ All 19 providers supported by rig must be configurable:
 }
 ```
 
-### 15. Open Questions
+### 15. Thinking Configuration Integration
+
+The thinking/reasoning configuration system (`getThinkingConfig()`) uses provider-specific names that differ from the provider registry IDs. The provider registry must include a `thinkingConfigProvider` field to map between them.
+
+#### Provider ID to Thinking Config Provider Mapping
+
+| Provider Registry ID | Thinking Config Provider | Facade Used | Notes |
+|---------------------|-------------------------|-------------|-------|
+| `anthropic` | `claude` | `ClaudeThinkingFacade` | Uses `thinking.budget_tokens` |
+| `google` | `gemini-2.5` or `gemini-3` | `Gemini25ThinkingFacade` / `Gemini3ThinkingFacade` | Model-dependent (see below) |
+| `openai` | (none) | N/A | OpenAI o1/o3 have built-in reasoning, no config needed |
+| `deepseek` | (none) | N/A | DeepSeek R1 has built-in reasoning |
+| All other providers | (none) | N/A | No thinking config support |
+
+#### Gemini Model-Based Thinking Config Selection
+
+Gemini requires model-based thinking config selection because Gemini 2.5 and Gemini 3 use different APIs:
+
+| Model Pattern | Thinking Config Provider | Config Format |
+|--------------|-------------------------|---------------|
+| `gemini-2.5-*` | `gemini-2.5` | `thinkingConfig.thinkingBudget` (token count) |
+| `gemini-2.0-*` | `gemini-2.5` | Same as 2.5 (budget-based) |
+| `gemini-3-*` | `gemini-3` | `thinkingConfig.thinkingLevel` (enum: low/medium/high) |
+
+#### Provider Registry Extension
+
+```typescript
+interface ProviderRegistryEntry {
+  id: string;                      // "anthropic"
+  displayName: string;             // "Anthropic"
+  envVar: string;                  // "ANTHROPIC_API_KEY"
+  authMethod: 'bearer' | 'x-api-key' | 'query-param' | 'none';
+  baseUrl: string;
+  // NEW: Thinking configuration
+  thinkingConfigProvider?: string; // "claude" - maps to ThinkingConfigFacade
+  thinkingConfigModelDependent?: boolean; // true for google - requires model inspection
+}
+
+// Example entries
+const PROVIDER_REGISTRY: ProviderRegistryEntry[] = [
+  {
+    id: 'anthropic',
+    displayName: 'Anthropic',
+    envVar: 'ANTHROPIC_API_KEY',
+    authMethod: 'x-api-key',
+    baseUrl: 'https://api.anthropic.com',
+    thinkingConfigProvider: 'claude',
+  },
+  {
+    id: 'google',
+    displayName: 'Google',
+    envVar: 'GEMINI_API_KEY',
+    authMethod: 'query-param',
+    baseUrl: 'https://generativelanguage.googleapis.com',
+    thinkingConfigModelDependent: true, // Must inspect model to determine facade
+  },
+  // ... other providers
+];
+```
+
+#### getThinkingConfigProvider() Helper
+
+```typescript
+/**
+ * Get the thinking config provider string for a given provider/model combination.
+ * 
+ * @param providerId - Provider registry ID (e.g., "anthropic", "google")
+ * @param modelId - Model ID (e.g., "claude-sonnet-4", "gemini-2.5-flash")
+ * @returns Thinking config provider string for getThinkingConfig(), or null if not supported
+ */
+export function getThinkingConfigProvider(
+  providerId: string,
+  modelId: string
+): string | null {
+  const entry = getProviderRegistryEntry(providerId);
+  if (!entry) return null;
+
+  // Model-dependent (Google/Gemini)
+  if (entry.thinkingConfigModelDependent) {
+    if (modelId.includes('gemini-3')) {
+      return 'gemini-3';
+    } else if (modelId.includes('gemini-2') || modelId.includes('gemini-2.5')) {
+      return 'gemini-2.5';
+    }
+    return null;
+  }
+
+  // Direct mapping
+  return entry.thinkingConfigProvider ?? null;
+}
+```
+
+#### Usage in AgentView.tsx
+
+```typescript
+// BEFORE (broken - uses provider ID directly)
+thinkingConfig = getThinkingConfig(currentProvider, effectiveLevel);
+
+// AFTER (correct - maps provider ID to thinking config provider)
+const thinkingProvider = getThinkingConfigProvider(
+  currentProvider,
+  currentModel?.modelId ?? ''
+);
+if (thinkingProvider && effectiveLevel !== JsThinkingLevel.Off) {
+  thinkingConfig = getThinkingConfig(thinkingProvider, effectiveLevel);
+}
+```
+
+#### ThinkingLevelDialog Integration
+
+The `/thinking` command dialog should only be available when the current provider supports thinking configuration:
+
+```typescript
+// In AgentView.tsx command handler
+case '/thinking':
+  const thinkingProvider = getThinkingConfigProvider(currentProvider, currentModel?.modelId ?? '');
+  if (!thinkingProvider) {
+    addSystemMessage('Thinking level configuration is not supported for this provider.');
+    return;
+  }
+  setShowThinkingDialog(true);
+  break;
+```
+
+#### Files to Modify for Thinking Integration
+
+| File | Change |
+|------|--------|
+| `src/utils/provider-config.ts` | Add `thinkingConfigProvider` and `thinkingConfigModelDependent` to registry |
+| `src/utils/provider-config.ts` | Add `getThinkingConfigProvider()` helper |
+| `src/tui/components/AgentView.tsx` | Use `getThinkingConfigProvider()` instead of `currentProvider` directly |
+| `src/tui/components/ThinkingLevelDialog.tsx` | No changes needed (receives level, not provider) |
+
+### 16. Open Questions
 
 1. Should we support project-level credentials (spec/credentials/) for team sharing?
 2. Should credentials be encrypted at rest? (adds complexity)
 3. Should we validate API keys on save (requires network)?
 4. How to handle credential rotation notifications?
 
-### 16. Success Criteria
+### 17. Success Criteria
 
 - [ ] API keys can be configured via Settings UI
 - [ ] Credentials persist in `~/.fspec/credentials/credentials.json`
@@ -635,3 +768,7 @@ All 19 providers supported by rig must be configurable:
 - [ ] Environment variables continue to work (backward compatible)
 - [ ] Connection test validates credentials before saving
 - [ ] Model selection shows configured/not configured status per provider
+- [ ] Provider registry includes `thinkingConfigProvider` mapping
+- [ ] `getThinkingConfigProvider()` correctly maps provider/model to thinking facade
+- [ ] `/thinking` command only available for providers that support thinking config
+- [ ] Gemini model-dependent thinking config selection works correctly

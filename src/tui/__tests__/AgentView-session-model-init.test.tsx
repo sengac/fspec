@@ -32,7 +32,7 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceListSessions: vi.fn(() => []),
 }));
 
-vi.mock('../../../utils/credentials', () => ({
+vi.mock('../../utils/credentials', () => ({
   getProviderConfig: mockGetProviderConfig,
 }));
 
@@ -117,11 +117,13 @@ describe('Session creation with model initialization', () => {
     });
 
     // Then: Session should be created with the full model path
+    // CONFIG-004: Now includes apiKey as 5th parameter
     expect(mockSessionManagerCreateWithId).toHaveBeenCalledWith(
       'test-session-id',
       'anthropic/claude-opus-4-5',
       'test-project',
-      expect.any(String)
+      expect.any(String),
+      'test-key' // CONFIG-004: apiKey from credentials
     );
   });
 
@@ -154,11 +156,13 @@ describe('Session creation with model initialization', () => {
     });
 
     // Then: Should use the exact persisted model path
+    // CONFIG-004: Now includes apiKey as 5th parameter
     expect(mockSessionManagerCreateWithId).toHaveBeenCalledWith(
       expect.any(String),
       'anthropic/claude-opus-4-5',
       'test-project',
-      expect.any(String)
+      expect.any(String),
+      'test-key' // CONFIG-004: apiKey from credentials
     );
   });
 
@@ -220,11 +224,13 @@ describe('Session creation with model initialization', () => {
     });
 
     // Then: Both provider and model should be passed to Rust
+    // CONFIG-004: Now includes apiKey as 5th parameter
     expect(mockSessionManagerCreateWithId).toHaveBeenCalledWith(
       expect.any(String),
       'anthropic/claude-sonnet-4', // Full path
       'my-project',
-      'My Session'
+      'My Session',
+      'test-key' // CONFIG-004: apiKey from credentials
     );
   });
 

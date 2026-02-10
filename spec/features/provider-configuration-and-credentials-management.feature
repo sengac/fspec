@@ -214,3 +214,15 @@ Feature: Provider Configuration and Credentials Management
     When the system makes an API request to Anthropic
     Then the API key should be in the "x-api-key" header
     And the API key should not be in the Authorization header
+
+  @integration
+  @napi
+  Scenario: TUI session creation uses credentials file
+    Given I have saved an API key for "anthropic" via the TUI Settings screen
+    When I create a new session with an Anthropic model from the TUI
+    Then the sessionService should read the API key from ~/.fspec/credentials/credentials.json
+    Given ANTHROPIC_API_KEY is not set in the environment
+    Given there is no .env file in the project
+    Then the API key should be passed to the Rust session_manager_create_with_id function
+    Then the session should be created successfully and ready for prompting
+
