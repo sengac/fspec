@@ -101,33 +101,44 @@ impl ProviderAdapter for ClaudeProvider {
 }
 
 impl ClaudeProvider {
-    /// MODEL-001: Create a new ClaudeProvider with explicit model
+    /// Create a new ClaudeProvider with explicit model.
     ///
     /// Model is REQUIRED - will return error if None.
+    ///
+    /// Auth mode is determined by the **token prefix**, not by which environment
+    /// variable the credential came from. This allows OAuth tokens stored in
+    /// ANTHROPIC_API_KEY to be correctly detected and use Bearer authentication.
+    ///
+    /// Token prefixes:
+    /// - `sk-ant-oat` → OAuth token → uses `Authorization: Bearer` header
+    /// - `sk-ant-api` or other → API key → uses `x-api-key` header
     pub fn new_with_model(model: Option<&str>) -> Result<Self, ProviderError> {
         let model_name = model.ok_or_else(|| {
             ProviderError::config("claude", "Model is required. Please select a model before creating a session.")
         })?;
 
-        // Check for API key first (takes precedence) using shared helper
-        if let Ok(api_key) = detect_credential_from_env("claude", &["ANTHROPIC_API_KEY"]) {
-            return Self::from_api_key_with_mode_and_model(&api_key, AuthMode::ApiKey, model_name);
-        }
-
-        // Fall back to OAuth token using shared helper
-        if let Ok(oauth_token) = detect_credential_from_env("claude", &["CLAUDE_CODE_OAUTH_TOKEN"])
-        {
-            return Self::from_api_key_with_mode_and_model(
-                &oauth_token,
-                AuthMode::OAuth,
-                model_name,
-            );
+        // Check both env vars for credentials
+        let credential = detect_credential_from_env("claude", &["ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"]);
+        
+        if let Ok(token) = credential {
+            let auth_mode = Self::detect_auth_mode_from_token(&token);
+            return Self::from_api_key_with_mode_and_model(&token, auth_mode, model_name);
         }
 
         Err(ProviderError::auth(
             "claude",
             "No API key found. Set ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN environment variable",
         ))
+    }
+    
+    /// Detect auth mode from token prefix.
+    /// OAuth tokens start with `sk-ant-oat`, API keys use other prefixes.
+    fn detect_auth_mode_from_token(token: &str) -> AuthMode {
+        if token.starts_with("sk-ant-oat") {
+            AuthMode::OAuth
+        } else {
+            AuthMode::ApiKey
+        }
     }
 
     /// MODEL-001: Create a new ClaudeProvider with explicit model
@@ -145,7 +156,6 @@ impl ClaudeProvider {
         auth_mode: AuthMode,
         model: &str,
     ) -> Result<Self, ProviderError> {
-        // Use shared validation helper (REFAC-013)
         validate_api_key_static("claude", api_key)?;
 
         // Build rig client based on auth mode

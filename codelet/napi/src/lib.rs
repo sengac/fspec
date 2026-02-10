@@ -34,6 +34,9 @@ mod work_units_watcher;
 // Persistence module works in both modes (pure Rust with optional NAPI bindings)
 pub mod persistence;
 
+// Credentials module works in both modes (pure Rust with optional NAPI bindings)
+pub mod credentials;
+
 // Test support module for integration tests
 pub mod test_support;
 

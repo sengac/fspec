@@ -226,3 +226,15 @@ Feature: Provider Configuration and Credentials Management
     Then the API key should be passed to the Rust session_manager_create_with_id function
     Then the session should be created successfully and ready for prompting
 
+
+  Scenario: sessionService reads credentials file and passes API key to Rust
+    Given I have a credentials file at ~/.fspec/credentials/credentials.json containing an API key for "anthropic"
+    When I call createSession with modelPath "anthropic/claude-sonnet-4"
+    Then sessionService should extract provider ID "anthropic" from the modelPath
+    Given no ANTHROPIC_API_KEY environment variable is set
+    Given there is no .env file in the working directory
+    Then sessionService should call getProviderConfig to retrieve the API key from credentials.json
+    Then sessionService should pass the API key to sessionManagerCreateWithId as the fifth parameter
+    Then Rust should receive the API key and set ANTHROPIC_API_KEY environment variable
+    Then the session should be created successfully
+

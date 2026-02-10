@@ -73,6 +73,10 @@ pub fn set_data_directory(dir: PathBuf) -> Result<(), String> {
 
     let mut hist = HISTORY_STORE.lock().map_err(|e| e.to_string())?;
     *hist = None;
+    drop(hist);
+
+    // Reset credential store so it reinitializes with the new directory
+    crate::credentials::reset_credential_store();
 
     Ok(())
 }

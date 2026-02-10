@@ -4,19 +4,35 @@
  * Credentials are stored in ~/.fspec/credentials/credentials.json
  * with secure file permissions (600 for file, 700 for directory).
  *
- * Resolution priority chain:
- * 1. Explicit credentials (passed programmatically)
- * 2. Credentials file (~/.fspec/credentials/credentials.json)
- * 3. Environment variables
- * 4. .env file (lowest priority fallback)
+ * Resolution priority chain (handled in Rust):
+ * 1. Credentials file (~/.fspec/credentials/credentials.json)
+ * 2. Environment variables
+ * 3. .env file (lowest priority fallback)
  */
 
-import { readFile, writeFile, mkdir, chmod, stat } from 'fs/promises';
-import { join, dirname } from 'path';
+import { readFile, writeFile, mkdir, chmod } from 'fs/promises';
+import { join } from 'path';
 import { existsSync } from 'fs';
 import { parse as dotenvParse } from 'dotenv';
 import { readFileSync } from 'fs';
 import { getFspecUserDir } from './config';
+
+// Import credentialsReload to notify Rust after credential changes
+let credentialsReload: (() => Promise<boolean>) | undefined;
+
+// Use dynamic import to handle cases where NAPI module isn't available
+async function loadNapiModule(): Promise<void> {
+  try {
+    const napi = await import('@sengac/codelet-napi');
+    credentialsReload = napi.credentialsReload;
+  } catch {
+    // NAPI not available (e.g., during pure Node.js CLI usage)
+    credentialsReload = undefined;
+  }
+}
+
+// Initialize on module load
+void loadNapiModule();
 
 /**
  * Provider credential data
@@ -95,8 +111,8 @@ export async function loadCredentials(): Promise<CredentialsFile> {
       return { version: 1, providers: {} };
     }
     return JSON.parse(content);
-  } catch (error: any) {
-    if (error.code === 'ENOENT') {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'code' in error && error.code === 'ENOENT') {
       return { version: 1, providers: {} };
     }
     throw error;
@@ -108,6 +124,7 @@ export async function loadCredentials(): Promise<CredentialsFile> {
  *
  * Creates credentials directory with 700 permissions
  * Creates/updates credentials file with 600 permissions
+ * After saving, calls credentialsReload() to notify Rust.
  *
  * NEVER logs the API key - only masked version if needed
  */
@@ -136,10 +153,20 @@ export async function saveCredential(
 
   // Set file permissions to 600 (owner read/write only)
   await chmod(credPath, 0o600);
+
+  // Notify Rust to reload credentials
+  if (credentialsReload) {
+    try {
+      await credentialsReload();
+    } catch {
+      // Ignore errors - Rust may not be initialized yet
+    }
+  }
 }
 
 /**
  * Delete credential for a provider
+ * After deleting, calls credentialsReload() to notify Rust.
  */
 export async function deleteCredential(providerId: string): Promise<void> {
   const credPath = getCredentialsPath();
@@ -155,6 +182,15 @@ export async function deleteCredential(providerId: string): Promise<void> {
 
   // Maintain secure permissions
   await chmod(credPath, 0o600);
+
+  // Notify Rust to reload credentials
+  if (credentialsReload) {
+    try {
+      await credentialsReload();
+    } catch {
+      // Ignore errors - Rust may not be initialized yet
+    }
+  }
 }
 
 /**
@@ -210,66 +246,6 @@ export async function getProviderConfig(
   }
 
   return {};
-}
-
-/**
- * Resolve credential for a provider following the priority chain
- *
- * Priority:
- * 1. Explicit credentials (passed as parameter)
- * 2. Credentials file
- * 3. Environment variables
- * 4. .env file (if dotenvDir provided)
- *
- * @param providerId - The provider ID (e.g., 'anthropic', 'openai')
- * @param explicitKey - Optional explicit API key (highest priority)
- * @param dotenvDir - Optional directory containing .env file
- */
-export async function resolveCredential(
-  providerId: string,
-  explicitKey?: string,
-  dotenvDir?: string
-): Promise<string | undefined> {
-  // 1. Explicit credentials take highest priority
-  if (explicitKey) {
-    return explicitKey;
-  }
-
-  // 2. Try credentials file
-  const credentials = await loadCredentials();
-  const providerCred = credentials.providers[providerId];
-
-  if (providerCred?.apiKey) {
-    return providerCred.apiKey;
-  }
-
-  // 3. Try environment variables (check all possible env vars for this provider)
-  const envVars = PROVIDER_ENV_VARS[providerId];
-  if (envVars) {
-    for (const envVar of envVars) {
-      if (process.env[envVar]) {
-        return process.env[envVar];
-      }
-    }
-  }
-
-  // 4. Try .env file (lowest priority)
-  if (dotenvDir && envVars) {
-    const envPath = join(dotenvDir, '.env');
-    if (existsSync(envPath)) {
-      // Parse .env file silently (dotenvParse doesn't output anything to console)
-      const envContent = readFileSync(envPath, 'utf-8');
-      const parsed = dotenvParse(envContent);
-
-      for (const envVar of envVars) {
-        if (parsed[envVar]) {
-          return parsed[envVar];
-        }
-      }
-    }
-  }
-
-  return undefined;
 }
 
 /**

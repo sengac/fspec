@@ -261,6 +261,16 @@ export interface ContextFillInfo {
 }
 
 /**
+ * Force reload credentials from disk
+ *
+ * Call this after TypeScript saves credentials to ensure Rust picks up changes.
+ * Returns true if credentials were reloaded (file changed), false otherwise.
+ *
+ * SECURITY: This function does NOT return credentials - it only triggers a reload.
+ */
+export declare function credentialsReload(): boolean;
+
+/**
  * Debug command result (AGENT-021)
  * Returned by toggleDebug() to indicate debug capture state
  */
@@ -1196,20 +1206,16 @@ export declare function sessionManagerCreate(
  *
  * This is used when AgentView creates a session - the ID comes from persistence
  * so that detach/attach can find the session by the same ID used for persistence.
+ * Credentials are resolved internally by Rust using the credentials module.
  *
  * Note: This must be async because it uses tokio::spawn internally, which requires
  * a Tokio runtime context. NAPI-RS provides this context for async functions.
- *
- * CONFIG-004: Added optional api_key parameter. When provided, sets the appropriate
- * environment variable before ProviderManager initialization so that credentials
- * from ~/.fspec/credentials/credentials.json can be passed programmatically.
  */
 export declare function sessionManagerCreateWithId(
   sessionId: string,
   model: string,
   project: string,
-  name: string,
-  apiKey?: string | undefined | null
+  name: string
 ): Promise<void>;
 
 /** Destroy a background session */

@@ -3534,7 +3534,7 @@ impl SessionManager {
     /// Create a new background session (generates new UUID)
     pub async fn create_session(&self, _model: &str, project: &str) -> Result<String> {
         let id = Uuid::new_v4();
-        self.create_session_with_id(&id.to_string(), _model, project, &format!("Session {}", &id.to_string()[..8]), None).await?;
+        self.create_session_with_id(&id.to_string(), _model, project, &format!("Session {}", &id.to_string()[..8])).await?;
         Ok(id.to_string())
     }
     
@@ -3542,12 +3542,8 @@ impl SessionManager {
     ///
     /// This is the core session creation method. The ID should match the persistence
     /// session ID so that ESC + Detach and /resume can find the session.
-    ///
-    /// CONFIG-004: Added optional api_key parameter. When provided, sets the appropriate
-    /// environment variable for the provider before ProviderManager initialization.
-    /// This allows credentials from ~/.fspec/credentials/credentials.json to be passed
-    /// programmatically from TypeScript.
-    pub async fn create_session_with_id(&self, id: &str, model: &str, project: &str, name: &str, api_key: Option<&str>) -> Result<()> {
+    /// Credentials are resolved internally by Rust using the credentials module.
+    pub async fn create_session_with_id(&self, id: &str, model: &str, project: &str, name: &str) -> Result<()> {
         let uuid = Uuid::parse_str(id)
             .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
 
@@ -3598,35 +3594,10 @@ impl SessionManager {
 
         let (provider_id, model_id) = (Some(registry_provider.to_string()), Some(model_part.to_string()));
 
-        // CONFIG-004: If an explicit API key is provided, set the appropriate environment
-        // variable before ProviderManager initialization. This takes priority over .env file.
-        if let Some(key) = api_key {
-            let env_var_name = match *registry_provider {
-                "anthropic" => "ANTHROPIC_API_KEY",
-                "openai" => "OPENAI_API_KEY",
-                "cohere" => "COHERE_API_KEY",
-                "gemini" => "GOOGLE_GENERATIVE_AI_API_KEY",
-                "mistral" => "MISTRAL_API_KEY",
-                "xai" => "XAI_API_KEY",
-                "together" => "TOGETHER_API_KEY",
-                "huggingface" => "HUGGINGFACE_API_KEY",
-                "openrouter" => "OPENROUTER_API_KEY",
-                "groq" => "GROQ_API_KEY",
-                "deepseek" => "DEEPSEEK_API_KEY",
-                "perplexity" => "PERPLEXITY_API_KEY",
-                "moonshot" => "MOONSHOT_API_KEY",
-                "hyperbolic" => "HYPERBOLIC_API_KEY",
-                "mira" => "MIRA_API_KEY",
-                "galadriel" => "GALADRIEL_API_KEY",
-                "azure" => "AZURE_OPENAI_API_KEY",
-                "voyageai" => "VOYAGEAI_API_KEY",
-                "zai" => "ZAI_API_KEY",
-                // Ollama typically doesn't need an API key
-                _ => "",
-            };
-            if !env_var_name.is_empty() {
-                std::env::set_var(env_var_name, key);
-            }
+        // Resolve credentials internally using the credentials module.
+        let project_path = std::path::PathBuf::from(project);
+        if let Err(e) = crate::credentials::resolve_and_set_env_var(registry_provider, Some(project_path.as_path())) {
+            tracing::warn!("Failed to resolve credentials for provider {}: {}", registry_provider, e);
         }
 
         // Create ProviderManager with model registry support and select the model
@@ -3738,6 +3709,12 @@ impl SessionManager {
         }
 
         let (provider_id, model_id) = (Some(registry_provider.to_string()), Some(model_part.to_string()));
+
+        // Resolve credentials internally using the credentials module.
+        let project_path = std::path::PathBuf::from(project);
+        if let Err(e) = crate::credentials::resolve_and_set_env_var(registry_provider, Some(project_path.as_path())) {
+            tracing::warn!("Failed to resolve credentials for watcher provider {}: {}", registry_provider, e);
+        }
 
         let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
             .await
@@ -4873,22 +4850,18 @@ pub async fn session_manager_create(model: String, project: String) -> Result<St
 ///
 /// This is used when AgentView creates a session - the ID comes from persistence
 /// so that detach/attach can find the session by the same ID used for persistence.
+/// Credentials are resolved internally by Rust using the credentials module.
 ///
 /// Note: This must be async because it uses tokio::spawn internally, which requires
 /// a Tokio runtime context. NAPI-RS provides this context for async functions.
-///
-/// CONFIG-004: Added optional api_key parameter. When provided, sets the appropriate
-/// environment variable before ProviderManager initialization so that credentials
-/// from ~/.fspec/credentials/credentials.json can be passed programmatically.
 #[napi]
 pub async fn session_manager_create_with_id(
     session_id: String,
     model: String,
     project: String,
     name: String,
-    api_key: Option<String>,
 ) -> Result<()> {
-    SessionManager::instance().create_session_with_id(&session_id, &model, &project, &name, api_key.as_deref()).await
+    SessionManager::instance().create_session_with_id(&session_id, &model, &project, &name).await
 }
 
 /// List all background sessions

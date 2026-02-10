@@ -117,13 +117,12 @@ describe('Session creation with model initialization', () => {
     });
 
     // Then: Session should be created with the full model path
-    // CONFIG-004: Now includes apiKey as 5th parameter
+    // CONFIG-005: apiKey parameter removed - Rust resolves credentials internally
     expect(mockSessionManagerCreateWithId).toHaveBeenCalledWith(
       'test-session-id',
       'anthropic/claude-opus-4-5',
       'test-project',
-      expect.any(String),
-      'test-key' // CONFIG-004: apiKey from credentials
+      expect.any(String)
     );
   });
 
@@ -156,13 +155,12 @@ describe('Session creation with model initialization', () => {
     });
 
     // Then: Should use the exact persisted model path
-    // CONFIG-004: Now includes apiKey as 5th parameter
+    // CONFIG-005: apiKey parameter removed - Rust resolves credentials internally
     expect(mockSessionManagerCreateWithId).toHaveBeenCalledWith(
       expect.any(String),
       'anthropic/claude-opus-4-5',
       'test-project',
-      expect.any(String),
-      'test-key' // CONFIG-004: apiKey from credentials
+      expect.any(String)
     );
   });
 
@@ -224,13 +222,12 @@ describe('Session creation with model initialization', () => {
     });
 
     // Then: Both provider and model should be passed to Rust
-    // CONFIG-004: Now includes apiKey as 5th parameter
+    // CONFIG-005: apiKey parameter removed - Rust resolves credentials internally
     expect(mockSessionManagerCreateWithId).toHaveBeenCalledWith(
       expect.any(String),
-      'anthropic/claude-sonnet-4', // Full path
+      'anthropic/claude-sonnet-4',
       'my-project',
-      'My Session',
-      'test-key' // CONFIG-004: apiKey from credentials
+      'My Session'
     );
   });
 

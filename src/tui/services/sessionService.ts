@@ -46,8 +46,21 @@ export interface CreateSessionOptions {
 }
 
 /**
+ * Extract provider ID from model path.
+ * Model paths are in "provider/model-id" format (e.g., "anthropic/claude-sonnet-4").
+ *
+ * @param modelPath - Full model path
+ * @returns Provider ID (e.g., "anthropic")
+ */
+export function extractProviderId(modelPath: string): string {
+  const parts = modelPath.split('/');
+  return parts[0] || '';
+}
+
+/**
  * Create a new session in both persistence and Rust background.
  * This is the canonical way to create a session that's immediately usable.
+ * Credentials are resolved internally by Rust.
  *
  * @returns The created session info
  * @throws If session creation fails
@@ -132,6 +145,7 @@ export interface RestoreSessionOptions {
 /**
  * Restore a session from persistence to Rust background.
  * If the session already exists in Rust (background session), just returns its info.
+ * Credentials are resolved internally by Rust.
  *
  * This handles:
  * 1. Loading session manifest from persistence
