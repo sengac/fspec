@@ -8,9 +8,6 @@
  * - Single Responsibility: Only handles session creation/management
  * - Open/Closed: Easy to extend with new operations
  * - DRY: Reusable across CreateSessionDialog, /resume, navigation, etc.
- *
- * CONFIG-004: Integrated with credentials system to pass API keys to Rust NAPI.
- * Credentials are loaded from ~/.fspec/credentials/credentials.json when creating sessions.
  */
 
 import {
@@ -26,17 +23,6 @@ import {
 } from '@sengac/codelet-napi';
 import type { StreamChunk } from '@sengac/codelet-napi';
 import { logger } from '../../utils/logger';
-import { getProviderConfig } from '../../utils/credentials';
-
-/**
- * Extract provider ID from model path.
- * e.g., "anthropic/claude-sonnet-4" -> "anthropic"
- *
- * CONFIG-004: Used to look up credentials for the correct provider.
- */
-function extractProviderId(modelPath: string): string {
-  return modelPath.split('/')[0];
-}
 
 /**
  * Result of creating a new session
@@ -63,9 +49,6 @@ export interface CreateSessionOptions {
  * Create a new session in both persistence and Rust background.
  * This is the canonical way to create a session that's immediately usable.
  *
- * CONFIG-004: Now reads credentials from ~/.fspec/credentials/credentials.json
- * and passes them to Rust NAPI for provider authentication.
- *
  * @returns The created session info
  * @throws If session creation fails
  */
@@ -79,21 +62,6 @@ export async function createSession(
     `[SessionService] Creating new session: ${sessionName}, provider: ${modelPath}`
   );
 
-  // CONFIG-004: Get credentials for this provider from credentials file
-  const providerId = extractProviderId(modelPath);
-  const providerConfig = await getProviderConfig(providerId);
-  const apiKey = providerConfig.apiKey;
-
-  if (apiKey) {
-    logger.debug(
-      `[SessionService] Found credentials for ${providerId} (source: ${providerConfig.source})`
-    );
-  } else {
-    logger.debug(
-      `[SessionService] No credentials found for ${providerId}, Rust will use env vars`
-    );
-  }
-
   // Create persisted session first (gives us the ID)
   const persistedSession = persistenceCreateSessionWithProvider(
     sessionName,
@@ -102,13 +70,11 @@ export async function createSession(
   );
 
   // Create Rust background session with the same ID
-  // CONFIG-004: Pass API key from credentials file to Rust
   await sessionManagerCreateWithId(
     persistedSession.id,
     modelPath,
     project,
-    sessionName,
-    apiKey // undefined if not found - Rust falls back to env vars
+    sessionName
   );
 
   logger.debug(`[SessionService] Created session ${persistedSession.id}`);
@@ -251,20 +217,13 @@ export async function restoreSession(
   const modelPath = sessionManifest?.provider || fallbackModelPath;
   const sessionName = sessionManifest?.name || 'Restored Session';
 
-  // CONFIG-004: Get credentials for this provider from credentials file
-  const providerId = extractProviderId(modelPath);
-  const providerConfig = await getProviderConfig(providerId);
-  const apiKey = providerConfig.apiKey;
-
   // Create background session
   try {
-    // CONFIG-004: Pass API key from credentials file to Rust
     await sessionManagerCreateWithId(
       sessionId,
       modelPath,
       fallbackProject,
-      sessionName,
-      apiKey // undefined if not found - Rust falls back to env vars
+      sessionName
     );
   } catch (err) {
     // Session may already exist - this is actually OK, but log for debugging

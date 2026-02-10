@@ -111,35 +111,6 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
     });
   });
 
-  describe('Scenario: Create session with programmatic credentials via NAPI', () => {
-    it('should create session with explicit API key via NAPI', async () => {
-      // @step Given I have TypeScript code that imports codelet-napi
-      // The import is done at the module level - we're testing the NAPI binding
-      const { sessionManagerCreateWithId } = await import(
-        '@sengac/codelet-napi'
-      );
-      expect(sessionManagerCreateWithId).toBeDefined();
-
-      // @step When I call CodeletSession.new_with_credentials with model "anthropic/claude-sonnet-4" and API key
-      // NOTE: This step documents the EXPECTED API - not yet implemented
-      // Current API: sessionManagerCreateWithId(id, model, project, name)
-      // Required API: sessionManagerCreateWithId(id, model, project, name, apiKey?)
-      // For now, verify the function exists and accepts the current parameters
-      expect(typeof sessionManagerCreateWithId).toBe('function');
-
-      // @step Then a session should be created successfully
-      // This will be fully tested after implementation adds apiKey parameter
-
-      // @step And the session should use the provided API key
-      // The implementation will need to pass the API key to Rust
-      // Rust will use it instead of environment variable detection
-
-      // @step And the session should not read from environment variables
-      // When explicit credentials are provided, environment should be bypassed
-      expect(true).toBe(true); // Placeholder until implementation
-    });
-  });
-
   describe('Scenario: Delete a provider credential', () => {
     it('should remove credential and update file', async () => {
       // @step Given I have credentials configured for "anthropic"
@@ -155,7 +126,9 @@ describe('Feature: Provider Configuration and Credentials Management', () => {
       // @step And "anthropic" should no longer have an apiKey entry
       expect(content.providers.anthropic).toBeUndefined();
 
-      // @step And the provider should show as "not configured"
+      // @step And the provider should NOT have credentials from file source
+      // Note: .env file may still provide credentials as fallback, but the
+      // credentials FILE should no longer be the source
       const config = await getProviderConfig('anthropic');
       expect(config.source).not.toBe('file');
     });
@@ -557,99 +530,5 @@ describe('Provider Registry Constants', () => {
     expect(SUPPORTED_PROVIDERS).toContain('ollama');
     expect(SUPPORTED_PROVIDERS).toContain('azure');
     expect(SUPPORTED_PROVIDERS).toContain('zai');
-  });
-});
-
-// ============================================
-// TUI SESSION SERVICE INTEGRATION SCENARIOS
-// ============================================
-
-/**
- * These tests verify the integration between sessionService.ts and credentials.ts
- * Scenario: TUI session creation uses credentials file
- *
- * The current implementation has a gap:
- * - TypeScript saves credentials to ~/.fspec/credentials/credentials.json
- * - But sessionService.createSession() never reads those credentials
- * - And never passes them to Rust NAPI
- *
- * The fix requires:
- * 1. sessionService.createSession() to call getProviderConfig(providerId)
- * 2. Pass the API key to Rust session_manager_create_with_id
- * 3. Rust to accept the API key and use it for provider auth
- */
-describe('Scenario: TUI session creation uses credentials file', () => {
-  it('should read API key from credentials file and pass to Rust NAPI', async () => {
-    // @step Given I have saved an API key for "anthropic" via the TUI Settings screen
-    // This is tested by verifying getProviderConfig is called with the correct provider
-
-    // @step When I create a new session with an Anthropic model from the TUI
-    // Currently sessionService.createSession does NOT call getProviderConfig
-    // This test documents the expected behavior
-
-    // @step Then the sessionService should read the API key from ~/.fspec/credentials/credentials.json
-    // The implementation needs to:
-    // 1. Extract provider from modelPath: "anthropic/claude-sonnet-4" -> "anthropic"
-    // 2. Call getProviderConfig("anthropic")
-
-    // @step Given ANTHROPIC_API_KEY is not set in the environment
-    delete process.env.ANTHROPIC_API_KEY;
-
-    // @step Given there is no .env file in the project
-    // (no .env file created in test)
-
-    // @step Then the API key should be passed to the Rust session_manager_create_with_id function
-    // Current NAPI signature: sessionManagerCreateWithId(id, model, project, name)
-    // Required NAPI signature: sessionManagerCreateWithId(id, model, project, name, apiKey?)
-
-    // This test verifies the expected extraction logic
-    const modelPath = 'anthropic/claude-sonnet-4-20250514';
-    const providerId = modelPath.split('/')[0];
-    expect(providerId).toBe('anthropic');
-
-    // Verify getProviderConfig returns the correct structure
-    // (Save a credential first)
-    await saveCredential('anthropic', 'sk-ant-test-key-for-session');
-    const config = await getProviderConfig('anthropic');
-    expect(config.apiKey).toBe('sk-ant-test-key-for-session');
-    expect(config.source).toBe('file');
-
-    // @step Then the session should be created successfully and ready for prompting
-    // This will be verified after implementation is complete
-    expect(config.apiKey).toBeDefined();
-  });
-
-  it('should extract provider ID correctly from various model paths', async () => {
-    // Test various model path formats to ensure proper provider extraction
-    const testCases = [
-      { modelPath: 'anthropic/claude-sonnet-4', expectedProvider: 'anthropic' },
-      { modelPath: 'openai/gpt-4-turbo', expectedProvider: 'openai' },
-      { modelPath: 'gemini/gemini-2.0-flash', expectedProvider: 'gemini' },
-      { modelPath: 'ollama/llama3.2', expectedProvider: 'ollama' },
-      {
-        modelPath: 'openrouter/anthropic/claude-3.5-sonnet',
-        expectedProvider: 'openrouter',
-      },
-    ];
-
-    for (const { modelPath, expectedProvider } of testCases) {
-      const providerId = modelPath.split('/')[0];
-      expect(providerId).toBe(expectedProvider);
-    }
-  });
-
-  it('should handle missing credentials gracefully', async () => {
-    // @step Given no credentials are configured for "mistral"
-    // (no saveCredential call for mistral)
-    delete process.env.MISTRAL_API_KEY;
-
-    // @step When getProviderConfig is called
-    const config = await getProviderConfig('mistral');
-
-    // @step Then it should return empty config without throwing
-    expect(config.apiKey).toBeUndefined();
-
-    // The sessionService should handle this by passing undefined to Rust
-    // Rust will then fall back to environment variable detection
   });
 });
