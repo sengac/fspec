@@ -1,19 +1,17 @@
-//! PDF reading module
-//!
-//! TOOLS-002: Provides PDF reading with three modes:
+//! PDF reading module with three modes:
 //! - TEXT: Extract text page by page using lopdf
 //! - IMAGES: Extract embedded images using lopdf XObject iteration
-//! - VISUAL: Render pages as PNG images at 150 DPI using pdfium-render
-//!
-//! Handles encrypted PDFs with clear errors.
+//! - VISUAL: Render pages as PNG images using hayro (pure Rust)
 
 use base64::{engine::general_purpose::STANDARD as BASE64, Engine};
-use image::ImageFormat;
+use hayro::hayro_interpret::InterpreterSettings;
+use hayro::hayro_syntax::{LoadPdfError, Pdf};
+use hayro::vello_cpu::color::palette::css::WHITE;
+use hayro::RenderSettings;
 use lopdf::{Document, Error as LopdfError};
-use pdfium_render::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::io::Cursor;
 use std::path::Path;
+use std::sync::Arc;
 
 /// Error types for PDF reading
 #[derive(Debug)]
@@ -26,8 +24,6 @@ pub enum PdfError {
     ExtractionError { page: u32, message: String },
     /// Error rendering PDF page
     RenderError { page: u32, message: String },
-    /// Pdfium library not available
-    PdfiumNotAvailable(String),
 }
 
 impl std::fmt::Display for PdfError {
@@ -44,9 +40,6 @@ impl std::fmt::Display for PdfError {
             }
             PdfError::RenderError { page, message } => {
                 write!(f, "Error rendering page {page}: {message}")
-            }
-            PdfError::PdfiumNotAvailable(msg) => {
-                write!(f, "Pdfium library not available: {msg}")
             }
         }
     }
@@ -98,15 +91,11 @@ impl PdfContent {
 
 /// Read and extract text from a PDF file
 pub fn read_pdf_from_bytes(bytes: &[u8], path: &str) -> Result<PdfContent, PdfError> {
-    // Check for encryption markers in raw bytes first
-    // This catches encrypted PDFs that lopdf can't parse
     if has_encryption_markers(bytes) {
         return Err(PdfError::Encrypted(path.to_string()));
     }
 
-    // Load PDF from bytes
     let doc = Document::load_mem(bytes).map_err(|e| {
-        // Check if the error is due to encryption
         if is_encryption_error(&e) {
             PdfError::Encrypted(path.to_string())
         } else {
@@ -114,15 +103,11 @@ pub fn read_pdf_from_bytes(bytes: &[u8], path: &str) -> Result<PdfContent, PdfEr
         }
     })?;
 
-    // Check if document is encrypted
     if doc.is_encrypted() {
         return Err(PdfError::Encrypted(path.to_string()));
     }
 
-    // Get page count
     let page_count = doc.get_pages().len();
-
-    // Extract text from each page
     let mut pages = Vec::with_capacity(page_count);
 
     for page_num in 1..=page_count as u32 {
@@ -149,8 +134,6 @@ pub fn read_pdf_from_path(path: &Path) -> Result<PdfContent, PdfError> {
     read_pdf_from_bytes(&bytes, &path.to_string_lossy())
 }
 
-/// Check if a lopdf error indicates encryption or an invalid/corrupted PDF
-/// (which could be due to encryption that we can't parse)
 fn is_encryption_error(error: &LopdfError) -> bool {
     let error_str = error.to_string().to_lowercase();
     error_str.contains("encrypt")
@@ -161,16 +144,11 @@ fn is_encryption_error(error: &LopdfError) -> bool {
 
 /// Check if the raw PDF bytes contain encryption markers
 pub fn has_encryption_markers(bytes: &[u8]) -> bool {
-    // Look for common encryption-related strings in the PDF header/trailer
     let content = String::from_utf8_lossy(bytes);
     content.contains("/Encrypt")
         || content.contains("/Standard")
         || content.contains("/Filter /Standard")
 }
-
-// ============================================
-// VISUAL MODE: Render pages as images
-// ============================================
 
 /// A rendered PDF page as an image
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -194,84 +172,46 @@ pub struct RenderedPdfPages {
     pub pages: Vec<RenderedPage>,
 }
 
-/// DPI for rendering PDF pages (150 DPI as per TOOLS-002 spec)
-const RENDER_DPI: f32 = 150.0;
+/// Scale factor for 150 DPI rendering (150 / 72 standard PDF points per inch)
+const RENDER_SCALE: f32 = 150.0 / 72.0;
 
-/// Standard PDF DPI (72 points per inch)
-const PDF_POINTS_PER_INCH: f32 = 72.0;
-
-/// Render PDF pages as PNG images at 150 DPI
-///
-/// TOOLS-002: Visual mode renders each page as a PNG image at 150 DPI.
-/// Uses pdfium-render for high-quality page rendering.
+/// Render PDF pages as PNG images at 150 DPI using hayro (pure Rust)
 pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, PdfError> {
-    // Check for encryption markers first
     if has_encryption_markers(bytes) {
         return Err(PdfError::Encrypted(path.to_string()));
     }
 
-    // Try to bind to the Pdfium library
-    let pdfium = Pdfium::new(
-        Pdfium::bind_to_system_library()
-            .or_else(|_| Pdfium::bind_to_library(Pdfium::pdfium_platform_library_name_at_path("./")))
-            .map_err(|e| PdfError::PdfiumNotAvailable(format!(
-                "Could not load Pdfium library: {e}. Install libpdfium for your platform."
-            )))?
-    );
-
-    // Load the PDF document
-    let document = pdfium.load_pdf_from_byte_slice(bytes, None).map_err(|e| {
-        let err_str = e.to_string().to_lowercase();
-        if err_str.contains("password") || err_str.contains("encrypt") {
-            PdfError::Encrypted(path.to_string())
-        } else {
-            PdfError::LoadError(e.to_string())
-        }
+    let pdf = Pdf::new(Arc::new(bytes.to_vec())).map_err(|e| match e {
+        LoadPdfError::Decryption(_) => PdfError::Encrypted(path.to_string()),
+        LoadPdfError::Invalid => PdfError::LoadError("Invalid or corrupted PDF".to_string()),
     })?;
 
-    let page_count = document.pages().len() as usize;
+    let pdf_pages = pdf.pages();
+    let page_count = pdf_pages.len();
     let mut pages = Vec::with_capacity(page_count);
 
-    // Calculate scale factor for 150 DPI rendering
-    let scale = RENDER_DPI / PDF_POINTS_PER_INCH;
+    let interpreter_settings = InterpreterSettings::default();
+    let render_settings = RenderSettings {
+        x_scale: RENDER_SCALE,
+        y_scale: RENDER_SCALE,
+        width: None,
+        height: None,
+        bg_color: WHITE.into(),
+    };
 
-    // Render each page
-    for (index, page) in document.pages().iter().enumerate() {
+    for (index, page) in pdf_pages.iter().enumerate() {
         let page_num = (index + 1) as u32;
 
-        // Get page dimensions and calculate render size
-        let width = page.width();
-        let height = page.height();
-        let render_width = (width.value * scale) as i32;
-        let render_height = (height.value * scale) as i32;
+        let pixmap = hayro::render(&page, &interpreter_settings, &render_settings);
 
-        // Render the page to a bitmap
-        let bitmap = page
-            .render_with_config(
-                &PdfRenderConfig::new()
-                    .set_target_width(render_width)
-                    .set_target_height(render_height)
-                    .render_form_data(true)
-                    .render_annotations(true),
-            )
-            .map_err(|e| PdfError::RenderError {
-                page: page_num,
-                message: e.to_string(),
-            })?;
-
-        // Convert to image::DynamicImage and encode as PNG
-        let dynamic_image = bitmap.as_image();
-        let mut png_bytes = Cursor::new(Vec::new());
-        dynamic_image
-            .write_to(&mut png_bytes, ImageFormat::Png)
-            .map_err(|e| PdfError::RenderError {
-                page: page_num,
-                message: format!("Failed to encode PNG: {e}"),
-            })?;
+        let png_bytes = pixmap.into_png().map_err(|e| PdfError::RenderError {
+            page: page_num,
+            message: format!("Failed to encode PNG: {e:?}"),
+        })?;
 
         pages.push(RenderedPage {
             page_number: page_num,
-            data: BASE64.encode(png_bytes.into_inner()),
+            data: BASE64.encode(&png_bytes),
             media_type: "image/png".to_string(),
         });
     }
@@ -282,10 +222,6 @@ pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, Pd
         pages,
     })
 }
-
-// ============================================
-// IMAGES MODE: Extract embedded images
-// ============================================
 
 /// An extracted embedded image from a PDF
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -316,16 +252,11 @@ pub struct ExtractedPdfImages {
 }
 
 /// Extract embedded images from a PDF
-///
-/// TOOLS-002: Images mode extracts all embedded XObject images.
-/// Determines format from /Filter (DCTDecode=JPEG, FlateDecode=PNG).
 pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages, PdfError> {
-    // Check for encryption markers first
     if has_encryption_markers(bytes) {
         return Err(PdfError::Encrypted(path.to_string()));
     }
 
-    // Load PDF
     let doc = Document::load_mem(bytes).map_err(|e| {
         if is_encryption_error(&e) {
             PdfError::Encrypted(path.to_string())
@@ -342,12 +273,10 @@ pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages
     let mut images = Vec::new();
     let mut image_index = 0u32;
 
-    // Iterate through all objects looking for image XObjects
     for (_object_id, object) in doc.objects.iter() {
         if let Ok(stream) = object.as_stream() {
             let dict = &stream.dict;
 
-            // Check if this is an image XObject
             let is_image = dict
                 .get(b"Subtype")
                 .ok()
@@ -361,7 +290,6 @@ pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages
 
             image_index += 1;
 
-            // Get image dimensions
             let width = dict
                 .get(b"Width")
                 .ok()
@@ -373,7 +301,6 @@ pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages
                 .and_then(|h| h.as_i64().ok())
                 .map(|h| h as u32);
 
-            // Determine media type from filter
             let filter = dict
                 .get(b"Filter")
                 .ok()
@@ -384,10 +311,9 @@ pub fn extract_pdf_images(bytes: &[u8], path: &str) -> Result<ExtractedPdfImages
                 Some("DCTDecode") => "image/jpeg",
                 Some("JPXDecode") => "image/jp2",
                 Some("CCITTFaxDecode") => "image/tiff",
-                _ => "application/octet-stream", // Unknown or raw image data
+                _ => "application/octet-stream",
             };
 
-            // Get the raw image content
             let content = stream.content.clone();
 
             images.push(ExtractedImage {

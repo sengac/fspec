@@ -65,8 +65,7 @@ base64 = "0.22"
 
 # PDF Reading (TOOLS-002)
 lopdf.workspace = true
-pdfium-render.workspace = true
-image.workspace = true
+hayro.workspace = true
 
 # Signal handling for browser cleanup
 ctrlc.workspace = true

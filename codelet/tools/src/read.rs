@@ -197,10 +197,6 @@ impl rig::tool::Tool for ReadTool {
                                 tool: "read",
                                 message: format!("Error rendering page {page}: {message}"),
                             },
-                            PdfError::PdfiumNotAvailable(msg) => ToolError::File {
-                                tool: "read",
-                                message: msg,
-                            },
                         };
 
                         match mode {

@@ -91,9 +91,8 @@ tiktoken-rs = "0.6"
 
 # === PDF Reading (TOOLS-002) ===
 lopdf = "0.36"
-# pdfium-render requires the Pdfium C library to be installed
-pdfium-render = "0.8"
-image = { version = "0.25", default-features = false, features = ["png"] }
+# hayro is a pure Rust PDF renderer (MIT/Apache 2.0) - no C dependencies
+hayro = "0.5"
 
 # === Codex Provider ===
 keyring = "3.3"
