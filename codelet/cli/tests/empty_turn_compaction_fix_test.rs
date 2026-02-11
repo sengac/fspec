@@ -12,7 +12,8 @@ use codelet_core::compaction::TokenTracker;
 #[tokio::test]
 async fn test_compaction_not_triggered_when_turns_empty() -> Result<()> {
     // Given a session with empty turns
-    let mut session = Session::new(Some("claude"))?;
+    // Use None to pick any available provider - test is about compaction logic, not provider
+    let mut session = Session::new(None)?;
 
     // Verify turns are empty
     assert_eq!(
@@ -61,7 +62,8 @@ async fn test_compaction_triggers_when_turns_exist() -> Result<()> {
     use std::time::SystemTime;
 
     // Given a session with conversation turns
-    let mut session = Session::new(Some("claude"))?;
+    // Use None to pick any available provider - test is about compaction logic, not provider
+    let mut session = Session::new(None)?;
 
     // Add a test turn
     session.turns.push(ConversationTurn {
