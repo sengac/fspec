@@ -9,15 +9,16 @@
  * 5. Track if session should be auto-created immediately
  * 6. Track current work unit ID and status for SessionHeader display
  *
- * Note: Rust's SessionManager separately tracks the "active" session for
- * navigation purposes (via sessionAttach/sessionDetach). This store handles
- * React-side state that doesn't belong in Rust.
+ * IMPORTANT: This store syncs active session state with Rust's SessionManager
+ * via sessionSetActive(). This ensures fspec CLI commands can detect the
+ * active session when running within a TUI session.
  */
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { useShallow } from 'zustand/react/shallow';
 import { logger } from '../../utils/logger';
+import { sessionSetActive, sessionClearActive } from '@sengac/codelet-napi';
 
 /**
  * Session store state
@@ -157,6 +158,14 @@ export const useSessionStore = create<SessionStoreState>()(
 
     activateSession: (sessionId: string) => {
       logger.debug(`[SessionStore] activateSession: ${sessionId}`);
+      // Sync with Rust's SessionManager so fspec CLI can detect active session
+      try {
+        sessionSetActive(sessionId);
+      } catch (e) {
+        logger.warn(
+          `[SessionStore] Failed to set active session in Rust: ${e}`
+        );
+      }
       set(state => {
         state.currentSessionId = sessionId;
         state.isReadyForNewSession = false;
@@ -166,6 +175,14 @@ export const useSessionStore = create<SessionStoreState>()(
 
     prepareForNewSession: () => {
       logger.debug('[SessionStore] prepareForNewSession');
+      // Clear Rust's active session when preparing for a new one
+      try {
+        sessionClearActive();
+      } catch (e) {
+        logger.warn(
+          `[SessionStore] Failed to clear active session in Rust: ${e}`
+        );
+      }
       set(state => {
         // ATOMIC: Both must change together to maintain invariant
         state.currentSessionId = null;
@@ -233,6 +250,14 @@ export const useSessionStore = create<SessionStoreState>()(
 
     reset: () => {
       logger.debug('[SessionStore] reset');
+      // Clear Rust's active session on full reset
+      try {
+        sessionClearActive();
+      } catch (e) {
+        logger.warn(
+          `[SessionStore] Failed to clear active session in Rust: ${e}`
+        );
+      }
       set(state => {
         state.currentSessionId = null;
         state.isReadyForNewSession = true;
@@ -246,6 +271,14 @@ export const useSessionStore = create<SessionStoreState>()(
 
     navigateToNewSession: () => {
       logger.debug('[SessionStore] navigateToNewSession');
+      // Clear Rust's active session when navigating to create a new one
+      try {
+        sessionClearActive();
+      } catch (e) {
+        logger.warn(
+          `[SessionStore] Failed to clear active session in Rust: ${e}`
+        );
+      }
       set(state => {
         state.currentSessionId = null;
         state.isReadyForNewSession = true;
