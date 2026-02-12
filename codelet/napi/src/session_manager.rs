@@ -199,12 +199,12 @@ pub fn parse_interjection(response: &str) -> Option<Interjection> {
             "true" => true,
             "false" => false,
             _ => {
-                tracing::warn!("Invalid urgent value '{}' in [INTERJECT] block - must be 'true' or 'false'", value);
+                tracing::error!("Invalid urgent value '{}' in [INTERJECT] block - must be 'true' or 'false'", value);
                 return None;
             }
         }
     } else {
-        tracing::warn!("Missing 'urgent:' field in [INTERJECT] block");
+        tracing::error!("Missing 'urgent:' field in [INTERJECT] block");
         return None;
     };
     
@@ -233,7 +233,7 @@ pub fn parse_interjection(response: &str) -> Option<Interjection> {
     let content = content_parts.join("\n").trim().to_string();
     
     if content.is_empty() {
-        tracing::warn!("Empty content in [INTERJECT] block");
+        tracing::error!("Empty content in [INTERJECT] block");
         return None;
     }
     
@@ -607,9 +607,8 @@ pub(crate) async fn watcher_loop_tick(
                         WatcherLoopAction::Continue
                     }
                 }
-                Err(broadcast::error::RecvError::Lagged(n)) => {
-                    // Log warning about missed chunks (Rule: handle lag gracefully)
-                    tracing::warn!("Watcher lagged behind by {} chunks, continuing from current position", n);
+                Err(broadcast::error::RecvError::Lagged(_)) => {
+                    // Missed some chunks due to lag - continue from current position
                     WatcherLoopAction::Continue
                 }
                 Err(broadcast::error::RecvError::Closed) => {
@@ -1214,12 +1213,9 @@ impl BackgroundSession {
     /// Called by session loop when FspecTool is invoked. Blocks until TypeScript
     /// executes the command and sends the result back via sessionSendFspecResult.
     pub fn wait_for_fspec_response(&self) -> crate::types::FspecResult {
-        tracing::warn!("[FSPEC_SESSION] wait_for_fspec_response called, about to block on recv()...");
         let rx = self.fspec_response_rx.lock().expect("fspec_response_rx lock poisoned");
-        tracing::warn!("[FSPEC_SESSION] Got lock on fspec_response_rx, calling recv()...");
         // Block until we receive a response
-        let result = rx.recv().unwrap_or_else(|e| {
-            tracing::warn!("[FSPEC_SESSION] recv() failed with error: {:?}", e);
+        rx.recv().unwrap_or_else(|_| {
             crate::types::FspecResult {
                 success: false,
                 data: String::new(),
@@ -1227,9 +1223,7 @@ impl BackgroundSession {
                 system_reminder: None,
                 tool_call_id: String::new(),
             }
-        });
-        tracing::warn!("[FSPEC_SESSION] recv() returned, success={}", result.success);
-        result
+        })
     }
 
     /// Send fspec command result (CODE-009)
@@ -1237,11 +1231,8 @@ impl BackgroundSession {
     /// Called by NAPI function (sessionSendFspecResult) when TypeScript
     /// has finished executing the fspec command and wants to send the result back.
     pub fn send_fspec_result(&self, result: crate::types::FspecResult) {
-        tracing::warn!("[FSPEC_SESSION] send_fspec_result called, success={}, tool_call_id={}", 
-            result.success, result.tool_call_id);
-        match self.fspec_response_tx.send(result) {
-            Ok(_) => tracing::warn!("[FSPEC_SESSION] Successfully sent fspec result to channel"),
-            Err(e) => tracing::warn!("[FSPEC_SESSION] Failed to send fspec result: {:?}", e),
+        if let Err(e) = self.fspec_response_tx.send(result) {
+            tracing::error!("[FSPEC_SESSION] Failed to send fspec result: {:?}", e);
         }
     }
 
@@ -3597,7 +3588,7 @@ impl SessionManager {
         // Resolve credentials internally using the credentials module.
         let project_path = std::path::PathBuf::from(project);
         if let Err(e) = crate::credentials::resolve_and_set_env_var(registry_provider, Some(project_path.as_path())) {
-            tracing::warn!("Failed to resolve credentials for provider {}: {}", registry_provider, e);
+            tracing::error!("Failed to resolve credentials for provider {}: {}", registry_provider, e);
         }
 
         // Create ProviderManager with model registry support and select the model
@@ -3713,7 +3704,7 @@ impl SessionManager {
         // Resolve credentials internally using the credentials module.
         let project_path = std::path::PathBuf::from(project);
         if let Err(e) = crate::credentials::resolve_and_set_env_var(registry_provider, Some(project_path.as_path())) {
-            tracing::warn!("Failed to resolve credentials for watcher provider {}: {}", registry_provider, e);
+            tracing::error!("Failed to resolve credentials for watcher provider {}: {}", registry_provider, e);
         }
 
         let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
@@ -4134,7 +4125,7 @@ fn persist_anchor_point(
         }).collect();
         (Some(turn.user_message.clone()), Some(turn.assistant_response.clone()), tools)
     } else {
-        tracing::warn!("TUI-057: Anchor turn_index {} out of bounds (turns len {}), cannot capture content",
+        tracing::error!("Anchor turn_index {} out of bounds (turns len {}), cannot capture content",
             anchor.turn_index, original_turns.len());
         (None, None, Vec::new())
     };
@@ -4154,8 +4145,6 @@ fn persist_anchor_point(
     // Add anchor point to manifest (this saves the manifest)
     add_anchor_point(&mut session_manifest, persisted_anchor)?;
     
-    tracing::warn!("TUI-056: Persisted anchor point to session {} (turn_index={}, type={})", 
-        session_id, anchor.turn_index, anchor_type);
     Ok(())
 }
 
@@ -4284,14 +4273,10 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             // Similar to pause handler - blocks until TypeScript executes and responds
             let session_for_fspec = session.clone();
             let fspec_handler: codelet_tools::FspecHandler = std::sync::Arc::new(move |request: codelet_tools::FspecHandlerRequest| {
-                tracing::warn!("[FSPEC_HANDLER_CLOSURE] Handler invoked for command: {}", request.command);
-                tracing::warn!("[FSPEC_HANDLER_CLOSURE] Session is_attached: {}", session_for_fspec.is_attached());
-                
                 // Check if session is attached before blocking
                 // If the session is detached, TypeScript won't receive the request and
                 // we'll block forever waiting for a response that will never come.
                 if !session_for_fspec.is_attached() {
-                    tracing::warn!("[FSPEC_HANDLER_CLOSURE] Session is detached, returning error immediately");
                     return codelet_tools::FspecHandlerResult {
                         success: false,
                         data: String::new(),
@@ -4303,8 +4288,6 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 // Generate a unique tool call ID for correlation
                 let tool_call_id = uuid::Uuid::new_v4().to_string();
                 
-                tracing::warn!("[FSPEC_HANDLER_CLOSURE] Generated tool_call_id: {}", tool_call_id);
-                
                 // Emit FspecCommandRequest chunk for TypeScript to process
                 let fspec_request = crate::types::FspecRequest {
                     command: request.command.clone(),
@@ -4313,16 +4296,10 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                     tool_call_id: tool_call_id.clone(),
                 };
                 
-                tracing::warn!("[FSPEC_HANDLER_CLOSURE] Emitting FspecCommandRequest chunk via handle_output...");
                 session_for_fspec.handle_output(StreamChunk::fspec_command_request(fspec_request));
-                tracing::warn!("[FSPEC_HANDLER_CLOSURE] FspecCommandRequest chunk emitted (NonBlocking)");
-                
-                tracing::warn!("[FSPEC_HANDLER_CLOSURE] About to call wait_for_fspec_response() - THIS WILL BLOCK");
                 
                 // Block until TypeScript executes and calls sessionSendFspecResult
                 let fspec_result = session_for_fspec.wait_for_fspec_response();
-                
-                tracing::warn!("[FSPEC_HANDLER_CLOSURE] wait_for_fspec_response() returned: success={}", fspec_result.success);
                 
                 // Emit FspecCommandResult chunk for UI display
                 session_for_fspec.handle_output(StreamChunk::fspec_command_result(fspec_result.clone()));
@@ -5043,12 +5020,8 @@ pub fn session_pause_confirm(session_id: String, approved: bool) -> Result<()> {
 /// ```
 #[napi]
 pub fn session_send_fspec_result(session_id: String, result: crate::types::FspecResult) -> Result<()> {
-    tracing::warn!("[FSPEC_NAPI] session_send_fspec_result called: session_id={}, success={}, tool_call_id={}", 
-        session_id, result.success, result.tool_call_id);
     let session = SessionManager::instance().get_session(&session_id)?;
-    tracing::warn!("[FSPEC_NAPI] Got session, calling send_fspec_result...");
     session.send_fspec_result(result);
-    tracing::warn!("[FSPEC_NAPI] send_fspec_result completed");
     Ok(())
 }
 
@@ -5124,12 +5097,6 @@ pub fn session_get_anchor_points(session_id: String) -> Result<Vec<NapiAnchorPoi
     // This is necessary because in-memory AnchorPoint doesn't store turn content
     let session_manifest = load_session(uuid)
         .map_err(|e| Error::from_reason(format!("Failed to load session manifest: {}", e)))?;
-    
-    tracing::warn!(
-        "TUI-056: /anchors called for session {} - found {} anchors in persistence",
-        session_id,
-        session_manifest.anchor_points.len()
-    );
     
     // Convert persisted anchor points to NAPI types
     let napi_anchors: Vec<NapiAnchorPoint> = session_manifest.anchor_points.iter().map(|anchor| {
@@ -5828,13 +5795,10 @@ pub fn session_restore_anchor_points(session_id: String) -> Result<u32> {
             });
         }
         
-        tracing::warn!("TUI-056: Restored {} anchor points for session {}", restored_count, session_id);
         Ok(restored_count as u32)
     } else {
         // Anchors already present in memory - skip restore
         let existing_count = anchor_points.len();
-        tracing::warn!("TUI-056: Skipping anchor restore - {} anchors already in memory for session {}", 
-            existing_count, session_id);
         Ok(existing_count as u32)
     }
 }
@@ -5974,14 +5938,9 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
     let original_turns = inner.turns.clone();
 
     // Execute compaction
-    tracing::warn!("TUI-056: About to call execute_compaction for session {}", session_id);
     let (metrics, anchor) = match execute_compaction(&mut inner).await {
-        Ok(result) => {
-            tracing::warn!("TUI-056: execute_compaction returned Ok, anchor={:?}", result.1.as_ref().map(|a| (&a.anchor_type, a.confidence)));
-            result
-        },
+        Ok(result) => result,
         Err(e) => {
-            tracing::warn!("TUI-056: execute_compaction returned Err: {}", e);
             // PERF-002: Clear progress and reset status on error
             session.set_compaction_progress(None);
             session.set_status(SessionStatus::Idle);
@@ -6004,8 +5963,6 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
             return Err(Error::from_reason(format!("Compaction failed: {e}")));
         }
     };
-
-    tracing::warn!("TUI-056: Post-compaction processing started for session {}", session_id);
 
     // PERF-002: Clear progress and reset status after successful completion
     session.set_compaction_progress(None);
@@ -6033,26 +5990,17 @@ pub async fn session_compact(session_id: String) -> Result<CompactionResult> {
 
     // TUI-056: Store anchor point if one was created during compaction
     if let Some(ref anchor_point) = anchor {
-        tracing::warn!(
-            "TUI-056: Compaction produced anchor (turn_index={}, type={:?}, confidence={})",
-            anchor_point.turn_index,
-            anchor_point.anchor_type,
-            anchor_point.confidence
-        );
-        
         // Store in memory for immediate use
         let mut anchor_points = session.anchor_points.lock().expect("anchor_points lock poisoned");
         anchor_points.push(anchor_point.clone());
-        tracing::warn!("TUI-056: Session {} now has {} anchor points in memory", 
-            session_id, anchor_points.len());
         
         // Persist to disk so it survives session resume
         if let Err(e) = persist_anchor_point(&session.id, anchor_point, &original_turns) {
-            tracing::warn!("TUI-056: Failed to persist anchor point: {}", e);
+            tracing::error!("Failed to persist anchor point: {}", e);
             // Don't fail compaction if anchor persistence fails - it's not critical
         }
     } else {
-        tracing::warn!("TUI-056: Compaction completed but no anchor point was created - this should not happen");
+        tracing::error!("Compaction completed but no anchor point was created - this should not happen");
     }
 
     // REFAC-007 Rule [32]: Persist compaction state to session manifest

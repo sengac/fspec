@@ -292,21 +292,18 @@ async fn test_anchor_weights_from_llm_response() {
             let type_str = type_str.to_string();
             async move {
                 Ok(format!(
-                    r#"[{{"turn_index": 0, "anchor_type": "{}", "confidence": 0.95, "description": "Test"}}]"#,
-                    type_str
+                    r#"[{{"turn_index": 0, "anchor_type": "{type_str}", "confidence": 0.95, "description": "Test"}}]"#
                 ))
             }
         };
 
         let anchors = detector.detect_batch(&turns, &mock_llm).await.unwrap();
         
-        assert_eq!(anchors.len(), 1, "Should have 1 anchor for {}", type_str);
+        assert_eq!(anchors.len(), 1, "Should have 1 anchor for {type_str}");
         assert_eq!(anchors[0].anchor_type, expected_type);
         assert!(
             (anchors[0].weight - expected_weight).abs() < 0.01,
-            "Weight for {} should be {}, got {}",
-            type_str,
-            expected_weight,
+            "Weight for {type_str} should be {expected_weight}, got {}",
             anchors[0].weight
         );
     }

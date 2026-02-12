@@ -78,26 +78,18 @@ pub fn set_fspec_handler(handler: Option<FspecHandler>) {
 /// 
 /// Returns an error result if no handler is configured.
 pub fn execute_fspec_command(request: FspecRequest) -> FspecResult {
-    tracing::warn!("[FSPEC_HANDLER] execute_fspec_command called: command={}, project_root={}", 
-        request.command, request.project_root);
-    
     let handler = match FSPEC_HANDLER.read() {
         Ok(guard) => guard.clone(),
-        Err(e) => {
-            tracing::warn!("[FSPEC_HANDLER] Failed to acquire read lock: {:?}", e);
+        Err(_) => {
             return FspecResult::default();
         }
     };
     
     match handler {
         Some(h) => {
-            tracing::warn!("[FSPEC_HANDLER] Handler found, calling handler closure...");
-            let result = h(request);
-            tracing::warn!("[FSPEC_HANDLER] Handler returned: success={}", result.success);
-            result
+            h(request)
         }
         None => {
-            tracing::warn!("[FSPEC_HANDLER] No handler configured!");
             FspecResult {
                 success: false,
                 data: String::new(),

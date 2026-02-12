@@ -241,8 +241,6 @@ fn test_all_tests_compile_after_migration() {
     // @step And there should be no compilation errors
 
     // This test passes if it compiles, meaning the refactoring didn't break compilation.
-    // The actual test suite is run separately.
-    assert!(true, "Test compilation succeeded");
 }
 
 /// Scenario: No clippy warnings about unused code
@@ -256,7 +254,4 @@ fn test_no_unused_code_warnings() {
     // @step And there should be no errors
 
     // This test documents the requirement. Actual clippy check is done in CI.
-    // If this test runs, it means the code compiled without clippy errors
-    // (assuming clippy is run as part of the test suite).
-    assert!(true, "Clippy requirement documented");
 }

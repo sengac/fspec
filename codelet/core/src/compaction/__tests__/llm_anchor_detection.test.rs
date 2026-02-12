@@ -12,6 +12,7 @@ use anyhow::Result;
 use std::time::SystemTime;
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
 mod llm_anchor_detection_tests {
     use super::*;
 
@@ -190,9 +191,9 @@ These anchors represent significant moments in the conversation."#.to_string())
         // @step Given a conversation with 2 turns
         let turns: Vec<ConversationTurn> = (0..2)
             .map(|i| ConversationTurn {
-                user_message: format!("Request {}", i),
+                user_message: format!("Request {i}"),
                 timestamp: SystemTime::now(),
-                assistant_response: format!("Response {}", i),
+                assistant_response: format!("Response {i}"),
                 tool_calls: vec![],
                 tool_results: vec![],
                 previous_error: None,
@@ -277,9 +278,9 @@ These anchors represent significant moments in the conversation."#.to_string())
 
         let turns: Vec<ConversationTurn> = (0..2)
             .map(|i| ConversationTurn {
-                user_message: format!("Message {}", i),
+                user_message: format!("Message {i}"),
                 timestamp: SystemTime::now(),
-                assistant_response: format!("Reply {}", i),
+                assistant_response: format!("Reply {i}"),
                 tool_calls: vec![],
                 tool_results: vec![],
                 previous_error: None,
@@ -306,9 +307,9 @@ These anchors represent significant moments in the conversation."#.to_string())
 
         let turns: Vec<ConversationTurn> = (0..2)
             .map(|i| ConversationTurn {
-                user_message: format!("Request {}", i),
+                user_message: format!("Request {i}"),
                 timestamp: SystemTime::now(),
-                assistant_response: format!("Response {}", i),
+                assistant_response: format!("Response {i}"),
                 tool_calls: vec![],
                 tool_results: vec![],
                 previous_error: if i == 1 { Some(true) } else { None },

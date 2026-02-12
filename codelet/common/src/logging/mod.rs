@@ -129,22 +129,19 @@ pub fn init_logging(verbose: bool) -> Result<()> {
 mod tests {
     use super::*;
 
-    fn setup_test_data_dir() -> tempfile::TempDir {
-        let temp_dir = tempfile::tempdir().expect("Failed to create temp directory");
+    fn setup_test_data_dir() -> anyhow::Result<tempfile::TempDir> {
+        let temp_dir = tempfile::tempdir()?;
         crate::set_data_directory(temp_dir.path().to_path_buf())
-            .expect("Failed to set data directory");
-        temp_dir
+            .map_err(|e| anyhow::anyhow!(e))?;
+        Ok(temp_dir)
     }
 
     #[test]
-    fn test_init_logging_basic() {
-        let _temp_dir = setup_test_data_dir();
-        
-        // Note: Can only init once per process, so tests may interfere
-        // This is a basic smoke test - we just verify it doesn't panic
+    fn test_init_logging_basic() -> anyhow::Result<()> {
+        let _temp_dir = setup_test_data_dir()?;
+
         let _result = init_logging(false);
 
-        // May fail if already initialized, which is okay
-        // The fact we reached here means no panic occurred
+        Ok(())
     }
 }

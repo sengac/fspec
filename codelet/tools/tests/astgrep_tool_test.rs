@@ -305,8 +305,7 @@ function MyComponent() {
     let error_msg = result.unwrap_err().to_string();
     assert!(
         error_msg.contains("MultipleNode") || error_msg.contains("Invalid AST pattern"),
-        "Error message should indicate the pattern is invalid. Got: {}",
-        error_msg
+        "Error message should indicate the pattern is invalid. Got: {error_msg}"
     );
 }
 
@@ -385,12 +384,11 @@ function anotherFunction(x) {
         .unwrap();
 
     // @step Then the result should find all function definitions
-    println!("Result:\n{}", result);
+    println!("Result:\n{result}");
     
     // Should find at least the regular functions
     assert!(
         result.contains("myFunction") || result.contains("anotherFunction"),
-        "Should find function definitions. Got: {}",
-        result
+        "Should find function definitions. Got: {result}"
     );
 }

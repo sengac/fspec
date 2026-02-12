@@ -1,3 +1,6 @@
+// These tests require the full NAPI bindings (not available in noop mode)
+#![cfg(not(feature = "noop"))]
+
 /**
  * Test: Session creation with model validation
  *

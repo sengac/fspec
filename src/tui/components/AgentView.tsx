@@ -48,6 +48,7 @@ import { calculatePaneWidth } from '../utils/textWrap';
 import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
 import { useFileSearchInput } from '../hooks/useFileSearchInput';
 import { useInputCompat, InputPriority } from '../input/index';
+import { attachToSession } from '../hooks/useSessionStreamManager';
 import {
   getSelectionSeparatorType,
   generateArrowBar,
@@ -86,11 +87,11 @@ import {
   sessionSetDebugEnabled,
   toggleDebug,
   sessionCompact,
-  sessionAttach,
+  // REFAC-008: sessionAttach removed - use attachToSession from useSessionStreamManager hook
   sessionSendInput,
   sessionGetBufferedOutput,
   sessionGetMergedOutput,
-  sessionDetach,
+  // REFAC-008: sessionDetach removed - use cleanupCurrentSessionHandler() which unregisters handler
   sessionInterrupt,
   sessionSetModel,
   sessionGetModel,
@@ -124,8 +125,7 @@ import {
   sessionGetAnchorPoints,
   // UX-002: Compaction progress polling for automatic compaction
   sessionGetCompactionProgress,
-  // CODE-009: Fspec command result sending via NAPI
-  sessionSendFspecResult,
+  // REFAC-008: sessionSendFspecResult removed - handled by GlobalSessionStreamManager
   type NapiAnchorPoint,
   type SessionRoleInfo,
   type NapiProviderModels,
@@ -144,7 +144,7 @@ import {
   getProviderConfig,
   maskApiKey,
 } from '../../utils/credentials';
-import { fspecCallback } from '../../utils/fspec-callback';
+// REFAC-008: fspecCallback removed - handled by GlobalSessionStreamManager
 import {
   SUPPORTED_PROVIDERS,
   getProviderRegistryEntry,
@@ -2155,6 +2155,19 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // SESS-001: Track if we need to auto-resume an attached session
   const needsAutoResumeRef = useRef<string | null>(null);
 
+  // REFAC-008: Track cleanup function for current session's handler registration
+  // When navigating away, we call this cleanup instead of sessionDetach.
+  // The GlobalSessionStreamManager stays subscribed; only the handler is unregistered.
+  const sessionCleanupRef = useRef<(() => void) | null>(null);
+
+  // REFAC-008: Helper to cleanup current session handler and clear ref
+  const cleanupCurrentSessionHandler = useCallback(() => {
+    if (sessionCleanupRef.current) {
+      sessionCleanupRef.current();
+      sessionCleanupRef.current = null;
+    }
+  }, []);
+
   // SESS-001: Check for attached session on mount and mark for auto-resume
   useEffect(() => {
     if (workUnitId) {
@@ -2417,17 +2430,15 @@ export const AgentView: React.FC<AgentViewProps> = ({
         const parentSession = sessions.find(s => s.id === parentId);
         const parentName = parentSession?.name || parentId;
 
-        // Detach from current watcher session
-        sessionDetach(currentSessionId);
+        // REFAC-008: Cleanup current handler before switching
+        cleanupCurrentSessionHandler();
 
         // Switch to parent session (atomic state transition via store)
         activateSession(parentId);
 
-        // Attach to parent session for live streaming
-        sessionAttach(parentId, (_err: Error | null, chunk: StreamChunk) => {
-          if (chunk) {
-            handleStreamChunk(chunk);
-          }
+        // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
+        sessionCleanupRef.current = attachToSession(parentId, (chunk: StreamChunk) => {
+          handleStreamChunk(chunk);
         });
 
         // Get buffered output and display
@@ -2914,12 +2925,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // This enables detach/attach to work - the background session continues running
       // even when the UI is detached
 
+      // REFAC-008: Cleanup any existing handler before registering new one
+      cleanupCurrentSessionHandler();
+
       // Create a promise that resolves when the agent completes (Done chunk received)
       const promptComplete = new Promise<void>((resolve, reject) => {
-        // Attach callback for streaming - this receives chunks from the background session
-        sessionAttach(
-          activeSessionId,
-          (_err: Error | null, chunk: StreamChunk) => {
+        // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
+        // FspecCommandRequest is handled globally - we only get UI chunks here
+        sessionCleanupRef.current = attachToSession(activeSessionId, (chunk: StreamChunk) => {
             if (!chunk) return;
 
             if (chunk.type === 'Text' && chunk.text) {
@@ -3514,88 +3527,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
               });
               // NAPI-009: Reject the promise on error
               reject(new Error(chunk.error));
-            } else if (
-              chunk.type === 'FspecCommandRequest' &&
-              chunk.fspecRequest
-            ) {
-              // CODE-009: Handle fspec command request - TypeScript executes and sends result back to Rust
-              const command = chunk.fspecRequest.command;
-              const argsJson = chunk.fspecRequest.argsJson;
-              const projectRoot = chunk.fspecRequest.projectRoot;
-              const toolCallId = chunk.fspecRequest.toolCallId;
-
-              logger.warn(
-                `[FSPEC_TS] FspecCommandRequest received in handleSubmit callback: command=${command}`
-              );
-
-              // CODE-009: Execute fspec command asynchronously via TypeScript callback
-              (async () => {
-                try {
-                  logger.warn(
-                    `[FSPEC_TS] Calling fspecCallback(${command})...`
-                  );
-                  const resultJson = await fspecCallback(
-                    command,
-                    argsJson,
-                    projectRoot
-                  );
-                  logger.warn(
-                    `[FSPEC_TS] fspecCallback returned raw: ${resultJson}`
-                  );
-
-                  const parsed = JSON.parse(resultJson) as {
-                    success?: boolean;
-                    data?: string;
-                    error?: string;
-                    systemReminders?: string[];
-                  };
-                  logger.warn(
-                    `[FSPEC_TS] Parsed result: success=${parsed.success}, error=${parsed.error}`
-                  );
-
-                  // Build the system reminder from captured reminders
-                  let systemReminder: string | undefined = undefined;
-                  if (
-                    parsed.systemReminders &&
-                    parsed.systemReminders.length > 0
-                  ) {
-                    systemReminder = parsed.systemReminders
-                      .map(r => `<system-reminder>\n${r}\n</system-reminder>`)
-                      .join('\n');
-                  }
-
-                  logger.warn(
-                    `[FSPEC_TS] Calling sessionSendFspecResult: success=${parsed.success}`
-                  );
-
-                  // CODE-009: Send result back to Rust via NAPI
-                  // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
-                  sessionSendFspecResult(activeSessionId, {
-                    success: parsed.success ?? true,
-                    data: parsed.data ?? resultJson,
-                    error: parsed.error ?? undefined,
-                    systemReminder,
-                    toolCallId,
-                  });
-                  logger.warn(`[FSPEC_TS] sessionSendFspecResult completed`);
-                } catch (err) {
-                  const error = err as Error;
-                  logger.error(
-                    `[FSPEC_TS] Fspec command ${command} failed:`,
-                    error.message
-                  );
-
-                  // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
-                  sessionSendFspecResult(activeSessionId, {
-                    success: false,
-                    data: '',
-                    error: error.message,
-                    systemReminder: undefined,
-                    toolCallId,
-                  });
-                }
-              })();
             }
+            // REFAC-008: FspecCommandRequest is handled globally by GlobalSessionStreamManager
+            // AgentView no longer processes FspecCommandRequest chunks
           }
         );
       });
@@ -4775,103 +4709,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
         ...prev,
         { type: 'user-input', content: chunk.text! },
       ]);
-    } else if (chunk.type === 'FspecCommandRequest' && chunk.fspecRequest) {
-      // CODE-009: Handle fspec command request with type-safe field access
-      // TypeScript executes the command and sends result back to Rust
-      const command = chunk.fspecRequest.command;
-      const argsJson = chunk.fspecRequest.argsJson;
-      const projectRoot = chunk.fspecRequest.projectRoot;
-      const toolCallId = chunk.fspecRequest.toolCallId;
-      const sessionId = currentSessionIdRef.current;
-
-      logger.warn(
-        `[FSPEC_TS] FspecCommandRequest received: command=${command}, toolCallId=${toolCallId}`
-      );
-      logger.warn(
-        `[FSPEC_TS] sessionId=${sessionId}, projectRoot=${projectRoot}`
-      );
-
-      if (!sessionId) {
-        logger.error(
-          '[FSPEC_TS] FspecCommandRequest received but no session ID available'
-        );
-        return;
-      }
-
-      logger.warn(`[FSPEC_TS] About to call fspecCallback async...`);
-
-      // CODE-009: Execute fspec command asynchronously via TypeScript callback
-      // This runs the command and sends the result back to Rust which is blocking
-      (async () => {
-        try {
-          logger.warn(
-            `[FSPEC_TS] Calling fspecCallback(${command}, ${argsJson}, ${projectRoot})...`
-          );
-          // Execute fspec command via TypeScript implementation
-          const resultJson = await fspecCallback(
-            command,
-            argsJson,
-            projectRoot
-          );
-          logger.warn(
-            `[FSPEC_TS] fspecCallback returned: ${resultJson.substring(0, 200)}...`
-          );
-
-          const parsed = JSON.parse(resultJson) as {
-            success?: boolean;
-            data?: string;
-            error?: string;
-            systemReminders?: string[];
-          };
-
-          // Build the system reminder from captured reminders
-          let systemReminder: string | undefined = undefined;
-          if (parsed.systemReminders && parsed.systemReminders.length > 0) {
-            systemReminder = parsed.systemReminders
-              .map(r => `<system-reminder>\n${r}\n</system-reminder>`)
-              .join('\n');
-          }
-
-          logger.warn(
-            `[FSPEC_TS] About to call sessionSendFspecResult: success=${parsed.success}, toolCallId=${toolCallId}`
-          );
-
-          // CODE-009: Send result back to Rust via NAPI
-          // This unblocks the session which is waiting for the result
-          // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
-          sessionSendFspecResult(sessionId, {
-            success: parsed.success ?? true,
-            data: parsed.data ?? resultJson,
-            error: parsed.error ?? undefined,
-            systemReminder,
-            toolCallId,
-          });
-
-          logger.warn(`[FSPEC_TS] sessionSendFspecResult called successfully`);
-          logger.debug(`Fspec command ${command} completed:`, {
-            success: parsed.success,
-            toolCallId,
-          });
-        } catch (err) {
-          const error = err as Error;
-          logger.error(
-            `[FSPEC_TS] Fspec command ${command} failed:`,
-            error.message
-          );
-
-          // CODE-009: Send error result back to Rust
-          // NOTE: Use undefined (not null) for Option<String> fields - NAPI-RS requires this
-          sessionSendFspecResult(sessionId, {
-            success: false,
-            data: '',
-            error: error.message,
-            systemReminder: undefined,
-            toolCallId,
-          });
-          logger.warn(`[FSPEC_TS] sessionSendFspecResult called with error`);
-        }
-      })();
     }
+    // REFAC-008: FspecCommandRequest is handled globally by GlobalSessionStreamManager
+    // AgentView no longer processes FspecCommandRequest chunks - they are filtered out
+    // by the manager before reaching session handlers
   }, []);
 
   // SESS-001: Shared function to resume a session by ID (used by /resume, auto-resume, and VIEWNV-001 navigation)
@@ -4948,11 +4789,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
           }
         }
 
-        // Attach for live streaming
-        sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
-          if (chunk) {
-            handleStreamChunk(chunk);
-          }
+        // REFAC-008: Cleanup previous handler before attaching to new session
+        cleanupCurrentSessionHandler();
+
+        // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
+        sessionCleanupRef.current = attachToSession(sessionId, (chunk: StreamChunk) => {
+          handleStreamChunk(chunk);
         });
 
         // Update session state (atomic transition via store)
@@ -5007,15 +4849,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // Save reference to current session before detaching (to detect navigation context)
     const wasInSession = !!currentSessionId;
 
-    // Detach from current session if any
-    if (currentSessionId) {
-      try {
-        sessionDetach(currentSessionId);
-      } catch (err) {
-        // Session detach failure could indicate backend issues, connection problems, etc.
-        logger.error('Failed to detach from current session:', err);
-      }
-    }
+    // REFAC-008: Cleanup current handler before creating new session
+    cleanupCurrentSessionHandler();
 
     try {
       const project = currentProjectRef.current;
@@ -5101,29 +4936,16 @@ export const AgentView: React.FC<AgentViewProps> = ({
         }
       }
 
-      // Detach from current session
-      if (currentSessionId) {
-        try {
-          sessionDetach(currentSessionId);
-        } catch (err) {
-          // Session detach failure could indicate backend issues, connection problems, etc.
-          logger.error('Failed to detach from current session:', err);
-        }
-      }
+      // REFAC-008: Cleanup current handler before navigating
+      // Note: resumeSessionById will also call cleanup, but calling twice is safe
+      cleanupCurrentSessionHandler();
 
       // Resume the target session
       await resumeSessionById(targetSessionId);
     },
     onNavigateToBoard: () => {
-      // Exit AgentView back to BoardView
-      if (currentSessionId) {
-        try {
-          sessionDetach(currentSessionId);
-        } catch (err) {
-          // Session detach failure could indicate backend issues, connection problems, etc.
-          logger.error('Failed to detach from session:', err);
-        }
-      }
+      // REFAC-008: Cleanup current handler before exiting to board
+      cleanupCurrentSessionHandler();
       onExit();
     },
     // Note: Create dialog is now handled by the hook via store action (openCreateSessionDialog)
@@ -5418,20 +5240,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
     const selectedWatcher = watcherList[watcherIndex];
 
     try {
+      // REFAC-008: Cleanup previous handler before switching to watcher session
+      cleanupCurrentSessionHandler();
+
       // Switch to the watcher session (atomic transition via store)
       activateSession(selectedWatcher.id);
       setIsWatcherMode(false);
       setWatcherList([]);
 
-      // Attach to watcher session for live streaming
-      sessionAttach(
-        selectedWatcher.id,
-        (_err: Error | null, chunk: StreamChunk) => {
-          if (chunk) {
-            handleStreamChunk(chunk);
-          }
-        }
-      );
+      // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
+      sessionCleanupRef.current = attachToSession(selectedWatcher.id, (chunk: StreamChunk) => {
+        handleStreamChunk(chunk);
+      });
 
       // Get buffered output and display
       const mergedChunks = sessionGetMergedOutput(selectedWatcher.id);
@@ -5573,19 +5393,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const handleInstanceOpen = useCallback(
     async (instance: WatcherInstance) => {
       try {
+        // REFAC-008: Cleanup previous handler before switching to watcher instance
+        cleanupCurrentSessionHandler();
+
         // Switch to watcher instance session (atomic transition via store)
         activateSession(instance.sessionId);
         setIsWatcherMode(false);
         setWatcherList([]);
 
-        sessionAttach(
-          instance.sessionId,
-          (_err: Error | null, chunk: StreamChunk) => {
-            if (chunk) {
-              handleStreamChunk(chunk);
-            }
-          }
-        );
+        // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
+        sessionCleanupRef.current = attachToSession(instance.sessionId, (chunk: StreamChunk) => {
+          handleStreamChunk(chunk);
+        });
 
         const mergedChunks = sessionGetMergedOutput(instance.sessionId);
         const restoredMessages = processChunksToConversation(
@@ -5871,15 +5690,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
         }
       }
 
-      // Attach for live streaming
-      sessionAttach(
-        selectedSession.id,
-        (_err: Error | null, chunk: StreamChunk) => {
-          if (chunk) {
-            handleStreamChunk(chunk);
-          }
-        }
-      );
+      // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
+      // Cleanup is done inside try block before attaching
+      cleanupCurrentSessionHandler();
+
+      // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
+      sessionCleanupRef.current = attachToSession(selectedSession.id, (chunk: StreamChunk) => {
+        handleStreamChunk(chunk);
+      });
 
       // Update session state (atomic transition via store)
       // Note: activateSession sets both currentSessionId and isReadyForNewSession=false atomically
@@ -5992,17 +5810,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       if (index === 0) {
         // Detach - session continues running in background
-        if (currentSessionId) {
-          try {
-            sessionDetach(currentSessionId);
-          } catch (err) {
-            // Log but continue - session may not be in background manager
-            logger.error('Failed to detach session:', err);
-          }
-        }
+        // REFAC-008: Cleanup handler - session stays subscribed via GlobalSessionStreamManager
+        cleanupCurrentSessionHandler();
         onExit();
       } else if (index === 1) {
         // Close Session - terminate the session
+        // REFAC-008: Cleanup handler before destroying session
+        cleanupCurrentSessionHandler();
         if (currentSessionId) {
           try {
             sessionManagerDestroy(currentSessionId);
@@ -7800,28 +7614,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
                 );
               }
             }
-            // Detach from current session
-            if (currentSessionId) {
-              try {
-                sessionDetach(currentSessionId);
-              } catch (err) {
-                // Session detach failure could indicate backend issues, connection problems, etc.
-                logger.error('Failed to detach from session:', err);
-              }
-            }
+            // REFAC-008: Cleanup current handler before navigating
+            cleanupCurrentSessionHandler();
             // Resume the target session
             await resumeSessionById(targetSessionId);
           }}
           onNavigateToBoard={() => {
-            // Exit AgentView back to BoardView
-            if (currentSessionId) {
-              try {
-                sessionDetach(currentSessionId);
-              } catch (err) {
-                // Session detach failure could indicate backend issues, connection problems, etc.
-                logger.error('Failed to detach from session:', err);
-              }
-            }
+            // REFAC-008: Cleanup current handler before exiting to board
+            cleanupCurrentSessionHandler();
             onExit();
           }}
         />

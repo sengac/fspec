@@ -206,6 +206,12 @@ vi.mock('ink', async () => {
 import { AgentView } from '../components/AgentView';
 // Import refreshSessionState to notify hook when mock status changes
 import { refreshSessionState, clearAllSubscriptions } from '../hooks/useRustSessionState';
+// REFAC-008: Import test helpers to properly inject chunks via GlobalSessionStreamManager
+import {
+  stopGlobalSessionStreamManager,
+  clearNapiModuleCache,
+  injectTestChunk,
+} from '../services/globalSessionStreamManager';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -233,7 +239,7 @@ const resetMockSession = () => {
 
 // Helper to simulate streaming with tok/s from Rust
 // TUI-031: Tok/s is calculated in Rust and sent via TokenUpdate.tokensPerSecond
-// NAPI-009: Callback signature is (err, chunk) for sessionAttach
+// REFAC-008: Use injectTestChunk to bypass async NAPI import issues
 const simulateStreaming = async (
   finalTokens: { inputTokens: number; outputTokens: number },
   waitTime: number,
@@ -243,39 +249,29 @@ const simulateStreaming = async (
   mockState.sessionStatus = 'running';
   // Notify useRustSessionState hook that state has changed so it re-fetches
   refreshSessionState('mock-session-id');
-  if (capturedCallback) {
-    // First text chunk
-    capturedCallback(null, { type: 'Text', text: 'Hello ' });
-  }
+  // REFAC-008: Use injectTestChunk to deliver chunks directly to handlers
+  injectTestChunk('mock-session-id', { type: 'Text', text: 'Hello ' });
   await waitForFrame(waitTime / 3);
-  if (capturedCallback) {
-    // Second text chunk
-    capturedCallback(null, { type: 'Text', text: 'world, this is ' });
-  }
+  injectTestChunk('mock-session-id', { type: 'Text', text: 'world, this is ' });
   await waitForFrame(waitTime / 3);
-  if (capturedCallback) {
-    // Third text chunk
-    capturedCallback(null, { type: 'Text', text: 'a streaming response.' });
-    // Send token update with tok/s from Rust
-    capturedCallback(null, {
-      type: 'TokenUpdate',
-      tokens: { ...finalTokens, tokensPerSecond },
-    });
-  }
+  injectTestChunk('mock-session-id', { type: 'Text', text: 'a streaming response.' });
+  // Send token update with tok/s from Rust
+  injectTestChunk('mock-session-id', {
+    type: 'TokenUpdate',
+    tokens: { ...finalTokens, tokensPerSecond },
+  });
   await waitForFrame(waitTime / 3);
 };
 
 // Helper to end streaming
-// NAPI-009: Callback signature is (err, chunk) for sessionAttach
+// REFAC-008: Use injectTestChunk to bypass async NAPI import issues
 const endStreaming = async (finalTokens = { inputTokens: 100, outputTokens: 50 }) => {
-  if (capturedCallback) {
-    // Final token update with tokensPerSecond: null to hide tok/s display
-    capturedCallback(null, {
-      type: 'TokenUpdate',
-      tokens: { ...finalTokens, tokensPerSecond: null },
-    });
-    capturedCallback(null, { type: 'Done' });
-  }
+  // Final token update with tokensPerSecond: null to hide tok/s display
+  injectTestChunk('mock-session-id', {
+    type: 'TokenUpdate',
+    tokens: { ...finalTokens, tokensPerSecond: null },
+  });
+  injectTestChunk('mock-session-id', { type: 'Done' });
   if (capturedResolver) {
     capturedResolver();
   }
@@ -292,12 +288,17 @@ describe('Feature: Real-time tokens per second display in agent modal header', (
     resetMockSession();
     // Clear useRustSessionState subscriptions between tests
     clearAllSubscriptions();
+    // REFAC-008: Reset GlobalSessionStreamManager and NAPI module cache
+    stopGlobalSessionStreamManager();
+    clearNapiModuleCache();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
     // Ensure subscriptions are cleaned up
     clearAllSubscriptions();
+    // REFAC-008: Clean up GlobalSessionStreamManager
+    stopGlobalSessionStreamManager();
   });
 
   describe('Scenario: Display tokens per second after multiple token updates', () => {

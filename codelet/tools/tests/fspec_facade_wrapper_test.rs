@@ -70,7 +70,7 @@ async fn test_fspec_tool_wrapper_emits_structured_json_marker() {
         *cmd_clone.lock().unwrap() = req.command.clone();
         *args_clone.lock().unwrap() = req.args_json.clone();
         *root_clone.lock().unwrap() = req.project_root.clone();
-        *prov_clone.lock().unwrap() = req.provider.clone();
+        *prov_clone.lock().unwrap() = req.provider;
         FspecResult {
             success: true,
             data: "Test result".to_string(),
@@ -117,8 +117,8 @@ async fn test_fspec_tool_wrapper_with_gemini_facade() {
     let cmd_clone = captured_command.clone();
     
     let handler: FspecHandler = Arc::new(move |req| {
-        *prov_clone.lock().unwrap() = req.provider.clone();
-        *cmd_clone.lock().unwrap() = req.command.clone();
+        *prov_clone.lock().unwrap() = req.provider;
+        *cmd_clone.lock().unwrap() = req.command;
         FspecResult {
             success: true,
             data: "Gemini result".to_string(),
@@ -167,9 +167,9 @@ async fn test_fspec_request_json_has_all_required_fields_for_typescript() {
     let root_clone = captured_project_root.clone();
     
     let handler: FspecHandler = Arc::new(move |req| {
-        *cmd_clone.lock().unwrap() = req.command.clone();
-        *args_clone.lock().unwrap() = req.args_json.clone();
-        *root_clone.lock().unwrap() = req.project_root.clone();
+        *cmd_clone.lock().unwrap() = req.command;
+        *args_clone.lock().unwrap() = req.args_json;
+        *root_clone.lock().unwrap() = req.project_root;
         FspecResult {
             success: true,
             data: "Result".to_string(),
@@ -246,7 +246,7 @@ async fn test_fspec_wrapper_handles_empty_args() {
     let args_clone = captured_args.clone();
     
     let handler: FspecHandler = Arc::new(move |req| {
-        *args_clone.lock().unwrap() = req.args_json.clone();
+        *args_clone.lock().unwrap() = req.args_json;
         FspecResult {
             success: true,
             data: "Result".to_string(),
@@ -280,7 +280,7 @@ async fn test_fspec_wrapper_handles_special_characters_in_args() {
     let args_clone = captured_args.clone();
     
     let handler: FspecHandler = Arc::new(move |req| {
-        *args_clone.lock().unwrap() = req.args_json.clone();
+        *args_clone.lock().unwrap() = req.args_json;
         FspecResult {
             success: true,
             data: "Result".to_string(),

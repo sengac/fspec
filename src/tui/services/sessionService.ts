@@ -1,13 +1,8 @@
 /**
  * sessionService.ts - Session Creation and Management Service
  *
- * VIEWNV-001: Provides clean, reusable functions for session operations.
+ * Provides clean, reusable functions for session operations.
  * These are pure async functions (no React hooks) that handle Rust/persistence interactions.
- *
- * This follows SOLID principles:
- * - Single Responsibility: Only handles session creation/management
- * - Open/Closed: Easy to extend with new operations
- * - DRY: Reusable across CreateSessionDialog, /resume, navigation, etc.
  */
 
 import {
@@ -16,13 +11,13 @@ import {
   sessionRestoreMessages,
   sessionRestoreTokenState,
   sessionRestoreAnchorPoints,
-  sessionAttach,
   persistenceCreateSessionWithProvider,
   persistenceLoadSession,
   persistenceGetSessionMessageEnvelopes,
 } from '@sengac/codelet-napi';
 import type { StreamChunk } from '@sengac/codelet-napi';
 import { logger } from '../../utils/logger';
+import { GlobalSessionStreamManager } from './globalSessionStreamManager';
 
 /**
  * Result of creating a new session
@@ -71,10 +66,6 @@ export async function createSession(
   const { modelPath, project, name } = options;
   const sessionName = name || `New Session ${new Date().toLocaleString()}`;
 
-  logger.debug(
-    `[SessionService] Creating new session: ${sessionName}, provider: ${modelPath}`
-  );
-
   // Create persisted session first (gives us the ID)
   const persistedSession = persistenceCreateSessionWithProvider(
     sessionName,
@@ -90,7 +81,8 @@ export async function createSession(
     sessionName
   );
 
-  logger.debug(`[SessionService] Created session ${persistedSession.id}`);
+  const manager = GlobalSessionStreamManager.getInstance();
+  manager.subscribeToSession(persistedSession.id);
 
   return {
     sessionId: persistedSession.id,
@@ -114,6 +106,7 @@ export interface RestoreSessionResult {
     cumulativeBilledInput?: number;
   };
   wasBackgroundSession: boolean;
+  unregister?: () => void;
 }
 
 /**
@@ -173,17 +166,12 @@ export async function restoreSession(
   const bgSession = backgroundSessions.find(bg => bg.id === sessionId);
 
   if (bgSession) {
-    logger.debug(
-      `[SessionService] Session ${sessionId} already exists in background`
-    );
+    const manager = GlobalSessionStreamManager.getInstance();
+    manager.subscribeToSession(sessionId);
 
-    // Attach for streaming if callback provided
+    let unregister: (() => void) | undefined;
     if (onStreamChunk) {
-      sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
-        if (chunk) {
-          onStreamChunk(chunk);
-        }
-      });
+      unregister = manager.registerHandler(sessionId, onStreamChunk);
     }
 
     return {
@@ -191,10 +179,9 @@ export async function restoreSession(
       name: bgSession.name || 'Session',
       provider: bgSession.model || fallbackModelPath,
       wasBackgroundSession: true,
+      unregister,
     };
   }
-
-  logger.debug(`[SessionService] Restoring persisted session ${sessionId}`);
 
   // Load session manifest from persistence (if not provided)
   let sessionManifest: {
@@ -210,14 +197,12 @@ export async function restoreSession(
   } | null = null;
 
   if (sessionData) {
-    // Use provided session data if available
     sessionManifest = {
       provider: sessionData.provider || fallbackModelPath,
       name: sessionData.name || 'Restored Session',
       tokenUsage: sessionData.tokenUsage,
     };
   } else {
-    // Fall back to loading from persistence
     try {
       sessionManifest = persistenceLoadSession(sessionId);
     } catch (err) {
@@ -231,7 +216,6 @@ export async function restoreSession(
   const modelPath = sessionManifest?.provider || fallbackModelPath;
   const sessionName = sessionManifest?.name || 'Restored Session';
 
-  // Create background session
   try {
     await sessionManagerCreateWithId(
       sessionId,
@@ -239,36 +223,22 @@ export async function restoreSession(
       fallbackProject,
       sessionName
     );
-  } catch (err) {
-    // Session may already exist - this is actually OK, but log for debugging
-    logger.debug(
-      `[SessionService] Session ${sessionId} may already exist in background:`,
-      err
-    );
+  } catch {
+    // Session may already exist
   }
 
-  // Restore messages from persistence
   const envelopes: string[] = persistenceGetSessionMessageEnvelopes(sessionId);
   await sessionRestoreMessages(sessionId, envelopes);
 
-  // TUI-056: Restore anchor points from persistence
-  // This ensures /anchors shows correct history after session resume
   try {
-    const restoredAnchors = sessionRestoreAnchorPoints(sessionId);
-    if (restoredAnchors > 0) {
-      logger.debug(
-        `[SessionService] Restored ${restoredAnchors} anchor points for session ${sessionId}`
-      );
-    }
+    sessionRestoreAnchorPoints(sessionId);
   } catch (err) {
-    // Don't fail session restore if anchor restore fails - it's not critical
-    logger.warn(
+    logger.error(
       `[SessionService] Failed to restore anchor points for ${sessionId}:`,
       err
     );
   }
 
-  // Restore token state if available
   if (sessionManifest?.tokenUsage) {
     await sessionRestoreTokenState(
       sessionId,
@@ -281,16 +251,13 @@ export async function restoreSession(
     );
   }
 
-  // Attach for streaming if callback provided
-  if (onStreamChunk) {
-    sessionAttach(sessionId, (_err: Error | null, chunk: StreamChunk) => {
-      if (chunk) {
-        onStreamChunk(chunk);
-      }
-    });
-  }
+  const manager = GlobalSessionStreamManager.getInstance();
+  manager.subscribeToSession(sessionId);
 
-  logger.debug(`[SessionService] Restored session ${sessionId}`);
+  let unregister: (() => void) | undefined;
+  if (onStreamChunk) {
+    unregister = manager.registerHandler(sessionId, onStreamChunk);
+  }
 
   return {
     sessionId,
@@ -298,5 +265,6 @@ export async function restoreSession(
     provider: modelPath,
     tokenUsage: sessionManifest?.tokenUsage,
     wasBackgroundSession: false,
+    unregister,
   };
 }

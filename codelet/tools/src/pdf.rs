@@ -196,13 +196,13 @@ pub fn render_pdf_pages(bytes: &[u8], path: &str) -> Result<RenderedPdfPages, Pd
         y_scale: RENDER_SCALE,
         width: None,
         height: None,
-        bg_color: WHITE.into(),
+        bg_color: WHITE,
     };
 
     for (index, page) in pdf_pages.iter().enumerate() {
         let page_num = (index + 1) as u32;
 
-        let pixmap = hayro::render(&page, &interpreter_settings, &render_settings);
+        let pixmap = hayro::render(page, &interpreter_settings, &render_settings);
 
         let png_bytes = pixmap.into_png().map_err(|e| PdfError::RenderError {
             page: page_num,

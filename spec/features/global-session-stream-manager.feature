@@ -2,11 +2,10 @@
 @tui
 @REFAC-008
 Feature: Global Session Stream Subscription for FspecCommandRequest Handling
-
   """
   CRITICAL CONSTRAINT: Rust attach() REPLACES the callback (only ONE per session).
   Both sessionAttach() and sessionSubscribe() call the same attach() function.
-  
+
   SOLUTION: GlobalSessionStreamManager is the SOLE subscriber - it owns the callback
   for ALL sessions and multiplexes events to registered handlers. AgentView does NOT
   call sessionAttach/sessionDetach - it registers with the manager via hook.
@@ -23,6 +22,8 @@ Feature: Global Session Stream Subscription for FspecCommandRequest Handling
   #   4. Session subscriptions must be added on session creation and removed on session destruction
   #   5. Event handlers must be composable via registerHandler/unregisterHandler pattern
   #   6. AgentView must NOT call sessionAttach/sessionDetach directly - it registers with GlobalSessionStreamManager
+  #   7. Tests MUST use real NAPI bindings and fixtures - NO MOCKS for sessionAttach or GlobalSessionStreamManager
+  #   8. Tests MUST use universal-test-setup.ts from src/test-helpers for temp directories and automatic cleanup
   #
   # ARCHITECTURE DECISION:
   #   GlobalSessionStreamManager is the SOLE subscriber (Option B).
@@ -39,7 +40,6 @@ Feature: Global Session Stream Subscription for FspecCommandRequest Handling
   #   5. AgentView receives Text/Thinking/ToolCall chunks for UI rendering - does NOT handle FspecCommandRequest
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have fspec commands execute successfully from detached sessions
@@ -100,3 +100,16 @@ Feature: Global Session Stream Subscription for FspecCommandRequest Handling
     When the session emits a FspecCommandRequest chunk
     Then AgentView should NOT receive the FspecCommandRequest chunk
     And the GlobalSessionStreamManager should handle the FspecCommandRequest
+
+  # ===========================================
+  # Scenario 6: Tests use real NAPI bindings without mocks
+  # ===========================================
+  @unit
+  Scenario: Tests use real NAPI bindings without mocks
+    Given the test environment using universal-test-setup.ts for temp directories
+    When a test creates a session via persistenceCreateSessionWithProvider
+    And subscribes to it via GlobalSessionStreamManager
+    And simulates a FspecCommandRequest chunk via simulateChunk
+    Then the fspec command should execute successfully
+    And no mocks should be used for sessionAttach or GlobalSessionStreamManager
+    And temp directories should be automatically cleaned up

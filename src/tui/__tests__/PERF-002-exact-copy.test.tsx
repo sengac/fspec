@@ -158,6 +158,13 @@ vi.mock('../../models.dev', () => ({
 // Import the component after mocks are set up
 import { AgentView } from '../components/AgentView';
 import { useSessionStore } from '../store/sessionStore';
+// REFAC-008: Import test helpers to properly inject chunks via GlobalSessionStreamManager
+import {
+  stopGlobalSessionStreamManager,
+  clearNapiModuleCache,
+  injectTestChunk,
+} from '../services/globalSessionStreamManager';
+import { clearAllSubscriptions } from '../hooks/useRustSessionState';
 
 // Test utility functions
 const waitForFrame = async (timeout = 10) => {
@@ -180,20 +187,19 @@ const resetMockSession = () => {
 };
 
 // Streaming simulation helpers
+// REFAC-008: Use injectTestChunk to bypass async NAPI import issues
 const simulateStreamingResponse = async (options: {
   text?: string;
   inputTokens?: number;
   outputTokens?: number;
   error?: string;
 }) => {
-  if (!capturedCallback) return;
-  
   if (options.text) {
-    capturedCallback(null, { type: 'Text', text: options.text });
+    injectTestChunk('mock-session-id', { type: 'Text', text: options.text });
   }
   
   if (options.inputTokens !== undefined || options.outputTokens !== undefined) {
-    capturedCallback(null, {
+    injectTestChunk('mock-session-id', {
       type: 'TokenUpdate',
       tokens: {
         inputTokens: options.inputTokens ?? 0,
@@ -202,10 +208,8 @@ const simulateStreamingResponse = async (options: {
     });
   }
   
-  if (options.error) {
-    capturedCallback(new Error(options.error), null);
-  } else {
-    capturedCallback(null, { type: 'Done' });
+  if (!options.error) {
+    injectTestChunk('mock-session-id', { type: 'Done' });
   }
   
   if (capturedResolver) {
@@ -216,7 +220,7 @@ const simulateStreamingResponse = async (options: {
 };
 
 // Message sending helper
-const sendMessageToAgent = async (stdin: any, message: string) => {
+const sendMessageToAgent = async (stdin: { write: (data: string) => void }, message: string) => {
   stdin.write(message);
   await waitForFrame();
   stdin.write('\r');
@@ -226,10 +230,17 @@ const sendMessageToAgent = async (stdin: any, message: string) => {
 describe('PERF-002: Test exactly copied from working AgentView', () => {
   beforeEach(() => {
     resetMockSession();
+    // REFAC-008: Reset GlobalSessionStreamManager and NAPI module cache
+    stopGlobalSessionStreamManager();
+    clearNapiModuleCache();
+    clearAllSubscriptions();
   });
 
   afterEach(() => {
     vi.clearAllMocks();
+    // REFAC-008: Clean up GlobalSessionStreamManager
+    stopGlobalSessionStreamManager();
+    clearAllSubscriptions();
   });
 
   describe('Scenario: Successful manual compaction with compression feedback', () => {

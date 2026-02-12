@@ -1,20 +1,13 @@
-// Feature: spec/features/tool-pause-handler-mechanism.feature
-// PAUSE-001: Interactive Tool Pause for Browser Debugging
-//
-// This test file tests the tool_pause module's handler mechanism.
-// Uses set_pause_handler() for global handler registration.
-
 use codelet_tools::{
     has_pause_handler, pause_for_user, set_pause_handler, PauseHandler, PauseKind, PauseRequest,
     PauseResponse, PauseState,
 };
 use serial_test::serial;
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::{Arc, Condvar, Mutex, PoisonError};
 use std::thread;
 use std::time::Duration;
 
-// Helper to ensure tests don't interfere with each other
 fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
     set_pause_handler(None);
     let result = f();
@@ -22,13 +15,20 @@ fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
     result
 }
 
-// =============================================================================
-// Scenario: No handler returns Resumed
-// =============================================================================
+fn mutex_lock<T>(mutex: &Mutex<T>) -> Result<std::sync::MutexGuard<'_, T>, anyhow::Error> {
+    mutex
+        .lock()
+        .map_err(|e: PoisonError<_>| anyhow::anyhow!("Mutex poisoned: {e}"))
+}
 
-/// @step Given no pause handler is registered
-/// @step When a tool calls pause_for_user
-/// @step Then it should return Resumed immediately (no-op)
+fn wait_for_response<'a>(
+    cvar: &'a Condvar,
+    guard: std::sync::MutexGuard<'a, Option<PauseResponse>>,
+) -> Result<std::sync::MutexGuard<'a, Option<PauseResponse>>, anyhow::Error> {
+    cvar.wait(guard)
+        .map_err(|e: PoisonError<_>| anyhow::anyhow!("Condvar wait failed: {e}"))
+}
+
 #[test]
 #[serial]
 fn test_no_handler_returns_resumed_immediately() {
@@ -48,14 +48,6 @@ fn test_no_handler_returns_resumed_immediately() {
     });
 }
 
-// =============================================================================
-// Scenario: Handler is invoked with correct request
-// =============================================================================
-
-/// @step Given a pause handler is registered
-/// @step When a tool calls pause_for_user
-/// @step Then the handler should be invoked with the request
-/// @step And the handler's response should be returned
 #[test]
 #[serial]
 fn test_handler_is_invoked_with_request() {
@@ -66,7 +58,6 @@ fn test_handler_is_invoked_with_request() {
         let handler: PauseHandler = Arc::new(move |request: PauseRequest| {
             handler_called_clone.store(true, Ordering::SeqCst);
 
-            // Verify request contents
             assert_eq!(request.kind, PauseKind::Continue);
             assert_eq!(request.tool_name, "WebSearch");
             assert_eq!(request.message, "Page loaded");
@@ -91,13 +82,6 @@ fn test_handler_is_invoked_with_request() {
     });
 }
 
-// =============================================================================
-// Scenario: Handler returns different response types
-// =============================================================================
-
-/// @step Given a handler that returns Approved
-/// @step When pause_for_user is called
-/// @step Then it should return Approved
 #[test]
 #[serial]
 fn test_handler_returns_approved() {
@@ -116,9 +100,6 @@ fn test_handler_returns_approved() {
     });
 }
 
-/// @step Given a handler that returns Denied
-/// @step When pause_for_user is called
-/// @step Then it should return Denied
 #[test]
 #[serial]
 fn test_handler_returns_denied() {
@@ -137,9 +118,6 @@ fn test_handler_returns_denied() {
     });
 }
 
-/// @step Given a handler that returns Interrupted
-/// @step When pause_for_user is called
-/// @step Then it should return Interrupted
 #[test]
 #[serial]
 fn test_handler_returns_interrupted() {
@@ -158,45 +136,38 @@ fn test_handler_returns_interrupted() {
     });
 }
 
-// =============================================================================
-// Scenario: Handler can block and resume
-// =============================================================================
-
-/// @step Given a handler that blocks on a condvar
-/// @step When pause_for_user is called
-/// @step And a background thread signals the condvar
-/// @step Then pause_for_user should unblock and return the response
 #[test]
 #[serial]
-fn test_handler_can_block_and_resume() {
+fn test_handler_can_block_and_resume() -> anyhow::Result<()> {
     with_clean_handler(|| {
-        // Simulate the session's condvar mechanism
         let response_signal: Arc<(Mutex<Option<PauseResponse>>, Condvar)> =
             Arc::new((Mutex::new(None), Condvar::new()));
         let signal_clone = Arc::clone(&response_signal);
 
-        // Handler that blocks until signaled (simulates BackgroundSession behavior)
         let handler: PauseHandler = Arc::new(move |_request: PauseRequest| {
             let (lock, cvar) = &*signal_clone;
-            let mut response = lock.lock().unwrap();
+            let Ok(mut response) = mutex_lock(lock) else {
+                return PauseResponse::Interrupted;
+            };
 
-            // Block until response is set
             while response.is_none() {
-                response = cvar.wait(response).unwrap();
+                let Ok(new_response) = wait_for_response(cvar, response) else {
+                    return PauseResponse::Interrupted;
+                };
+                response = new_response;
             }
 
-            response.take().unwrap()
+            response.take().unwrap_or(PauseResponse::Interrupted)
         });
 
-        // Spawn thread that will signal resume after a delay
         let signal_for_thread = Arc::clone(&response_signal);
-        let signaler_thread = thread::spawn(move || {
+        let signaler_thread = thread::spawn(move || -> anyhow::Result<()> {
             thread::sleep(Duration::from_millis(50));
 
-            // Signal resume
             let (lock, cvar) = &*signal_for_thread;
-            *lock.lock().unwrap() = Some(PauseResponse::Resumed);
+            *mutex_lock(lock)? = Some(PauseResponse::Resumed);
             cvar.notify_one();
+            Ok(())
         });
 
         set_pause_handler(Some(handler));
@@ -207,23 +178,22 @@ fn test_handler_can_block_and_resume() {
             details: None,
         });
 
-        signaler_thread.join().expect("Signaler thread should complete");
+        signaler_thread
+            .join()
+            .map_err(|_| anyhow::anyhow!("Signaler thread panicked"))??;
 
         assert_eq!(
             response,
             PauseResponse::Resumed,
             "Tool should have received Resumed response"
         );
-    });
+        Ok(())
+    })
 }
 
-/// @step Given a blocking handler is registered
-/// @step When pause_for_user is called
-/// @step And the user signals Interrupted
-/// @step Then pause_for_user should return Interrupted
 #[test]
 #[serial]
-fn test_handler_can_be_interrupted() {
+fn test_handler_can_be_interrupted() -> anyhow::Result<()> {
     with_clean_handler(|| {
         let response_signal: Arc<(Mutex<Option<PauseResponse>>, Condvar)> =
             Arc::new((Mutex::new(None), Condvar::new()));
@@ -231,22 +201,28 @@ fn test_handler_can_be_interrupted() {
 
         let handler: PauseHandler = Arc::new(move |_request: PauseRequest| {
             let (lock, cvar) = &*signal_clone;
-            let mut response = lock.lock().unwrap();
+            let Ok(mut response) = mutex_lock(lock) else {
+                return PauseResponse::Interrupted;
+            };
+
             while response.is_none() {
-                response = cvar.wait(response).unwrap();
+                let Ok(new_response) = wait_for_response(cvar, response) else {
+                    return PauseResponse::Interrupted;
+                };
+                response = new_response;
             }
-            response.take().unwrap()
+
+            response.take().unwrap_or(PauseResponse::Interrupted)
         });
 
-        // Spawn thread that will signal interrupt after a delay
         let signal_for_thread = Arc::clone(&response_signal);
-        let signaler_thread = thread::spawn(move || {
+        let signaler_thread = thread::spawn(move || -> anyhow::Result<()> {
             thread::sleep(Duration::from_millis(50));
 
-            // Signal interrupt (simulates user pressing Esc)
             let (lock, cvar) = &*signal_for_thread;
-            *lock.lock().unwrap() = Some(PauseResponse::Interrupted);
+            *mutex_lock(lock)? = Some(PauseResponse::Interrupted);
             cvar.notify_one();
+            Ok(())
         });
 
         set_pause_handler(Some(handler));
@@ -257,32 +233,28 @@ fn test_handler_can_be_interrupted() {
             details: None,
         });
 
-        signaler_thread.join().expect("Signaler thread should complete");
+        signaler_thread
+            .join()
+            .map_err(|_| anyhow::anyhow!("Signaler thread panicked"))??;
 
         assert_eq!(response, PauseResponse::Interrupted);
-    });
+        Ok(())
+    })
 }
-
-// =============================================================================
-// Scenario: has_pause_handler correctly reports handler presence
-// =============================================================================
 
 #[test]
 #[serial]
 fn test_has_pause_handler() {
     with_clean_handler(|| {
-        // No handler set
         assert!(
             !has_pause_handler(),
             "Should return false when no handler set"
         );
 
-        // Set a handler
         let handler: PauseHandler = Arc::new(|_| PauseResponse::Resumed);
         set_pause_handler(Some(handler));
         assert!(has_pause_handler(), "Should return true when handler is set");
 
-        // Clear the handler
         set_pause_handler(None);
         assert!(
             !has_pause_handler(),
@@ -290,10 +262,6 @@ fn test_has_pause_handler() {
         );
     });
 }
-
-// =============================================================================
-// Scenario: PauseState can be created from PauseRequest
-// =============================================================================
 
 #[test]
 fn test_pause_state_from_request() {
@@ -312,19 +280,17 @@ fn test_pause_state_from_request() {
     assert_eq!(state.details, Some("rm -rf /important".to_string()));
 }
 
-// =============================================================================
-// Scenario: Handler receives correct request details
-// =============================================================================
-
 #[test]
 #[serial]
-fn test_confirm_pause_with_details() {
+fn test_confirm_pause_with_details() -> anyhow::Result<()> {
     with_clean_handler(|| {
-        let captured_details = Arc::new(Mutex::new(None));
+        let captured_details: Arc<Mutex<Option<String>>> = Arc::new(Mutex::new(None));
         let captured_clone = Arc::clone(&captured_details);
 
         let handler: PauseHandler = Arc::new(move |request: PauseRequest| {
-            *captured_clone.lock().unwrap() = request.details.clone();
+            if let Ok(mut guard) = mutex_lock(&captured_clone) {
+                *guard = request.details;
+            }
             PauseResponse::Approved
         });
 
@@ -336,16 +302,11 @@ fn test_confirm_pause_with_details() {
             details: Some("sudo rm -rf /*".to_string()),
         });
 
-        assert_eq!(
-            *captured_details.lock().unwrap(),
-            Some("sudo rm -rf /*".to_string())
-        );
-    });
+        let captured = mutex_lock(&captured_details)?;
+        assert_eq!(*captured, Some("sudo rm -rf /*".to_string()));
+        Ok(())
+    })
 }
-
-// =============================================================================
-// Scenario: Multiple pause calls work correctly
-// =============================================================================
 
 #[test]
 #[serial]
@@ -360,8 +321,7 @@ fn test_multiple_pause_calls() {
         });
 
         set_pause_handler(Some(handler));
-        
-        // Make multiple pause calls
+
         for _ in 0..3 {
             let response = pause_for_user(PauseRequest {
                 kind: PauseKind::Continue,
@@ -376,10 +336,6 @@ fn test_multiple_pause_calls() {
     });
 }
 
-// =============================================================================
-// Scenario: Handler replacement works correctly
-// =============================================================================
-
 #[test]
 #[serial]
 fn test_handler_replacement() {
@@ -387,7 +343,6 @@ fn test_handler_replacement() {
         let first_handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);
         let second_handler: PauseHandler = Arc::new(|_| PauseResponse::Denied);
 
-        // Use first handler
         set_pause_handler(Some(first_handler));
         let response = pause_for_user(PauseRequest {
             kind: PauseKind::Confirm,
@@ -397,7 +352,6 @@ fn test_handler_replacement() {
         });
         assert_eq!(response, PauseResponse::Approved);
 
-        // Replace with second handler
         set_pause_handler(Some(second_handler));
         let response = pause_for_user(PauseRequest {
             kind: PauseKind::Confirm,

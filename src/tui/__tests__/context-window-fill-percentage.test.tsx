@@ -184,6 +184,12 @@ vi.mock('ink', async () => {
 
 // Import the component after mocks are set up
 import { AgentView } from '../components/AgentView';
+// REFAC-008: Import test helpers to properly inject chunks via GlobalSessionStreamManager
+import {
+  stopGlobalSessionStreamManager,
+  clearNapiModuleCache,
+  injectTestChunk,
+} from '../services/globalSessionStreamManager';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -209,33 +215,29 @@ const resetMockSession = () => {
 };
 
 // Helper to simulate ContextFillUpdate event
-// NAPI-009: Callback signature is (err, chunk)
+// REFAC-008: Use injectTestChunk to bypass async NAPI import issues
 const simulateContextFillUpdate = async (
   fillPercentage: number,
   effectiveTokens: number,
   threshold: number,
   contextWindow: number
 ) => {
-  if (capturedCallback) {
-    capturedCallback(null, {
-      type: 'ContextFillUpdate',
-      contextFill: {
-        fillPercentage,
-        effectiveTokens,
-        threshold,
-        contextWindow,
-      },
-    });
-  }
+  injectTestChunk('mock-session-id', {
+    type: 'ContextFillUpdate',
+    contextFill: {
+      fillPercentage,
+      effectiveTokens,
+      threshold,
+      contextWindow,
+    },
+  });
   await waitForFrame(50);
 };
 
 // Helper to end streaming
-// NAPI-009: Callback signature is (err, chunk)
+// REFAC-008: Use injectTestChunk to bypass async NAPI import issues
 const endStreaming = async () => {
-  if (capturedCallback) {
-    capturedCallback(null, { type: 'Done' });
-  }
+  injectTestChunk('mock-session-id', { type: 'Done' });
   if (capturedResolver) {
     capturedResolver();
   }
@@ -246,10 +248,15 @@ describe('Feature: Context Window Fill Percentage Indicator', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     resetMockSession();
+    // REFAC-008: Reset GlobalSessionStreamManager and NAPI module cache
+    stopGlobalSessionStreamManager();
+    clearNapiModuleCache();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    // REFAC-008: Clean up GlobalSessionStreamManager
+    stopGlobalSessionStreamManager();
   });
 
   describe('Scenario: Display shows 0% at start of fresh conversation', () => {

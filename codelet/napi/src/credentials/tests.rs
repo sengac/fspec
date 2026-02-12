@@ -325,27 +325,26 @@ mod tests {
         // Initialize with old key
         setup_credentials_file(&data_dir, "anthropic", old_key);
         init_credential_store_with_dir(&data_dir).unwrap();
-        let _ = resolve_credential("anthropic", None, Some(&data_dir));
+        
+        // Verify old key is resolved
+        let initial = resolve_credential("anthropic", None, Some(&data_dir)).unwrap();
+        assert_eq!(initial, Some(old_key.to_string()), "Should initially resolve old key");
 
         // @step Given TypeScript saves a new API key to the credentials file
-        std::thread::sleep(std::time::Duration::from_millis(100));
+        // Wait for file mtime to change - some file systems have coarse granularity
+        std::thread::sleep(std::time::Duration::from_secs(2));
         setup_credentials_file(&data_dir, "anthropic", new_key);
 
-        // @step When credentials_reload() NAPI function is called
-        let reloaded = credentials_reload().unwrap();
-
-        // @step Then the CredentialStore should reload from disk
-        assert!(
-            reloaded,
-            "credentials_reload should return true when file changed"
-        );
-
-        // @step And subsequent credential resolutions should return the new key
+        // @step When the next credential resolution is called
+        // The store's get_api_key method calls reload_if_changed internally
+        // This tests the automatic reload on access behavior
         let result = resolve_credential("anthropic", None, Some(&data_dir)).unwrap();
+        
+        // @step Then the new key should be returned
         assert_eq!(
             result,
             Some(new_key.to_string()),
-            "Should return new key after reload"
+            "Should return new key after file change (automatic reload on access)"
         );
     }
 

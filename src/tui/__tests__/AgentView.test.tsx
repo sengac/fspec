@@ -244,6 +244,7 @@ vi.mock('../hooks/useRustSessionState', () => {
       };
     },
     refreshSessionState: (_sessionId: string) => {},
+    clearAllSubscriptions: () => {},
     manualAttach: () => {},
     manualDetach: () => {},
     getSessionChunks: () => [],
@@ -268,6 +269,13 @@ vi.mock('ink', async () => {
 
 // Import the component after mocks are set up
 import { AgentView } from '../components/AgentView';
+// REFAC-008: Import test helpers to properly inject chunks via GlobalSessionStreamManager
+import {
+  stopGlobalSessionStreamManager,
+  clearNapiModuleCache,
+  injectTestChunk,
+} from '../services/globalSessionStreamManager';
+import { clearAllSubscriptions } from '../hooks/useRustSessionState';
 
 // Helper to wait for async operations
 const waitForFrame = (ms = 50): Promise<void> =>
@@ -312,10 +320,17 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
     resetMockSession();
     // VIEWNV-001: Reset sessionStore state between tests
     useSessionStore.getState().reset();
+    // REFAC-008: Reset GlobalSessionStreamManager and NAPI module cache
+    stopGlobalSessionStreamManager();
+    clearNapiModuleCache();
+    clearAllSubscriptions();
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    // REFAC-008: Clean up GlobalSessionStreamManager
+    stopGlobalSessionStreamManager();
+    clearAllSubscriptions();
   });
 
   describe('Scenario: Open agent modal and send prompt with streaming response', () => {
@@ -528,10 +543,9 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Simulate streaming response to complete the turn
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'Text', text: 'Hi!' });
-        capturedCallback(null, { type: 'Done' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'Text', text: 'Hi!' });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -594,10 +608,9 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Simulate streaming response to complete the turn
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'Text', text: 'Hi!' });
-        capturedCallback(null, { type: 'Done' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'Text', text: 'Hi!' });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -685,10 +698,9 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Simulate streaming response to complete the turn
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'Text', text: 'Hi!' });
-        capturedCallback(null, { type: 'Done' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'Text', text: 'Hi!' });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -748,11 +760,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Simulate streaming response with high token count
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'Text', text: 'Hi!' });
-        capturedCallback(null, { type: 'TokenUpdate', tokens: { inputTokens: 175000, outputTokens: 5000 } });
-        capturedCallback(null, { type: 'Done' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'Text', text: 'Hi!' });
+      injectTestChunk('mock-session-id', { type: 'TokenUpdate', tokens: { inputTokens: 175000, outputTokens: 5000 } });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -825,11 +836,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Simulate streaming response with high token count
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'Text', text: 'Hi!' });
-        capturedCallback(null, { type: 'TokenUpdate', tokens: { inputTokens: 150000, outputTokens: 5000 } });
-        capturedCallback(null, { type: 'Done' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'Text', text: 'Hi!' });
+      injectTestChunk('mock-session-id', { type: 'TokenUpdate', tokens: { inputTokens: 150000, outputTokens: 5000 } });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -913,11 +923,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // Simulate streaming response with token count
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'Text', text: 'Hi!' });
-        capturedCallback(null, { type: 'TokenUpdate', tokens: { inputTokens: 100000, outputTokens: 5000 } });
-        capturedCallback(null, { type: 'Done' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'Text', text: 'Hi!' });
+      injectTestChunk('mock-session-id', { type: 'TokenUpdate', tokens: { inputTokens: 100000, outputTokens: 5000 } });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -966,13 +975,12 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      if (capturedCallback) {
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
         // SessionStateChange should NOT appear in conversation
-        capturedCallback(null, { type: 'SessionStateChange', state: 'Compacting' });
+      injectTestChunk('mock-session-id', { type: 'SessionStateChange', state: 'Compacting' });
         // UserNotification SHOULD appear in conversation
-        capturedCallback(null, { type: 'UserNotification', message: 'Context compacted successfully', severity: 'Info' });
-        capturedCallback(null, { type: 'Done' });
-      }
+      injectTestChunk('mock-session-id', { type: 'UserNotification', message: 'Context compacted successfully', severity: 'Info' });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -1009,11 +1017,10 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       await waitForFrame(100);
 
       // NAPI-010: UserNotification for user-visible status messages
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'UserNotification', message: 'Processing request...', severity: 'Info' });
-        capturedCallback(null, { type: 'Text', text: 'Done!' });
-        capturedCallback(null, { type: 'Done' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'UserNotification', message: 'Processing request...', severity: 'Info' });
+      injectTestChunk('mock-session-id', { type: 'Text', text: 'Done!' });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -1037,10 +1044,9 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       stdin.write('\r');
       await waitForFrame(100);
 
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'UserNotification', message: 'API rate limit exceeded', severity: 'Warning' });
-        capturedCallback(null, { type: 'Done' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'UserNotification', message: 'API rate limit exceeded', severity: 'Warning' });
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }
@@ -1079,9 +1085,8 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
 
       // @step When the compaction hook automatically triggers compaction
       // (Simulated by SessionStateChange{Compacting} from Rust backend)
-      if (capturedCallback) {
-        capturedCallback(null, { type: 'SessionStateChange', state: 'Compacting' });
-      }
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { type: 'SessionStateChange', state: 'Compacting' });
       await waitForFrame(100);
 
       // @step Then the input placeholder should show "Compacting: analyzing anchors... 15/32 turns"
@@ -1092,8 +1097,8 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
       expect(frame).toMatch(/Compacting.*analyzing anchors.*15.*32/i);
 
       // Clean up - send CompactionComplete to end compaction
-      if (capturedCallback) {
-        capturedCallback(null, { 
+      // REFAC-008: Using injectTestChunk instead of capturedCallback
+      injectTestChunk('mock-session-id', { 
           type: 'CompactionComplete', 
           compactionResult: {
             originalTokens: 10000,
@@ -1103,8 +1108,7 @@ describe('Feature: TUI Integration for Codelet AI Agent', () => {
             turnsKept: 2,
           }
         });
-        capturedCallback(null, { type: 'Done' });
-      }
+      injectTestChunk('mock-session-id', { type: 'Done' });
       if (capturedResolver) {
         capturedResolver();
       }

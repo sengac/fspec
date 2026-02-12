@@ -393,27 +393,17 @@ impl Tool for FspecToolFacadeWrapper {
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         use crate::fspec_handler::{execute_fspec_command, FspecRequest, has_fspec_handler};
 
-        tracing::warn!("[FSPEC_WRAPPER] FspecToolFacadeWrapper.call invoked with args: {:?}", args.0);
-
         // Map provider-specific args to internal params via the facade
         let internal_params = self.facade.map_params(args.0)?;
 
-        tracing::warn!("[FSPEC_WRAPPER] Mapped to internal params: command={}, project_root={}", 
-            internal_params.command, internal_params.project_root);
-
         // Check if fspec handler is configured (required for TypeScript integration)
-        let has_handler = has_fspec_handler();
-        tracing::warn!("[FSPEC_WRAPPER] has_fspec_handler() = {}", has_handler);
-        
-        if !has_handler {
+        if !has_fspec_handler() {
             return Err(ToolError::Execution {
                 tool: "fspec",
                 message: "Fspec handler not configured. FspecTool requires session context with TypeScript integration.".to_string(),
             });
         }
 
-        tracing::warn!("[FSPEC_WRAPPER] About to call execute_fspec_command...");
-        
         // Execute command via the global handler
         // This blocks until TypeScript executes the command and sends the result back
         let result = execute_fspec_command(FspecRequest {
@@ -422,8 +412,6 @@ impl Tool for FspecToolFacadeWrapper {
             project_root: internal_params.project_root,
             provider: self.facade.provider().to_string(),
         });
-
-        tracing::warn!("[FSPEC_WRAPPER] execute_fspec_command returned: success={}", result.success);
 
         // Return the actual result (not a marker)
         if result.success {
