@@ -77,6 +77,7 @@ Tags that categorize features by functional area.
 | `@board-view` | Kanban board visualization |
 | `@board-visualization` | Kanban board visualization and layout features |
 | `@bootstrap` | Bootstrap documentation and initialization workflows |
+| `@bridge` | Bridge tool features for external platform integration |
 | `@bug-reporting` | Bug reporting and issue submission features |
 | `@bulk` | Bulk operations |
 | `@bulk-add` | Bulk add operations |
@@ -273,6 +274,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@blob-storage` | Blob storage for large content |
 | `@boundary` | Boundary condition scenarios |
 | `@browser-integration` | Features requiring browser launcher integration |
+| `@buffer-overflow` | Buffer overflow handling scenarios |
 | `@build` | Build system configuration and bundling |
 | `@bundling` | Features related to build bundling and module resolution |
 | `@cache` | Caching and persistence features |
@@ -290,6 +292,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@complex-config` | Complex configuration scenarios |
 | `@concurrency` | Concurrent access coordination and file locking mechanisms |
 | `@config` | Configuration loading and management features |
+| `@connection-error` | Connection error handling scenarios |
 | `@content-deduplication` | Content-addressed deduplication |
 | `@content-type` | Content type classification for message persistence |
 | `@context` | Context preservation scenarios |
@@ -307,6 +310,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@default` | Scenarios testing default behavior or state |
 | `@destructive-action` | Features requiring confirmation dialogs for destructive operations (delete, overwrite, etc.) |
 | `@development-tools` | Development tooling and utilities |
+| `@disconnect` | Disconnection handling scenarios |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@document` | Document content type scenarios |
 | `@email` | Email-related functionality |
@@ -335,6 +339,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@http-server` | HTTP server implementation and lifecycle management |
 | `@idempotent` | Operations that can be safely repeated without changing results |
 | `@image` | Image content type scenarios |
+| `@inbound` | Inbound message flow scenarios |
 | `@initialization` | File and system initialization features |
 | `@ink` | Ink (React for CLIs) rendering engine |
 | `@interactive` | Interactive terminal UI features using Ink |
@@ -371,10 +376,12 @@ Tags for specific technical concerns or architectural patterns.
 | `@multi-part` | Multi-part message scenarios |
 | `@multi-provider` | Multi-provider session support for sessions using different LLM providers |
 | `@multimodal` | Multimodal content handling (images, PDFs, etc.) |
+| `@multiple-bridges` | Multiple bridge connection scenarios |
 | `@napi` | NAPI-RS native module bindings for Node.js |
 | `@native` | Native platform builds |
 | `@no-logging` | Ensuring secrets are not logged |
 | `@ollama` | Ollama local provider |
+| `@outbound` | Outbound message flow scenarios |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@package` | npm package configuration |
 | `@parallel-tools` | Parallel tool execution scenarios |
@@ -391,6 +398,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@raw-output` | Raw tool output metadata scenarios |
 | `@react` | React framework and component lifecycle features |
 | `@real-time` | Features with real-time data synchronization and live updates |
+| `@reconnect` | Reconnection handling scenarios |
 | `@registry` | Provider or component registry |
 | `@replace-mode` | AST refactor replace mode |
 | `@request-id` | API request ID scenarios |
@@ -815,7 +823,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-07T11:07:21.255Z_
+_Last updated: 2026-02-12T20:15:16.020Z_
 
 **Update Command**: `fspec tag-stats`
 

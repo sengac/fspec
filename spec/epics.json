@@ -311,6 +311,19 @@
         "TOOLS-001",
         "TOOLS-002"
       ]
+    },
+    "external-bridge": {
+      "id": "external-bridge",
+      "title": "BRIDGE",
+      "createdAt": "2026-02-12T19:53:42.738Z",
+      "description": "External Platform Bridge - Connect agent I/O to messaging platforms like Telegram for remote control and monitoring",
+      "workUnits": [
+        "BRIDGE-001",
+        "BRIDGE-002",
+        "BRIDGE-003",
+        "BRIDGE-004",
+        "BRIDGE-005"
+      ]
     }
   }
 }

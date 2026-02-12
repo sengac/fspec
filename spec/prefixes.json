@@ -344,6 +344,16 @@
       "prefix": "BLOCK",
       "description": "Command and file access blocklist/allowlist filtering system",
       "createdAt": "2026-02-04T18:22:39.516Z"
+    },
+    "CONN": {
+      "prefix": "CONN",
+      "description": "External messaging platform connection and relay features",
+      "createdAt": "2026-02-12T19:52:45.649Z"
+    },
+    "BRIDGE": {
+      "prefix": "BRIDGE",
+      "description": "Bridge tool for relaying agent I/O to external messaging platforms (Telegram, etc.)",
+      "createdAt": "2026-02-12T19:53:18.815Z"
     }
   }
 }

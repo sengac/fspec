@@ -238,6 +238,10 @@
           "description": "Bootstrap documentation and initialization workflows"
         },
         {
+          "name": "@bridge",
+          "description": "Bridge tool features for external platform integration"
+        },
+        {
           "name": "@bug-reporting",
           "description": "Bug reporting and issue submission features"
         },
@@ -994,6 +998,10 @@
           "description": "Features requiring browser launcher integration"
         },
         {
+          "name": "@buffer-overflow",
+          "description": "Buffer overflow handling scenarios"
+        },
+        {
           "name": "@build",
           "description": "Build system configuration and bundling"
         },
@@ -1062,6 +1070,10 @@
           "description": "Configuration loading and management features"
         },
         {
+          "name": "@connection-error",
+          "description": "Connection error handling scenarios"
+        },
+        {
           "name": "@content-deduplication",
           "description": "Content-addressed deduplication"
         },
@@ -1128,6 +1140,10 @@
         {
           "name": "@development-tools",
           "description": "Development tooling and utilities"
+        },
+        {
+          "name": "@disconnect",
+          "description": "Disconnection handling scenarios"
         },
         {
           "name": "@discovery",
@@ -1240,6 +1256,10 @@
         {
           "name": "@image",
           "description": "Image content type scenarios"
+        },
+        {
+          "name": "@inbound",
+          "description": "Inbound message flow scenarios"
         },
         {
           "name": "@initialization",
@@ -1386,6 +1406,10 @@
           "description": "Multimodal content handling (images, PDFs, etc.)"
         },
         {
+          "name": "@multiple-bridges",
+          "description": "Multiple bridge connection scenarios"
+        },
+        {
           "name": "@napi",
           "description": "NAPI-RS native module bindings for Node.js"
         },
@@ -1400,6 +1424,10 @@
         {
           "name": "@ollama",
           "description": "Ollama local provider"
+        },
+        {
+          "name": "@outbound",
+          "description": "Outbound message flow scenarios"
         },
         {
           "name": "@outside-in-bdd",
@@ -1464,6 +1492,10 @@
         {
           "name": "@real-time",
           "description": "Features with real-time data synchronization and live updates"
+        },
+        {
+          "name": "@reconnect",
+          "description": "Reconnection handling scenarios"
         },
         {
           "name": "@registry",
@@ -2294,7 +2326,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-07T11:07:21.255Z",
+    "lastUpdated": "2026-02-12T20:15:16.020Z",
     "phaseStats": [
       {
         "phase": "Phase 1",
