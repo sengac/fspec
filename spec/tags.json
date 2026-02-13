@@ -330,6 +330,10 @@
           "description": "Configuration loading and validation"
         },
         {
+          "name": "@connect",
+          "description": "WebSocket connection scenarios"
+        },
+        {
           "name": "@connection-test",
           "description": "Connection testing functionality"
         },
@@ -540,6 +544,10 @@
         {
           "name": "@multi-agent-support",
           "description": "Features related to supporting multiple AI coding agents beyond Claude"
+        },
+        {
+          "name": "@multiple",
+          "description": "Multiple simultaneous connections"
         },
         {
           "name": "@navigation",
@@ -1678,6 +1686,10 @@
           "description": "Tool call content type scenarios"
         },
         {
+          "name": "@tool-definition",
+          "description": "Scenarios testing tool definition/schema"
+        },
+        {
           "name": "@tool-messages",
           "description": "Scenarios testing tool output message handling"
         },
@@ -2326,7 +2338,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-12T20:15:16.020Z",
+    "lastUpdated": "2026-02-12T23:41:26.832Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

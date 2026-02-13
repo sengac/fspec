@@ -8,6 +8,9 @@
 pub mod astgrep;
 pub mod astgrep_refactor;
 pub mod bash;
+pub mod bridge;
+pub mod bridge_handler;
+pub mod bridge_relay;
 pub mod chrome_browser;
 pub mod edit;
 pub mod error;
@@ -16,7 +19,7 @@ pub mod file_type;
 pub mod fspec;
 pub mod fspec_handler;
 pub mod fspec_workflow_guidance;
-pub mod napi_bridge;
+
 pub mod glob;
 pub mod grep;
 pub mod limits;
@@ -32,6 +35,14 @@ pub mod validation;
 pub mod web_search;
 pub mod write;
 
+// Test fixtures for integration tests
+#[cfg(test)]
+pub mod bridge_test_fixtures;
+
+// Integration tests using real WebSocket fixtures
+#[cfg(test)]
+mod bridge_integration_tests;
+
 pub use error::ToolError;
 
 use serde::{Deserialize, Serialize};
@@ -41,6 +52,17 @@ pub use astgrep::AstGrepTool;
 pub use astgrep_refactor::AstGrepRefactorTool;
 pub use bash::BashTool;
 pub use bash::{clear_bash_abort, request_bash_abort};
+pub use bridge::{
+    get_or_create_bridge_manager, remove_bridge_manager, BridgeAction, BridgeConnectionInfo,
+    BridgeConnectionState, BridgeManager, BridgeToolArgs, BridgeResult, BridgeTool,
+};
+pub use bridge_handler::{
+    execute_bridge_command, handle_bridge_action, has_bridge_handler, set_bridge_handler,
+    set_bridge_session_context, remove_bridge_session_context,
+    set_current_bridge_session, get_current_bridge_session,
+    BridgeHandler, BridgeRequest, BroadcastReceiverFactory,
+};
+pub use bridge_relay::{spawn_relay_task, InputInjector};
 pub use chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
 pub use edit::EditTool;
 pub use fspec::FspecTool;

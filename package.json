@@ -24,7 +24,10 @@
     "test": "npm run build && vitest run",
     "test:watch": "vitest --watch",
     "prepare": "husky",
-    "prepublishOnly": "node scripts/check-publish-deps.js"
+    "prepublishOnly": "node scripts/check-publish-deps.js",
+    "bridge:telegram": "npx tsx bridge/telegram-endpoint.ts",
+    "bridge:telegram:bg": "nohup npx tsx bridge/telegram-endpoint.ts > bridge/telegram.log 2>&1 & echo $! > bridge/telegram.pid && echo 'Telegram bridge started in background (PID saved to bridge/telegram.pid)'",
+    "bridge:telegram:stop": "kill $(cat bridge/telegram.pid) 2>/dev/null && rm bridge/telegram.pid && echo 'Telegram bridge stopped' || echo 'No running bridge found'"
   },
   "keywords": [
     "spec-driven-development",
@@ -111,7 +114,9 @@
     "@types/lodash.throttle": "^4.1.9",
     "@types/node": "^24.5.1",
     "@types/node-fetch": "^2.6.13",
+    "@types/node-telegram-bot-api": "^0.64.13",
     "@types/react": "^19.2.2",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.46.2",
     "delay": "^7.0.0",
@@ -124,10 +129,12 @@
     "lint-staged": "^16.2.6",
     "memfs": "^4.49.0",
     "node-fetch": "^3.3.2",
+    "node-telegram-bot-api": "^0.67.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
     "vite": "^7.1.5",
-    "vitest": "^4.0.1"
+    "vitest": "^4.0.1",
+    "ws": "^8.19.0"
   },
   "lint-staged": {
     "*.ts": [

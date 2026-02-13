@@ -26,6 +26,7 @@ rig-core.workspace = true
 
 # Async
 tokio.workspace = true
+tokio-tungstenite.workspace = true
 futures.workspace = true
 async-trait.workspace = true
 

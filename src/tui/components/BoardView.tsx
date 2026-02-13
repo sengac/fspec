@@ -544,10 +544,17 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
             if (currentColumn.units.length > 0) {
               const workUnit = currentColumn.units[selectedWorkUnitIndex];
               setSelectedWorkUnit(workUnit);
-              // VIEWNV-001: Use unified navigateToNewSession to ensure session is auto-created
-              // This allows /thinking and other commands to work immediately
-              // Note: If workUnit has an attached session, AgentView will auto-resume it instead
-              navigateToNewSession();
+              
+              // VIEWNV-001: Check if work unit has an attached session
+              // If so, navigate to that session instead of creating a new one
+              const attachedSessionId = useFspecStore.getState().getAttachedSession(workUnit.id);
+              if (attachedSessionId) {
+                // Navigate to existing session (like Shift+Right does)
+                setNavigationTarget(attachedSessionId);
+              } else {
+                // No attached session - prepare to auto-create one
+                navigateToNewSession();
+              }
               setViewMode('agent');
             }
           }

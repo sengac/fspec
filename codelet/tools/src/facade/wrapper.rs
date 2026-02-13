@@ -703,3 +703,183 @@ impl Tool for LsToolFacadeWrapper {
         }
     }
 }
+
+// ============================================================================
+// BridgeToolFacadeWrapper - Adapts BridgeToolFacade implementations to rig::tool::Tool
+// ============================================================================
+
+use super::bridge_facade::{BoxedBridgeToolFacade, InternalBridgeParams};
+use crate::bridge::BridgeAction;
+use crate::bridge_handler::{execute_bridge_command, get_current_bridge_session, has_bridge_handler, BridgeRequest};
+
+/// Result type for bridge operations
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[must_use = "BridgeOperationResult should be checked for success/failure"]
+pub struct BridgeOperationResult {
+    pub success: bool,
+    pub message: String,
+    pub connections: Option<Vec<crate::bridge::BridgeConnectionInfo>>,
+}
+
+/// Wrapper that adapts a BridgeToolFacade to rig's Tool trait.
+///
+/// This enables provider-specific bridge facades to be used with rig's agent builder
+/// while maintaining the facade's custom tool name, schema, and parameter mapping.
+///
+/// ## Execution Flow
+///
+/// Unlike other tool wrappers that execute directly, BridgeToolFacadeWrapper uses
+/// the global bridge_handler mechanism to manage WebSocket connections with session context:
+///
+/// 1. LLM calls Bridge tool with action args
+/// 2. Wrapper calls `execute_bridge_command()` with request
+/// 3. Handler (set by session_manager) manages WebSocket connections
+/// 4. Handler returns result to wrapper
+/// 5. Wrapper returns actual result to LLM
+pub struct BridgeToolFacadeWrapper {
+    /// The underlying facade providing name, schema, and param mapping
+    facade: BoxedBridgeToolFacade,
+}
+
+impl BridgeToolFacadeWrapper {
+    /// Create a new wrapper for the given bridge facade
+    pub fn new(facade: BoxedBridgeToolFacade) -> Self {
+        Self { facade }
+    }
+
+    /// Get the facade's provider name
+    pub fn provider(&self) -> &'static str {
+        self.facade.provider()
+    }
+}
+
+impl Tool for BridgeToolFacadeWrapper {
+    const NAME: &'static str = "bridge_facade_wrapper";
+
+    type Error = ToolError;
+    type Args = FacadeArgs;
+    type Output = BridgeOperationResult;
+
+    /// Override to return the facade's tool name (e.g., "Bridge" for Claude, "bridge_connection" for Gemini)
+    fn name(&self) -> String {
+        self.facade.tool_name().to_string()
+    }
+
+    /// Override to return the facade's definition (provider-specific schema)
+    async fn definition(&self, _prompt: String) -> RigToolDefinition {
+        let def = self.facade.definition();
+        RigToolDefinition {
+            name: def.name,
+            description: def.description,
+            parameters: def.parameters,
+        }
+    }
+
+    async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Map provider-specific args to internal params via the facade
+        let internal_params = self.facade.map_params(args.0)?;
+
+        // Check if bridge handler is configured (required for session context)
+        if !has_bridge_handler() {
+            return Err(ToolError::Execution {
+                tool: "bridge",
+                message: "Bridge handler not configured. BridgeTool requires session context."
+                    .to_string(),
+            });
+        }
+
+        // Convert internal params to BridgeAction
+        let action = match internal_params {
+            InternalBridgeParams::Connect { url } => BridgeAction::Connect { url },
+            InternalBridgeParams::Disconnect { url } => BridgeAction::Disconnect { url },
+            InternalBridgeParams::List => BridgeAction::List,
+        };
+
+        // Get the current session ID (set by session manager via set_current_bridge_session)
+        let session_id = get_current_bridge_session().unwrap_or_else(uuid::Uuid::nil);
+
+        // Execute command via the global handler
+        let result = execute_bridge_command(BridgeRequest {
+            session_id,
+            action,
+        });
+
+        // Return the result
+        Ok(BridgeOperationResult {
+            success: result.success,
+            message: result.message,
+            connections: result.connections,
+        })
+    }
+}
+
+#[cfg(test)]
+mod bridge_wrapper_tests {
+    use super::*;
+    use crate::bridge_handler::{set_bridge_handler, set_current_bridge_session, BridgeHandler};
+    use crate::bridge::BridgeResult;
+    use crate::facade::bridge_facade::ClaudeBridgeFacade;
+    use serial_test::serial;
+    use std::sync::Arc;
+
+    /// Feature: spec/features/bridge-tool-unit.feature
+    /// Scenario: Bridge wrapper uses current session ID from handler
+    #[tokio::test]
+    #[serial]
+    async fn test_bridge_wrapper_uses_current_session_id() {
+        // @step Given the bridge handler is configured
+        let received_session_id = Arc::new(std::sync::Mutex::new(None));
+        let received_session_id_clone = received_session_id.clone();
+
+        let handler: BridgeHandler = Arc::new(move |req| {
+            *received_session_id_clone.lock().unwrap() = Some(req.session_id);
+            BridgeResult {
+                success: true,
+                message: "test".to_string(),
+                connections: Some(vec![]),
+            }
+        });
+        set_bridge_handler(Some(handler));
+
+        // @step And the current bridge session is set to a valid session ID
+        let expected_session_id = uuid::Uuid::new_v4();
+        set_current_bridge_session(Some(expected_session_id));
+
+        // @step When the BridgeToolFacadeWrapper executes a list action
+        let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade));
+        let args = FacadeArgs(serde_json::json!({
+            "action": {"type": "list"}
+        }));
+
+        let _ = wrapper.call(args).await;
+
+        // @step Then the request should contain the correct session ID
+        let actual_session_id = received_session_id.lock().unwrap();
+        assert_eq!(
+            *actual_session_id,
+            Some(expected_session_id),
+            "BridgeRequest should contain session ID set via set_current_bridge_session"
+        );
+
+        // Cleanup
+        set_bridge_handler(None);
+        set_current_bridge_session(None);
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_bridge_wrapper_fails_without_handler() {
+        set_bridge_handler(None);
+        set_current_bridge_session(None);
+
+        let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade));
+        let args = FacadeArgs(serde_json::json!({
+            "action": {"type": "list"}
+        }));
+
+        let result = wrapper.call(args).await;
+
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("handler not configured"));
+    }
+}

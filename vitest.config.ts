@@ -21,7 +21,7 @@ export default defineConfig({
     testTimeout: 30000, // 30 seconds timeout for slow tests
     hookTimeout: 30000, // 30 seconds for setup/teardown hooks
 
-    include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
+    include: ['src/**/*.test.ts', 'src/**/*.test.tsx', 'bridge/**/*.test.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],

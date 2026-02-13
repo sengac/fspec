@@ -1085,10 +1085,23 @@ impl BackgroundSession {
         // If attached, forward to callback
         // Note: We check is_attached first, but callback may be None during detach transition.
         // This is safe because detach() clears callback before setting is_attached to false.
-        if self.is_attached() {
-            if let Some(cb) = self.attached_callback.read().expect("callback lock poisoned").as_ref() {
+        let is_attached = self.is_attached();
+        if is_attached {
+            let callback_guard = self.attached_callback.read().expect("callback lock poisoned");
+            if let Some(cb) = callback_guard.as_ref() {
                 let _ = cb.call(Ok(chunk), ThreadsafeFunctionCallMode::NonBlocking);
+            } else {
+                tracing::warn!(
+                    "[handle_output] session={}, is_attached=true but callback is None!",
+                    self.id
+                );
             }
+        } else {
+            // Only log when is_attached is false - this could indicate a problem
+            tracing::warn!(
+                "[handle_output] session={}, is_attached=false, chunk not forwarded to UI callback",
+                self.id
+            );
         }
     }
     
@@ -4202,6 +4215,7 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             result = watcher_rx.recv() => {
                 match result {
                     Some(watcher_input) => {
+                        tracing::warn!("agent_loop received watcher input from {}: {}", watcher_input.role_name, watcher_input.message.chars().take(50).collect::<String>());
                         // Format watcher input as a user message with structured prefix
                         let formatted = format_watcher_input(&watcher_input);
                         // Emit the watcher input chunk so it appears in the UI
@@ -4223,7 +4237,7 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
         if let Some((input, thinking_config)) = input_to_process {
             let thinking_config_ref = thinking_config.as_deref();
 
-            tracing::debug!("Session {} received input: {}", session.id, input.chars().take(50).collect::<String>());
+            tracing::warn!("Session {} processing input: {}", session.id, input.chars().take(50).collect::<String>());
 
             // REFAC-007: Persist user message to Rust persistence layer
             // This replaces TypeScript's persistenceStoreMessageEnvelope call
@@ -4314,6 +4328,99 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             });
 
             codelet_tools::set_fspec_handler(Some(fspec_handler));
+
+            // BRIDGE-001: Set up bridge handler and session context for WebSocket relay
+            // The bridge handler needs to call async handle_bridge_action, so we use
+            // the tokio runtime handle to block_on the async function from the sync handler.
+            let session_for_bridge = session.clone();
+            let session_id_for_bridge = session.id;
+            let runtime_handle = tokio::runtime::Handle::current();
+            
+            // Create the broadcast receiver factory that converts StreamChunk to JSON
+            // This is the Adapter Pattern - adapts StreamChunk broadcast to JSON broadcast
+            let watcher_broadcast_sender = session_for_bridge.watcher_broadcast.clone();
+            let broadcast_rx_factory: codelet_tools::BroadcastReceiverFactory = Arc::new(move || {
+                // Subscribe to the watcher broadcast
+                let mut stream_rx = watcher_broadcast_sender.subscribe();
+                
+                // Create a new JSON broadcast channel for this bridge connection
+                let (json_tx, json_rx) = tokio::sync::broadcast::channel::<serde_json::Value>(256);
+                
+                // Spawn an adapter task that converts StreamChunk to JSON
+                let json_tx_clone = json_tx.clone();
+                tokio::spawn(async move {
+                    loop {
+                        match stream_rx.recv().await {
+                            Ok(chunk) => {
+                                // Convert StreamChunk to JSON using to_json_value()
+                                let json_value = chunk.to_json_value();
+                                // Send to the JSON broadcast channel
+                                // Ignore send errors (no receivers)
+                                let _ = json_tx_clone.send(json_value);
+                            }
+                            Err(tokio::sync::broadcast::error::RecvError::Lagged(n)) => {
+                                tracing::warn!("Bridge adapter lagged {} messages", n);
+                                // Continue receiving
+                            }
+                            Err(tokio::sync::broadcast::error::RecvError::Closed) => {
+                                tracing::debug!("Bridge adapter: source broadcast closed");
+                                break;
+                            }
+                        }
+                    }
+                });
+                
+                json_rx
+            });
+            
+            // Create input injector that sends messages to the session's watcher input channel
+            let watcher_input_tx = session_for_bridge.watcher_input_sender();
+            let input_injector: codelet_tools::InputInjector = Arc::new(move |message: String| {
+                // Create a WatcherInput message for injection from bridge
+                let input = WatcherInput {
+                    source_session_id: "bridge".to_string(),
+                    role_name: "bridge".to_string(),
+                    authority: RoleAuthority::Peer,
+                    message: message.clone(),
+                };
+                // Try to send - if channel is full, log warning
+                match watcher_input_tx.try_send(input) {
+                    Ok(()) => {
+                        tracing::warn!("Bridge input injected successfully: {}", message.chars().take(50).collect::<String>());
+                    }
+                    Err(e) => {
+                        tracing::warn!("Failed to inject bridge input: {}", e);
+                    }
+                }
+            });
+            
+            // Set the session context for bridge relay tasks
+            codelet_tools::set_bridge_session_context(
+                session_id_for_bridge,
+                broadcast_rx_factory,
+                input_injector,
+            );
+            
+            // Set the bridge handler that calls handle_bridge_action
+            let bridge_handler: codelet_tools::BridgeHandler = Arc::new(move |request: codelet_tools::BridgeRequest| {
+                // Use block_in_place to run async code from sync context
+                // This is safe because we're in a multi-threaded tokio runtime
+                tokio::task::block_in_place(|| {
+                    runtime_handle.block_on(async {
+                        match codelet_tools::handle_bridge_action(request.session_id, request.action).await {
+                            Ok(result) => result,
+                            Err(e) => codelet_tools::BridgeResult {
+                                success: false,
+                                message: format!("Bridge action failed: {}", e),
+                                connections: None,
+                            },
+                        }
+                    })
+                })
+            });
+            
+            codelet_tools::set_bridge_handler(Some(bridge_handler));
+            codelet_tools::set_current_bridge_session(Some(session.id));
             
             let result = match current_provider.as_str() {
                 "claude" => run_with_provider!(&mut inner_session, get_claude, &input, session, &output, thinking_config_value),
@@ -4328,6 +4435,9 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             
             set_pause_handler(None);
             codelet_tools::set_fspec_handler(None);
+            codelet_tools::set_bridge_handler(None);
+            codelet_tools::set_current_bridge_session(None);
+            codelet_tools::remove_bridge_session_context(session.id);
 
             // Handle result
             // Note: run_agent_stream emits StreamEvent::Done on successful completion,

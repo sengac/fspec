@@ -195,7 +195,7 @@ impl ZAIProvider {
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
         use codelet_tools::facade::{
             BashToolFacadeWrapper, FileToolFacadeWrapper, LsToolFacadeWrapper,
-            SearchToolFacadeWrapper, zai_fspec_tool, ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade,
+            SearchToolFacadeWrapper, zai_bridge_tool, zai_fspec_tool, ZAIEditFileFacade, ZAIFindFilesFacade, ZAIGrepFilesFacade,
             ZAIListDirFacade, ZAIReadFileFacade, ZAIRunCommandFacade, ZAIWriteFileFacade,
         };
         use codelet_tools::{AstGrepRefactorTool, AstGrepTool, WebSearchTool};
@@ -234,6 +234,7 @@ impl ZAIProvider {
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
             .tool(zai_fspec_tool()) // FspecTool for ACDD workflow management
+            .tool(zai_bridge_tool()) // BridgeTool for external WebSocket connections
             .tool(WebSearchTool::new());
 
         // Set preamble if provided

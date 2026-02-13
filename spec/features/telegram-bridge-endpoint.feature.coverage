@@ -1,0 +1,576 @@
+{
+  "scenarios": [
+    {
+      "name": "Start endpoint with required configuration",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "83-102",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360,
+                361,
+                362,
+                363,
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371,
+                372,
+                373,
+                374,
+                375,
+                376,
+                377,
+                378,
+                379,
+                380,
+                381,
+                382,
+                383,
+                384,
+                385,
+                386,
+                387,
+                388,
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fail to start without required bot token",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "105-119",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                354,
+                355,
+                356,
+                357,
+                358,
+                359,
+                360
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Use pre-configured chat ID for immediate message delivery",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "126-150",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                364,
+                365,
+                366,
+                367,
+                368,
+                369,
+                370,
+                371
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Learn chat ID from first Telegram message",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "153-194",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                242,
+                243,
+                244,
+                245,
+                246,
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reject additional codelet connections",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "201-221",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                275,
+                276,
+                277,
+                278,
+                279,
+                280
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Accept new connection after session disconnect",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "224-242",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                300,
+                301,
+                302,
+                303,
+                304,
+                305,
+                306,
+                307
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relay text chunk to Telegram with MarkdownV2 formatting",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "249-271",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175,
+                176,
+                177,
+                178,
+                179,
+                180,
+                181,
+                182
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relay thinking chunk with emoji prefix",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "274-300",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                157,
+                158
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relay tool_call chunk with tool indicator",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "303-332",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                160,
+                161,
+                162,
+                163,
+                164,
+                165
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relay tool_result chunk with correlated tool name",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "335-374",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relay error chunk with error indicator",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "377-403",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                178,
+                179
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Display completion marker for done chunk",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "406-428",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                175,
+                176
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Truncate long messages to fit Telegram limit",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "435-465",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                114,
+                115,
+                116,
+                117,
+                118,
+                119,
+                120,
+                121,
+                122,
+                123,
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141,
+                142,
+                143
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Properly close code blocks when truncating mid-block",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "468-497",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Preserve code block language markers",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "500-524",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Relay Telegram message to codelet as input",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "531-559",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                230,
+                231,
+                232,
+                233,
+                234,
+                235,
+                236,
+                237,
+                238,
+                239,
+                240
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Update active chat when user messages from different device",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "562-585",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                232,
+                233,
+                234,
+                235,
+                236
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Route messages from multiple Telegram users to single session",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "588-617",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                330,
+                331,
+                332,
+                333,
+                334,
+                335,
+                336,
+                337,
+                338,
+                339,
+                340,
+                341,
+                342,
+                343,
+                344,
+                345
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle Telegram API errors gracefully",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-endpoint.test.ts",
+          "lines": "590-620",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                212,
+                213,
+                214,
+                215,
+                216,
+                217,
+                218
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 19,
+    "coveredScenarios": 19,
+    "coveragePercent": 100,
+    "testFiles": [
+      "bridge/__tests__/telegram-endpoint.test.ts"
+    ],
+    "implFiles": [
+      "bridge/telegram-endpoint.ts"
+    ],
+    "totalLinesCovered": 768
+  }
+}

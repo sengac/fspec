@@ -302,7 +302,7 @@ impl ClaudeProvider {
     ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
         // TOOL-008: Use facade for system prompt formatting
         use codelet_tools::facade::{
-            claude_fspec_tool, select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,
+            claude_bridge_tool, claude_fspec_tool, select_claude_facade, ClaudeWebSearchFacade, FacadeToolWrapper,
         };
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
@@ -327,6 +327,7 @@ impl ClaudeProvider {
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
             .tool(claude_fspec_tool()) // FspecTool for ACDD workflow management
+            .tool(claude_bridge_tool()) // BridgeTool for external WebSocket connections
             .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade))); // TOOL-007: Use facade for consistent tool interfaces
 
         // PROV-006, TOOL-008: Apply cache_control to system prompt using facade

@@ -29,6 +29,8 @@
 //! - Clear, concise descriptions
 
 mod bash;
+mod bridge_facade;
+mod bridge_registration;
 mod file_ops;
 mod fspec_facade;
 mod fspec_registration;
@@ -44,6 +46,14 @@ pub mod wrapper;
 mod zai;
 
 pub use bash::GeminiRunShellCommandFacade;
+pub use bridge_facade::{
+    BoxedBridgeToolFacade, BridgeToolFacade, ClaudeBridgeFacade, GeminiBridgeFacade,
+    InternalBridgeParams, OpenAIBridgeFacade, ZAIBridgeFacade,
+};
+pub use bridge_registration::{
+    bridge_tool_for_provider, claude_bridge_tool, gemini_bridge_tool, openai_bridge_tool,
+    zai_bridge_tool,
+};
 pub use file_ops::{GeminiReadFileFacade, GeminiReplaceFacade, GeminiWriteFileFacade};
 pub use fspec_facade::{
     ClaudeFspecFacade, GeminiFspecFacade, InternalFspecParams, OpenAIFspecFacade, ZAIFspecFacade,
@@ -85,6 +95,6 @@ pub use web_search::{
     GeminiWebScreenshotFacade,
 };
 pub use wrapper::{
-    BashToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper, FspecToolFacadeWrapper,
-    LsToolFacadeWrapper, SearchToolFacadeWrapper,
+    BashToolFacadeWrapper, BridgeToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper,
+    FspecToolFacadeWrapper, LsToolFacadeWrapper, SearchToolFacadeWrapper,
 };

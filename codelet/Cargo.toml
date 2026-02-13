@@ -102,6 +102,10 @@ sha2 = "0.10"
 # Note: WITHOUT "fetch" feature to avoid auto-downloading Chrome
 headless_chrome = "1.0"
 
+# === WebSocket (BRIDGE-001) ===
+tokio-tungstenite = { version = "0.26", features = ["rustls-tls-webpki-roots"] }
+url = "2"
+
 # === Testing ===
 tempfile = "3"
 assert_cmd = "2"

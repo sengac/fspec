@@ -1,0 +1,643 @@
+/**
+ * Telegram Bridge Endpoint
+ *
+ * Standalone WebSocket server that bridges codelet sessions to Telegram.
+ * This module exports testable functions and can be run as a standalone process.
+ *
+ * BRIDGE-002: Telegram Bridge Endpoint
+ *
+ * Architecture:
+ * - WebSocket server (ws) listens for codelet BridgeManager connections
+ * - Telegram Bot API (node-telegram-bot-api) with polling mode
+ * - Single session at a time - rejects additional connections
+ * - Chat ID learned from TELEGRAM_CHAT_ID env or first Telegram message
+ */
+
+import { WebSocketServer, WebSocket } from 'ws';
+import * as TelegramBotModule from 'node-telegram-bot-api';
+import { config } from 'dotenv';
+
+// Handle both ESM and CJS module formats
+const TelegramBot =
+  (TelegramBotModule as { default?: typeof TelegramBotModule }).default ||
+  TelegramBotModule;
+type TelegramBotInstance = InstanceType<typeof TelegramBot>;
+
+// Load environment variables
+config();
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface StreamChunkData {
+  type: 'text' | 'thinking' | 'tool_call' | 'tool_result' | 'done' | 'error';
+  text?: string;
+  thinking?: string;
+  name?: string;
+  id?: string;
+  tool_call_id?: string;
+  content?: string;
+  is_error?: boolean;
+  error?: string;
+}
+
+export interface StreamChunkMessage {
+  type: 'chunk';
+  session_id: string;
+  data: StreamChunkData;
+}
+
+export interface ConnectedMessage {
+  type: 'connected';
+  session_id: string;
+  data: Record<string, never>;
+}
+
+export type OutboundMessage = StreamChunkMessage | ConnectedMessage;
+
+export interface InboundMessage {
+  type: 'input';
+  session_id: string;
+  message: string;
+}
+
+export interface EndpointState {
+  wss: WebSocketServer | null;
+  bot: TelegramBotInstance | null;
+  currentSession: {
+    ws: WebSocket | null;
+    sessionId: string | null;
+  };
+  chatId: string | null;
+  toolNameMap: Map<string, string>;
+  isRunning: boolean;
+  // Buffering state
+  messageBuffer: string[];
+  bufferTimer: ReturnType<typeof setTimeout> | null;
+  lastSendTime: number;
+}
+
+// ============================================================================
+// Buffering Configuration
+// ============================================================================
+
+const BUFFER_FLUSH_INTERVAL_MS = 500; // Flush buffer every 500ms
+const MIN_SEND_INTERVAL_MS = 300; // Minimum time between sends
+const MAX_BUFFER_SIZE = 50; // Force flush if buffer exceeds this many chunks
+
+// ============================================================================
+// Global State
+// ============================================================================
+
+const state: EndpointState = {
+  wss: null,
+  bot: null,
+  currentSession: {
+    ws: null,
+    sessionId: null,
+  },
+  chatId: null,
+  toolNameMap: new Map(),
+  isRunning: false,
+  messageBuffer: [],
+  bufferTimer: null,
+  lastSendTime: 0,
+};
+
+// ============================================================================
+// MarkdownV2 Escaping
+// ============================================================================
+
+/**
+ * Escape special characters for Telegram MarkdownV2 format.
+ * Characters that need escaping: _ * [ ] ( ) ~ ` > # + - = | { } . !
+ * Does NOT escape content inside code blocks.
+ */
+export function escapeMarkdownV2(text: string): string {
+  const specialChars = /([_*[\]()~`>#+\-=|{}.!])/g;
+
+  // Split by code blocks to avoid escaping inside them
+  const parts = text.split(/(```[\s\S]*?```|`[^`]+`)/);
+
+  return parts
+    .map((part, index) => {
+      // Odd indices are code blocks (matched by the regex group)
+      if (index % 2 === 1) {
+        return part; // Don't escape inside code blocks
+      }
+      return part.replace(specialChars, '\\$1');
+    })
+    .join('');
+}
+
+// ============================================================================
+// Message Truncation
+// ============================================================================
+
+const TELEGRAM_MAX_LENGTH = 4096;
+const PRESERVE_CHARS = 1500;
+
+/**
+ * Smart truncation that preserves beginning and end of message.
+ * Properly handles code block boundaries.
+ */
+export function truncateMessage(
+  text: string,
+  maxLength: number = TELEGRAM_MAX_LENGTH
+): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  // Calculate how much we need to cut
+  const omittedChars = text.length - PRESERVE_CHARS * 2;
+  const indicator = `\n\n[...${omittedChars} chars omitted...]\n\n`;
+  const targetLength = maxLength - indicator.length;
+  const halfTarget = Math.floor(targetLength / 2);
+
+  let beginning = text.slice(0, halfTarget);
+  let ending = text.slice(-halfTarget);
+
+  // Handle code block boundaries in the beginning part
+  const beginningOpenBlocks = countOpenCodeBlocks(beginning);
+  if (beginningOpenBlocks > 0) {
+    // Close any open code blocks
+    beginning += '\n```';
+  }
+
+  // Handle code block boundaries in the ending part
+  const endingHasOpenBlock = hasUnclosedCodeBlock(ending);
+  if (endingHasOpenBlock || beginningOpenBlocks > 0) {
+    // Re-open code block if the ending contains code block content
+    const firstCodeBlockInEnding = ending.indexOf('```');
+    if (firstCodeBlockInEnding === -1 || endingHasOpenBlock) {
+      ending = '```\n' + ending;
+    }
+  }
+
+  return beginning + indicator + ending;
+}
+
+/**
+ * Count unclosed code blocks (``` markers) in text.
+ */
+function countOpenCodeBlocks(text: string): number {
+  const matches = text.match(/```/g);
+  if (!matches) {
+    return 0;
+  }
+  // Odd number means there's an unclosed block
+  return matches.length % 2;
+}
+
+/**
+ * Check if text starts inside an unclosed code block.
+ * (i.e., the text would need an opening ``` prepended)
+ */
+function hasUnclosedCodeBlock(text: string): boolean {
+  // Check if first ``` is a closing marker (no language specifier before it)
+  const firstMarker = text.indexOf('```');
+  if (firstMarker === -1) {
+    return false;
+  }
+  // If there's text before the first ```, check if it looks like code block content
+  const beforeMarker = text.slice(0, firstMarker);
+  // If the text before contains newlines but no ```, we're inside a code block
+  return beforeMarker.includes('\n') && !beforeMarker.includes('```');
+}
+
+// ============================================================================
+// Message Formatting
+// ============================================================================
+
+/**
+ * Format a StreamChunk for Telegram display.
+ */
+export function formatForTelegram(
+  chunk: StreamChunkData,
+  toolNameMap?: Map<string, string>
+): string {
+  const map = toolNameMap || state.toolNameMap;
+
+  switch (chunk.type) {
+    case 'text':
+      return escapeMarkdownV2(chunk.text || '');
+
+    case 'thinking':
+      return `💭 ${escapeMarkdownV2(chunk.thinking || '')}`;
+
+    case 'tool_call':
+      // Store tool name for later correlation
+      if (chunk.id && chunk.name) {
+        map.set(chunk.id, chunk.name);
+      }
+      return `🔧 Running: ${escapeMarkdownV2(chunk.name || 'unknown')}`;
+
+    case 'tool_result': {
+      // Look up tool name from stored mapping
+      const toolName = chunk.tool_call_id
+        ? map.get(chunk.tool_call_id) || 'unknown'
+        : 'unknown';
+      const content = chunk.content || '';
+      const prefix = chunk.is_error ? '❌ ' : '';
+      return `${prefix}\\[${escapeMarkdownV2(toolName)}\\] ${escapeMarkdownV2(content)}`;
+    }
+
+    case 'done':
+      return '✓';
+
+    case 'error':
+      return `❌ Error: ${escapeMarkdownV2(chunk.error || 'Unknown error')}`;
+
+    default:
+      return '';
+  }
+}
+
+// ============================================================================
+// Stream Chunk Handling with Buffering
+// ============================================================================
+
+/**
+ * Flush the message buffer to Telegram.
+ * Combines all buffered chunks into a single message.
+ */
+async function flushBuffer(): Promise<void> {
+  // Clear the timer
+  if (state.bufferTimer) {
+    clearTimeout(state.bufferTimer);
+    state.bufferTimer = null;
+  }
+
+  // Nothing to flush
+  if (state.messageBuffer.length === 0) {
+    return;
+  }
+
+  if (!state.bot || !state.chatId) {
+    state.messageBuffer = [];
+    return;
+  }
+
+  // Combine all buffered messages
+  const combined = state.messageBuffer.join('');
+  state.messageBuffer = [];
+
+  if (!combined.trim()) {
+    return;
+  }
+
+  // Truncate if necessary
+  const text = truncateMessage(combined);
+
+  // Send to Telegram
+  try {
+    state.lastSendTime = Date.now();
+    await state.bot.sendMessage(state.chatId, text, {
+      parse_mode: 'MarkdownV2',
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error('[telegram-endpoint] Telegram API error:', errorMessage);
+    // Drop the message and continue
+  }
+}
+
+/**
+ * Schedule a buffer flush if not already scheduled.
+ */
+function scheduleFlush(): void {
+  if (state.bufferTimer) {
+    return; // Already scheduled
+  }
+
+  // Calculate delay based on when we last sent
+  const timeSinceLastSend = Date.now() - state.lastSendTime;
+  const delay = Math.max(
+    BUFFER_FLUSH_INTERVAL_MS,
+    MIN_SEND_INTERVAL_MS - timeSinceLastSend
+  );
+
+  state.bufferTimer = setTimeout(() => {
+    void flushBuffer();
+  }, delay);
+}
+
+/**
+ * Handle an outbound message (codelet → Telegram).
+ * Buffers messages and flushes periodically to avoid overwhelming Telegram.
+ */
+export async function handleStreamChunk(
+  msg: StreamChunkMessage
+): Promise<void> {
+  if (!state.bot) {
+    console.error('[telegram-endpoint] Bot not initialized');
+    return;
+  }
+
+  if (!state.chatId) {
+    console.warn(
+      '[telegram-endpoint] No chat ID linked - dropping chunk. Waiting for first Telegram message.'
+    );
+    return;
+  }
+
+  // Format the message
+  const text = formatForTelegram(msg.data);
+  if (!text) {
+    return;
+  }
+
+  // Handle special chunk types that should flush immediately
+  if (msg.data.type === 'done' || msg.data.type === 'error') {
+    // Add to buffer and flush immediately
+    state.messageBuffer.push(text);
+    await flushBuffer();
+    return;
+  }
+
+  // Handle tool_call and tool_result - these are important markers
+  // Add them to buffer but potentially flush if buffer is getting large
+  if (msg.data.type === 'tool_call' || msg.data.type === 'tool_result') {
+    // Add newline before tool markers for readability
+    if (state.messageBuffer.length > 0) {
+      state.messageBuffer.push('\n');
+    }
+    state.messageBuffer.push(text);
+    state.messageBuffer.push('\n');
+
+    // Force flush if buffer is large
+    if (state.messageBuffer.length >= MAX_BUFFER_SIZE) {
+      await flushBuffer();
+    } else {
+      scheduleFlush();
+    }
+    return;
+  }
+
+  // Regular text/thinking chunks - buffer them
+  state.messageBuffer.push(text);
+
+  // Force flush if buffer exceeds max size
+  if (state.messageBuffer.length >= MAX_BUFFER_SIZE) {
+    await flushBuffer();
+  } else {
+    scheduleFlush();
+  }
+}
+
+// ============================================================================
+// Telegram Message Handling
+// ============================================================================
+
+/**
+ * Handle an inbound message from Telegram.
+ * Updates active chat ID and returns message to send to codelet.
+ */
+export function handleTelegramMessage(
+  chatId: string,
+  text: string
+): InboundMessage {
+  // Update active chat ID (allows device switching)
+  state.chatId = chatId;
+
+  // Create message for codelet
+  return {
+    type: 'input',
+    session_id: state.currentSession.sessionId || '',
+    message: text,
+  };
+}
+
+// ============================================================================
+// WebSocket Server
+// ============================================================================
+
+function setupWebSocketServer(port: number, host: string): WebSocketServer {
+  const wss = new WebSocketServer({ port, host });
+
+  wss.on('connection', (ws: WebSocket) => {
+    // Check if a session is already connected
+    if (state.currentSession.ws !== null) {
+      console.log(
+        '[telegram-endpoint] Rejecting connection - session already active'
+      );
+      ws.close(4000, 'Session already connected');
+      return;
+    }
+
+    console.log('[telegram-endpoint] Codelet session connected');
+    state.currentSession.ws = ws;
+
+    ws.on('message', (data: Buffer | string) => {
+      try {
+        const message = JSON.parse(data.toString()) as OutboundMessage;
+        if (message.type === 'connected') {
+          // Learn session ID from connection handshake
+          state.currentSession.sessionId = message.session_id;
+          console.log(
+            `[telegram-endpoint] Session connected: ${message.session_id}`
+          );
+        } else if (message.type === 'chunk') {
+          void handleStreamChunk(message);
+        }
+      } catch (error) {
+        console.error('[telegram-endpoint] Failed to parse message:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('[telegram-endpoint] Codelet session disconnected');
+      // Flush any remaining buffered messages before clearing state
+      void flushBuffer();
+      state.currentSession.ws = null;
+      state.currentSession.sessionId = null;
+      state.toolNameMap.clear();
+    });
+
+    ws.on('error', error => {
+      console.error('[telegram-endpoint] WebSocket error:', error);
+    });
+  });
+
+  wss.on('error', error => {
+    console.error('[telegram-endpoint] WebSocket server error:', error);
+  });
+
+  return wss;
+}
+
+// ============================================================================
+// Telegram Bot Setup
+// ============================================================================
+
+function setupTelegramBot(token: string): TelegramBotInstance {
+  const bot = new TelegramBot(token, { polling: true });
+
+  bot.on('message', msg => {
+    const chatId = msg.chat.id.toString();
+    const text = msg.text || '';
+
+    console.log(
+      `[telegram-endpoint] Received message from chat ${chatId}: ${text.slice(0, 50)}...`
+    );
+
+    // Update active chat ID
+    state.chatId = chatId;
+
+    // If we have a connected session, forward the message
+    if (
+      state.currentSession.ws &&
+      state.currentSession.ws.readyState === WebSocket.OPEN
+    ) {
+      const inputMessage = handleTelegramMessage(chatId, text);
+      console.log(
+        `[telegram-endpoint] Sending input to codelet - session_id: "${inputMessage.session_id}", message: "${inputMessage.message.slice(0, 50)}..."`
+      );
+      state.currentSession.ws.send(JSON.stringify(inputMessage));
+    } else {
+      console.log(
+        '[telegram-endpoint] No active session to forward message to'
+      );
+    }
+  });
+
+  bot.on('polling_error', error => {
+    console.error('[telegram-endpoint] Telegram polling error:', error);
+  });
+
+  return bot;
+}
+
+// ============================================================================
+// Endpoint Lifecycle
+// ============================================================================
+
+/**
+ * Start the Telegram bridge endpoint.
+ */
+export function startEndpoint(): EndpointState {
+  // Validate required environment variables
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    throw new Error('Missing required TELEGRAM_BOT_TOKEN environment variable');
+  }
+
+  // Get configuration from environment
+  const port = parseInt(process.env.WEBSOCKET_PORT || '8080', 10);
+  const host = process.env.WEBSOCKET_HOST || 'localhost';
+  const preConfiguredChatId = process.env.TELEGRAM_CHAT_ID;
+
+  // Initialize chat ID from environment if provided
+  if (preConfiguredChatId) {
+    state.chatId = preConfiguredChatId;
+    console.log(
+      `[telegram-endpoint] Pre-configured chat ID: ${preConfiguredChatId}`
+    );
+  } else {
+    console.warn(
+      '[telegram-endpoint] No TELEGRAM_CHAT_ID configured - waiting for first Telegram message'
+    );
+  }
+
+  // Start WebSocket server
+  state.wss = setupWebSocketServer(port, host);
+  console.log(
+    `[telegram-endpoint] WebSocket server listening on ${host}:${port}`
+  );
+
+  // Start Telegram bot
+  state.bot = setupTelegramBot(token);
+  console.log('[telegram-endpoint] Telegram bot connected with polling mode');
+
+  state.isRunning = true;
+  return state;
+}
+
+/**
+ * Stop the endpoint gracefully.
+ */
+export async function stopEndpoint(): Promise<void> {
+  // Flush any remaining buffered messages
+  if (state.bufferTimer) {
+    clearTimeout(state.bufferTimer);
+    state.bufferTimer = null;
+  }
+  if (state.messageBuffer.length > 0 && state.bot && state.chatId) {
+    await flushBuffer();
+  }
+
+  if (state.bot) {
+    await state.bot.stopPolling();
+    state.bot = null;
+  }
+
+  if (state.wss) {
+    state.wss.close();
+    state.wss = null;
+  }
+
+  state.currentSession.ws = null;
+  state.currentSession.sessionId = null;
+  state.chatId = null;
+  state.toolNameMap.clear();
+  state.messageBuffer = [];
+  state.lastSendTime = 0;
+  state.isRunning = false;
+}
+
+/**
+ * Reset state (for testing).
+ */
+export function resetState(): void {
+  if (state.bufferTimer) {
+    clearTimeout(state.bufferTimer);
+  }
+  state.wss = null;
+  state.bot = null;
+  state.currentSession = { ws: null, sessionId: null };
+  state.chatId = null;
+  state.toolNameMap.clear();
+  state.messageBuffer = [];
+  state.bufferTimer = null;
+  state.lastSendTime = 0;
+  state.isRunning = false;
+}
+
+/**
+ * Get current state (for testing).
+ */
+export function getState(): EndpointState {
+  return state;
+}
+
+// ============================================================================
+// CLI Entry Point
+// ============================================================================
+
+// Run when executed directly (use environment variable or check process.argv)
+const runAsMain = process.argv[1]?.includes('telegram-endpoint');
+
+if (runAsMain) {
+  try {
+    startEndpoint();
+    console.log('[telegram-endpoint] Endpoint started successfully');
+
+    // Handle graceful shutdown
+    process.on('SIGINT', async () => {
+      console.log('\n[telegram-endpoint] Shutting down...');
+      await stopEndpoint();
+      process.exit(0);
+    });
+
+    process.on('SIGTERM', async () => {
+      console.log('[telegram-endpoint] Received SIGTERM, shutting down...');
+      await stopEndpoint();
+      process.exit(0);
+    });
+  } catch (error) {
+    console.error('[telegram-endpoint] Failed to start:', error);
+    process.exit(1);
+  }
+}

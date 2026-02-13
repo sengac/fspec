@@ -16,5 +16,5 @@ use super::store::credentials_reload as internal_credentials_reload;
 /// SECURITY: This function does NOT return credentials - it only triggers a reload.
 #[napi]
 pub fn credentials_reload() -> Result<bool> {
-    internal_credentials_reload().map_err(|e| napi::Error::from_reason(e))
+    internal_credentials_reload().map_err(napi::Error::from_reason)
 }

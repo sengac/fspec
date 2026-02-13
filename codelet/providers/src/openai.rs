@@ -118,7 +118,7 @@ impl OpenAIProvider {
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
-        use codelet_tools::facade::openai_fspec_tool;
+        use codelet_tools::facade::{openai_bridge_tool, openai_fspec_tool};
         use codelet_tools::{
             AstGrepRefactorTool, AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool,
             ReadTool, WebSearchTool, WriteTool,
@@ -140,6 +140,7 @@ impl OpenAIProvider {
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
             .tool(openai_fspec_tool()) // FspecTool for ACDD workflow management
+            .tool(openai_bridge_tool()) // BridgeTool for external WebSocket connections
             .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
 
         // Set preamble if provided

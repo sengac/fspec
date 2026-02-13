@@ -89,6 +89,7 @@ pub fn has_pause_handler() -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serial_test::serial;
     use std::sync::atomic::{AtomicBool, Ordering};
 
     fn with_clean_handler<T>(f: impl FnOnce() -> T) -> T {
@@ -129,6 +130,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_no_handler_returns_resumed() {
         with_clean_handler(|| {
             let response = pause_for_user(PauseRequest {
@@ -142,6 +144,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_has_pause_handler_when_not_set() {
         with_clean_handler(|| {
             assert!(!has_pause_handler());
@@ -149,6 +152,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_set_pause_handler_sets_handler() {
         with_clean_handler(|| {
             let called = Arc::new(AtomicBool::new(false));
@@ -178,6 +182,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_handler_receives_correct_request() {
         with_clean_handler(|| {
             let handler: PauseHandler = Arc::new(|request| {
@@ -198,6 +203,7 @@ mod tests {
     }
 
     #[test]
+    #[serial]
     fn test_handler_can_return_different_responses() {
         with_clean_handler(|| {
             let handler: PauseHandler = Arc::new(|_| PauseResponse::Approved);

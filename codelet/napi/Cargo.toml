@@ -71,6 +71,10 @@ once_cell = "1.19"
 notify = "6"
 notify-debouncer-mini = "0.4"
 
+# WebSocket client (BRIDGE-001)
+tokio-tungstenite = { workspace = true }
+url = { workspace = true }
+
 # Test support (used by integration tests)
 tempfile = "3"
 

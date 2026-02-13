@@ -530,6 +530,153 @@ impl StreamChunk {
     pub fn work_units_update(work_units: Vec<WorkUnitInfo>) -> Self {
         Self::WorkUnitsUpdate { work_units }
     }
+
+    /// Convert StreamChunk to serde_json::Value for bridge relay (BRIDGE-001)
+    ///
+    /// This manual serialization is needed because StreamChunk uses NAPI's
+    /// discriminant-based serialization which doesn't implement serde::Serialize.
+    /// The bridge needs to serialize chunks to JSON for WebSocket transmission.
+    pub fn to_json_value(&self) -> serde_json::Value {
+        use serde_json::json;
+
+        match self {
+            Self::Text { text, correlation_id, observed_correlation_ids } => json!({
+                "type": "text",
+                "text": text,
+                "correlationId": correlation_id,
+                "observedCorrelationIds": observed_correlation_ids,
+            }),
+            Self::Thinking { thinking, correlation_id, observed_correlation_ids } => json!({
+                "type": "thinking",
+                "thinking": thinking,
+                "correlationId": correlation_id,
+                "observedCorrelationIds": observed_correlation_ids,
+            }),
+            Self::ToolCall { tool_call, correlation_id, observed_correlation_ids } => json!({
+                "type": "toolCall",
+                "toolCall": {
+                    "id": tool_call.id,
+                    "name": tool_call.name,
+                    "input": tool_call.input,
+                },
+                "correlationId": correlation_id,
+                "observedCorrelationIds": observed_correlation_ids,
+            }),
+            Self::ToolResult { tool_result, correlation_id, observed_correlation_ids } => json!({
+                "type": "toolResult",
+                "toolResult": {
+                    "toolCallId": tool_result.tool_call_id,
+                    "content": tool_result.content,
+                    "isError": tool_result.is_error,
+                },
+                "correlationId": correlation_id,
+                "observedCorrelationIds": observed_correlation_ids,
+            }),
+            Self::ToolProgress { tool_progress, correlation_id, observed_correlation_ids } => json!({
+                "type": "toolProgress",
+                "toolProgress": {
+                    "toolCallId": tool_progress.tool_call_id,
+                    "toolName": tool_progress.tool_name,
+                    "outputChunk": tool_progress.output_chunk,
+                    "isStderr": tool_progress.is_stderr,
+                },
+                "correlationId": correlation_id,
+                "observedCorrelationIds": observed_correlation_ids,
+            }),
+            Self::SessionStateChange { state } => json!({
+                "type": "sessionStateChange",
+                "state": format!("{:?}", state),
+            }),
+            Self::UserNotification { message, severity } => json!({
+                "type": "userNotification",
+                "message": message,
+                "severity": format!("{:?}", severity),
+            }),
+            Self::Interrupted { queued_inputs } => json!({
+                "type": "interrupted",
+                "queuedInputs": queued_inputs,
+            }),
+            Self::TokenUpdate { tokens } => json!({
+                "type": "tokenUpdate",
+                "tokens": {
+                    "inputTokens": tokens.input_tokens,
+                    "outputTokens": tokens.output_tokens,
+                    "cacheCreationInputTokens": tokens.cache_creation_input_tokens,
+                    "cacheReadInputTokens": tokens.cache_read_input_tokens,
+                    "tokensPerSecond": tokens.tokens_per_second,
+                },
+            }),
+            Self::ContextFillUpdate { context_fill } => json!({
+                "type": "contextFillUpdate",
+                "contextFill": {
+                    "fillPercentage": context_fill.fill_percentage,
+                    "effectiveTokens": context_fill.effective_tokens,
+                    "threshold": context_fill.threshold,
+                    "contextWindow": context_fill.context_window,
+                },
+            }),
+            Self::Done => json!({
+                "type": "done",
+            }),
+            Self::Error { error } => json!({
+                "type": "error",
+                "error": error,
+            }),
+            Self::UserInput { text } => json!({
+                "type": "userInput",
+                "text": text,
+            }),
+            Self::WatcherInput { text } => json!({
+                "type": "watcherInput",
+                "text": text,
+            }),
+            Self::WatcherPendingInjection { watcher_pending_injection } => json!({
+                "type": "watcherPendingInjection",
+                "watcherPendingInjection": {
+                    "urgent": watcher_pending_injection.urgent,
+                    "content": watcher_pending_injection.content,
+                },
+            }),
+            Self::CompactionComplete { compaction_result } => json!({
+                "type": "compactionComplete",
+                "compactionResult": {
+                    "originalTokens": compaction_result.original_tokens,
+                    "compactedTokens": compaction_result.compacted_tokens,
+                    "compressionRatio": compaction_result.compression_ratio,
+                    "turnsSummarized": compaction_result.turns_summarized,
+                    "turnsKept": compaction_result.turns_kept,
+                },
+            }),
+            Self::FspecCommandRequest { fspec_request } => json!({
+                "type": "fspecCommandRequest",
+                "fspecRequest": {
+                    "command": fspec_request.command,
+                    "argsJson": fspec_request.args_json,
+                    "projectRoot": fspec_request.project_root,
+                    "toolCallId": fspec_request.tool_call_id,
+                },
+            }),
+            Self::FspecCommandResult { fspec_result } => json!({
+                "type": "fspecCommandResult",
+                "fspecResult": {
+                    "success": fspec_result.success,
+                    "data": fspec_result.data,
+                    "error": fspec_result.error,
+                    "systemReminder": fspec_result.system_reminder,
+                    "toolCallId": fspec_result.tool_call_id,
+                },
+            }),
+            Self::WorkUnitsUpdate { work_units } => json!({
+                "type": "workUnitsUpdate",
+                "workUnits": work_units.iter().map(|wu| json!({
+                    "id": wu.id,
+                    "title": wu.title,
+                    "status": wu.status,
+                    "workType": wu.work_type,
+                })).collect::<Vec<_>>(),
+            }),
+        }
+    }
 }
 
 /// Provider configuration for programmatic credential passing (CONFIG-004)

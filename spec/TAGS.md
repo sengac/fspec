@@ -100,6 +100,7 @@ Tags that categorize features by functional area.
 | `@compound` | Compound query operations |
 | `@config-management` | Configuration management and settings features |
 | `@configuration` | Configuration loading and validation |
+| `@connect` | WebSocket connection scenarios |
 | `@connection-test` | Connection testing functionality |
 | `@context-management` | Context window and memory management features |
 | `@context-window` | Context window management and monitoring features |
@@ -153,6 +154,7 @@ Tags that categorize features by functional area.
 | `@model-selection` | Model selection and provider management features |
 | `@modification` | Feature Modification Operations |
 | `@multi-agent-support` | Features related to supporting multiple AI coding agents beyond Claude |
+| `@multiple` | Multiple simultaneous connections |
 | `@navigation` | Navigation and keyboard interaction features in the TUI |
 | `@operations` | General operations |
 | `@orchestration` | Command orchestration features that coordinate multiple operations |
@@ -444,6 +446,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@tokens` | Token tracking scenarios |
 | `@toml` | TOML configuration file parsing and manipulation |
 | `@tool-call` | Tool call content type scenarios |
+| `@tool-definition` | Scenarios testing tool definition/schema |
 | `@tool-messages` | Scenarios testing tool output message handling |
 | `@tool-result` | Tool result content type scenarios |
 | `@tool-use` | Tool use content type scenarios |
@@ -823,7 +826,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-12T20:15:16.020Z_
+_Last updated: 2026-02-12T23:41:26.832Z_
 
 **Update Command**: `fspec tag-stats`
 

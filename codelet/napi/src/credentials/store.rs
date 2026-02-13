@@ -4,7 +4,7 @@
 //! Uses lazy_static singleton pattern matching the persistence module.
 
 use super::types::CredentialsFile;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
 use std::time::SystemTime;
@@ -25,7 +25,7 @@ pub struct CredentialStore {
 
 impl CredentialStore {
     /// Create a new credential store for the given data directory
-    pub fn new(data_dir: &PathBuf) -> Result<Self, String> {
+    pub fn new(data_dir: &Path) -> Result<Self, String> {
         let credentials_file = data_dir.join("credentials").join("credentials.json");
         let mut store = Self {
             credentials_file,
@@ -95,7 +95,7 @@ impl CredentialStore {
 }
 
 /// Initialize the credential store with a specific data directory
-pub fn init_credential_store_with_dir(data_dir: &PathBuf) -> Result<(), String> {
+pub fn init_credential_store_with_dir(data_dir: &Path) -> Result<(), String> {
     let mut store = CREDENTIAL_STORE.lock().map_err(|e| e.to_string())?;
     *store = Some(CredentialStore::new(data_dir)?);
     Ok(())
@@ -136,7 +136,7 @@ pub fn reset_credential_store() {
 /// Returns true if the file was reloaded (mtime changed), false otherwise.
 /// After reloading, also updates environment variables for all providers
 /// so that active sessions pick up the new credentials immediately.
-pub(crate) fn credentials_reload() -> Result<bool, String> {
+pub fn credentials_reload() -> Result<bool, String> {
     let mut store = get_store()?;
     if let Some(ref mut s) = *store {
         let reloaded = s.reload_if_changed()?;
@@ -163,7 +163,7 @@ pub(crate) fn credentials_reload() -> Result<bool, String> {
 }
 
 /// Refresh credentials on session resume
-pub fn refresh_credentials_on_resume(data_dir: &PathBuf) -> Result<(), String> {
+pub fn refresh_credentials_on_resume(data_dir: &Path) -> Result<(), String> {
     let mut store = get_store()?;
     if store.is_none() {
         *store = Some(CredentialStore::new(data_dir)?);
@@ -193,7 +193,7 @@ pub fn get_stored_api_key(provider_id: &str) -> Result<Option<String>, String> {
 /// Get API key from the credential store for a provider with specific data dir
 pub fn get_stored_api_key_with_dir(
     provider_id: &str,
-    data_dir: &PathBuf,
+    data_dir: &Path,
 ) -> Result<Option<String>, String> {
     let mut store = get_store()?;
     if store.is_none() {

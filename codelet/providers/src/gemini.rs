@@ -104,7 +104,7 @@ impl GeminiProvider {
     ) -> rig::agent::Agent<gemini::completion::CompletionModel> {
         use codelet_tools::facade::{
             build_gemini_system_prompt, BashToolFacadeWrapper, FacadeToolWrapper,
-            FileToolFacadeWrapper, gemini_fspec_tool, GeminiGlobFacade, GeminiGoogleWebSearchFacade,
+            FileToolFacadeWrapper, gemini_bridge_tool, gemini_fspec_tool, GeminiGlobFacade, GeminiGoogleWebSearchFacade,
             GeminiListDirectoryFacade, GeminiReadFileFacade, GeminiReplaceFacade,
             GeminiRunShellCommandFacade, GeminiSearchFileContentFacade, GeminiWebFetchFacade,
             GeminiWriteFileFacade, LsToolFacadeWrapper, SearchToolFacadeWrapper,
@@ -157,6 +157,7 @@ impl GeminiProvider {
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
             .tool(gemini_fspec_tool()) // FspecTool for ACDD workflow management
+            .tool(gemini_bridge_tool()) // BridgeTool for external WebSocket connections
             .tool(google_web_search) // TOOL-001: Gemini-native google_web_search
             .tool(web_fetch); // TOOL-001: Gemini-native web_fetch
 
