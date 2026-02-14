@@ -88,6 +88,7 @@ where
     run_agent_stream_internal(
         agent,
         prompt,
+        None, // No images for CLI mode
         session,
         Some(event_stream),
         Some(input_queue),
@@ -121,6 +122,7 @@ where
     run_agent_stream_internal::<M, O, dyn futures::Stream<Item = TuiEvent> + Unpin + Send>(
         agent,
         prompt,
+        None, // No images for standard API
         session,
         None,
         None,
@@ -131,16 +133,59 @@ where
     .await
 }
 
+/// BRIDGE-007: Run agent stream with multimodal support (images)
+///
+/// Same as run_agent_stream but accepts optional images for multimodal input.
+/// Called from NAPI agent_loop when bridge input includes images.
+pub async fn run_agent_stream_with_images<M, O>(
+    agent: RigAgent<M>,
+    prompt: &str,
+    images: Option<Vec<BridgeImage>>,
+    session: &mut Session,
+    is_interrupted: Arc<AtomicBool>,
+    interrupt_notify: Arc<Notify>,
+    output: &O,
+) -> Result<()>
+where
+    M: CompletionModel,
+    M::StreamingResponse: WasmCompatSend + GetTokenUsage,
+    O: StreamOutput,
+{
+    run_agent_stream_internal::<M, O, dyn futures::Stream<Item = TuiEvent> + Unpin + Send>(
+        agent,
+        prompt,
+        images,
+        session,
+        None,
+        None,
+        is_interrupted,
+        Some(interrupt_notify),
+        output,
+    )
+    .await
+}
+
+/// BRIDGE-007: Image data from bridge for multimodal support
+#[derive(Clone)]
+pub struct BridgeImage {
+    /// Base64-encoded image data
+    pub data: String,
+    /// Media type (e.g., "image/jpeg", "image/png")
+    pub media_type: String,
+}
+
 /// Internal generic stream loop
 ///
 /// Core streaming logic shared between CLI and NAPI modes.
 /// - When event_stream is Some: Uses tokio::select! with event handling (CLI)
 /// - When event_stream is None but interrupt_notify is Some: Uses tokio::select! with Notify (NAPI)
 /// - NAPI-004: The interrupt_notify enables immediate ESC response during tool execution
+/// - BRIDGE-007: Now supports optional images for multimodal input
 #[allow(clippy::too_many_arguments)]
 async fn run_agent_stream_internal<M, O, E>(
     agent: RigAgent<M>,
     prompt: &str,
+    images: Option<Vec<BridgeImage>>,
     session: &mut Session,
     mut event_stream: Option<&mut E>,
     mut input_queue: Option<&mut InputQueue>,
@@ -154,7 +199,7 @@ where
     O: StreamOutput,
     E: futures::Stream<Item = TuiEvent> + Unpin + Send + ?Sized,
 {
-    use rig::message::{Message, UserContent};
+    use rig::message::{Message, UserContent, ImageMediaType};
     use rig::OneOrMany;
     use std::time::Instant;
     use uuid::Uuid;
@@ -212,9 +257,46 @@ where
     }
 
     // CRITICAL: Add user prompt to message history for persistence (CLI-008)
-    session.messages.push(Message::User {
-        content: OneOrMany::one(UserContent::text(prompt)),
-    });
+    // BRIDGE-007: Support multimodal messages with text and images
+    if let Some(bridge_images) = images {
+        // Create multimodal message with text and images
+        let mut content_parts: Vec<UserContent> = Vec::new();
+        
+        // Add text first (if not empty)
+        if !prompt.is_empty() {
+            content_parts.push(UserContent::text(prompt));
+        }
+        
+        // Add images
+        for img in bridge_images {
+            // Parse media type string to ImageMediaType enum
+            let media_type = match img.media_type.as_str() {
+                "image/jpeg" | "image/jpg" => Some(ImageMediaType::JPEG),
+                "image/png" => Some(ImageMediaType::PNG),
+                "image/gif" => Some(ImageMediaType::GIF),
+                "image/webp" => Some(ImageMediaType::WEBP),
+                _ => Some(ImageMediaType::JPEG), // Default to JPEG
+            };
+            content_parts.push(UserContent::image_base64(img.data, media_type, None));
+        }
+        
+        // If we have content, push as multimodal message
+        if !content_parts.is_empty() {
+            session.messages.push(Message::User {
+                content: OneOrMany::many(content_parts).expect("content_parts is non-empty"),
+            });
+        } else {
+            // Fallback to text-only if somehow both are empty
+            session.messages.push(Message::User {
+                content: OneOrMany::one(UserContent::text(prompt)),
+            });
+        }
+    } else {
+        // Standard text-only message
+        session.messages.push(Message::User {
+            content: OneOrMany::one(UserContent::text(prompt)),
+        });
+    }
 
     // GEMINI-THINK: For Gemini preview models with thinking enabled, ensure thought signatures
     // are present on function calls in the active loop. Without this, Gemini 2.5/3 preview

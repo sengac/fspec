@@ -112,6 +112,13 @@ Feature: Support Incoming Image Attachments from Telegram
   # MEDIA TYPE SCENARIOS
   # ====================
 
+  Scenario: Pass images to LLM as multimodal input
+    Given I have a connected Telegram bridge session
+    When the bridge processes the photo message and injects it into the session
+    Then the session should pass the image to the LLM as a UserContent::Image
+    And Telegram provides a photo message with caption "Describe this image"
+    And the LLM should receive both the text message and the image
+
   Scenario Outline: Detect correct media type from file extension
     Given I have a connected Telegram bridge session
     And Telegram provides a photo with file_path "<file_path>"

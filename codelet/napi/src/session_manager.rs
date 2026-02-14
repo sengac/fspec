@@ -4202,17 +4202,20 @@ fn persist_anchor_point(
 ///
 /// TOOL-012: Now passes session.id to create_rig_agent() so tools know which
 /// session's handler to use at call time.
+/// BRIDGE-007: Updated to use run_agent_stream_with_images for multimodal support.
 macro_rules! run_with_provider {
-    ($inner:expr, $getter:ident, $input:expr, $session:expr, $output:expr, $thinking:expr) => {
+    ($inner:expr, $getter:ident, $input:expr, $images:expr, $session:expr, $output:expr, $thinking:expr) => {
         match $inner.provider_manager_mut().$getter() {
             Ok(provider) => {
                 // TOOL-012: Pass session.id as first parameter so tools store it at construction
                 let agent = codelet_core::RigAgent::with_default_depth(
                     provider.create_rig_agent($session.id, None, $thinking.clone())
                 );
-                codelet_cli::interactive::run_agent_stream(
+                // BRIDGE-007: Use run_agent_stream_with_images for multimodal support
+                codelet_cli::interactive::run_agent_stream_with_images(
                     agent,
                     $input,
+                    $images,
                     $inner,
                     $session.is_interrupted.clone(),
                     $session.interrupt_notify.clone(),
@@ -4225,9 +4228,20 @@ macro_rules! run_with_provider {
     };
 }
 
+/// Input with optional images for multimodal support (BRIDGE-007)
+struct InputWithImages {
+    /// The text prompt
+    text: String,
+    /// Optional thinking config JSON
+    thinking_config: Option<String>,
+    /// Optional images from bridge (BRIDGE-007)
+    images: Option<Vec<BridgeImageData>>,
+}
+
 /// Agent loop that runs in background tokio task
 /// WATCH-019: Modified to also process watcher injections via watcher_input_rx
 /// REFAC-007: Persists messages to Rust persistence layer
+/// BRIDGE-007: Now supports multimodal input with images from bridge
 async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receiver<PromptInput>) {
     loop {
         // WATCH-019: Use tokio::select! to wait on both user input and watcher input
@@ -4235,13 +4249,18 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
         let mut watcher_rx = session.watcher_input_rx.lock().await;
         
         // Use biased to prefer user input over watcher input
-        let input_to_process: Option<(String, Option<String>)> = tokio::select! {
+        // BRIDGE-007: Changed to InputWithImages to support multimodal content
+        let input_to_process: Option<InputWithImages> = tokio::select! {
             biased;
             
             // User input takes priority
             result = input_rx.recv() => {
                 match result {
-                    Some(prompt_input) => Some((prompt_input.input, prompt_input.thinking_config)),
+                    Some(prompt_input) => Some(InputWithImages {
+                        text: prompt_input.input,
+                        thinking_config: prompt_input.thinking_config,
+                        images: None, // Regular user input doesn't have images (yet)
+                    }),
                     None => {
                         // Channel closed, exit loop
                         drop(watcher_rx);
@@ -4271,9 +4290,12 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                             session.handle_output(StreamChunk::watcher_input(formatted.clone()));
                         }
                         
-                        // TODO: BRIDGE-008 - Pass images to LLM as multimodal input
-                        // For now, images are passed to the UI but not to the LLM prompt
-                        Some((formatted, None))
+                        // BRIDGE-007: Pass images to LLM as multimodal input
+                        Some(InputWithImages {
+                            text: formatted,
+                            thinking_config: None,
+                            images: watcher_input.images,
+                        })
                     }
                     None => {
                         // Watcher channel closed, continue with user input only
@@ -4287,14 +4309,21 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
         drop(watcher_rx);
         
         // If we got input to process, run the agent
-        if let Some((input, thinking_config)) = input_to_process {
-            let thinking_config_ref = thinking_config.as_deref();
+        // BRIDGE-007: Changed to InputWithImages to support multimodal content
+        if let Some(input_with_images) = input_to_process {
+            let thinking_config_ref = input_with_images.thinking_config.as_deref();
+            let input = &input_with_images.text;
 
             tracing::warn!("Session {} processing input: {}", session.id, input.chars().take(50).collect::<String>());
+            
+            // BRIDGE-007: Log if images are present
+            if let Some(ref images) = input_with_images.images {
+                tracing::warn!("Session {} has {} image(s) attached", session.id, images.len());
+            }
 
             // REFAC-007: Persist user message to Rust persistence layer
             // This replaces TypeScript's persistenceStoreMessageEnvelope call
-            if let Err(e) = persist_user_message(&session.id, &input) {
+            if let Err(e) = persist_user_message(&session.id, input) {
                 tracing::error!("Failed to persist user message for session {}: {}", session.id, e);
                 // Continue processing even if persistence fails - don't block agent execution
             }
@@ -4500,11 +4529,21 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             
             codelet_tools::set_bridge_handler(Some(bridge_handler));
             
+            // BRIDGE-007: Convert BridgeImageData to BridgeImage for run_agent_stream_with_images
+            let bridge_images: Option<Vec<codelet_cli::interactive::BridgeImage>> = input_with_images.images.map(|imgs| {
+                imgs.into_iter()
+                    .map(|img| codelet_cli::interactive::BridgeImage {
+                        data: img.data,
+                        media_type: img.media_type,
+                    })
+                    .collect()
+            });
+            
             let result = match current_provider.as_str() {
-                "claude" => run_with_provider!(&mut inner_session, get_claude, &input, session, &output, thinking_config_value),
-                "openai" => run_with_provider!(&mut inner_session, get_openai, &input, session, &output, thinking_config_value),
-                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &input, session, &output, thinking_config_value),
-                "zai" => run_with_provider!(&mut inner_session, get_zai, &input, session, &output, thinking_config_value),
+                "claude" => run_with_provider!(&mut inner_session, get_claude, input, bridge_images.clone(), session, &output, thinking_config_value),
+                "openai" => run_with_provider!(&mut inner_session, get_openai, input, bridge_images.clone(), session, &output, thinking_config_value),
+                "gemini" => run_with_provider!(&mut inner_session, get_gemini, input, bridge_images.clone(), session, &output, thinking_config_value),
+                "zai" => run_with_provider!(&mut inner_session, get_zai, input, bridge_images, session, &output, thinking_config_value),
                 _ => {
                     tracing::error!("Unsupported provider: {}", current_provider);
                     Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
@@ -4607,11 +4646,12 @@ async fn watcher_agent_loop(
             
             set_pause_handler(Some(pause_handler));
             
+            // BRIDGE-007: Watcher doesn't support images yet, pass None
             let result = match current_provider.as_str() {
-                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, session, &watcher_output, None::<serde_json::Value>),
-                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, session, &watcher_output, None::<serde_json::Value>),
-                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, session, &watcher_output, None::<serde_json::Value>),
-                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, session, &watcher_output, None::<serde_json::Value>),
+                "claude" => run_with_provider!(&mut inner_session, get_claude, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
+                "openai" => run_with_provider!(&mut inner_session, get_openai, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
+                "gemini" => run_with_provider!(&mut inner_session, get_gemini, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
+                "zai" => run_with_provider!(&mut inner_session, get_zai, &prompt, None, session, &watcher_output, None::<serde_json::Value>),
                 _ => {
                     tracing::error!("Unsupported provider: {}", current_provider);
                     Err(anyhow::anyhow!("Unsupported provider: {}", current_provider))
