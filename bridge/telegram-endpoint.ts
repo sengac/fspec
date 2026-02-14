@@ -75,17 +75,20 @@ export interface EndpointState {
   isRunning: boolean;
   // Buffering state
   messageBuffer: string[];
+  bufferCharCount: number;
   bufferTimer: ReturnType<typeof setTimeout> | null;
   lastSendTime: number;
+  lastChunkTime: number;
 }
 
 // ============================================================================
 // Buffering Configuration
 // ============================================================================
 
-const BUFFER_FLUSH_INTERVAL_MS = 500; // Flush buffer every 500ms
+const BUFFER_IDLE_FLUSH_MS = 800; // Flush after 800ms of no new chunks (idle)
 const MIN_SEND_INTERVAL_MS = 300; // Minimum time between sends
 const MAX_BUFFER_SIZE = 50; // Force flush if buffer exceeds this many chunks
+const MAX_BUFFER_CHARS = 3500; // Force flush if buffer approaches Telegram limit
 
 // ============================================================================
 // Global State
@@ -102,8 +105,10 @@ const state: EndpointState = {
   toolNameMap: new Map(),
   isRunning: false,
   messageBuffer: [],
+  bufferCharCount: 0,
   bufferTimer: null,
   lastSendTime: 0,
+  lastChunkTime: 0,
 };
 
 // ============================================================================
@@ -172,6 +177,7 @@ export function escapeMarkdownV2(text: string): string {
       if (index % 2 === 1) {
         return part; // Don't escape inside code blocks
       }
+      // Note: '\\$1' in JS source becomes '\$1' at runtime (backslash + captured group)
       return part.replace(specialChars, '\\$1');
     })
     .join('');
@@ -323,12 +329,14 @@ async function flushBuffer(): Promise<void> {
 
   if (!state.bot || !state.chatId) {
     state.messageBuffer = [];
+    state.bufferCharCount = 0;
     return;
   }
 
   // Combine all buffered messages
   const combined = state.messageBuffer.join('');
   state.messageBuffer = [];
+  state.bufferCharCount = 0;
 
   if (!combined.trim()) {
     return;
@@ -351,17 +359,20 @@ async function flushBuffer(): Promise<void> {
 }
 
 /**
- * Schedule a buffer flush if not already scheduled.
+ * Schedule a buffer flush based on idle time.
+ * Resets the timer each time new content arrives, so we only flush
+ * after a period of no new chunks (idle flush).
  */
-function scheduleFlush(): void {
+function scheduleIdleFlush(): void {
+  // Clear any existing timer - we reset on each new chunk
   if (state.bufferTimer) {
-    return; // Already scheduled
+    clearTimeout(state.bufferTimer);
   }
 
-  // Calculate delay based on when we last sent
+  // Calculate delay - respect minimum send interval
   const timeSinceLastSend = Date.now() - state.lastSendTime;
   const delay = Math.max(
-    BUFFER_FLUSH_INTERVAL_MS,
+    BUFFER_IDLE_FLUSH_MS,
     MIN_SEND_INTERVAL_MS - timeSinceLastSend
   );
 
@@ -372,7 +383,8 @@ function scheduleFlush(): void {
 
 /**
  * Handle an outbound message (codelet → Telegram).
- * Buffers messages and flushes periodically to avoid overwhelming Telegram.
+ * Buffers messages and flushes on idle (no new chunks for a period)
+ * or when buffer size limits are reached.
  */
 export async function handleStreamChunk(
   msg: StreamChunkMessage
@@ -395,10 +407,14 @@ export async function handleStreamChunk(
     return;
   }
 
+  // Track when we last received a chunk
+  state.lastChunkTime = Date.now();
+
   // Handle special chunk types that should flush immediately
   if (msg.data.type === 'done' || msg.data.type === 'error') {
     // Add to buffer and flush immediately
     state.messageBuffer.push(text);
+    state.bufferCharCount += text.length;
     await flushBuffer();
     return;
   }
@@ -409,27 +425,37 @@ export async function handleStreamChunk(
     // Add newline before tool markers for readability
     if (state.messageBuffer.length > 0) {
       state.messageBuffer.push('\n');
+      state.bufferCharCount += 1;
     }
     state.messageBuffer.push(text);
     state.messageBuffer.push('\n');
+    state.bufferCharCount += text.length + 1;
 
-    // Force flush if buffer is large
-    if (state.messageBuffer.length >= MAX_BUFFER_SIZE) {
+    // Force flush if buffer is approaching Telegram's limit
+    if (
+      state.bufferCharCount >= MAX_BUFFER_CHARS ||
+      state.messageBuffer.length >= MAX_BUFFER_SIZE
+    ) {
       await flushBuffer();
     } else {
-      scheduleFlush();
+      scheduleIdleFlush();
     }
     return;
   }
 
   // Regular text/thinking chunks - buffer them
   state.messageBuffer.push(text);
+  state.bufferCharCount += text.length;
 
-  // Force flush if buffer exceeds max size
-  if (state.messageBuffer.length >= MAX_BUFFER_SIZE) {
+  // Force flush if buffer exceeds limits
+  if (
+    state.bufferCharCount >= MAX_BUFFER_CHARS ||
+    state.messageBuffer.length >= MAX_BUFFER_SIZE
+  ) {
     await flushBuffer();
   } else {
-    scheduleFlush();
+    // Schedule idle flush - timer resets on each new chunk
+    scheduleIdleFlush();
   }
 }
 
@@ -691,7 +717,9 @@ export async function stopEndpoint(): Promise<void> {
   state.chatId = null;
   state.toolNameMap.clear();
   state.messageBuffer = [];
+  state.bufferCharCount = 0;
   state.lastSendTime = 0;
+  state.lastChunkTime = 0;
   state.isRunning = false;
 }
 
@@ -708,8 +736,10 @@ export function resetState(): void {
   state.chatId = null;
   state.toolNameMap.clear();
   state.messageBuffer = [];
+  state.bufferCharCount = 0;
   state.bufferTimer = null;
   state.lastSendTime = 0;
+  state.lastChunkTime = 0;
   state.isRunning = false;
 }
 
