@@ -324,6 +324,17 @@
         "BRIDGE-004",
         "BRIDGE-005"
       ]
+    },
+    "gitoxide-integration": {
+      "id": "gitoxide-integration",
+      "title": "Gitoxide Integration and Multi-Agent Worktree Support",
+      "createdAt": "2026-02-13T23:50:59.425Z",
+      "description": "Replace isomorphic-git with gitoxide (Rust) and add multi-agent worktree support for concurrent agent workflows",
+      "workUnits": [
+        "GIT-013",
+        "GIT-014",
+        "GIT-015"
+      ]
     }
   }
 }

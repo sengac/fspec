@@ -84,6 +84,7 @@ import {
 describe('Feature: Telegram Bridge Endpoint', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
     // Reset mock implementations
     mockWsOn.mockClear();
     mockWsClose.mockClear();
@@ -101,6 +102,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
   });
 
   afterEach(async () => {
+    vi.useRealTimers();
     vi.restoreAllMocks();
     // Stop endpoint if running
     const state = getState();
@@ -176,6 +178,9 @@ describe('Feature: Telegram Bridge Endpoint', () => {
       };
       await handleStreamChunk(chunk);
 
+      // Advance timers to trigger buffer flush
+      await vi.advanceTimersByTimeAsync(500);
+
       // @step Then the message should be sent immediately to the pre-configured Telegram chat
       expect(mockBotSendMessage).toHaveBeenCalledWith('12345678', 'Hello', {
         parse_mode: 'MarkdownV2',
@@ -206,6 +211,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
 
       // @step Then the chunk should be dropped with a console warning
       await handleStreamChunk(chunk1);
+      await vi.advanceTimersByTimeAsync(500);
       expect(mockBotSendMessage).not.toHaveBeenCalled();
 
       // @step When a user sends "hi" in Telegram
@@ -221,6 +227,9 @@ describe('Feature: Telegram Bridge Endpoint', () => {
         data: { type: 'text', text: 'How can I help?' },
       };
       await handleStreamChunk(chunk2);
+
+      // Advance timers to trigger buffer flush
+      await vi.advanceTimersByTimeAsync(500);
 
       // @step Then the message should be sent to the learned Telegram chat
       expect(mockBotSendMessage).toHaveBeenCalledWith(
@@ -426,6 +435,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
 
       // @step And the message should be sent to the linked Telegram chat
       await handleStreamChunk(chunk);
+      await vi.advanceTimersByTimeAsync(500);
       expect(mockBotSendMessage).toHaveBeenCalledWith(
         '12345678',
         'Hello, I can help',
@@ -459,6 +469,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
 
       // @step And the message should be sent to the linked Telegram chat
       await handleStreamChunk(chunk);
+      await vi.advanceTimersByTimeAsync(500);
       expect(mockBotSendMessage).toHaveBeenCalledWith(
         '12345678',
         expect.stringContaining('💭'),
@@ -491,6 +502,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
 
       // @step And the message should be sent to the linked Telegram chat
       await handleStreamChunk(chunk);
+      await vi.advanceTimersByTimeAsync(500);
       expect(mockBotSendMessage).toHaveBeenCalledWith(
         '12345678',
         expect.stringContaining('🔧'),
@@ -519,6 +531,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
         data: { type: 'tool_call', name: 'Read', id: 'abc123' },
       };
       await handleStreamChunk(toolCallChunk);
+      await vi.advanceTimersByTimeAsync(500);
       mockBotSendMessage.mockClear();
 
       // @step When the codelet sends a tool_result chunk with tool_call_id "abc123" and content "file contents here"
@@ -541,6 +554,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
 
       // @step And the message should be sent to the linked Telegram chat
       await handleStreamChunk(resultChunk);
+      await vi.advanceTimersByTimeAsync(500);
       expect(mockBotSendMessage).toHaveBeenCalledWith(
         '12345678',
         expect.stringContaining('\\[Read\\]'),
@@ -753,6 +767,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
         data: { type: 'text', text: 'Response' },
       };
       await handleStreamChunk(chunk);
+      await vi.advanceTimersByTimeAsync(500);
       expect(mockBotSendMessage).toHaveBeenCalledWith('222', 'Response', {
         parse_mode: 'MarkdownV2',
       });
@@ -792,6 +807,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
         data: { type: 'text', text: 'Response' },
       };
       await handleStreamChunk(chunk);
+      await vi.advanceTimersByTimeAsync(500);
       expect(mockBotSendMessage).toHaveBeenCalledWith('222', 'Response', {
         parse_mode: 'MarkdownV2',
       });
@@ -830,6 +846,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
 
       // @step Then the error should be logged to console
       await handleStreamChunk(chunk);
+      await vi.advanceTimersByTimeAsync(500);
       expect(consoleSpy).toHaveBeenCalledWith(
         expect.stringContaining('[telegram-endpoint] Telegram API error:'),
         expect.any(String)
@@ -846,6 +863,7 @@ describe('Feature: Telegram Bridge Endpoint', () => {
         data: { type: 'text', text: 'World' },
       };
       await handleStreamChunk(chunk2);
+      await vi.advanceTimersByTimeAsync(500);
       expect(mockBotSendMessage).toHaveBeenCalledTimes(2);
 
       consoleSpy.mockRestore();

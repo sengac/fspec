@@ -126,31 +126,38 @@ async fn run_agent(
         ProviderManager::new()?
     };
 
+    // TOOL-012: Generate session_id for tool handler lookup
+    // In single-shot mode, tools like Fspec won't have handlers registered,
+    // but we still need a session_id for API consistency. Tools will fail
+    // gracefully with "handler not configured" if invoked.
+    let session_id = uuid::Uuid::new_v4();
+
     // Create rig agent and stream based on selected provider type
     // Each provider has a different agent type, so we handle them separately
     // PROV-006: Pass None for preamble - single-shot mode doesn't use persistent context
+    // TOOL-012: Pass session_id as first parameter
     match manager.current_provider_name() {
         "claude" => {
             let provider = manager.get_claude()?;
-            let rig_agent = provider.create_rig_agent(None, None);
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "openai" => {
             let provider = manager.get_openai()?;
-            let rig_agent = provider.create_rig_agent(None, None);
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "codex" => {
             let provider = manager.get_codex()?;
-            let rig_agent = provider.create_rig_agent(None, None);
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }
         "gemini" => {
             let provider = manager.get_gemini()?;
-            let rig_agent = provider.create_rig_agent(None, None);
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream(agent, prompt).await
         }

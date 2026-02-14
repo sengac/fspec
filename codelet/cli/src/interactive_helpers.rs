@@ -280,32 +280,37 @@ pub async fn execute_compaction(session: &mut Session) -> Result<(CompactionMetr
 /// This centralizes the provider dispatch logic to avoid DRY violations.
 /// Each provider requires its own type handling, but the pattern is identical.
 /// PROV-006: Pass None for preamble - used by compaction and other internal operations.
+/// TOOL-012: Generate session_id for API consistency even though internal operations
+/// likely won't invoke Fspec/Bridge tools.
 pub async fn prompt_provider(
     manager: &codelet_providers::ProviderManager,
     prompt: &str,
 ) -> anyhow::Result<String> {
+    // TOOL-012: Generate session_id for tool handler lookup API consistency
+    let session_id = uuid::Uuid::new_v4();
+
     match manager.current_provider_name() {
         "claude" => {
             let provider = manager.get_claude()?;
-            let rig_agent = provider.create_rig_agent(None, None);
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await
         }
         "openai" => {
             let provider = manager.get_openai()?;
-            let rig_agent = provider.create_rig_agent(None, None);
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await
         }
         "codex" => {
             let provider = manager.get_codex()?;
-            let rig_agent = provider.create_rig_agent(None, None);
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await
         }
         "gemini" => {
             let provider = manager.get_gemini()?;
-            let rig_agent = provider.create_rig_agent(None, None);
+            let rig_agent = provider.create_rig_agent(session_id, None, None);
             let agent = codelet_core::RigAgent::with_default_depth(rig_agent);
             agent.prompt(prompt).await
         }

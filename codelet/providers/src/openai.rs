@@ -112,9 +112,14 @@ impl OpenAIProvider {
     /// WebSearchTool is now included as a rig tool that provides web search capabilities
     /// with Search, OpenPage, and FindInPage actions.
     ///
+    /// # TOOL-012 Note
+    /// Session ID is now required as the first parameter. This ensures tools know which
+    /// session's handler to use at call time, eliminating reliance on thread-local state.
+    ///
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(
         &self,
+        session_id: uuid::Uuid,
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
@@ -126,6 +131,7 @@ impl OpenAIProvider {
         use rig::client::CompletionClient;
 
         // Build agent with all 11 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
+        // TOOL-012: Pass session_id to fspec and bridge tools
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -139,8 +145,8 @@ impl OpenAIProvider {
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
-            .tool(openai_fspec_tool()) // FspecTool for ACDD workflow management
-            .tool(openai_bridge_tool()) // BridgeTool for external WebSocket connections
+            .tool(openai_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
+            .tool(openai_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
             .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
 
         // Set preamble if provided

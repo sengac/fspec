@@ -294,9 +294,14 @@ impl ClaudeProvider {
     /// Web search uses FacadeToolWrapper(ClaudeWebSearchFacade) for consistent tool interfaces.
     /// This provides web search capabilities with Search, OpenPage, and FindInPage actions.
     ///
+    /// # TOOL-012 Note
+    /// Session ID is now required as the first parameter. This ensures tools know which
+    /// session's handler to use at call time, eliminating reliance on thread-local state.
+    ///
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(
         &self,
+        session_id: uuid::Uuid,
         preamble: Option<&str>,
         thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<anthropic::completion::CompletionModel> {
@@ -313,6 +318,7 @@ impl ClaudeProvider {
 
         // Build agent with all 11 tools using rig's builder pattern (TOOL-007: Uses FacadeToolWrapper for web search)
         // MODEL-001: Use stored model name instead of DEFAULT_MODEL
+        // TOOL-012: Pass session_id to fspec and bridge tools
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -326,8 +332,8 @@ impl ClaudeProvider {
             .tool(LsTool::new())
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
-            .tool(claude_fspec_tool()) // FspecTool for ACDD workflow management
-            .tool(claude_bridge_tool()) // BridgeTool for external WebSocket connections
+            .tool(claude_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
+            .tool(claude_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
             .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade))); // TOOL-007: Use facade for consistent tool interfaces
 
         // PROV-006, TOOL-008: Apply cache_control to system prompt using facade

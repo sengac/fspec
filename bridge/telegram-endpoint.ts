@@ -60,6 +60,7 @@ export interface InboundMessage {
   type: 'input';
   session_id: string;
   message: string;
+  images?: Array<{ data: string; media_type: string }>;
 }
 
 export interface EndpointState {
@@ -108,6 +109,51 @@ const state: EndpointState = {
 // ============================================================================
 // MarkdownV2 Escaping
 // ============================================================================
+
+/**
+ * Get media type from file path extension.
+ * Defaults to image/jpeg for unknown or missing extensions (Telegram photos are typically JPEG).
+ */
+export function getMediaTypeFromPath(filePath: string): string {
+  const ext = filePath.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'png':
+      return 'image/png';
+    case 'jpg':
+    case 'jpeg':
+      return 'image/jpeg';
+    case 'gif':
+      return 'image/gif';
+    case 'webp':
+      return 'image/webp';
+    default:
+      return 'image/jpeg'; // Default for Telegram photos
+  }
+}
+
+/**
+ * Download a photo from Telegram and convert to base64.
+ * Returns null if download fails.
+ */
+export async function downloadPhotoAsBase64(
+  bot: TelegramBotInstance,
+  fileId: string
+): Promise<{ data: string; media_type: string } | null> {
+  try {
+    const fileLink = await bot.getFileLink(fileId);
+    const response = await globalThis.fetch(fileLink);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+    const buffer = await response.arrayBuffer();
+    const base64 = Buffer.from(buffer).toString('base64');
+    const mediaType = getMediaTypeFromPath(fileLink);
+    return { data: base64, media_type: mediaType };
+  } catch (error) {
+    console.error('[telegram-endpoint] Photo download failed:', error);
+    return null;
+  }
+}
 
 /**
  * Escape special characters for Telegram MarkdownV2 format.
@@ -397,17 +443,25 @@ export async function handleStreamChunk(
  */
 export function handleTelegramMessage(
   chatId: string,
-  text: string
+  text: string,
+  images?: Array<{ data: string; media_type: string }>
 ): InboundMessage {
   // Update active chat ID (allows device switching)
   state.chatId = chatId;
 
   // Create message for codelet
-  return {
+  const message: InboundMessage = {
     type: 'input',
     session_id: state.currentSession.sessionId || '',
     message: text,
   };
+
+  // Only include images if provided and non-empty
+  if (images && images.length > 0) {
+    message.images = images;
+  }
+
+  return message;
 }
 
 // ============================================================================
@@ -475,8 +529,62 @@ function setupWebSocketServer(port: number, host: string): WebSocketServer {
 function setupTelegramBot(token: string): TelegramBotInstance {
   const bot = new TelegramBot(token, { polling: true });
 
-  bot.on('message', msg => {
+  bot.on('message', async msg => {
     const chatId = msg.chat.id.toString();
+
+    // Check for photo message
+    if (msg.photo && msg.photo.length > 0) {
+      // Use caption for photos, not text (msg.text is undefined for photos)
+      const text = msg.caption || '';
+
+      console.log(
+        `[telegram-endpoint] Received photo from chat ${chatId}${text ? `: "${text.slice(0, 50)}..."` : ''}`
+      );
+
+      // Get highest resolution (last element in array)
+      const highestRes = msg.photo[msg.photo.length - 1];
+
+      // Download and convert to base64
+      let images: Array<{ data: string; media_type: string }> = [];
+      const imageData = await downloadPhotoAsBase64(bot, highestRes.file_id);
+      if (imageData) {
+        images = [imageData];
+      } else {
+        console.error(
+          '[telegram-endpoint] Photo download failed, forwarding caption only'
+        );
+      }
+
+      // Don't send if no caption and no image
+      if (!text && images.length === 0) {
+        console.warn(
+          '[telegram-endpoint] Photo download failed with no caption, dropping message'
+        );
+        return;
+      }
+
+      // Update active chat ID
+      state.chatId = chatId;
+
+      // If we have a connected session, forward the message
+      if (
+        state.currentSession.ws &&
+        state.currentSession.ws.readyState === WebSocket.OPEN
+      ) {
+        const inputMessage = handleTelegramMessage(chatId, text, images);
+        console.log(
+          `[telegram-endpoint] Sending photo input to codelet - session_id: "${inputMessage.session_id}", caption: "${text.slice(0, 50)}...", images: ${images.length}`
+        );
+        state.currentSession.ws.send(JSON.stringify(inputMessage));
+      } else {
+        console.log(
+          '[telegram-endpoint] No active session to forward photo to'
+        );
+      }
+      return;
+    }
+
+    // Regular text message
     const text = msg.text || '';
 
     console.log(

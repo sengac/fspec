@@ -285,6 +285,7 @@ impl SessionRole {
 }
 
 /// Watcher input message for injection into parent session (WATCH-006)
+/// BRIDGE-007: Extended to support optional images from Telegram bridge
 #[derive(Debug, Clone)]
 pub struct WatcherInput {
     /// Session ID of the watcher sending the input
@@ -295,10 +296,22 @@ pub struct WatcherInput {
     pub authority: RoleAuthority,
     /// The message content to inject
     pub message: String,
+    /// Optional images for multimodal input (BRIDGE-007)
+    pub images: Option<Vec<BridgeImageData>>,
+}
+
+/// Image data from bridge (BRIDGE-007)
+/// Matches the ImageData struct from codelet_tools::bridge_relay
+#[derive(Debug, Clone)]
+pub struct BridgeImageData {
+    /// Base64-encoded image data
+    pub data: String,
+    /// Media type (e.g., "image/jpeg", "image/png")
+    pub media_type: String,
 }
 
 impl WatcherInput {
-    /// Create a new WatcherInput
+    /// Create a new WatcherInput (backward compatible - no images)
     pub fn new(
         source_session_id: String,
         role_name: String,
@@ -313,6 +326,28 @@ impl WatcherInput {
             role_name,
             authority,
             message,
+            images: None,
+        })
+    }
+    
+    /// Create a new WatcherInput with images (BRIDGE-007)
+    pub fn with_images(
+        source_session_id: String,
+        role_name: String,
+        authority: RoleAuthority,
+        message: String,
+        images: Option<Vec<BridgeImageData>>,
+    ) -> std::result::Result<Self, String> {
+        // Allow empty message if images are present
+        if message.is_empty() && images.as_ref().is_none_or(|v| v.is_empty()) {
+            return Err("message cannot be empty when no images are provided".to_string());
+        }
+        Ok(Self {
+            source_session_id,
+            role_name,
+            authority,
+            message,
+            images,
         })
     }
 }
@@ -2684,7 +2719,7 @@ mod watcher_input_tests {
         // @step And the chunk should contain the formatted message with structured prefix
         // NAPI-010: Use pattern matching
         match chunk {
-            StreamChunk::WatcherInput { text } => {
+            StreamChunk::WatcherInput { text, .. } => {
                 assert!(text.starts_with("[WATCHER: security-auditor | Authority: Supervisor | Session: xyz789]"));
             }
             _ => panic!("Expected WatcherInput variant"),
@@ -4164,12 +4199,16 @@ fn persist_anchor_point(
 /// Macro to reduce duplication in provider handling.
 /// Each provider returns a different concrete type, so we must match and call
 /// run_agent_stream in each branch. This macro eliminates the boilerplate.
+///
+/// TOOL-012: Now passes session.id to create_rig_agent() so tools know which
+/// session's handler to use at call time.
 macro_rules! run_with_provider {
     ($inner:expr, $getter:ident, $input:expr, $session:expr, $output:expr, $thinking:expr) => {
         match $inner.provider_manager_mut().$getter() {
             Ok(provider) => {
+                // TOOL-012: Pass session.id as first parameter so tools store it at construction
                 let agent = codelet_core::RigAgent::with_default_depth(
-                    provider.create_rig_agent(None, $thinking.clone())
+                    provider.create_rig_agent($session.id, None, $thinking.clone())
                 );
                 codelet_cli::interactive::run_agent_stream(
                     agent,
@@ -4218,8 +4257,22 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                         tracing::warn!("agent_loop received watcher input from {}: {}", watcher_input.role_name, watcher_input.message.chars().take(50).collect::<String>());
                         // Format watcher input as a user message with structured prefix
                         let formatted = format_watcher_input(&watcher_input);
-                        // Emit the watcher input chunk so it appears in the UI
-                        session.handle_output(StreamChunk::watcher_input(formatted.clone()));
+                        
+                        // BRIDGE-007: Emit the watcher input chunk with images if present
+                        if let Some(ref images) = watcher_input.images {
+                            let watcher_images: Vec<crate::types::WatcherInputImage> = images.iter()
+                                .map(|img| crate::types::WatcherInputImage {
+                                    data: img.data.clone(),
+                                    media_type: img.media_type.clone(),
+                                })
+                                .collect();
+                            session.handle_output(StreamChunk::watcher_input_with_images(formatted.clone(), watcher_images));
+                        } else {
+                            session.handle_output(StreamChunk::watcher_input(formatted.clone()));
+                        }
+                        
+                        // TODO: BRIDGE-008 - Pass images to LLM as multimodal input
+                        // For now, images are passed to the UI but not to the LLM prompt
                         Some((formatted, None))
                     }
                     None => {
@@ -4327,7 +4380,9 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 }
             });
 
-            codelet_tools::set_fspec_handler(Some(fspec_handler));
+            // REFAC-008-FIX: Use per-session handler storage to prevent race conditions
+            // when multiple sessions run concurrently.
+            codelet_tools::set_fspec_handler_for_session(session.id, Some(fspec_handler));
 
             // BRIDGE-001: Set up bridge handler and session context for WebSocket relay
             // The bridge handler needs to call async handle_bridge_action, so we use
@@ -4374,19 +4429,43 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             });
             
             // Create input injector that sends messages to the session's watcher input channel
+            // BRIDGE-007: Updated to accept InjectedInput with optional images
             let watcher_input_tx = session_for_bridge.watcher_input_sender();
-            let input_injector: codelet_tools::InputInjector = Arc::new(move |message: String| {
+            let input_injector: codelet_tools::InputInjector = Arc::new(move |input: codelet_tools::InjectedInput| {
+                // Convert InjectedInput images to BridgeImageData
+                let bridge_images = input.images.map(|imgs| {
+                    imgs.into_iter()
+                        .map(|img| BridgeImageData {
+                            data: img.data,
+                            media_type: img.media_type,
+                        })
+                        .collect()
+                });
+                
                 // Create a WatcherInput message for injection from bridge
-                let input = WatcherInput {
-                    source_session_id: "bridge".to_string(),
-                    role_name: "bridge".to_string(),
-                    authority: RoleAuthority::Peer,
-                    message: message.clone(),
+                // Note: For bridge, we allow empty message if images are present
+                let watcher_input = if input.message.is_empty() && bridge_images.is_some() {
+                    WatcherInput {
+                        source_session_id: "bridge".to_string(),
+                        role_name: "bridge".to_string(),
+                        authority: RoleAuthority::Peer,
+                        message: String::new(),
+                        images: bridge_images,
+                    }
+                } else {
+                    WatcherInput {
+                        source_session_id: "bridge".to_string(),
+                        role_name: "bridge".to_string(),
+                        authority: RoleAuthority::Peer,
+                        message: input.message.clone(),
+                        images: bridge_images,
+                    }
                 };
+                
                 // Try to send - if channel is full, log warning
-                match watcher_input_tx.try_send(input) {
+                match watcher_input_tx.try_send(watcher_input) {
                     Ok(()) => {
-                        tracing::warn!("Bridge input injected successfully: {}", message.chars().take(50).collect::<String>());
+                        tracing::warn!("Bridge input injected successfully: {}", input.message.chars().take(50).collect::<String>());
                     }
                     Err(e) => {
                         tracing::warn!("Failed to inject bridge input: {}", e);
@@ -4420,7 +4499,6 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             });
             
             codelet_tools::set_bridge_handler(Some(bridge_handler));
-            codelet_tools::set_current_bridge_session(Some(session.id));
             
             let result = match current_provider.as_str() {
                 "claude" => run_with_provider!(&mut inner_session, get_claude, &input, session, &output, thinking_config_value),
@@ -4434,9 +4512,9 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             };
             
             set_pause_handler(None);
-            codelet_tools::set_fspec_handler(None);
+            // Clean up per-session handlers
+            codelet_tools::set_fspec_handler_for_session(session.id, None);
             codelet_tools::set_bridge_handler(None);
-            codelet_tools::set_current_bridge_session(None);
             codelet_tools::remove_bridge_session_context(session.id);
 
             // Handle result

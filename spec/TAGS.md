@@ -36,6 +36,7 @@ Tags that identify which architectural component a feature belongs to.
 | `@persistence` | Session persistence and storage functionality |
 | `@providers` | Provider integration and LLM provider implementations |
 | `@session` | Session management and state tracking |
+| `@telegram` | Telegram bot and messaging platform integration |
 | `@templates` | Template generation and transformation system |
 | `@tool-integration` | Tool integration and callback handling |
 | `@tools` | Tool system components and tool implementations |
@@ -90,6 +91,7 @@ Tags that categorize features by functional area.
 | `@cascade` | Cascade operations |
 | `@checkpoint` | Checkpoint and snapshot management for experimentation and recovery |
 | `@checkpoint-management` | Checkpoint creation, restoration, and management functionality |
+| `@chunking` | Content chunking and message splitting for size-limited platforms |
 | `@code-analysis` | Code analysis and AST research features |
 | `@code-quality` | Code quality validation and review features |
 | `@command-history` | Command history navigation scenarios |
@@ -826,7 +828,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-12T23:41:26.832Z_
+_Last updated: 2026-02-13T23:35:24.836Z_
 
 **Update Command**: `fspec tag-stats`
 

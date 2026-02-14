@@ -310,7 +310,6 @@ mod tests {
     ///
     /// These tests map directly to the Gherkin scenarios in the feature file.
     /// Tests MUST fail initially (red phase) before implementation makes them pass.
-
     mod connect_action {
         use super::*;
 
@@ -609,6 +608,7 @@ mod tests {
                 msg_type: "input".to_string(),
                 session_id: session_id.to_string(),
                 message: "build the app".to_string(),
+                images: None, // BRIDGE-007: No images in this test
             };
 
             // @step Then the agent should receive "build the app" as user input

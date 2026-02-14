@@ -1560,7 +1560,11 @@ export type StreamChunk =
   | { type: 'Done' }
   | { type: 'Error'; error: string }
   | { type: 'UserInput'; text: string }
-  | { type: 'WatcherInput'; text: string }
+  | {
+      type: 'WatcherInput';
+      text: string /** Optional images for multimodal input (BRIDGE-007) */;
+      images?: Array<WatcherInputImage>;
+    }
   | {
       type: 'WatcherPendingInjection';
       watcherPendingInjection: WatcherPendingInjectionInfo;
@@ -1650,6 +1654,14 @@ export interface ToolResultInfo {
  * on the parent session via receive_watcher_input().
  */
 export declare function watcherInject(watcherId: string, message: string): void;
+
+/** BRIDGE-007: Image data for watcher input (from Telegram bridge) */
+export interface WatcherInputImage {
+  /** Base64-encoded image data */
+  data: string;
+  /** Media type (e.g., "image/jpeg", "image/png") */
+  mediaType: string;
+}
 
 /**
  * Watcher pending injection information (WATCH-020)

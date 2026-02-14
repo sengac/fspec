@@ -184,12 +184,14 @@ impl ZAIProvider {
     /// GLM models work best with snake_case tool names and flat JSON schemas.
     ///
     /// # Arguments
+    /// * `session_id` - Session UUID for tool handler lookup (TOOL-012)
     /// * `preamble` - Optional system prompt/preamble for the agent
     /// * `thinking_config` - Optional thinking configuration JSON (currently unused for Z.AI/GLM models)
     ///   Note: GLM models handle reasoning internally and don't use the same thinking config format
     ///   as Claude or Gemini. The reasoning capability is model-dependent.
     pub fn create_rig_agent(
         &self,
+        session_id: uuid::Uuid,
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
@@ -220,6 +222,7 @@ impl ZAIProvider {
         let list_dir = LsToolFacadeWrapper::new(Arc::new(ZAIListDirFacade));
 
         // Build agent with Z.AI-optimized tools using rig's builder pattern
+        // TOOL-012: Pass session_id to fspec and bridge tools
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -233,8 +236,8 @@ impl ZAIProvider {
             .tool(list_dir) // Z.AI-native list_dir
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
-            .tool(zai_fspec_tool()) // FspecTool for ACDD workflow management
-            .tool(zai_bridge_tool()) // BridgeTool for external WebSocket connections
+            .tool(zai_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
+            .tool(zai_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
             .tool(WebSearchTool::new());
 
         // Set preamble if provided

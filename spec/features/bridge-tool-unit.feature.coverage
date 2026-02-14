@@ -750,12 +750,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Bridge wrapper uses current session ID from handler",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 12,
+    "totalScenarios": 13,
     "coveredScenarios": 12,
-    "coveragePercent": 100,
+    "coveragePercent": 92,
     "testFiles": [
       "codelet/tools/src/bridge.rs"
     ],

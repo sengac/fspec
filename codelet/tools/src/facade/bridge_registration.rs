@@ -4,50 +4,73 @@
 //! for use in agent builders and tool collections.
 //!
 //! Feature: spec/features/bridge-tool-unit.feature
+//!
+//! ## TOOL-012: Session ID at Construction
+//!
+//! All registration functions accept a `session_id` parameter. This ensures
+//! the tool wrapper knows which session's context to use at call time,
+//! eliminating reliance on global current session state.
 
 use super::bridge_facade::{
     ClaudeBridgeFacade, GeminiBridgeFacade, OpenAIBridgeFacade, ZAIBridgeFacade,
 };
 use super::wrapper::BridgeToolFacadeWrapper;
 use std::sync::Arc;
+use uuid::Uuid;
 
-/// Create a BridgeTool wrapper for Claude provider
+/// Create a BridgeTool wrapper for Claude provider with explicit session association (TOOL-012)
+///
+/// # Arguments
+/// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
 ///
 /// NO CLI FALLBACKS - This will throw an error if handler is not configured.
-pub fn claude_bridge_tool() -> BridgeToolFacadeWrapper {
-    BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade))
+pub fn claude_bridge_tool(session_id: Uuid) -> BridgeToolFacadeWrapper {
+    BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade), session_id)
 }
 
-/// Create a BridgeTool wrapper for Gemini provider
+/// Create a BridgeTool wrapper for Gemini provider with explicit session association (TOOL-012)
+///
+/// # Arguments
+/// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
 ///
 /// NO CLI FALLBACKS - This will throw an error if handler is not configured.
-pub fn gemini_bridge_tool() -> BridgeToolFacadeWrapper {
-    BridgeToolFacadeWrapper::new(Arc::new(GeminiBridgeFacade))
+pub fn gemini_bridge_tool(session_id: Uuid) -> BridgeToolFacadeWrapper {
+    BridgeToolFacadeWrapper::new(Arc::new(GeminiBridgeFacade), session_id)
 }
 
-/// Create a BridgeTool wrapper for OpenAI provider
+/// Create a BridgeTool wrapper for OpenAI provider with explicit session association (TOOL-012)
+///
+/// # Arguments
+/// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
 ///
 /// NO CLI FALLBACKS - This will throw an error if handler is not configured.
-pub fn openai_bridge_tool() -> BridgeToolFacadeWrapper {
-    BridgeToolFacadeWrapper::new(Arc::new(OpenAIBridgeFacade))
+pub fn openai_bridge_tool(session_id: Uuid) -> BridgeToolFacadeWrapper {
+    BridgeToolFacadeWrapper::new(Arc::new(OpenAIBridgeFacade), session_id)
 }
 
-/// Create a BridgeTool wrapper for Z.AI provider
+/// Create a BridgeTool wrapper for Z.AI provider with explicit session association (TOOL-012)
+///
+/// # Arguments
+/// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
 ///
 /// NO CLI FALLBACKS - This will throw an error if handler is not configured.
-pub fn zai_bridge_tool() -> BridgeToolFacadeWrapper {
-    BridgeToolFacadeWrapper::new(Arc::new(ZAIBridgeFacade))
+pub fn zai_bridge_tool(session_id: Uuid) -> BridgeToolFacadeWrapper {
+    BridgeToolFacadeWrapper::new(Arc::new(ZAIBridgeFacade), session_id)
 }
 
-/// Create a BridgeTool wrapper for the specified provider
+/// Create a BridgeTool wrapper for the specified provider with explicit session association (TOOL-012)
+///
+/// # Arguments
+/// * `provider` - Provider name ("claude", "gemini", "openai", "zai")
+/// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
 ///
 /// NO CLI FALLBACKS - This will throw an error if handler is not configured.
-pub fn bridge_tool_for_provider(provider: &str) -> Option<BridgeToolFacadeWrapper> {
+pub fn bridge_tool_for_provider(provider: &str, session_id: Uuid) -> Option<BridgeToolFacadeWrapper> {
     match provider {
-        "claude" => Some(claude_bridge_tool()),
-        "gemini" => Some(gemini_bridge_tool()),
-        "openai" => Some(openai_bridge_tool()),
-        "zai" => Some(zai_bridge_tool()),
+        "claude" => Some(claude_bridge_tool(session_id)),
+        "gemini" => Some(gemini_bridge_tool(session_id)),
+        "openai" => Some(openai_bridge_tool(session_id)),
+        "zai" => Some(zai_bridge_tool(session_id)),
         _ => None,
     }
 }
@@ -58,25 +81,46 @@ mod tests {
 
     #[test]
     fn test_all_provider_tools_created() {
-        let claude = claude_bridge_tool();
+        let session_id = Uuid::new_v4();
+        
+        let claude = claude_bridge_tool(session_id);
         assert_eq!(claude.provider(), "claude");
+        assert_eq!(claude.session_id(), session_id);
 
-        let gemini = gemini_bridge_tool();
+        let gemini = gemini_bridge_tool(session_id);
         assert_eq!(gemini.provider(), "gemini");
+        assert_eq!(gemini.session_id(), session_id);
 
-        let openai = openai_bridge_tool();
+        let openai = openai_bridge_tool(session_id);
         assert_eq!(openai.provider(), "openai");
+        assert_eq!(openai.session_id(), session_id);
 
-        let zai = zai_bridge_tool();
+        let zai = zai_bridge_tool(session_id);
         assert_eq!(zai.provider(), "zai");
+        assert_eq!(zai.session_id(), session_id);
     }
 
     #[test]
     fn test_provider_lookup() {
-        assert!(bridge_tool_for_provider("claude").is_some());
-        assert!(bridge_tool_for_provider("gemini").is_some());
-        assert!(bridge_tool_for_provider("openai").is_some());
-        assert!(bridge_tool_for_provider("zai").is_some());
-        assert!(bridge_tool_for_provider("unknown").is_none());
+        let session_id = Uuid::new_v4();
+        
+        assert!(bridge_tool_for_provider("claude", session_id).is_some());
+        assert!(bridge_tool_for_provider("gemini", session_id).is_some());
+        assert!(bridge_tool_for_provider("openai", session_id).is_some());
+        assert!(bridge_tool_for_provider("zai", session_id).is_some());
+        assert!(bridge_tool_for_provider("unknown", session_id).is_none());
+    }
+
+    #[test]
+    fn test_different_sessions_have_different_ids() {
+        let session_a = Uuid::new_v4();
+        let session_b = Uuid::new_v4();
+        
+        let tool_a = claude_bridge_tool(session_a);
+        let tool_b = claude_bridge_tool(session_b);
+        
+        assert_eq!(tool_a.session_id(), session_a);
+        assert_eq!(tool_b.session_id(), session_b);
+        assert_ne!(tool_a.session_id(), tool_b.session_id());
     }
 }

@@ -9,17 +9,15 @@
 //! ## Architecture
 //!
 //! 1. Session manager sets handler via `set_bridge_handler()` before agent run
-//! 2. Session manager sets session context via `set_bridge_session_context()`
-//! 3. Session manager sets current session via `set_current_bridge_session()`
-//! 4. BridgeToolFacadeWrapper calls `execute_bridge_command()`
-//! 5. Handler spawns relay task with session context
-//! 6. Handler returns result to BridgeTool
+//! 2. Session manager sets session context via `set_bridge_session_context(session_id, ...)`
+//! 3. BridgeToolFacadeWrapper (constructed with session_id) calls `execute_bridge_command()`
+//! 4. Handler spawns relay task with session context
+//! 5. Handler returns result to BridgeTool
 //!
-//! ## Session ID Flow
+//! ## Session Association (TOOL-012)
 //!
-//! The current session ID is tracked via `set_current_bridge_session()` which
-//! should be called by the session manager before tool execution. The wrapper
-//! retrieves this via `get_current_bridge_session()` to construct the request.
+//! Tools are constructed WITH their session_id at creation time. The session_id
+//! is stored as a field on the wrapper struct and passed in the BridgeRequest.
 
 use crate::bridge::{
     get_or_create_bridge_manager, BridgeAction, BridgeConnectionInfo, BridgeConnectionState,
@@ -59,29 +57,6 @@ pub struct BridgeSessionContext {
 static BRIDGE_HANDLER: RwLock<Option<BridgeHandler>> = RwLock::new(None);
 static BRIDGE_SESSION_CONTEXTS: once_cell::sync::Lazy<RwLock<HashMap<Uuid, Arc<BridgeSessionContext>>>> =
     once_cell::sync::Lazy::new(|| RwLock::new(HashMap::new()));
-static CURRENT_BRIDGE_SESSION: RwLock<Option<Uuid>> = RwLock::new(None);
-
-/// Set the current session ID for bridge operations
-///
-/// Called by session manager before tool execution to establish which session
-/// the Bridge tool should operate on. This is retrieved by the wrapper via
-/// `get_current_bridge_session()`.
-pub fn set_current_bridge_session(session_id: Option<Uuid>) {
-    if let Ok(mut guard) = CURRENT_BRIDGE_SESSION.write() {
-        *guard = session_id;
-    }
-}
-
-/// Get the current session ID for bridge operations
-///
-/// Returns the session ID set via `set_current_bridge_session()`, or None
-/// if no session is currently active.
-pub fn get_current_bridge_session() -> Option<Uuid> {
-    CURRENT_BRIDGE_SESSION
-        .read()
-        .ok()
-        .and_then(|guard| *guard)
-}
 
 /// Set the bridge command handler
 ///
@@ -153,12 +128,21 @@ pub fn execute_bridge_command(request: BridgeRequest) -> BridgeResult {
     }
 }
 
-/// Check if a bridge handler is configured
-pub fn has_bridge_handler() -> bool {
-    BRIDGE_HANDLER
+/// Check if a bridge handler is configured for a specific session
+///
+/// Checks that both the global handler AND session context are configured.
+pub fn has_bridge_handler_for_session(session_id: Uuid) -> bool {
+    let has_handler = BRIDGE_HANDLER
         .read()
         .map(|guard| guard.is_some())
-        .unwrap_or(false)
+        .unwrap_or(false);
+
+    let has_context = BRIDGE_SESSION_CONTEXTS
+        .read()
+        .map(|guard| guard.contains_key(&session_id))
+        .unwrap_or(false);
+
+    has_handler && has_context
 }
 
 /// Default implementation of bridge actions (used when handler is set up)
@@ -351,21 +335,33 @@ mod tests {
 
     #[test]
     #[serial]
-    fn test_has_bridge_handler() {
+    fn test_has_bridge_handler_for_session() {
         with_clean_handler(|| {
-            assert!(!has_bridge_handler());
+            let session_id = Uuid::new_v4();
 
+            // No handler or context
+            assert!(!has_bridge_handler_for_session(session_id));
+
+            // Set handler only
             let handler: BridgeHandler = Arc::new(|_| BridgeResult {
                 success: true,
                 message: String::new(),
                 connections: None,
             });
             set_bridge_handler(Some(handler));
+            assert!(!has_bridge_handler_for_session(session_id)); // Still false - no context
 
-            assert!(has_bridge_handler());
+            // Set context
+            let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
+            let broadcast_factory: BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
+            let input_injector: InputInjector = Arc::new(|_| {});
+            set_bridge_session_context(session_id, broadcast_factory, input_injector);
 
-            set_bridge_handler(None);
-            assert!(!has_bridge_handler());
+            assert!(has_bridge_handler_for_session(session_id)); // Now true
+
+            // Remove context
+            remove_bridge_session_context(session_id);
+            assert!(!has_bridge_handler_for_session(session_id));
         });
     }
 
@@ -422,7 +418,7 @@ mod tests {
             Arc::new(move || broadcast_tx_clone.subscribe());
         
         let input_injector: crate::bridge_relay::InputInjector = 
-            Arc::new(|_msg| {
+            Arc::new(|_input: crate::bridge_relay::InjectedInput| {
                 // Mock input injector - do nothing
             });
         
@@ -447,27 +443,5 @@ mod tests {
         // Cleanup
         remove_bridge_session_context(session_id);
         crate::bridge::remove_bridge_manager(session_id).await;
-    }
-
-    #[test]
-    #[serial]
-    fn test_current_bridge_session() {
-        // Initially no session is set
-        set_current_bridge_session(None);
-        assert!(get_current_bridge_session().is_none());
-
-        // Set a session
-        let session_id = Uuid::new_v4();
-        set_current_bridge_session(Some(session_id));
-        assert_eq!(get_current_bridge_session(), Some(session_id));
-
-        // Can update to different session
-        let session_id_2 = Uuid::new_v4();
-        set_current_bridge_session(Some(session_id_2));
-        assert_eq!(get_current_bridge_session(), Some(session_id_2));
-
-        // Can clear session
-        set_current_bridge_session(None);
-        assert!(get_current_bridge_session().is_none());
     }
 }

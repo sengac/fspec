@@ -102,6 +102,10 @@
           "description": "Session management and state tracking"
         },
         {
+          "name": "@telegram",
+          "description": "Telegram bot and messaging platform integration"
+        },
+        {
           "name": "@templates",
           "description": "Template generation and transformation system"
         },
@@ -288,6 +292,10 @@
         {
           "name": "@checkpoint-management",
           "description": "Checkpoint creation, restoration, and management functionality"
+        },
+        {
+          "name": "@chunking",
+          "description": "Content chunking and message splitting for size-limited platforms"
         },
         {
           "name": "@code-analysis",
@@ -2338,7 +2346,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-12T23:41:26.832Z",
+    "lastUpdated": "2026-02-13T23:35:24.836Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

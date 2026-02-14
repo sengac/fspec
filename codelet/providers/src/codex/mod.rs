@@ -114,12 +114,15 @@ impl CodexProvider {
     /// - All 10 tools (Read, Write, Edit, Bash, Grep, Glob, Ls, AstGrep, AstGrepRefactor, WebSearchTool)
     ///
     /// # Arguments
+    /// * `session_id` - Session UUID for tool handler lookup (TOOL-012). Currently unused for Codex
+    ///   as it doesn't have Fspec/Bridge tools, but included for API consistency across providers.
     /// * `preamble` - Optional system prompt/preamble for the agent
     /// * `_thinking_config` - Optional thinking configuration JSON (TOOL-010, currently unused for Codex)
     ///
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(
         &self,
+        _session_id: uuid::Uuid,
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
@@ -130,6 +133,7 @@ impl CodexProvider {
         use rig::client::CompletionClient;
 
         // Build agent with all 10 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
+        // Note: Codex doesn't have Fspec/Bridge tools - simpler toolset for code completion
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)

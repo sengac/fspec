@@ -74,6 +74,17 @@ pub struct NapiToolCall {
     pub success: bool,
 }
 
+/// BRIDGE-007: Image data for watcher input (from Telegram bridge)
+#[napi(object)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct WatcherInputImage {
+    /// Base64-encoded image data
+    pub data: String,
+    /// Media type (e.g., "image/jpeg", "image/png")
+    #[napi(js_name = "mediaType")]
+    pub media_type: String,
+}
+
 /// TUI-056: File modification info for turn details
 #[napi(object)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -348,8 +359,12 @@ pub enum StreamChunk {
     },
 
     /// Watcher input message (WATCH-006: for watcher injection into parent session)
+    /// BRIDGE-007: Extended to support optional images from Telegram bridge
     WatcherInput {
         text: String,
+        /// Optional images for multimodal input (BRIDGE-007)
+        #[napi(js_name = "images")]
+        images: Option<Vec<WatcherInputImage>>,
     },
 
     /// Watcher pending injection - when auto_inject=false (WATCH-020)
@@ -466,8 +481,17 @@ impl StreamChunk {
     }
 
     /// Watcher input message (WATCH-006: for watcher injection into parent session)
+    /// BRIDGE-007: Extended to support optional images
     pub fn watcher_input(formatted_message: String) -> Self {
-        Self::WatcherInput { text: formatted_message }
+        Self::WatcherInput { text: formatted_message, images: None }
+    }
+    
+    /// Watcher input message with images (BRIDGE-007)
+    pub fn watcher_input_with_images(formatted_message: String, images: Vec<WatcherInputImage>) -> Self {
+        Self::WatcherInput { 
+            text: formatted_message, 
+            images: if images.is_empty() { None } else { Some(images) }
+        }
     }
 
     /// Set correlation ID on the chunk (for variants that support it)
@@ -626,10 +650,19 @@ impl StreamChunk {
                 "type": "userInput",
                 "text": text,
             }),
-            Self::WatcherInput { text } => json!({
-                "type": "watcherInput",
-                "text": text,
-            }),
+            Self::WatcherInput { text, images } => {
+                let mut obj = json!({
+                    "type": "watcherInput",
+                    "text": text,
+                });
+                if let Some(imgs) = images {
+                    obj["images"] = json!(imgs.iter().map(|i| json!({
+                        "data": i.data,
+                        "mediaType": i.media_type,
+                    })).collect::<Vec<_>>());
+                }
+                obj
+            },
             Self::WatcherPendingInjection { watcher_pending_injection } => json!({
                 "type": "watcherPendingInjection",
                 "watcherPendingInjection": {

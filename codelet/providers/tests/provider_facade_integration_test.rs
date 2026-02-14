@@ -4,10 +4,13 @@
 //!
 //! Tests for provider facade integration following ACDD workflow (TOOL-007).
 //! Each test maps to a Gherkin scenario with @step comments.
+//!
+//! TOOL-012: Updated to pass session_id to create_rig_agent()
 
 use codelet_providers::{ClaudeProvider, GeminiProvider};
 use serial_test::serial;
 use std::env;
+use uuid::Uuid;
 
 /// Helper to clean up test environment
 fn cleanup_test_env() {
@@ -36,7 +39,9 @@ async fn test_claude_provider_uses_web_search_facade() {
     let provider = provider.unwrap();
 
     // @step When I call create_rig_agent()
-    let _agent = provider.create_rig_agent(None, None);
+    // TOOL-012: Pass session_id as first parameter
+    let session_id = Uuid::new_v4();
+    let _agent = provider.create_rig_agent(session_id, None, None);
 
     // @step Then the agent includes FacadeToolWrapper wrapping ClaudeWebSearchFacade
     // @step And the web_search tool has flat schema with action_type enum containing search, open_page, and find_in_page
@@ -72,7 +77,9 @@ async fn test_gemini_provider_includes_all_facade_wrapped_tools() {
     let provider = provider.unwrap();
 
     // @step When I call create_rig_agent()
-    let _agent = provider.create_rig_agent(None, None);
+    // TOOL-012: Pass session_id as first parameter
+    let session_id = Uuid::new_v4();
+    let _agent = provider.create_rig_agent(session_id, None, None);
 
     // @step Then the agent includes LsToolFacadeWrapper with tool name 'list_directory'
     // @step And the list_directory tool has flat schema with path parameter
@@ -103,7 +110,9 @@ async fn test_e2e_gemini_tools_registered_with_correct_schemas() {
         .expect("GeminiProvider should initialize with real API key");
 
     // @step When I create a rig agent and inspect tool definitions
-    let _agent = provider.create_rig_agent(Some("Test preamble for E2E"), None);
+    // TOOL-012: Pass session_id as first parameter
+    let session_id = Uuid::new_v4();
+    let _agent = provider.create_rig_agent(session_id, Some("Test preamble for E2E"), None);
 
     // @step Then I find 10 tools registered with Gemini-native names
     // Expected tools: read_file, write_file, replace, run_shell_command,
@@ -148,7 +157,9 @@ async fn test_claude_provider_agent_creation_succeeds() {
     let provider = ClaudeProvider::new_with_model(Some("claude-sonnet-4-20250514")).expect("ClaudeProvider should initialize");
 
     // Agent creation should not panic
-    let _agent = provider.create_rig_agent(Some("Test preamble"), None);
+    // TOOL-012: Pass session_id as first parameter
+    let session_id = Uuid::new_v4();
+    let _agent = provider.create_rig_agent(session_id, Some("Test preamble"), None);
 
     cleanup_test_env();
 }
@@ -164,7 +175,9 @@ async fn test_gemini_provider_agent_creation_with_preamble() {
     let provider = GeminiProvider::new().expect("GeminiProvider should initialize");
 
     // Agent creation with preamble should succeed
-    let _agent = provider.create_rig_agent(Some("Custom system prompt for testing"), None);
+    // TOOL-012: Pass session_id as first parameter
+    let session_id = Uuid::new_v4();
+    let _agent = provider.create_rig_agent(session_id, Some("Custom system prompt for testing"), None);
 
     cleanup_test_env();
 }

@@ -23,6 +23,43 @@ const MAX_RECONNECT_DELAY_SECS: u64 = 30;
 /// Initial reconnection delay in seconds
 const INITIAL_RECONNECT_DELAY_SECS: u64 = 1;
 
+/// Image data received from bridge endpoint (BRIDGE-007)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ImageData {
+    /// Base64-encoded image data
+    pub data: String,
+    /// Media type (e.g., "image/jpeg", "image/png")
+    pub media_type: String,
+}
+
+/// Input to be injected into the session (BRIDGE-007)
+/// Replaces the simple String to support images from Telegram bridge
+#[derive(Debug, Clone)]
+pub struct InjectedInput {
+    /// Text message content
+    pub message: String,
+    /// Optional images (from Telegram photo messages)
+    pub images: Option<Vec<ImageData>>,
+}
+
+impl InjectedInput {
+    /// Create a new InjectedInput with just a message (backward compatibility)
+    pub fn text_only(message: String) -> Self {
+        Self {
+            message,
+            images: None,
+        }
+    }
+    
+    /// Create a new InjectedInput with message and images
+    pub fn with_images(message: String, images: Vec<ImageData>) -> Self {
+        Self {
+            message,
+            images: if images.is_empty() { None } else { Some(images) },
+        }
+    }
+}
+
 /// Inbound message from WebSocket endpoint
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InboundMessage {
@@ -30,10 +67,13 @@ pub struct InboundMessage {
     pub msg_type: String,
     pub session_id: String,
     pub message: String,
+    /// Optional images array (BRIDGE-007: Telegram photo support)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub images: Option<Vec<ImageData>>,
 }
 
-/// Callback for injecting input into the session
-pub type InputInjector = Arc<dyn Fn(String) + Send + Sync>;
+/// Callback for injecting input into the session (BRIDGE-007: updated to InjectedInput)
+pub type InputInjector = Arc<dyn Fn(InjectedInput) + Send + Sync>;
 
 /// Spawn a WebSocket relay task for a bridge connection
 ///
@@ -244,8 +284,19 @@ async fn handle_inbound_message(
     // Handle based on message type
     match inbound.msg_type.as_str() {
         "input" => {
-            tracing::warn!("Injecting input from bridge: {}", inbound.message);
-            input_injector(inbound.message);
+            // BRIDGE-007: Create InjectedInput with message and optional images
+            let injected = match inbound.images {
+                Some(images) if !images.is_empty() => {
+                    tracing::info!("Injecting input from bridge with {} image(s): {}", 
+                        images.len(), inbound.message);
+                    InjectedInput::with_images(inbound.message, images)
+                }
+                _ => {
+                    tracing::info!("Injecting text input from bridge: {}", inbound.message);
+                    InjectedInput::text_only(inbound.message)
+                }
+            };
+            input_injector(injected);
             Ok(())
         }
         _ => {
@@ -349,6 +400,102 @@ mod tests {
         assert_eq!(msg.msg_type, "input");
         assert_eq!(msg.session_id, "test-id");
         assert_eq!(msg.message, "hello");
+        assert!(msg.images.is_none());
+    }
+    
+    // @step Given the bridge_relay module receives a JSON message with images
+    // @step When the InboundMessage is deserialized
+    // @step Then the images array should contain 1 element
+    #[test]
+    fn test_inbound_message_parse_with_images() {
+        let json = r#"{"type": "input", "session_id": "test-123", "message": "What is this?", "images": [{"data": "base64...", "media_type": "image/jpeg"}]}"#;
+        let msg: InboundMessage = serde_json::from_str(json).unwrap();
+        assert_eq!(msg.msg_type, "input");
+        assert_eq!(msg.session_id, "test-123");
+        assert_eq!(msg.message, "What is this?");
+        
+        // @step And the first image should have data "base64..."
+        // @step And the first image should have media_type "image/jpeg"
+        let images = msg.images.unwrap();
+        assert_eq!(images.len(), 1);
+        assert_eq!(images[0].data, "base64...");
+        assert_eq!(images[0].media_type, "image/jpeg");
+    }
+    
+    // @step Given the bridge_relay module receives a JSON message without images
+    // @step When the InboundMessage is deserialized
+    // @step Then the images field should be None
+    // @step And the message field should be "Hello"
+    #[test]
+    fn test_inbound_message_backward_compatibility() {
+        let json = r#"{"type": "input", "session_id": "test-123", "message": "Hello"}"#;
+        let msg: InboundMessage = serde_json::from_str(json).unwrap();
+        assert_eq!(msg.message, "Hello");
+        assert!(msg.images.is_none());
+    }
+    
+    #[test]
+    fn test_inbound_message_with_multiple_images() {
+        let json = r#"{"type": "input", "session_id": "test-123", "message": "Compare these", "images": [{"data": "img1", "media_type": "image/jpeg"}, {"data": "img2", "media_type": "image/png"}]}"#;
+        let msg: InboundMessage = serde_json::from_str(json).unwrap();
+        let images = msg.images.unwrap();
+        assert_eq!(images.len(), 2);
+        assert_eq!(images[0].media_type, "image/jpeg");
+        assert_eq!(images[1].media_type, "image/png");
+    }
+    
+    #[test]
+    fn test_injected_input_text_only() {
+        let input = InjectedInput::text_only("Hello".to_string());
+        assert_eq!(input.message, "Hello");
+        assert!(input.images.is_none());
+    }
+    
+    #[test]
+    fn test_injected_input_with_images() {
+        let images = vec![ImageData {
+            data: "base64data".to_string(),
+            media_type: "image/jpeg".to_string(),
+        }];
+        let input = InjectedInput::with_images("Caption".to_string(), images);
+        assert_eq!(input.message, "Caption");
+        assert!(input.images.is_some());
+        assert_eq!(input.images.unwrap().len(), 1);
+    }
+    
+    #[test]
+    fn test_injected_input_with_empty_images() {
+        let input = InjectedInput::with_images("Text".to_string(), vec![]);
+        assert_eq!(input.message, "Text");
+        assert!(input.images.is_none()); // Empty vec becomes None
+    }
+    
+    // @step Given the bridge receives an inbound message with images
+    // @step When handle_inbound_message processes the message
+    // @step Then the InputInjector callback should receive InjectedInput with message and images
+    // @step And the images should be propagated to the session
+    #[tokio::test]
+    async fn test_injected_input_propagates_images() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        
+        let received_images = Arc::new(AtomicBool::new(false));
+        let received_images_clone = received_images.clone();
+        
+        let input_injector: InputInjector = Arc::new(move |input: InjectedInput| {
+            if input.images.is_some() {
+                received_images_clone.store(true, Ordering::SeqCst);
+            }
+        });
+        
+        let session_id = uuid::Uuid::new_v4();
+        let json = format!(
+            r#"{{"type": "input", "session_id": "{session_id}", "message": "What is this?", "images": [{{"data": "base64...", "media_type": "image/jpeg"}}]}}"#
+        );
+        
+        // This calls the input_injector internally
+        let result = super::handle_inbound_message(&json, session_id, input_injector).await;
+        assert!(result.is_ok());
+        assert!(received_images.load(Ordering::SeqCst), "InputInjector should receive images");
     }
     
     #[test]

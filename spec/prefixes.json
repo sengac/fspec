@@ -354,6 +354,11 @@
       "prefix": "BRIDGE",
       "description": "Bridge tool for relaying agent I/O to external messaging platforms (Telegram, etc.)",
       "createdAt": "2026-02-12T19:53:18.815Z"
+    },
+    "SCHED": {
+      "prefix": "SCHED",
+      "description": "Scheduled workflow automation and cron-like job execution",
+      "createdAt": "2026-02-13T03:26:48.726Z"
     }
   }
 }

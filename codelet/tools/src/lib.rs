@@ -57,12 +57,11 @@ pub use bridge::{
     BridgeConnectionState, BridgeManager, BridgeToolArgs, BridgeResult, BridgeTool,
 };
 pub use bridge_handler::{
-    execute_bridge_command, handle_bridge_action, has_bridge_handler, set_bridge_handler,
-    set_bridge_session_context, remove_bridge_session_context,
-    set_current_bridge_session, get_current_bridge_session,
+    execute_bridge_command, handle_bridge_action, has_bridge_handler_for_session,
+    set_bridge_handler, set_bridge_session_context, remove_bridge_session_context,
     BridgeHandler, BridgeRequest, BroadcastReceiverFactory,
 };
-pub use bridge_relay::{spawn_relay_task, InputInjector};
+pub use bridge_relay::{spawn_relay_task, InputInjector, InjectedInput, ImageData};
 pub use chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
 pub use edit::EditTool;
 pub use fspec::FspecTool;
@@ -77,7 +76,10 @@ pub use tool_pause::{
     PauseHandler, PauseKind, PauseRequest, PauseResponse, PauseState,
 };
 pub use fspec_handler::{
-    execute_fspec_command, has_fspec_handler, set_fspec_handler,
+    execute_fspec_command_for_session,
+    has_fspec_handler_for_session,
+    set_fspec_handler_for_session,
+    clear_all_fspec_handlers,
     FspecHandler, FspecRequest as FspecHandlerRequest, FspecResult as FspecHandlerResult,
 };
 pub use fspec_workflow_guidance::{get_fspec_workflow_guidance, FSPEC_WORKFLOW_GUIDANCE};

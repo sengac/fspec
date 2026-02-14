@@ -130,19 +130,26 @@ mod tests {
         use super::super::fspec_registration::{
             claude_fspec_tool, gemini_fspec_tool, openai_fspec_tool, zai_fspec_tool,
         };
+        use uuid::Uuid;
 
-        // Test that FspecToolFacadeWrapper can be created for all providers
-        let claude_wrapper = claude_fspec_tool();
+        // TOOL-012: Test that FspecToolFacadeWrapper can be created with session_id
+        let session_id = Uuid::new_v4();
+        
+        let claude_wrapper = claude_fspec_tool(session_id);
         assert_eq!(claude_wrapper.provider(), "claude");
+        assert_eq!(claude_wrapper.session_id(), session_id);
 
-        let gemini_wrapper = gemini_fspec_tool();
+        let gemini_wrapper = gemini_fspec_tool(session_id);
         assert_eq!(gemini_wrapper.provider(), "gemini");
+        assert_eq!(gemini_wrapper.session_id(), session_id);
 
-        let openai_wrapper = openai_fspec_tool();
+        let openai_wrapper = openai_fspec_tool(session_id);
         assert_eq!(openai_wrapper.provider(), "openai");
+        assert_eq!(openai_wrapper.session_id(), session_id);
 
-        let zai_wrapper = zai_fspec_tool();
+        let zai_wrapper = zai_fspec_tool(session_id);
         assert_eq!(zai_wrapper.provider(), "zai");
+        assert_eq!(zai_wrapper.session_id(), session_id);
     }
 
     #[test]

@@ -323,6 +323,7 @@ use super::fspec_facade::BoxedFspecToolFacade;
 use super::traits::{BoxedBashToolFacade, InternalBashParams};
 use crate::bash::BashArgs;
 use crate::BashTool;
+use uuid::Uuid;
 
 /// Result type for bash operations
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -340,31 +341,41 @@ pub struct BashOperationResult {
 /// ## Execution Flow
 ///
 /// Unlike other tool wrappers that execute directly, FspecToolFacadeWrapper uses
-/// the global fspec_handler mechanism to route commands through TypeScript:
+/// the fspec_handler mechanism to route commands through TypeScript:
 ///
 /// 1. LLM calls Fspec tool with command args
-/// 2. Wrapper calls `execute_fspec_command()` with request
+/// 2. Wrapper calls `execute_fspec_command_for_session(self.session_id, request)`
 /// 3. Handler (set by session_manager) emits FspecCommandRequest to TypeScript
 /// 4. Handler blocks waiting for TypeScript response
 /// 5. TypeScript executes command via fspecCallback and calls sessionSendFspecResult
 /// 6. Handler receives result and returns to wrapper
 /// 7. Wrapper returns actual result (not marker) to LLM
-///
-/// This is similar to the pause mechanism used for user confirmation prompts.
 pub struct FspecToolFacadeWrapper {
     /// The underlying facade providing name, schema, and param mapping
     facade: BoxedFspecToolFacade,
+    /// Session ID for handler lookup - set at construction time (TOOL-012)
+    /// This eliminates reliance on thread-local current session state.
+    session_id: Uuid,
 }
 
 impl FspecToolFacadeWrapper {
-    /// Create a new wrapper for the given fspec facade
-    pub fn new(facade: BoxedFspecToolFacade) -> Self {
-        Self { facade }
+    /// Create a new wrapper for the given fspec facade with explicit session association.
+    ///
+    /// # Arguments
+    /// * `facade` - The provider-specific facade for schema/naming
+    /// * `session_id` - The session ID for handler lookup (must be registered via set_fspec_handler_for_session)
+    pub fn new(facade: BoxedFspecToolFacade, session_id: Uuid) -> Self {
+        Self { facade, session_id }
     }
 
     /// Get the facade's provider name
     pub fn provider(&self) -> &'static str {
         self.facade.provider()
+    }
+
+    /// Get the session ID associated with this tool instance
+    pub fn session_id(&self) -> Uuid {
+        self.session_id
     }
 }
 
@@ -391,27 +402,33 @@ impl Tool for FspecToolFacadeWrapper {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
-        use crate::fspec_handler::{execute_fspec_command, FspecRequest, has_fspec_handler};
+        use crate::fspec_handler::{execute_fspec_command_for_session, FspecRequest, has_fspec_handler_for_session};
 
         // Map provider-specific args to internal params via the facade
         let internal_params = self.facade.map_params(args.0)?;
 
-        // Check if fspec handler is configured (required for TypeScript integration)
-        if !has_fspec_handler() {
+        // Check if fspec handler is configured for this session (TOOL-012: use self.session_id)
+        if !has_fspec_handler_for_session(self.session_id) {
             return Err(ToolError::Execution {
                 tool: "fspec",
-                message: "Fspec handler not configured. FspecTool requires session context with TypeScript integration.".to_string(),
+                message: format!(
+                    "Fspec handler not configured for session {}. FspecTool requires session context with TypeScript integration.",
+                    self.session_id
+                ),
             });
         }
 
-        // Execute command via the global handler
+        // Execute command via the session-specific handler (TOOL-012: use self.session_id)
         // This blocks until TypeScript executes the command and sends the result back
-        let result = execute_fspec_command(FspecRequest {
-            command: internal_params.command,
-            args_json: internal_params.args,
-            project_root: internal_params.project_root,
-            provider: self.facade.provider().to_string(),
-        });
+        let result = execute_fspec_command_for_session(
+            self.session_id,
+            FspecRequest {
+                command: internal_params.command,
+                args_json: internal_params.args,
+                project_root: internal_params.project_root,
+                provider: self.facade.provider().to_string(),
+            },
+        );
 
         // Return the actual result (not a marker)
         if result.success {
@@ -710,7 +727,7 @@ impl Tool for LsToolFacadeWrapper {
 
 use super::bridge_facade::{BoxedBridgeToolFacade, InternalBridgeParams};
 use crate::bridge::BridgeAction;
-use crate::bridge_handler::{execute_bridge_command, get_current_bridge_session, has_bridge_handler, BridgeRequest};
+use crate::bridge_handler::{execute_bridge_command, has_bridge_handler_for_session, BridgeRequest};
 
 /// Result type for bridge operations
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -739,17 +756,29 @@ pub struct BridgeOperationResult {
 pub struct BridgeToolFacadeWrapper {
     /// The underlying facade providing name, schema, and param mapping
     facade: BoxedBridgeToolFacade,
+    /// Session ID for context lookup - set at construction time (TOOL-012)
+    /// This eliminates reliance on global current session state.
+    session_id: Uuid,
 }
 
 impl BridgeToolFacadeWrapper {
-    /// Create a new wrapper for the given bridge facade
-    pub fn new(facade: BoxedBridgeToolFacade) -> Self {
-        Self { facade }
+    /// Create a new wrapper for the given bridge facade with explicit session association.
+    ///
+    /// # Arguments
+    /// * `facade` - The provider-specific facade for schema/naming
+    /// * `session_id` - The session ID for context lookup (must be registered via set_bridge_session_context)
+    pub fn new(facade: BoxedBridgeToolFacade, session_id: Uuid) -> Self {
+        Self { facade, session_id }
     }
 
     /// Get the facade's provider name
     pub fn provider(&self) -> &'static str {
         self.facade.provider()
+    }
+
+    /// Get the session ID associated with this tool instance
+    pub fn session_id(&self) -> Uuid {
+        self.session_id
     }
 }
 
@@ -779,12 +808,14 @@ impl Tool for BridgeToolFacadeWrapper {
         // Map provider-specific args to internal params via the facade
         let internal_params = self.facade.map_params(args.0)?;
 
-        // Check if bridge handler is configured (required for session context)
-        if !has_bridge_handler() {
+        // Check if bridge handler is configured for this session (TOOL-012: use self.session_id)
+        if !has_bridge_handler_for_session(self.session_id) {
             return Err(ToolError::Execution {
                 tool: "bridge",
-                message: "Bridge handler not configured. BridgeTool requires session context."
-                    .to_string(),
+                message: format!(
+                    "Bridge handler not configured for session {}. BridgeTool requires session context.",
+                    self.session_id
+                ),
             });
         }
 
@@ -795,12 +826,9 @@ impl Tool for BridgeToolFacadeWrapper {
             InternalBridgeParams::List => BridgeAction::List,
         };
 
-        // Get the current session ID (set by session manager via set_current_bridge_session)
-        let session_id = get_current_bridge_session().unwrap_or_else(uuid::Uuid::nil);
-
-        // Execute command via the global handler
+        // Execute command via the session-specific handler (TOOL-012: use self.session_id)
         let result = execute_bridge_command(BridgeRequest {
-            session_id,
+            session_id: self.session_id,
             action,
         });
 
@@ -814,19 +842,20 @@ impl Tool for BridgeToolFacadeWrapper {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
 mod bridge_wrapper_tests {
     use super::*;
-    use crate::bridge_handler::{set_bridge_handler, set_current_bridge_session, BridgeHandler};
+    use crate::bridge_handler::{set_bridge_handler, set_bridge_session_context, remove_bridge_session_context, BridgeHandler};
     use crate::bridge::BridgeResult;
     use crate::facade::bridge_facade::ClaudeBridgeFacade;
     use serial_test::serial;
     use std::sync::Arc;
 
-    /// Feature: spec/features/bridge-tool-unit.feature
-    /// Scenario: Bridge wrapper uses current session ID from handler
+    /// Feature: spec/features/tool-wrapper-session-association.feature
+    /// Scenario: Bridge tool wrapper stores session_id at construction (TOOL-012)
     #[tokio::test]
     #[serial]
-    async fn test_bridge_wrapper_uses_current_session_id() {
+    async fn test_bridge_wrapper_uses_session_id_from_construction() {
         // @step Given the bridge handler is configured
         let received_session_id = Arc::new(std::sync::Mutex::new(None));
         let received_session_id_clone = received_session_id.clone();
@@ -841,38 +870,48 @@ mod bridge_wrapper_tests {
         });
         set_bridge_handler(Some(handler));
 
-        // @step And the current bridge session is set to a valid session ID
+        // @step And a session ID is created
         let expected_session_id = uuid::Uuid::new_v4();
-        set_current_bridge_session(Some(expected_session_id));
+
+        // @step And bridge session context is set for the session
+        let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
+        let broadcast_factory: crate::BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
+        let input_injector: crate::InputInjector = Arc::new(|_| {});
+        set_bridge_session_context(expected_session_id, broadcast_factory, input_injector);
+
+        // @step When the BridgeToolFacadeWrapper is created with session_id at construction (TOOL-012)
+        let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade), expected_session_id);
+
+        // @step Then the wrapper should store session_id as a field
+        assert_eq!(wrapper.session_id(), expected_session_id);
 
         // @step When the BridgeToolFacadeWrapper executes a list action
-        let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade));
         let args = FacadeArgs(serde_json::json!({
             "action": {"type": "list"}
         }));
 
         let _ = wrapper.call(args).await;
 
-        // @step Then the request should contain the correct session ID
+        // @step Then the request should contain the correct session ID from construction
         let actual_session_id = received_session_id.lock().unwrap();
         assert_eq!(
             *actual_session_id,
             Some(expected_session_id),
-            "BridgeRequest should contain session ID set via set_current_bridge_session"
+            "BridgeRequest should contain session ID from wrapper construction, not thread-local"
         );
 
         // Cleanup
         set_bridge_handler(None);
-        set_current_bridge_session(None);
+        remove_bridge_session_context(expected_session_id);
     }
 
     #[tokio::test]
     #[serial]
     async fn test_bridge_wrapper_fails_without_handler() {
         set_bridge_handler(None);
-        set_current_bridge_session(None);
+        let session_id = uuid::Uuid::new_v4();
 
-        let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade));
+        let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade), session_id);
         let args = FacadeArgs(serde_json::json!({
             "action": {"type": "list"}
         }));

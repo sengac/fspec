@@ -21,13 +21,21 @@ pub(super) async fn run_agent_with_interruption(
     // CLI output handler
     let output = CliOutput;
 
+    // TOOL-012: Generate session_id for tool handler lookup
+    // In CLI interactive mode, tools like Fspec won't have handlers registered,
+    // but we still need a session_id for API consistency. Tools will fail
+    // gracefully with "handler not configured" if invoked.
+    let session_id = uuid::Uuid::new_v4();
+
     // Macro to eliminate code duplication across provider branches (DRY principle)
     // PROV-006: Pass preamble to enable cache_control for API key mode
+    // TOOL-012: Pass session_id as first parameter
     macro_rules! run_with_provider {
         ($get_provider:ident, $preamble:expr) => {{
             let provider = manager.$get_provider()?;
             // TOOL-010: Pass None for thinking_config in CLI (keywords not supported yet)
-            let rig_agent = provider.create_rig_agent($preamble, None);
+            // TOOL-012: Pass session_id as first parameter
+            let rig_agent = provider.create_rig_agent(session_id, $preamble, None);
             let agent = RigAgent::with_default_depth(rig_agent);
             run_agent_stream_with_interruption(
                 agent,

@@ -3,10 +3,7 @@
 //! CODE-009: FspecToolFacadeWrapper tests for structured command request emission
 //!
 //! These tests verify that FspecToolFacadeWrapper emits the correct JSON structure
-//! with __fspec_request__ marker instead of the old FSPEC_INTERCEPT string pattern.
-//!
-//! NOTE: These tests require a mock fspec handler to be configured since the wrapper
-//! now calls execute_fspec_command which needs TypeScript integration.
+//! and routes through the fspec_handler mechanism properly.
 //!
 //! Tests are serialized using a static mutex because they modify global state (the handler).
 
@@ -15,20 +12,25 @@ use codelet_tools::facade::{
     wrapper::FacadeArgs,
 };
 use codelet_tools::fspec_handler::FspecResult;
-use codelet_tools::{set_fspec_handler, FspecHandler};
+use codelet_tools::{set_fspec_handler_for_session, clear_all_fspec_handlers, FspecHandler};
 use rig::tool::Tool;
 use serde_json::json;
 use std::sync::Arc;
 use once_cell::sync::Lazy;
 use std::sync::Mutex;
+use uuid::Uuid;
 
 /// Mutex to ensure tests run serially (they modify global fspec handler state)
 static TEST_MUTEX: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
+/// Test session ID for isolation
+fn test_session_id() -> Uuid {
+    Uuid::new_v4()
+}
+
 /// Helper to set up a mock fspec handler that returns a mock result
-fn setup_mock_handler() {
+fn setup_mock_handler(session_id: Uuid) {
     let handler: FspecHandler = Arc::new(|req| {
-        // Return mock result - actual tests verify the request structure via handler
         FspecResult {
             success: true,
             data: format!("Mock result for command: {}", req.command),
@@ -36,12 +38,12 @@ fn setup_mock_handler() {
             system_reminder: None,
         }
     });
-    set_fspec_handler(Some(handler));
+    set_fspec_handler_for_session(session_id, Some(handler));
 }
 
 /// Helper to clean up handler after test
 fn cleanup_handler() {
-    set_fspec_handler(None);
+    clear_all_fspec_handlers();
 }
 
 // ============================================================================
@@ -54,6 +56,8 @@ async fn test_fspec_tool_wrapper_emits_structured_json_marker() {
     
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
     // Scenario: FspecTool emits structured command request and receives typed result
+    
+    let session_id = test_session_id();
     
     // Setup mock handler that captures the request
     let captured_command = Arc::new(std::sync::Mutex::new(String::new()));
@@ -78,10 +82,10 @@ async fn test_fspec_tool_wrapper_emits_structured_json_marker() {
             system_reminder: None,
         }
     });
-    set_fspec_handler(Some(handler));
+    set_fspec_handler_for_session(session_id, Some(handler));
     
     // @step Given a codelet session with FspecTool available
-    let wrapper = claude_fspec_tool();
+    let wrapper = claude_fspec_tool(session_id);
     
     // @step When the LLM invokes Fspec tool with command "show-work-unit" and args '{"id":"CODE-001"}'
     let args = FacadeArgs(json!({
@@ -111,6 +115,8 @@ async fn test_fspec_tool_wrapper_with_gemini_facade() {
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
     // Scenario: FspecTool emits structured command request and receives typed result
     
+    let session_id = test_session_id();
+    
     let captured_provider = Arc::new(std::sync::Mutex::new(String::new()));
     let captured_command = Arc::new(std::sync::Mutex::new(String::new()));
     let prov_clone = captured_provider.clone();
@@ -126,10 +132,10 @@ async fn test_fspec_tool_wrapper_with_gemini_facade() {
             system_reminder: None,
         }
     });
-    set_fspec_handler(Some(handler));
+    set_fspec_handler_for_session(session_id, Some(handler));
     
     // @step Given a codelet session with FspecTool available
-    let wrapper = gemini_fspec_tool();
+    let wrapper = gemini_fspec_tool(session_id);
     
     // @step When the LLM invokes Fspec tool with command "list-work-units" and args '{}'
     let args = FacadeArgs(json!({
@@ -158,6 +164,8 @@ async fn test_fspec_request_json_has_all_required_fields_for_typescript() {
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
     // Scenario: TypeScript handles FspecCommandRequest with type-safe field access
     
+    let session_id = test_session_id();
+    
     let captured_command = Arc::new(std::sync::Mutex::new(String::new()));
     let captured_args = Arc::new(std::sync::Mutex::new(String::new()));
     let captured_project_root = Arc::new(std::sync::Mutex::new(String::new()));
@@ -177,10 +185,10 @@ async fn test_fspec_request_json_has_all_required_fields_for_typescript() {
             system_reminder: None,
         }
     });
-    set_fspec_handler(Some(handler));
+    set_fspec_handler_for_session(session_id, Some(handler));
     
     // @step Given a codelet session processing StreamChunk events
-    let wrapper = claude_fspec_tool();
+    let wrapper = claude_fspec_tool(session_id);
     
     // @step When a FspecCommandRequest chunk is received
     let args = FacadeArgs(json!({
@@ -210,10 +218,11 @@ async fn test_fspec_wrapper_does_not_emit_fspec_intercept_string() {
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
     // Scenario: FSPEC_INTERCEPT string pattern is removed after migration
     
-    setup_mock_handler();
+    let session_id = test_session_id();
+    setup_mock_handler(session_id);
     
     // @step Given the structured StreamChunk flow is implemented for fspec commands
-    let wrapper = claude_fspec_tool();
+    let wrapper = claude_fspec_tool(session_id);
     
     // @step When all fspec tool calls use FspecCommandRequest and FspecCommandResult
     let args = FacadeArgs(json!({
@@ -242,6 +251,8 @@ async fn test_fspec_wrapper_handles_empty_args() {
     let _lock = TEST_MUTEX.lock().unwrap();
     
     // Test edge case: empty args should still work
+    let session_id = test_session_id();
+    
     let captured_args = Arc::new(std::sync::Mutex::new(String::new()));
     let args_clone = captured_args.clone();
     
@@ -254,9 +265,9 @@ async fn test_fspec_wrapper_handles_empty_args() {
             system_reminder: None,
         }
     });
-    set_fspec_handler(Some(handler));
+    set_fspec_handler_for_session(session_id, Some(handler));
     
-    let wrapper = claude_fspec_tool();
+    let wrapper = claude_fspec_tool(session_id);
     
     let args = FacadeArgs(json!({
         "command": "list-work-units",
@@ -276,6 +287,8 @@ async fn test_fspec_wrapper_handles_special_characters_in_args() {
     let _lock = TEST_MUTEX.lock().unwrap();
     
     // Test edge case: special characters in args should be preserved
+    let session_id = test_session_id();
+    
     let captured_args = Arc::new(std::sync::Mutex::new(String::new()));
     let args_clone = captured_args.clone();
     
@@ -288,9 +301,9 @@ async fn test_fspec_wrapper_handles_special_characters_in_args() {
             system_reminder: None,
         }
     });
-    set_fspec_handler(Some(handler));
+    set_fspec_handler_for_session(session_id, Some(handler));
     
-    let wrapper = claude_fspec_tool();
+    let wrapper = claude_fspec_tool(session_id);
     
     let special_args = r#"{"title":"Test with 'quotes' and \"escaped\""}"#;
     let args = FacadeArgs(json!({

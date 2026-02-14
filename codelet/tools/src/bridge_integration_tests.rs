@@ -16,7 +16,7 @@ mod integration_tests {
         OutboundMessage,
     };
     use crate::bridge_handler::{handle_bridge_action, set_bridge_session_context, remove_bridge_session_context};
-    use crate::bridge_relay::InputInjector;
+    use crate::bridge_relay::{InputInjector, InjectedInput};
     use crate::bridge_test_fixtures::TestWebSocketServer;
     use crate::BridgeAction;
     use serde_json::json;
@@ -34,7 +34,7 @@ mod integration_tests {
             Arc::new(move || broadcast_tx.subscribe());
         
         let input_injector: InputInjector = 
-            Arc::new(|_msg| {
+            Arc::new(|_input: InjectedInput| {
                 // Mock input injector for tests
             });
         

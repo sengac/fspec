@@ -92,6 +92,7 @@ impl GeminiProvider {
     /// - `replace` - Gemini-native text replacement with flat schema
     ///
     /// # Arguments
+    /// * `session_id` - Session UUID for tool handler lookup (TOOL-012)
     /// * `preamble` - Optional system prompt/preamble for the agent
     /// * `thinking_config` - Optional thinking configuration JSON from ThinkingConfigFacade (TOOL-010).
     ///   Expected format: `{"thinkingConfig": {"includeThoughts": true, "thinkingLevel": "high"}}`
@@ -99,6 +100,7 @@ impl GeminiProvider {
     ///   for Gemini 2.5
     pub fn create_rig_agent(
         &self,
+        session_id: uuid::Uuid,
         preamble: Option<&str>,
         thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<gemini::completion::CompletionModel> {
@@ -143,6 +145,7 @@ impl GeminiProvider {
         // TOOL-004: Use facade wrapper for bash instead of raw BashTool
         // TOOL-005: Use facade wrappers for search instead of raw GrepTool/GlobTool
         // TOOL-006: Use facade wrapper for directory listing instead of raw LsTool
+        // TOOL-012: Pass session_id to fspec and bridge tools
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
@@ -156,8 +159,8 @@ impl GeminiProvider {
             .tool(list_directory) // TOOL-006: Gemini-native list_directory
             .tool(AstGrepTool::new())
             .tool(AstGrepRefactorTool::new())
-            .tool(gemini_fspec_tool()) // FspecTool for ACDD workflow management
-            .tool(gemini_bridge_tool()) // BridgeTool for external WebSocket connections
+            .tool(gemini_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
+            .tool(gemini_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
             .tool(google_web_search) // TOOL-001: Gemini-native google_web_search
             .tool(web_fetch); // TOOL-001: Gemini-native web_fetch
 
