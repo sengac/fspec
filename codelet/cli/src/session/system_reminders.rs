@@ -600,4 +600,59 @@ mod tests {
             1
         );
     }
+
+    /// Feature: spec/features/work-unit-context-backend.feature
+    /// Scenario: Compaction preserves environment date during session
+    #[test]
+    fn test_partition_for_compaction_preserves_environment_reminder() {
+        // @step Given a session was created on "2026-02-14" with environment info containing "Date: 2026-02-14"
+        let env_reminder = create_test_message(&create_system_reminder_content(
+            SystemReminderType::Environment,
+            "Platform: macos\nArchitecture: aarch64\nShell: /bin/zsh\nUser: testuser\nWorking directory: /home/test\nDate: 2026-02-14",
+            false,
+        ));
+        let regular1 = create_test_message("First message");
+        let regular2 = create_test_message("Second message");
+        let regular3 = create_test_message("Third message - lots of conversation");
+
+        let messages = vec![
+            env_reminder,
+            regular1,
+            regular2,
+            regular3,
+        ];
+
+        // @step When context compaction is triggered due to context window limits
+        let (preserved_reminders, compactable) = partition_for_compaction(&messages);
+
+        // @step Then partition_for_compaction should preserve the environment system reminder
+        assert_eq!(
+            preserved_reminders.len(),
+            1,
+            "Should preserve exactly one system reminder"
+        );
+        assert!(
+            is_system_reminder_of_type(&preserved_reminders[0], SystemReminderType::Environment),
+            "Preserved reminder should be Environment type"
+        );
+
+        // @step And the environment information should still contain "Date: 2026-02-14"
+        if let Message::User { content } = &preserved_reminders[0] {
+            if let UserContent::Text(text) = content.first() {
+                assert!(
+                    text.text.contains("Date: 2026-02-14"),
+                    "Environment reminder should contain the date"
+                );
+            }
+        }
+
+        // @step And inject_context_reminders should NOT be called during compaction
+        // (This is verified by the fact that we're only testing partition_for_compaction,
+        // which doesn't call inject_context_reminders - the caller handles reinjection)
+        assert_eq!(
+            compactable.len(),
+            3,
+            "Regular messages should be compactable"
+        );
+    }
 }

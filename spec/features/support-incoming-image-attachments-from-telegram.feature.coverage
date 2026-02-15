@@ -591,12 +591,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Pass images to LLM as multimodal input",
+      "testMappings": []
     }
   ],
   "stats": {
-    "totalScenarios": 15,
+    "totalScenarios": 16,
     "coveredScenarios": 15,
-    "coveragePercent": 100,
+    "coveragePercent": 94,
     "testFiles": [
       "bridge/__tests__/telegram-image-handling.test.ts"
     ],
