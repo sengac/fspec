@@ -4341,7 +4341,6 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
         // If we got input to process, run the agent
         // BRIDGE-007: Changed to InputWithImages to support multimodal content
         if let Some(input_with_images) = input_to_process {
-            let thinking_config_ref = input_with_images.thinking_config.as_deref();
             let input = &input_with_images.text;
 
             tracing::warn!("Session {} processing input: {}", session.id, input.chars().take(50).collect::<String>());
@@ -4362,14 +4361,59 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             session.set_status(SessionStatus::Running);
             session.reset_interrupt();
 
-            // Parse thinking config JSON if provided
-            let thinking_config_value: Option<serde_json::Value> = thinking_config_ref.and_then(|config_str| {
-                serde_json::from_str(config_str).ok()
-            });
+            // Get provider name early (needed for thinking config)
+            // Lock briefly, then release before the heavy processing
+            let current_provider = {
+                let inner = session.inner.lock().await;
+                inner.current_provider_name().to_string()
+            };
 
-            // Get provider name before creating output (need inner_session lock)
+            // BRIDGE-006: Unified thinking level detection
+            // Single source of truth - same logic for TUI, Bridge, and Watcher input.
+            // This replaces the old approach where TypeScript passed thinking_config
+            // only for TUI input (watcher/bridge was hardcoded to None).
+            //
+            // Priority:
+            // 1. If TypeScript passed an explicit thinking_config, use it (backwards compat)
+            // 2. Otherwise, detect from message text + session base level
+            let thinking_config_value: Option<serde_json::Value> = {
+                // First try TypeScript-provided config (for backwards compatibility)
+                if let Some(config_str) = input_with_images.thinking_config.as_deref() {
+                    serde_json::from_str(config_str).ok()
+                } else {
+                    // Unified detection: detect level from message text
+                    use crate::thinking_level_detection::{
+                        detect_thinking_level, has_disable_keywords,
+                        compute_effective_thinking_level, thinking_level_from_u8,
+                    };
+                    use crate::thinking_config::{get_thinking_config, JsThinkingLevel};
+                    
+                    let detected_level = detect_thinking_level(input);
+                    let force_off = has_disable_keywords(input);
+                    let base_level = thinking_level_from_u8(session.get_base_thinking_level());
+                    let effective_level = compute_effective_thinking_level(base_level, detected_level, force_off);
+                    
+                    if effective_level == JsThinkingLevel::Off {
+                        None
+                    } else {
+                        // Get thinking config for this provider and level
+                        match get_thinking_config(current_provider.clone(), effective_level) {
+                            Ok(config_str) => {
+                                tracing::info!("Thinking level detected: {:?} (base={:?}, detected={:?}, force_off={})", 
+                                    effective_level, base_level, detected_level, force_off);
+                                serde_json::from_str(&config_str).ok()
+                            }
+                            Err(e) => {
+                                tracing::warn!("Failed to get thinking config: {}", e);
+                                None
+                            }
+                        }
+                    }
+                }
+            };
+
+            // Re-acquire lock for the rest of processing
             let mut inner_session = session.inner.lock().await;
-            let current_provider = inner_session.current_provider_name().to_string();
             
             // REFAC-007: Create output handler with provider for message persistence
             let session_for_output = session.clone();

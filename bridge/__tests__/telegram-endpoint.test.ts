@@ -445,8 +445,8 @@ describe('Feature: Telegram Bridge Endpoint', () => {
     });
   });
 
-  describe('Scenario: Relay thinking chunk with emoji prefix', () => {
-    it('should format thinking chunk with 💭 prefix', async () => {
+  describe('Scenario: Relay thinking chunk wrapped in think tags', () => {
+    it('should wrap thinking chunk in <think>...</think> tags (BRIDGE-006)', async () => {
       // @step Given the endpoint is running with a linked Telegram chat
       process.env.TELEGRAM_BOT_TOKEN = 'test-bot-token-123';
       process.env.TELEGRAM_CHAT_ID = '12345678';
@@ -462,18 +462,27 @@ describe('Feature: Telegram Bridge Endpoint', () => {
         data: { type: 'thinking', thinking: 'Let me analyze this...' },
       };
 
-      // @step Then the message should be formatted as "💭 Let me analyze this..."
+      // @step Then the message should be wrapped in <think> tags (BRIDGE-006 rule [10])
+      // Note: formatForTelegram still uses 💭 for direct formatting,
+      // but handleStreamChunk wraps thinking in <think>...</think> tags per BRIDGE-006
       const formatted = formatForTelegram(chunk.data);
       expect(formatted).toContain('💭');
-      // Note: dots are escaped in MarkdownV2
-      expect(formatted).toContain('Let me analyze this\\.\\.\\.');
 
-      // @step And the message should be sent to the linked Telegram chat
+      // @step And the message sent to Telegram should be wrapped in escaped <think> tags
       await handleStreamChunk(chunk);
-      await vi.advanceTimersByTimeAsync(850);
+
+      // Send a done chunk to trigger flush (thinking only flushes on non-thinking chunks)
+      const doneChunk: OutboundMessage = {
+        type: 'chunk',
+        session_id: 'test-session-uuid',
+        data: { type: 'done' },
+      };
+      await handleStreamChunk(doneChunk);
+      await vi.advanceTimersByTimeAsync(100);
+
       expect(mockBotSendMessage).toHaveBeenCalledWith(
         '12345678',
-        expect.stringContaining('💭'),
+        expect.stringContaining('\\<think\\>'),
         { parse_mode: 'MarkdownV2' }
       );
     });
@@ -549,7 +558,10 @@ describe('Feature: Telegram Bridge Endpoint', () => {
 
       // @step Then the endpoint should look up the tool name from the stored mapping
       // @step And the message should be formatted as "[Read] file contents here"
-      const formatted = formatForTelegram(resultChunk.data);
+      const formatted = formatForTelegram(
+        resultChunk.data,
+        getState().toolNameMap
+      );
       expect(formatted).toContain('\\[Read\\]');
       expect(formatted).toContain('file contents here');
 

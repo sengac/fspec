@@ -11,6 +11,7 @@ use napi_derive::napi;
 
 /// TypeScript-friendly thinking level enum
 #[napi]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum JsThinkingLevel {
     /// Disable thinking/reasoning entirely
     Off,

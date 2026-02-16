@@ -165,6 +165,13 @@ vi.mock('@sengac/codelet-napi', () => ({
     High: 3,
   },
   getThinkingConfig: vi.fn(() => null),
+  // BRIDGE-006: Unified thinking level detection NAPI functions
+  napiDetectThinkingLevel: vi.fn(() => 0), // Default to Off
+  napiHasDisableKeywords: vi.fn(() => false),
+  napiComputeEffectiveThinkingLevel: vi.fn((base: number, detected: number, forceOff: boolean) => {
+    if (forceOff) { return 0; }
+    return Math.max(base, detected);
+  }),
   // TUI-034: Model listing function
   modelsListAll: () => mockState.modelsListAll(),
   // TUI-034: Model cache directory setup

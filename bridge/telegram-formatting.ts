@@ -39,11 +39,11 @@ export interface StreamChunkData {
 
 /**
  * Escape special characters for Telegram MarkdownV2 format.
- * Characters that need escaping: _ * [ ] ( ) ~ ` > # + - = | { } . !
+ * Characters that need escaping: _ * [ ] ( ) ~ ` > # + - = | { } . ! <
  * Does NOT escape content inside code blocks.
  */
 export function escapeMarkdownV2(text: string): string {
-  const specialChars = /([_*[\]()~`>#+\-=|{}.!])/g;
+  const specialChars = /([_*[\]()~`>#+\-=|{}.!<])/g;
 
   // Split by code blocks to avoid escaping inside them
   const parts = text.split(/(```[\s\S]*?```|`[^`]+`)/);

@@ -24,6 +24,17 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerList: vi.fn(() => []),
   JsThinkingLevel: { Off: 0, Low: 1, Medium: 2, High: 3 },
   getThinkingConfig: vi.fn(() => null),
+  // BRIDGE-006: Unified thinking level detection NAPI functions
+  napiDetectThinkingLevel: vi.fn(() => 0), // Default to Off
+  napiHasDisableKeywords: vi.fn(() => false),
+  napiComputeEffectiveThinkingLevel: vi.fn(
+    (base: number, detected: number, forceOff: boolean) => {
+      if (forceOff) {
+        return 0;
+      }
+      return Math.max(base, detected);
+    }
+  ),
 }));
 
 describe('Feature: Input state not restored when navigating from BoardView to AgentView', () => {

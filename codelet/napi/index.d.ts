@@ -560,6 +560,21 @@ export interface NapiCompactionState {
   compactedAt: string;
 }
 
+/** Compute effective level - NAPI export for TypeScript. */
+export declare function napiComputeEffectiveThinkingLevel(
+  baseLevel: number,
+  detectedLevel: number,
+  forceOff: boolean
+): number;
+
+/**
+ * Detect thinking level from prompt - NAPI export for TypeScript.
+ *
+ * This allows TypeScript to show the thinking level indicator in the UI
+ * while Rust remains the single source of truth for detection logic.
+ */
+export declare function napiDetectThinkingLevel(prompt: string): number;
+
 /** TUI-056: File modification info for turn details */
 export interface NapiFileModification {
   /** File path */
@@ -575,6 +590,9 @@ export interface NapiForkPoint {
   forkAfterIndex: number;
   forkedAt: string;
 }
+
+/** Check for disable keywords - NAPI export for TypeScript. */
+export declare function napiHasDisableKeywords(prompt: string): boolean;
 
 export interface NapiHistoryEntry {
   display: string;

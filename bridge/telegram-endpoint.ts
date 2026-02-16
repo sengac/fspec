@@ -22,6 +22,8 @@ import {
   getWhitelistStartupMessage,
 } from './telegram-whitelist';
 import { isSlashCommand, handleSlashCommand } from './telegram-slash-commands';
+import { ThinkingBlockHandler } from './telegram-thinking-handler';
+import { summarizeToolResult } from './telegram-content-chunker';
 
 // Handle both ESM and CJS module formats
 const TelegramBot =
@@ -85,6 +87,8 @@ export interface EndpointState {
   bufferTimer: ReturnType<typeof setTimeout> | null;
   lastSendTime: number;
   lastChunkTime: number;
+  // Thinking block handler (manages <think>...</think> tags)
+  thinkingHandler: ThinkingBlockHandler;
   // User whitelist
   allowedUserIds: Set<number> | null;
   // Agent state for /status command
@@ -119,6 +123,7 @@ const state: EndpointState = {
   bufferTimer: null,
   lastSendTime: 0,
   lastChunkTime: 0,
+  thinkingHandler: new ThinkingBlockHandler(),
   allowedUserIds: null,
   agentState: 'idle',
 };
@@ -178,7 +183,7 @@ export async function downloadPhotoAsBase64(
  * Does NOT escape content inside code blocks.
  */
 export function escapeMarkdownV2(text: string): string {
-  const specialChars = /([_*[\]()~`>#+\-=|{}.!])/g;
+  const specialChars = /([_*[\]()~`>#+\-=|{}.!<])/g;
 
   // Split by code blocks to avoid escaping inside them
   const parts = text.split(/(```[\s\S]*?```|`[^`]+`)/);
@@ -305,6 +310,14 @@ export function formatForTelegram(
         : 'unknown';
       const content = chunk.content || '';
       const prefix = chunk.is_error ? '❌ ' : '';
+      const lineCount = (content.match(/\n/g) || []).length + 1;
+
+      // Summarize large outputs instead of sending verbatim
+      if (content.length > 500 || lineCount > 20) {
+        const summary = summarizeToolResult(toolName, content);
+        return `${prefix}${escapeMarkdownV2(summary)}`;
+      }
+
       return `${prefix}\\[${escapeMarkdownV2(toolName)}\\] ${escapeMarkdownV2(content)}`;
     }
 
@@ -326,6 +339,10 @@ export function formatForTelegram(
 /**
  * Flush the message buffer to Telegram.
  * Combines all buffered chunks into a single message.
+ *
+ * NOTE: Does NOT close thinking blocks - thinking content streams naturally
+ * across multiple flushes. Thinking blocks are only closed when transitioning
+ * to non-thinking content (see handleStreamChunk).
  */
 async function flushBuffer(): Promise<void> {
   // Clear the timer
@@ -397,6 +414,8 @@ function scheduleIdleFlush(): void {
  * Handle an outbound message (codelet → Telegram).
  * Buffers messages and flushes on idle (no new chunks for a period)
  * or when buffer size limits are reached.
+ *
+ * Thinking blocks are wrapped in <think>...</think> tags using ThinkingBlockHandler.
  */
 export async function handleStreamChunk(
   msg: StreamChunkMessage
@@ -422,14 +441,44 @@ export async function handleStreamChunk(
     state.agentState = 'idle';
   }
 
-  // Format the message
+  // Track when we last received a chunk
+  state.lastChunkTime = Date.now();
+
+  // Handle thinking chunks with ThinkingBlockHandler
+  if (msg.data.type === 'thinking') {
+    const escapedContent = escapeMarkdownV2(msg.data.thinking || '');
+    const formatted = state.thinkingHandler.processThinking(escapedContent);
+
+    state.messageBuffer.push(formatted);
+    state.bufferCharCount += formatted.length;
+
+    // Force flush if buffer exceeds limits
+    if (
+      state.bufferCharCount >= MAX_BUFFER_CHARS ||
+      state.messageBuffer.length >= MAX_BUFFER_SIZE
+    ) {
+      await flushBuffer();
+    } else {
+      scheduleIdleFlush();
+    }
+    return;
+  }
+
+  // Format the message (for non-thinking chunk types)
   const text = formatForTelegram(msg.data);
+
+  // IMPORTANT: Only close thinking block if there's actual content to transition to.
+  // Empty chunks (e.g., empty text) should NOT close thinking blocks.
   if (!text) {
     return;
   }
 
-  // Track when we last received a chunk
-  state.lastChunkTime = Date.now();
+  // Close thinking block when transitioning to non-thinking content WITH actual content
+  const closeTag = state.thinkingHandler.closeIfOpen();
+  if (closeTag) {
+    state.messageBuffer.push(closeTag);
+    state.bufferCharCount += closeTag.length;
+  }
 
   // Handle special chunk types that should flush immediately
   if (msg.data.type === 'done' || msg.data.type === 'error') {
@@ -464,7 +513,7 @@ export async function handleStreamChunk(
     return;
   }
 
-  // Regular text/thinking chunks - buffer them
+  // Regular text chunks - buffer them
   state.messageBuffer.push(text);
   state.bufferCharCount += text.length;
 
@@ -568,11 +617,18 @@ function setupWebSocketServer(port: number, host: string): WebSocketServer {
 
     ws.on('close', () => {
       console.log('[telegram-endpoint] Codelet session disconnected');
+      // Close any open thinking block before flushing
+      const closeTag = state.thinkingHandler.closeIfOpen();
+      if (closeTag) {
+        state.messageBuffer.push(closeTag);
+        state.bufferCharCount += closeTag.length;
+      }
       // Flush any remaining buffered messages before clearing state
       void flushBuffer();
       state.currentSession.ws = null;
       state.currentSession.sessionId = null;
       state.toolNameMap.clear();
+      state.thinkingHandler.reset();
     });
 
     ws.on('error', error => {
@@ -807,6 +863,7 @@ export async function stopEndpoint(): Promise<void> {
   state.bufferCharCount = 0;
   state.lastSendTime = 0;
   state.lastChunkTime = 0;
+  state.thinkingHandler.reset();
   state.agentState = 'idle';
   state.isRunning = false;
 }
@@ -828,6 +885,7 @@ export function resetState(): void {
   state.bufferTimer = null;
   state.lastSendTime = 0;
   state.lastChunkTime = 0;
+  state.thinkingHandler.reset();
   state.allowedUserIds = null;
   state.agentState = 'idle';
   state.isRunning = false;

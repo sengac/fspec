@@ -25,6 +25,8 @@ pub mod session_manager;
 #[cfg(not(feature = "noop"))]
 mod thinking_config;
 #[cfg(not(feature = "noop"))]
+mod thinking_level_detection;
+#[cfg(not(feature = "noop"))]
 mod types;
 #[cfg(not(feature = "noop"))]
 mod simple_test;
@@ -55,6 +57,10 @@ pub use session_manager::*;
 #[cfg(not(feature = "noop"))]
 pub use thinking_config::{
     extract_thinking_text, get_thinking_config, is_thinking_content, JsThinkingLevel,
+};
+#[cfg(not(feature = "noop"))]
+pub use thinking_level_detection::{
+    napi_detect_thinking_level, napi_has_disable_keywords, napi_compute_effective_thinking_level,
 };
 #[cfg(not(feature = "noop"))]
 pub use types::*;
