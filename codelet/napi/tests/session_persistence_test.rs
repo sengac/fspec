@@ -838,7 +838,7 @@ fn test_empty_message_content_handled() {
     let messages = get_session_messages(&reloaded).expect("get messages should succeed");
     
     assert_eq!(messages.len(), 1);
-    assert!(messages[0].content.is_empty() || messages[0].content == "");
+    assert!(messages[0].content.is_empty());
 }
 
 // ============================================================================

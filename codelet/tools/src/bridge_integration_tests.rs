@@ -38,7 +38,7 @@ mod integration_tests {
                 // Mock input injector for tests
             });
         
-        set_bridge_session_context(session_id, broadcast_rx_factory, input_injector);
+        set_bridge_session_context(session_id, broadcast_rx_factory, input_injector, None);
     }
     
     /// Clean up session context after test

@@ -16,6 +16,12 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import * as TelegramBotModule from 'node-telegram-bot-api';
 import { config } from 'dotenv';
+import {
+  parseAllowedUserIds,
+  isUserAuthorized,
+  getWhitelistStartupMessage,
+} from './telegram-whitelist';
+import { isSlashCommand, handleSlashCommand } from './telegram-slash-commands';
 
 // Handle both ESM and CJS module formats
 const TelegramBot =
@@ -79,6 +85,10 @@ export interface EndpointState {
   bufferTimer: ReturnType<typeof setTimeout> | null;
   lastSendTime: number;
   lastChunkTime: number;
+  // User whitelist
+  allowedUserIds: Set<number> | null;
+  // Agent state for /status command
+  agentState: 'idle' | 'thinking' | 'executing';
 }
 
 // ============================================================================
@@ -109,6 +119,8 @@ const state: EndpointState = {
   bufferTimer: null,
   lastSendTime: 0,
   lastChunkTime: 0,
+  allowedUserIds: null,
+  agentState: 'idle',
 };
 
 // ============================================================================
@@ -401,6 +413,15 @@ export async function handleStreamChunk(
     return;
   }
 
+  // Update agent state based on chunk type
+  if (msg.data.type === 'thinking') {
+    state.agentState = 'thinking';
+  } else if (msg.data.type === 'tool_call') {
+    state.agentState = 'executing';
+  } else if (msg.data.type === 'done' || msg.data.type === 'error') {
+    state.agentState = 'idle';
+  }
+
   // Format the message
   const text = formatForTelegram(msg.data);
   if (!text) {
@@ -462,6 +483,24 @@ export async function handleStreamChunk(
 // ============================================================================
 // Telegram Message Handling
 // ============================================================================
+
+/**
+ * Send a control message to the WebSocket session.
+ * Used by slash commands (/stop, /clear) to communicate with the agent.
+ */
+function sendControlMessage(
+  ws: WebSocket,
+  sessionId: string,
+  action: string
+): void {
+  ws.send(
+    JSON.stringify({
+      type: 'control',
+      action,
+      session_id: sessionId,
+    })
+  );
+}
 
 /**
  * Handle an inbound message from Telegram.
@@ -558,6 +597,13 @@ function setupTelegramBot(token: string): TelegramBotInstance {
   bot.on('message', async msg => {
     const chatId = msg.chat.id.toString();
 
+    // User ID validation (whitelist check) using extracted pure function
+    const authResult = isUserAuthorized(msg.from?.id, state.allowedUserIds);
+    if (!authResult.authorized) {
+      console.log(`[telegram-endpoint] Dropping message: ${authResult.reason}`);
+      return;
+    }
+
     // Check for photo message
     if (msg.photo && msg.photo.length > 0) {
       // Use caption for photos, not text (msg.text is undefined for photos)
@@ -620,11 +666,36 @@ function setupTelegramBot(token: string): TelegramBotInstance {
     // Update active chat ID
     state.chatId = chatId;
 
+    // Handle slash commands before forwarding to agent
+    if (isSlashCommand(text)) {
+      console.log(`[telegram-endpoint] Processing slash command: ${text}`);
+      const result = await handleSlashCommand(text, state);
+      if (result.handled) {
+        // Send control message to session if action is required
+        if (result.action && state.currentSession.ws) {
+          const actionMap: Record<string, string> = {
+            stop: 'interrupt',
+            clear: 'clear',
+          };
+          sendControlMessage(
+            state.currentSession.ws,
+            state.currentSession.sessionId || '',
+            actionMap[result.action]
+          );
+        }
+        return; // Don't forward slash commands to agent
+      }
+    }
+
     // If we have a connected session, forward the message
     if (
       state.currentSession.ws &&
       state.currentSession.ws.readyState === WebSocket.OPEN
     ) {
+      // BRIDGE-011: Set agentState to 'thinking' immediately when forwarding a message
+      // This ensures /stop correctly detects the agent is processing before any chunks arrive
+      state.agentState = 'thinking';
+
       const inputMessage = handleTelegramMessage(chatId, text);
       console.log(
         `[telegram-endpoint] Sending input to codelet - session_id: "${inputMessage.session_id}", message: "${inputMessage.message.slice(0, 50)}..."`
@@ -675,6 +746,22 @@ export function startEndpoint(): EndpointState {
     );
   }
 
+  // Parse allowed user IDs from environment using extracted pure function
+  const whitelistResult = parseAllowedUserIds(
+    process.env.TELEGRAM_ALLOWED_USER_IDS
+  );
+  state.allowedUserIds = whitelistResult.allowedUserIds;
+
+  const whitelistMessage = getWhitelistStartupMessage(whitelistResult);
+  if (
+    whitelistResult.allowedUserIds === null &&
+    whitelistResult.invalidIdCount > 0
+  ) {
+    console.warn(`[telegram-endpoint] ${whitelistMessage}`);
+  } else {
+    console.log(`[telegram-endpoint] ${whitelistMessage}`);
+  }
+
   // Start WebSocket server
   state.wss = setupWebSocketServer(port, host);
   console.log(
@@ -720,6 +807,7 @@ export async function stopEndpoint(): Promise<void> {
   state.bufferCharCount = 0;
   state.lastSendTime = 0;
   state.lastChunkTime = 0;
+  state.agentState = 'idle';
   state.isRunning = false;
 }
 
@@ -740,6 +828,8 @@ export function resetState(): void {
   state.bufferTimer = null;
   state.lastSendTime = 0;
   state.lastChunkTime = 0;
+  state.allowedUserIds = null;
+  state.agentState = 'idle';
   state.isRunning = false;
 }
 

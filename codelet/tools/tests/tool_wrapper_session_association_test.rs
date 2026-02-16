@@ -315,7 +315,7 @@ async fn test_bridge_tool_stores_session_id() {
     let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
     let broadcast_factory: codelet_tools::BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
     let input_injector: codelet_tools::InputInjector = Arc::new(|_| {});
-    set_bridge_session_context(session_c, broadcast_factory, input_injector);
+    set_bridge_session_context(session_c, broadcast_factory, input_injector, None);
     
     // Set up a bridge handler
     use codelet_tools::bridge_handler::{set_bridge_handler, BridgeHandler};
@@ -406,7 +406,7 @@ fn test_session_id_at_construction() {
     let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
     let broadcast_factory: codelet_tools::BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
     let input_injector: codelet_tools::InputInjector = Arc::new(|_| {});
-    set_bridge_session_context(session_id, broadcast_factory, input_injector);
+    set_bridge_session_context(session_id, broadcast_factory, input_injector, None);
 
     // Tools store session_id at construction
     let fspec_tool = claude_fspec_tool(session_id);

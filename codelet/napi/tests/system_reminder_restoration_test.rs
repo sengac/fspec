@@ -199,7 +199,7 @@ fn test_only_latest_reminder_per_type_preserved() {
     let assistant1 = create_assistant_message("Response");
     // When environment is updated, a new reminder is appended (old preserved for cache)
     let env_messages = add_system_reminder(
-        &[env_old.clone()],
+        std::slice::from_ref(&env_old),
         SystemReminderType::Environment,
         "NEW: Platform: linux",
     );
@@ -397,12 +397,12 @@ fn test_multiple_reminder_types_each_preserve_only_latest() {
     );
     let user1 = create_user_message("conversation");
     let env_new_messages = add_system_reminder(
-        &[env_old.clone()],
+        std::slice::from_ref(&env_old),
         SystemReminderType::Environment,
         "NEW ENV",
     );
     let claude_new_messages = add_system_reminder(
-        &[claude_old.clone()],
+        std::slice::from_ref(&claude_old),
         SystemReminderType::ClaudeMd,
         "NEW CLAUDE.md",
     );

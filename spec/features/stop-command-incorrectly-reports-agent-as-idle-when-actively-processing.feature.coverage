@@ -1,0 +1,89 @@
+{
+  "scenarios": [
+    {
+      "name": "Stop immediately after sending message",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/stop-command-idle-detection.test.ts",
+          "lines": "77-101",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stop while agent is executing tool",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/stop-command-idle-detection.test.ts",
+          "lines": "103-126",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stop when agent is truly idle",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/stop-command-idle-detection.test.ts",
+          "lines": "128-149",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117,
+                118
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "bridge/__tests__/stop-command-idle-detection.test.ts"
+    ],
+    "implFiles": [
+      "bridge/telegram-endpoint.ts",
+      "bridge/telegram-slash-commands.ts"
+    ],
+    "totalLinesCovered": 95
+  }
+}

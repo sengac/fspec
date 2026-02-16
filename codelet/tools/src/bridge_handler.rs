@@ -23,7 +23,7 @@ use crate::bridge::{
     get_or_create_bridge_manager, BridgeAction, BridgeConnectionInfo, BridgeConnectionState,
     BridgeResult,
 };
-use crate::bridge_relay::{spawn_relay_task, InputInjector};
+use crate::bridge_relay::{spawn_relay_task, ControlHandler, InputInjector};
 use crate::ToolError;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
@@ -52,6 +52,8 @@ pub struct BridgeSessionContext {
     pub broadcast_rx_factory: BroadcastReceiverFactory,
     /// Callback to inject input into the session
     pub input_injector: InputInjector,
+    /// BRIDGE-008: Optional handler for control messages (interrupt, clear)
+    pub control_handler: Option<ControlHandler>,
 }
 
 static BRIDGE_HANDLER: RwLock<Option<BridgeHandler>> = RwLock::new(None);
@@ -72,15 +74,19 @@ pub fn set_bridge_handler(handler: Option<BridgeHandler>) {
 ///
 /// Called by session manager to provide broadcast channel and input injection
 /// for the relay tasks.
+///
+/// BRIDGE-008: Now accepts an optional control_handler for interrupt/clear actions
 pub fn set_bridge_session_context(
     session_id: Uuid,
     broadcast_rx_factory: BroadcastReceiverFactory,
     input_injector: InputInjector,
+    control_handler: Option<ControlHandler>,
 ) {
     if let Ok(mut guard) = BRIDGE_SESSION_CONTEXTS.write() {
         guard.insert(session_id, Arc::new(BridgeSessionContext {
             broadcast_rx_factory,
             input_injector,
+            control_handler,
         }));
     }
 }
@@ -189,9 +195,10 @@ pub async fn handle_bridge_action(
             // Get a broadcast receiver from the factory
             let broadcast_rx = (context.broadcast_rx_factory)();
             let input_injector = context.input_injector.clone();
+            let control_handler = context.control_handler.clone();
 
-            // Spawn the relay task
-            match spawn_relay_task(session_id, url.clone(), broadcast_rx, input_injector).await {
+            // Spawn the relay task (BRIDGE-008: with control_handler)
+            match spawn_relay_task(session_id, url.clone(), broadcast_rx, input_injector, control_handler).await {
                 Ok(handle) => {
                     // Store the task handle
                     let mut mgr = manager.write().await;
@@ -355,7 +362,7 @@ mod tests {
             let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
             let broadcast_factory: BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
             let input_injector: InputInjector = Arc::new(|_| {});
-            set_bridge_session_context(session_id, broadcast_factory, input_injector);
+            set_bridge_session_context(session_id, broadcast_factory, input_injector, None);
 
             assert!(has_bridge_handler_for_session(session_id)); // Now true
 
@@ -422,7 +429,7 @@ mod tests {
                 // Mock input injector - do nothing
             });
         
-        set_bridge_session_context(session_id, broadcast_rx_factory, input_injector);
+        set_bridge_session_context(session_id, broadcast_rx_factory, input_injector, None);
         
         // This test will try to connect but fail because there's no server
         // The important thing is that it doesn't fail due to missing context

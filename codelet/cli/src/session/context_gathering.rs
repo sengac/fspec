@@ -158,6 +158,7 @@ pub fn gather_environment_info() -> EnvironmentInfo {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, clippy::expect_used)]
 mod tests {
     use super::*;
 
@@ -228,7 +229,9 @@ mod tests {
         assert!(!info.date.is_empty(), "Date field should not be empty");
 
         // Verify ISO 8601 format (YYYY-MM-DD)
-        let date_regex = regex::Regex::new(r"^\d{4}-\d{2}-\d{2}$").unwrap();
+        // Note: using expect() here as the regex pattern is compile-time constant and known valid
+        let date_regex = regex::Regex::new(r"^\d{4}-\d{2}-\d{2}$")
+            .expect("valid regex pattern");
         assert!(
             date_regex.is_match(&info.date),
             "Date '{}' should be in YYYY-MM-DD format",
@@ -367,7 +370,7 @@ mod tests {
         // @step And the AI should see today's date, not yesterday's
         let fresh_content = fresh_info.to_reminder_content();
         assert!(
-            fresh_content.contains(&format!("Date: {}", today)),
+            fresh_content.contains(&format!("Date: {today}")),
             "Fresh content should have today's date"
         );
         // The old date should not be present in fresh content

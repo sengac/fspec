@@ -1924,20 +1924,16 @@ mod session_role_tests {
     fn test_get_role_returns_role_details() {
         // @step Given a BackgroundSession exists
         // @step And the role has been set to name "test-role" with authority Peer
-        let role = Some(SessionRole::new(
+        let role = SessionRole::new(
             "test-role".to_string(),
             None,
             RoleAuthority::Peer,
-        ).expect("valid role"));
+        ).expect("valid role");
 
         // @step When I call get_role
-        let result = role;
-
         // @step Then it should return a SessionRole with name "test-role" and authority Peer
-        assert!(result.is_some());
-        let r = result.unwrap();
-        assert_eq!(r.name, "test-role");
-        assert_eq!(r.authority, RoleAuthority::Peer);
+        assert_eq!(role.name, "test-role");
+        assert_eq!(role.authority, RoleAuthority::Peer);
     }
 
     /// Scenario: Set role with invalid authority returns error
@@ -3301,9 +3297,8 @@ mod watcher_integration_tests {
 mod work_unit_context_tests {
     use super::*;
 
-    /// Feature: spec/features/work-unit-context.feature
-    ///
-    /// Tests for WorkUnitContext struct and related functionality (TUI-059)
+    // Feature: spec/features/work-unit-context.feature
+    // Tests for WorkUnitContext struct and related functionality (TUI-059)
 
     // =========================================================================
     // Scenario: Work unit ID appears in environment information when entering AgentView
@@ -4502,11 +4497,53 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                 }
             });
             
+            // BRIDGE-008: Create control handler for interrupt/clear actions
+            let session_for_control = session.clone();
+            let control_handler: codelet_tools::ControlHandler = Arc::new(move |action: &str| {
+                match action {
+                    "interrupt" => {
+                        tracing::info!("Bridge control: interrupting session");
+                        session_for_control.interrupt();
+                    }
+                    "clear" => {
+                        tracing::info!("Bridge control: clearing session");
+                        // AGENT-022: Use block_in_place because this closure is called from async context
+                        // (handle_inbound_message is async). blocking_lock() panics if called directly
+                        // from within a tokio runtime without this wrapper.
+                        tokio::task::block_in_place(|| {
+                            // Clear the output buffer (conversation history display)
+                            if let Ok(mut buffer) = session_for_control.output_buffer.write() {
+                                buffer.clear();
+                            }
+                            
+                            // AGENT-022: Clear actual session state (messages, turns, tokens)
+                            // This is CRITICAL - without this, the AI remembers the previous conversation
+                            let mut inner = session_for_control.inner.blocking_lock();
+                            inner.messages.clear();
+                            inner.turns.clear();
+                            inner.token_tracker = codelet_core::compaction::TokenTracker::default();
+                            
+                            // CRITICAL: Reinject context reminders so AI retains project context
+                            // Without this, the AI loses CLAUDE.md and environment info
+                            inner.inject_context_reminders();
+                            drop(inner);
+                            
+                            // Reset the interrupt flag
+                            session_for_control.reset_interrupt();
+                        });
+                    }
+                    _ => {
+                        tracing::warn!("Bridge control: unknown action '{}'", action);
+                    }
+                }
+            });
+            
             // Set the session context for bridge relay tasks
             codelet_tools::set_bridge_session_context(
                 session_id_for_bridge,
                 broadcast_rx_factory,
                 input_injector,
+                Some(control_handler),
             );
             
             // Set the bridge handler that calls handle_bridge_action

@@ -609,6 +609,7 @@ mod tests {
                 session_id: session_id.to_string(),
                 message: "build the app".to_string(),
                 images: None, // BRIDGE-007: No images in this test
+                action: None, // BRIDGE-008: No action for input messages
             };
 
             // @step Then the agent should receive "build the app" as user input

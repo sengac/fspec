@@ -178,7 +178,7 @@ fn test_resume_preserves_anchor_descriptions() {
     let mut session = create_session("Description Resume", &project).expect("create");
     let session_id = session.id;
     
-    let descriptions = vec![
+    let descriptions = [
         "Simple description",
         "Description with\nnewlines\nand\ttabs",
         "Special chars: <>&\"'",

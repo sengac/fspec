@@ -2245,18 +2245,15 @@ fn test_compacted_session_envelopes_can_be_parsed_end_to_end() {
 
     // @step And the remaining envelopes should be the post-compaction messages
     let second_envelope: MessageEnvelope = serde_json::from_str(&envelopes[1]).unwrap();
-    match &second_envelope.message {
-        super::message_envelope::MessagePayload::User(user_msg) => {
-            match &user_msg.content[0] {
-                super::message_envelope::UserContent::Text { text } => {
-                    assert!(
-                        text.contains("Message 8"),
-                        "Second envelope should be message 8 (first post-compaction)"
-                    );
-                }
-                _ => panic!("Expected Text content"),
-            }
+    if let super::message_envelope::MessagePayload::User(user_msg) = &second_envelope.message {
+        if let super::message_envelope::UserContent::Text { text } = &user_msg.content[0] {
+            assert!(
+                text.contains("Message 8"),
+                "Second envelope should be message 8 (first post-compaction)"
+            );
+        } else {
+            panic!("Expected Text content");
         }
-        _ => {} // Could be assistant message too
     }
+    // Note: Could also be assistant message, which is fine
 }

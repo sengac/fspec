@@ -19,31 +19,26 @@ use codelet_core::compaction::TokenTracker;
 #[test]
 fn test_token_tracker_field_restoration() {
     // @step Given I have a session with persisted token usage
-    let mut tracker = TokenTracker::default();
+    let default_tracker = TokenTracker::default();
 
     // Verify default values
-    assert_eq!(tracker.input_tokens, 0);
-    assert_eq!(tracker.output_tokens, 0);
-    assert_eq!(tracker.cache_read_input_tokens, None);
-    assert_eq!(tracker.cache_creation_input_tokens, None);
-    assert_eq!(tracker.cumulative_billed_input, 0);
-    assert_eq!(tracker.cumulative_billed_output, 0);
+    assert_eq!(default_tracker.input_tokens, 0);
+    assert_eq!(default_tracker.output_tokens, 0);
+    assert_eq!(default_tracker.cache_read_input_tokens, None);
+    assert_eq!(default_tracker.cache_creation_input_tokens, None);
+    assert_eq!(default_tracker.cumulative_billed_input, 0);
+    assert_eq!(default_tracker.cumulative_billed_output, 0);
 
     // @step When I restore the token state (simulating session_restore_token_state)
     // These are the same field assignments as in session_restore_token_state
-    let input_tokens: u32 = 5000;
-    let output_tokens: u32 = 8000;
-    let cache_read_tokens: u32 = 2000;
-    let cache_creation_tokens: u32 = 1000;
-    let cumulative_billed_input: u32 = 10000;
-    let cumulative_billed_output: u32 = 8000;
-
-    tracker.input_tokens = input_tokens as u64;
-    tracker.output_tokens = output_tokens as u64;
-    tracker.cache_read_input_tokens = Some(cache_read_tokens as u64);
-    tracker.cache_creation_input_tokens = Some(cache_creation_tokens as u64);
-    tracker.cumulative_billed_input = cumulative_billed_input as u64;
-    tracker.cumulative_billed_output = cumulative_billed_output as u64;
+    let tracker = TokenTracker {
+        input_tokens: 5000,
+        output_tokens: 8000,
+        cache_read_input_tokens: Some(2000),
+        cache_creation_input_tokens: Some(1000),
+        cumulative_billed_input: 10000,
+        cumulative_billed_output: 8000,
+    };
 
     // @step Then the token state is restored to the session
     assert_eq!(tracker.input_tokens, 5000);
@@ -64,13 +59,15 @@ fn test_token_tracker_field_restoration() {
 #[test]
 fn test_effective_tokens_after_restoration() {
     // @step Given I have restored token state with cache read tokens
-    let mut tracker = TokenTracker::default();
-
     // Restore state as session_restore_token_state would
-    tracker.input_tokens = 10000;
-    tracker.output_tokens = 5000;
-    tracker.cache_read_input_tokens = Some(4000); // 4000 cache reads
-    tracker.cache_creation_input_tokens = Some(1000);
+    let tracker = TokenTracker {
+        input_tokens: 10000,
+        output_tokens: 5000,
+        cache_read_input_tokens: Some(4000), // 4000 cache reads
+        cache_creation_input_tokens: Some(1000),
+        cumulative_billed_input: 0,
+        cumulative_billed_output: 0,
+    };
 
     // @step When I calculate effective tokens
     let effective = tracker.effective_tokens();
@@ -90,15 +87,15 @@ fn test_effective_tokens_after_restoration() {
 #[test]
 fn test_token_restoration_with_zero_cache() {
     // @step Given a session that was created before cache tracking
-    let mut tracker = TokenTracker::default();
-
     // @step When I restore token state with zero cache values
-    tracker.input_tokens = 3000;
-    tracker.output_tokens = 2000;
-    tracker.cache_read_input_tokens = Some(0);
-    tracker.cache_creation_input_tokens = Some(0);
-    tracker.cumulative_billed_input = 3000;
-    tracker.cumulative_billed_output = 2000;
+    let tracker = TokenTracker {
+        input_tokens: 3000,
+        output_tokens: 2000,
+        cache_read_input_tokens: Some(0),
+        cache_creation_input_tokens: Some(0),
+        cumulative_billed_input: 3000,
+        cumulative_billed_output: 2000,
+    };
 
     // @step Then the cache fields are set to Some(0)
     assert_eq!(tracker.cache_read_input_tokens, Some(0));
@@ -118,15 +115,14 @@ fn test_token_restoration_with_zero_cache() {
 #[test]
 fn test_token_tracker_value_preservation() {
     // @step Given I have restored token state to a session
-    let mut tracker = TokenTracker::default();
-
-    // Restore values
-    tracker.input_tokens = 15000;
-    tracker.output_tokens = 12000;
-    tracker.cache_read_input_tokens = Some(5000);
-    tracker.cache_creation_input_tokens = Some(2500);
-    tracker.cumulative_billed_input = 30000;
-    tracker.cumulative_billed_output = 25000;
+    let tracker = TokenTracker {
+        input_tokens: 15000,
+        output_tokens: 12000,
+        cache_read_input_tokens: Some(5000),
+        cache_creation_input_tokens: Some(2500),
+        cumulative_billed_input: 30000,
+        cumulative_billed_output: 25000,
+    };
 
     // @step When the session's token tracker is accessed
     let total = tracker.total_tokens();
@@ -153,15 +149,17 @@ fn test_token_tracker_value_preservation() {
 #[test]
 fn test_large_token_value_conversion() {
     // @step Given token values near u32 maximum
-    let mut tracker = TokenTracker::default();
-
-    let large_value: u32 = u32::MAX - 1000; // Near max u32
+    let large_value: u64 = (u32::MAX - 1000) as u64;
 
     // @step When I restore the token state
-    tracker.input_tokens = large_value as u64;
-    tracker.output_tokens = large_value as u64;
-    tracker.cumulative_billed_input = large_value as u64;
-    tracker.cumulative_billed_output = large_value as u64;
+    let tracker = TokenTracker {
+        input_tokens: large_value,
+        output_tokens: large_value,
+        cache_read_input_tokens: None,
+        cache_creation_input_tokens: None,
+        cumulative_billed_input: large_value,
+        cumulative_billed_output: large_value,
+    };
 
     // @step Then the values are correctly converted to u64
     assert_eq!(tracker.input_tokens, (u32::MAX - 1000) as u64);

@@ -283,7 +283,13 @@ where
         // If we have content, push as multimodal message
         if !content_parts.is_empty() {
             session.messages.push(Message::User {
-                content: OneOrMany::many(content_parts).expect("content_parts is non-empty"),
+                content: match OneOrMany::many(content_parts) {
+                    Ok(content) => content,
+                    Err(_) => {
+                        // Fallback to text only if somehow content_parts was empty
+                        OneOrMany::one(UserContent::text(prompt))
+                    }
+                },
             });
         } else {
             // Fallback to text-only if somehow both are empty

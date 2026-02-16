@@ -1,15 +1,13 @@
 // These tests require the full NAPI bindings (not available in noop mode)
 #![cfg(not(feature = "noop"))]
 
-/**
- * Test: Session creation with model validation
- *
- * Ensures that session creation properly validates model strings and rejects
- * invalid formats (e.g., "claude" instead of "anthropic/claude-opus-4-5").
- *
- * This prevents the bug where sessions were created without proper model
- * selection due to missing provider prefix in the model string.
- */
+// Test: Session creation with model validation
+//
+// Ensures that session creation properly validates model strings and rejects
+// invalid formats (e.g., "claude" instead of "anthropic/claude-opus-4-5").
+//
+// This prevents the bug where sessions were created without proper model
+// selection due to missing provider prefix in the model string.
 
 #[cfg(test)]
 mod tests {

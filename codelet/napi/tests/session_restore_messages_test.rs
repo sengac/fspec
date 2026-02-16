@@ -143,7 +143,7 @@ mod session_restore_messages_tests {
         assert_eq!(tool_result_block.get("type").and_then(|t| t.as_str()).unwrap(), "tool_result");
         assert_eq!(tool_result_block.get("tool_use_id").and_then(|t| t.as_str()).unwrap(), "tool_123");
         assert_eq!(tool_result_block.get("content").and_then(|t| t.as_str()).unwrap(), "File contents here");
-        assert_eq!(tool_result_block.get("is_error").and_then(|e| e.as_bool()).unwrap(), false);
+        assert!(!tool_result_block.get("is_error").and_then(|e| e.as_bool()).unwrap());
     }
     
     #[test]

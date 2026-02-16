@@ -23,6 +23,14 @@ const MAX_RECONNECT_DELAY_SECS: u64 = 30;
 /// Initial reconnection delay in seconds
 const INITIAL_RECONNECT_DELAY_SECS: u64 = 1;
 
+// Message type constants
+const MSG_TYPE_INPUT: &str = "input";
+const MSG_TYPE_CONTROL: &str = "control";
+
+// Control action constants
+const ACTION_INTERRUPT: &str = "interrupt";
+const ACTION_CLEAR: &str = "clear";
+
 /// Image data received from bridge endpoint (BRIDGE-007)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ImageData {
@@ -66,14 +74,23 @@ pub struct InboundMessage {
     #[serde(rename = "type")]
     pub msg_type: String,
     pub session_id: String,
+    /// Message content (for input messages)
+    #[serde(default)]
     pub message: String,
     /// Optional images array (BRIDGE-007: Telegram photo support)
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub images: Option<Vec<ImageData>>,
+    /// Optional action for control messages (BRIDGE-008)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub action: Option<String>,
 }
 
 /// Callback for injecting input into the session (BRIDGE-007: updated to InjectedInput)
 pub type InputInjector = Arc<dyn Fn(InjectedInput) + Send + Sync>;
+
+/// Callback for handling control actions (BRIDGE-008: interrupt, clear)
+/// Takes the action name and returns whether it was handled successfully
+pub type ControlHandler = Arc<dyn Fn(&str) + Send + Sync>;
 
 /// Spawn a WebSocket relay task for a bridge connection
 ///
@@ -82,14 +99,17 @@ pub type InputInjector = Arc<dyn Fn(InjectedInput) + Send + Sync>;
 /// 2. Updates connection state to Connected
 /// 3. Spawns outbound/inbound message handlers
 /// 4. Handles reconnection on disconnect
+///
+/// BRIDGE-008: Now accepts an optional control_handler for interrupt/clear actions
 pub async fn spawn_relay_task(
     session_id: Uuid,
     url: String,
     stream_rx: broadcast::Receiver<serde_json::Value>,
     input_injector: InputInjector,
+    control_handler: Option<ControlHandler>,
 ) -> Result<tokio::task::JoinHandle<()>, ToolError> {
     let handle = tokio::spawn(async move {
-        relay_loop(session_id, url, stream_rx, input_injector).await;
+        relay_loop(session_id, url, stream_rx, input_injector, control_handler).await;
     });
     
     Ok(handle)
@@ -101,6 +121,7 @@ async fn relay_loop(
     url: String,
     mut stream_rx: broadcast::Receiver<serde_json::Value>,
     input_injector: InputInjector,
+    control_handler: Option<ControlHandler>,
 ) {
     let mut reconnect_delay = Duration::from_secs(INITIAL_RECONNECT_DELAY_SECS);
     
@@ -111,6 +132,7 @@ async fn relay_loop(
             &url,
             &mut stream_rx,
             input_injector.clone(),
+            control_handler.clone(),
         ).await {
             Ok(()) => {
                 // Clean disconnect, exit the loop
@@ -151,6 +173,7 @@ async fn connect_and_relay(
     url: &str,
     stream_rx: &mut broadcast::Receiver<serde_json::Value>,
     input_injector: InputInjector,
+    control_handler: Option<ControlHandler>,
 ) -> Result<(), String> {
     // Connect to WebSocket
     let (ws_stream, _) = connect_async(url)
@@ -178,6 +201,7 @@ async fn connect_and_relay(
     let inbound_url = url.to_string();
     let inbound_session_id = session_id;
     let inbound_shutdown_tx = shutdown_tx.clone();
+    let inbound_control_handler = control_handler.clone();
     let inbound_handle = tokio::spawn(async move {
         tracing::warn!("Bridge {} inbound handler started, listening for session {}", inbound_url, inbound_session_id);
         while let Some(msg_result) = ws_read.next().await {
@@ -188,6 +212,7 @@ async fn connect_and_relay(
                         text.as_ref(),
                         inbound_session_id,
                         input_injector.clone(),
+                        inbound_control_handler.clone(),
                     ).await {
                         tracing::warn!("Failed to handle inbound message: {}", e);
                     }
@@ -266,10 +291,13 @@ async fn connect_and_relay(
 }
 
 /// Handle an inbound message from the WebSocket
-async fn handle_inbound_message(
+///
+/// BRIDGE-008: Now handles "control" message type with actions "interrupt" and "clear"
+pub async fn handle_inbound_message(
     text: &str,
     session_id: Uuid,
     input_injector: InputInjector,
+    control_handler: Option<ControlHandler>,
 ) -> Result<(), String> {
     // Parse the message
     let inbound: InboundMessage = serde_json::from_str(text)
@@ -283,7 +311,7 @@ async fn handle_inbound_message(
     
     // Handle based on message type
     match inbound.msg_type.as_str() {
-        "input" => {
+        MSG_TYPE_INPUT => {
             // BRIDGE-007: Create InjectedInput with message and optional images
             let injected = match inbound.images {
                 Some(images) if !images.is_empty() => {
@@ -298,6 +326,27 @@ async fn handle_inbound_message(
             };
             input_injector(injected);
             Ok(())
+        }
+        MSG_TYPE_CONTROL => {
+            // BRIDGE-008: Handle control messages (interrupt, clear)
+            let action = inbound.action.as_deref().unwrap_or("");
+            
+            match action {
+                ACTION_INTERRUPT | ACTION_CLEAR => {
+                    if let Some(handler) = control_handler {
+                        tracing::info!("Handling control action from bridge: {}", action);
+                        handler(action);
+                    } else {
+                        tracing::warn!("Received control action '{}' but no control handler is configured", action);
+                    }
+                    Ok(())
+                }
+                _ => {
+                    // Unknown action - log warning but don't crash (graceful handling)
+                    tracing::warn!("Ignoring unknown control action: {}", action);
+                    Ok(())
+                }
+            }
         }
         _ => {
             tracing::warn!("Ignoring unknown message type: {}", inbound.msg_type);
@@ -493,7 +542,7 @@ mod tests {
         );
         
         // This calls the input_injector internally
-        let result = super::handle_inbound_message(&json, session_id, input_injector).await;
+        let result = super::handle_inbound_message(&json, session_id, input_injector, None).await;
         assert!(result.is_ok());
         assert!(received_images.load(Ordering::SeqCst), "InputInjector should receive images");
     }
@@ -508,5 +557,199 @@ mod tests {
         let json = serde_json::to_string(&msg).unwrap();
         assert!(json.contains("\"type\":\"chunk\""));
         assert!(json.contains("\"session_id\":\"test-id\""));
+    }
+    
+    // =========================================================================
+    // BRIDGE-008: Control message tests
+    // =========================================================================
+    
+    /// @step Given the bridge is connected to a session
+    /// @step And the agent is processing a request
+    /// @step When the bridge receives a message with type "control" and action "interrupt"
+    /// @step Then the agent should stop processing
+    /// @step And the is_interrupted flag should be set to true
+    #[tokio::test]
+    async fn test_handle_interrupt_control_message() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        
+        // @step Given the bridge is connected to a session
+        let session_id = uuid::Uuid::new_v4();
+        
+        // @step And the agent is processing a request
+        let interrupt_called = Arc::new(AtomicBool::new(false));
+        let interrupt_called_clone = interrupt_called.clone();
+        
+        let input_injector: InputInjector = Arc::new(|_| {});
+        let control_handler: ControlHandler = Arc::new(move |action: &str| {
+            if action == "interrupt" {
+                interrupt_called_clone.store(true, Ordering::SeqCst);
+            }
+        });
+        
+        // @step When the bridge receives a message with type "control" and action "interrupt"
+        let json = format!(
+            r#"{{"type": "control", "session_id": "{session_id}", "message": "", "action": "interrupt"}}"#
+        );
+        
+        let result = super::handle_inbound_message(&json, session_id, input_injector, Some(control_handler)).await;
+        
+        // @step Then the agent should stop processing
+        assert!(result.is_ok());
+        
+        // @step And the is_interrupted flag should be set to true
+        assert!(interrupt_called.load(Ordering::SeqCst), "Control handler should be called for interrupt");
+    }
+    
+    /// @step Given the bridge is connected to a session
+    /// @step And the session has conversation history
+    /// @step When the bridge receives a message with type "control" and action "clear"
+    /// @step Then the session should be reset
+    /// @step And the conversation history should be cleared
+    #[tokio::test]
+    async fn test_handle_clear_control_message() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        
+        // @step Given the bridge is connected to a session
+        let session_id = uuid::Uuid::new_v4();
+        
+        // @step And the session has conversation history
+        let clear_called = Arc::new(AtomicBool::new(false));
+        let clear_called_clone = clear_called.clone();
+        
+        let input_injector: InputInjector = Arc::new(|_| {});
+        let control_handler: ControlHandler = Arc::new(move |action: &str| {
+            if action == "clear" {
+                clear_called_clone.store(true, Ordering::SeqCst);
+            }
+        });
+        
+        // @step When the bridge receives a message with type "control" and action "clear"
+        let json = format!(
+            r#"{{"type": "control", "session_id": "{session_id}", "message": "", "action": "clear"}}"#
+        );
+        
+        let result = super::handle_inbound_message(&json, session_id, input_injector, Some(control_handler)).await;
+        
+        // @step Then the session should be reset
+        assert!(result.is_ok());
+        
+        // @step And the conversation history should be cleared
+        assert!(clear_called.load(Ordering::SeqCst), "Control handler should be called for clear");
+    }
+    
+    /// @step Given the bridge is connected to a session
+    /// @step When the bridge receives a message with type "control" and action "unknown"
+    /// @step Then an error should be logged
+    /// @step And the bridge should not crash
+    /// @step And the session should remain active
+    #[tokio::test]
+    async fn test_handle_unknown_control_action_gracefully() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        
+        // @step Given the bridge is connected to a session
+        let session_id = uuid::Uuid::new_v4();
+        
+        let handler_called = Arc::new(AtomicBool::new(false));
+        let handler_called_clone = handler_called.clone();
+        
+        let input_injector: InputInjector = Arc::new(|_| {});
+        let control_handler: ControlHandler = Arc::new(move |_| {
+            handler_called_clone.store(true, Ordering::SeqCst);
+        });
+        
+        // @step When the bridge receives a message with type "control" and action "unknown"
+        let json = format!(
+            r#"{{"type": "control", "session_id": "{session_id}", "message": "", "action": "unknown"}}"#
+        );
+        
+        // @step Then an error should be logged (tracing::warn in implementation)
+        let result = super::handle_inbound_message(&json, session_id, input_injector, Some(control_handler)).await;
+        
+        // @step And the bridge should not crash
+        assert!(result.is_ok(), "Unknown action should be handled gracefully");
+        
+        // @step And the session should remain active
+        // Handler should NOT be called for unknown actions
+        assert!(!handler_called.load(Ordering::SeqCst), "Handler should not be called for unknown action");
+    }
+    
+    /// @step Given the bridge is connected to a session
+    /// @step When the bridge receives a message with type "input"
+    /// @step Then the message should be forwarded to the agent
+    /// @step And the agent should process the input
+    #[tokio::test]
+    async fn test_forward_input_messages_to_agent() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        
+        // @step Given the bridge is connected to a session
+        let session_id = uuid::Uuid::new_v4();
+        
+        let input_called = Arc::new(AtomicBool::new(false));
+        let input_called_clone = input_called.clone();
+        
+        let input_injector: InputInjector = Arc::new(move |_| {
+            input_called_clone.store(true, Ordering::SeqCst);
+        });
+        let control_handler: ControlHandler = Arc::new(|_| {});
+        
+        // @step When the bridge receives a message with type "input"
+        let json = format!(
+            r#"{{"type": "input", "session_id": "{session_id}", "message": "Hello, agent!"}}"#
+        );
+        
+        let result = super::handle_inbound_message(&json, session_id, input_injector, Some(control_handler)).await;
+        
+        // @step Then the message should be forwarded to the agent
+        assert!(result.is_ok());
+        
+        // @step And the agent should process the input
+        assert!(input_called.load(Ordering::SeqCst), "Input injector should be called for input messages");
+    }
+    
+    /// Test backward compatibility: input messages work without control handler
+    #[tokio::test]
+    async fn test_input_without_control_handler_backward_compatible() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        
+        let input_called = Arc::new(AtomicBool::new(false));
+        let input_called_clone = input_called.clone();
+        
+        let input_injector: InputInjector = Arc::new(move |_| {
+            input_called_clone.store(true, Ordering::SeqCst);
+        });
+        
+        let session_id = uuid::Uuid::new_v4();
+        let json = format!(
+            r#"{{"type": "input", "session_id": "{session_id}", "message": "Test"}}"#
+        );
+        
+        let result = super::handle_inbound_message(&json, session_id, input_injector, None).await;
+        assert!(result.is_ok());
+        assert!(input_called.load(Ordering::SeqCst));
+    }
+    
+    /// Test control message without handler is handled gracefully
+    #[tokio::test]
+    async fn test_control_message_without_handler() {
+        let input_injector: InputInjector = Arc::new(|_| {});
+        
+        let session_id = uuid::Uuid::new_v4();
+        let json = format!(
+            r#"{{"type": "control", "session_id": "{session_id}", "message": "", "action": "interrupt"}}"#
+        );
+        
+        // Should not panic - just log a warning
+        let result = super::handle_inbound_message(&json, session_id, input_injector, None).await;
+        assert!(result.is_ok(), "Should handle gracefully when no control handler is set");
+    }
+    
+    /// Test control message parsing with action field
+    #[test]
+    fn test_inbound_message_parse_control() {
+        let json = r#"{"type": "control", "session_id": "test-id", "message": "", "action": "interrupt"}"#;
+        let msg: InboundMessage = serde_json::from_str(json).unwrap();
+        assert_eq!(msg.msg_type, "control");
+        assert_eq!(msg.session_id, "test-id");
+        assert_eq!(msg.action, Some("interrupt".to_string()));
     }
 }

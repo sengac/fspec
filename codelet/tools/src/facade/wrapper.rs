@@ -877,7 +877,7 @@ mod bridge_wrapper_tests {
         let (tx, _rx) = tokio::sync::broadcast::channel::<serde_json::Value>(16);
         let broadcast_factory: crate::BroadcastReceiverFactory = Arc::new(move || tx.subscribe());
         let input_injector: crate::InputInjector = Arc::new(|_| {});
-        set_bridge_session_context(expected_session_id, broadcast_factory, input_injector);
+        set_bridge_session_context(expected_session_id, broadcast_factory, input_injector, None);
 
         // @step When the BridgeToolFacadeWrapper is created with session_id at construction (TOOL-012)
         let wrapper = BridgeToolFacadeWrapper::new(Arc::new(ClaudeBridgeFacade), expected_session_id);

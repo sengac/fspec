@@ -6,20 +6,20 @@
 //! Tests map directly to Gherkin scenarios in the feature file.
 
 #[cfg(test)]
-mod tests {
+mod credential_tests {
     use crate::credentials::{
-        credentials_reload, extract_provider_from_model, get_disk_read_count,
-        init_credential_store_with_dir, refresh_credentials_on_resume, reset_credential_store,
-        reset_disk_read_count, resolve_credential, resolve_credential_for_session,
+        extract_provider_from_model, get_disk_read_count, init_credential_store_with_dir,
+        refresh_credentials_on_resume, reset_credential_store, reset_disk_read_count,
+        resolve_credential, resolve_credential_for_session,
     };
     use serial_test::serial;
     use std::env;
     use std::fs;
-    use std::path::PathBuf;
+    use std::path::Path;
     use tempfile::TempDir;
 
     /// Helper to create a temporary credentials directory with a credentials file
-    fn setup_credentials_file(data_dir: &PathBuf, provider: &str, api_key: &str) {
+    fn setup_credentials_file(data_dir: &Path, provider: &str, api_key: &str) {
         let cred_dir = data_dir.join("credentials");
         fs::create_dir_all(&cred_dir).unwrap();
         let cred_file = cred_dir.join("credentials.json");
@@ -39,7 +39,7 @@ mod tests {
     }
 
     /// Helper to create an empty credentials file
-    fn setup_empty_credentials_file(data_dir: &PathBuf) {
+    fn setup_empty_credentials_file(data_dir: &Path) {
         let cred_dir = data_dir.join("credentials");
         fs::create_dir_all(&cred_dir).unwrap();
         let cred_file = cred_dir.join("credentials.json");
@@ -47,7 +47,7 @@ mod tests {
     }
 
     /// Helper to create a .env file with an API key
-    fn setup_dotenv_file(project_dir: &PathBuf, env_var: &str, api_key: &str) {
+    fn setup_dotenv_file(project_dir: &Path, env_var: &str, api_key: &str) {
         let env_file = project_dir.join(".env");
         let content = format!("{}={}\n", env_var, api_key);
         fs::write(&env_file, content).unwrap();
@@ -402,10 +402,8 @@ mod tests {
 
         // For now, this test documents the security requirement
         // The actual enforcement is via code review of napi_bindings.rs
-        assert!(
-            true,
-            "Security constraint: no NAPI function returns credentials (verified by code review)"
-        );
+        // Test passes because credentials_reload returns bool, not credentials
+        // Verified by checking the function signature in napi_bindings.rs
     }
 }
 

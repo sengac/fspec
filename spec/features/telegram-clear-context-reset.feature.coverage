@@ -1,0 +1,172 @@
+{
+  "scenarios": [
+    {
+      "name": "Clear command resets AI context completely",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/telegram_clear_context_test.rs",
+          "lines": "45-98",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                4508,
+                4509,
+                4510,
+                4511,
+                4512,
+                4513,
+                4514,
+                4515,
+                4516,
+                4517,
+                4518,
+                4519,
+                4520,
+                4521,
+                4522,
+                4523,
+                4524,
+                4525,
+                4526,
+                4527,
+                4528,
+                4529,
+                4530
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System reminders preserved after clear",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/telegram_clear_context_test.rs",
+          "lines": "100-161",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                4508,
+                4509,
+                4510,
+                4511,
+                4512,
+                4513,
+                4514,
+                4515,
+                4516,
+                4517,
+                4518,
+                4519,
+                4520,
+                4521,
+                4522,
+                4523,
+                4524,
+                4525,
+                4526,
+                4527,
+                4528,
+                4529,
+                4530
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token counters reset after clear",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/telegram_clear_context_test.rs",
+          "lines": "163-208",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                4508,
+                4509,
+                4510,
+                4511,
+                4512,
+                4513,
+                4514,
+                4515,
+                4516,
+                4517,
+                4518,
+                4519,
+                4520,
+                4521,
+                4522,
+                4523,
+                4524,
+                4525,
+                4526,
+                4527,
+                4528,
+                4529,
+                4530
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clear resets session state not just output buffer",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/telegram_clear_context_test.rs",
+          "lines": "210-259",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                4508,
+                4509,
+                4510,
+                4511,
+                4512,
+                4513,
+                4514,
+                4515,
+                4516,
+                4517,
+                4518,
+                4519,
+                4520,
+                4521,
+                4522,
+                4523,
+                4524,
+                4525,
+                4526,
+                4527,
+                4528,
+                4529,
+                4530
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/telegram_clear_context_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 304
+  }
+}

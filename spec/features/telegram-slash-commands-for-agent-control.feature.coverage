@@ -1,0 +1,276 @@
+{
+  "scenarios": [
+    {
+      "name": "Show available commands with /help",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "56-80",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Check status when agent is idle",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "82-102",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Check status when agent is processing",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "104-124",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stop agent when it is running",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "126-152",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stop agent when it is already idle",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "154-173",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clear conversation history",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "175-204",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Handle unknown slash command",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "206-231",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                109,
+                110,
+                111,
+                112,
+                113,
+                114,
+                115
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slash commands are case-insensitive",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "233-259",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [
+                125,
+                126,
+                127,
+                128,
+                129
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Slash commands are not forwarded to the agent",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-slash-commands.test.ts",
+          "lines": "261-280",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674,
+                675,
+                676,
+                677,
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684,
+                685,
+                686,
+                687,
+                688,
+                689,
+                690,
+                691,
+                692
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 9,
+    "coveredScenarios": 9,
+    "coveragePercent": 100,
+    "testFiles": [
+      "bridge/__tests__/telegram-slash-commands.test.ts"
+    ],
+    "implFiles": [
+      "bridge/telegram-slash-commands.ts",
+      "bridge/telegram-endpoint.ts"
+    ],
+    "totalLinesCovered": 332
+  }
+}
