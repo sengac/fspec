@@ -168,5 +168,5 @@ Test the local bindings (macOS only):
 
 ```bash
 cd codelet/napi
-node -e "const { CodeletSession } = require('./index.js'); console.log('OK')"
+node -e "const { BackgroundSession } = require('./index.js'); console.log('OK')"
 ```

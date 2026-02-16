@@ -45,7 +45,7 @@ Stream item types:
 
 ## NAPI-RS Integration Strategy
 
-1. Create `CodeletSession` class that wraps `codelet_cli::session::Session`
+1. Create `BackgroundSession` class that wraps `codelet_cli::session::Session`
 2. Expose getters: `currentProviderName`, `availableProviders`, `tokenTracker`, `messages`
 3. Expose methods: `switchProvider(name)`, `clearHistory()`
 4. Create `prompt(input, callback)` async function using `ThreadsafeFunction<StreamChunk>`

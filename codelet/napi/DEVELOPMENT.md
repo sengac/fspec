@@ -227,4 +227,4 @@ npm login
 
 ## Version History
 
-- `0.1.0` - Initial release with CodeletSession, persistence APIs, multi-provider support
+- `0.1.0` - Initial release with BackgroundSession, persistence APIs, multi-provider support

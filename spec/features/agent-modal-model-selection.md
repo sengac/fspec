@@ -44,9 +44,9 @@ Implement a hierarchical model selector that:
 ┌─────────────────────────────────────────────────────────────┐
 │  3. NAPI Layer (codelet-napi)                               │
 │     - modelsListAll() → Vec<NapiProviderModels>             │
-│     - CodeletSession.newWithModel(modelString)              │
-│     - CodeletSession.selectModel(modelString)               │
-│     - CodeletSession.selectedModel getter                    │
+│     - BackgroundSession.newWithModel(modelString)              │
+│     - BackgroundSession.selectModel(modelString)               │
+│     - BackgroundSession.selectedModel getter                    │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
@@ -93,7 +93,7 @@ Implement a hierarchical model selector that:
 1. User navigates with arrow keys, Enter to select
        │
        ▼
-2. selectModel("provider/model-id") called on CodeletSession
+2. selectModel("provider/model-id") called on BackgroundSession
        │
        ▼
 3. ProviderManager.select_model() validates and switches model
@@ -109,7 +109,7 @@ Implement a hierarchical model selector that:
 | File | Purpose |
 |------|---------|
 | `src/tui/components/AgentModal.tsx` | Main modal component, selector overlay |
-| `codelet/napi/src/session.rs` | CodeletSession with newWithModel(), selectModel() |
+| `codelet/napi/src/session.rs` | BackgroundSession with newWithModel(), selectModel() |
 | `codelet/napi/src/models.rs` | modelsListAll(), modelsListForProvider(), modelsGetInfo() |
 | `codelet/providers/src/manager.rs` | ProviderManager.select_model(), selected_model_string() |
 | `codelet/providers/src/models/registry.rs` | ModelRegistry validation |
@@ -215,7 +215,7 @@ const mapProviderNameToId = (providerName: string): string => {
 
 ## Critical Implementation Requirements
 
-1. **MUST use `CodeletSession.newWithModel()`** for session creation (not basic constructor)
+1. **MUST use `BackgroundSession.newWithModel()`** for session creation (not basic constructor)
 2. **MUST filter to only models with `tool_call=true`** capability
 3. **MUST show capability indicators** (`[R]` reasoning, `[V]` vision, `[200k]` context)
 4. **MUST persist full model path** `"provider/model-id"` in session manifest
@@ -279,20 +279,20 @@ npm run build
 
 Verify these exports exist in `index.d.ts`:
 - `modelsListAll(): Promise<NapiProviderModels[]>`
-- `CodeletSession.newWithModel(modelString: string): Promise<CodeletSession>`
-- `CodeletSession.selectModel(modelString: string): Promise<void>`
-- `CodeletSession.selectedModel: string | null`
+- `BackgroundSession.newWithModel(modelString: string): Promise<BackgroundSession>`
+- `BackgroundSession.selectModel(modelString: string): Promise<void>`
+- `BackgroundSession.selectedModel: string | null`
 
 ### Phase 2: Session Initialization
 
 Update `initSession` in AgentModal.tsx to use `newWithModel()`:
 
 ```typescript
-const { modelsListAll, CodeletSession } = codeletNapi;
+const { modelsListAll, BackgroundSession } = codeletNapi;
 
 // Load available models
 const allModels = await modelsListAll();
-const availableProviderNames = new CodeletSession().availableProviders;
+const availableProviderNames = new BackgroundSession().availableProviders;
 
 // Filter and build sections
 const sections = buildProviderSections(allModels, availableProviderNames);
@@ -302,7 +302,7 @@ const defaultModel = findFirstAvailableModel(sections);
 const modelString = `${defaultModel.providerId}/${defaultModel.modelId}`;
 
 // Create session with model
-const newSession = await CodeletSession.newWithModel(modelString);
+const newSession = await BackgroundSession.newWithModel(modelString);
 ```
 
 ### Phase 3: Model Selector Component

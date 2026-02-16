@@ -41,7 +41,7 @@ let matches = root.find_all(pattern_owned.as_str());
 **File:** `codelet/napi/src/lib.rs`
 
 Current exports include:
-- `CodeletSession` - Main session class
+- `BackgroundSession` - Main session class
 - `persistenceStoreMessageEnvelope` - Persistence functions
 - `getThinkingConfig` - Thinking level configuration
 - `modelsListAll`, `modelsRefreshCache` - Model management

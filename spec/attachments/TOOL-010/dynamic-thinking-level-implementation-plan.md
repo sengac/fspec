@@ -90,7 +90,7 @@ Only match command-like phrases, NOT conversational usage:
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Rust: CodeletSession receives thinking config              │
+│  Rust: BackgroundSession receives thinking config              │
 │  Location: codelet/napi/src/session.rs                      │
 │  Merges config into request additional_params               │
 └─────────────────────────────────────────────────────────────┘

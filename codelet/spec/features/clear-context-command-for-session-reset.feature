@@ -3,7 +3,7 @@ Feature: Clear context command for session reset
 
   """
   Architecture notes:
-  - /clear must reset session to equivalent of fresh CodeletSession state
+  - /clear must reset session to equivalent of fresh BackgroundSession state
   - CRITICAL: clear_history() destroys system reminders (CLAUDE.md, environment info)
   - MUST call inject_context_reminders() after clearing to restore project context
   - Without reinjecting reminders, AI loses CLAUDE.md context on next prompt

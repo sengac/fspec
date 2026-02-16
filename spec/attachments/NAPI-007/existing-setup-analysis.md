@@ -9,7 +9,7 @@
 **Key Files**:
 - `Cargo.toml` - Rust crate configuration with NAPI-RS dependencies
 - `package.json` - npm package configuration with 6 target platforms
-- `src/lib.rs` - Module root exposing CodeletSession
+- `src/lib.rs` - Module root exposing BackgroundSession
 - `src/session.rs` - Main class with prompt(), interrupt(), compact(), etc.
 - `src/types.rs` - TypeScript interface definitions
 - `src/output.rs` - Stream handling via ThreadsafeFunction

@@ -1410,6 +1410,41 @@ impl BackgroundSession {
         clear_bash_abort();
     }
     
+    /// TUI-065: Clear session history and reinject context reminders
+    ///
+    /// This method clears the session's messages, turns, and token tracker,
+    /// then reinjects the context reminders (CLAUDE.md, environment info) so
+    /// the AI retains project context after clearing.
+    ///
+    /// DRY: This is the single source of truth for clear functionality.
+    /// Both TUI /clear command (via NAPI) and Telegram bridge /clear use this.
+    ///
+    /// Note: Caller is responsible for wrapping in `tokio::task::block_in_place()`
+    /// if calling from an async context (like the bridge control handler).
+    pub fn clear_history(&self) {
+        // Clear the output buffer (conversation history display)
+        if let Ok(mut buffer) = self.output_buffer.write() {
+            buffer.clear();
+        }
+        
+        // Clear actual session state (messages, turns, tokens)
+        let mut inner = self.inner.blocking_lock();
+        inner.messages.clear();
+        inner.turns.clear();
+        inner.token_tracker = codelet_core::compaction::TokenTracker::default();
+        
+        // CRITICAL: Reinject context reminders so AI retains project context
+        // Without this, the AI loses CLAUDE.md and environment info
+        inner.inject_context_reminders();
+        drop(inner);
+        
+        // Reset the interrupt flag
+        self.reset_interrupt();
+        
+        // TUI-066: Emit chunk so React updates state as side effect
+        self.handle_output(StreamChunk::session_state_change(SessionState::Cleared));
+    }
+    
     /// Get session info for listing
     pub fn get_info(&self) -> SessionInfo {
         // Get message count from output buffer (each turn produces multiple chunks,
@@ -4507,29 +4542,12 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                     }
                     "clear" => {
                         tracing::info!("Bridge control: clearing session");
-                        // AGENT-022: Use block_in_place because this closure is called from async context
+                        // TUI-065: Use block_in_place because this closure is called from async context
                         // (handle_inbound_message is async). blocking_lock() panics if called directly
                         // from within a tokio runtime without this wrapper.
                         tokio::task::block_in_place(|| {
-                            // Clear the output buffer (conversation history display)
-                            if let Ok(mut buffer) = session_for_control.output_buffer.write() {
-                                buffer.clear();
-                            }
-                            
-                            // AGENT-022: Clear actual session state (messages, turns, tokens)
-                            // This is CRITICAL - without this, the AI remembers the previous conversation
-                            let mut inner = session_for_control.inner.blocking_lock();
-                            inner.messages.clear();
-                            inner.turns.clear();
-                            inner.token_tracker = codelet_core::compaction::TokenTracker::default();
-                            
-                            // CRITICAL: Reinject context reminders so AI retains project context
-                            // Without this, the AI loses CLAUDE.md and environment info
-                            inner.inject_context_reminders();
-                            drop(inner);
-                            
-                            // Reset the interrupt flag
-                            session_for_control.reset_interrupt();
+                            // DRY: Use the shared clear_history method
+                            session_for_control.clear_history();
                         });
                     }
                     _ => {
@@ -5202,6 +5220,21 @@ pub fn session_send_input(session_id: String, input: String, thinking_config: Op
 pub fn session_interrupt(session_id: String) -> Result<()> {
     let session = SessionManager::instance().get_session(&session_id)?;
     session.interrupt();
+    Ok(())
+}
+
+/// TUI-065: Clear session history and reinject context reminders
+///
+/// This function clears the session's messages, turns, and token tracker,
+/// then reinjects the context reminders (CLAUDE.md, environment info) so
+/// the AI retains project context after clearing.
+///
+/// DRY: This is the single source of truth for clear functionality.
+/// Both TUI /clear command and Telegram bridge /clear should use this.
+#[napi]
+pub fn session_clear_history(session_id: String) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    session.clear_history();
     Ok(())
 }
 

@@ -81,14 +81,14 @@ The cleanest fix is to use `tokio::sync::Notify` to allow the JavaScript interru
 
 ### Implementation Design
 
-#### 1. Add Notify to CodeletSession
+#### 1. Add Notify to BackgroundSession
 
 **File: `codelet/napi/src/session.rs`**
 
 ```rust
 use tokio::sync::Notify;
 
-pub struct CodeletSession {
+pub struct BackgroundSession {
     inner: Arc<Mutex<codelet_cli::session::Session>>,
     is_interrupted: Arc<AtomicBool>,
     interrupt_notify: Arc<Notify>,  // NEW

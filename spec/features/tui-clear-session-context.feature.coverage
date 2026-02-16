@@ -1,0 +1,246 @@
+{
+  "scenarios": [
+    {
+      "name": "Clear command resets AI context completely",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "lines": "20-52",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1411,
+                1412,
+                1413,
+                1414,
+                1415,
+                1416,
+                1417,
+                1418,
+                1419,
+                1420,
+                1421,
+                1422,
+                1423,
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token counters reset after clear",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "lines": "57-87",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1411,
+                1412,
+                1413,
+                1414,
+                1415,
+                1416,
+                1417,
+                1418,
+                1419,
+                1420,
+                1421,
+                1422,
+                1423,
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System reminders preserved after clear",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "lines": "92-123",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1411,
+                1412,
+                1413,
+                1414,
+                1415,
+                1416,
+                1417,
+                1418,
+                1419,
+                1420,
+                1421,
+                1422,
+                1423,
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clear implementation uses shared DRY function",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "lines": "128-150",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5240,
+                5241,
+                5242,
+                5243,
+                5244,
+                5245,
+                5246,
+                5247,
+                5248,
+                5249,
+                5250,
+                5251,
+                5252,
+                5253
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Provider and debug state preserved across clear",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "lines": "155-173",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1411,
+                1412,
+                1413,
+                1414,
+                1415,
+                1416,
+                1417,
+                1418,
+                1419,
+                1420,
+                1421,
+                1422,
+                1423,
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/tui_clear_session_context_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 288
+  }
+}

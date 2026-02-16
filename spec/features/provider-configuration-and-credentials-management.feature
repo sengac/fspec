@@ -30,7 +30,7 @@ Feature: Provider Configuration and Credentials Management
   # EXAMPLES:
   #   0. User opens Settings tab in model selection, enters Anthropic API key, key is saved to ~/.fspec/credentials/credentials.json with 600 permissions
   #   1. User configures OpenRouter with custom base URL, provider settings saved to ~/.fspec/fspec-config.json under providers.openrouter
-  #   2. TypeScript code calls CodeletSession.new_with_credentials(modelString, providerConfig) with explicit API key, session created without reading environment
+  #   2. TypeScript code calls BackgroundSession.new_with_credentials(modelString, providerConfig) with explicit API key, session created without reading environment
   #   3. Model selection shows 'Anthropic (configured)' with green checkmark when credentials exist, 'OpenAI (not configured)' with warning when missing
   #   4. User has ANTHROPIC_API_KEY in environment but also has different key in ~/.fspec/credentials, credentials file takes precedence
   #   5. User clicks Test Connection button for a provider, system validates API key by making a lightweight API call, shows success or error
@@ -71,7 +71,7 @@ Feature: Provider Configuration and Credentials Management
   @napi @programmatic
   Scenario: Create session with programmatic credentials via NAPI
     Given I have TypeScript code that imports codelet-napi
-    When I call CodeletSession.new_with_credentials with model "anthropic/claude-sonnet-4" and API key
+    When I call BackgroundSession.new_with_credentials with model "anthropic/claude-sonnet-4" and API key
     Then a session should be created successfully
     And the session should use the provided API key
     And the session should not read from environment variables
@@ -141,7 +141,7 @@ Feature: Provider Configuration and Credentials Management
   Scenario: Explicit credentials take highest priority
     Given I have an API key in the credentials file for "anthropic"
     And I have ANTHROPIC_API_KEY set in the environment
-    When I call CodeletSession.new_with_credentials with a different explicit API key
+    When I call BackgroundSession.new_with_credentials with a different explicit API key
     Then the explicit API key should be used
     And neither the credentials file nor environment variable should be used
 

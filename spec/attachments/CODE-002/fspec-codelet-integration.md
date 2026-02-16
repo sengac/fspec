@@ -55,7 +55,7 @@ console.error(systemReminder);
 - **Rust-based tool system** with tools in `codelet/tools/src/`
 - **NAPI-RS bindings** expose tools to Node.js in `codelet/napi/`
 - **Current tools**: Bash, Read, Write, Edit, AstGrep, Glob, Grep, WebSearch
-- **AgentView.tsx/SplitSessionView.tsx** use tools via CodeletSession
+- **AgentView.tsx/SplitSessionView.tsx** use tools via BackgroundSession
 
 ### Problems with Current Bash Approach
 

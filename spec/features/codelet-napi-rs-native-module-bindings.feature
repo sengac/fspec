@@ -14,7 +14,7 @@ Feature: Codelet NAPI-RS Native Module Bindings
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. The native module must expose a CodeletSession class that manages conversation state, provider selection, and token tracking
+  #   1. The native module must expose a BackgroundSession class that manages conversation state, provider selection, and token tracking
   #   2. The native module must support streaming responses via ThreadsafeFunction callbacks, emitting chunks for text, tool calls, tool results, and completion
   #   3. Tool execution must be auto-executed without user approval (matching current codelet behavior)
   #   4. Sessions start fresh each time (no persistence across fspec restarts)
@@ -26,8 +26,8 @@ Feature: Codelet NAPI-RS Native Module Bindings
   #   10. The native module must be bundled into the main fspec package, not published as a separate npm package
   #
   # EXAMPLES:
-  #   1. import { CodeletSession } from 'codelet-napi'; const session = new CodeletSession(); // Creates session with auto-detected provider
-  #   2. const session = new CodeletSession('claude'); // Creates session with specific provider
+  #   1. import { BackgroundSession } from 'codelet-napi'; const session = new BackgroundSession(); // Creates session with auto-detected provider
+  #   2. const session = new BackgroundSession('claude'); // Creates session with specific provider
   #   3. session.availableProviders // Returns ['claude', 'openai', 'gemini'] based on configured credentials
   #   4. await session.prompt('Read the README', (chunk) => { if (chunk.type === 'text') console.log(chunk.text); })
   #   5. chunk.type can be: 'text' | 'tool_call' | 'tool_result' | 'done' | 'error'
@@ -57,13 +57,13 @@ Feature: Codelet NAPI-RS Native Module Bindings
 
   Scenario: Create session with auto-detected provider
     Given I have at least one provider configured with credentials
-    When I create a new CodeletSession without specifying a provider
+    When I create a new BackgroundSession without specifying a provider
     Then the session should be created with the highest priority available provider
     And the currentProviderName getter should return the detected provider name
 
   Scenario: Create session with specific provider
     Given I have Claude provider configured with credentials
-    When I create a new CodeletSession with provider name 'claude'
+    When I create a new BackgroundSession with provider name 'claude'
     Then the session should be created with the Claude provider
     And the currentProviderName getter should return 'claude'
 
@@ -73,43 +73,43 @@ Feature: Codelet NAPI-RS Native Module Bindings
     Then I should receive an array containing 'claude', 'openai', and 'gemini'
 
   Scenario: Stream prompt with text chunks
-    Given I have an active CodeletSession
+    Given I have an active BackgroundSession
     When I call session.prompt with input text and a callback function
     Then the callback should receive chunks with type 'text' containing streamed content
     And the final chunk should have type 'done'
 
   Scenario: Track token usage during conversation
-    Given I have an active CodeletSession
+    Given I have an active BackgroundSession
     When I complete a prompt that uses tokens
     Then the tokenTracker getter should return inputTokens, outputTokens, and cache token counts
 
   Scenario: Switch provider mid-conversation
-    Given I have an active CodeletSession with Claude provider
+    Given I have an active BackgroundSession with Claude provider
     When I call session.switchProvider with 'openai'
     Then the currentProviderName should return 'openai'
     And I have completed at least one prompt
     And subsequent prompts should use the OpenAI provider
 
   Scenario: Receive tool call chunks during streaming
-    Given I have an active CodeletSession
+    Given I have an active BackgroundSession
     When I prompt with a request that triggers a tool call like 'read this file'
     Then the callback should receive a chunk with type 'tool_call'
     And the toolCall object should contain id, name, and input properties
 
   Scenario: Receive tool result chunks after tool execution
-    Given I have an active CodeletSession
+    Given I have an active BackgroundSession
     When a tool call is executed automatically
     Then the callback should receive a chunk with type 'tool_result'
     And the toolResult object should contain toolCallId, content, and isError properties
 
   Scenario: Auto-inject context reminders on session creation
     Given I am in a directory with a CLAUDE.md file
-    When I create a new CodeletSession
+    When I create a new BackgroundSession
     Then the session messages should include context reminders
     And the context should include CLAUDE.md content and environment information
 
   Scenario: Trigger context compaction automatically
-    Given I have an active CodeletSession with many messages
+    Given I have an active BackgroundSession with many messages
     When I send another prompt
     Then the session should automatically compact the context
     And the token count approaches the context window threshold

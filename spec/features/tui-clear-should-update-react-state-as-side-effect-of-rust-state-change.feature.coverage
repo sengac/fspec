@@ -1,0 +1,172 @@
+{
+  "scenarios": [
+    {
+      "name": "TUI /clear triggers Rust state change which emits chunk to update React",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-066-clear-state-change-chunk.test.ts",
+          "lines": "76-120",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444,
+                1445,
+                1446
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bridge /clear uses same Rust code path as TUI",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-066-clear-state-change-chunk.test.ts",
+          "lines": "122-153",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444,
+                1445,
+                1446
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System reminders preserved after clear",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-066-clear-state-change-chunk.test.ts",
+          "lines": "155-180",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444,
+                1445,
+                1446
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Clear failure does not corrupt React state",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/TUI-066-clear-state-change-chunk.test.ts",
+          "lines": "182-216",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443,
+                1444,
+                1445,
+                1446
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 4,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/TUI-066-clear-state-change-chunk.test.ts"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 230
+  }
+}

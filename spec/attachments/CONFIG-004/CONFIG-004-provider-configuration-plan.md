@@ -38,7 +38,7 @@ pub struct ProviderCredentials {
 - No API key configuration UI
 
 **Codelet-NAPI (`codelet/napi/`)**:
-- `CodeletSession` class
+- `BackgroundSession` class
 - No credential passing mechanism
 - Provider selection via environment only
 
@@ -226,7 +226,7 @@ pub struct NapiCredentialsConfig {
 
 ```rust
 #[napi]
-impl CodeletSession {
+impl BackgroundSession {
     // Existing: auto-detect from environment
     #[napi(constructor)]
     pub fn new(provider_name: Option<String>) -> Result<Self>;
@@ -398,7 +398,7 @@ OpenRouter provides access to many models via a unified API. This is important f
 │   1. Load credentials from credentials.ts                                │
 │   2. Load provider config from config.ts                                 │
 │   3. Merge: { apiKey, enabled, defaultModel, baseUrl }                   │
-│   4. Create session: CodeletSession.new_with_credentials(...)            │
+│   4. Create session: BackgroundSession.new_with_credentials(...)            │
 └────────────────────────────────────┬────────────────────────────────────┘
                                      │
                                      ▼
@@ -466,7 +466,7 @@ OpenRouter provides access to many models via a unified API. This is important f
 
 #### Phase 2: Codelet-NAPI Integration
 1. Add `NapiProviderConfig` type to Rust NAPI bindings
-2. Implement `CodeletSession::new_with_credentials()`
+2. Implement `BackgroundSession::new_with_credentials()`
 3. Update `ProviderManager` to accept explicit credentials
 4. Add `set_provider_credential()` for runtime updates
 

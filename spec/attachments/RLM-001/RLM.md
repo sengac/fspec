@@ -346,7 +346,7 @@ export interface RLMConfig {
   subModel?: string;  // Optional different model for sub-calls
 }
 
-export class CodeletSession {
+export class BackgroundSession {
   // Existing methods...
   
   /** Enable RLM mode for next prompt */

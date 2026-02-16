@@ -13,7 +13,7 @@ Analyze existing codebase structure to understand integration points for backgro
 Key structs that will be extended or integrated with:
 
 ```
-codelet/napi/src/session.rs:36 - pub struct CodeletSession
+codelet/napi/src/session.rs:36 - pub struct BackgroundSession
 codelet/napi/src/types.rs:118 - pub struct StreamChunk
 codelet/napi/src/output.rs:80 - pub struct NapiOutput
 codelet/napi/src/persistence/types.rs:129 - pub struct SessionManifest
@@ -29,7 +29,7 @@ codelet/napi/src/persistence/mod.rs:43 - MESSAGE_STORE, SESSION_STORE, BLOB_STOR
 
 New `SESSION_MANAGER` will follow this established pattern.
 
-### 3. CodeletSession Implementation
+### 3. BackgroundSession Implementation
 
 Location: `codelet/napi/src/session.rs:47`
 
@@ -50,7 +50,7 @@ Location: `src/tui/components/AgentView.tsx:593`
 Export: `export const AgentView: React.FC<AgentViewProps>`
 
 Current session ownership:
-- Line ~595: `const [session, setSession] = useState<CodeletSessionType | null>(null)`
+- Line ~595: `const [session, setSession] = useState<BackgroundSessionType | null>(null)`
 
 Will be refactored to use session ID and NAPI bindings instead of direct ownership.
 
@@ -67,7 +67,7 @@ Background sessions will use these existing stores for persistence.
 
 1. **New file**: `codelet/napi/src/session_manager.rs` - SessionManager singleton
 2. **Modify**: `codelet/napi/src/lib.rs` - expose new NAPI bindings
-3. **Modify**: `codelet/napi/src/session.rs` - BackgroundSession wraps CodeletSession
+3. **Modify**: `codelet/napi/src/session.rs` - BackgroundSession wraps BackgroundSession
 4. **Modify**: `src/tui/components/AgentView.tsx` - use session bindings instead of direct ownership
 
 ## Conclusion

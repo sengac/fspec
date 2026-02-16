@@ -125,6 +125,8 @@ import {
   sessionGetAnchorPoints,
   // UX-002: Compaction progress polling for automatic compaction
   sessionGetCompactionProgress,
+  // TUI-065: Clear session history
+  sessionClearHistory,
   // REFAC-008: sessionSendFspecResult removed - handled by GlobalSessionStreamManager
   type NapiAnchorPoint,
   type SessionRoleInfo,
@@ -2168,6 +2170,25 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
   }, []);
 
+  // TUI-065: Helper to handle /clear command - clears session context and resets conversation
+  const handleClearCommand = useCallback(() => {
+    // Clear the actual session context (messages, turns, tokens)
+    // This calls the NAPI function which clears the Rust session and reinjects context reminders
+    if (currentSessionId) {
+      try {
+        sessionClearHistory(currentSessionId);
+      } catch (err) {
+        logger.error('[AgentView] Failed to clear session history:', err);
+      }
+    }
+    
+    // Reset React state to match the cleared session
+    setConversation([]);
+    setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+    setContextFillPercentage(0);
+    // Note: currentProvider, isDebugEnabled, and historyEntries are preserved
+  }, [currentSessionId]);
+
   // SESS-001: Check for attached session on mount and mark for auto-resume
   useEffect(() => {
     if (workUnitId) {
@@ -2280,14 +2301,16 @@ export const AgentView: React.FC<AgentViewProps> = ({
       return;
     }
 
-    // AGENT-003: Handle /clear command - clear context and reset conversation
+    // TUI-066: Handle /clear command - call Rust, state updates via chunk handler
     if (userMessage === '/clear') {
       setInputValue('');
-      // Reset React state - background session history is managed by SessionManager
-      setConversation([]);
-      setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-      setContextFillPercentage(0);
-      // Note: currentProvider, isDebugEnabled, and historyEntries are preserved
+      if (currentSessionId) {
+        try {
+          sessionClearHistory(currentSessionId);
+        } catch (err) {
+          logger.error('[AgentView] Failed to clear session history:', err);
+        }
+      }
       return;
     }
 
@@ -3324,10 +3347,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
             } else if (chunk.type === 'SessionStateChange') {
               // NAPI-010: Internal state change - update state machine, do NOT add to conversation
 
-              // UX-002: Use unified compaction hook for ALL compaction state
-              // This ensures consistent behavior across manual, hook-triggered, and emergency compaction
-              // NOTE: Use compactionRef.current to avoid stale closure issues in this callback
-              if (chunk.state === 'Compacting') {
+              if (chunk.state === 'Cleared') {
+                // TUI-066: React state update as side effect of Rust clear_history()
+                setConversation([]);
+                setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+                setContextFillPercentage(0);
+              } else if (chunk.state === 'Compacting') {
+                // UX-002: Use unified compaction hook for ALL compaction state
                 const progress = sessionGetCompactionProgress(activeSessionId);
                 compactionRef.current.startCompaction(
                   'hook-triggered',
@@ -3746,12 +3772,16 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // Handle /clear command
+      // TUI-066: Handle /clear command - call Rust, state updates via chunk handler
       if (userMessage === '/clear') {
         setInputValue('');
-        setConversation([]);
-        setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-        setContextFillPercentage(0);
+        if (currentSessionId) {
+          try {
+            sessionClearHistory(currentSessionId);
+          } catch (err) {
+            logger.error('[AgentView] Failed to clear session history:', err);
+          }
+        }
         return;
       }
 
@@ -4573,12 +4603,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // (Rust persists token state when streaming completes - TODO: implement in session_manager.rs)
     } else if (chunk.type === 'SessionStateChange') {
       // NAPI-010: Internal state change - update state machine, do NOT add to conversation
-      // The state field tells us the new session state (Idle, Running, Paused, Compacting, Interrupted)
 
-      // UX-002: Use unified compaction hook for ALL compaction state
-      // This ensures consistent behavior across manual, hook-triggered, and emergency compaction
-      // NOTE: Use compactionRef.current to avoid stale closure issues in this callback
-      if (chunk.state === 'Compacting') {
+      if (chunk.state === 'Cleared') {
+        // TUI-066: React state update as side effect of Rust clear_history()
+        setConversation([]);
+        setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+        setContextFillPercentage(0);
+      } else if (chunk.state === 'Compacting') {
+        // UX-002: Use unified compaction hook for ALL compaction state
         const sessionId = currentSessionIdRef.current;
         if (sessionId) {
           const progress = sessionGetCompactionProgress(sessionId);

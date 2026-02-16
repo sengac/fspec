@@ -124,6 +124,6 @@ export declare function sessionManagerDestroy(sessionId: string): void
 ```
 
 ## Session ID Tracking
-Need to track currentSessionId - currently AgentView uses sessionRef.current (CodeletSession object) but NAPI functions need the session ID string.
+Need to track currentSessionId - currently AgentView uses sessionRef.current (BackgroundSession object) but NAPI functions need the session ID string.
 
 Option: Check if sessionManagerList() can identify the current session, or store ID when session is created.

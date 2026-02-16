@@ -137,10 +137,10 @@ The feature uses existing NAPI functions from NAPI-009 (Background Session Manag
 
 ### Session ID Tracking
 
-Currently `AgentView.tsx` doesn't track session ID explicitly (uses `sessionRef.current` for the CodeletSession object). Need to either:
+Currently `AgentView.tsx` doesn't track session ID explicitly (uses `sessionRef.current` for the BackgroundSession object). Need to either:
 
 1. **Option A**: Store session ID when creating session
-2. **Option B**: Get session ID from CodeletSession (if API supports it)
+2. **Option B**: Get session ID from BackgroundSession (if API supports it)
 
 Recommend Option A - add `currentSessionId` state that's set when session is created.
 

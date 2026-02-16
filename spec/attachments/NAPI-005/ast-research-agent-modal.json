@@ -9,7 +9,7 @@
     "debug_handler_code": "if (userMessage === '/debug') { setInputValue(''); try { const result = sessionRef.current.toggleDebug(getFspecUserDir()); setIsDebugEnabled(result.enabled); setConversation(prev => [...prev, { role: 'tool', content: result.message }]); } catch (err) { const errorMessage = err instanceof Error ? err.message : 'Failed to toggle debug mode'; setError(errorMessage); } return; }"
   },
   "integration_notes": {
-    "session_ref": "sessionRef.current provides access to CodeletSession",
+    "session_ref": "sessionRef.current provides access to BackgroundSession",
     "state_updates": "Use setConversation to add tool messages, setError for errors, setInputValue('') to clear input",
     "message_format": "Tool role messages displayed in yellow - use { role: 'tool', content: '...' }",
     "token_usage": "setTokenUsage can be called to update header display"

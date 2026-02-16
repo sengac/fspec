@@ -140,7 +140,7 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     Given the test job downloads build artifacts
     And Node.js 20 is installed
     When running a smoke test that imports codelet-napi
-    Then the CodeletSession class should be accessible
+    Then the BackgroundSession class should be accessible
     And no native module loading errors should occur
 
   # ============================================================

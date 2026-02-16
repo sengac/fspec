@@ -10,7 +10,7 @@ Feature: Agent Modal Model Selection
   LAYER ARCHITECTURE:
   1. UI Layer (AgentModal.tsx): Tab key trigger, hierarchical model selector overlay, header display
   2. State Layer (React): currentModel, providerSections, showModelSelector, expandedProviders
-  3. NAPI Layer (codelet-napi): modelsListAll(), CodeletSession.newWithModel(), selectModel(), selectedModel getter
+  3. NAPI Layer (codelet-napi): modelsListAll(), BackgroundSession.newWithModel(), selectModel(), selectedModel getter
   4. Provider Layer (codelet-providers): ModelRegistry, ModelCache, ProviderManager.select_model()
   5. Cache Layer: ~/.fspec/cache/models.json with embedded fallback
 
@@ -23,19 +23,19 @@ Feature: Agent Modal Model Selection
 
   DATA FLOW - Model Selection:
   1. User navigates with arrow keys, Enter to select
-  2. selectModel("provider/model-id") called on CodeletSession
+  2. selectModel("provider/model-id") called on BackgroundSession
   3. ProviderManager.select_model() validates and switches model
   4. Header updated to show model name and capability indicators
 
   FILE STRUCTURE:
   - src/tui/components/AgentModal.tsx - Main modal component, selector overlay
-  - codelet/napi/src/session.rs - CodeletSession with newWithModel(), selectModel()
+  - codelet/napi/src/session.rs - BackgroundSession with newWithModel(), selectModel()
   - codelet/napi/src/models.rs - modelsListAll(), modelsListForProvider(), modelsGetInfo()
   - codelet/providers/src/manager.rs - ProviderManager.select_model(), selected_model_string()
   - codelet/providers/src/models/registry.rs - ModelRegistry validation
 
   CRITICAL IMPLEMENTATION REQUIREMENTS:
-  - MUST use CodeletSession.newWithModel() for session creation (not basic constructor)
+  - MUST use BackgroundSession.newWithModel() for session creation (not basic constructor)
   - MUST filter to only models with tool_call=true capability
   - MUST show capability indicators ([R] reasoning, [V] vision, [200k] context)
   - MUST persist full model path "provider/model-id" in session manifest
@@ -192,7 +192,7 @@ Feature: Agent Modal Model Selection
   Scenario: New session uses newWithModel factory method
     Given I open the AgentModal
     When the session initializes
-    Then CodeletSession.newWithModel should be called
+    Then BackgroundSession.newWithModel should be called
     And the default model should be the first available with tool_call=true
 
   Scenario: Session stores full model path in persistence

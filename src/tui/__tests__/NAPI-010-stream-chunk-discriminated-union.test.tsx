@@ -35,15 +35,16 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
       expect(indexDts).toContain('state: SessionState');
     });
 
-    it('should handle SessionStateChange by calling refreshRustState, not adding to conversation', () => {
+    it('should handle SessionStateChange by calling refreshRustState, not adding messages to conversation', () => {
       // @step Given a StreamChunk handler processes incoming chunks from Rust
       // @step When Rust emits a SessionStateChange chunk with state Compacting
       // @step Then the handler updates isCompacting state to true
-      // @step And no message is added to the conversation
+      // @step And no message is ADDED to the conversation
 
       // SessionStateChange should:
       // 1. Call refreshRustState to update UI state (status indicators)
-      // 2. NOT call setConversation (internal state, not user-visible)
+      // 2. NOT ADD messages to conversation (internal state changes are not user-visible messages)
+      // 3. TUI-066: Cleared state is special - it CLEARS conversation (setConversation([])), not adds
 
       // Check handleStreamChunk (the main streaming handler)
       const handleStreamChunkFn = agentViewSource.match(
@@ -53,9 +54,9 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
 
       const handlerCode = handleStreamChunkFn![0];
 
-      // Extract the SessionStateChange handling block
+      // Extract the SessionStateChange handling block (full block until next chunk type check)
       const sessionStateChangeMatch = handlerCode.match(
-        /chunk\.type\s*===\s*['"]SessionStateChange['"][\s\S]*?(?=}\s*else\s*if)/
+        /chunk\.type\s*===\s*['"]SessionStateChange['"][\s\S]*?refreshRustState\([^)]+\);/
       );
       expect(sessionStateChangeMatch).not.toBeNull();
 
@@ -64,8 +65,14 @@ describe('NAPI-010: StreamChunk Discriminated Union', () => {
       // Verify it calls refreshRustState (which reads state including isCompacting from Rust)
       expect(sessionStateHandler).toContain('refreshRustState');
 
-      // Verify it does NOT call setConversation (would add to conversation)
-      expect(sessionStateHandler).not.toContain('setConversation');
+      // TUI-066: Verify it handles Cleared state by clearing conversation (not adding to it)
+      // setConversation([]) clears the conversation, which is correct for Cleared state
+      expect(sessionStateHandler).toContain("chunk.state === 'Cleared'");
+      expect(sessionStateHandler).toContain('setConversation([])');
+
+      // Verify it does NOT ADD to conversation (pattern: prev => [...prev, item])
+      // Clearing with setConversation([]) is OK, but we should not see prev => [...prev pattern
+      expect(sessionStateHandler).not.toMatch(/setConversation\s*\(\s*prev\s*=>/);
 
       // Also verify processChunksToConversation does NOT handle SessionStateChange
       // (it's intentionally excluded - internal state is not part of conversation history)

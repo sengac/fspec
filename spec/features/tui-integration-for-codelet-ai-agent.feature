@@ -10,7 +10,7 @@ Feature: TUI Integration for Codelet AI Agent
   Architecture notes:
   - Integrates codelet-napi native module (Rust via NAPI-RS) into existing fspec Ink/React TUI
   - Modal overlay renders on top of existing TUI views (board, work unit details)
-  - Uses CodeletSession class from codelet-napi for AI provider interactions
+  - Uses BackgroundSession class from codelet-napi for AI provider interactions
   - Streaming via ThreadsafeFunction callback for real-time chunk display
   - Fresh session per modal open (no persistence) simplifies state management
   - Provider auto-detection priority: Claude > Gemini > Codex > OpenAI

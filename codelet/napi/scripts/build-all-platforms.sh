@@ -244,4 +244,4 @@ done
 
 echo ""
 log_info "To test locally (macOS only), run:"
-echo "  node -e \"const { CodeletSession } = require('./index.js'); console.log('OK')\""
+echo "  node -e \"const { BackgroundSession } = require('./index.js'); console.log('OK')\""

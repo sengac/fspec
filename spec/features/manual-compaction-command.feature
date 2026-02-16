@@ -5,7 +5,7 @@
 Feature: Manual Compaction Command
 
   """
-  Integration: AgentModal.tsx handleSubmit intercepts /compact before session.prompt() (pattern from /debug lines 254-271). Dependency: CodeletSession in codelet-napi/src/session.rs exposes compact() method. Dependency: compact() calls execute_compaction from codelet/cli/src/interactive_helpers.rs. Type: CompactionResult contains metrics (originalTokens, compactedTokens, compressionRatio, turnsSummarized, turnsKept). Display: Result shown as tool role message (yellow) in conversation. Update: Token tracker in header refreshes immediately after compaction.
+  Integration: AgentModal.tsx handleSubmit intercepts /compact before session.prompt() (pattern from /debug lines 254-271). Dependency: BackgroundSession in codelet-napi/src/session.rs exposes compact() method. Dependency: compact() calls execute_compaction from codelet/cli/src/interactive_helpers.rs. Type: CompactionResult contains metrics (originalTokens, compactedTokens, compressionRatio, turnsSummarized, turnsKept). Display: Result shown as tool role message (yellow) in conversation. Update: Token tracker in header refreshes immediately after compaction.
   """
 
   # ========================================
@@ -17,7 +17,7 @@ Feature: Manual Compaction Command
   #   2. After compaction completes, the session must continue seamlessly without requiring user to resend their last message
   #   3. Token counts must be updated after manual compaction to reflect the reduced context size
   #   4. AgentModal.tsx handleSubmit must intercept /compact input BEFORE calling session.prompt() (same pattern as /debug at lines 254-271)
-  #   5. CodeletSession in codelet-napi/src/session.rs must expose a compact() method that calls execute_compaction from cli/src/interactive_helpers.rs
+  #   5. BackgroundSession in codelet-napi/src/session.rs must expose a compact() method that calls execute_compaction from cli/src/interactive_helpers.rs
   #   6. compact() must return CompactionResult with metrics (originalTokens, compactedTokens, compressionRatio, turnsSummarized, turnsKept)
   #   7. Compaction result message must be displayed in conversation area as a tool role message (yellow text)
   #   8. Token tracker display in header must update immediately after successful compaction

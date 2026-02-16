@@ -243,6 +243,7 @@ pub enum SessionState {
     Paused,
     Compacting,
     Interrupted,
+    Cleared,
 }
 
 /// NAPI-010: User notification severity levels

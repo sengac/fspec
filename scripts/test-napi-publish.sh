@@ -376,9 +376,9 @@ try {
     const pkg = require('@sengac/codelet-napi');
     console.log('Package exports:', Object.keys(pkg));
 
-    if (pkg.CodeletSession) {
-        console.log('✓ CodeletSession class found');
-        console.log('  Type:', typeof pkg.CodeletSession);
+    if (pkg.BackgroundSession) {
+        console.log('✓ BackgroundSession class found');
+        console.log('  Type:', typeof pkg.BackgroundSession);
     } else {
         console.log('Available exports:', pkg);
     }

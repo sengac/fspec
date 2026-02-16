@@ -1,0 +1,125 @@
+{
+  "scenarios": [
+    {
+      "name": "AI has no memory of prior conversation after clear",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "lines": "20-43",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                2285,
+                2286,
+                2287,
+                2288,
+                2289,
+                2290,
+                2291,
+                2292,
+                2293,
+                2294,
+                2295,
+                2296,
+                2297,
+                2298,
+                2299,
+                2300,
+                2301,
+                2302,
+                2303,
+                2304
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "System reminders preserved after clear",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "lines": "51-81",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Token counters reset after clear",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/tui_clear_session_context_test.rs",
+          "lines": "88-112",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1424,
+                1425,
+                1426,
+                1427,
+                1428,
+                1429,
+                1430,
+                1431,
+                1432,
+                1433,
+                1434,
+                1435,
+                1436,
+                1437,
+                1438,
+                1439,
+                1440,
+                1441,
+                1442,
+                1443
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/tui_clear_session_context_test.rs"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 140
+  }
+}

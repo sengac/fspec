@@ -103,7 +103,7 @@ sessionGetBufferedOutput(sessionId: string, limit: number): StreamChunk[];
 ```
 
 ### 4. AgentView.tsx Changes
-- Remove direct `CodeletSession` ownership
+- Remove direct `BackgroundSession` ownership
 - Add session selector UI (list running sessions)
 - Attach/detach via NAPI calls
 - Hydrate conversation from buffered output on attach

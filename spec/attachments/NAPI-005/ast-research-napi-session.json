@@ -6,7 +6,7 @@
   },
   "key_findings": {
     "session_methods": [
-      {"name": "new", "line": 46, "purpose": "Create new CodeletSession"},
+      {"name": "new", "line": 46, "purpose": "Create new BackgroundSession"},
       {"name": "toggle_debug", "line": 103, "purpose": "Toggle debug mode - PATTERN TO FOLLOW"},
       {"name": "token_tracker", "line": 163, "purpose": "Get current token usage"},
       {"name": "prompt", "line": 268, "purpose": "Send prompt with streaming callback"}

@@ -10,7 +10,7 @@ Feature: Background Session Management with Attach/Detach
   - SessionManager is a Rust singleton owning HashMap<Uuid, Arc<BackgroundSession>>
   - Each BackgroundSession spawns a tokio task running agent_loop that waits on mpsc channel for input
   - Attach stores ThreadsafeFunction callback; detach clears it but session continues
-  - AgentView.tsx refactored to use NAPI session bindings instead of direct CodeletSession ownership
+  - AgentView.tsx refactored to use NAPI session bindings instead of direct BackgroundSession ownership
   - Integrates with existing persistence system (persistenceStoreMessageEnvelope) for session recovery
   - Output buffering uses RwLock<Vec<StreamChunk>> unbounded buffer for full session history
   - Key files: codelet/napi/src/session_manager.rs, src/tui/components/AgentView.tsx

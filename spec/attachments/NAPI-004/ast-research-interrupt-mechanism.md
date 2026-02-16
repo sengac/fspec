@@ -6,7 +6,7 @@
 
 **Current Structure:**
 ```rust
-pub struct CodeletSession {
+pub struct BackgroundSession {
     inner: Arc<Mutex<codelet_cli::session::Session>>,
     is_interrupted: Arc<AtomicBool>,  // Current interrupt flag
 }
@@ -51,7 +51,7 @@ The interrupt check at line 246 only runs after `stream.next()` returns.
 
 Add `tokio::sync::Notify` to enable immediate wake-up:
 
-1. **CodeletSession changes:**
+1. **BackgroundSession changes:**
    - Add `interrupt_notify: Arc<Notify>` field
    - In `interrupt()`: call `notify_waiters()` after setting flag
 

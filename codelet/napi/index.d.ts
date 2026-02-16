@@ -983,6 +983,18 @@ export declare function sessionAttach(
 export declare function sessionClearActive(): void;
 
 /**
+ * TUI-065: Clear session history and reinject context reminders
+ *
+ * This function clears the session's messages, turns, and token tracker,
+ * then reinjects the context reminders (CLAUDE.md, environment info) so
+ * the AI retains project context after clearing.
+ *
+ * DRY: This is the single source of truth for clear functionality.
+ * Both TUI /clear command and Telegram bridge /clear should use this.
+ */
+export declare function sessionClearHistory(sessionId: string): void;
+
+/**
  * Clear pending observed correlation IDs for a session (WATCH-011)
  *
  * Call this after the watcher finishes processing an observation response.
@@ -1428,6 +1440,7 @@ export declare const enum SessionState {
   Paused = 'Paused',
   Compacting = 'Compacting',
   Interrupted = 'Interrupted',
+  Cleared = 'Cleared',
 }
 
 /**

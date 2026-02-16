@@ -9,7 +9,7 @@
 Feature: Immediate ESC interrupt during tool execution
 
   """
-  Uses tokio::sync::Notify to allow JavaScript interrupt signal to immediately wake blocked stream.next().await in NAPI mode. The interrupt() method calls notify_waiters() which wakes the tokio::select! in run_agent_stream_internal. CLI mode uses existing keyboard event stream via tokio::select! and is unchanged. Implementation requires adding Notify field to CodeletSession and passing it through to stream_loop.
+  Uses tokio::sync::Notify to allow JavaScript interrupt signal to immediately wake blocked stream.next().await in NAPI mode. The interrupt() method calls notify_waiters() which wakes the tokio::select! in run_agent_stream_internal. CLI mode uses existing keyboard event stream via tokio::select! and is unchanged. Implementation requires adding Notify field to BackgroundSession and passing it through to stream_loop.
   """
 
   # ========================================
