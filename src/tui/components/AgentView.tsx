@@ -1195,9 +1195,35 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // BRIDGE-013: Persistent chunk handler for bridge/watcher input display.
   // Always registered when viewing a session. Skips when handleSubmit's handler
   // is active (sessionCleanupRef.current set) to avoid duplicate updates.
+  // TUI-066: Also handles SessionStateChange with Cleared state from bridge /clear
+  //
+  // NOTE: We use a ref to access setContextFillPercentage since it's defined later
+  // in the component and would cause a TDZ error if included in dependencies.
+  // This is safe because React setters are stable and never change.
+  const setContextFillPercentageRef = useRef<
+    React.Dispatch<React.SetStateAction<number>>
+  >(null);
+
   const persistentChunkHandler = useCallback(
     (chunk: StreamChunk) => {
       if (!chunk || sessionCleanupRef.current) {
+        return;
+      }
+
+      // TUI-066: Handle SessionStateChange with Cleared state (from bridge /clear or TUI /clear)
+      // This must be handled here since persistentChunkHandler receives chunks when no
+      // handleSubmit is active (which is the case for /clear commands)
+      if (chunk.type === 'SessionStateChange') {
+        if (chunk.state === 'Cleared') {
+          setConversation([]);
+          setTokenUsage({ inputTokens: 0, outputTokens: 0 });
+          // Use ref to avoid TDZ - setContextFillPercentage is defined later
+          if (setContextFillPercentageRef.current) {
+            setContextFillPercentageRef.current(0);
+          }
+        }
+        // Other SessionStateChange states (Compacting, etc.) are handled by handleSubmit's handler
+        // when agent is running. If not running, we can safely ignore them here.
         return;
       }
 
@@ -1222,7 +1248,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return updated;
       });
     },
-    [setConversation]
+    [setConversation, setTokenUsage]
   );
 
   // BRIDGE-013: Register persistent handler - unregisters on session change or unmount
@@ -1347,6 +1373,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
   // TUI-033: Context window fill percentage (received from Rust via ContextFillUpdate event)
   const [contextFillPercentage, setContextFillPercentage] = useState<number>(0);
+
+  // TUI-066: Set ref for persistentChunkHandler to access setContextFillPercentage
+  // This avoids TDZ since persistentChunkHandler is defined before this state
+  useEffect(() => {
+    setContextFillPercentageRef.current = setContextFillPercentage;
+  }, [setContextFillPercentage]);
 
   // TUI-049: Centralized helper for updating token state from streaming chunks
   // This ensures consistent handling of TokenUpdate and ContextFillUpdate across all chunk handlers
@@ -2078,25 +2110,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
       sessionCleanupRef.current = null;
     }
   }, []);
-
-  // TUI-065: Helper to handle /clear command - clears session context and resets conversation
-  const handleClearCommand = useCallback(() => {
-    // Clear the actual session context (messages, turns, tokens)
-    // This calls the NAPI function which clears the Rust session and reinjects context reminders
-    if (currentSessionId) {
-      try {
-        sessionClearHistory(currentSessionId);
-      } catch (err) {
-        logger.error('[AgentView] Failed to clear session history:', err);
-      }
-    }
-    
-    // Reset React state to match the cleared session
-    setConversation([]);
-    setTokenUsage({ inputTokens: 0, outputTokens: 0 });
-    setContextFillPercentage(0);
-    // Note: currentProvider, isDebugEnabled, and historyEntries are preserved
-  }, [currentSessionId]);
 
   // SESS-001: Check for attached session on mount and mark for auto-resume
   useEffect(() => {
