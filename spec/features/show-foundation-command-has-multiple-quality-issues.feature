@@ -5,7 +5,6 @@
 @bug-fix
 @BUG-081
 Feature: show-foundation command has multiple quality issues
-
   """
   Fixes option name mismatch between registration (--section) and handler (options.field). Adds positional argument support for field parameter. Maintains backward compatibility with FIELD_MAP for mapped aliases and JSON path notation.
   """
@@ -29,7 +28,6 @@ Feature: show-foundation command has multiple quality issues
   #   5. Run 'fspec show-foundation --section nonExistentField' and receive error message 'Field not found'
   #
   # ========================================
-
   Background: User Story
     As a developer using show-foundation command
     I want to view foundation data with correct parameter handling
@@ -42,7 +40,6 @@ Feature: show-foundation command has multiple quality issues
     And the output should display only the project overview content
     And the output should not contain other foundation fields
 
-
   Scenario: Filter foundation using positional argument
     Given I have a foundation.json with projectOverview field
     When I run `fspec show-foundation projectOverview`
@@ -50,13 +47,11 @@ Feature: show-foundation command has multiple quality issues
     And the output should display only the project overview content
     And the result should match --section flag output
 
-
   Scenario: Filter foundation using JSON path notation
     Given I have a foundation.json with nested solutionSpace.overview field
     When I run `fspec show-foundation solutionSpace.overview`
     Then the command should exit with code 0
     And the output should display only the solution space overview content
-
 
   Scenario: Display entire foundation without field filter
     Given I have a complete foundation.json file
@@ -67,10 +62,8 @@ Feature: show-foundation command has multiple quality issues
     And the output should contain PROBLEM SPACE section
     And the output should contain SOLUTION SPACE section
 
-
   Scenario: Handle non-existent field error
     Given I have a foundation.json file
     When I run `fspec show-foundation --section nonExistentField`
     Then the command should exit with code 1
     And the output should show "Field 'nonExistentField' not found"
-

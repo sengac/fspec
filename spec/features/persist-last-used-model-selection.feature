@@ -4,7 +4,6 @@
 @persistence
 @TUI-035
 Feature: Persist Last Used Model Selection
-
   """
   LAYER ARCHITECTURE:
   1. UI Layer (AgentModal.tsx): Read persisted model on init, update on model switch
@@ -58,7 +57,6 @@ Feature: Persist Last Used Model Selection
   #   5. Fresh install with no config.json, uses default model selection logic
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec's AI agent
     I want to have my last used model remembered
@@ -67,7 +65,6 @@ Feature: Persist Last Used Model Selection
   # ----------------------------------------
   # RESTORATION ON NEW SESSION
   # ----------------------------------------
-
   Scenario: Restore persisted model on new session
     Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "anthropic/claude-opus-4"
     And ANTHROPIC_API_KEY is set
@@ -84,7 +81,6 @@ Feature: Persist Last Used Model Selection
   # ----------------------------------------
   # FALLBACK SCENARIOS
   # ----------------------------------------
-
   Scenario: Fall back when persisted model no longer exists
     Given ~/.fspec/fspec-config.json contains "tui.lastUsedModel": "google/old-deprecated-model"
     And GOOGLE_GENERATIVE_AI_API_KEY is set
@@ -115,7 +111,6 @@ Feature: Persist Last Used Model Selection
   # ----------------------------------------
   # CONFIG STRUCTURE
   # ----------------------------------------
-
   Scenario: Config uses proper nested structure
     Given I am in the AgentModal
     When I switch models via the selector

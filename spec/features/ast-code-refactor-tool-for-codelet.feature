@@ -6,7 +6,6 @@
 @ast
 @TOOLS-003
 Feature: AST Code Refactor Tool for Codelet
-
   """
   Implements rig::tool::Tool trait following existing AstGrepTool pattern in codelet/tools/src/astgrep.rs. Uses ast-grep-core and ast-grep-language crates for AST parsing. NAPI refactor implementation in codelet/napi/src/astgrep.rs provides reference algorithm. Supports 23 languages. Two modes: extract-to-file (default) and replace-in-place. Target file append mode for collecting multiple extractions. Async file I/O with tokio.
   """
@@ -47,7 +46,6 @@ Feature: AST Code Refactor Tool for Codelet
   #   A: No dry-run mode for initial implementation - keep it simple
   #
   # ========================================
-
   Background: User Story
     As a AI agent using codelet tools
     I want to refactor code by extracting AST-matched patterns to new files

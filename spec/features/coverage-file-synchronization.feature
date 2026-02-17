@@ -7,7 +7,6 @@
 @bug-fix
 @COV-055
 Feature: Coverage File Synchronization
-
   """
   Notification strategy: (1) Explicit commands (delete-scenario) always notify, (2) Automatic cleanup (generate-coverage) only notify if stale scenarios found, (3) Validation errors always notify. Use ✓ for success, ℹ for informational, ✗ for errors.
   """
@@ -46,7 +45,6 @@ Feature: Coverage File Synchronization
   #   1. No, do not preserve mappings from deleted scenarios. Clean removal without archiving.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to have coverage files automatically sync when scenarios are deleted
@@ -60,7 +58,6 @@ Feature: Coverage File Synchronization
     And the coverage statistics should show totalScenarios as 2
     And the output should display '✓ Deleted scenario "Scenario B" from test.feature' with coverage update notification
 
-
   Scenario: Bulk delete scenarios by tag removes coverage entries
     Given multiple feature files with scenarios tagged @deprecated
     And coverage files exist for all features
@@ -68,7 +65,6 @@ Feature: Coverage File Synchronization
     Then all @deprecated scenarios should be removed from feature files
     And all corresponding coverage entries should be removed
     And coverage statistics should be recalculated for affected files
-
 
   Scenario: Coverage validation detects stale scenarios
     Given a feature file with scenarios A and B
@@ -78,7 +74,6 @@ Feature: Coverage File Synchronization
     And the output should suggest running 'fspec generate-coverage' to sync
     And the output should list the stale scenario names
 
-
   Scenario: Generate coverage syncs deleted scenarios
     Given a feature file with scenarios A and B
     And a coverage file with entries for A, B, and C (stale)
@@ -86,7 +81,6 @@ Feature: Coverage File Synchronization
     Then the coverage file should only contain entries for A and B
     And scenario C should be removed from the coverage file
     And the output should display 'ℹ Removed 1 stale scenario from coverage'
-
 
   Scenario: Deleted scenario no longer causes uncovered error
     Given a coverage file with uncovered scenario X
@@ -96,11 +90,9 @@ Feature: Coverage File Synchronization
     Then the command should succeed
     And no 'scenario X uncovered' error should be reported
 
-
   Scenario: Rename scenario preserves test mappings
     Given a scenario 'User logs in' with test mappings
     When I run 'fspec update-scenario user-login "User logs in" "User authenticates"'
     Then the feature file should show the renamed scenario 'User authenticates'
     And the coverage file should have entry for 'User authenticates'
     And all test mappings should be preserved from the old scenario name
-

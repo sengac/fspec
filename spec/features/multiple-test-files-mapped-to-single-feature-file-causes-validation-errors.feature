@@ -4,7 +4,6 @@
 @validation
 @VAL-005
 Feature: Multiple test files mapped to single feature file causes validation errors
-
   """
   In update-work-unit-status.ts validateTestFilesHaveStepComments() after collecting workUnitTestFiles, check if workUnitTestFiles.size > 1. If true, throw error blocking transition. Error message should tell user to split feature file into multiple smaller features with 1:1 mapping.
   """
@@ -26,7 +25,6 @@ Feature: Multiple test files mapped to single feature file causes validation err
   #   4. Coverage has 2 test files linked to feature -> throw error: 'Multiple test files detected. Split feature file.'
   #
   # ========================================
-
   Background: User Story
     As a AI agent moving work unit through workflow
     I want to enforce 1 feature file = 1 test file

@@ -43,7 +43,6 @@ Feature: Tool Result and File Content Cache
   #    - For partial reads: Include only the NEW content not previously seen
   #
   # ========================================
-
   Background: User Story
     As a developer using codelet for code exploration
     I want repeated file reads and tool calls to be cached
@@ -52,7 +51,6 @@ Feature: Tool Result and File Content Cache
   # ----------------------------------------
   # FILE CONTENT CACHE SCENARIOS
   # ----------------------------------------
-
   Scenario: First read of a file populates the cache
     Given the file content cache is empty
     And a file "/project/src/App.tsx" exists with 1000 lines
@@ -106,7 +104,6 @@ Feature: Tool Result and File Content Cache
   # ----------------------------------------
   # TOOL RESULT CACHE SCENARIOS
   # ----------------------------------------
-
   Scenario: Grep results are cached
     Given the tool result cache is empty
     When grep is called with pattern "useState" in "/project/src"
@@ -148,7 +145,6 @@ Feature: Tool Result and File Content Cache
   # ----------------------------------------
   # CONTEXT DEDUPLICATION SCENARIOS
   # ----------------------------------------
-
   Scenario: Multiple reads of same file in one turn are deduplicated
     Given a new conversation turn starts
     When the model reads "/project/src/App.tsx" at line 1
@@ -169,7 +165,6 @@ Feature: Tool Result and File Content Cache
   # ----------------------------------------
   # CONFIGURATION SCENARIOS
   # ----------------------------------------
-
   Scenario: Cache can be disabled via configuration
     Given cache_enabled is set to false in config
     When the read tool is called
@@ -190,31 +185,3 @@ Feature: Tool Result and File Content Cache
     Given fuzzy_match_threshold is set to 0.90 in config
     When a similar query is made
     Then fuzzy matching should use 0.90 threshold instead of default 0.85
-
-  # ----------------------------------------
-  # IMPLEMENTATION NOTES
-  # ----------------------------------------
-  #
-  # Location: codelet/tools/src/cache/
-  #   - mod.rs: Cache module exports
-  #   - file_cache.rs: FileContentCache implementation
-  #   - result_cache.rs: ToolResultCache implementation
-  #   - fuzzy.rs: Fuzzy matching utilities (Levenshtein or similar)
-  #
-  # Integration points:
-  #   - codelet/tools/src/read.rs: Use FileContentCache
-  #   - codelet/tools/src/grep.rs: Use ToolResultCache
-  #   - codelet/tools/src/glob.rs: Use ToolResultCache
-  #   - codelet/cli/src/interactive/stream_loop.rs: Clear turn-local dedup on new turn
-  #
-  # Data structures (inspired by vtcode):
-  #   - FileContentCache: HashMap<PathBuf, CachedFile> with LRU eviction
-  #   - CachedFile: { content: Arc<String>, mtime: SystemTime, size: usize, last_access: Instant }
-  #   - ToolResultCache: HashMap<String, CachedResult> with fuzzy index
-  #   - CachedResult: { result: Arc<String>, created: Instant, access_count: u32 }
-  #
-  # Thread safety:
-  #   - Use Arc<RwLock<Cache>> for concurrent access
-  #   - Tools are called concurrently, cache must be thread-safe
-  #
-  # ========================================

@@ -73,7 +73,6 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
   # ===========================================
   # LINK DETECTION SCENARIOS
   # ===========================================
-
   @happy-path
   Scenario: Detect absolute file path in conversation message
     Given a conversation message contains "/home/user/project/src/file.ts"
@@ -114,7 +113,6 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
   # ===========================================
   # LINK OPENING SCENARIOS
   # ===========================================
-
   @integration
   Scenario: Open file at specific line and column
     Given the user is viewing a conversation with file link "/home/user/file.ts:42:10"
@@ -156,7 +154,6 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
   # ===========================================
   # ERROR HANDLING SCENARIOS
   # ===========================================
-
   @error-handling
   Scenario: Show error for non-existent file path
     Given a conversation message contains file link "/nonexistent/path/file.ts"
@@ -174,7 +171,6 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
   # ===========================================
   # VISUAL STYLING SCENARIOS
   # ===========================================
-
   @styling
   Scenario: File links displayed in blue color
     Given a conversation message contains file path "/path/to/file.ts"
@@ -203,7 +199,6 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
   # ===========================================
   # LINE WRAPPING SCENARIOS
   # ===========================================
-
   @wrapping
   Scenario: Long URL preserves link boundary across line wrap
     Given a conversation message contains "https://github.com/user/repo/blob/main/src/very/long/path/file.ts"
@@ -214,7 +209,6 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
   # ===========================================
   # KEYBOARD NAVIGATION SCENARIOS
   # ===========================================
-
   @keyboard
   Scenario: Tab navigates between links
     Given a conversation message contains multiple links
@@ -230,7 +224,6 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
   # ===========================================
   # PERFORMANCE SCENARIOS
   # ===========================================
-
   @performance
   Scenario: Limit maximum clickable links per message
     Given the configuration has "links.maxLinksPerMessage" set to 50
@@ -241,7 +234,6 @@ Feature: Implement Clickable File Links and URL Opening in Conversation Views
   # ===========================================
   # COMPONENT COVERAGE SCENARIOS
   # ===========================================
-
   @component
   Scenario: Links work in AgentView component
     Given the user is viewing conversations in AgentView

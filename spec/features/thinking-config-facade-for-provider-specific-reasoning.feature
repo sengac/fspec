@@ -5,7 +5,6 @@
 @provider-abstraction
 @TOOL-009
 Feature: Thinking Config Facade for Provider-Specific Reasoning Configuration
-
   """
   ThinkingConfigFacade trait with provider(), request_config(ThinkingLevel), is_thinking_part(part), extract_thinking_text(part) methods. ThinkingLevel enum: Off, Low, Medium, High. Provider implementations: Gemini3ThinkingFacade (uses thinkingLevel enum), Gemini25ThinkingFacade (uses thinkingBudget token count), ClaudeThinkingFacade (uses thinking.budget_tokens). Located in codelet/tools/src/facade/thinking_config.rs. NAPI bindings expose getThinkingConfig() and isThinkingContent() to TypeScript via codelet/napi. See attached plan: thinking-config-facade-implementation-plan.md
   """
@@ -32,7 +31,6 @@ Feature: Thinking Config Facade for Provider-Specific Reasoning Configuration
   #   6. ThinkingLevel::Off returns empty object {} for all providers (no thinking configuration)
   #
   # ========================================
-
   Background: User Story
     As a developer integrating LLM providers
     I want to configure provider-specific thinking/reasoning settings through a common interface

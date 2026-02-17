@@ -2,7 +2,6 @@
 @codelet
 @WATCH-020
 Feature: Autonomous Watcher Interjection with Response Parsing
-
   """
   Adds auto_inject field to SessionRole/WatcherConfig, exposes via NAPI for WatcherCreateView toggle
   """
@@ -56,7 +55,6 @@ Feature: Autonomous Watcher Interjection with Response Parsing
   #   A: Parse [INTERJECT]/[CONTINUE] blocks ONLY for observation evaluations (is_user_prompt=false). Direct user prompts to the watcher are normal conversation - no parsing, no risk of accidental injection from explanatory text. This matches the architecture intent where the structured format is specifically for evaluation decisions. If user-initiated injection is needed later, add an explicit /inject command as a separate feature.
   #
   # ========================================
-
   Background: User Story
     As a watcher session AI agent
     I want to autonomously evaluate parent session observations and inject warnings or advice when my watching brief is triggered
@@ -70,14 +68,12 @@ Feature: Autonomous Watcher Interjection with Response Parsing
     And the parent session should be interrupted mid-stream
     And the parent session should receive a purple watcher message
 
-
   Scenario: Watcher continues without injection when no issues found
     Given an Architecture Advisor watcher with Peer authority is observing a parent session
     When the parent session implements a service following good patterns and emits a Done breakpoint
     And the watcher AI responds with '[CONTINUE] Implementation follows good patterns [/CONTINUE]'
     Then no injection should occur
     And the watcher UI should show the evaluation response for user reference
-
 
   Scenario: Non-urgent injection waits for parent turn completion
     Given a Test Enforcer watcher with auto-inject enabled is observing a parent session
@@ -86,14 +82,12 @@ Feature: Autonomous Watcher Interjection with Response Parsing
     Then the injection should wait until the parent's current turn completes
     And the parent should see the suggestion after finishing the current response
 
-
   Scenario: Malformed interjection block is treated as continue
     Given a watcher with auto-inject enabled is observing a parent session
     When the watcher AI responds with '[INTERJECT] this is not properly formatted'
     Then parse_interjection should return None
     And no injection should occur
     And a warning should be logged about the malformed interjection block
-
 
   Scenario: Evaluation prompt includes proper format instructions
     Given a watcher with role 'Security Reviewer' and brief 'Watch for SQL injection, XSS'
@@ -102,13 +96,11 @@ Feature: Autonomous Watcher Interjection with Response Parsing
     And the prompt should include the watching brief
     And the prompt should include explicit [INTERJECT]/[CONTINUE] response format instructions
 
-
   Scenario: Multiline content is preserved in injection
     Given a watcher with auto-inject enabled is observing a parent session
     When the watcher AI responds with a multiline [INTERJECT] block containing "urgent: true" and multiline content
     Then parse_interjection should extract the full multiline content
     And the injection should preserve the formatting including newlines
-
 
   Scenario: Auto-inject disabled shows pending injection without injecting
     Given a watcher with auto-inject disabled is observing a parent session
@@ -116,11 +108,9 @@ Feature: Autonomous Watcher Interjection with Response Parsing
     Then no automatic injection should occur
     And the watcher UI should show the pending injection for manual review
 
-
   Scenario: Direct user prompts are not parsed for injection
     Given a watcher with auto-inject enabled
     When the user sends a direct prompt 'What issues have you seen?'
     And the watcher responds with a summary
     Then the response should be shown normally in the watcher UI
     And no [INTERJECT] parsing should occur because is_user_prompt is true
-

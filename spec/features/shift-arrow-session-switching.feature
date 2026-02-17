@@ -4,7 +4,6 @@
 @tui
 @TUI-049
 Feature: Shift+Arrow Session Switching
-
   """
   Architecture notes:
   - Key detection: MultiLineInput.tsx using escape sequences [1;2C (Shift+Right) and [1;2D (Shift+Left)
@@ -41,7 +40,6 @@ Feature: Shift+Arrow Session Switching
   #   6. User switches from session A (running agent task) to session B. Session A continues executing in background, user sees session B's conversation immediately.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to quickly switch between active background sessions using Shift+Left/Right arrow keys
@@ -89,7 +87,6 @@ Feature: Shift+Arrow Session Switching
     And session A should continue executing in background
     And I should see session B's conversation immediately
 
-
   Scenario: Switch to previous session with Shift+Left
     Given I have 3 background sessions A, B, and C
     And I am currently attached to session B
@@ -98,7 +95,6 @@ Feature: Shift+Arrow Session Switching
     And I should be attached to session A
     And I should see session A's conversation
 
-
   Scenario: Input text preserved when switching sessions
     Given I have 2 background sessions A and B
     And I am attached to session A
@@ -106,4 +102,3 @@ Feature: Shift+Arrow Session Switching
     When I press Shift+Right arrow to switch to session B
     And I press Shift+Left arrow to return to session A
     Then I should see 'hello world' in the input field
-

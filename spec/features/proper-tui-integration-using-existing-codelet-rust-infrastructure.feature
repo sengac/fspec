@@ -1,7 +1,6 @@
 @agent-integration
 @tui
 Feature: Proper TUI Integration Using Existing Codelet Rust Infrastructure
-
   """
   Architecture notes:
   - TODO: Add key architectural decisions
@@ -31,7 +30,6 @@ Feature: Proper TUI Integration Using Existing Codelet Rust Infrastructure
   #   6. User opens agent modal → modal takes full terminal width and height → user has maximum space for conversation
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to interact with the codelet AI agent using the same infrastructure as the codelet CLI

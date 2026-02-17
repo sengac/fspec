@@ -3,7 +3,6 @@
 @session-management
 @TUI-046
 Feature: Detach Confirmation Modal on AgentView Exit
-
   """
   Modifies AgentView.tsx ESC handler (Priority 5) to show ThreeButtonDialog instead of calling onExit() directly. Uses sessionManagerDestroy() from codelet-napi for session destruction. Session handler cleanup via GlobalSessionStreamManager. Reuses ThreeButtonDialog component from TUI-040 for DRY/SOLID compliance.
   """
@@ -34,7 +33,6 @@ Feature: Detach Confirmation Modal on AgentView Exit
   #   7. User selects 'Detach' while agent is mid-execution (isLoading=true), session continues running in background via handler cleanup, later visible in /resume with running status
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI agent mode
     I want to be prompted with a confirmation modal when exiting AgentView that asks whether to detach (keep session running in background) or close the session
@@ -48,19 +46,16 @@ Feature: Detach Confirmation Modal on AgentView Exit
     Then the session is detached and continues running in background
     And the view exits
 
-
   Scenario: ESC dismisses the exit modal
     Given the exit confirmation modal is showing
     When I press the ESC key
     Then the modal dismisses
     And I remain in AgentView with the session unchanged
 
-
   Scenario: No modal when exiting without active session
     Given I am in AgentView with no active session
     When I press the ESC key
     Then the view exits immediately without showing the modal
-
 
   Scenario: ESC clears input before showing exit modal
     Given I am in AgentView with an active session and text in the input field
@@ -68,7 +63,6 @@ Feature: Detach Confirmation Modal on AgentView Exit
     Then the input field is cleared
     When I press the ESC key again
     Then the exit confirmation modal appears
-
 
   Scenario: Cancel exit and remain in AgentView
     Given I am in AgentView with an active session
@@ -79,7 +73,6 @@ Feature: Detach Confirmation Modal on AgentView Exit
     Then the modal dismisses
     And I remain in AgentView with the session unchanged
 
-
   Scenario: Close session and exit
     Given I am in AgentView with an active session and empty input
     When I press the ESC key
@@ -88,4 +81,3 @@ Feature: Detach Confirmation Modal on AgentView Exit
     And I press Enter to confirm
     Then the session is destroyed
     And the view exits
-

@@ -5,7 +5,6 @@
 @validation
 @BUG-088
 Feature: Malformed question text when transforming Event Storm hotspots to Example Mapping
-
   """
   Architecture notes:
   - Fix is in generate-example-mapping-from-event-storm command
@@ -29,7 +28,6 @@ Feature: Malformed question text when transforming Event Storm hotspots to Examp
   #   3. Concern 'Should drag-and-drop support multi-select? How to handle edge cases?' → '@human: Should drag-and-drop support multi-select? How to handle edge cases?'
   #
   # ========================================
-
   Background: User Story
     As a developer transforming Event Storm to Example Mapping
     I want to generate clear, grammatically correct questions from hotspot concerns

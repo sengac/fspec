@@ -4,7 +4,6 @@
 @ui-enhancement
 @TUI-055
 Feature: File Search Popup Modal for @ Symbol Input
-
   """
   Integration point: MultiLineInput.tsx component needs @ symbol detection with regex @(\S*)$
   UI Constraint: Terminal UI using React + Ink framework requires different popup approach than web-based OpenCode
@@ -49,7 +48,6 @@ Feature: File Search Popup Modal for @ Symbol Input
   #   A: Yes, exact same keyboard navigation as slash command palette - Up/Down to highlight, Enter to select, Escape to close, continue typing to filter
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to reference files quickly while typing
@@ -76,7 +74,7 @@ Feature: File Search Popup Modal for @ Symbol Input
     Given I am in the MultiLineInput component
     When I type "@comp"
     Then the popup should appear with files matching "comp"
-    And the results should include "src/components/" 
+    And the results should include "src/components/"
     And the results should include "lib/compiler.ts"
     And the results should include "test/compare.test.ts"
     And the matching should be fuzzy (non-contiguous character matching)
@@ -103,7 +101,7 @@ Feature: File Search Popup Modal for @ Symbol Input
     Then I should see a list of files containing "src"
     When I press the Down arrow key
     Then the next file should be highlighted
-    When I press the Up arrow key  
+    When I press the Up arrow key
     Then the previous file should be highlighted
     When I press Enter on "src/components/Button.tsx"
     Then "@src/components/Button.tsx" should be inserted

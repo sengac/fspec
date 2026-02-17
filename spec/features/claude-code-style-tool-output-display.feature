@@ -3,7 +3,6 @@
 @tui
 @TUI-037
 Feature: Claude Code Style Tool Output Display
-
   """
   Architecture notes:
   - Changes are in AgentModal.tsx only (TUI component)
@@ -54,7 +53,6 @@ Feature: Claude Code Style Tool Output Display
   #   A: It's a bug - fix the disappearing tool header as part of this story
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec/codelet agent
     I want to see tool outputs displayed in Claude Code's visual style

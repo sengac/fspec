@@ -2,7 +2,6 @@
 @tui
 @WATCH-022
 Feature: Split Session View Component Extraction
-
   """
   SplitSessionView.tsx created in src/tui/components/ alongside AgentView.tsx
   AgentView.tsx imports SplitSessionView and renders it when isWatcherSessionView is true, passing required props
@@ -28,7 +27,6 @@ Feature: Split Session View Component Extraction
   #   5. Step 5: Input area at bottom works with MultiLineInput - onSubmit callback is called when user submits
   #
   # ========================================
-
   Background: User Story
     As a developer debugging the watcher split view
     I want to have the split view code in a separate component

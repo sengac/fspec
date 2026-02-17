@@ -2,7 +2,6 @@
 @codelet
 @PAUSE-001
 Feature: Session Pause State Isolation
-
   """
   Session integration: Add SessionStatus::Paused variant to session_manager.rs.
   Add pause_state: RwLock<Option<PauseState>> field to BackgroundSession struct.

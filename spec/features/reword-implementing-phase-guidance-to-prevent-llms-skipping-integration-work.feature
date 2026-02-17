@@ -5,7 +5,6 @@
 @high
 @REMIND-015
 Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping integration work
-
   """
   Modifies src/utils/system-reminder.ts getStatusChangeReminder function. Changes IMPLEMENTING phase reminder (lines 164-187) to emphasize CREATION + CONNECTION pattern. Also updates specifyingStateReminder to add WHO CALLS THIS prompt. Uses system-reminder anti-drift pattern for LLM guidance.
   """
@@ -35,7 +34,6 @@ Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping integration
   #   A: Yes, include SPECIFYING phase updates in this work unit to prompt integration thinking during Example Mapping
   #
   # ========================================
-
   Background: User Story
     As a AI coding agent using fspec
     I want to receive clear guidance during IMPLEMENTING phase that emphasizes integration work
@@ -46,12 +44,10 @@ Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping integration
     When the status change reminder is generated
     Then the reminder should contain "IMPLEMENTATION = CREATION + CONNECTION"
 
-
   Scenario: IMPLEMENTING phase includes WHO CALLS THIS heuristic
     Given a work unit transitions to IMPLEMENTING status
     When the status change reminder is generated
     Then the reminder should contain "WHO CALLS THIS?"
-
 
   Scenario: IMPLEMENTING phase lists COMPLETE MEANS checklist
     Given a work unit transitions to IMPLEMENTING status
@@ -61,13 +57,11 @@ Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping integration
     And the reminder should contain "Call sites connected"
     And the reminder should contain "Feature works end-to-end"
 
-
   Scenario: IMPLEMENTING phase separates STAY IN SCOPE from INTEGRATION IS NOT SCOPE CREEP
     Given a work unit transitions to IMPLEMENTING status
     When the status change reminder is generated
     Then the reminder should contain "STAY IN SCOPE"
     And the reminder should contain "INTEGRATION IS NOT SCOPE CREEP"
-
 
   Scenario: IMPLEMENTING phase removes minimization-encouraging phrases
     Given a work unit transitions to IMPLEMENTING status
@@ -77,17 +71,14 @@ Feature: Reword IMPLEMENTING phase guidance to prevent LLMs skipping integration
     And the reminder should not contain "minimal code"
     And the reminder should not contain "Avoid over-implementation"
 
-
   Scenario: IMPLEMENTING phase next steps include integration verification
     Given a work unit transitions to IMPLEMENTING status
     When the status change reminder is generated
     Then the suggested next steps should include wiring up integration points
     And the suggested next steps should include verifying feature works end-to-end
 
-
   Scenario: SPECIFYING phase includes WHO CALLS THIS prompt for integration points
     Given a work unit transitions to SPECIFYING status
     When the status change reminder is generated
     Then the reminder should contain "WHO CALLS THIS?"
     And the reminder should prompt for integration scenarios
-

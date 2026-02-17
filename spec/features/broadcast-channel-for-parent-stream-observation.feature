@@ -2,7 +2,6 @@
 @codelet
 @WATCH-003
 Feature: Broadcast Channel for Parent Stream Observation
-
   """
   Add watcher_broadcast: broadcast::Sender<StreamChunk> field to BackgroundSession struct
   Initialize broadcast channel in BackgroundSession::new() with capacity 256
@@ -31,7 +30,6 @@ Feature: Broadcast Channel for Parent Stream Observation
   #   6. Session with no broadcast subscribers → handle_output() still buffers and calls UI callback normally (broadcast is fire-and-forget)
   #
   # ========================================
-
   Background: User Story
     As a watcher session
     I want to receive real-time stream chunks from my parent session via a broadcast channel

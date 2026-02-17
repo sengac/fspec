@@ -1,6 +1,5 @@
 @AGENT-022
 Feature: Clear context command for session reset
-
   """
   After clearing session, inject_context_reminders() must be called to restore CLAUDE.md and environment system reminders
   Fix location: codelet/napi/src/session_manager.rs line 4508-4516, the 'clear' action handler
@@ -23,13 +22,14 @@ Feature: Clear context command for session reset
   #   4. Current implementation clears only output buffer but not session.messages, session.turns, or token_tracker
   #
   # ========================================
-
   Background: User Story
     As a remote user on Telegram
     I want to send /clear to reset the AI session
     So that start fresh without the AI remembering previous conversation context
 
-  @telegram @bridge @session
+  @telegram
+  @bridge
+  @session
   Scenario: Clear command resets AI context completely
     Given I have an active conversation with the AI via Telegram bridge
     And the conversation has accumulated messages and tokens
@@ -38,7 +38,9 @@ Feature: Clear context command for session reset
     And the next message should be treated as a fresh conversation start
     And no confirmation dialog should appear
 
-  @telegram @bridge @session
+  @telegram
+  @bridge
+  @session
   Scenario: System reminders preserved after clear
     Given I have an active conversation with the AI via Telegram bridge
     And the AI has access to project context (CLAUDE.md, environment info)
@@ -47,7 +49,9 @@ Feature: Clear context command for session reset
     And the AI should still know the platform and working directory
     And the conversation history should be cleared
 
-  @telegram @bridge @session
+  @telegram
+  @bridge
+  @session
   Scenario: Token counters reset after clear
     Given I have an active conversation with accumulated tokens
     And the session shows input and output token counts
@@ -56,7 +60,9 @@ Feature: Clear context command for session reset
     And the session.messages should be empty
     And the session.turns should be empty
 
-  @telegram @bridge @session
+  @telegram
+  @bridge
+  @session
   Scenario: Clear resets session state not just output buffer
     Given I have an active conversation via Telegram bridge
     And the session has messages, turns, and token_tracker state

@@ -6,7 +6,6 @@
 @bug-fix
 @BUG-085
 Feature: Bounded Context Map UI duplicates each bounded context name in visualization
-
   """
   Bug exists in src/generators/foundation-md.ts in the generateBoundedContextMermaid function. The default case on line 50 sets description equal to context.text, causing duplication when context doesn't match hardcoded cases. Fix: Change default case to set description to empty string instead of context.text.
   """
@@ -26,7 +25,6 @@ Feature: Bounded Context Map UI duplicates each bounded context name in visualiz
   #   3. After fix, 'Mind Mapping' context generates node label 'Mind Mapping' (single line, no <br/> tag)
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to view bounded context map visualization

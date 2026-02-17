@@ -3,7 +3,6 @@
 @bug-fix
 @BUG-083
 Feature: AST research tool fails with relative file paths
-
   """
   AST research tool uses tree-sitter for code analysis. Path resolution should use Node.js path.resolve() to convert relative paths to absolute paths based on process.cwd(). Implementation is in src/research-tools/ast.ts.
   """
@@ -21,7 +20,6 @@ Feature: AST research tool fails with relative file paths
   #   2. Run 'fspec research --tool=ast --operation=list-functions --file=/Users/rquast/projects/fspec/src/index.ts' and it successfully analyzes the file
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec research tools
     I want to use relative file paths with AST research tool

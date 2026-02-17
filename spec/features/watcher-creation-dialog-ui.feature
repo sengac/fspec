@@ -2,7 +2,6 @@
 @tui
 @WATCH-009
 Feature: Watcher Creation Dialog UI
-
   """
   Add showWatcherCreateDialog useState and form state (watcherName, watcherAuthority, watcherModel, watcherBrief, createDialogFocus) to AgentView.tsx
   Replace TODO in N key handler (line 4741) with setShowWatcherCreateDialog(true)
@@ -36,13 +35,11 @@ Feature: Watcher Creation Dialog UI
   #   6. User with empty name field presses Enter on Create → nothing happens (Create disabled), name field shows required indicator
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to create a new watcher via a dialog from the Watcher Management overlay
     So that I can spawn AI agents to observe my parent session
 
-  
   Scenario: Open watcher creation dialog with N key
     Given the Watcher Management overlay is open
     When the user presses the N key
@@ -51,7 +48,6 @@ Feature: Watcher Creation Dialog UI
     And the authority should be set to "Peer" by default
     And the model should be set to the current session model
 
-  
   Scenario: Tab through dialog fields
     Given the Watcher Creation dialog is open
     And the name field is focused
@@ -66,7 +62,6 @@ Feature: Watcher Creation Dialog UI
     When the user presses Tab
     Then the name field should be focused again
 
-  
   Scenario: Toggle authority with arrow keys
     Given the Watcher Creation dialog is open
     And the authority selector is focused with value "Peer"
@@ -75,7 +70,6 @@ Feature: Watcher Creation Dialog UI
     When the user presses the left arrow key
     Then the authority should change to "Peer"
 
-  
   Scenario: Create watcher successfully
     Given the Watcher Creation dialog is open
     And the user has entered name "Code Reviewer"
@@ -88,7 +82,6 @@ Feature: Watcher Creation Dialog UI
     And the dialog should close
     And the Watcher Management overlay should show the new watcher "Code Reviewer"
 
-  
   Scenario: Cancel watcher creation with Escape
     Given the Watcher Creation dialog is open
     And the user has entered some data in the fields
@@ -97,7 +90,6 @@ Feature: Watcher Creation Dialog UI
     And the Watcher Management overlay should be visible
     And the watcher list should be unchanged
 
-  
   Scenario: Create button disabled when name is empty
     Given the Watcher Creation dialog is open
     And the name field is empty

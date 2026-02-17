@@ -6,7 +6,6 @@
 @critical
 @BUG-089
 Feature: Generic and unhelpful examples auto-generated from Event Storm domain events
-
   """
   Architecture notes:
   - Fix is in generate-example-mapping-from-event-storm command
@@ -31,7 +30,6 @@ Feature: Generic and unhelpful examples auto-generated from Event Storm domain e
   #   3. Policies still generate rules and hotspots still generate questions (only event-to-example conversion is removed)
   #
   # ========================================
-
   Background: User Story
     As a developer transforming Event Storm to Example Mapping
     I want to avoid auto-generated generic examples from domain events
@@ -45,10 +43,10 @@ Feature: Generic and unhelpful examples auto-generated from Event Storm domain e
 
   Scenario: Preserve policy and hotspot transformations while skipping event transformation
     Given a work unit with Event Storm containing:
-      | type     | data                                      |
-      | policy   | when: "UserAuthenticated" then: "LoadDashboard" |
-      | hotspot  | concern: "What happens if session expires?"      |
-      | event    | text: "TrackPlayed"                              |
+      | type    | data                                            |
+      | policy  | when: "UserAuthenticated" then: "LoadDashboard" |
+      | hotspot | concern: "What happens if session expires?"     |
+      | event   | text: "TrackPlayed"                             |
     When I transform Event Storm to Example Mapping
     Then 1 rule should be added from the policy
     And 1 question should be added from the hotspot

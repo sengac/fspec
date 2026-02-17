@@ -4,7 +4,6 @@
 @context-management
 @CTX-001
 Feature: Complete Anchor-Based Context Compaction
-
   """
   Key architectural decisions:
   - Uses anchor detection patterns to identify meaningful conversation milestones
@@ -55,7 +54,6 @@ Feature: Complete Anchor-Based Context Compaction
   #   [9] Error state extraction: 'error: cannot find module' → error_states contains error message
   #
   # ========================================
-
   Background: User Story
     As a AI agent using codelet
     I want to have meaningful context preserved after compaction with dynamic extraction of active files, goals, error states, and build status into summaries
@@ -64,7 +62,6 @@ Feature: Complete Anchor-Based Context Compaction
   # ========================================
   # ANCHOR DETECTION SCENARIOS
   # ========================================
-
   Scenario: Detect TaskCompletion anchor after successful test run
     Given a conversation with 6 turns about fixing a bug in auth.rs
     And turn 3 contains an Edit tool call to auth.rs followed by a test run that passes
@@ -107,7 +104,6 @@ Feature: Complete Anchor-Based Context Compaction
   # ========================================
   # SYNTHETIC ANCHOR SCENARIOS
   # ========================================
-
   Scenario: Create synthetic UserCheckpoint when no natural anchors found
     Given a conversation with 10 turns
     And all turns use only Read and WebSearch tools with no Edit or Write calls
@@ -121,7 +117,6 @@ Feature: Complete Anchor-Based Context Compaction
   # ========================================
   # PRESERVATIONCONTEXT SCENARIOS
   # ========================================
-
   Scenario: Extract active files from Edit Write and Read tool calls
     Given a conversation with 5 turns
     And turn 1 has an Edit tool call to "src/auth.rs"
@@ -168,7 +163,6 @@ Feature: Complete Anchor-Based Context Compaction
   # ========================================
   # DYNAMIC SUMMARY SCENARIOS
   # ========================================
-
   Scenario: Generate summary with dynamic PreservationContext not hardcoded
     Given a conversation with 8 turns that gets compacted
     And the PreservationContext has active_files containing "auth.rs" and "login.ts"
@@ -195,7 +189,6 @@ Feature: Complete Anchor-Based Context Compaction
   # ========================================
   # TURN SELECTION SCENARIOS
   # ========================================
-
   Scenario: Always preserve last 3 conversation turns
     Given a conversation with 10 turns
     And an anchor exists at turn 5

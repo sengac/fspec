@@ -7,7 +7,6 @@
 @bug-fix
 @BUG-084
 Feature: discover-foundation --finalize does not auto-create Foundation Event Storm work unit
-
   """
   Bug in src/commands/discover-foundation.ts --finalize logic. Missing auto-creation of FOUND prefix and Foundation Event Storm work unit. Fix: After successful finalization, check if FOUND prefix exists (create if not), then create work unit with proper description. CRITICAL: Tests MUST use isolated tmpdir, never write to actual spec/work-units.json
   """
@@ -27,7 +26,6 @@ Feature: discover-foundation --finalize does not auto-create Foundation Event St
   #   3. Running finalize twice does NOT create duplicate work units (idempotency check in isolated test)
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec for foundation discovery
     I want to have Foundation Event Storm work unit auto-created after finalization

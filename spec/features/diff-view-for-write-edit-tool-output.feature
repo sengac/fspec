@@ -2,7 +2,6 @@
 @tui
 @TUI-038
 Feature: Diff View for Write/Edit Tool Output
-
   """
   Changes are in AgentModal.tsx only (TUI component). Reuses diff formatting from diff-parser.ts and color scheme from FileDiffViewer.tsx. Edit tool receives old_string and new_string which can be directly diffed. Write tool receives file content; for new files all lines are additions, for existing files would need full file diff (not in scope for initial implementation). Uses Ink's Text component with backgroundColor prop for colored output.
   """
@@ -25,7 +24,6 @@ Feature: Diff View for Write/Edit Tool Output
   #   4. Edit with 100+ line diff: first 4 lines visible, then '... +96 lines (ctrl+o to expand)' indicator
   #
   # ========================================
-
   Background: User Story
     As a developer using AI agents
     I want to see colored diff output when Write/Edit tools modify files
@@ -36,27 +34,22 @@ Feature: Diff View for Write/Edit Tool Output
     When the tool result is displayed in the TUI
     Then the removed line shows '-const x = 1' with red background and the added line shows '+const x = 2' with green background
 
-
   Scenario: Write tool shows new file content as additions
     Given the agent executes a Write tool creating a new file with 3 lines of content
     When the tool result is displayed in the TUI
     Then all 3 lines are shown with '+' prefix and green background
-
 
   Scenario: Edit tool shows multi-line replacement with grouped changes
     Given the agent executes an Edit tool replacing 3 lines with 2 new lines
     When the tool result is displayed in the TUI
     Then the 3 removed lines are grouped together with red background followed by the 2 added lines grouped together with green background
 
-
   Scenario: Long diff output is collapsed with expand indicator
     Given the agent executes an Edit tool with a 100+ line diff
     When the tool result is displayed in the TUI
     Then the first 4 lines of the diff are visible followed by '... +96 lines (ctrl+o to expand)' indicator
 
-
   Scenario: Diff output uses tree connector pattern
     Given the agent executes an Edit tool with a multi-line diff
     When the tool result is displayed in the TUI
     Then the first diff line has 'L ' prefix and subsequent lines have two-space indent
-

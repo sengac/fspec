@@ -5,7 +5,6 @@
 @tui
 @TUI-058
 Feature: Default Thinking Level Persistence
-
   """
   Implementation:
   - Follow TUI-035 (persist-last-used-model-selection) pattern - use loadConfig/writeConfig from src/utils/config.ts to store tui.defaultThinkingLevel. Create separate defaultThinkingLevelConfig.ts for DRY/SOLID separation. Apply default during session creation in AgentView.tsx similar to lastUsedModel restoration.
@@ -38,7 +37,6 @@ Feature: Default Thinking Level Persistence
   #   9. User presses D on High when Medium was default - '(default)' moves from Medium to High
   #
   # ========================================
-
   Background: User Story
     As a developer using the AI agent TUI
     I want to set a default thinking level for new sessions
@@ -47,7 +45,6 @@ Feature: Default Thinking Level Persistence
   # ----------------------------------------
   # DIALOG UI - Setting Default
   # ----------------------------------------
-
   Scenario: Set default thinking level via D key
     Given the user has a chat session open
     And the ThinkingLevelDialog is open with High selected
@@ -64,7 +61,6 @@ Feature: Default Thinking Level Persistence
   # ----------------------------------------
   # VISUAL INDICATOR - Default Level Display
   # ----------------------------------------
-
   Scenario: Dialog shows default indicator when default is set
     Given ~/.fspec/fspec-config.json contains "tui.defaultThinkingLevel": 2
     And the user has a chat session open
@@ -89,7 +85,6 @@ Feature: Default Thinking Level Persistence
   # ----------------------------------------
   # SESSION INITIALIZATION - Restoring Default
   # ----------------------------------------
-
   Scenario: Restore default thinking level on new session
     Given ~/.fspec/fspec-config.json contains "tui.defaultThinkingLevel": 3
     When the user starts a new agent session
@@ -105,7 +100,6 @@ Feature: Default Thinking Level Persistence
   # ----------------------------------------
   # SEPARATION OF CURRENT VS DEFAULT
   # ----------------------------------------
-
   Scenario: Current session selection is independent of default
     Given the user has set a default thinking level of Medium via D key
     And the ThinkingLevelDialog is open with High selected
@@ -116,7 +110,6 @@ Feature: Default Thinking Level Persistence
   # ----------------------------------------
   # ERROR HANDLING
   # ----------------------------------------
-
   Scenario: Handle corrupt config gracefully
     Given ~/.fspec/fspec-config.json contains invalid JSON
     When the user starts a new agent session

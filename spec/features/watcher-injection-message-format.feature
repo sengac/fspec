@@ -2,7 +2,6 @@
 @codelet
 @WATCH-006
 Feature: Watcher Injection Message Format
-
   """
   Add WatcherInput struct in session_manager.rs near SessionRole types (before BackgroundSession)
   Add format_watcher_input() function to create the structured prefix format
@@ -31,7 +30,6 @@ Feature: Watcher Injection Message Format
   #   5. Multiline watcher message → formatted message preserves newlines after the prefix header
   #
   # ========================================
-
   Background: User Story
     As a watcher session
     I want to inject messages into the parent session stream

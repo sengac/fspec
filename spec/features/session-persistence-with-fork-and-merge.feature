@@ -1,7 +1,8 @@
 @done
-@NAPI-006 @codelet @session-management
+@NAPI-006
+@codelet
+@session-management
 Feature: Session Persistence with Fork and Merge
-
   """
   All persistence operations implemented in Rust, exposed to TypeScript via NAPI-RS bindings
   Uses content-addressed blob storage with SHA-256 hashing for large content deduplication
@@ -72,7 +73,6 @@ Feature: Session Persistence with Fork and Merge
   #   8. Forked session B and original session A both reference same message objects M1-M3 (no duplication)
   #
   # ========================================
-
   Background: User Story
     As a developer using codelet
     I want to save and restore conversation sessions, fork to try alternative approaches, and merge insights from other conversations

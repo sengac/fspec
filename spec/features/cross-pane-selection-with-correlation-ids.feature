@@ -3,7 +3,6 @@
 @done
 @WATCH-011
 Feature: Cross-Pane Selection with Correlation IDs
-
   """
   SplitSessionView builds correlation maps for bi-directional turn highlighting
   """
@@ -40,7 +39,6 @@ Feature: Cross-Pane Selection with Correlation IDs
   #   A: Cyan color with bold text and a vertical bar prefix ('│ '). The cross-pane highlighted lines use: color='cyan', bold=true, and prepend '│ ' to content. This is distinct from the active selection (which uses arrow bars ▼▼▼) and clearly visible in the dimmed inactive pane.
   #
   # ========================================
-
   Background: User Story
     As a user viewing a watcher session in split view
     I want to see visual correlation between parent conversation turns and watcher observations/responses

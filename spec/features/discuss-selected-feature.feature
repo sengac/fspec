@@ -3,7 +3,6 @@
 @done
 @WATCH-016
 Feature: Discuss Selected Feature
-
   """
   Architecture notes:
   - Enter behavior is implemented in SplitSessionView.tsx useInput handler
@@ -30,7 +29,6 @@ Feature: Discuss Selected Feature
   #   5. User presses Enter on watcher pane selection while TurnContentModal is already showing → modal updates to show the newly selected turn content
   #
   # ========================================
-
   Background: User Story
     As a user viewing a watcher session in split view
     I want to press Enter on a selected message to discuss it or view its full content

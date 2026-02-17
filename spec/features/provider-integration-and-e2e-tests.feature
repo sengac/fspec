@@ -1,8 +1,12 @@
 @testing
 @providers
-@TOOL-007 @high @tools @facade-pattern @provider-abstraction @e2e
+@TOOL-007
+@high
+@tools
+@facade-pattern
+@provider-abstraction
+@e2e
 Feature: Provider Integration and E2E Tests
-
   """
   ClaudeProvider needs FacadeToolWrapper(ClaudeWebSearchFacade) in create_rig_agent(). GeminiProvider already uses all facades. E2E tests in codelet/tests/*_facade_e2e_test.rs with #[ignore] for CI. Claude supports oneOf schemas so only WebSearch needs facade; other tools use raw implementations.
   """
@@ -23,7 +27,6 @@ Feature: Provider Integration and E2E Tests
   #   3. E2E test calls gemini_provider.create_rig_agent() and verifies 10 tools registered: read_file, write_file, replace, run_shell_command, search_file_content, find_files, list_directory, ast_grep, google_web_search, web_fetch
   #
   # ========================================
-
   Background: User Story
     As a developer integrating LLM providers
     I want to have all providers use the facade pattern consistently and verify with E2E tests
@@ -45,7 +48,8 @@ Feature: Provider Integration and E2E Tests
     And all other facade wrappers are registered
 
   # Example 3: E2E test verifies tool registration
-  @e2e @integration
+  @e2e
+  @integration
   Scenario: E2E test verifies all Gemini tools are registered with correct schemas
     Given a configured GeminiProvider with real API key
     When I create a rig agent and inspect tool definitions
@@ -53,7 +57,8 @@ Feature: Provider Integration and E2E Tests
     And each tool has the expected flat schema without oneOf
 
   # Rule 4: E2E tests marked with ignore
-  @e2e @integration
+  @e2e
+  @integration
   Scenario: E2E tests are marked with ignore attribute for CI
     Given E2E test files in codelet/tests/
     When the tests are compiled

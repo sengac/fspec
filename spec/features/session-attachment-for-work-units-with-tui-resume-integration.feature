@@ -4,7 +4,6 @@
 @high
 @SESS-001
 Feature: Session attachment for work units with TUI resume integration
-
   """
   Architecture notes:
 
@@ -74,7 +73,6 @@ Feature: Session attachment for work units with TUI resume integration
   #   A: Left side: 🟢 AUTH-001
   #
   # ========================================
-
   Background: User Story
     As a developer using codelet TUI
     I want to have my conversation session automatically attached to the work unit I'm working on

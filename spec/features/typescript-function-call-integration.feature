@@ -3,7 +3,6 @@
 @integration
 @CODE-005
 Feature: TypeScript Function Call Integration
-
   """
   Architecture notes:
   - Replace TODO in Tool::call() method with callFspecCommand NAPI integration
@@ -47,7 +46,6 @@ Feature: TypeScript Function Call Integration
   #   A: No specific performance measurements required. The goal is simply to eliminate CLI process spawning overhead completely. As long as FspecTool calls TypeScript functions directly via NAPI without spawning processes, the performance improvement is sufficient. No complex caching strategies needed.
   #
   # ========================================
-
   Background: User Story
     As a Rust agent using FspecTool
     I want to execute fspec commands directly via TypeScript functions
@@ -62,7 +60,7 @@ Feature: TypeScript Function Call Integration
     And no CLI process spawning occurs during command execution
 
   Scenario: Execute create-story command with system reminder workflow guidance
-    Given I have FspecTool connected to NAPI infrastructure 
+    Given I have FspecTool connected to NAPI infrastructure
     And TypeScript callback can dynamically import fspec command modules
     When I call FspecTool.call() for 'create-story' command with story details
     Then TypeScript callback imports createStory() function from src/commands/

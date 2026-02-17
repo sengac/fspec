@@ -2,7 +2,6 @@
 @tui
 @BRIDGE-012
 Feature: TUI session chunk filtering
-
   """
   TUI (AgentView) registers a handler with GlobalSessionStreamManager for its current session.
   It only displays chunks that match the currently-viewed session_id.

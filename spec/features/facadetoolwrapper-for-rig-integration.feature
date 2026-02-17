@@ -1,7 +1,10 @@
 @tool-discovery
-@TOOL-002 @high @tools @facade @rig
+@TOOL-002
+@high
+@tools
+@facade
+@rig
 Feature: FacadeToolWrapper for Rig Integration
-
   """
   FacadeToolWrapper in codelet/tools/src/facade/wrapper.rs implements rig::tool::Tool trait. Overrides name() and definition() to return facade-specific values. call() maps params via facade then executes base tool.
   """
@@ -20,7 +23,6 @@ Feature: FacadeToolWrapper for Rig Integration
   #   2. Wrapping GeminiWebFetchFacade returns tool name 'web_fetch'
   #
   # ========================================
-
   Background: User Story
     As a developer using the facade system
     I want to use FacadeToolWrapper to integrate facades with rig's agent builder

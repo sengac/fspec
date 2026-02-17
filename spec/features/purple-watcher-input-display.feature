@@ -3,7 +3,6 @@
 @done
 @WATCH-012
 Feature: Purple Watcher Input Display
-
   """
   ConversationLine role union in src/tui/types/conversation.ts extended with 'watcher' role
   """
@@ -31,7 +30,6 @@ Feature: Purple Watcher Input Display
   #   6. processChunksToConversation receives WatcherInput chunk → creates ConversationMessage with type='watcher-input' containing parsed role and content
   #
   # ========================================
-
   Background: User Story
     As a user observing a parent session with active watchers
     I want to see watcher injections displayed distinctly in purple with the watcher's role name as a prefix
@@ -46,7 +44,6 @@ Feature: Purple Watcher Input Display
     And the result should contain sessionId "abc-123"
     And the result should contain content "SQL injection vulnerability detected"
 
-
   Scenario: Parse watcher prefix with peer authority
     Given a message with watcher prefix "[WATCHER: Code Reviewer | Authority: Peer | Session: xyz-789]"
     And the message content is "Consider adding error handling"
@@ -56,12 +53,10 @@ Feature: Purple Watcher Input Display
     And the result should contain sessionId "xyz-789"
     And the result should contain content "Consider adding error handling"
 
-
   Scenario: Parse regular message without watcher prefix
     Given a message "Regular user message without prefix"
     When the parseWatcherPrefix function parses the message
     Then the result should be null
-
 
   Scenario: Parse multiline watcher message
     Given a message with watcher prefix "[WATCHER: Arch Advisor | Authority: Peer | Session: def-456]"
@@ -74,7 +69,6 @@ Feature: Purple Watcher Input Display
     When the parseWatcherPrefix function parses the message
     Then the result should contain all three lines in content
 
-
   Scenario: Display watcher input in magenta color
     Given a ConversationLine with role "watcher"
     When the line is rendered in the conversation view
@@ -82,11 +76,9 @@ Feature: Purple Watcher Input Display
     And it should be distinct from user lines which are "green"
     And it should be distinct from assistant lines which are "white"
 
-
   Scenario: Process WatcherInput chunk to conversation message
     Given a StreamChunk with type "WatcherInput"
     And the text field contains "[WATCHER: Security Reviewer | Authority: Supervisor | Session: abc-123]\nVulnerability detected"
     When processChunksToConversation processes the chunk
     Then a ConversationMessage with type "watcher-input" should be created
     And the message content should show "[W] Security Reviewer> Vulnerability detected"
-

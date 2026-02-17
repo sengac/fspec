@@ -1,7 +1,10 @@
 @done
-@TOOL-005 @high @tools @facade-pattern @provider-abstraction
+@TOOL-005
+@high
+@tools
+@facade-pattern
+@provider-abstraction
 Feature: Search Facades
-
   """
   GeminiSearchFileContentFacade in codelet/tools/src/facade/search.rs implements SearchToolFacade trait. Uses tool name 'search_file_content'. Maps {pattern, path} to InternalSearchParams::Grep. GeminiGlobFacade uses tool name 'find_files'. Maps {pattern, path} to InternalSearchParams::Glob. Both wrapped with SearchToolFacadeWrapper and added to GeminiProvider.create_rig_agent().
   """
@@ -26,7 +29,6 @@ Feature: Search Facades
   #   4. GeminiGlobFacade provides flat schema {type: 'object', properties: {pattern: {type: 'string'}, path: {type: 'string'}}, required: ['pattern']} - no oneOf
   #
   # ========================================
-
   Background: User Story
     As a LLM agent using Gemini provider
     I want to execute search operations with Gemini-native tool names and flat schemas

@@ -4,7 +4,6 @@
 @data-integrity
 @BUG-092
 Feature: Duplicate question IDs from generate-example-mapping-from-event-storm
-
   """
   Uses stable indices system (Migration 001) with monotonic ID counters. Command generate-example-mapping-from-event-storm transforms Event Storm hotspots to Example Mapping questions. Must use workUnit.nextQuestionId++ pattern (not array.length) to prevent duplicate IDs. Same pattern applies to rules (nextRuleId) and examples (nextExampleId) for consistency.
   """
@@ -26,7 +25,6 @@ Feature: Duplicate question IDs from generate-example-mapping-from-event-storm
   #   4. After event storm mapping, manual add-question command gets next sequential ID without collision
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to have unique question IDs after generating example mapping from event storm

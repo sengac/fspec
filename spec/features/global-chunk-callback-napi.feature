@@ -2,7 +2,6 @@
 @codelet
 @BRIDGE-012
 Feature: Global chunk callback NAPI for session-agnostic chunk emission
-
   """
   Rust exposes a single global callback via NAPI that TypeScript registers once at app startup.
   ALL chunks from ALL sessions go through this ONE callback with signature (session_id, chunk).

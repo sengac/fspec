@@ -5,7 +5,6 @@
 @integration
 @CODE-003
 Feature: NAPI Binding Setup for FspecTool
-
   """
   Implement real FspecTool in codelet/tools/src/fspec.rs and expose via NAPI callback pattern
   """
@@ -42,7 +41,6 @@ Feature: NAPI Binding Setup for FspecTool
   #   TypeScript callback: imports src/commands/, executes, returns structured JSON
   #
   # ========================================
-
   Background: User Story
     As a AI agent using codelet tools
     I want to call fspec commands via NAPI callback pattern
@@ -57,7 +55,7 @@ Feature: NAPI Binding Setup for FspecTool
     Then FspecTool should be available for NAPI binding
     And it should follow existing tool implementation patterns
 
-  Scenario: Expose callFspecCommand via NAPI callback pattern  
+  Scenario: Expose callFspecCommand via NAPI callback pattern
     Given FspecTool is implemented in codelet/tools/src/fspec.rs
     And I have the NAPI binding infrastructure in codelet/napi/src/lib.rs
     When I create callFspecCommand NAPI function with callback pattern
@@ -88,7 +86,7 @@ Feature: NAPI Binding Setup for FspecTool
   Scenario: Support all ACDD workflow commands
     Given callFspecCommand supports comprehensive command execution
     When Rust agent calls commands for work units (create-story, show-work-unit, update-work-unit-status)
-    And agent calls example mapping commands (add-rule, add-example, answer-question) 
+    And agent calls example mapping commands (add-rule, add-example, answer-question)
     And agent calls feature commands (create-feature, generate-scenarios, validate)
     And agent calls board and dependency management commands
     Then all ACDD workflow commands execute successfully

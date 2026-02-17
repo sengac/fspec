@@ -1,6 +1,5 @@
 @RES-022
 Feature: Research tools fail when invoked via Fspec tool - reads process.argv instead of Commander args
-
   """
   Fix location: src/commands/research.ts line 304. The registerResearchCommand action handler must use varArgs (from Commander.js) instead of process.argv.slice(2). The varArgs array contains unknown options forwarded by allowUnknownOption(). Individual research tools (ast.ts, perplexity.ts, jira.ts, confluence.ts, stakeholder.ts) correctly parse args - no changes needed there.
   """
@@ -20,7 +19,6 @@ Feature: Research tools fail when invoked via Fspec tool - reads process.argv in
   #   3. CLI calls research with ast tool - behavior unchanged from before fix
   #
   # ========================================
-
   Background: User Story
     As a AI agent
     I want to use research tools via the Fspec tool

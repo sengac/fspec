@@ -2,7 +2,6 @@
 @codelet
 @WATCH-004
 Feature: Session Role and Authority Model
-
   """
   Add SessionRole struct and RoleAuthority enum in session_manager.rs near SessionStatus
   Add role: RwLock<Option<SessionRole>> field to BackgroundSession struct
@@ -31,7 +30,6 @@ Feature: Session Role and Authority Model
   #   6. session_set_role with empty name → returns error 'Role name cannot be empty'
   #
   # ========================================
-
   Background: User Story
     As a session management system
     I want to distinguish between regular sessions and watcher sessions with different authority levels

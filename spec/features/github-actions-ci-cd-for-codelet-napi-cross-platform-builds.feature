@@ -6,7 +6,6 @@
 @cross-platform
 @NAPI-007
 Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
-
   """
   Architecture Notes:
 
@@ -15,11 +14,11 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
 
   FILES TO MODIFY:
   - codelet/napi/package.json:
-    - Change "name" from "codelet-napi" to "@sengac/codelet-napi"
-    - Set "private": false
-    - Run "napi prepublish -t npm" to generate optionalDependencies
+  - Change "name" from "codelet-napi" to "@sengac/codelet-napi"
+  - Set "private": false
+  - Run "napi prepublish -t npm" to generate optionalDependencies
   - package.json (root fspec):
-    - Change "codelet-napi": "file:codelet/napi" to "@sengac/codelet-napi": "^0.1.0"
+  - Change "codelet-napi": "file:codelet/napi" to "@sengac/codelet-napi": "^0.1.0"
 
   NPM PACKAGE STRUCTURE (7 packages total):
   - @sengac/codelet-napi (main package with JS wrapper + optionalDependencies)
@@ -33,9 +32,9 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   WORKFLOW STRUCTURE:
   - Triggers: push/PR to codelet/**, tags codelet-napi-v*
   - Jobs:
-    1. build (matrix: 6 platforms) → uploads .node artifacts
-    2. test (matrix: macOS/Linux/Windows) → downloads artifacts, runs smoke test
-    3. publish (on version tags only) → downloads all artifacts, runs napi prepublish, npm publish
+  1. build (matrix: 6 platforms) → uploads .node artifacts
+  2. test (matrix: macOS/Linux/Windows) → downloads artifacts, runs smoke test
+  3. publish (on version tags only) → downloads all artifacts, runs napi prepublish, npm publish
 
   BUILD MATRIX:
   | Target                      | Runner          | Method              |
@@ -70,15 +69,16 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   # ============================================================
   # WORKFLOW CONFIGURATION SCENARIOS
   # ============================================================
-
-  @workflow @triggers
+  @workflow
+  @triggers
   Scenario: Workflow triggers on codelet directory changes
     Given the file .github/workflows/build-codelet-napi.yml exists
     When a push or PR modifies any file in "codelet/**"
     Then the workflow should trigger
     And build all 6 platform targets
 
-  @workflow @triggers
+  @workflow
+  @triggers
   Scenario: Workflow triggers npm publish on version tags
     Given the file .github/workflows/build-codelet-napi.yml exists
     When a tag matching "codelet-napi-v*" is pushed
@@ -89,8 +89,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   # ============================================================
   # BUILD JOB SCENARIOS
   # ============================================================
-
-  @build @native
+  @build
+  @native
   Scenario: Native builds for x64 platforms
     Given the build job runs with matrix strategy
     When building for x86_64-apple-darwin
@@ -98,7 +98,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     And use "napi build --platform --release --target x86_64-apple-darwin"
     And upload artifact "codelet-napi.darwin-x64.node"
 
-  @build @native
+  @build
+  @native
   Scenario: Native build for Apple Silicon
     Given the build job runs with matrix strategy
     When building for aarch64-apple-darwin
@@ -106,7 +107,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     And use "napi build --platform --release --target aarch64-apple-darwin"
     And upload artifact "codelet-napi.darwin-arm64.node"
 
-  @build @cross-compile
+  @build
+  @cross-compile
   Scenario: Cross-compilation for Linux ARM64
     Given the build job runs with matrix strategy
     When building for aarch64-unknown-linux-gnu
@@ -114,7 +116,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     And use Docker image "ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian-aarch64"
     And upload artifact "codelet-napi.linux-arm64-gnu.node"
 
-  @build @cross-compile
+  @build
+  @cross-compile
   Scenario: Cross-compilation for Windows ARM64
     Given the build job runs with matrix strategy
     When building for aarch64-pc-windows-msvc
@@ -123,7 +126,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     And use "napi build --platform --release --target aarch64-pc-windows-msvc"
     And upload artifact "codelet-napi.win32-arm64-msvc.node"
 
-  @build @workspace
+  @build
+  @workspace
   Scenario: Build includes patched rig-core dependency
     Given the checkout includes codelet/patches/rig-core
     And codelet/Cargo.toml has [patch.crates-io] for rig-core
@@ -134,8 +138,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   # ============================================================
   # TEST JOB SCENARIOS
   # ============================================================
-
-  @test @smoke
+  @test
+  @smoke
   Scenario: Smoke test verifies binary loads correctly
     Given the test job downloads build artifacts
     And Node.js 20 is installed
@@ -146,8 +150,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   # ============================================================
   # PUBLISH JOB SCENARIOS
   # ============================================================
-
-  @publish @npm
+  @publish
+  @npm
   Scenario: Publish generates platform-specific packages
     Given all 6 build artifacts are downloaded
     And NPM_TOKEN secret is configured
@@ -162,7 +166,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
       | @sengac/codelet-napi-win32-x64-msvc   |
       | @sengac/codelet-napi-win32-arm64-msvc |
 
-  @publish @npm
+  @publish
+  @npm
   Scenario: Main package has correct optionalDependencies
     Given "napi prepublish -t npm" has been run
     When inspecting @sengac/codelet-napi package.json
@@ -172,8 +177,8 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
   # ============================================================
   # END-USER EXPERIENCE SCENARIOS (Acceptance Criteria)
   # ============================================================
-
-  @acceptance @install
+  @acceptance
+  @install
   Scenario Outline: Users on any platform get correct binary automatically
     Given @sengac/codelet-napi is published to npm with all platform packages
     And I am on a <platform> system
@@ -182,10 +187,10 @@ Feature: GitHub Actions CI/CD for codelet-napi cross-platform builds
     And the fspec CLI should work without Rust compilation
 
     Examples:
-      | platform           | platform_package                       |
-      | macOS ARM64        | @sengac/codelet-napi-darwin-arm64      |
-      | macOS Intel        | @sengac/codelet-napi-darwin-x64        |
-      | Linux x64          | @sengac/codelet-napi-linux-x64-gnu     |
-      | Linux ARM64        | @sengac/codelet-napi-linux-arm64-gnu   |
-      | Windows x64        | @sengac/codelet-napi-win32-x64-msvc    |
-      | Windows ARM64      | @sengac/codelet-napi-win32-arm64-msvc  |
+      | platform      | platform_package                      |
+      | macOS ARM64   | @sengac/codelet-napi-darwin-arm64     |
+      | macOS Intel   | @sengac/codelet-napi-darwin-x64       |
+      | Linux x64     | @sengac/codelet-napi-linux-x64-gnu    |
+      | Linux ARM64   | @sengac/codelet-napi-linux-arm64-gnu  |
+      | Windows x64   | @sengac/codelet-napi-win32-x64-msvc   |
+      | Windows ARM64 | @sengac/codelet-napi-win32-arm64-msvc |

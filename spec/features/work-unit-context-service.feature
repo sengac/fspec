@@ -1,7 +1,6 @@
 @done
 @TUI-059
 Feature: Work Unit Context Service Layer
-
   """
   Architecture notes:
   - Service layer: workUnitContextService.ts (pure functions), useWorkUnitContext.ts (React hook), workUnitStatusHook.ts (command integration)
@@ -24,7 +23,8 @@ Feature: Work Unit Context Service Layer
     And the environment information should not contain the work unit title
     And the environment information should not contain the work unit status
 
-  @status-change @system-reminder
+  @status-change
+  @system-reminder
   Scenario: LLM receives notification when updating a different work unit
     Given I am in the AgentView
     And the session is attached to work unit "AUTH-001"

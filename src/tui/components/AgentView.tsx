@@ -48,7 +48,10 @@ import { calculatePaneWidth } from '../utils/textWrap';
 import { useSlashCommandInput } from '../hooks/useSlashCommandInput';
 import { useFileSearchInput } from '../hooks/useFileSearchInput';
 import { useInputCompat, InputPriority } from '../input/index';
-import { attachToSession } from '../hooks/useSessionStreamManager';
+import {
+  attachToSession,
+  useSessionStreamManager,
+} from '../hooks/useSessionStreamManager';
 import {
   getSelectionSeparatorType,
   generateArrowBar,
@@ -185,7 +188,9 @@ import { formatMarkdownTables } from '../utils/markdown-table-formatter';
 import {
   parseWatcherPrefix,
   extractToolArgsDisplay,
+  processStreamingChunk,
   type PendingToolCallInfo,
+  type ChunkProcessorContext,
 } from '../utils/chunkProcessor';
 import { useFspecStore } from '../store/fspecStore';
 import {
@@ -1186,6 +1191,42 @@ export const AgentView: React.FC<AgentViewProps> = ({
     sessionId: currentSessionId,
     workUnitId,
   });
+
+  // BRIDGE-013: Persistent chunk handler for bridge/watcher input display.
+  // Always registered when viewing a session. Skips when handleSubmit's handler
+  // is active (sessionCleanupRef.current set) to avoid duplicate updates.
+  const persistentChunkHandler = useCallback(
+    (chunk: StreamChunk) => {
+      if (!chunk || sessionCleanupRef.current) {
+        return;
+      }
+
+      const ctx: ChunkProcessorContext = {
+        formatToolHeader,
+        formatCollapsedOutput,
+        pendingToolCalls: pendingToolDiffsRef.current
+          ? new Map(
+              Array.from(pendingToolDiffsRef.current.entries()).map(
+                ([id, diff]) => [
+                  id,
+                  { name: diff.toolName, input: {} } as PendingToolCallInfo,
+                ]
+              )
+            )
+          : new Map(),
+      };
+
+      setConversation(prev => {
+        const updated = [...prev];
+        processStreamingChunk(chunk, updated, ctx);
+        return updated;
+      });
+    },
+    [setConversation]
+  );
+
+  // BRIDGE-013: Register persistent handler - unregisters on session change or unmount
+  useSessionStreamManager(currentSessionId, persistentChunkHandler);
 
   // NAPI-003: Resume mode state (session selection overlay)
   const [isResumeMode, setIsResumeMode] = useState(false);
@@ -3488,6 +3529,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Wait for the prompt to complete (Done chunk received)
       await promptComplete;
 
+      // BRIDGE-013: Cleanup handleSubmit's handler so persistent handler can take over
+      cleanupCurrentSessionHandler();
+
       // WATCH-011: Clear observed correlation IDs after response completes
       if (isWatcherSession && activeSessionId) {
         try {
@@ -3505,6 +3549,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       // Token usage is now handled by background session via TokenUpdate chunks
     } catch (err) {
+      // BRIDGE-013: Cleanup handleSubmit's handler on error so persistent handler can take over
+      cleanupCurrentSessionHandler();
+
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to send prompt';
       // Clean up streaming placeholder and show error in conversation

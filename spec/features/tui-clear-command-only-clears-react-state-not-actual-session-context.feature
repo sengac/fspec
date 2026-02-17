@@ -2,7 +2,6 @@
 @tui
 @TUI-065
 Feature: TUI /clear command only clears React state, not actual session context
-
   """
   The bug was a simple typo: code used 'currentSessionRef.current' but the variable is 'currentSessionIdRef'. Fixed by using 'currentSessionId' directly which is already in scope.
   """
@@ -25,7 +24,6 @@ Feature: TUI /clear command only clears React state, not actual session context
   #   A: INVESTIGATION NEEDED: The Rust implementation clears inner.messages but we need to verify the API request is actually being built from inner.messages and not some cached/buffered copy. Also need to verify sessionClearHistory NAPI is actually being called from TypeScript.
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to use /clear in the TUI to reset the AI session

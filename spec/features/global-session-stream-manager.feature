@@ -7,7 +7,7 @@ Feature: Global Session Stream Subscription for FspecCommandRequest Handling
   GlobalSessionStreamManager is the SOLE subscriber - it owns the global chunk callback
   for ALL sessions and multiplexes events to registered handlers. AgentView does NOT
   call NAPI directly for streaming - it registers handlers with the manager via hook.
-  
+
   The global callback (sessionSetGlobalChunkCallback) receives chunks from ALL sessions
   with (sessionId, chunk) and routes to appropriate handlers.
   """

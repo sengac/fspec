@@ -1,7 +1,8 @@
 @done
-@BRIDGE-007 @telegram @bridge
+@BRIDGE-007
+@telegram
+@bridge
 Feature: Support Incoming Image Attachments from Telegram
-
   """
   Architecture Notes:
   - InboundMessage interface change: add images?: Array<{data: string, media_type: string}> field
@@ -38,7 +39,6 @@ Feature: Support Incoming Image Attachments from Telegram
   #   6. Photo download times out after 30s - bridge logs error and forwards caption only
   #
   # ========================================
-
   Background: User Story
     As a Telegram user
     I want to send images to Claude via the bridge
@@ -47,7 +47,6 @@ Feature: Support Incoming Image Attachments from Telegram
   # ====================
   # HAPPY PATH SCENARIOS
   # ====================
-
   Scenario: Download highest resolution photo from Telegram
     Given I have a connected Telegram bridge session
     And Telegram provides a photo with multiple resolutions
@@ -64,8 +63,8 @@ Feature: Support Incoming Image Attachments from Telegram
   Scenario: Handle single resolution photo
     Given I have a connected Telegram bridge session
     And Telegram provides a photo with only one resolution
-      | index | file_id    | width | height |
-      | 0     | single_id  | 800   | 600    |
+      | index | file_id   | width | height |
+      | 0     | single_id | 800   | 600    |
     When the bridge processes the photo message
     Then it should request the file with file_id "single_id"
     And the WebSocket message should include the image in the images array
@@ -87,9 +86,9 @@ Feature: Support Incoming Image Attachments from Telegram
   Scenario: Use msg.caption not msg.text for photo messages
     Given I have a connected Telegram bridge session
     And Telegram provides a photo message where:
-      | field   | value                    |
-      | caption | This is the caption      |
-      | text    | This should be ignored   |
+      | field   | value                  |
+      | caption | This is the caption    |
+      | text    | This should be ignored |
     When the bridge processes the photo message
     Then the WebSocket message should have message "This is the caption"
     And the message should NOT contain "This should be ignored"
@@ -101,17 +100,16 @@ Feature: Support Incoming Image Attachments from Telegram
     And the photo file_path is "photos/test.jpg"
     When the bridge processes the photo message
     Then the WebSocket message should have this structure:
-      | field                  | value              |
-      | type                   | input              |
-      | session_id             | test-session-123   |
-      | message                | Hello              |
-      | images[0].data         | SGVsbG8gV29ybGQ=   |
-      | images[0].media_type   | image/jpeg         |
+      | field                | value            |
+      | type                 | input            |
+      | session_id           | test-session-123 |
+      | message              | Hello            |
+      | images[0].data       | SGVsbG8gV29ybGQ= |
+      | images[0].media_type | image/jpeg       |
 
   # ====================
   # MEDIA TYPE SCENARIOS
   # ====================
-
   Scenario: Pass images to LLM as multimodal input
     Given I have a connected Telegram bridge session
     When the bridge processes the photo message and injects it into the session
@@ -126,12 +124,12 @@ Feature: Support Incoming Image Attachments from Telegram
     Then the image should have media_type "<media_type>"
 
     Examples:
-      | file_path            | media_type  |
-      | photos/file_123.jpg  | image/jpeg  |
-      | photos/file_456.jpeg | image/jpeg  |
-      | photos/file_789.png  | image/png   |
-      | photos/file_abc.gif  | image/gif   |
-      | photos/file_def.webp | image/webp  |
+      | file_path            | media_type |
+      | photos/file_123.jpg  | image/jpeg |
+      | photos/file_456.jpeg | image/jpeg |
+      | photos/file_789.png  | image/png  |
+      | photos/file_abc.gif  | image/gif  |
+      | photos/file_def.webp | image/webp |
 
   Scenario: Default to image/jpeg for unknown extension
     Given I have a connected Telegram bridge session
@@ -148,7 +146,6 @@ Feature: Support Incoming Image Attachments from Telegram
   # ====================
   # ERROR SCENARIOS
   # ====================
-
   Scenario: Drop photo when no active session
     Given the Telegram bridge has no active WebSocket session
     When a user sends a photo through Telegram
@@ -175,7 +172,6 @@ Feature: Support Incoming Image Attachments from Telegram
   # ====================
   # EDGE CASE SCENARIOS
   # ====================
-
   Scenario: Ignore non-photo media types
     Given I have a connected Telegram bridge session
     When a user sends a document through Telegram

@@ -4,14 +4,13 @@
 @done
 @REFAC-006
 Feature: Migrate fspec research AST tool from tree-sitter to codelet ast-grep
-
   """
-  
+
   - Rust implementation in codelet/napi/src/astgrep.rs exposes astGrepSearch() and astGrepRefactor() via NAPI
   - TypeScript CLI wrapper in src/research-tools/ast.ts handles argument parsing and calls NAPI functions
   - Existing codelet/tools/src/astgrep.rs AstGrepTool contains core pattern matching logic to reuse
   - Removes 17 tree-sitter npm dependencies and associated TypeScript code (query-executor.ts, language-loader.ts, ast-queries/)
-  
+
   """
 
   # ========================================
@@ -68,7 +67,6 @@ Feature: Migrate fspec research AST tool from tree-sitter to codelet ast-grep
   #   A: Looks good. Can improve in later iterations or revisit if something is missing.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to use the ast research tool with pattern-based search via codelet's native ast-grep implementation
@@ -79,13 +77,11 @@ Feature: Migrate fspec research AST tool from tree-sitter to codelet ast-grep
     When I run ast search with pattern 'function $NAME($$$ARGS)' and language 'typescript'
     Then the output contains matches in file:line:column:text format
 
-
   Scenario: Refactor moves matched code to new file
     Given a source file containing 'const SafeTextInput' component
     When I run ast refactor with pattern 'const SafeTextInput' from source to target file
     Then the matched code is removed from the source file
     And the matched code is written to the target file
-
 
   Scenario: Refactor errors when pattern matches multiple nodes
     Given a source file with multiple const declarations
@@ -93,21 +89,17 @@ Feature: Migrate fspec research AST tool from tree-sitter to codelet ast-grep
     Then an error is returned stating 'Pattern matched 5 nodes. Refactor requires exactly 1 match.'
     And the error lists all match locations
 
-
   Scenario: NAPI exports astGrepSearch function
     Given the codelet-napi module is loaded
     When I call astGrepSearch with pattern, language, and paths
     Then the function returns an array of match results
-
 
   Scenario: NAPI exports astGrepRefactor function
     Given the codelet-napi module is loaded
     When I call astGrepRefactor with pattern, language, source file, and target file
     Then the function moves the matched code from source to target
 
-
   Scenario: Tree-sitter dependencies are removed
     Given the package.json file
     When the migration is complete
     Then no @sengac/tree-sitter packages are listed as dependencies
-

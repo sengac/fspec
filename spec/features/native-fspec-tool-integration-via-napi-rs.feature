@@ -7,7 +7,6 @@
 @integration
 @CODE-002
 Feature: Native Fspec Tool Integration via NAPI-RS
-
   """
   System reminder preservation is critical - must capture and pass workflow orchestration guidance to LLM
   """
@@ -28,7 +27,6 @@ Feature: Native Fspec Tool Integration via NAPI-RS
   #   3. AI agent seamlessly uses Fspec tool alongside other codelet tools (Bash, Read, Write) in same session
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec within codelet
     I want to execute fspec commands as native tool via NAPI-RS

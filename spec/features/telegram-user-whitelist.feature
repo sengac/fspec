@@ -1,6 +1,5 @@
 @BRIDGE-009
 Feature: User ID Whitelist for Telegram Bridge
-
   """
   Access control is implemented in setupTelegramBot() message handler. User IDs are stored in a Set<number> for O(1) lookup. Configuration is loaded at startup from TELEGRAM_ALLOWED_USER_IDS environment variable. The msg.from.id field (sender's unique Telegram ID) is used for validation, not msg.chat.id (which differs in groups).
   """
@@ -29,7 +28,6 @@ Feature: User ID Whitelist for Telegram Bridge
   #   8. Startup without whitelist - log shows 'No user whitelist configured - accepting all users'
   #
   # ========================================
-
   Background: User Story
     As a bot operator
     I want to restrict Telegram bridge access to specific user IDs
@@ -38,15 +36,16 @@ Feature: User ID Whitelist for Telegram Bridge
   # ========================================
   # SCENARIOS
   # ========================================
-
-  @whitelist @authorized
+  @whitelist
+  @authorized
   Scenario: Authorized user message is forwarded to codelet
     Given the endpoint is configured with TELEGRAM_ALLOWED_USER_IDS "123456789"
     And the endpoint is running with a connected codelet session
     When a Telegram message arrives from user ID 123456789
     Then the message should be forwarded to the codelet session
 
-  @whitelist @unauthorized
+  @whitelist
+  @unauthorized
   Scenario: Unauthorized user message is dropped silently
     Given the endpoint is configured with TELEGRAM_ALLOWED_USER_IDS "123456789"
     And the endpoint is running with a connected codelet session
@@ -54,7 +53,8 @@ Feature: User ID Whitelist for Telegram Bridge
     Then the message should not be forwarded to the codelet session
     And the log should contain "unauthorized user: 999999999"
 
-  @whitelist @multiple-ids
+  @whitelist
+  @multiple-ids
   Scenario: Multiple user IDs can be whitelisted
     Given the endpoint is configured with TELEGRAM_ALLOWED_USER_IDS "111,222,333"
     And the endpoint is running with a connected codelet session
@@ -68,7 +68,8 @@ Feature: User ID Whitelist for Telegram Bridge
     When a Telegram message arrives from user ID 999999999
     Then the message should be forwarded to the codelet session
 
-  @whitelist @no-from-field
+  @whitelist
+  @no-from-field
   Scenario: Message without from field is dropped when whitelist active
     Given the endpoint is configured with TELEGRAM_ALLOWED_USER_IDS "123456789"
     And the endpoint is running with a connected codelet session
@@ -76,20 +77,23 @@ Feature: User ID Whitelist for Telegram Bridge
     Then the message should not be forwarded to the codelet session
     And the log should contain "no user ID"
 
-  @whitelist @invalid-ids
+  @whitelist
+  @invalid-ids
   Scenario: Invalid user IDs in environment variable are filtered out
     Given the endpoint is configured with TELEGRAM_ALLOWED_USER_IDS "abc,456,xyz"
     And the endpoint is running with a connected codelet session
     When a Telegram message arrives from user ID 456
     Then the message should be forwarded to the codelet session
 
-  @startup @whitelist
+  @startup
+  @whitelist
   Scenario: Startup logs whitelist enabled message
     Given the endpoint is configured with TELEGRAM_ALLOWED_USER_IDS "111,222,333"
     When the endpoint starts up
     Then the log should contain "User whitelist enabled: 3 user(s)"
 
-  @startup @no-whitelist
+  @startup
+  @no-whitelist
   Scenario: Startup logs no whitelist message
     Given the endpoint is configured without TELEGRAM_ALLOWED_USER_IDS
     When the endpoint starts up

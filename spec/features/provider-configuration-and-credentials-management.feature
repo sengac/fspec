@@ -5,7 +5,6 @@
 @security
 @CONFIG-004
 Feature: Provider Configuration and Credentials Management
-
   """
   See attached plan: spec/attachments/CONFIG-004/CONFIG-004-provider-configuration-plan.md for complete implementation details including data flow, NAPI types, and UI mockups
   """
@@ -45,13 +44,13 @@ Feature: Provider Configuration and Credentials Management
   #   14. Provider registry contains all 19 providers: OpenAI, Anthropic, Cohere, Gemini, Mistral, xAI, Together, HuggingFace, OpenRouter, Groq, Ollama, DeepSeek, Perplexity, Moonshot, Hyperbolic, Mira, Galadriel, Azure, VoyageAI
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to configure provider API keys and settings via the TUI
     So that I can manage credentials without editing .env files or environment variables
 
-  @credentials @storage
+  @credentials
+  @storage
   Scenario: Save API key with secure file permissions
     Given the credentials directory does not exist
     When I save an API key for the "anthropic" provider
@@ -60,7 +59,8 @@ Feature: Provider Configuration and Credentials Management
     And the credentials directory should have 700 permissions
     And the API key should be stored under "providers.anthropic.apiKey"
 
-  @config @provider-settings
+  @config
+  @provider-settings
   Scenario: Configure provider with custom base URL
     Given I have an existing fspec configuration
     When I configure the "openrouter" provider with base URL "https://openrouter.ai/api/v1"
@@ -68,7 +68,8 @@ Feature: Provider Configuration and Credentials Management
     And the settings should include "providers.openrouter.baseUrl"
     And the settings should include "providers.openrouter.enabled" as true
 
-  @napi @programmatic
+  @napi
+  @programmatic
   Scenario: Create session with programmatic credentials via NAPI
     Given I have TypeScript code that imports codelet-napi
     When I call BackgroundSession.new_with_credentials with model "anthropic/claude-sonnet-4" and API key
@@ -76,7 +77,8 @@ Feature: Provider Configuration and Credentials Management
     And the session should use the provided API key
     And the session should not read from environment variables
 
-  @ui @status-display
+  @ui
+  @status-display
   Scenario: Display provider configuration status in model selection
     Given the "anthropic" provider has credentials configured
     And the "openai" provider does not have credentials configured
@@ -86,7 +88,8 @@ Feature: Provider Configuration and Credentials Management
     And configured providers should show available models
     And unconfigured providers should show a warning
 
-  @priority @credential-resolution
+  @priority
+  @credential-resolution
   Scenario: Credentials file takes precedence over environment variables
     Given I have ANTHROPIC_API_KEY set in the environment
     And I have a different API key in the credentials file for "anthropic"
@@ -94,7 +97,8 @@ Feature: Provider Configuration and Credentials Management
     Then the credentials file API key should be used
     And the environment variable should be ignored
 
-  @ui @connection-test
+  @ui
+  @connection-test
   Scenario: Test provider connection before saving
     Given I am in the provider settings view
     And I have entered an API key for "anthropic"
@@ -103,25 +107,28 @@ Feature: Provider Configuration and Credentials Management
     And I should see a success message if the key is valid
     And I should see an error message if the key is invalid
 
-  @ollama @local
+  @ollama
+  @local
   Scenario: Configure Ollama without API key
     Given I want to use the local Ollama provider
     When I configure "ollama" with base URL "http://localhost:11434"
     Then the provider should be enabled without requiring an API key
     And I should be able to list available Ollama models
 
-  @azure @complex-config
+  @azure
+  @complex-config
   Scenario: Configure Azure OpenAI with endpoint and version
     Given I want to use Azure OpenAI
     When I configure "azure" provider with:
-      | setting    | value                                    |
-      | endpoint   | https://myresource.openai.azure.com      |
-      | apiVersion | 2024-10-21                               |
-      | apiKey     | my-azure-api-key                         |
+      | setting    | value                               |
+      | endpoint   | https://myresource.openai.azure.com |
+      | apiVersion | 2024-10-21                          |
+      | apiKey     | my-azure-api-key                    |
     Then the Azure configuration should be saved
     And I should be able to create sessions using Azure models
 
-  @backward-compat @env-vars
+  @backward-compat
+  @env-vars
   Scenario: Environment variables continue to work
     Given I have OPENAI_API_KEY set in the environment
     And I do not have credentials configured in the credentials file
@@ -129,7 +136,8 @@ Feature: Provider Configuration and Credentials Management
     Then "openai" should be marked as available
     And sessions should be creatable using the environment variable
 
-  @security @no-logging
+  @security
+  @no-logging
   Scenario: API keys are never logged
     Given I configure an API key for any provider
     When the system processes the credential
@@ -137,7 +145,8 @@ Feature: Provider Configuration and Credentials Management
     And the API key should not appear in error messages
     And only masked versions should be displayed in the UI
 
-  @priority @credential-resolution
+  @priority
+  @credential-resolution
   Scenario: Explicit credentials take highest priority
     Given I have an API key in the credentials file for "anthropic"
     And I have ANTHROPIC_API_KEY set in the environment
@@ -145,7 +154,8 @@ Feature: Provider Configuration and Credentials Management
     Then the explicit API key should be used
     And neither the credentials file nor environment variable should be used
 
-  @priority @credential-resolution
+  @priority
+  @credential-resolution
   Scenario: .env file is lowest priority fallback
     Given I do not have credentials in the credentials file
     And I do not have ANTHROPIC_API_KEY in the environment
@@ -153,7 +163,8 @@ Feature: Provider Configuration and Credentials Management
     When the system resolves credentials for "anthropic"
     Then the .env file API key should be used
 
-  @ui @settings-navigation
+  @ui
+  @settings-navigation
   Scenario: Navigate to Settings view with Tab key
     Given I am in the model selection screen
     When I press the Tab key
@@ -161,14 +172,16 @@ Feature: Provider Configuration and Credentials Management
     And I should see a list of all 19 providers
     And each provider should show its configuration status
 
-  @ui @masked-display
+  @ui
+  @masked-display
   Scenario: API keys display with masked format
     Given I have configured an API key "sk-ant-api03-abcdefghijklmnop" for "anthropic"
     When I view the Settings for "anthropic"
     Then the API key should display as "sk-ant-••••••••mnop"
     And the full key should never be visible
 
-  @credentials @delete
+  @credentials
+  @delete
   Scenario: Delete a provider credential
     Given I have credentials configured for "anthropic"
     When I delete the credential for "anthropic"
@@ -176,7 +189,8 @@ Feature: Provider Configuration and Credentials Management
     And "anthropic" should no longer have an apiKey entry
     And the provider should show as "not configured"
 
-  @providers @registry
+  @providers
+  @registry
   Scenario: All 19 rig providers are registered
     When I query the provider registry
     Then I should see exactly 19 providers:
@@ -201,14 +215,16 @@ Feature: Provider Configuration and Credentials Management
       | azure       |
       | voyageai    |
 
-  @providers @auth-methods
+  @providers
+  @auth-methods
   Scenario: Gemini uses query parameter authentication
     Given I have configured an API key for "gemini"
     When the system makes an API request to Gemini
     Then the API key should be passed as a query parameter "key"
     And the API key should not be in the Authorization header
 
-  @providers @auth-methods
+  @providers
+  @auth-methods
   Scenario: Anthropic uses x-api-key header authentication
     Given I have configured an API key for "anthropic"
     When the system makes an API request to Anthropic
@@ -226,7 +242,6 @@ Feature: Provider Configuration and Credentials Management
     Then the API key should be passed to the Rust session_manager_create_with_id function
     Then the session should be created successfully and ready for prompting
 
-
   Scenario: sessionService reads credentials file and passes API key to Rust
     Given I have a credentials file at ~/.fspec/credentials/credentials.json containing an API key for "anthropic"
     When I call createSession with modelPath "anthropic/claude-sonnet-4"
@@ -237,4 +252,3 @@ Feature: Provider Configuration and Credentials Management
     Then sessionService should pass the API key to sessionManagerCreateWithId as the fifth parameter
     Then Rust should receive the API key and set ANTHROPIC_API_KEY environment variable
     Then the session should be created successfully
-

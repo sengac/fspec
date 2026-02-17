@@ -1,7 +1,10 @@
 @tool-discovery
-@TOOL-004 @high @tools @facade @gemini
+@TOOL-004
+@high
+@tools
+@facade
+@gemini
 Feature: Bash Facade
-
   """
   GeminiRunShellCommandFacade in codelet/tools/src/facade/bash.rs implements ToolFacade trait.
   Uses tool name 'run_shell_command' and maps {command} to BashArgs.
@@ -23,7 +26,6 @@ Feature: Bash Facade
   #   2. GeminiRunShellCommandFacade provides flat schema {type: 'object', properties: {command: {type: 'string'}}, required: ['command']} - no oneOf
   #
   # ========================================
-
   Background: User Story
     As a LLM agent using Gemini provider
     I want to execute shell commands with Gemini-native tool names and flat schemas

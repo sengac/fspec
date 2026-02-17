@@ -1,8 +1,10 @@
 @done
 @navigation
-@TUI-056 @tui @dialog @tui-component
+@TUI-056
+@tui
+@dialog
+@tui-component
 Feature: Interactive anchor point viewer with conversation navigation
-
   """
   Must reuse VirtualList component for anchor display and follow existing keyboard navigation patterns
   """
@@ -32,7 +34,6 @@ Feature: Interactive anchor point viewer with conversation navigation
   #   A: Yes - use E for ErrorResolution, T for TaskCompletion, F for FeatureMilestone, U for UserCheckpoint to jump quickly between anchor types.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to view and navigate anchor points in conversation sessions
@@ -66,7 +67,7 @@ Feature: Interactive anchor point viewer with conversation navigation
     Then I should jump to the first ErrorResolution anchor
     When I press "T"
     Then I should jump to the first TaskCompletion anchor
-    When I press "F" 
+    When I press "F"
     Then I should jump to the first FeatureMilestone anchor
     When I press "U"
     Then I should jump to the first UserCheckpoint anchor

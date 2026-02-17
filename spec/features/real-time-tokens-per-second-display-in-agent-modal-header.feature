@@ -2,7 +2,6 @@
 @tui
 @TUI-031
 Feature: Real-time tokens per second display in agent modal header
-
   """
   Modifies AgentModal.tsx component in src/tui/components/. Uses per-chunk delta calculation for accurate tok/s measurement. Tracks lastTokenUpdateRef for previous token count and timestamp. Collects instantaneous rate samples in tokPerSecSamples array. Displays average of all rate samples during streaming. Display position is between streaming indicator and token count in header Box component.
   """
@@ -27,7 +26,6 @@ Feature: Real-time tokens per second display in agent modal header
   #   5. With slow provider, instantaneous rates are averaged for stable display
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec agent modal
     I want to see real-time tokens per second during AI streaming
@@ -41,13 +39,11 @@ Feature: Real-time tokens per second display in agent modal header
     Then the header should display the averaged tok/s value
     And the tokens per second should appear to the left of the token count
 
-
   Scenario: Suppress tokens per second before rate samples available
     Given the agent modal is open and streaming a response
     And only one TokenUpdate event has been received
     When the header is rendered
     Then no tokens per second value should be displayed
-
 
   Scenario: Hide tokens per second when streaming ends
     Given the agent modal was streaming a response
@@ -55,7 +51,6 @@ Feature: Real-time tokens per second display in agent modal header
     When the streaming completes
     Then the tokens per second display should disappear
     And only the token counts should remain visible
-
 
   Scenario: Display proper header layout during streaming
     Given the agent modal is open with provider 'claude'
@@ -67,13 +62,11 @@ Feature: Real-time tokens per second display in agent modal header
     And the header should show '12.3 tok/s' to the left of the token count
     And the header should show 'tokens: 1234↓ 567↑'
 
-
   Scenario: Calculate tokens per second for slow provider
     Given the agent modal is open and streaming a response
     And multiple TokenUpdate events have been received with slow token generation
     When the header is rendered
     Then the header should display a low tok/s value reflecting the slow rate
-
 
   Scenario: Update tokens per second in real-time during streaming
     Given the agent modal is streaming a response
@@ -81,4 +74,3 @@ Feature: Real-time tokens per second display in agent modal header
     When additional tokens continue to stream over time
     Then the tokens per second display should update with new samples
     And the displayed value should reflect the average of all rate samples
-

@@ -4,27 +4,26 @@
 @context-window
 @TUI-033
 Feature: Context Window Fill Percentage Indicator
-
   """
-  
+
   Implementation Architecture:
   - Backend (Rust): Add ContextFillUpdate event to stream types in codelet/core/src/stream/types.rs
   - Stream Loop: Calculate and emit context fill in codelet/cli/src/interactive/stream_loop.rs after token updates
   - NAPI Bridge: Expose ContextFillUpdate via codelet/napi/src/streaming.rs bindings
   - Frontend (React): Handle event in src/tui/components/AgentModal.tsx, add color-coded display
-  
+
   Data Flow:
   - TokenTracker tracks cumulative tokens in session
   - Effective tokens = input_tokens - (cache_read_tokens * 0.9)
   - Threshold = context_window * 0.9 (compaction trigger)
   - Percentage = (effective_tokens / threshold) * 100
-  
+
   Dependencies:
   - Existing TokenTracker infrastructure (codelet/core/src/compaction/model.rs)
   - Existing calculate_compaction_threshold() function (codelet/cli/src/compaction_threshold.rs)
   - NAPI streaming event system
   - Ink React components (Box, Text)
-  
+
   """
 
   # ========================================
@@ -49,7 +48,6 @@ Feature: Context Window Fill Percentage Indicator
   #   7. After compaction: percentage resets based on new effective token count
   #
   # ========================================
-
   Background: User Story
     As a developer using Claude Code
     I want to see how full the context window is at a glance

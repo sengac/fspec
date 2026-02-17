@@ -7,7 +7,6 @@
 @tui
 @TUI-051
 Feature: Input state not restored when navigating from BoardView to AgentView
-
   """
   Add useEffect hook in AgentView that watches inputValue and calls sessionSetPendingInput(currentSessionId, inputValue) on every change, debounced to avoid excessive Rust calls. This ensures real-time sync of input state.
   """
@@ -25,7 +24,6 @@ Feature: Input state not restored when navigating from BoardView to AgentView
   #   2. User types 'Testing 1 2 3' character by character in AgentView, and the input state is synced to Rust after each keystroke via sessionSetPendingInput
   #
   # ========================================
-
   Background: User Story
     As a user navigating between BoardView and AgentView
     I want to switch from BoardView to AgentView using Shift+Right
@@ -49,4 +47,3 @@ Feature: Input state not restored when navigating from BoardView to AgentView
     When the user presses Shift+Right to switch to Session B
     And the user presses Shift+Left to return to Session A
     Then Session A's AgentView input area should display "Hello world"
-

@@ -5,7 +5,6 @@
 @critical
 @BUG-090
 Feature: Answered questions display as 'true' instead of actual answer text
-
   """
   Architecture notes:
   - Fix is in answer-question command (src/commands/answer-question.ts)
@@ -30,7 +29,6 @@ Feature: Answered questions display as 'true' instead of actual answer text
   #   3. Question answered before BUG-090 fix shows 'A: true', after fix shows actual answer text
   #
   # ========================================
-
   Background: User Story
     As a developer answering Example Mapping questions
     I want to preserve answer text instead of boolean true

@@ -3,7 +3,6 @@
 @high
 @NAPI-005
 Feature: Manual Compaction Command
-
   """
   Integration: AgentModal.tsx handleSubmit intercepts /compact before session.prompt() (pattern from /debug lines 254-271). Dependency: BackgroundSession in codelet-napi/src/session.rs exposes compact() method. Dependency: compact() calls execute_compaction from codelet/cli/src/interactive_helpers.rs. Type: CompactionResult contains metrics (originalTokens, compactedTokens, compressionRatio, turnsSummarized, turnsKept). Display: Result shown as tool role message (yellow) in conversation. Update: Token tracker in header refreshes immediately after compaction.
   """
@@ -34,7 +33,6 @@ Feature: Manual Compaction Command
   #   8. User types /compact, conversation continues seamlessly - user can immediately type next message without resending anything
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to trigger context compaction with /compact command in AgentModal
@@ -47,13 +45,11 @@ Feature: Manual Compaction Command
     And I see a result message showing original tokens, compacted tokens, and compression percentage
     And the token display in the header updates to reflect the reduced context size
 
-
   Scenario: Empty session shows nothing to compact
     Given I am in AgentModal with no messages in the conversation
     When I type '/compact' and press Enter
     Then I see 'Nothing to compact - no messages yet' in the conversation area
     And the input field returns to normal and I can type my next message
-
 
   Scenario: Compaction failure preserves context
     Given I am in AgentModal with an active conversation
@@ -61,4 +57,3 @@ Feature: Manual Compaction Command
     Then I see 'Compaction failed: [error message]' in the conversation area
     And the compaction API returns an error
     And my conversation context remains unchanged
-

@@ -3,7 +3,6 @@
 @session
 @WATCH-019
 Feature: Watcher Loop and Input Channel Not Integrated
-
   """
   session_create_watcher must: 1) Create BackgroundSession 2) Subscribe to parent's watcher_broadcast via subscribe_to_stream() 3) Spawn watcher_agent_loop (not agent_loop) passing the broadcast receiver
   Parent agent_loop uses tokio::select! to read from both input_rx AND watcher_input_rx, with user input taking priority
@@ -26,7 +25,6 @@ Feature: Watcher Loop and Input Channel Not Integrated
   #   3. Watcher injects message → watcher_inject calls receive_watcher_input → parent agent_loop reads from watcher_input_rx → parent AI receives and responds to watcher message
   #
   # ========================================
-
   Background: User Story
     As a watcher session
     I want to observe parent session and inject messages
@@ -37,15 +35,12 @@ Feature: Watcher Loop and Input Channel Not Integrated
     When the watcher injects a message via watcher_inject
     Then the parent agent_loop should read the message from watcher_input_rx and process it
 
-
   Scenario: Watcher session subscribes to parent broadcast on creation
     Given a parent session exists with an active broadcast channel
     When session_create_watcher is called with the parent session ID
     Then the watcher should have a broadcast receiver subscribed to the parent's stream
 
-
   Scenario: Watcher loop processes parent observations at breakpoints
     Given a watcher session is running with parent broadcast subscription
     When the parent session emits Text chunks followed by a Done chunk
     Then the watcher should accumulate observations and trigger evaluation at the Done breakpoint
-

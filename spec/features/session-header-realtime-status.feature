@@ -3,7 +3,6 @@
 @tui
 @TUI-060
 Feature: Session Header Work Unit Status Display
-
   """
   Display work unit ID and status in session header with realtime updates.
   Format: '#N (WORK-ID: status): model'.
@@ -30,7 +29,6 @@ Feature: Session Header Work Unit Status Display
   #   7. Header format: '#N (WORK-ID: status): model' - data from Zustand subscriptions
   #
   # ========================================
-
   Background: User Story
     As a developer using the TUI
     I want to see the attached work unit ID and status update in realtime in the session header
@@ -39,7 +37,6 @@ Feature: Session Header Work Unit Status Display
   # ----------------------------------------
   # Zustand Store Architecture
   # ----------------------------------------
-
   @unit
   Scenario: SessionHeader subscribes to sessionStore for work unit info
     Given SessionHeader component is rendered
@@ -64,7 +61,6 @@ Feature: Session Header Work Unit Status Display
   # ----------------------------------------
   # Singleton File Watcher
   # ----------------------------------------
-
   @unit
   Scenario: BoardView has singleton file watcher for work-units.json
     Given BoardView is rendered
@@ -81,7 +77,6 @@ Feature: Session Header Work Unit Status Display
   # ----------------------------------------
   # Integration Scenarios
   # ----------------------------------------
-
   @integration
   Scenario: Status change via fspec command updates header in realtime
     Given I am in AgentView with session #1

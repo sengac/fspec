@@ -4,7 +4,6 @@
 @tui
 @TUI-032
 Feature: VirtualList scroll-only mode for AgentModal
-
   """
   Testing: Existing VirtualList tests must continue passing (no changes to item mode behavior)
   Testing: Add new test file VirtualList-scroll-mode.test.tsx for scroll mode specific behavior
@@ -61,7 +60,6 @@ Feature: VirtualList scroll-only mode for AgentModal
   #   13. CheckpointViewer uses VirtualList without selectionMode prop (defaults to item mode), file selection works as before
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to scroll through chat content in AgentModal without individual line selection
@@ -70,7 +68,6 @@ Feature: VirtualList scroll-only mode for AgentModal
   # ========================================
   # SCROLL MODE SCENARIOS
   # ========================================
-
   @scroll-mode
   Scenario: Scroll down with arrow key in scroll mode
     Given a VirtualList with selectionMode set to "scroll"
@@ -172,7 +169,6 @@ Feature: VirtualList scroll-only mode for AgentModal
   # ========================================
   # ITEM MODE SCENARIOS (BACKWARDS COMPATIBILITY)
   # ========================================
-
   @item-mode
   Scenario: Arrow keys move selection in item mode
     Given a VirtualList with default selectionMode
@@ -193,7 +189,6 @@ Feature: VirtualList scroll-only mode for AgentModal
   # ========================================
   # AGENTMODAL INTEGRATION SCENARIOS
   # ========================================
-
   @integration
   Scenario: AgentModal uses scroll mode for conversation
     Given the AgentModal is open

@@ -2,7 +2,6 @@
 @codelet
 @WATCH-021
 Feature: Auto-Inject Toggle in Watcher Creation Dialog
-
   """
   Requires WATCH-020's NAPI binding to accept auto_inject parameter in session_create_watcher or session_set_role
   """
@@ -27,7 +26,6 @@ Feature: Auto-Inject Toggle in Watcher Creation Dialog
   #   4. User tabs to Auto-inject field when enabled → sees 'Auto-inject:' label in cyan, '[●] Enabled' in green with blue highlight, and '(←/→ to toggle)' hint
   #
   # ========================================
-
   Background: User Story
     As a user creating a new watcher
     I want to toggle whether the watcher automatically injects messages or requires manual review
@@ -37,13 +35,11 @@ Feature: Auto-Inject Toggle in Watcher Creation Dialog
     Given the user opens the watcher creation dialog
     Then the Auto-inject field should show '[●] Enabled' in green
 
-
   Scenario: User disables auto-inject with arrow keys
     Given the watcher creation dialog is open
     And the Auto-inject field is focused and shows Enabled
     When the user presses the Right arrow key
     Then the Auto-inject field should show '[ ] Disabled' in gray
-
 
   Scenario: Tab navigation includes auto-inject field
     Given the watcher creation dialog is open
@@ -53,7 +49,6 @@ Feature: Auto-Inject Toggle in Watcher Creation Dialog
     When the user presses Tab again
     Then the Create button should be focused
 
-
   Scenario: Auto-inject field shows focus styling and hint
     Given the watcher creation dialog is open
     When the user tabs to the Auto-inject field
@@ -61,11 +56,9 @@ Feature: Auto-Inject Toggle in Watcher Creation Dialog
     And the toggle should have a blue background highlight
     And the hint '(←/→ to toggle)' should be visible
 
-
   Scenario: Creating watcher passes auto-inject setting
     Given the watcher creation dialog is open
     And the user has entered a valid role name
     And the user has disabled auto-inject
     When the user presses Enter to create the watcher
     Then onCreate should be called with autoInject set to false
-

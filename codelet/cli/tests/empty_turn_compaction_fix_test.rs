@@ -122,7 +122,7 @@ fn test_defensive_check_logic() {
 
     // Case 1: High tokens, empty turns -> Should NOT compact
     assert!(
-        !(effective_tokens > threshold && !empty_turns.is_empty()),
+        effective_tokens <= threshold || empty_turns.is_empty(),
         "Should not compact when turns are empty"
     );
 
@@ -135,7 +135,7 @@ fn test_defensive_check_logic() {
     // Case 3: Low tokens, non-empty turns -> Should NOT compact
     let low_tokens = 50_000u64;
     assert!(
-        !(low_tokens > threshold && !non_empty_turns.is_empty()),
+        low_tokens <= threshold || non_empty_turns.is_empty(),
         "Should not compact when tokens are low"
     );
 }

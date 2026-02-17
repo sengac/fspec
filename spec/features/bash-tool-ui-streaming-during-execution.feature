@@ -4,7 +4,6 @@
 @high
 @TOOL-011
 Feature: Bash Tool UI Streaming During Execution
-
   """
   Implementation approach based on research of opencode, aider, gemini-cli, letta. Use tokio spawn with piped stdout, read lines in loop, emit via StreamOutput trait. See attached research document for detailed comparison.
   """
@@ -28,27 +27,29 @@ Feature: Bash Tool UI Streaming During Execution
   #   5. Similar to opencode pattern: emit_tool_progress callback called on each stdout chunk
   #
   # ========================================
-
   Background: User Story
     As a developer using codelet CLI
     I want to see bash command output streaming in real-time during execution
     So that I get visual feedback that commands are running and can see progress without waiting for completion
 
-  @streaming @happy-path
+  @streaming
+  @happy-path
   Scenario: Stream command output to UI in real-time
     Given a bash command that produces incremental output
     When the command executes through the bash tool
     Then output chunks should be emitted to the UI as they are produced
     And the user should see output appearing progressively
 
-  @streaming @llm-integration
+  @streaming
+  @llm-integration
   Scenario: Buffer complete output for LLM response
     Given a bash command that produces multiple lines of output
     When the command completes execution
     Then the LLM should receive the complete buffered output
     And the output should not be sent as individual streaming chunks to the LLM
 
-  @truncation @edge-case
+  @truncation
+  @edge-case
   Scenario: Truncate large output for LLM while streaming full output to UI
     Given a bash command that produces output exceeding MAX_OUTPUT_CHARS
     When the command executes and completes
@@ -56,7 +57,8 @@ Feature: Bash Tool UI Streaming During Execution
     And the LLM result should be truncated to MAX_OUTPUT_CHARS limit
     And a truncation warning should be included in the LLM result
 
-  @timeout @error-handling
+  @timeout
+  @error-handling
   Scenario: Handle timeout with partial streamed output
     Given a bash command that will exceed the timeout limit
     When the command times out during execution
@@ -64,7 +66,8 @@ Feature: Bash Tool UI Streaming During Execution
     And the LLM should receive a timeout error
     And the partial output should be preserved in the error context
 
-  @integration @callback
+  @integration
+  @callback
   Scenario: Emit progress through StreamOutput trait
     Given a bash command is executing
     When stdout chunks are received from the subprocess

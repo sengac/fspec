@@ -3,7 +3,6 @@
 @done
 @CMPCT-002
 Feature: Handle Gemini continuation + compaction gracefully
-
   """
   Pattern follows OpenCode's approach: signal at turn boundary, compact in outer loop, retry
   """
@@ -24,7 +23,6 @@ Feature: Handle Gemini continuation + compaction gracefully
   #   3. Given Gemini model has produced partial response text during continuation, When compaction is triggered, Then partial text is preserved in session history, And user does not lose any model output
   #
   # ========================================
-
   Background: User Story
     As a developer using Gemini models
     I want to have context compaction handled gracefully during model continuation

@@ -1,6 +1,5 @@
 @BRIDGE-011
 Feature: /stop command incorrectly reports agent as idle when actively processing
-
   """
   agentState in telegram-endpoint.ts must transition to 'thinking' when forwarding message to agent via WebSocket. Fix location: setupTelegramBot() message handler around line 693.
   """
@@ -20,7 +19,6 @@ Feature: /stop command incorrectly reports agent as idle when actively processin
   #   3. User sends /stop when agent is truly idle (no pending message) -> receives 'Nothing to stop'
   #
   # ========================================
-
   Background: User Story
     As a Telegram user
     I want to stop agent processing with /stop command

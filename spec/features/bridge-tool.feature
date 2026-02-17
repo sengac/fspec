@@ -3,7 +3,6 @@
 @bridge
 @BRIDGE-001
 Feature: Bridge Tool Integration Tests
-
   """
   Integration tests for Bridge tool using real WebSocket connections.
   Tests actual WebSocket behavior via TestWebSocketServer fixtures.
@@ -18,8 +17,8 @@ Feature: Bridge Tool Integration Tests
   # -------------------------------------------
   # Connect Action (Integration)
   # -------------------------------------------
-
-  @connect @integration
+  @connect
+  @integration
   Scenario: Connect to a valid WebSocket endpoint
     Given an agent session is running
     And a WebSocket server is listening at "ws://localhost:8080"
@@ -27,7 +26,9 @@ Feature: Bridge Tool Integration Tests
     Then the tool should return "Connected to ws://localhost:8080"
     And the bridge should be subscribed to the session's broadcast channel
 
-  @connect @error @integration
+  @connect
+  @error
+  @integration
   Scenario: Fail to connect to invalid endpoint
     Given an agent session is running
     When the agent calls Bridge with action "connect" and url "ws://invalid:9999"
@@ -36,8 +37,8 @@ Feature: Bridge Tool Integration Tests
   # -------------------------------------------
   # Disconnect Action (Integration)
   # -------------------------------------------
-
-  @disconnect @integration
+  @disconnect
+  @integration
   Scenario: Disconnect from a connected endpoint
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
@@ -48,17 +49,18 @@ Feature: Bridge Tool Integration Tests
   # -------------------------------------------
   # List Action (Integration)
   # -------------------------------------------
-
-  @list @integration
+  @list
+  @integration
   Scenario: List active bridge connections
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
     When the agent calls Bridge with action "list"
     Then the tool should return a list containing:
-      | url                   | state     | buffered |
-      | ws://localhost:8080   | connected | 0        |
+      | url                 | state     | buffered |
+      | ws://localhost:8080 | connected | 0        |
 
-  @list @integration
+  @list
+  @integration
   Scenario: List connections during reconnect
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
@@ -66,14 +68,14 @@ Feature: Bridge Tool Integration Tests
     And the bridge is attempting to reconnect
     When the agent calls Bridge with action "list"
     Then the tool should return a list containing:
-      | url                   | state        |
-      | ws://localhost:8080   | reconnecting |
+      | url                 | state        |
+      | ws://localhost:8080 | reconnecting |
 
   # -------------------------------------------
   # Multiple Bridges (Integration)
   # -------------------------------------------
-
-  @multiple @integration
+  @multiple
+  @integration
   Scenario: Connect to multiple endpoints simultaneously
     Given an agent session is running
     And a WebSocket server is listening at "ws://localhost:8080"
@@ -88,24 +90,24 @@ Feature: Bridge Tool Integration Tests
   # -------------------------------------------
   # Outbound Messages (Integration)
   # -------------------------------------------
-
-  @outbound @integration
+  @outbound
+  @integration
   Scenario: Relay StreamChunks to connected endpoint as JSON
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
     When the agent produces a text response "I can help with that"
     Then "ws://localhost:8080" should receive a JSON message with:
-      | field      | value                        |
-      | type       | chunk                        |
-      | session_id | <current_session_id>         |
-      | data.type  | text                         |
-      | data.text  | I can help with that         |
+      | field      | value                |
+      | type       | chunk                |
+      | session_id | <current_session_id> |
+      | data.type  | text                 |
+      | data.text  | I can help with that |
 
   # -------------------------------------------
   # Inbound Messages (Integration)
   # -------------------------------------------
-
-  @inbound @integration
+  @inbound
+  @integration
   Scenario: Receive input from endpoint and inject into session
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
@@ -118,8 +120,8 @@ Feature: Bridge Tool Integration Tests
   # -------------------------------------------
   # Reconnection & Buffering (Integration)
   # -------------------------------------------
-
-  @reconnect @integration
+  @reconnect
+  @integration
   Scenario: Auto-reconnect and deliver buffered messages
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"
@@ -130,7 +132,8 @@ Feature: Bridge Tool Integration Tests
     And the bridge reconnects
     Then "ws://localhost:8080" should receive the buffered messages in order
 
-  @buffer-overflow @integration
+  @buffer-overflow
+  @integration
   Scenario: Drop connection when buffer exceeds 1GB
     Given an agent session is running
     And the agent has connected a bridge to "ws://localhost:8080"

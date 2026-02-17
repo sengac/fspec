@@ -2,7 +2,6 @@
 @bridge
 @BRIDGE-002
 Feature: Telegram Bridge Endpoint
-
   """
   WebSocket server using 'ws' npm package - listens for codelet BridgeManager connections
   Telegram Bot API via 'node-telegram-bot-api' with polling mode for receiving messages
@@ -69,7 +68,6 @@ Feature: Telegram Bridge Endpoint
   #   A: Hybrid approach (Option D): Optional TELEGRAM_CHAT_ID env var for pre-configuration. If not set, drop chunks with console warning until first Telegram message establishes the chat_id. Most recent message updates active chat (allows device switching).
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to run a standalone Telegram bridge endpoint
@@ -78,7 +76,6 @@ Feature: Telegram Bridge Endpoint
   # -------------------------------------------
   # Endpoint Startup & Configuration
   # -------------------------------------------
-
   @startup
   Scenario: Start endpoint with required configuration
     Given TELEGRAM_BOT_TOKEN is set in .env
@@ -87,14 +84,16 @@ Feature: Telegram Bridge Endpoint
     And the Telegram bot should connect with polling mode
     And the endpoint should be ready to accept codelet connections
 
-  @startup @error-handling
+  @startup
+  @error-handling
   Scenario: Fail to start without required bot token
     Given TELEGRAM_BOT_TOKEN is not set in .env
     When I attempt to start the telegram endpoint
     Then the endpoint should exit with an error message
     And the error message should indicate TELEGRAM_BOT_TOKEN is required
 
-  @chat-association @pre-configured
+  @chat-association
+  @pre-configured
   Scenario: Use pre-configured chat ID for immediate message delivery
     Given TELEGRAM_BOT_TOKEN is set in .env
     And TELEGRAM_CHAT_ID is set in .env
@@ -103,7 +102,8 @@ Feature: Telegram Bridge Endpoint
     And the AI responds with "Hello"
     Then the message should be sent immediately to the pre-configured Telegram chat
 
-  @chat-association @dynamic
+  @chat-association
+  @dynamic
   Scenario: Learn chat ID from first Telegram message
     Given TELEGRAM_BOT_TOKEN is set in .env
     And TELEGRAM_CHAT_ID is not set
@@ -135,8 +135,8 @@ Feature: Telegram Bridge Endpoint
   # -------------------------------------------
   # Outbound: StreamChunk → Telegram
   # -------------------------------------------
-
-  @outbound @text
+  @outbound
+  @text
   Scenario: Relay text chunk to Telegram with MarkdownV2 formatting
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -144,7 +144,8 @@ Feature: Telegram Bridge Endpoint
     Then the message should be formatted with MarkdownV2
     And the message should be sent to the linked Telegram chat
 
-  @outbound @thinking
+  @outbound
+  @thinking
   Scenario: Relay thinking chunk with emoji prefix
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -152,7 +153,8 @@ Feature: Telegram Bridge Endpoint
     Then the message should be formatted as "💭 Let me analyze this..."
     And the message should be sent to the linked Telegram chat
 
-  @outbound @tool-call
+  @outbound
+  @tool-call
   Scenario: Relay tool_call chunk with tool indicator
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -161,7 +163,8 @@ Feature: Telegram Bridge Endpoint
     And the message should be sent to the linked Telegram chat
     And the tool name should be stored for later correlation
 
-  @outbound @tool-result
+  @outbound
+  @tool-result
   Scenario: Relay tool_result chunk with correlated tool name
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -171,7 +174,8 @@ Feature: Telegram Bridge Endpoint
     And the message should be formatted as "[Read] file contents here"
     And the message should be sent to the linked Telegram chat
 
-  @outbound @error
+  @outbound
+  @error
   Scenario: Relay error chunk with error indicator
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -179,7 +183,8 @@ Feature: Telegram Bridge Endpoint
     Then the message should be formatted as "❌ Error: Connection failed"
     And the message should be sent to the linked Telegram chat
 
-  @outbound @done
+  @outbound
+  @done
   Scenario: Display completion marker for done chunk
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -189,7 +194,6 @@ Feature: Telegram Bridge Endpoint
   # -------------------------------------------
   # Message Formatting & Truncation
   # -------------------------------------------
-
   @truncation
   Scenario: Truncate long messages to fit Telegram limit
     Given the endpoint is running with a linked Telegram chat
@@ -200,7 +204,8 @@ Feature: Telegram Bridge Endpoint
     And a truncation indicator should be added in the middle
     And the last ~1500 characters should be preserved
 
-  @truncation @code-block
+  @truncation
+  @code-block
   Scenario: Properly close code blocks when truncating mid-block
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -209,7 +214,8 @@ Feature: Telegram Bridge Endpoint
     And the code block should be re-opened after the truncation marker if needed
     And the message should be valid MarkdownV2
 
-  @formatting @code-block
+  @formatting
+  @code-block
   Scenario: Preserve code block language markers
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -220,7 +226,6 @@ Feature: Telegram Bridge Endpoint
   # -------------------------------------------
   # Inbound: Telegram → Codelet
   # -------------------------------------------
-
   @inbound
   Scenario: Relay Telegram message to codelet as input
     Given the endpoint is running with a linked Telegram chat
@@ -231,7 +236,8 @@ Feature: Telegram Bridge Endpoint
     And the message should contain the session_id
     And the message should contain "build the app"
 
-  @inbound @device-switch
+  @inbound
+  @device-switch
   Scenario: Update active chat when user messages from different device
     Given the endpoint is running with chat ID "111"
     And a codelet session is connected
@@ -239,7 +245,8 @@ Feature: Telegram Bridge Endpoint
     Then the active chat ID should be updated to "222"
     And subsequent chunks should be sent to chat ID "222"
 
-  @inbound @multi-user
+  @inbound
+  @multi-user
   Scenario: Route messages from multiple Telegram users to single session
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -251,8 +258,8 @@ Feature: Telegram Bridge Endpoint
   # -------------------------------------------
   # Error Handling
   # -------------------------------------------
-
-  @error-handling @telegram-api
+  @error-handling
+  @telegram-api
   Scenario: Handle Telegram API errors gracefully
     Given the endpoint is running with a linked Telegram chat
     And a codelet session is connected
@@ -261,4 +268,3 @@ Feature: Telegram Bridge Endpoint
     Then the error should be logged to console
     And the message should be dropped
     And the endpoint should continue receiving chunks
-

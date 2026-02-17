@@ -2,7 +2,6 @@
 @codelet
 @WATCH-002
 Feature: WatchGraph and Session Relationship Tracking
-
   """
   Architecture notes:
   - WatchGraph is a struct with two RwLock-protected HashMaps living inside SessionManager
@@ -33,7 +32,6 @@ Feature: WatchGraph and Session Relationship Tracking
   #   7. get_parent(session_id: abc) returns None when abc is a regular session (not a watcher)
   #
   # ========================================
-
   Background: User Story
     As a watcher session subsystem
     I want to track parent-watcher relationships between sessions

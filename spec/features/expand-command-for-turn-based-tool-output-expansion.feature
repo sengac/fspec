@@ -4,7 +4,6 @@
 @virtuallist
 @TUI-043
 Feature: Expand command for turn-based tool output expansion
-
   """
   Architecture notes:
   - File: src/tui/components/AgentView.tsx
@@ -38,7 +37,6 @@ Feature: Expand command for turn-based tool output expansion
   #   6. User expands turn A, navigates to turn B (collapsed), navigates back to turn A → turn A is still expanded
   #
   # ========================================
-
   Background: User Story
     As a developer using the AI agent TUI
     I want to toggle expansion of collapsed tool output for a selected turn
@@ -52,19 +50,16 @@ Feature: Expand command for turn-based tool output expansion
     Then the turn expands to show the full tool output without truncation
     And the "...+N lines" hint is no longer visible for that turn
 
-
   Scenario: Collapse expanded turn by running expand again
     Given I am in turn selection mode with a turn currently expanded
     When I run the /expand command
     Then the turn collapses back to the truncated view
     And the "...+N lines (use /select and /expand)" hint is visible again
 
-
   Scenario: Silently ignore expand when not in turn selection mode
     Given I am NOT in turn selection mode
     When I run the /expand command
     Then the command does nothing silently
-
 
   Scenario: Updated hint message in collapsed tool output
     Given a tool produces output with 50 lines
@@ -72,13 +67,11 @@ Feature: Expand command for turn-based tool output expansion
     Then I see the hint "...+46 lines (use /select and /expand)"
     And I do NOT see the old hint "ctrl+o to expand"
 
-
   Scenario: Expand collapsed diff output from Edit tool
     Given I have a conversation with an Edit tool diff showing 100 lines of changes collapsed
     And I am in turn selection mode with that turn selected
     When I run the /expand command
     Then the full diff is visible with all 100 lines of changes
-
 
   Scenario: Expansion state persists when navigating between turns
     Given I am in turn selection mode
@@ -88,4 +81,3 @@ Feature: Expand command for turn-based tool output expansion
     And then navigate back to turn A
     Then turn A is still expanded
     And turn B remains collapsed
-

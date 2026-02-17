@@ -4,7 +4,6 @@
 @credentials
 @CONFIG-005
 Feature: Move Credential Management to Rust
-
   """
   Create codelet/napi/src/credentials/ module with: mod.rs, store.rs, types.rs, resolver.rs, napi_bindings.rs
   CredentialStore uses lazy_static global singleton with Mutex, matching persistence module pattern
@@ -41,7 +40,6 @@ Feature: Move Credential Management to Rust
   #   18. Standard API key (sk-ant-api-...) stored in ANTHROPIC_API_KEY env var -> ClaudeProvider detects non-OAuth prefix -> uses AuthMode::ApiKey -> sends x-api-key header
   #
   # ========================================
-
   Background: User Story
     As a TUI user
     I want to update my API credentials
@@ -133,9 +131,8 @@ Feature: Move Credential Management to Rust
     When the API checks for functions that return credentials to TypeScript
     Then no NAPI function should return the actual API key value
 
-
-  @integration
   # OAuth Token Detection by Prefix (Rule 14)
+  @integration
   @unit
   Scenario: Detect OAuth token from prefix and use Bearer authentication
     Given a credential with value "sk-ant-oat01-abc123" is available
@@ -166,4 +163,3 @@ Feature: Move Credential Management to Rust
     When a Claude session is created
     Then ClaudeProvider should detect ApiKey mode from the token prefix
     And the session should authenticate using x-api-key header
-

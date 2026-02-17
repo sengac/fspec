@@ -258,10 +258,8 @@ fn create_valid_test_pdf() -> Vec<u8> {
     });
 
     // Update page to reference Pages node
-    if let Ok(page) = doc.get_object_mut(page_id) {
-        if let Object::Dictionary(ref mut dict) = page {
-            dict.set("Parent", pages_id);
-        }
+    if let Ok(Object::Dictionary(ref mut dict)) = doc.get_object_mut(page_id) {
+        dict.set("Parent", pages_id);
     }
 
     // Create catalog

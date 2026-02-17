@@ -5,18 +5,17 @@
 @codelet
 @TOOLS-001
 Feature: Add Multimodal Content Support to Read Tool
-
   """
   LAYER ARCHITECTURE:
   1. Read Tool (codelet/tools/src/read.rs): Detects file type, returns structured output
   2. Agent Loop: Parses tool output, converts to appropriate message content type
   3. Provider Layer (rig): Converts message content to provider-specific API format
-  
+
   FILE STRUCTURE:
   - codelet/tools/src/read.rs - Read tool implementation
   - codelet/tools/src/file_type.rs - File type detection (new)
   - codelet-napi/src/session.rs - Agent loop tool result handling
-  
+
   CRITICAL REQUIREMENTS:
   - Supported image formats: PNG, JPG/JPEG, GIF, WEBP, SVG
   - File type detection by extension AND magic bytes fallback
@@ -40,7 +39,6 @@ Feature: Add Multimodal Content Support to Read Tool
   #   3. Agent reads corrupted image file - returns graceful error message instead of crashing
   #
   # ========================================
-
   Background: User Story
     As a developer using the fspec agent
     I want to read images and PDFs visually in the conversation
@@ -51,21 +49,17 @@ Feature: Add Multimodal Content Support to Read Tool
     When I ask the agent to read screenshot.png
     Then the agent displays the image visually in the conversation
 
-
   Scenario: Read text file with line numbers
     Given a JSON config file exists at config.json
     When I ask the agent to read config.json
     Then the agent shows the file content with line numbers
-
 
   Scenario: Handle corrupted image gracefully
     Given a corrupted image file exists at broken.png
     When I ask the agent to read broken.png
     Then the agent shows a clear error message explaining the file could not be read
 
-
   Scenario: Detect image type by content when extension missing
     Given a PNG image file exists at image-without-extension with no file extension
     When I ask the agent to read image-without-extension
     Then the agent detects it as a PNG image and displays it visually
-

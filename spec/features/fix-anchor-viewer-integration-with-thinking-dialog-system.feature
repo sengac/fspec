@@ -3,7 +3,6 @@
 @tui
 @TUI-056
 Feature: Fix Anchor Viewer Integration with Thinking Dialog System
-
   """
   Update AgentView.tsx disabled prop logic to coordinate multiple dialog states properly
   """
@@ -29,7 +28,6 @@ Feature: Fix Anchor Viewer Integration with Thinking Dialog System
   #   A: Expose array of AnchorPoint objects with {turn_index, anchor_type, confidence, description, timestamp} properties. Function should filter by session ID and return anchors detected during compaction for that session.
   #
   # ========================================
-
   Background: User Story
     As a user interacting with TUI
     I want to view anchor points in conversation without breaking existing dialog system

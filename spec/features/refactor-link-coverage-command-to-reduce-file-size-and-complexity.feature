@@ -6,7 +6,6 @@
 @cli
 @REFAC-005
 Feature: Refactor link-coverage command to reduce file size and complexity
-
   """
   Split link-coverage.ts into core logic, validation, and stats update modules
   """
@@ -25,7 +24,6 @@ Feature: Refactor link-coverage command to reduce file size and complexity
   #   2. Developer checks file sizes and confirms link-coverage.ts is < 300 lines
   #
   # ========================================
-
   Background: User Story
     As a Developer
     I want to refactor the link-coverage command

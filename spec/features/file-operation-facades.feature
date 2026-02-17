@@ -1,7 +1,10 @@
 @tool-discovery
-@TOOL-003 @high @tools @facade @gemini
+@TOOL-003
+@high
+@tools
+@facade
+@gemini
 Feature: File Operation Facades
-
   """
   Create GeminiReadFileFacade, GeminiWriteFileFacade, GeminiReplaceFacade in codelet/tools/src/facade/file_ops.rs. Each implements ToolFacade trait. Add InternalFileParams enum to traits.rs. Wrap with FacadeToolWrapper and add to GeminiProvider.create_rig_agent(). Follow pattern from web_search.rs facades.
   """
@@ -24,7 +27,6 @@ Feature: File Operation Facades
   #   4. GeminiProvider.create_rig_agent() adds read_file, write_file, replace tools using FileToolFacadeWrapper instead of raw ReadTool, WriteTool, EditTool
   #
   # ========================================
-
   Background: User Story
     As a LLM agent using Gemini provider
     I want to use file operations with Gemini-native tool names and flat schemas

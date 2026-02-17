@@ -6,7 +6,6 @@
 @cli
 @BUG-091
 Feature: link-coverage crashes when coverage file stats are missing
-
   """
   Ensure updateStats function checks for existence of stats object before assignment
   """
@@ -23,7 +22,6 @@ Feature: link-coverage crashes when coverage file stats are missing
   #   1. User runs link-coverage on a manually created coverage file without stats object
   #
   # ========================================
-
   Background: User Story
     As a Developer
     I want to link coverage to a feature file

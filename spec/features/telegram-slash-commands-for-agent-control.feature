@@ -2,7 +2,6 @@
 @telegram
 @BRIDGE-010
 Feature: Telegram Slash Commands for Agent Control
-
   """
   Slash commands are intercepted in setupTelegramBot's message handler BEFORE forwarding to codelet. Commands are detected by checking if text starts with '/'. The SlashCommandHandler processes commands synchronously and returns responses via bot.sendMessage directly to the same chatId. This does NOT require BRIDGE-008 control channel - responses go directly to Telegram.
   """
@@ -32,7 +31,6 @@ Feature: Telegram Slash Commands for Agent Control
   #   8. User sends /HELP (uppercase), still triggers help command
   #
   # ========================================
-
   Background: User Story
     As a Telegram user
     I want to send slash commands to control the agent

@@ -3,7 +3,6 @@
 @done
 @TUI-047
 Feature: Attach to Detached Sessions from Resume View
-
   """
   Modifies handleResumeMode() to query both persistenceListSessions() and sessionManagerList(), merging results with background sessions taking precedence. Adds status icon rendering (🔄/💾) in resume list. Uses GlobalSessionStreamManager to register handlers for streaming sessions.
   """
@@ -35,7 +34,6 @@ Feature: Attach to Detached Sessions from Resume View
   #   8. User has no background sessions but has persisted sessions, resume view shows only 💾 icons, no 🔄 icons, all sessions load from persistence (backward compatible)
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec TUI
     I want to see which sessions are running in the background when viewing /resume, indicated by emoji icons, and attach to them using the existing background session API rather than loading from persistence
@@ -47,13 +45,11 @@ Feature: Attach to Detached Sessions from Resume View
     Then I see the running session with a 🔄 icon
     And I see the idle session with a 💾 icon
 
-
   Scenario: Attach to running session shows buffered output then live stream
     Given I have a detached session that produced output while I was away
     When I select the running session from /resume
     Then I immediately see the buffered output from while I was detached
     And I see live streaming output continue in real-time
-
 
   Scenario: Idle session loads from persistence as before
     Given I have an idle persisted session with conversation history
@@ -61,19 +57,16 @@ Feature: Attach to Detached Sessions from Resume View
     Then the conversation history displays as before
     And I can type a new prompt
 
-
   Scenario: Delete running session destroys background session
     Given I am in resume mode with a running background session selected
     When I press D and confirm deletion
     Then the background session is destroyed
     And the session list refreshes without that session
 
-
   Scenario: Sessions sorted by most recent first
     Given I have multiple sessions with different last updated times
     When I view the resume list
     Then sessions appear sorted by most recent first
-
 
   Scenario: Backward compatible when no background sessions exist
     Given I have only persisted sessions and no background sessions
@@ -81,10 +74,8 @@ Feature: Attach to Detached Sessions from Resume View
     Then I see all sessions with 💾 icons
     And selecting any session loads from persistence as before
 
-
   Scenario: Attach to idle background session shows complete output
     Given I have a session that finished while I was detached
     When I select the idle background session from /resume
     Then I see the complete buffered output from the finished task
     And I can type a new prompt to continue the conversation
-

@@ -83,7 +83,6 @@ Feature: Agent Modal Model Selection
   #   A: Yes, user may still want to select different models within that provider.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec's AI agent
     I want to select specific models within providers
@@ -92,7 +91,6 @@ Feature: Agent Modal Model Selection
   # ----------------------------------------
   # BASIC SELECTOR BEHAVIOR
   # ----------------------------------------
-
   Scenario: Tab key opens model selector with providers as collapsible sections
     Given I am in the AgentModal with a valid session
     And multiple providers have valid credentials
@@ -141,7 +139,6 @@ Feature: Agent Modal Model Selection
   # ----------------------------------------
   # CAPABILITY INDICATORS
   # ----------------------------------------
-
   Scenario: Display reasoning capability indicator
     Given the model selector is open
     When I view a model with reasoning=true
@@ -166,7 +163,6 @@ Feature: Agent Modal Model Selection
   # ----------------------------------------
   # PROVIDER FILTERING
   # ----------------------------------------
-
   Scenario: Only show providers with valid credentials
     Given ANTHROPIC_API_KEY is set
     And OPENAI_API_KEY is NOT set
@@ -188,7 +184,6 @@ Feature: Agent Modal Model Selection
   # ----------------------------------------
   # SESSION INITIALIZATION
   # ----------------------------------------
-
   Scenario: New session uses newWithModel factory method
     Given I open the AgentModal
     When the session initializes
@@ -215,7 +210,6 @@ Feature: Agent Modal Model Selection
   # ----------------------------------------
   # ERROR HANDLING
   # ----------------------------------------
-
   Scenario: Graceful fallback when model cache unavailable
     Given the models.dev cache is corrupted or unavailable
     When I open the AgentModal
@@ -236,7 +230,6 @@ Feature: Agent Modal Model Selection
   # ----------------------------------------
   # UI DISPLAY FORMAT
   # ----------------------------------------
-
   Scenario: Provider header shows model count
     Given the "anthropic" provider has 3 models with tool_call=true
     When I view the model selector

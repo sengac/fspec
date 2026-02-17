@@ -6,7 +6,6 @@
 @ai-guidance
 @DOC-016
 Feature: Documentation Clarity Improvements
-
   """
   This feature improves fspec bootstrap documentation clarity based on AI feedback from real-world usage. Implementation involves updating markdown files in the bootstrap command output, not code changes. Focus is on documentation structure, naming conventions, and workflow guidance to prevent AI confusion during fspec usage.
   """
@@ -46,7 +45,6 @@ Feature: Documentation Clarity Improvements
   #   A: true
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec
     I want to understand all bootstrap documentation without confusion

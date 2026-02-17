@@ -2,7 +2,6 @@
 @tools
 @BRIDGE-012
 Feature: Bridge session chunk filtering
-
   """
   Bridge tool receives session_id from the tool call context.
   It filters chunks to only relay those matching its bridged session.

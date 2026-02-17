@@ -2,7 +2,6 @@
 @tui
 @BRIDGE-012
 Feature: GlobalSessionStreamManager chunk routing by session_id
-
   """
   TypeScript GlobalSessionStreamManager registers the global callback ONCE at startup.
   It receives ALL chunks from ALL sessions and routes them to session-specific handlers.

@@ -2,7 +2,6 @@
 @codelet
 @WATCH-007
 Feature: NAPI Bindings for Watcher Operations
-
   """
   Add NAPI functions after existing session_* functions (around line 2780+)
   session_create_watcher must: 1) create session via SessionManager, 2) register in WatchGraph
@@ -34,7 +33,6 @@ Feature: NAPI Bindings for Watcher Operations
   #   8. watcher_inject on a watcher with no parent registered → error: Watcher has no parent session
   #
   # ========================================
-
   Background: User Story
     As a TypeScript application
     I want to call NAPI bindings for watcher operations
@@ -46,8 +44,8 @@ Feature: NAPI Bindings for Watcher Operations
     When I call session_create_watcher with parent "parent-uuid", model "claude-sonnet-4", project "/project", name "Code Reviewer"
     Then a new watcher session should be created and returned
     And the watcher should be registered in WatchGraph with parent "parent-uuid"
-    # Note: Broadcast subscription happens lazily when watcher loop starts
 
+    # Note: Broadcast subscription happens lazily when watcher loop starts
   @wip
   Scenario: Get parent of a watcher session
     Given a watcher session "watcher-uuid" watching parent "parent-uuid"

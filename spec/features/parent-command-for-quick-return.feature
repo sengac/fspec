@@ -3,7 +3,6 @@
 @done
 @WATCH-014
 Feature: /parent Command for Quick Return
-
   """
   Pattern: Follow existing /watcher command and handleWatcherSelect() session switching pattern
   """
@@ -28,7 +27,6 @@ Feature: /parent Command for Quick Return
   #   5. User in watcher presses /parent and the parent session was previously streaming → user sees parent conversation at current point, can continue interacting with parent
   #
   # ========================================
-
   Background: User Story
     As a user in a watcher session
     I want to type /parent to quickly switch back to the parent session
@@ -43,7 +41,6 @@ Feature: /parent Command for Quick Return
     And a status message shows "Switched to parent session: Main Dev Session"
     And the parent session conversation is displayed
 
-
   Scenario: Error when using /parent in regular session
     Given a regular session named "Code Project" exists
     And the session is not a watcher session
@@ -52,9 +49,7 @@ Feature: /parent Command for Quick Return
     Then a status message shows "This session has no parent. /parent only works from watcher sessions."
     And the current session remains "Code Project"
 
-
   Scenario: Error when no active session exists
     Given no session is currently active
     When the user types "/parent"
     Then a status message shows "No active session. Start a session first."
-

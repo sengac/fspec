@@ -2,7 +2,6 @@
 @tui
 @TUI-066
 Feature: TUI /clear should update React state as side effect of Rust state change
-
   """
   1. Add SessionState::Cleared variant to Rust enum (types.rs)
   2. session.clear_history() emits StreamChunk::SessionStateChange { state: Cleared } after clearing
@@ -28,7 +27,6 @@ Feature: TUI /clear should update React state as side effect of Rust state chang
   #   4. If sessionClearHistory() throws error, no SessionStateChange{Cleared} chunk emitted, React state unchanged - atomic: either all state updates or none
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to have React state update as a side effect of Rust state changes

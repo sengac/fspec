@@ -3,7 +3,6 @@
 @high
 @PROV-002
 Feature: Limit File Reads to 25000 Tokens
-
   """
   Architecture notes:
   - Add tiktoken-rs dependency with cl100k_base encoding for accurate token counting
@@ -46,7 +45,6 @@ Feature: Limit File Reads to 25000 Tokens
   #   9. Update compactor.rs token estimation to use tiktoken-rs instead of len()/4 approximation
   #
   # ========================================
-
   Background: User Story
     As a developer using codelet for code exploration
     I want to have file reads automatically limited to 25,000 tokens
@@ -55,7 +53,6 @@ Feature: Limit File Reads to 25000 Tokens
   # ----------------------------------------
   # SUCCESS SCENARIOS
   # ----------------------------------------
-
   Scenario: Read file under token limit
     Given a TypeScript file "/project/src/app.ts" with 50KB of content
     When the read tool is called for "/project/src/app.ts"
@@ -83,7 +80,6 @@ Feature: Limit File Reads to 25000 Tokens
   # ----------------------------------------
   # ERROR SCENARIOS
   # ----------------------------------------
-
   Scenario: Read file exceeding token limit throws error
     Given a minified JavaScript file "/project/dist/bundle.js" with 200KB of content
     When the read tool is called for "/project/dist/bundle.js"
@@ -95,7 +91,6 @@ Feature: Limit File Reads to 25000 Tokens
   # ----------------------------------------
   # CONFIGURATION SCENARIOS
   # ----------------------------------------
-
   Scenario: Custom token limit via environment variable
     Given the environment variable CODELET_MAX_FILE_TOKENS is set to 50000
     And a JavaScript file "/project/dist/bundle.js" with 150KB of content
@@ -106,7 +101,6 @@ Feature: Limit File Reads to 25000 Tokens
   # ----------------------------------------
   # TOKEN ESTIMATION WITH TIKTOKEN-RS
   # ----------------------------------------
-
   Scenario: Token estimation uses tiktoken-rs cl100k_base encoding
     Given a text file with English content
     When the token count is estimated using TokenEstimator
@@ -122,7 +116,6 @@ Feature: Limit File Reads to 25000 Tokens
   # ----------------------------------------
   # MIGRATION SCENARIOS
   # ----------------------------------------
-
   Scenario: Replace byte-based estimation in interactive_helpers
     Given the existing estimate_tokens() function in interactive_helpers.rs
     When the migration is complete

@@ -2,7 +2,6 @@
 @codelet
 @PAUSE-001
 Feature: Tool Pause Handler Mechanism
-
   """
   Core mechanism: codelet/tools/src/tool_pause.rs with PauseKind enum (Continue/Confirm),
   PauseRequest struct, PauseResponse enum, and pause_for_user() blocking function.

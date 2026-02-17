@@ -5,7 +5,6 @@
 @bridge
 @BRIDGE-006
 Feature: Intelligent Content-Aware Chunking for Telegram Display
-
   """
   Implementation should be a content-aware buffer that accumulates streaming data and flushes at detected boundaries
   Use a boundary detector with priority: code block > heading > paragraph > sentence > max size
@@ -54,7 +53,6 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
   #   3. Tool errors: Keep existing pattern - ❌ prefix already differentiates errors from success in formatForTelegram()
   #
   # ========================================
-
   Background: User Story
     As a user viewing Claude's output via Telegram
     I want to receive well-formatted, logically-chunked messages
@@ -63,7 +61,6 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
   # ===========================================
   # BOUNDARY DETECTION SCENARIOS
   # ===========================================
-
   @boundary
   Scenario: Complete sentence arrives in single message
     Given the chunker receives streaming text "I will analyze this code."
@@ -79,42 +76,48 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
     Then it flushes at the sentence boundary
     And the remaining text stays in the buffer for the next message
 
-  @boundary @code-block
+  @boundary
+  @code-block
   Scenario: Code block arrives as complete unit
     Given the chunker receives a code block "```typescript\nconst x = 1;\n```"
     When the idle timeout triggers a flush
     Then Telegram receives the complete code block in one message
     And the code block is not split across messages
 
-  @boundary @code-block
+  @boundary
+  @code-block
   Scenario: Multi-line code block stays together
     Given the chunker receives a 50-line code block
     And the code block is under 4096 characters
     When the idle timeout triggers a flush
     Then all 50 lines arrive in a single Telegram message
 
-  @boundary @paragraph
+  @boundary
+  @paragraph
   Scenario: Paragraph break triggers new chunk
     Given the buffer contains "First paragraph.\n\nSecond paragraph."
     When the buffer is flushed
     Then "First paragraph." becomes one message
     And "Second paragraph." becomes the next message
 
-  @boundary @heading
+  @boundary
+  @heading
   Scenario: Heading starts new message
     Given the buffer contains "Some text.\n\n## New Section\n\nMore text."
     When the buffer is flushed
     Then "Some text." is sent first
     And "## New Section\n\nMore text." starts a new message
 
-  @boundary @list
+  @boundary
+  @list
   Scenario: List items stay together in single message
     Given the chunker receives a list with 10 items
     And the total list is under 4096 characters
     When the idle timeout triggers a flush
     Then all 10 items arrive in a single Telegram message
 
-  @boundary @priority
+  @boundary
+  @priority
   Scenario: Code block boundary takes priority over paragraph
     Given the buffer contains text followed by a code block followed by a paragraph
     When the buffer approaches the size limit inside the code block
@@ -124,30 +127,36 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
   # ===========================================
   # CONTENT SUMMARIZATION SCENARIOS
   # ===========================================
-
-  @summarization @thinking
-  @summarization @thinking
-  @summarization @thinking
-  @summarization @tool
+  @summarization
+  @thinking
+  @summarization
+  @thinking
+  @summarization
+  @thinking
+  @summarization
+  @tool
   Scenario: Tool call displays formatted invocation
     Given Claude invokes the Fspec tool with command "create-story"
     When the tool_call chunk is processed
     Then Telegram shows "🔧 Running: Fspec(create-story)"
 
-  @summarization @tool
+  @summarization
+  @tool
   Scenario: File read tool result shows summary with line count
     Given Claude reads a 500-line file "src/auth.ts"
     When the tool_result chunk is processed
     Then Telegram shows "📄 Read src/auth.ts (500 lines)" instead of file contents
 
-  @summarization @tool
+  @summarization
+  @tool
   Scenario: Large tool output summarized not sent verbatim
     Given a tool returns 10000 characters of output
     When the tool_result chunk is processed
     Then Telegram receives a summary under 500 characters
     And the full output is not sent
 
-  @summarization @tool
+  @summarization
+  @tool
   Scenario: Tool call with arguments shows arg summary
     Given Claude invokes Read with file_path "/home/user/file.ts"
     When the tool_call chunk is processed
@@ -156,49 +165,57 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
   # ===========================================
   # MARKDOWN VALIDATION SCENARIOS
   # ===========================================
-
-  @validation @limit
+  @validation
+  @limit
   Scenario: Message respects 4096 character limit
     Given the buffer contains 5000 characters of text
     When the buffer is flushed
     Then no single Telegram message exceeds 4096 characters
 
-  @validation @limit
+  @validation
+  @limit
   Scenario: Long message splits at logical boundary before limit
     Given the buffer contains 5000 characters with a paragraph break at 3800
     When the buffer is flushed
     Then the first message ends at the paragraph break
     And the second message contains the remainder
 
-  @validation @markdown
+  @validation
+  @markdown
   Scenario: Unclosed code block closed before sending
     Given the buffer contains "```typescript\nconst x = 1;" without closing fence
     And the buffer is being force-flushed due to size limit
     When the message is prepared for sending
     Then a closing "```" is appended to make valid markdown
 
-  @validation @markdown
+  @validation
+  @markdown
   Scenario: Unclosed bold markers balanced before sending
     Given the buffer contains "This is **bold text without closing"
     And the buffer is being force-flushed
     When the message is prepared for sending
     Then a closing "**" is appended to balance the markers
 
-  @validation @markdown
+  @validation
+  @markdown
   Scenario: Inline code backticks balanced in each chunk
     Given the buffer contains "Use the `command without closing"
     And the buffer is being force-flushed
     When the message is prepared for sending
     Then a closing backtick is appended
 
-  @validation @code-block @limit
+  @validation
+  @code-block
+  @limit
   Scenario: Code block exceeding limit truncated with indicator
     Given a code block contains 6000 characters
     When it is processed for Telegram
     Then it is truncated to under 4096 characters
     And includes "[...N chars omitted...]" indicator
 
-  @validation @code-block @limit
+  @validation
+  @code-block
+  @limit
   Scenario: Truncated code block has closing fence
     Given a code block is truncated due to size
     When the truncated message is prepared
@@ -213,7 +230,6 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
     Then all table rows arrive in a single Telegram message
     And the table is not split mid-row
 
-
   @boundary
   @table
   @priority
@@ -224,7 +240,6 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
     And the second message contains the complete table
     And no table row is split across messages
 
-
   @boundary
   @table
   Scenario: Table row never split mid-row
@@ -232,7 +247,6 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
     When the buffer approaches the size limit mid-row
     Then it waits for the row to complete before flushing
     And the row "| Feb 10 | $5,048.96 | +0.17% |" is never split into separate messages
-
 
   @thinking
   Scenario: Thinking content wrapped in think tags
@@ -242,11 +256,9 @@ Feature: Intelligent Content-Aware Chunking for Telegram Display
     And the actual thinking content flows naturally
     And the final message ends with '</think>'
 
-
   @thinking
   Scenario: Multiple thinking chunks stream as continuous content
     Given Claude sends 5 separate thinking chunks in succession
     When they are processed for Telegram
     Then the content flows between single '<think>' and '</think>' tags
     And NOT 5 separate '🤔' indicator messages
-

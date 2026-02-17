@@ -3,7 +3,6 @@
 @tui
 @WATCH-023
 Feature: Watcher Templates and Improved Creation UX
-
   """
   Architecture Notes:
   - Types: src/tui/types/watcherTemplate.ts (WatcherTemplate, WatcherInstance interfaces)
@@ -48,7 +47,6 @@ Feature: Watcher Templates and Improved Creation UX
   #   26. Switching between sessions (watcher/parent) does NOT show notification (UI change is feedback)
   #
   # ========================================
-
   Background: User Story
     As a TUI user managing watcher sessions
     I want to create, manage, and spawn watchers from reusable templates
@@ -57,7 +55,6 @@ Feature: Watcher Templates and Improved Creation UX
   # ===========================================
   # Template List - Display and Navigation
   # ===========================================
-
   Scenario: View templates with active instance count
     Given I have a "Security Reviewer" template with 2 active instances
     And I have a "Test Enforcer" template with no active instances
@@ -102,7 +99,6 @@ Feature: Watcher Templates and Improved Creation UX
   # ===========================================
   # Spawning and Opening Watchers
   # ===========================================
-
   Scenario: Spawn new instance from template
     Given "Security Reviewer" template is selected
     When I press Enter
@@ -130,7 +126,6 @@ Feature: Watcher Templates and Improved Creation UX
   # ===========================================
   # Template CRUD Operations
   # ===========================================
-
   Scenario: Create new template
     Given the /watcher overlay is open
     When I press N
@@ -171,7 +166,6 @@ Feature: Watcher Templates and Improved Creation UX
   # ===========================================
   # Template Form - Navigation
   # ===========================================
-
   Scenario: Navigate form fields with arrow keys
     Given the template form is open with Name field focused
     When I press the down arrow key
@@ -187,7 +181,6 @@ Feature: Watcher Templates and Improved Creation UX
   # ===========================================
   # Template Form - Model Selection
   # ===========================================
-
   Scenario: Model defaults to parent session model
     Given my parent session uses "claude-sonnet-4"
     When I open the template form
@@ -208,7 +201,6 @@ Feature: Watcher Templates and Improved Creation UX
   # ===========================================
   # Template Form - Authority Field
   # ===========================================
-
   Scenario: Authority shows inline explanation when focused
     Given the template form is open
     When I focus the Authority field
@@ -225,7 +217,6 @@ Feature: Watcher Templates and Improved Creation UX
   # ===========================================
   # Template Slug Generation
   # ===========================================
-
   Scenario: Slug is auto-generated from template name
     When I save a template with name "Security Reviewer"
     Then the template slug is "security-reviewer"

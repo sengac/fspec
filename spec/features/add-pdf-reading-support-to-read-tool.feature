@@ -5,7 +5,6 @@
 @tools
 @TOOLS-002
 Feature: Add PDF Reading Support to Read Tool
-
   """
   VISUAL MODE: Uses pdfium-render crate (Rust wrapper for Google Pdfium C++ library). Renders pages via PdfPage::render_with_config() at 150 DPI to PdfBitmap, converts to image::DynamicImage, encodes as PNG base64. Returns array of {page_number, data, media_type} objects.
 
@@ -46,12 +45,10 @@ Feature: Add PDF Reading Support to Read Tool
   #   9. LLM reads UML-class-diagram.pdf -> visual mode renders diagram -> LLM identifies classes, inheritance relationships, and method signatures from the visual
   #
   # ========================================
-
   Background: User Story
     As a developer using codelet for code exploration
     I want to read PDF files in different modes - visual rendering, text extraction, or embedded image extraction
     So that I can explore PDF documentation visually for diagrams, extract text for searching, or pull out embedded images as needed
-
 
   Scenario: Read PDF with default visual mode renders pages as images
     Given a PDF file "architecture-diagram.pdf" containing diagrams
@@ -60,14 +57,12 @@ Feature: Add PDF Reading Support to Read Tool
     And the response should include page count and base64-encoded image data
     And each image should have page_number, data, and media_type fields
 
-
   Scenario: Read PDF with explicit text mode extracts searchable text
     Given a PDF file "api-spec.pdf" with multiple pages of text content
     When the read tool is called with pdf_mode="text"
     Then text should be extracted from each page
     And each page should be labeled with "--- Page N ---" separator
     And the reading order should be preserved
-
 
   Scenario: Read PDF with images mode extracts embedded images
     Given a PDF file "product-catalog.pdf" with embedded product photos
@@ -76,7 +71,6 @@ Feature: Add PDF Reading Support to Read Tool
     And each image should be returned with base64 data and media type
     And image dimensions (width, height) should be included
 
-
   Scenario: Reject password-protected PDF with clear error before parsing
     Given a password-protected PDF file "encrypted.pdf"
     When the read tool is called with any pdf_mode
@@ -84,13 +78,11 @@ Feature: Add PDF Reading Support to Read Tool
     And an error should be returned before parsing attempts
     And the error message should be "Cannot read password-protected PDF: encrypted.pdf"
 
-
   Scenario: Visual mode includes page count for context awareness
     Given a PDF file "report.pdf" with 25 pages of content
     When the read tool is called with pdf_mode="visual"
     Then the response should include the total page count (25)
     And all 25 pages should be rendered as base64-encoded PNG images
-
 
   Scenario: Text mode handles scanned PDFs gracefully
     Given a scanned PDF file "scanned-document.pdf" with no extractable text
@@ -98,13 +90,11 @@ Feature: Add PDF Reading Support to Read Tool
     Then empty or minimal text should be returned
     And the output should still include page separators
 
-
   Scenario: All PDF modes are exempt from text token limits
     Given a large PDF file that would exceed the text token limit
     When the read tool is called with any pdf_mode
     Then the PDF should be processed successfully without token limit error
     And the appropriate content should be returned based on the mode
-
 
   Scenario: Invalid pdf_mode falls back to visual mode
     Given a PDF file "document.pdf" with mixed content

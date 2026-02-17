@@ -5,7 +5,7 @@
 //! These tests verify that FspecToolFacadeWrapper emits the correct JSON structure
 //! and routes through the fspec_handler mechanism properly.
 //!
-//! Tests are serialized using a static mutex because they modify global state (the handler).
+//! Tests are serialized using a tokio mutex because they modify global state (the handler).
 
 use codelet_tools::facade::{
     claude_fspec_tool, gemini_fspec_tool,
@@ -17,10 +17,11 @@ use rig::tool::Tool;
 use serde_json::json;
 use std::sync::Arc;
 use once_cell::sync::Lazy;
-use std::sync::Mutex;
+use tokio::sync::Mutex;
 use uuid::Uuid;
 
 /// Mutex to ensure tests run serially (they modify global fspec handler state)
+/// Uses tokio::sync::Mutex to be async-aware and avoid clippy::await_holding_lock
 static TEST_MUTEX: Lazy<Mutex<()>> = Lazy::new(|| Mutex::new(()));
 
 /// Test session ID for isolation
@@ -52,7 +53,7 @@ fn cleanup_handler() {
 
 #[tokio::test]
 async fn test_fspec_tool_wrapper_emits_structured_json_marker() {
-    let _lock = TEST_MUTEX.lock().unwrap();
+    let _lock = TEST_MUTEX.lock().await;
     
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
     // Scenario: FspecTool emits structured command request and receives typed result
@@ -110,7 +111,7 @@ async fn test_fspec_tool_wrapper_emits_structured_json_marker() {
 
 #[tokio::test]
 async fn test_fspec_tool_wrapper_with_gemini_facade() {
-    let _lock = TEST_MUTEX.lock().unwrap();
+    let _lock = TEST_MUTEX.lock().await;
     
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
     // Scenario: FspecTool emits structured command request and receives typed result
@@ -159,7 +160,7 @@ async fn test_fspec_tool_wrapper_with_gemini_facade() {
 
 #[tokio::test]
 async fn test_fspec_request_json_has_all_required_fields_for_typescript() {
-    let _lock = TEST_MUTEX.lock().unwrap();
+    let _lock = TEST_MUTEX.lock().await;
     
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
     // Scenario: TypeScript handles FspecCommandRequest with type-safe field access
@@ -213,7 +214,7 @@ async fn test_fspec_request_json_has_all_required_fields_for_typescript() {
 
 #[tokio::test]
 async fn test_fspec_wrapper_does_not_emit_fspec_intercept_string() {
-    let _lock = TEST_MUTEX.lock().unwrap();
+    let _lock = TEST_MUTEX.lock().await;
     
     // Feature: spec/features/structured-fspectool-results-via-streamchunk-discriminated-union.feature
     // Scenario: FSPEC_INTERCEPT string pattern is removed after migration
@@ -248,7 +249,7 @@ async fn test_fspec_wrapper_does_not_emit_fspec_intercept_string() {
 
 #[tokio::test]
 async fn test_fspec_wrapper_handles_empty_args() {
-    let _lock = TEST_MUTEX.lock().unwrap();
+    let _lock = TEST_MUTEX.lock().await;
     
     // Test edge case: empty args should still work
     let session_id = test_session_id();
@@ -284,7 +285,7 @@ async fn test_fspec_wrapper_handles_empty_args() {
 
 #[tokio::test]
 async fn test_fspec_wrapper_handles_special_characters_in_args() {
-    let _lock = TEST_MUTEX.lock().unwrap();
+    let _lock = TEST_MUTEX.lock().await;
     
     // Test edge case: special characters in args should be preserved
     let session_id = test_session_id();

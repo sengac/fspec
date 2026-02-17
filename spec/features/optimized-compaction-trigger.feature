@@ -1,7 +1,8 @@
 @done
-@CTX-002 @cli @context-window
+@CTX-002
+@cli
+@context-window
 Feature: Optimized Compaction Window Limit Trigger
-
   """
   Key architectural decisions:
   - Implements optimized isOverflow() algorithm for context compaction
@@ -63,7 +64,6 @@ Feature: Optimized Compaction Window Limit Trigger
   #   11. Benefit: Claude agent gets 11,808 more tokens before compaction (191,808 vs legacy 180,000)
   #
   # ========================================
-
   Background: User Story
     As a AI coding agent using codelet
     I want to have compaction triggered at the correct token threshold
@@ -72,65 +72,62 @@ Feature: Optimized Compaction Window Limit Trigger
   # ========================================
   # USABLE CONTEXT CALCULATION SCENARIOS
   # ========================================
-
   Scenario: Calculate usable context for Claude Sonnet
     Given a model with context_window of 200000 tokens
     And the model has max_output_tokens of 8192
     And SESSION_OUTPUT_TOKEN_MAX is 32000
     When I calculate usable context
     Then usable context should be 191808 tokens
-    # 200,000 - min(8,192, 32,000) = 200,000 - 8,192 = 191,808
 
+    # 200,000 - min(8,192, 32,000) = 200,000 - 8,192 = 191,808
   Scenario: Calculate usable context for GPT-4
     Given a model with context_window of 128000 tokens
     And the model has max_output_tokens of 4096
     And SESSION_OUTPUT_TOKEN_MAX is 32000
     When I calculate usable context
     Then usable context should be 123904 tokens
-    # 128,000 - min(4,096, 32,000) = 128,000 - 4,096 = 123,904
 
+    # 128,000 - min(4,096, 32,000) = 128,000 - 4,096 = 123,904
   Scenario: SESSION_OUTPUT_MAX caps high-output models
     Given a model with context_window of 200000 tokens
     And the model has max_output_tokens of 64000
     And SESSION_OUTPUT_TOKEN_MAX is 32000
     When I calculate usable context
     Then usable context should be 168000 tokens
-    # 200,000 - min(64,000, 32,000) = 200,000 - 32,000 = 168,000
 
+    # 200,000 - min(64,000, 32,000) = 200,000 - 32,000 = 168,000
   Scenario: Unknown model with zero max_output uses SESSION_OUTPUT_MAX fallback
     Given a model with context_window of 100000 tokens
     And the model has max_output_tokens of 0
     And SESSION_OUTPUT_TOKEN_MAX is 32000
     When I calculate usable context
     Then usable context should be 68000 tokens
+
     # min(0, 32000) = 0, but 0 triggers fallback to SESSION_OUTPUT_MAX
     # usable = 100,000 - 32,000 = 68,000 (NOT 100,000)
-
   # ========================================
   # TOKEN COUNTING SCENARIOS
   # ========================================
-
   Scenario: Token count includes all three token types
     Given input_tokens of 150000
     And cache_read_tokens of 20000
     And output_tokens of 5000
     When I calculate total token count
     Then total token count should be 175000
-    # 150,000 + 20,000 + 5,000 = 175,000 (NOT discounted)
 
+    # 150,000 + 20,000 + 5,000 = 175,000 (NOT discounted)
   Scenario: Token count does not discount cache tokens
     Given input_tokens of 180000
     And cache_read_tokens of 50000
     And output_tokens of 10000
     When I calculate total token count
     Then total token count should be 240000
+
     # 180,000 + 50,000 + 10,000 = 240,000
     # NOT: 180,000 - (50,000 * 0.9) = 135,000 (old broken calculation)
-
   # ========================================
   # COMPACTION TRIGGER SCENARIOS
   # ========================================
-
   Scenario: No compaction when under usable context threshold
     Given a Claude model with context_window of 200000 and max_output of 8192
     And input_tokens of 150000
@@ -138,8 +135,8 @@ Feature: Optimized Compaction Window Limit Trigger
     And output_tokens of 5000
     When I check if compaction should trigger
     Then compaction should NOT trigger
-    # total=175,000, usable=191,808 → 175,000 < 191,808 → NO trigger
 
+    # total=175,000, usable=191,808 → 175,000 < 191,808 → NO trigger
   Scenario: Trigger compaction when over usable context threshold
     Given a Claude model with context_window of 200000 and max_output of 8192
     And input_tokens of 170000
@@ -147,8 +144,8 @@ Feature: Optimized Compaction Window Limit Trigger
     And output_tokens of 5000
     When I check if compaction should trigger
     Then compaction should trigger
-    # total=195,000, usable=191,808 → 195,000 > 191,808 → TRIGGER
 
+    # total=195,000, usable=191,808 → 195,000 > 191,808 → TRIGGER
   Scenario: Compaction triggers later than legacy 90% threshold
     Given a Claude model with context_window of 200000 and max_output of 8192
     And input_tokens of 165000
@@ -156,9 +153,9 @@ Feature: Optimized Compaction Window Limit Trigger
     And output_tokens of 6000
     When I check if compaction should trigger
     Then compaction should NOT trigger
+
     # total=181,000, usable=191,808 → no trigger
     # Legacy 90% threshold=180,000 would have triggered here
-
   Scenario: No compaction when token count exactly equals usable context
     Given a Claude model with context_window of 200000 and max_output of 8192
     And input_tokens of 171808
@@ -166,13 +163,12 @@ Feature: Optimized Compaction Window Limit Trigger
     And output_tokens of 5000
     When I check if compaction should trigger
     Then compaction should NOT trigger
+
     # total=191,808, usable=191,808 → 191,808 > 191,808 is FALSE
     # Uses strictly greater than (>), not greater-or-equal (>=)
-
   # ========================================
   # EDGE CASE AND BYPASS SCENARIOS
   # ========================================
-
   Scenario: No compaction when context_window is zero
     Given a model with context_window of 0 tokens
     And the model has max_output_tokens of 8192
@@ -181,8 +177,8 @@ Feature: Optimized Compaction Window Limit Trigger
     And output_tokens of 5000
     When I check if compaction should trigger
     Then compaction should NOT trigger
-    # context_window = 0 means no context limit, so no compaction needed
 
+    # context_window = 0 means no context limit, so no compaction needed
   Scenario: No compaction when disable flag is set
     Given a model with context_window of 200000 tokens
     And the model has max_output_tokens of 8192
@@ -192,12 +188,3 @@ Feature: Optimized Compaction Window Limit Trigger
     And the disable autocompact flag is set to true
     When I check if compaction should trigger
     Then compaction should NOT trigger
-    # Even though total (250,000) far exceeds usable (191,808)
-    # The disable flag bypasses all compaction logic
-
-  # ========================================
-  # PROVIDER TRAIT SCENARIOS
-  # ========================================
-  # NOTE: Provider-specific max_output_tokens() implementation will be
-  # handled in a separate work unit (CTX-003) for the providers crate.
-  # See: codelet/providers/src/{claude,openai,gemini}.rs

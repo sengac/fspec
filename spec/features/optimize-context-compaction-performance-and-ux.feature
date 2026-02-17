@@ -4,7 +4,6 @@
 @performance
 @PERF-002
 Feature: Optimize Context Compaction Performance and UX
-
   """
   Batch anchor detection in ContextCompactor::compact() - single LLM call instead of per-turn calls
   """
@@ -43,7 +42,6 @@ Feature: Optimize Context Compaction Performance and UX
   #   A: Use existing confirmation dialog system to show retry options when compaction fails. Leverage pre-existing dialog components instead of custom error handling UI.
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec
     I want to run /compact command to optimize conversation context
@@ -76,9 +74,9 @@ Feature: Optimize Context Compaction Performance and UX
     When I run "/compact"
     And the LLM provider is unavailable
     Then I should see a dialog with options:
-      | Retry                     |
+      | Retry                       |
       | Continue without compacting |
-      | Cancel                    |
+      | Cancel                      |
     And I can select any option to proceed
 
   Scenario: Auto-retry succeeds after transient network issue

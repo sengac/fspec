@@ -4,7 +4,6 @@
 @high
 @TOOL-008
 Feature: System Prompt Facade for Provider-Specific Prompt Handling
-
   """
   SystemPromptFacade trait with provider(), identity_prefix(), transform_preamble(), format_for_api() methods. Provider-specific implementations: ClaudeOAuthSystemPromptFacade (with identity prefix), ClaudeApiKeySystemPromptFacade (no prefix), GeminiSystemPromptFacade, OpenAISystemPromptFacade. Located in codelet/tools/src/facade/system_prompt.rs. Integrates with provider implementations via facade selection based on auth type.
   """
@@ -30,7 +29,6 @@ Feature: System Prompt Facade for Provider-Specific Prompt Handling
   #   6. identity_prefix() returns Some('You are Claude Code...') for Claude OAuth and None for other facades
   #
   # ========================================
-
   Background: User Story
     As a developer integrating LLM providers
     I want to have provider-specific system prompt formatting handled automatically
@@ -44,7 +42,6 @@ Feature: System Prompt Facade for Provider-Specific Prompt Handling
     And the text should start with "You are Claude Code"
     And the text should contain the original preamble
 
-
   Scenario: Claude API key facade passes preamble through unchanged
     Given a ClaudeApiKeySystemPromptFacade
     And a preamble "You are a helpful assistant"
@@ -53,14 +50,12 @@ Feature: System Prompt Facade for Provider-Specific Prompt Handling
     And the text should NOT start with "You are Claude Code"
     And the text should equal the original preamble exactly
 
-
   Scenario: Gemini facade formats preamble as plain string
     Given a GeminiSystemPromptFacade
     And a preamble "You are a helpful assistant"
     When I call format_for_api with the preamble
     Then the result should be a plain string
     And the result should equal "You are a helpful assistant"
-
 
   Scenario: OpenAI facade formats preamble as plain string
     Given an OpenAISystemPromptFacade
@@ -69,14 +64,12 @@ Feature: System Prompt Facade for Provider-Specific Prompt Handling
     Then the result should be a plain string
     And the result should equal "You are a helpful assistant"
 
-
   Scenario: Claude facade formats system prompts with cache_control
     Given any Claude system prompt facade
     And a preamble "You are a helpful assistant"
     When I call format_for_api with the preamble
     Then the result should be a JSON array
     And each element should have a cache_control field with type "ephemeral"
-
 
   Scenario: ClaudeProvider selects correct facade based on token type
     Given a ClaudeProvider with OAuth token starting with "cc-"
@@ -87,4 +80,3 @@ Feature: System Prompt Facade for Provider-Specific Prompt Handling
     Given a ClaudeProvider with API key not starting with "cc-"
     When the provider selects a system prompt facade
     Then it should use ClaudeApiKeySystemPromptFacade
-

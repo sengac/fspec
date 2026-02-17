@@ -3,7 +3,6 @@
 @codelet
 @CTX-004
 Feature: Replace Rule-Based Anchor Detection with Pure LLM Analysis
-
   """
   15-second timeout with synthetic anchor fallback to prevent hanging on LLM analysis
   """
@@ -33,7 +32,6 @@ Feature: Replace Rule-Based Anchor Detection with Pure LLM Analysis
   #   A: Stick to existing 4 anchor types initially for backward compatibility. LLM should map detected meaningful moments to these types: ErrorResolution, TaskCompletion, UserCheckpoint, FeatureMilestone. Can extend later if needed.
   #
   # ========================================
-
   Background: User Story
     As a developer using context compaction
     I want to get accurate anchor point detection from LLM analysis

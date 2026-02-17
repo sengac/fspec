@@ -2,7 +2,6 @@
 @tui
 @PAUSE-001
 Feature: TUI Pause State Display
-
   """
   TUI integration: Modify InputTransition.tsx to check isPaused and render
   PauseIndicator instead of ThinkingIndicator when paused. Handle Enter key

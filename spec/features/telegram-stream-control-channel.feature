@@ -1,6 +1,5 @@
 @BRIDGE-008
 Feature: Telegram Stream Control Channel
-
   """
   BridgeManager in codelet/napi handles WebSocket connections and message routing. Control messages need to be handled in the input_receiver mpsc channel handler that processes incoming WebSocket messages.
   """
@@ -23,7 +22,6 @@ Feature: Telegram Stream Control Channel
   #   4. Bridge receives {type: 'input'}, message forwarded to agent (existing behavior)
   #
   # ========================================
-
   Background: User Story
     As a bridge endpoint
     I want to receive control messages from remote sources

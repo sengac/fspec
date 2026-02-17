@@ -8,8 +8,8 @@ Feature: Z.AI GLM Provider Integration
   - ZAIProvider in codelet/providers/src/zai.rs uses rig's OpenAI client with custom base_url
   - Follows same pattern as GeminiProvider for OpenAI-compatible APIs
   - Supports two endpoints based on API key environment variable:
-    - ZAI_API_KEY: Normal API (https://api.z.ai/api/paas/v4)
-    - ZAI_PLAN_API_KEY: Coding Plan API (https://api.z.ai/api/coding/paas/v4)
+  - ZAI_API_KEY: Normal API (https://api.z.ai/api/paas/v4)
+  - ZAI_PLAN_API_KEY: Coding Plan API (https://api.z.ai/api/coding/paas/v4)
   - ZAI_PLAN_API_KEY takes precedence if both are set
 
   Facade Pattern:

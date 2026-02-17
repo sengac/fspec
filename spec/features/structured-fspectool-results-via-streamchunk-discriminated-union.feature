@@ -4,7 +4,6 @@
 @codelet
 @CODE-009
 Feature: Structured FspecTool Results via StreamChunk Discriminated Union
-
   """
   Architecture notes:
   - Add FspecCommandRequest and FspecCommandResult types to codelet/napi/src/types.rs following CompactionResult pattern
@@ -30,7 +29,6 @@ Feature: Structured FspecTool Results via StreamChunk Discriminated Union
   #   5. After migration, FSPEC_INTERCEPT string pattern is removed from wrapper.rs and stream_handlers.rs - all fspec tool calls use structured StreamChunk flow
   #
   # ========================================
-
   Background: User Story
     As a AI agent using fspec within codelet
     I want to receive fspec command results as typed StreamChunk variants

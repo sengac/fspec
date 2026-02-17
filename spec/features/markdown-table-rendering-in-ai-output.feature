@@ -3,7 +3,6 @@
 @tui
 @TUI-044
 Feature: Markdown Table Rendering in AI Output
-
   """
   Table rendering utility function formatMarkdownTables() processes content and replaces raw table markdown with aligned box-drawing output
   """
@@ -28,7 +27,6 @@ Feature: Markdown Table Rendering in AI Output
   #   5. Table header row rendered in bold
   #
   # ========================================
-
   Background: User Story
     As a user viewing AI agent output in the TUI
     I want to see markdown tables rendered with proper column alignment
@@ -41,7 +39,6 @@ Feature: Markdown Table Rendering in AI Output
     And columns are aligned based on content width
     And the header row is rendered in bold
 
-
   Scenario: Table with alignment specifiers renders with correct alignment
     Given the AI response contains a table with alignment specifiers
     When the streaming completes
@@ -49,10 +46,8 @@ Feature: Markdown Table Rendering in AI Output
     And columns with :---: are center-aligned
     And columns with ---: are right-aligned
 
-
   Scenario: Tables mixed with other content preserves surrounding text
     Given the AI response contains text before and after a markdown table
     When the streaming completes
     Then only the table portion is rendered with box borders
     And the surrounding text remains unchanged
-

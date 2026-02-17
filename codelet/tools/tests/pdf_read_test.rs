@@ -422,10 +422,8 @@ fn create_test_pdf_with_pages(page_contents: &[&str]) -> Vec<u8> {
     });
 
     for page_id in &page_ids {
-        if let Ok(page) = doc.get_object_mut(*page_id) {
-            if let Object::Dictionary(ref mut dict) = page {
-                dict.set("Parent", pages_id);
-            }
+        if let Ok(Object::Dictionary(ref mut dict)) = doc.get_object_mut(*page_id) {
+            dict.set("Parent", pages_id);
         }
     }
 

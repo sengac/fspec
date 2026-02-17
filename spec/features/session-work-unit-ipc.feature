@@ -4,7 +4,6 @@
 @tui
 @TUI-060
 Feature: Session Work Unit Attachment via IPC
-
   """
   When AI runs update-work-unit-status via the Fspec tool (TUI context) on a DIFFERENT
   work unit, the session should automatically attach to the NEW work unit via IPC.
@@ -26,7 +25,6 @@ Feature: Session Work Unit Attachment via IPC
   # ----------------------------------------
   # Core IPC Session Attachment Scenarios
   # ----------------------------------------
-
   @integration
   @critical
   Scenario: Fspec tool updates status on DIFFERENT work unit and session attaches to it
@@ -57,7 +55,6 @@ Feature: Session Work Unit Attachment via IPC
   # ----------------------------------------
   # IPC Implementation Scenarios
   # ----------------------------------------
-
   @unit
   Scenario: workUnitStatusHook sends IPC message on context change
     Given the workUnitStatusHook is called with workUnitId "AUTH-001"

@@ -2,7 +2,6 @@
 @codelet
 @WATCH-005
 Feature: Watcher Agent Loop with Dual Input
-
   """
   Create WatcherState enum { Idle, Observing, Processing } in session_manager.rs
   Create ObservationBuffer struct to accumulate StreamChunks with timestamp tracking
@@ -33,7 +32,6 @@ Feature: Watcher Agent Loop with Dual Input
   #   6. Empty observation buffer when breakpoint occurs → no evaluation prompt generated → continue waiting
   #
   # ========================================
-
   Background: User Story
     As a watcher session
     I want to receive input from both user prompts and parent session observations

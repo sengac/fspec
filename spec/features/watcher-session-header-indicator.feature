@@ -4,7 +4,6 @@
 @tui
 @WATCH-015
 Feature: Watcher Session Header Indicator
-
   """
   Architecture notes:
   - SplitSessionView receives additional props: displayModelId, displayReasoning, displayHasVision, displayContextWindow, tokenUsage, rustTokens, contextFillPercentage
@@ -34,7 +33,6 @@ Feature: Watcher Session Header Indicator
   #   6. Turn select mode enabled in watcher view → [SELECT] indicator appears in header
   #
   # ========================================
-
   Background: User Story
     As a user viewing a watcher session
     I want to see the full header with watcher indicator, model info, and token stats

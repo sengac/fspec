@@ -3,33 +3,32 @@
 @browser
 @BROWSE-002
 Feature: Full-page scrollable screenshot capture
-
   """
-  
+
   Integration Points:
   - WebSearchAction enum (codelet_common/src/web_search.rs): Add CaptureScreenshot variant with url, output_path, full_page fields
   - WebSearchTool (codelet_tools/src/web_search.rs): Handle CaptureScreenshot action, update tool description
   - ChromeBrowser (codelet_tools/src/chrome_browser.rs): Add capture_screenshot method
-  
+
   CDP Method: Tab::capture_screenshot
   - capture_beyond_viewport: false (default) = viewport only
   - capture_beyond_viewport: true = entire scrollable page
   - format: PNG (lossless quality)
   - from_surface: true (capture rendered content)
-  
+
   File Handling:
   - Default: Generate unique path in system temp directory (e.g., /tmp/screenshot-{uuid}.png)
   - Custom: Use output_path if provided by caller
   - Always PNG format for consistency with Read tool
-  
+
   Return Format:
   - WebSearchResult with success=true and message containing file path
   - Path can be passed directly to Read tool for viewing
-  
+
   Tool Description Update Required:
   - Current: 'Perform web search, open web pages, or find content within pages...'
   - Updated: Add 'capture screenshots' to the description
-  
+
   """
 
   # ========================================
@@ -55,7 +54,6 @@ Feature: Full-page scrollable screenshot capture
   #   A: Option A: Save to file and return path. This is better for token efficiency (full-page screenshots can be huge), reuses existing Read tool multimodal support, simpler implementation, and matches industry patterns like Playwright MCP.
   #
   # ========================================
-
   Background: User Story
     As a AI agent using codelet web tools
     I want to capture screenshots of web pages and save them to files
@@ -68,13 +66,11 @@ Feature: Full-page scrollable screenshot capture
     And the screenshot file should exist at the returned path
     And the screenshot should capture the visible viewport
 
-
   Scenario: Capture full-page screenshot of scrollable content
     Given a web page with scrollable content taller than the viewport
     When I capture a screenshot with url "https://example.com" and full_page set to true
     Then the screenshot should capture the entire scrollable page content
     And the screenshot height should exceed the viewport height
-
 
   Scenario: Capture screenshot to custom output path
     Given a web page at "https://example.com"
@@ -82,10 +78,8 @@ Feature: Full-page scrollable screenshot capture
     Then the screenshot should be saved to "/tmp/my-custom-screenshot.png"
     And the returned path should match the specified output_path
 
-
   Scenario: View captured screenshot using Read tool
     Given I have captured a screenshot that returned path "/tmp/screenshot.png"
     When I use the Read tool with file_path "/tmp/screenshot.png"
     Then the Read tool should return image data with type "image"
     And the media_type should be "image/png"
-

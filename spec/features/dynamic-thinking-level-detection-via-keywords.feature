@@ -4,7 +4,6 @@
 @high
 @TOOL-010
 Feature: Dynamic Thinking Level Detection via Keywords
-
   """
   Keyword detection happens in TypeScript (src/utils/thinkingLevel.ts) before sending to Rust session. Uses regex patterns to match command-like phrases while ignoring conversational usage. Disable keywords (quickly, briefly) have highest priority. Integrates with TOOL-009 ThinkingConfigFacade via getThinkingConfig() NAPI binding. Session receives thinking config JSON and merges into additional_params for provider request. UI displays detected level in status area. StreamChunk::Thinking type enables streaming thinking content to UI.
   """
@@ -33,7 +32,6 @@ Feature: Dynamic Thinking Level Detection via Keywords
   #   8. UI shows thinking indicator when level is not Off
   #
   # ========================================
-
   Background: User Story
     As a developer using fspec's AI agent
     I want to have thinking/reasoning levels automatically detected from my prompt keywords

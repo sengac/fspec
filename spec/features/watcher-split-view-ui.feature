@@ -2,7 +2,6 @@
 @tui
 @WATCH-010
 Feature: Watcher Split View UI
-
   """
   Architecture notes:
   - Split view is implemented as a mode within AgentView, triggered when sessionGetParent(sessionId) returns non-null
@@ -40,7 +39,6 @@ Feature: Watcher Split View UI
   #   8. Regular session (non-watcher) opened → normal single-pane AgentView renders (no split view)
   #
   # ========================================
-
   Background: User Story
     As a user viewing a watcher session
     I want to see a split view with parent observation on the left and watcher conversation on the right

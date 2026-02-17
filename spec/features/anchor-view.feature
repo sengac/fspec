@@ -1,7 +1,6 @@
 @done
 @TUI-057
 Feature: Refactor Anchor Viewer from Dialog to Full-Screen View
-
   """
   Create AnchorView.tsx as full-screen component following WatcherCreateView pattern with position='absolute' and terminal dimensions
   Use useInputCompat with CRITICAL priority and return true for ALL input at end of handler to ensure complete input isolation
@@ -34,7 +33,6 @@ Feature: Refactor Anchor Viewer from Dialog to Full-Screen View
   #   6. User types /anchors with no active session → status message 'Start a session first to view anchor points' (same as current behavior)
   #
   # ========================================
-
   Background: User Story
     As a developer using the TUI
     I want to view anchor points in a dedicated full-screen view

@@ -1,6 +1,7 @@
-@critical @component @feature-group
+@critical
+@component
+@feature-group
 Feature: Rust Credential NAPI Integration
-
   """
   Architecture notes:
   - TODO: Add key architectural decisions

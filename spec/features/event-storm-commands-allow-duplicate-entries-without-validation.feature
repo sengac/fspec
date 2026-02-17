@@ -5,7 +5,6 @@
 @validation
 @BUG-087
 Feature: Event Storm commands allow duplicate entries without validation
-
   """
   Check for duplicates in add-domain-event command before adding. Search existing non-deleted events with case-insensitive text match. If found, throw error with event ID. Apply same logic to add-command, add-policy, add-hotspot.
   """
@@ -25,7 +24,6 @@ Feature: Event Storm commands allow duplicate entries without validation
   #   3. add-domain-event UI-001 'EventA', delete event 0, add-domain-event UI-001 'EventA' succeeds (deleted entries ignored)
   #
   # ========================================
-
   Background: User Story
     As a developer using Event Storm commands
     I want to prevent duplicate entries when adding the same text

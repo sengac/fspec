@@ -3,7 +3,6 @@
 @integration
 @CODE-006
 Feature: System Reminder Preservation
-
   """
   Include captured system reminders in FspecTool response JSON for LLM workflow orchestration
   """
@@ -33,7 +32,6 @@ Feature: System Reminder Preservation
   #   A: Capture both patterns to maintain compatibility with existing commands - parse result.systemReminder AND raw <system-reminder> tags
   #
   # ========================================
-
   Background: User Story
     As a AI agent using FspecTool
     I want to capture system reminders from fspec command execution
@@ -46,7 +44,7 @@ Feature: System Reminder Preservation
     And the system reminder should be parsed from the captured stderr
     And the system reminder should be included in the FspecTool response
 
-  Scenario: Parse result.systemReminder property from command response  
+  Scenario: Parse result.systemReminder property from command response
     Given a fspec command returns a result with systemReminder property
     When the TypeScript callback processes the command result
     Then the result.systemReminder content should be extracted

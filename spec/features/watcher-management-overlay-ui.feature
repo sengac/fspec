@@ -2,7 +2,6 @@
 @tui
 @WATCH-008
 Feature: Watcher Management Overlay UI
-
   """
   Add isWatcherMode useState and watcherList useState to AgentView.tsx state section (around line 950)
   Add /watcher command handler in handleSubmit() near other slash commands (around line 1696)
@@ -42,7 +41,6 @@ Feature: Watcher Management Overlay UI
   #   9. User edits watcher name from 'Code Reviewer' to 'Senior Reviewer' and presses Enter → change persists
   #
   # ========================================
-
   Background: User Story
     As a fspec TUI user
     I want to open a Watcher Management overlay via /watcher command

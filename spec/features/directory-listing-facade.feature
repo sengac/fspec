@@ -1,6 +1,9 @@
-@TOOL-006 @high @tools @facade-pattern @provider-abstraction
+@TOOL-006
+@high
+@tools
+@facade-pattern
+@provider-abstraction
 Feature: Directory Listing Facade
-
   """
   GeminiListDirectoryFacade in codelet/tools/src/facade/ls.rs implements LsToolFacade trait. Uses tool name 'list_directory'. Maps {path} to InternalLsParams::List. Wrapped with LsToolFacadeWrapper and replaces raw LsTool in GeminiProvider.create_rig_agent().
   """
@@ -22,7 +25,6 @@ Feature: Directory Listing Facade
   #   3. GeminiListDirectoryFacade provides flat schema {type: 'object', properties: {path: {type: 'string'}}, required: []} - no oneOf, path is optional
   #
   # ========================================
-
   Background: User Story
     As a LLM agent using Gemini provider
     I want to execute directory listing operations with Gemini-native tool name and flat schema
