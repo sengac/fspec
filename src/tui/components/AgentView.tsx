@@ -2111,6 +2111,18 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
   }, []);
 
+  // TUI-066: Shared handler for /clear command - clears session history
+  const handleClearCommand = useCallback(() => {
+    setInputValue('');
+    if (currentSessionId) {
+      try {
+        sessionClearHistory(currentSessionId);
+      } catch (err) {
+        logger.error('[AgentView] Failed to clear session history:', err);
+      }
+    }
+  }, [currentSessionId]);
+
   // SESS-001: Check for attached session on mount and mark for auto-resume
   useEffect(() => {
     if (workUnitId) {
@@ -2223,16 +2235,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
       return;
     }
 
-    // TUI-066: Handle /clear command - call Rust, state updates via chunk handler
     if (userMessage === '/clear') {
-      setInputValue('');
-      if (currentSessionId) {
-        try {
-          sessionClearHistory(currentSessionId);
-        } catch (err) {
-          logger.error('[AgentView] Failed to clear session history:', err);
-        }
-      }
+      handleClearCommand();
       return;
     }
 
@@ -3718,16 +3722,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
         return;
       }
 
-      // TUI-066: Handle /clear command - call Rust, state updates via chunk handler
       if (userMessage === '/clear') {
-        setInputValue('');
-        if (currentSessionId) {
-          try {
-            sessionClearHistory(currentSessionId);
-          } catch (err) {
-            logger.error('[AgentView] Failed to clear session history:', err);
-          }
-        }
+        handleClearCommand();
         return;
       }
 
