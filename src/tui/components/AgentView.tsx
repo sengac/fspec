@@ -87,11 +87,9 @@ import {
   sessionSetDebugEnabled,
   toggleDebug,
   sessionCompact,
-  // REFAC-008: sessionAttach removed - use attachToSession from useSessionStreamManager hook
   sessionSendInput,
   sessionGetBufferedOutput,
   sessionGetMergedOutput,
-  // REFAC-008: sessionDetach removed - use cleanupCurrentSessionHandler() which unregisters handler
   sessionInterrupt,
   sessionSetModel,
   sessionGetModel,
@@ -1145,8 +1143,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
   // UX-002: Ref for compaction functions to avoid stale closures in stream callbacks
   // The useCompaction hook returns new function references on each render, but stream
-  // callbacks (handleStreamChunk, handleSubmit's sessionAttach) capture the initial
-  // reference. Using a ref ensures callbacks always have access to the latest functions.
+  // callbacks (handleStreamChunk) capture the initial reference. Using a ref ensures
+  // callbacks always have access to the latest functions.
   const compactionRef = useRef(compaction);
   useEffect(() => {
     compactionRef.current = compaction;
@@ -2027,12 +2025,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // SESS-001: Track if we need to auto-resume an attached session
   const needsAutoResumeRef = useRef<string | null>(null);
 
-  // REFAC-008: Track cleanup function for current session's handler registration
-  // When navigating away, we call this cleanup instead of sessionDetach.
+  // Track cleanup function for current session's handler registration
+  // When navigating away, we call this cleanup to unregister the handler.
   // The GlobalSessionStreamManager stays subscribed; only the handler is unregistered.
   const sessionCleanupRef = useRef<(() => void) | null>(null);
 
-  // REFAC-008: Helper to cleanup current session handler and clear ref
+  // Helper to cleanup current session handler and clear ref
   const cleanupCurrentSessionHandler = useCallback(() => {
     if (sessionCleanupRef.current) {
       sessionCleanupRef.current();
@@ -2656,9 +2654,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Atomic state transition via store (sets currentSessionId + isReadyForNewSession=false)
         activateSession(activeSessionId);
 
-        // NAPI-009: Register session with SessionManager for background execution
+        // Register session with SessionManager for background execution
         // This enables ESC + Detach and /resume to work properly
-        // CRITICAL: This must succeed for sessionAttach to work
         // Note: Using sessionManagerCreateWithId directly here because session is already created in persistence
         // and we only need the Rust background session (createSession service would duplicate persistence)
         try {

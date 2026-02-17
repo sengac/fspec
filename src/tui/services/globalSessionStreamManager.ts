@@ -136,7 +136,7 @@ export class GlobalSessionStreamManager {
 
   /**
    * Subscribe to a session's stream.
-   * BRIDGE-012: No longer calls sessionAttach - chunks come via global callback.
+   * Chunks are delivered via the global callback registered at initialization.
    * Called when a session is created to track it for handler routing.
    */
   public subscribeToSession(sessionId: string): void {
@@ -146,12 +146,11 @@ export class GlobalSessionStreamManager {
 
     this.subscribedSessions.add(sessionId);
     this.sessionHandlers.set(sessionId, new Set());
-    // BRIDGE-012: No longer need to call attachToSession - global callback handles all chunks
   }
 
   /**
    * Unsubscribe from a session's stream.
-   * BRIDGE-012: Just removes tracking - no longer calls sessionDetach.
+   * Removes tracking for the session.
    * Called when a session is destroyed.
    */
   public unsubscribeFromSession(sessionId: string): void {

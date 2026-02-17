@@ -456,7 +456,7 @@ describe('Feature: Global Session Stream Subscription for FspecCommandRequest Ha
       // @step Then the fspec command should execute successfully
       expect(manager.getSubscribedSessions()).toContain(session.id);
 
-      // @step And no mocks should be used for sessionAttach or GlobalSessionStreamManager
+      // @step And no mocks should be used for GlobalSessionStreamManager
       expect(session.id).toMatch(/^[a-f0-9-]{36}$/);
       expect(manager.getSubscribedSessions()).toContain(session.id);
 

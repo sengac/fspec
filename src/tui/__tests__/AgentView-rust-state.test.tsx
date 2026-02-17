@@ -174,10 +174,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceRenameSession: vi.fn(),
   // Session management
   sessionManagerList: vi.fn().mockReturnValue([]),
-  sessionAttach: vi.fn(),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),
   sessionRestoreMessages: vi.fn(),

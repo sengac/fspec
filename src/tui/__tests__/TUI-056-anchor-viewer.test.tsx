@@ -120,8 +120,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   }])),
   setRustLogCallback: vi.fn(),
   // Session management
-  sessionAttach: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionInterrupt: vi.fn(),
   sessionSetPendingInput: vi.fn(),
   sessionGetPendingInput: vi.fn().mockReturnValue(null),

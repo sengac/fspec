@@ -4,12 +4,12 @@
  * This fixture creates REAL sessions that work with the actual session store,
  * React hooks, and component infrastructure. Only the NAPI boundary is mocked.
  *
- * Based on the working pattern from AgentView.test.tsx
+ * Session streaming uses GlobalSessionStreamManager with global chunk callback.
  */
 
 import { vi } from 'vitest';
 
-// Track callback and resolver at module level for test control (NAPI-009 pattern)
+// Track callback and resolver at module level for test control
 let capturedCallback: ((err: Error | null, chunk: unknown) => void) | null =
   null;
 let capturedResolver: (() => void) | null = null;
@@ -93,7 +93,17 @@ export function getFixtureState() {
 }
 
 /**
- * Standard NAPI mocks that create real sessions (following AgentView.test.tsx pattern)
+ * Set the captured callback for streaming simulation
+ * Used by GlobalSessionStreamManager tests
+ */
+export function setStreamingCallback(
+  callback: (err: Error | null, chunk: unknown) => void
+) {
+  capturedCallback = callback;
+}
+
+/**
+ * Standard NAPI mocks that create real sessions
  */
 export const createSessionNAPIMocks = () => ({
   // Core session management - creates REAL sessions
@@ -107,25 +117,14 @@ export const createSessionNAPIMocks = () => ({
     messageCount: 0,
   })),
 
-  // Session operations - follow exact working pattern
-  sessionAttach: vi
-    .fn()
-    .mockImplementation(
-      (
-        _sessionId: string,
-        callback: (err: Error | null, chunk: unknown) => void
-      ) => {
-        capturedCallback = callback;
-      }
-    ),
-
+  // Session input - streaming responses come via global callback
   sessionSendInput: vi
     .fn()
     .mockImplementation(
       (_sessionId: string, _input: string, _thinkingConfig: string | null) => {
         return new Promise(resolve => {
           capturedResolver = resolve;
-          // Note: Tests should call capturedCallback directly to control streaming responses
+          // Note: Tests should use setStreamingCallback and simulateStreamingResponse
         });
       }
     ),
@@ -153,7 +152,6 @@ export const createSessionNAPIMocks = () => ({
   sessionManagerList: vi.fn().mockReturnValue([]),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),
   sessionRestoreMessages: vi.fn(),
   sessionRestoreTokenState: vi.fn(),
@@ -195,7 +193,7 @@ export function simulateStreamingResponse(
   }>
 ) {
   if (!capturedCallback) {
-    throw new Error('No callback captured - call establishSession first');
+    throw new Error('No callback captured - call setStreamingCallback first');
   }
 
   chunks.forEach(chunk => {

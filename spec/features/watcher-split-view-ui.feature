@@ -6,7 +6,7 @@ Feature: Watcher Split View UI
   """
   Architecture notes:
   - Split view is implemented as a mode within AgentView, triggered when sessionGetParent(sessionId) returns non-null
-  - Parent pane subscribes to parent session output via sessionGetMergedOutput and sessionAttach
+  - Parent pane subscribes to parent session output via sessionGetMergedOutput with GlobalSessionStreamManager for live updates
   - Watcher pane uses standard AgentView conversation rendering
   - Pane state managed via useState hooks: activePane, parentConversation, watcherConversation
   """

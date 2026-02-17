@@ -11,7 +11,7 @@ Feature: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPa
   - Modify BoardView.tsx - Add Shift+Right handler to navigate to first session or show create dialog
   - Modify AgentView.tsx - Refactor switchToSession to use shared navigation logic, add create session dialog trigger at right edge
   - Modify SplitSessionView.tsx - Add Shift+Left/Right handlers for watcher navigation (currently only has regular Left/Right for pane switching)
-  - Dependencies: Uses @sengac/codelet-napi APIs (sessionManagerList, sessionGetParent, sessionGetWatchers, sessionAttach, sessionDetach)
+  - Dependencies: Uses @sengac/codelet-napi APIs (sessionManagerList, sessionGetParent, sessionGetWatchers, GlobalSessionStreamManager for chunk routing)
   """
 
   # ========================================

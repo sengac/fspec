@@ -24,7 +24,7 @@ Feature: /parent Command for Quick Return
   #   1. User is in watcher 'Security Reviewer' observing parent 'Main Dev Session', types /parent → switches to 'Main Dev Session', shows status 'Switched to parent session: Main Dev Session'
   #   2. User is in a regular session 'Code Project' (not a watcher), types /parent → shows error status 'This session has no parent. /parent only works from watcher sessions.'
   #   3. User has no active session (just opened AgentView), types /parent → shows error status 'No active session. Start a session first.'
-  #   4. User in watcher types /parent → watcher session is detached (sessionDetach), parent session is attached (sessionAttach), parent conversation is restored via sessionGetMergedOutput
+  #   4. User in watcher types /parent → watcher session handler is unregistered, parent session handler is registered via GlobalSessionStreamManager, parent conversation is restored via sessionGetMergedOutput
   #   5. User in watcher presses /parent and the parent session was previously streaming → user sees parent conversation at current point, can continue interacting with parent
   #
   # ========================================

@@ -9,8 +9,6 @@ import { useFspecStore } from '../../store/fspecStore';
 
 // Mock all external dependencies
 vi.mock('@sengac/codelet-napi', () => ({
-  sessionDetach: vi.fn(),
-  sessionAttach: vi.fn(),
   sessionGetMergedOutput: vi.fn(() => []),
   sessionManagerList: vi.fn(() => []),
   sessionGetParent: vi.fn(() => null),

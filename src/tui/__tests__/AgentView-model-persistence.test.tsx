@@ -151,10 +151,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceRenameSession: vi.fn(),
   // TUI-047: Session management for background sessions
   sessionManagerList: vi.fn().mockReturnValue([]),
-  sessionAttach: vi.fn(),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
   // NAPI-009: New session manager functions
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),

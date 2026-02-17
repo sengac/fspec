@@ -4,12 +4,12 @@
 @REFAC-008
 Feature: Global Session Stream Subscription for FspecCommandRequest Handling
   """
-  CRITICAL CONSTRAINT: Rust attach() REPLACES the callback (only ONE per session).
-  Both sessionAttach() and sessionSubscribe() call the same attach() function.
-
-  SOLUTION: GlobalSessionStreamManager is the SOLE subscriber - it owns the callback
+  GlobalSessionStreamManager is the SOLE subscriber - it owns the global chunk callback
   for ALL sessions and multiplexes events to registered handlers. AgentView does NOT
-  call sessionAttach/sessionDetach - it registers with the manager via hook.
+  call NAPI directly for streaming - it registers handlers with the manager via hook.
+  
+  The global callback (sessionSetGlobalChunkCallback) receives chunks from ALL sessions
+  with (sessionId, chunk) and routes to appropriate handlers.
   """
 
   # ========================================
@@ -22,13 +22,13 @@ Feature: Global Session Stream Subscription for FspecCommandRequest Handling
   #   3. AgentView must contain ONLY UI rendering logic - no event handling business logic
   #   4. Session subscriptions must be added on session creation and removed on session destruction
   #   5. Event handlers must be composable via registerHandler/unregisterHandler pattern
-  #   6. AgentView must NOT call sessionAttach/sessionDetach directly - it registers with GlobalSessionStreamManager
-  #   7. Tests MUST use real NAPI bindings and fixtures - NO MOCKS for sessionAttach or GlobalSessionStreamManager
+  #   6. AgentView must NOT call NAPI streaming functions directly - it registers with GlobalSessionStreamManager
+  #   7. Tests MUST use real NAPI bindings and fixtures - NO MOCKS for GlobalSessionStreamManager
   #   8. Tests MUST use universal-test-setup.ts from src/test-helpers for temp directories and automatic cleanup
   #
   # ARCHITECTURE DECISION:
   #   GlobalSessionStreamManager is the SOLE subscriber (Option B).
-  #   - Rust only supports ONE callback per session (attach() REPLACES)
+  #   - Global callback receives all chunks from all sessions
   #   - Manager owns the callback and forwards events to registered handlers
   #   - AgentView registers via useSessionStreamManager() hook
   #   - FspecCommandHandler is a global handler that processes FspecCommandRequest from any session
@@ -112,5 +112,5 @@ Feature: Global Session Stream Subscription for FspecCommandRequest Handling
     And subscribes to it via GlobalSessionStreamManager
     And simulates a FspecCommandRequest chunk via simulateChunk
     Then the fspec command should execute successfully
-    And no mocks should be used for sessionAttach or GlobalSessionStreamManager
+    And no mocks should be used for GlobalSessionStreamManager
     And temp directories should be automatically cleaned up

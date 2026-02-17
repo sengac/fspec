@@ -11,7 +11,7 @@ Feature: Shift+Arrow Session Switching
   - Handlers: AgentView.tsx handleSessionNext/handleSessionPrev callbacks
   - Session source: sessionManagerList() from Rust only (not merged with persisted-only sessions)
   - Navigation: List model - Right=index+1 (older), Left=index-1 (newer), with wrap-around
-  - NAPI bindings: sessionDetach(oldId), sessionAttach(newId, callback), sessionGetMergedOutput(newId)
+  - NAPI bindings: GlobalSessionStreamManager for handler registration, sessionGetMergedOutput(newId)
   - Input persistence: Store input text per-session in Rust (similar to debug mode), restore on reattach
   - Conversation loading: processChunksToConversation for restoring messages on attach
   - Pattern: Follows Shift+Up/Down history navigation (NAPI-006 in MultiLineInput.tsx:122-142)

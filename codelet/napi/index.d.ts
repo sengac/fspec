@@ -1385,7 +1385,7 @@ export declare function sessionSetDebugEnabled(
 ): void;
 
 /**
- * BRIDGE-012: Set the global chunk callback for all sessions.
+ * Set the global chunk callback for all sessions.
  *
  * This registers a single callback that receives ALL chunks from ALL sessions.
  * The callback signature is (args: { session_id: string, chunk: StreamChunk }) => void.
@@ -1393,9 +1393,6 @@ export declare function sessionSetDebugEnabled(
  *
  * This should be called ONCE at application startup by GlobalSessionStreamManager.
  * Calling it again will fail (callback can only be set once).
- *
- * After this is set, all sessions will emit chunks through this callback,
- * in addition to the per-session attached_callback (for backwards compatibility).
  */
 export declare function sessionSetGlobalChunkCallback(
   callback: (err: Error | null, arg: GlobalChunkCallbackArgs) => any

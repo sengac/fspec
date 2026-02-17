@@ -21,8 +21,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetTokens: vi.fn().mockReturnValue({ inputTokens: 0, outputTokens: 0 }),
   sessionGetDebugEnabled: vi.fn().mockReturnValue(false),
   sessionGetMergedOutput: vi.fn().mockReturnValue([]),
-  sessionAttach: vi.fn(),
-  sessionDetach: vi.fn(),
   // PAUSE-001: New NAPI functions that should exist
   sessionGetPauseState: vi.fn().mockReturnValue(null),
   sessionPauseResume: vi.fn(),

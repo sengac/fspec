@@ -4,7 +4,7 @@
  * TUI-047: Attach to Detached Sessions from Resume View
  *
  * Tests for viewing and attaching to background sessions from /resume.
- * - Running sessions show 🔄 icon and use sessionAttach()
+ * - Running sessions show 🔄 icon and use GlobalSessionStreamManager
  * - Idle background sessions show ⏸️ icon
  * - Persisted-only sessions show 💾 icon and use persistenceLoadSession()
  * - Delete works for both types
@@ -17,7 +17,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock state for tracking NAPI calls
 const mockState = {
-  sessionAttachCalled: false,
+  handlerRegistered: false,
   sessionGetBufferedOutputCalled: false,
   sessionManagerDestroyCalled: false,
   persistenceLoadSessionCalled: false,
@@ -28,7 +28,7 @@ const mockState = {
 
 // Reset mock state
 const resetMockState = () => {
-  mockState.sessionAttachCalled = false;
+  mockState.handlerRegistered = false;
   mockState.sessionGetBufferedOutputCalled = false;
   mockState.sessionManagerDestroyCalled = false;
   mockState.persistenceLoadSessionCalled = false;
@@ -156,7 +156,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
   });
 
   describe('Scenario: Attach to running session shows buffered output then live stream', () => {
-    it('should call sessionGetBufferedOutput then sessionAttach for running sessions', async () => {
+    it('should call sessionGetBufferedOutput then handler registration for running sessions', async () => {
       // @step Given I have a detached session that produced output while I was away
       const sessionId = 'bg-session-123';
       mockState.bufferedChunks = [
@@ -175,8 +175,8 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
           handleStreamChunk(chunk);
         }
 
-        // Then attach for live streaming (simulating sessionAttach)
-        mockState.sessionAttachCalled = true;
+        // Then attach for live streaming (registering handler)
+        mockState.handlerRegistered = true;
         mockState.lastAttachedSessionId = id;
       };
 
@@ -188,7 +188,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       expect(chunks.length).toBe(1);
 
       // @step And I see live streaming output continue in real-time
-      expect(mockState.sessionAttachCalled).toBe(true);
+      expect(mockState.handlerRegistered).toBe(true);
       expect(mockState.lastAttachedSessionId).toBe(sessionId);
     });
   });
@@ -212,10 +212,10 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       // Simulating handleResumeSelect() logic from AgentView
       const handleResumeSelect = async (selectedSession: MergedSession) => {
         if (selectedSession.isBackgroundSession && selectedSession.backgroundStatus === 'running') {
-          mockState.sessionAttachCalled = true;
+          mockState.handlerRegistered = true;
         } else if (selectedSession.isBackgroundSession) {
           // Idle background - also uses attach
-          mockState.sessionAttachCalled = true;
+          mockState.handlerRegistered = true;
         } else {
           // Persisted-only - load from disk
           mockState.persistenceLoadSessionCalled = true;
@@ -226,7 +226,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
 
       // @step Then the conversation history displays as before
       expect(mockState.persistenceLoadSessionCalled).toBe(true);
-      expect(mockState.sessionAttachCalled).toBe(false);
+      expect(mockState.handlerRegistered).toBe(false);
 
       // @step And I can type a new prompt
       // (Implicit - input available after load)
@@ -322,7 +322,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
   });
 
   describe('Scenario: Attach to idle background session shows complete output', () => {
-    it('should use sessionAttach for idle background sessions and show complete output', async () => {
+    it('should use GlobalSessionStreamManager for idle background sessions and show complete output', async () => {
       // @step Given I have a session that finished while I was detached
       const sessionId = 'bg-session-finished';
       mockState.bufferedChunks = [
@@ -351,7 +351,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
           handleStreamChunk(chunk);
         }
 
-        mockState.sessionAttachCalled = true;
+        mockState.handlerRegistered = true;
         mockState.lastAttachedSessionId = id;
       };
 
@@ -363,7 +363,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       expect(chunks.length).toBe(2);
 
       // @step And I can type a new prompt to continue the conversation
-      expect(mockState.sessionAttachCalled).toBe(true);
+      expect(mockState.handlerRegistered).toBe(true);
       expect(mockState.lastAttachedSessionId).toBe(sessionId);
     });
 
@@ -438,7 +438,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
           handleStreamChunk(chunk);
         }
 
-        mockState.sessionAttachCalled = true;
+        mockState.handlerRegistered = true;
         mockState.lastAttachedSessionId = id;
       };
 
@@ -567,7 +567,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       const handleResumeSelect = async (selectedSession: MergedSession) => {
         if (selectedSession.isBackgroundSession) {
           // ... attach logic ...
-          mockState.sessionAttachCalled = true;
+          mockState.handlerRegistered = true;
           mockState.lastAttachedSessionId = selectedSession.id;
 
           // NAPI-009: Set isLoading if session is running so ESC can interrupt
@@ -581,7 +581,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
 
       // @step Then isLoading should be set to true
       expect(isLoadingSet).toBe(true);
-      expect(mockState.sessionAttachCalled).toBe(true);
+      expect(mockState.handlerRegistered).toBe(true);
     });
 
     it('should NOT set isLoading=true when attaching to an idle background session', async () => {
@@ -610,7 +610,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
       const handleResumeSelect = async (selectedSession: MergedSession) => {
         if (selectedSession.isBackgroundSession) {
           // ... attach logic ...
-          mockState.sessionAttachCalled = true;
+          mockState.handlerRegistered = true;
           mockState.lastAttachedSessionId = selectedSession.id;
 
           // NAPI-009: Set isLoading if session is running so ESC can interrupt
@@ -624,7 +624,7 @@ describe('TUI-047: Attach to Detached Sessions from Resume View', () => {
 
       // @step Then isLoading should NOT be set to true (session is idle)
       expect(isLoadingSet).toBe(false);
-      expect(mockState.sessionAttachCalled).toBe(true);
+      expect(mockState.handlerRegistered).toBe(true);
     });
   });
 

@@ -1,7 +1,10 @@
 // Feature: spec/features/background-session-management-with-attach-detach.feature
-// Tests for NAPI-009: Background Session Management with Attach/Detach
+// Tests for NAPI-009: Background Session Management
 // Tests for TUI-046: Detach Confirmation Modal on AgentView Exit
 // Tests for TUI-047: Attach to Detached Sessions from Resume View
+//
+// Session streaming now uses GlobalSessionStreamManager with global chunk callback.
+// These tests verify session lifecycle management (create, destroy, buffer, restore).
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
@@ -11,8 +14,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),
   sessionManagerList: vi.fn(),
   sessionManagerDestroy: vi.fn(),
-  sessionAttach: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
   sessionInterrupt: vi.fn(),
   sessionSetPendingInput: vi.fn(),
@@ -30,8 +31,6 @@ import {
   sessionManagerCreateWithId,
   sessionManagerList,
   sessionManagerDestroy,
-  sessionAttach,
-  sessionDetach,
   sessionSendInput,
   sessionInterrupt,
   sessionGetStatus,
@@ -40,7 +39,7 @@ import {
   sessionRestoreTokenState,
 } from '@sengac/codelet-napi';
 
-describe('Background Session Management with Attach/Detach', () => {
+describe('Background Session Management', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -68,20 +67,17 @@ describe('Background Session Management with Attach/Detach', () => {
     });
   });
 
-  describe('TUI-046: Detach while agent is running', () => {
-    it('should detach session when user presses ESC and selects Detach', () => {
+  describe('TUI-046: Session lifecycle on AgentView exit', () => {
+    it('should allow detaching while agent is running (session continues in background)', () => {
       // @step Given I have an active session running in AgentView
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
       vi.mocked(sessionGetStatus).mockReturnValue('running');
 
       // @step When I press ESC and select "Detach" from the modal
-      sessionDetach(sessionId);
-
-      // @step Then the session is detached (callback removed)
-      expect(sessionDetach).toHaveBeenCalledWith(sessionId);
-
-      // @step And the session continues running in background
+      // (GlobalSessionStreamManager stops forwarding to TUI, but session continues)
       const status = sessionGetStatus(sessionId);
+
+      // @step Then the session continues running in background
       expect(status).toBe('running');
     });
 
@@ -126,8 +122,8 @@ describe('Background Session Management with Attach/Detach', () => {
       expect(sessions[1].status).toBe('idle');
     });
 
-    it('should show buffered output when attaching to a detached session', () => {
-      // @step Given I have a session that ran while I was detached
+    it('should show buffered output when viewing a session', () => {
+      // @step Given I have a session that ran while I was viewing another session
       const sessionId = 'session-with-output';
       vi.mocked(sessionGetBufferedOutput).mockReturnValue([
         { chunkType: 'Text', text: 'Output line 1' },
@@ -143,13 +139,10 @@ describe('Background Session Management with Attach/Detach', () => {
       expect(bufferedOutput[0].text).toBe('Output line 1');
       expect(bufferedOutput[1].text).toBe('Output line 2');
 
-      // @step And I can attach to receive live streaming
-      const callback = vi.fn();
-      sessionAttach(sessionId, callback);
-      expect(sessionAttach).toHaveBeenCalledWith(sessionId, callback);
+      // GlobalSessionStreamManager will route future chunks to the TUI handler
     });
 
-    it('should restore messages when attaching to a session', async () => {
+    it('should restore messages when viewing a session', async () => {
       // @step Given I have a session with persisted conversation history
       const sessionId = 'session-with-history';
       const envelopes = [
@@ -164,14 +157,14 @@ describe('Background Session Management with Attach/Detach', () => {
         }),
       ];
 
-      // @step When I attach to the session via /resume
+      // @step When I view the session via /resume
       await sessionRestoreMessages(sessionId, envelopes);
 
       // @step Then the messages are restored to the session
       expect(sessionRestoreMessages).toHaveBeenCalledWith(sessionId, envelopes);
     });
 
-    it('should restore token state when attaching to a session', async () => {
+    it('should restore token state when viewing a session', async () => {
       // @step Given I have a session with persisted token usage
       const sessionId = 'session-with-tokens';
       const tokenUsage = {
@@ -182,7 +175,7 @@ describe('Background Session Management with Attach/Detach', () => {
         cacheCreationTokens: 1000,
       };
 
-      // @step When I attach to the session via /resume
+      // @step When I view the session via /resume
       await sessionRestoreTokenState(
         sessionId,
         tokenUsage.currentContextTokens,
@@ -208,10 +201,8 @@ describe('Background Session Management with Attach/Detach', () => {
 
   describe('NAPI-009: Send input with thinking config', () => {
     it('should send input with thinking config to background session', () => {
-      // @step Given I have an attached session
+      // @step Given I have an active session
       const sessionId = 'active-session';
-      const callback = vi.fn();
-      sessionAttach(sessionId, callback);
 
       // @step When I send input with thinking config
       const thinkingConfig = JSON.stringify({
@@ -229,7 +220,7 @@ describe('Background Session Management with Attach/Detach', () => {
     });
 
     it('should send input without thinking config', () => {
-      // @step Given I have an attached session
+      // @step Given I have an active session
       const sessionId = 'active-session';
 
       // @step When I send input without thinking config
@@ -259,8 +250,8 @@ describe('Background Session Management with Attach/Detach', () => {
     });
   });
 
-  describe('Integration: Full attach/detach/reattach flow', () => {
-    it('should support full detach and reattach workflow', () => {
+  describe('Integration: Full session lifecycle', () => {
+    it('should support full session lifecycle workflow', () => {
       // @step Given I create a session with persistence ID
       const sessionId = '550e8400-e29b-41d4-a716-446655440000';
       sessionManagerCreateWithId(
@@ -270,10 +261,6 @@ describe('Background Session Management with Attach/Detach', () => {
         'My Task'
       );
 
-      // @step And I attach a callback for streaming
-      const callback1 = vi.fn();
-      sessionAttach(sessionId, callback1);
-
       // @step And I send input to start the agent (with thinking config)
       const thinkingConfig = JSON.stringify({
         type: 'enabled',
@@ -282,8 +269,8 @@ describe('Background Session Management with Attach/Detach', () => {
       sessionSendInput(sessionId, 'Do something', thinkingConfig);
       vi.mocked(sessionGetStatus).mockReturnValue('running');
 
-      // @step When I detach (ESC + Detach)
-      sessionDetach(sessionId);
+      // @step When I switch to another session (via GlobalSessionStreamManager)
+      // The running session continues in background
 
       // @step Then the session continues running
       expect(sessionGetStatus(sessionId)).toBe('running');
@@ -303,7 +290,7 @@ describe('Background Session Management with Attach/Detach', () => {
       expect(sessions[0].id).toBe(sessionId);
       expect(sessions[0].status).toBe('running');
 
-      // @step When I reattach via /resume
+      // @step When I switch back to this session via /resume
       vi.mocked(sessionGetStatus).mockReturnValue('idle'); // Task finished
       vi.mocked(sessionGetBufferedOutput).mockReturnValue([
         { chunkType: 'Text', text: 'Task completed!' },
@@ -313,8 +300,7 @@ describe('Background Session Management with Attach/Detach', () => {
       const buffered = sessionGetBufferedOutput(sessionId, 1000);
       expect(buffered).toHaveLength(2);
 
-      const callback2 = vi.fn();
-      sessionAttach(sessionId, callback2);
+      // GlobalSessionStreamManager routes future chunks to TUI handler
 
       // @step Then I can continue the conversation
       sessionSendInput(sessionId, 'What did you do?', null);

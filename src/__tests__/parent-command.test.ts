@@ -1,22 +1,18 @@
 // Feature: spec/features/parent-command-for-quick-return.feature
 // Tests for WATCH-014: /parent Command for Quick Return
+//
+// Session switching now uses GlobalSessionStreamManager for handler registration.
+// These tests verify the /parent command LOGIC (parent lookup, navigation).
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the NAPI bindings
 vi.mock('@sengac/codelet-napi', () => ({
   sessionGetParent: vi.fn(),
-  sessionDetach: vi.fn(),
-  sessionAttach: vi.fn(),
   sessionGetMergedOutput: vi.fn(),
 }));
 
-import {
-  sessionGetParent,
-  sessionDetach,
-  sessionAttach,
-  sessionGetMergedOutput,
-} from '@sengac/codelet-napi';
+import { sessionGetParent, sessionGetMergedOutput } from '@sengac/codelet-napi';
 
 // Mock conversation state
 interface ConversationMessage {
@@ -34,11 +30,6 @@ interface MockStreamChunk {
 function handleParentCommand(
   currentSessionId: string | null,
   getParent: (id: string) => string | null,
-  detachSession: (id: string) => void,
-  attachSession: (
-    id: string,
-    callback: (err: Error | null, chunk: MockStreamChunk) => void
-  ) => void,
   getMergedOutput: (id: string) => MockStreamChunk[],
   setCurrentSessionId: (id: string) => void,
   setConversation: (messages: ConversationMessage[]) => void,
@@ -66,14 +57,8 @@ function handleParentCommand(
   // Get parent session name for status message
   const parentName = getSessionName?.(parentId) || parentId;
 
-  // Detach from current watcher session
-  detachSession(currentSessionId);
-
-  // Switch to parent session
+  // Switch to parent session (GlobalSessionStreamManager handles routing)
   setCurrentSessionId(parentId);
-
-  // Attach to parent session
-  attachSession(parentId, () => {});
 
   // Get merged output and restore conversation
   const chunks = getMergedOutput(parentId);
@@ -124,8 +109,6 @@ describe('/parent Command for Quick Return', () => {
       const result = handleParentCommand(
         currentSessionId,
         vi.mocked(sessionGetParent),
-        vi.mocked(sessionDetach),
-        vi.mocked(sessionAttach) as any,
         vi.mocked(sessionGetMergedOutput),
         id => {
           switchedToSessionId = id;
@@ -146,11 +129,6 @@ describe('/parent Command for Quick Return', () => {
       );
 
       // @step And the parent session conversation is displayed
-      expect(sessionDetach).toHaveBeenCalledWith(watcherSessionId);
-      expect(sessionAttach).toHaveBeenCalledWith(
-        parentSessionId,
-        expect.any(Function)
-      );
       expect(sessionGetMergedOutput).toHaveBeenCalledWith(parentSessionId);
       expect(conversation).toHaveLength(1);
       expect(conversation[0].content).toBe('Previous conversation from parent');
@@ -174,8 +152,6 @@ describe('/parent Command for Quick Return', () => {
       const result = handleParentCommand(
         currentSessionId,
         vi.mocked(sessionGetParent),
-        vi.mocked(sessionDetach),
-        vi.mocked(sessionAttach) as any,
         vi.mocked(sessionGetMergedOutput),
         id => {
           switchedToSessionId = id;
@@ -193,8 +169,6 @@ describe('/parent Command for Quick Return', () => {
       // @step And the current session remains "Code Project"
       expect(switchedToSessionId).toBeNull();
       expect(result.switchedTo).toBeNull();
-      expect(sessionDetach).not.toHaveBeenCalled();
-      expect(sessionAttach).not.toHaveBeenCalled();
     });
   });
 
@@ -209,8 +183,6 @@ describe('/parent Command for Quick Return', () => {
       const result = handleParentCommand(
         currentSessionId,
         vi.mocked(sessionGetParent),
-        vi.mocked(sessionDetach),
-        vi.mocked(sessionAttach) as any,
         vi.mocked(sessionGetMergedOutput),
         id => {
           switchedToSessionId = id;
@@ -227,8 +199,6 @@ describe('/parent Command for Quick Return', () => {
       expect(switchedToSessionId).toBeNull();
       expect(result.switchedTo).toBeNull();
       expect(sessionGetParent).not.toHaveBeenCalled();
-      expect(sessionDetach).not.toHaveBeenCalled();
-      expect(sessionAttach).not.toHaveBeenCalled();
     });
   });
 });

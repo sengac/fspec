@@ -5,7 +5,7 @@
 Feature: Detach Confirmation Modal on AgentView Exit
 
   """
-  Modifies AgentView.tsx ESC handler (Priority 5) to show ThreeButtonDialog instead of calling onExit() directly. Uses sessionDetach() and sessionManagerDestroy() from codelet-napi for session lifecycle. Reuses ThreeButtonDialog component from TUI-040 for DRY/SOLID compliance.
+  Modifies AgentView.tsx ESC handler (Priority 5) to show ThreeButtonDialog instead of calling onExit() directly. Uses sessionManagerDestroy() from codelet-napi for session destruction. Session handler cleanup via GlobalSessionStreamManager. Reuses ThreeButtonDialog component from TUI-040 for DRY/SOLID compliance.
   """
 
   # ========================================
@@ -17,7 +17,7 @@ Feature: Detach Confirmation Modal on AgentView Exit
   #   2. The confirmation modal must use ThreeButtonDialog component for DRY/SOLID compliance (reuse existing TUI-040 pattern)
   #   3. The modal must present three options: 'Detach' (keep running in background), 'Close Session' (terminate), and 'Cancel' (stay in AgentView)
   #   4. The default selected option must be 'Detach' (index 0) since preserving work is the safest default
-  #   5. Detach option must call sessionDetach(sessionId) from codelet-napi to keep the session running in background
+  #   5. Detach option must unregister the session handler to keep the session running in background
   #   6. Close Session option must call sessionManagerDestroy(sessionId) to terminate the background session before exiting
   #   7. Cancel option must dismiss the modal and return to normal AgentView state without any session changes
   #   8. ESC key pressed while modal is showing must dismiss modal (handled by ThreeButtonDialog onCancel)
@@ -31,7 +31,7 @@ Feature: Detach Confirmation Modal on AgentView Exit
   #   4. User presses ESC while modal is showing, modal dismisses via onCancel, user remains in AgentView with session unchanged
   #   5. User opens AgentView fresh (no session yet), presses ESC immediately, view exits without modal (no session to detach)
   #   6. User with input text presses ESC, input clears (existing Priority 4 behavior), presses ESC again, modal appears for exit confirmation
-  #   7. User selects 'Detach' while agent is mid-execution (isLoading=true), session continues running in background via sessionDetach(), later visible in /resume with running status
+  #   7. User selects 'Detach' while agent is mid-execution (isLoading=true), session continues running in background via handler cleanup, later visible in /resume with running status
   #
   # ========================================
 

@@ -8,8 +8,6 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 
 // Mock the codelet-napi module
 const mockSessionManagerList = vi.fn();
-const mockSessionAttach = vi.fn();
-const mockSessionDetach = vi.fn();
 const mockSessionGetMergedOutput = vi.fn();
 const mockSessionGetStatus = vi.fn();
 const mockSessionSetPendingInput = vi.fn();
@@ -19,8 +17,6 @@ const mockSessionGetMessages = vi.fn(() => []);
 
 vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerList: mockSessionManagerList,
-  sessionAttach: mockSessionAttach,
-  sessionDetach: mockSessionDetach,
   sessionGetMergedOutput: mockSessionGetMergedOutput,
   sessionGetStatus: mockSessionGetStatus,
   sessionSetPendingInput: mockSessionSetPendingInput,
@@ -87,9 +83,8 @@ describe('Feature: Input not restored when switching between sessions', () => {
       await mockSessionSetPendingInput(sessionA, savedInput);
 
       // @step When the user presses Shift+Right to switch to Session B
-      // This should: 1) save A's input, 2) detach from A, 3) resume B
+      // This should: 1) save A's input, 2) activate B
       await mockSessionSetPendingInput(sessionA, savedInput); // Save before switching
-      await mockSessionDetach(sessionA);
       await mockActivateSession(sessionB);
 
       // Verify Session A's input was saved
@@ -97,7 +92,6 @@ describe('Feature: Input not restored when switching between sessions', () => {
         sessionA,
         savedInput
       );
-      expect(mockSessionDetach).toHaveBeenCalledWith(sessionA);
 
       // Verify Session B's input is restored (empty in this case)
       const sessionBInput = mockSessionGetPendingInput(sessionB);
@@ -106,7 +100,6 @@ describe('Feature: Input not restored when switching between sessions', () => {
       // @step And the user presses Shift+Left to return to Session A
       // This should: 1) save B's input (empty), 2) detach from B, 3) resume A
       await mockSessionSetPendingInput(sessionB, emptyInput);
-      await mockSessionDetach(sessionB);
       await mockActivateSession(sessionA);
 
       // Verify Session B's input was saved
@@ -148,9 +141,8 @@ describe('Feature: Input not restored when switching between sessions', () => {
       await mockSessionSetPendingInput(sessionA, savedInput);
 
       // @step When the user presses Shift+Right to switch to Session B
-      // This should: 1) save A's input, 2) detach from A, 3) resume B
+      // This should: 1) save A's input, 2) activate B
       await mockSessionSetPendingInput(sessionA, savedInput);
-      await mockSessionDetach(sessionA);
       await mockActivateSession(sessionB);
 
       // Verify Session A's input was saved
@@ -199,7 +191,6 @@ describe('Feature: Input not restored when switching between sessions', () => {
 
       // @step When the user presses Shift+Right to switch to Session B
       await mockSessionSetPendingInput(sessionA, savedInputA);
-      await mockSessionDetach(sessionA);
       await mockActivateSession(sessionB);
 
       // @step Then Session B's AgentView input area should display "Goodbye"
@@ -208,7 +199,6 @@ describe('Feature: Input not restored when switching between sessions', () => {
 
       // @step And the user presses Shift+Left to return to Session A
       await mockSessionSetPendingInput(sessionB, savedInputB);
-      await mockSessionDetach(sessionB);
       await mockActivateSession(sessionA);
 
       // @step And Session A's AgentView input area should display "Hello world"
@@ -238,7 +228,6 @@ describe('Feature: Input not restored when switching between sessions', () => {
       // Simulate navigating from A to B with empty input
       // The navigation logic should ALWAYS save pending input, even if empty
       await mockSessionSetPendingInput(sessionA, emptyInput);
-      await mockSessionDetach(sessionA);
       await mockActivateSession(sessionB);
 
       // Verify empty input was saved to prevent wrong session's input from persisting
@@ -267,9 +256,6 @@ describe('Feature: Input not restored when switching between sessions', () => {
         callOrder.push('save_pending_input');
         return Promise.resolve();
       });
-      mockSessionDetach.mockImplementation(() => {
-        callOrder.push('detach');
-      });
       mockActivateSession.mockImplementation(() => {
         callOrder.push('resume_session');
         return Promise.resolve();
@@ -277,15 +263,10 @@ describe('Feature: Input not restored when switching between sessions', () => {
 
       // Simulate navigation from A to B
       await mockSessionSetPendingInput(sessionA, savedInput);
-      await mockSessionDetach(sessionA);
       await mockActivateSession(sessionB);
 
-      // Verify order: save → detach → resume
-      expect(callOrder).toEqual([
-        'save_pending_input',
-        'detach',
-        'resume_session',
-      ]);
+      // Verify order: save → resume (detach is no longer needed with GlobalSessionStreamManager)
+      expect(callOrder).toEqual(['save_pending_input', 'resume_session']);
     });
   });
 });

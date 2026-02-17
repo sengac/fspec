@@ -5,7 +5,7 @@
 Feature: Attach to Detached Sessions from Resume View
 
   """
-  Modifies handleResumeMode() to query both persistenceListSessions() and sessionManagerList(), merging results with background sessions taking precedence. Adds status icon rendering (🔄/💾) in resume list. Modifies handleResumeSelect() to use sessionAttach() + sessionGetBufferedOutput() for running sessions instead of persistenceLoadSession().
+  Modifies handleResumeMode() to query both persistenceListSessions() and sessionManagerList(), merging results with background sessions taking precedence. Adds status icon rendering (🔄/💾) in resume list. Uses GlobalSessionStreamManager to register handlers for streaming sessions.
   """
 
   # ========================================
@@ -16,9 +16,9 @@ Feature: Attach to Detached Sessions from Resume View
   #   1. Resume view must query both persistenceListSessions() AND sessionManagerList() to get full picture of sessions
   #   2. Each session in resume list must display status icon: 🔄 for 'running' background sessions, 💾 for 'idle' persisted sessions
   #   3. Background sessions from sessionManagerList() take precedence - if session exists in both lists, use background session data and show running/idle status emoji
-  #   4. When user selects a RUNNING background session (🔄), use sessionAttach(sessionId, callback) instead of persistenceLoadSession()
+  #   4. When user selects a RUNNING background session (🔄), use GlobalSessionStreamManager handler registration instead of persistenceLoadSession()
   #   5. When attaching to running session, first call sessionGetBufferedOutput(sessionId, limit) to hydrate conversation with output produced while detached
-  #   6. After buffer hydration, sessionAttach callback receives live streaming chunks that append to conversation in real-time
+  #   6. After buffer hydration, GlobalSessionStreamManager handler receives live streaming chunks that append to conversation in real-time
   #   7. When user selects an IDLE persisted session (💾), use existing persistenceLoadSession() code path (no change to current resume behavior)
   #   8. Session list must be sorted by updatedAt descending (most recent first), same as current behavior
   #   9. Footer in resume mode must show: 'Enter Select | ↑↓ Navigate | D Delete | Esc Cancel' (unchanged)

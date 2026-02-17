@@ -5504,7 +5504,7 @@ pub fn session_manager_destroy(session_id: String) -> Result<()> {
     SessionManager::instance().destroy_session(&session_id)
 }
 
-/// BRIDGE-012: Set the global chunk callback for all sessions.
+/// Set the global chunk callback for all sessions.
 ///
 /// This registers a single callback that receives ALL chunks from ALL sessions.
 /// The callback signature is (args: { session_id: string, chunk: StreamChunk }) => void.
@@ -5512,9 +5512,6 @@ pub fn session_manager_destroy(session_id: String) -> Result<()> {
 ///
 /// This should be called ONCE at application startup by GlobalSessionStreamManager.
 /// Calling it again will fail (callback can only be set once).
-///
-/// After this is set, all sessions will emit chunks through this callback,
-/// in addition to the per-session attached_callback (for backwards compatibility).
 #[napi]
 pub fn session_set_global_chunk_callback(callback: ThreadsafeFunction<GlobalChunkCallbackArgs>) -> Result<()> {
     let global_cb = GlobalChunkCallback::new(callback);

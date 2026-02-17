@@ -17,8 +17,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetMergedOutput: vi.fn(),
   sessionGetRole: vi.fn(),
   sessionGetStatus: vi.fn(),
-  sessionAttach: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
   persistenceSetDataDirectory: vi.fn(),
   persistenceGetHistory: vi.fn(() => []),

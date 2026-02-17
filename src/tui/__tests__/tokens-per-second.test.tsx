@@ -53,7 +53,6 @@ const mockModels = vi.hoisted(() => ({
 }));
 
 // Track callback and resolver at module level for test control
-// NAPI-009: sessionAttach uses (err, chunk) signature
 let capturedCallback: ((err: Error | null, chunk: unknown) => void) | null = null;
 let capturedResolver: (() => void) | null = null;
 
@@ -116,13 +115,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceRenameSession: vi.fn(),
   // TUI-047: Session management for background sessions
   sessionManagerList: vi.fn().mockReturnValue([]),
-  // NAPI-009: sessionAttach captures callback for streaming chunks
-  sessionAttach: vi.fn().mockImplementation((_sessionId: string, callback: (err: Error | null, chunk: unknown) => void) => {
-    capturedCallback = callback;
-  }),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
   // NAPI-009: New session manager functions
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),

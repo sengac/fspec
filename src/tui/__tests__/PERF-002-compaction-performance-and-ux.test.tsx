@@ -116,12 +116,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceAppendMessage: vi.fn(),
   persistenceRenameSession: vi.fn(),
   sessionManagerList: vi.fn().mockReturnValue([]),
-  sessionAttach: vi.fn().mockImplementation((_sessionId: string, callback: (err: Error | null, chunk: unknown) => void) => {
-    capturedCallback = callback;
-  }),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn().mockImplementation((_sessionId: string, _input: string, _thinkingConfig: string | null) => {
     // NAPI-009: Trigger streaming callback when input is sent (simulates background session response)
   }),

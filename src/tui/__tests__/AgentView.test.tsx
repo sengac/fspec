@@ -125,15 +125,11 @@ vi.mock('@sengac/codelet-napi', () => ({
   persistenceRenameSession: vi.fn(),
   // TUI-047: Session management for background sessions
   sessionManagerList: vi.fn().mockReturnValue([]),
-  sessionAttach: vi.fn().mockImplementation((_sessionId: string, callback: (err: Error | null, chunk: unknown) => void) => {
-    capturedCallback = callback;
-  }),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn().mockImplementation((_sessionId: string, _input: string, _thinkingConfig: string | null) => {
-    // NAPI-009: Trigger streaming callback when input is sent (simulates background session response)
-    // Note: Tests should call capturedCallback directly to control streaming responses
+    // Streaming responses come via GlobalSessionStreamManager global callback
+    // Tests should call capturedCallback directly to control streaming responses
   }),
   // NAPI-009: New session manager functions
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),

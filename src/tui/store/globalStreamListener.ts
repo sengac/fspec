@@ -15,7 +15,6 @@ let isInitialized = false;
 let cleanupFn: (() => void) | null = null;
 
 let napiModule: {
-  // BRIDGE-012: sessionSubscribe/sessionDetach removed - replaced by global callback
   sessionGetActive: () => string | null;
   sessionGetWorkUnitContext: (
     sessionId: string
@@ -32,7 +31,6 @@ async function getNapiModule() {
   if (!napiModule) {
     const napi = await import('@sengac/codelet-napi');
     napiModule = {
-      // BRIDGE-012: sessionSubscribe removed from NAPI
       sessionGetActive: napi.sessionGetActive,
       sessionGetWorkUnitContext: napi.sessionGetWorkUnitContext,
       startWorkUnitsWatcher: napi.startWorkUnitsWatcher,

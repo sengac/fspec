@@ -7,8 +7,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerList: vi.fn(),
   sessionGetParent: vi.fn(),
-  sessionAttach: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionGetMergedOutput: vi.fn(),
   sessionGetStatus: vi.fn(),
   sessionSetPendingInput: vi.fn(),
@@ -18,9 +16,6 @@ vi.mock('@sengac/codelet-napi', () => ({
 import {
   sessionManagerList,
   sessionGetParent,
-  sessionAttach,
-  sessionDetach,
-  sessionGetMergedOutput,
   sessionSetPendingInput,
   sessionGetPendingInput,
 } from '@sengac/codelet-napi';

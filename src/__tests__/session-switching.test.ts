@@ -1,13 +1,14 @@
 // Feature: spec/features/shift-arrow-session-switching.feature
 // Tests for TUI-049: Shift+Arrow Session Switching
+//
+// Session switching now uses GlobalSessionStreamManager for handler registration.
+// These tests verify the navigation LOGIC (index calculation, wrap-around).
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Mock the NAPI bindings
 vi.mock('@sengac/codelet-napi', () => ({
   sessionManagerList: vi.fn(),
-  sessionAttach: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionGetMergedOutput: vi.fn(),
   sessionGetStatus: vi.fn(),
   sessionSetPendingInput: vi.fn(),
@@ -16,8 +17,6 @@ vi.mock('@sengac/codelet-napi', () => ({
 
 import {
   sessionManagerList,
-  sessionAttach,
-  sessionDetach,
   sessionGetMergedOutput,
   sessionGetStatus,
   sessionSetPendingInput,
@@ -37,6 +36,19 @@ const createMockSession = (
   messageCount: 5,
 });
 
+// Helper to calculate target session index (mirrors actual navigation logic)
+function calculateTargetIndex(
+  direction: 'next' | 'prev',
+  currentIndex: number,
+  totalSessions: number
+): number {
+  if (direction === 'next') {
+    return (currentIndex + 1) % totalSessions;
+  } else {
+    return (currentIndex - 1 + totalSessions) % totalSessions;
+  }
+}
+
 describe('Shift+Arrow Session Switching', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -52,24 +64,21 @@ describe('Shift+Arrow Session Switching', () => {
       ];
       vi.mocked(sessionManagerList).mockReturnValue(sessions);
 
-      // @step And I am currently attached to session A
+      // @step And I am currently viewing session A
       const currentSessionId = 'session-a';
       const currentIndex = sessions.findIndex(s => s.id === currentSessionId);
       expect(currentIndex).toBe(0);
 
       // @step When I press Shift+Right arrow
-      // Calculate next index (list navigation: right = index + 1)
-      const nextIndex = (currentIndex + 1) % sessions.length;
+      const nextIndex = calculateTargetIndex(
+        'next',
+        currentIndex,
+        sessions.length
+      );
       const nextSession = sessions[nextIndex];
 
-      // @step Then session A should be detached
-      sessionDetach(currentSessionId);
-      expect(sessionDetach).toHaveBeenCalledWith(currentSessionId);
-
-      // @step And I should be attached to session B
-      const callback = vi.fn();
-      sessionAttach(nextSession.id, callback);
-      expect(sessionAttach).toHaveBeenCalledWith('session-b', callback);
+      // @step Then the target session should be session B
+      expect(nextSession.id).toBe('session-b');
 
       // @step And I should see session B's conversation
       vi.mocked(sessionGetMergedOutput).mockReturnValue([
@@ -91,24 +100,21 @@ describe('Shift+Arrow Session Switching', () => {
       ];
       vi.mocked(sessionManagerList).mockReturnValue(sessions);
 
-      // @step And I am currently attached to session B
+      // @step And I am currently viewing session B
       const currentSessionId = 'session-b';
       const currentIndex = sessions.findIndex(s => s.id === currentSessionId);
       expect(currentIndex).toBe(1);
 
       // @step When I press Shift+Left arrow
-      // Calculate previous index (list navigation: left = index - 1)
-      const prevIndex = (currentIndex - 1 + sessions.length) % sessions.length;
+      const prevIndex = calculateTargetIndex(
+        'prev',
+        currentIndex,
+        sessions.length
+      );
       const prevSession = sessions[prevIndex];
 
-      // @step Then session B should be detached
-      sessionDetach(currentSessionId);
-      expect(sessionDetach).toHaveBeenCalledWith(currentSessionId);
-
-      // @step And I should be attached to session A
-      const callback = vi.fn();
-      sessionAttach(prevSession.id, callback);
-      expect(sessionAttach).toHaveBeenCalledWith('session-a', callback);
+      // @step Then the target session should be session A
+      expect(prevSession.id).toBe('session-a');
 
       // @step And I should see session A's conversation
       vi.mocked(sessionGetMergedOutput).mockReturnValue([
@@ -130,17 +136,21 @@ describe('Shift+Arrow Session Switching', () => {
       ];
       vi.mocked(sessionManagerList).mockReturnValue(sessions);
 
-      // @step And I am currently attached to session C (the last session)
+      // @step And I am currently viewing session C (the last session)
       const currentSessionId = 'session-c';
       const currentIndex = sessions.findIndex(s => s.id === currentSessionId);
       expect(currentIndex).toBe(2); // Last session
 
       // @step When I press Shift+Right arrow
       // Wrap around: index 2 + 1 = 3, 3 % 3 = 0
-      const nextIndex = (currentIndex + 1) % sessions.length;
+      const nextIndex = calculateTargetIndex(
+        'next',
+        currentIndex,
+        sessions.length
+      );
       expect(nextIndex).toBe(0);
 
-      // @step Then I should be attached to session A (the first session)
+      // @step Then I should be viewing session A (the first session)
       const nextSession = sessions[nextIndex];
       expect(nextSession.id).toBe('session-a');
     });
@@ -156,17 +166,21 @@ describe('Shift+Arrow Session Switching', () => {
       ];
       vi.mocked(sessionManagerList).mockReturnValue(sessions);
 
-      // @step And I am currently attached to session A (the first session)
+      // @step And I am currently viewing session A (the first session)
       const currentSessionId = 'session-a';
       const currentIndex = sessions.findIndex(s => s.id === currentSessionId);
       expect(currentIndex).toBe(0); // First session
 
       // @step When I press Shift+Left arrow
       // Wrap around: index 0 - 1 = -1, (-1 + 3) % 3 = 2
-      const prevIndex = (currentIndex - 1 + sessions.length) % sessions.length;
+      const prevIndex = calculateTargetIndex(
+        'prev',
+        currentIndex,
+        sessions.length
+      );
       expect(prevIndex).toBe(2);
 
-      // @step Then I should be attached to session C (the last session)
+      // @step Then I should be viewing session C (the last session)
       const prevSession = sessions[prevIndex];
       expect(prevSession.id).toBe('session-c');
     });
@@ -182,13 +196,7 @@ describe('Shift+Arrow Session Switching', () => {
       const shouldSwitch = sessions.length >= 2;
       expect(shouldSwitch).toBe(false);
 
-      // @step Then nothing should happen
-      // No detach or attach calls should be made
-      expect(sessionDetach).not.toHaveBeenCalled();
-      expect(sessionAttach).not.toHaveBeenCalled();
-
-      // @step And I should remain on the same session
-      // Current session ID unchanged
+      // @step Then nothing should happen - navigation requires 2+ sessions
     });
   });
 
@@ -209,9 +217,6 @@ describe('Shift+Arrow Session Switching', () => {
       expect(shouldSwitch).toBe(false);
 
       // @step Then nothing should happen
-      expect(sessionDetach).not.toHaveBeenCalled();
-      expect(sessionAttach).not.toHaveBeenCalled();
-
       // @step And the resume modal should remain open
       expect(isResumeMode).toBe(true);
     });
@@ -232,18 +237,21 @@ describe('Shift+Arrow Session Switching', () => {
       });
       expect(sessionGetStatus('session-a')).toBe('running');
 
-      // @step And I am attached to session A
+      // @step And I am viewing session A
       const currentSessionId = 'session-a';
+      const currentIndex = sessions.findIndex(s => s.id === currentSessionId);
 
       // @step When I press Shift+Right arrow
-      sessionDetach(currentSessionId);
+      const nextIndex = calculateTargetIndex(
+        'next',
+        currentIndex,
+        sessions.length
+      );
+      const targetSession = sessions[nextIndex];
+      expect(targetSession.id).toBe('session-b');
 
-      // @step Then I should be attached to session B
-      const callback = vi.fn();
-      sessionAttach('session-b', callback);
-      expect(sessionAttach).toHaveBeenCalledWith('session-b', callback);
-
-      // @step And session A should continue executing in background
+      // @step Then session A should continue executing in background
+      // (GlobalSessionStreamManager handles routing - A's handler stays registered)
       expect(sessionGetStatus('session-a')).toBe('running');
 
       // @step And I should see session B's conversation immediately
@@ -264,28 +272,21 @@ describe('Shift+Arrow Session Switching', () => {
       ];
       vi.mocked(sessionManagerList).mockReturnValue(sessions);
 
-      // @step And I am attached to session A
+      // @step And I am viewing session A
       const currentSessionId = 'session-a';
 
       // @step And I have typed 'hello world' in the input field
       const inputText = 'hello world';
 
       // @step When I press Shift+Right arrow to switch to session B
-      // Save input text to session A before detaching
+      // Save input text to session A before switching
       sessionSetPendingInput(currentSessionId, inputText);
       expect(sessionSetPendingInput).toHaveBeenCalledWith(
         'session-a',
         'hello world'
       );
 
-      sessionDetach(currentSessionId);
-      const callback = vi.fn();
-      sessionAttach('session-b', callback);
-
       // @step And I press Shift+Left arrow to return to session A
-      sessionDetach('session-b');
-      sessionAttach('session-a', callback);
-
       // @step Then I should see 'hello world' in the input field
       vi.mocked(sessionGetPendingInput).mockReturnValue('hello world');
       const restoredInput = sessionGetPendingInput('session-a');

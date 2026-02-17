@@ -16,8 +16,6 @@ const mockSessionGetParent = vi.fn();
 const mockSessionGetMergedOutput = vi.fn();
 const mockSessionGetRole = vi.fn();
 const mockSessionGetStatus = vi.fn();
-const mockSessionAttach = vi.fn();
-const mockSessionDetach = vi.fn();
 const mockSessionSendInput = vi.fn();
 
 vi.mock('@sengac/codelet-napi', () => ({
@@ -25,8 +23,6 @@ vi.mock('@sengac/codelet-napi', () => ({
   sessionGetMergedOutput: mockSessionGetMergedOutput,
   sessionGetRole: mockSessionGetRole,
   sessionGetStatus: mockSessionGetStatus,
-  sessionAttach: mockSessionAttach,
-  sessionDetach: mockSessionDetach,
   sessionSendInput: mockSessionSendInput,
   // Other required mocks
   persistenceSetDataDirectory: vi.fn(),

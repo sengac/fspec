@@ -194,13 +194,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   // VIEWNV-001: Session navigation helpers
   sessionGetParent: vi.fn().mockReturnValue(null),
   sessionGetWatchers: vi.fn().mockReturnValue([]),
-  // NAPI-009: sessionAttach captures callback for streaming chunks
-  sessionAttach: vi.fn().mockImplementation((_sessionId: string, callback: (err: Error | null, chunk: unknown) => void) => {
-    capturedCallback = callback;
-  }),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
   // TUI-052: Pending input for session resume
   sessionGetPendingInput: vi.fn().mockReturnValue(''),

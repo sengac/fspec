@@ -164,10 +164,8 @@ vi.mock('@sengac/codelet-napi', () => ({
   // VIEWNV-001: Session navigation helpers
   sessionGetParent: vi.fn().mockReturnValue(null),
   sessionGetWatchers: vi.fn().mockReturnValue([]),
-  sessionAttach: vi.fn(),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi.fn(),
   // NAPI-009: New session manager functions
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),

@@ -46,9 +46,6 @@ export {
   getSubscriptionForTesting,
 } from './sessionSubscription';
 
-// BRIDGE-012: sessionAttachment.ts removed - per-session attach/detach replaced by global callback
-// manualAttach, manualDetach, getSessionChunks are no longer needed
-
 // =============================================================================
 // Types
 // =============================================================================
@@ -240,10 +237,10 @@ export function useRustSessionState(sessionId: string | null): {
       const sub = getOrCreateSubscription(sessionId);
       sub.subscribers.add(callback);
 
-      // KEY FIX: Invalidate cache on subscribe to force fresh fetch from Rust.
-      // This handles the case where a session completed while detached (Done chunk
-      // not forwarded because is_attached=false). When we re-subscribe, we need
-      // fresh state from Rust, not stale cached state that still says "running".
+      // Invalidate cache on subscribe to force fresh fetch from Rust.
+      // This handles the case where a session completed while we were viewing
+      // another session. When we re-subscribe, we need fresh state from Rust,
+      // not stale cached state that still says "running".
       invalidateCache(sessionId);
 
       return () => {

@@ -1,6 +1,8 @@
 /**
  * Reusable test fixture for AgentView component testing
  * Extracted from working AgentView.test.tsx pattern
+ *
+ * Session streaming uses GlobalSessionStreamManager with global chunk callback.
  */
 
 import { vi } from 'vitest';
@@ -45,7 +47,7 @@ export const mockModels = {
   },
 };
 
-// Track callback and resolver at module level for test control (NAPI-009)
+// Track callback and resolver at module level for test control
 export let capturedCallback:
   | ((err: Error | null, chunk: unknown) => void)
   | null = null;
@@ -124,6 +126,16 @@ export const createFspecStoreMock = (
   };
 };
 
+/**
+ * Set the captured callback for streaming simulation
+ * Used by GlobalSessionStreamManager tests
+ */
+export function setStreamingCallback(
+  callback: (err: Error | null, chunk: unknown) => void
+) {
+  capturedCallback = callback;
+}
+
 // Complete NAPI module mock - individual functions only
 export const createNapiMock = () => ({
   ChunkType: {
@@ -176,34 +188,23 @@ export const createNapiMock = () => ({
   persistenceAppendMessage: vi.fn(),
   persistenceRenameSession: vi.fn(),
   persistenceSetSessionTokens: vi.fn(),
-  // TUI-047: Session management for background sessions
+  // Session management
   sessionManagerList: vi.fn().mockReturnValue([]),
-  sessionAttach: vi
-    .fn()
-    .mockImplementation(
-      (
-        _sessionId: string,
-        callback: (err: Error | null, chunk: unknown) => void
-      ) => {
-        capturedCallback = callback;
-      }
-    ),
   sessionGetBufferedOutput: vi.fn().mockReturnValue([]),
   sessionManagerDestroy: vi.fn(),
-  sessionDetach: vi.fn(),
   sessionSendInput: vi
     .fn()
     .mockImplementation(
       (_sessionId: string, _input: string, _thinkingConfig: string | null) => {
-        // NAPI-009: Trigger streaming callback when input is sent (simulates background session response)
-        // Note: Tests should call capturedCallback directly to control streaming responses
+        // Streaming responses come via GlobalSessionStreamManager global callback
+        // Tests should use setStreamingCallback and simulateStreamingResponse
       }
     ),
-  // NAPI-009: New session manager functions
+  // Session manager functions
   sessionManagerCreateWithId: vi.fn().mockResolvedValue(undefined),
   sessionRestoreMessages: vi.fn(),
   sessionRestoreTokenState: vi.fn(),
-  // NAPI-009 + AGENT-021: Debug and compaction for background sessions
+  // Debug and compaction for background sessions
   sessionToggleDebug: vi.fn().mockResolvedValue({
     enabled: true,
     sessionFile: '/tmp/debug-session.json',
@@ -230,9 +231,9 @@ export const createNapiMock = () => ({
   // TUI-054: Base thinking level
   sessionGetBaseThinkingLevel: vi.fn().mockReturnValue(0),
   sessionSetBaseThinkingLevel: vi.fn(),
-  // AGENT-021: Debug enabled state from Rust
+  // Debug enabled state from Rust
   sessionGetDebugEnabled: vi.fn().mockReturnValue(false),
-  // VIEWNV-001: Navigation functions for session/watcher navigation
+  // Navigation functions for session/watcher navigation
   sessionGetParent: vi.fn().mockReturnValue(null),
   sessionGetWatchers: vi.fn().mockReturnValue([]),
   // UX-002: Compaction progress

@@ -14,7 +14,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Create mock state for tracking NAPI calls
 const mockState = {
-  sessionDetachCalled: false,
+  handlerCleanupCalled: false,
   sessionManagerDestroyCalled: false,
   lastDetachedSessionId: null as string | null,
   lastDestroyedSessionId: null as string | null,
@@ -22,7 +22,7 @@ const mockState = {
 
 // Reset mock state helper
 const resetMockState = () => {
-  mockState.sessionDetachCalled = false;
+  mockState.handlerCleanupCalled = false;
   mockState.sessionManagerDestroyCalled = false;
   mockState.lastDetachedSessionId = null;
   mockState.lastDestroyedSessionId = null;
@@ -35,7 +35,7 @@ describe('TUI-046: Detach Confirmation Modal on AgentView Exit', () => {
   });
 
   describe('Scenario: Detach session using default selection and exit', () => {
-    it('should call sessionDetach when Detach option is selected', async () => {
+    it('should cleanup session handler when Detach option is selected', async () => {
       // @step Given I am in AgentView with an active session and empty input
       const currentSessionId = 'test-session-123';
       const onExit = vi.fn();
@@ -48,7 +48,7 @@ describe('TUI-046: Detach Confirmation Modal on AgentView Exit', () => {
       const handleExitChoice = async (index: number) => {
         if (index === 0) {
           // @step Then the session is detached and continues running in background
-          mockState.sessionDetachCalled = true;
+          mockState.handlerCleanupCalled = true;
           mockState.lastDetachedSessionId = currentSessionId;
           // @step And the view exits
           onExit();
@@ -57,7 +57,7 @@ describe('TUI-046: Detach Confirmation Modal on AgentView Exit', () => {
 
       await handleExitChoice(0);
 
-      expect(mockState.sessionDetachCalled).toBe(true);
+      expect(mockState.handlerCleanupCalled).toBe(true);
       expect(mockState.lastDetachedSessionId).toBe(currentSessionId);
       expect(onExit).toHaveBeenCalled();
     });
@@ -82,7 +82,7 @@ describe('TUI-046: Detach Confirmation Modal on AgentView Exit', () => {
 
       // @step And I remain in AgentView with the session unchanged
       expect(onExit).not.toHaveBeenCalled();
-      expect(mockState.sessionDetachCalled).toBe(false);
+      expect(mockState.handlerCleanupCalled).toBe(false);
       expect(mockState.sessionManagerDestroyCalled).toBe(false);
     });
   });
@@ -165,7 +165,7 @@ describe('TUI-046: Detach Confirmation Modal on AgentView Exit', () => {
 
       // @step And I remain in AgentView with the session unchanged
       expect(onExit).not.toHaveBeenCalled();
-      expect(mockState.sessionDetachCalled).toBe(false);
+      expect(mockState.handlerCleanupCalled).toBe(false);
       expect(mockState.sessionManagerDestroyCalled).toBe(false);
     });
   });
