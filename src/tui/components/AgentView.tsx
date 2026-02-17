@@ -192,6 +192,12 @@ import {
   type PendingToolCallInfo,
   type ChunkProcessorContext,
 } from '../utils/chunkProcessor';
+import {
+  createThinkingUpdate,
+  createFinalizationUpdate,
+  appendThinkingBulk,
+  finalizeThinkingBlock,
+} from '../utils/thinkingBlockManager';
 import { useFspecStore } from '../store/fspecStore';
 import {
   useSessionStore,
@@ -426,64 +432,6 @@ export interface AgentViewProps {
 // ConversationMessage, ConversationLine, and MessageType are imported from '../types/conversation'
 
 /**
- * Append thinking content to conversation.
- * Creates a new thinking block after each tool call, or appends to existing thinking block.
- *
- * SOLID: Clean separation - thinking is a proper message type, not a flag on tool messages.
- */
-const appendThinkingContent = (
-  messages: ConversationMessage[],
-  thinkingContent: string,
-  mode: 'replace' | 'append'
-): ConversationMessage[] => {
-  // Find the last thinking, tool-call, and user messages
-  const lastToolIdx = messages.findLastIndex(m => m.type === 'tool-call');
-  const lastThinkingIdx = messages.findLastIndex(m => m.type === 'thinking');
-  const lastUserIdx = messages.findLastIndex(m => m.type === 'user-input');
-  const streamingIdx = messages.findLastIndex(
-    m => m.type === 'assistant-text' && m.isStreaming
-  );
-
-  // Can reuse existing thinking if:
-  // 1. There is an existing thinking block
-  // 2. It comes after the last tool call (or no tool call exists)
-  // 3. It comes after the last user message (same turn - not from a previous turn)
-  const canReuseThinking =
-    lastThinkingIdx >= 0 &&
-    (lastToolIdx < 0 || lastThinkingIdx > lastToolIdx) &&
-    (lastUserIdx < 0 || lastThinkingIdx > lastUserIdx);
-
-  if (canReuseThinking) {
-    // Append to existing thinking block
-    const existingContent = messages[lastThinkingIdx].content.replace(
-      '[Thinking]\n',
-      ''
-    );
-    const newContent =
-      mode === 'replace' ? thinkingContent : existingContent + thinkingContent;
-    messages[lastThinkingIdx] = {
-      ...messages[lastThinkingIdx],
-      content: `[Thinking]\n${newContent}`,
-    };
-  } else if (streamingIdx >= 0) {
-    // Insert before streaming assistant message
-    messages.splice(streamingIdx, 0, {
-      type: 'thinking',
-      content: `[Thinking]\n${thinkingContent}`,
-    });
-  } else {
-    // Append new thinking block
-    messages.push({
-      type: 'thinking',
-      content: `[Thinking]\n${thinkingContent}`,
-    });
-  }
-
-  return messages;
-};
-
-
-/**
  * Process merged chunks into conversation messages for reattachment.
  * Used when attaching to a running/idle background session OR restoring from persistence.
  *
@@ -567,14 +515,14 @@ const processChunksToConversation = (
         });
       }
     } else if (chunk.type === 'Thinking' && chunk.thinking) {
-      appendThinkingContent(messages, chunk.thinking, 'append');
-      // WATCH-011: Propagate correlation to thinking messages if created
-      const lastMsg = messages[messages.length - 1];
-      if (lastMsg && lastMsg.type === 'thinking' && !lastMsg.correlationId) {
-        lastMsg.correlationId = correlationId;
-        lastMsg.observedCorrelationIds = observedCorrelationIds;
-      }
+      appendThinkingBulk(messages, chunk.thinking, {
+        correlationId,
+        observedCorrelationIds,
+      });
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+      // Finalize any active thinking block before tool call
+      finalizeThinkingBlock(messages);
+
       const toolCall = chunk.toolCall;
       let argsDisplay = '';
       let parsedInput: Record<string, unknown> = {};
@@ -2867,9 +2815,6 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // TOOL-011: Track if we've streamed tool progress (to skip redundant tool result preview)
       let hasStreamedToolProgress = false;
 
-      // Track current turn's thinking message index (reset after tool calls)
-      let currentThinkingIdx = -1;
-
       // This enables detach/attach to work - the background session continues running
       // even when the UI is detached
 
@@ -2925,41 +2870,17 @@ export const AgentView: React.FC<AgentViewProps> = ({
                 });
               }
 
-              // Update or create thinking message using tracked index
-              const thinkingSnapshot = currentThinking;
-              setConversation(prev => {
-                const updated = [...prev];
-                if (
-                  currentThinkingIdx >= 0 &&
-                  currentThinkingIdx < updated.length
-                ) {
-                  updated[currentThinkingIdx] = {
-                    ...updated[currentThinkingIdx],
-                    content: `[Thinking]\n${thinkingSnapshot}`,
-                  };
-                } else {
-                  // Insert new thinking block before streaming message
-                  const streamingIdx = updated.findLastIndex(
-                    m => m.isStreaming
-                  );
-                  const newThinking: ConversationMessage = {
-                    type: 'thinking',
-                    content: `[Thinking]\n${thinkingSnapshot}`,
-                  };
-                  if (streamingIdx >= 0) {
-                    updated.splice(streamingIdx, 0, newThinking);
-                    currentThinkingIdx = streamingIdx;
-                  } else {
-                    updated.push(newThinking);
-                    currentThinkingIdx = updated.length - 1;
-                  }
-                }
-                return updated;
-              });
+              // Update or create thinking message using the ThinkingBlockManager
+              // This handles proper block creation and streaming state management
+              setConversation(prev =>
+                createThinkingUpdate(prev, chunk.thinking || '')
+              );
             } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
               // Reset thinking state - new thinking after tool call needs new block
               currentThinking = '';
-              currentThinkingIdx = -1;
+
+              // Finalize any active thinking block before tool call
+              setConversation(prev => createFinalizationUpdate(prev));
 
               // Finalize current streaming message and add tool call (match CLI format)
               const toolCall = chunk.toolCall;
@@ -4441,12 +4362,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
       });
     } else if (chunk.type === 'Thinking' && chunk.thinking) {
       // Show thinking content in a separate message
-      setConversation(prev => {
-        const updated = [...prev];
-        appendThinkingContent(updated, chunk.thinking, 'append');
-        return updated;
-      });
+      setConversation(prev => createThinkingUpdate(prev, chunk.thinking || ''));
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+      // Finalize any active thinking block before tool call
+      setConversation(prev => createFinalizationUpdate(prev));
+
       const toolCall = chunk.toolCall;
       let argsDisplay = '';
       try {

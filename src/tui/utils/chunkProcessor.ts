@@ -11,6 +11,11 @@
 import type { StreamChunk } from '@sengac/codelet-napi';
 import type { ConversationMessage } from '../types/conversation';
 import { formatMarkdownTables } from './markdown-table-formatter';
+import {
+  appendThinking,
+  appendThinkingBulk,
+  finalizeThinkingBlock,
+} from './thinkingBlockManager';
 
 // ============================================================================
 // Types
@@ -202,54 +207,6 @@ export function extractToolArgsDisplay(
 }
 
 // ============================================================================
-// Thinking Content Helper
-// ============================================================================
-
-/**
- * Append thinking content to message array.
- * Creates new thinking message or updates existing one.
- *
- * @param messages - Array to modify in place
- * @param thinking - Thinking content to append
- * @param mode - 'append' to add to existing, 'new' to always create new
- */
-export function appendThinkingContent(
-  messages: ConversationMessage[],
-  thinking: string | undefined,
-  mode: 'append' | 'new' = 'append'
-): void {
-  if (!thinking) {
-    return;
-  }
-
-  if (mode === 'append') {
-    // Find last thinking message that's still being streamed
-    const lastThinkingIdx = messages.findLastIndex(
-      m => m.type === 'thinking' && m.isStreaming !== false
-    );
-    if (lastThinkingIdx >= 0) {
-      // Append to existing thinking message
-      const existing = messages[lastThinkingIdx].content;
-      const existingContent = existing.startsWith('[Thinking]\n')
-        ? existing.slice('[Thinking]\n'.length)
-        : existing;
-      messages[lastThinkingIdx] = {
-        ...messages[lastThinkingIdx],
-        content: `[Thinking]\n${existingContent}${thinking}`,
-      };
-      return;
-    }
-  }
-
-  // Create new thinking message
-  messages.push({
-    type: 'thinking',
-    content: `[Thinking]\n${thinking}`,
-    isStreaming: true,
-  });
-}
-
-// ============================================================================
 // Bulk Chunk Processing (for session restore/resume)
 // ============================================================================
 
@@ -312,14 +269,14 @@ export function processChunksToMessages(
         });
       }
     } else if (chunk.type === 'Thinking' && chunk.thinking) {
-      appendThinkingContent(messages, chunk.thinking, 'append');
-      // Propagate correlation to thinking messages
-      const lastMsg = messages[messages.length - 1];
-      if (lastMsg && lastMsg.type === 'thinking' && !lastMsg.correlationId) {
-        lastMsg.correlationId = correlationId;
-        lastMsg.observedCorrelationIds = observedCorrelationIds;
-      }
+      appendThinkingBulk(messages, chunk.thinking, {
+        correlationId,
+        observedCorrelationIds,
+      });
     } else if (chunk.type === 'ToolCall' && chunk.toolCall) {
+      // Finalize any active thinking block before tool call
+      finalizeThinkingBlock(messages);
+
       const toolCall = chunk.toolCall;
       let argsDisplay = '';
       let parsedInput: Record<string, unknown> = {};
@@ -534,11 +491,14 @@ export function processStreamingChunk(
   }
 
   if (chunk.type === 'Thinking' && chunk.thinking) {
-    appendThinkingContent(conversation, chunk.thinking, 'append');
+    appendThinking(conversation, chunk.thinking);
     return true;
   }
 
   if (chunk.type === 'ToolCall' && chunk.toolCall) {
+    // Finalize any active thinking block before tool call
+    finalizeThinkingBlock(conversation);
+
     const toolCall = chunk.toolCall;
     let argsDisplay = '';
     try {
