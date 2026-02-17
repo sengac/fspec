@@ -575,7 +575,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, callFspecCommand, credentialsReload, extractThinkingText, getAllWorkUnits, getThinkingConfig, getWorkUnit, getWorkUnitStatus, globSearch, isThinkingContent, isWorkUnitsWatcherActive, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, NapiAnchorType, napiComputeEffectiveThinkingLevel, napiDetectThinkingLevel, napiHasDisableKeywords, NotificationSeverity, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionAttach, sessionClearActive, sessionClearHistory, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionDetach, sessionGetActive, sessionGetAnchorPoints, sessionGetBaseThinkingLevel, sessionGetBufferedOutput, sessionGetCompactionProgress, sessionGetDebugEnabled, sessionGetFirst, sessionGetMergedOutput, sessionGetModel, sessionGetNext, sessionGetParent, sessionGetPauseState, sessionGetPendingInput, sessionGetPrev, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetTurnDetails, sessionGetWatchers, sessionGetWorkUnitContext, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionPauseConfirm, sessionPauseResume, sessionRestoreAnchorPoints, sessionRestoreMessages, sessionRestoreTokenState, sessionSendFspecResult, sessionSendInput, sessionSetActive, sessionSetBaseThinkingLevel, sessionSetDebugEnabled, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, sessionSetWorkUnitContext, SessionState, sessionSubscribe, sessionToggleDebug, sessionUnsubscribe, sessionUpdateDebugMetadata, setRustLogCallback, startWorkUnitsWatcher, stopWorkUnitsWatcher, testCallback, testProviderConnection, toggleDebug, watcherInject } = nativeBinding
+const { AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, callFspecCommand, credentialsReload, extractThinkingText, getAllWorkUnits, getThinkingConfig, getWorkUnit, getWorkUnitStatus, globSearch, isThinkingContent, isWorkUnitsWatcherActive, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, NapiAnchorType, napiComputeEffectiveThinkingLevel, napiDetectThinkingLevel, napiHasDisableKeywords, NotificationSeverity, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionClearActive, sessionClearHistory, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionGetActive, sessionGetAnchorPoints, sessionGetBaseThinkingLevel, sessionGetBufferedOutput, sessionGetCompactionProgress, sessionGetDebugEnabled, sessionGetFirst, sessionGetMergedOutput, sessionGetModel, sessionGetNext, sessionGetParent, sessionGetPauseState, sessionGetPendingInput, sessionGetPrev, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetTurnDetails, sessionGetWatchers, sessionGetWorkUnitContext, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionPauseConfirm, sessionPauseResume, sessionRestoreAnchorPoints, sessionRestoreMessages, sessionRestoreTokenState, sessionSendFspecResult, sessionSendInput, sessionSetActive, sessionSetBaseThinkingLevel, sessionSetDebugEnabled, sessionSetGlobalChunkCallback, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, sessionSetWorkUnitContext, SessionState, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, startWorkUnitsWatcher, stopWorkUnitsWatcher, testCallback, testProviderConnection, toggleDebug, watcherInject } = nativeBinding
 export { AstGrepCaseType }
 export { astGrepRefactor }
 export { astGrepReplace }
@@ -638,14 +638,12 @@ export { persistenceSetSessionTokens }
 export { persistenceStoreBlob }
 export { persistenceStoreMessageEnvelope }
 export { persistenceUpdateSessionTokens }
-export { sessionAttach }
 export { sessionClearActive }
 export { sessionClearHistory }
 export { sessionClearObservedCorrelationIds }
 export { sessionClearRole }
 export { sessionCompact }
 export { sessionCreateWatcher }
-export { sessionDetach }
 export { sessionGetActive }
 export { sessionGetAnchorPoints }
 export { sessionGetBaseThinkingLevel }
@@ -681,15 +679,14 @@ export { sessionSendInput }
 export { sessionSetActive }
 export { sessionSetBaseThinkingLevel }
 export { sessionSetDebugEnabled }
+export { sessionSetGlobalChunkCallback }
 export { sessionSetModel }
 export { sessionSetObservedCorrelationIds }
 export { sessionSetPendingInput }
 export { sessionSetRole }
 export { sessionSetWorkUnitContext }
 export { SessionState }
-export { sessionSubscribe }
 export { sessionToggleDebug }
-export { sessionUnsubscribe }
 export { sessionUpdateDebugMetadata }
 export { setRustLogCallback }
 export { startWorkUnitsWatcher }

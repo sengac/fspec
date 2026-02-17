@@ -1,0 +1,61 @@
+{
+  "scenarios": [
+    {
+      "name": "TUI displays only current session chunks",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/tui-session-chunk-filtering.test.ts",
+          "lines": "42-84",
+          "implMappings": [
+            {
+              "file": "src/tui/services/globalSessionStreamManager.ts",
+              "lines": [164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bridge input displays in TUI with correct session",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/tui-session-chunk-filtering.test.ts",
+          "lines": "87-129",
+          "implMappings": [
+            {
+              "file": "src/tui/services/globalSessionStreamManager.ts",
+              "lines": [164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session switch changes which chunks are displayed",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/tui-session-chunk-filtering.test.ts",
+          "lines": "132-178",
+          "implMappings": [
+            {
+              "file": "src/tui/services/globalSessionStreamManager.ts",
+              "lines": [164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/tui-session-chunk-filtering.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/services/globalSessionStreamManager.ts"
+    ],
+    "totalLinesCovered": 230
+  }
+}

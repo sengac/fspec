@@ -1,12 +1,11 @@
 /**
  * Global Session Stream Manager
  *
- * Sole subscriber to all session streams. Rust attach() replaces the callback
- * (only one per session), so this manager owns the callback for all sessions
- * and multiplexes events to registered handlers.
+ * BRIDGE-012: Refactored to use a single global callback for all sessions.
+ * Rust emits ALL chunks from ALL sessions through one callback with (session_id, chunk).
+ * TypeScript owns all routing logic via session_id.
  *
- * AgentView does not call sessionAttach/sessionDetach directly - it registers
- * with this manager via registerHandler().
+ * AgentView registers with this manager via registerHandler().
  *
  * FspecCommandRequest handling is done globally - when any session emits a
  * FspecCommandRequest, this manager handles it, preventing deadlocks when
@@ -14,7 +13,10 @@
  */
 
 import { logger } from '../../utils/logger';
-import type { StreamChunk } from '@sengac/codelet-napi';
+import type {
+  StreamChunk,
+  GlobalChunkCallbackArgs,
+} from '@sengac/codelet-napi';
 
 export type SessionChunkHandler = (chunk: StreamChunk) => void;
 export type GlobalChunkHandler = (
@@ -23,11 +25,10 @@ export type GlobalChunkHandler = (
 ) => void;
 
 interface NapiModule {
-  sessionAttach: (
-    sessionId: string,
-    callback: (err: Error | null, chunk: StreamChunk) => void
+  // BRIDGE-012: Global callback - registered ONCE at startup
+  sessionSetGlobalChunkCallback: (
+    callback: (err: Error | null, args: GlobalChunkCallbackArgs) => void
   ) => void;
-  sessionDetach: (sessionId: string) => void;
   sessionSendFspecResult: (
     sessionId: string,
     result: {
@@ -41,13 +42,13 @@ interface NapiModule {
 }
 
 let napiModule: NapiModule | null = null;
+let globalCallbackRegistered = false;
 
 async function getNapiModule(): Promise<NapiModule> {
   if (!napiModule) {
     const napi = await import('@sengac/codelet-napi');
     napiModule = {
-      sessionAttach: napi.sessionAttach,
-      sessionDetach: napi.sessionDetach,
+      sessionSetGlobalChunkCallback: napi.sessionSetGlobalChunkCallback,
       sessionSendFspecResult: napi.sessionSendFspecResult,
     };
   }
@@ -57,7 +58,8 @@ async function getNapiModule(): Promise<NapiModule> {
 /**
  * GlobalSessionStreamManager
  *
- * Singleton that manages all session stream subscriptions.
+ * BRIDGE-012: Singleton that manages all session stream subscriptions via global callback.
+ * Rust emits all chunks through ONE global callback, TypeScript routes by session_id.
  */
 export class GlobalSessionStreamManager {
   private static instance: GlobalSessionStreamManager | null = null;
@@ -97,11 +99,45 @@ export class GlobalSessionStreamManager {
       }
     }
     GlobalSessionStreamManager.instance = null;
+    // BRIDGE-012: Reset global callback state for testing
+    globalCallbackRegistered = false;
+  }
+
+  /**
+   * BRIDGE-012: Register the global chunk callback with Rust NAPI.
+   * Called ONCE at app startup. All chunks from all sessions come through this callback.
+   */
+  public async registerGlobalCallback(): Promise<void> {
+    if (globalCallbackRegistered) {
+      return;
+    }
+
+    try {
+      const napi = await getNapiModule();
+      napi.sessionSetGlobalChunkCallback(
+        (err: Error | null, args: GlobalChunkCallbackArgs) => {
+          if (err || !args || !args.sessionId || !args.chunk) {
+            return;
+          }
+          this.handleChunk(args.sessionId, args.chunk);
+        }
+      );
+      globalCallbackRegistered = true;
+      logger.info(
+        '[GlobalSessionStreamManager] Global chunk callback registered'
+      );
+    } catch (error) {
+      logger.error(
+        '[GlobalSessionStreamManager] Failed to register global callback:',
+        error
+      );
+    }
   }
 
   /**
    * Subscribe to a session's stream.
-   * Called when a session is created. This manager becomes the sole callback owner.
+   * BRIDGE-012: No longer calls sessionAttach - chunks come via global callback.
+   * Called when a session is created to track it for handler routing.
    */
   public subscribeToSession(sessionId: string): void {
     if (this.subscribedSessions.has(sessionId)) {
@@ -110,33 +146,12 @@ export class GlobalSessionStreamManager {
 
     this.subscribedSessions.add(sessionId);
     this.sessionHandlers.set(sessionId, new Set());
-    void this.attachToSession(sessionId);
-  }
-
-  private async attachToSession(sessionId: string): Promise<void> {
-    try {
-      const napi = await getNapiModule();
-      napi.sessionAttach(sessionId, (err: Error | null, chunk: StreamChunk) => {
-        if (err) {
-          logger.error(
-            `[GlobalSessionStreamManager] Error from session ${sessionId}:`,
-            err
-          );
-          return;
-        }
-
-        this.handleChunk(sessionId, chunk);
-      });
-    } catch (error) {
-      logger.error(
-        `[GlobalSessionStreamManager] Failed to attach to session ${sessionId}:`,
-        error
-      );
-    }
+    // BRIDGE-012: No longer need to call attachToSession - global callback handles all chunks
   }
 
   /**
    * Unsubscribe from a session's stream.
+   * BRIDGE-012: Just removes tracking - no longer calls sessionDetach.
    * Called when a session is destroyed.
    */
   public unsubscribeFromSession(sessionId: string): void {
@@ -146,19 +161,7 @@ export class GlobalSessionStreamManager {
 
     this.subscribedSessions.delete(sessionId);
     this.sessionHandlers.delete(sessionId);
-    void this.detachFromSession(sessionId);
-  }
-
-  private async detachFromSession(sessionId: string): Promise<void> {
-    try {
-      const napi = await getNapiModule();
-      napi.sessionDetach(sessionId);
-    } catch (error) {
-      logger.error(
-        `[GlobalSessionStreamManager] Failed to detach from session ${sessionId}:`,
-        error
-      );
-    }
+    // BRIDGE-012: No longer need to call detachFromSession - global callback handles cleanup
   }
 
   /**
@@ -341,29 +344,38 @@ let isInitialized = false;
 
 /**
  * Initialize the GlobalSessionStreamManager. Call once at app startup.
+ * BRIDGE-012: Registers the global chunk callback with Rust NAPI.
  */
 export function initGlobalSessionStreamManager(): void {
   if (isInitialized) {
     return;
   }
-  GlobalSessionStreamManager.getInstance();
+  const manager = GlobalSessionStreamManager.getInstance();
+
+  // BRIDGE-012: Register global callback ONCE at startup
+  void manager.registerGlobalCallback();
+
   isInitialized = true;
 }
 
 /**
  * Stop the GlobalSessionStreamManager. Unsubscribes from all sessions.
+ * BRIDGE-012: Resets global callback state for testing.
  */
 export function stopGlobalSessionStreamManager(): void {
   GlobalSessionStreamManager.resetInstance();
   isInitialized = false;
+  globalCallbackRegistered = false;
 }
 
 /**
  * Clear the napiModule cache (for testing).
  * This forces a fresh import on next access.
+ * BRIDGE-012: Also resets global callback state.
  */
 export function clearNapiModuleCache(): void {
   napiModule = null;
+  globalCallbackRegistered = false;
 }
 
 /**

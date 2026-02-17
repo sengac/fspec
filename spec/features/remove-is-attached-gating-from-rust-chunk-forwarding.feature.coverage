@@ -1,0 +1,110 @@
+{
+  "scenarios": [
+    {
+      "name": "Bridge input displays both input and response in TUI",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "1879-1916",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1120,
+                1121,
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "1879-1916",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1120,
+                1121,
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Keyboard input displays response in TUI",
+      "testMappings": [
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "1918-1943",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1120,
+                1121,
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129
+              ]
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/src/session_manager.rs",
+          "lines": "1918-1943",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1120,
+                1121,
+                1122,
+                1123,
+                1124,
+                1125,
+                1126,
+                1127,
+                1128,
+                1129
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 168
+  }
+}

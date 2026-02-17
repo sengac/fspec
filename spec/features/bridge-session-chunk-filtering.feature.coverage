@@ -1,0 +1,61 @@
+{
+  "scenarios": [
+    {
+      "name": "Bridge relays only bridged session chunks",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bridge-session-chunk-filtering.test.ts",
+          "lines": "40-86",
+          "implMappings": [
+            {
+              "file": "src/tui/services/globalSessionStreamManager.ts",
+              "lines": [204, 205, 206, 207, 208, 209, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bridge receives session_id from tool call context",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bridge-session-chunk-filtering.test.ts",
+          "lines": "89-130",
+          "implMappings": [
+            {
+              "file": "src/tui/services/globalSessionStreamManager.ts",
+              "lines": [204, 205, 206, 207, 208, 209, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Bridge input and response flow",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/bridge-session-chunk-filtering.test.ts",
+          "lines": "133-189",
+          "implMappings": [
+            {
+              "file": "src/tui/services/globalSessionStreamManager.ts",
+              "lines": [225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/bridge-session-chunk-filtering.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/services/globalSessionStreamManager.ts"
+    ],
+    "totalLinesCovered": 180
+  }
+}

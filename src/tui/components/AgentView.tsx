@@ -104,9 +104,6 @@ import {
   sessionRestoreTokenState,
   sessionSetPendingInput,
   sessionGetPendingInput,
-  // VIEWNV-001: Subscribe/unsubscribe without changing active session
-  sessionSubscribe,
-  sessionUnsubscribe,
   // WATCH-008: Watcher management NAPI functions
   sessionGetWatchers,
   sessionGetRole,
@@ -203,9 +200,7 @@ import {
 } from '../store/sessionStore';
 import {
   useRustSessionState,
-  manualAttach,
-  manualDetach,
-  getSessionChunks,
+  // BRIDGE-012: manualAttach, manualDetach, getSessionChunks removed - replaced by global callback
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
@@ -1675,9 +1670,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
         const parentLines = messagesToLines(parentMessages, parentPaneWidth);
         setParentConversation(parentLines);
 
-        // VIEWNV-001: Subscribe to parent session for live updates WITHOUT changing active session
-        // Use sessionSubscribe instead of sessionAttach to avoid corrupting navigation state
-        sessionSubscribe(parentId, (_err: Error | null, chunk: StreamChunk) => {
+        // BRIDGE-012: Subscribe to parent session for live updates via GlobalSessionStreamManager
+        // This uses the global callback architecture - no per-session NAPI attach/detach
+        const unregisterParentHandler = attachToSession(parentId, (chunk: StreamChunk) => {
           if (chunk) {
             const updatedChunks = sessionGetMergedOutput(parentId);
             const updatedMessages = processChunksToConversation(
@@ -1694,10 +1689,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
           }
         });
 
-        // Cleanup: unsubscribe from parent when effect re-runs or component unmounts
-        // VIEWNV-001: Use sessionUnsubscribe to avoid clearing the active session
+        // Cleanup: unregister handler when effect re-runs or component unmounts
+        // BRIDGE-012: Handler cleanup only - global callback stays registered
         return () => {
-          sessionUnsubscribe(parentId);
+          unregisterParentHandler();
         };
       } else {
         // Not a watcher session - disable split view

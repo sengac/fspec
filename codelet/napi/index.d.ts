@@ -359,6 +359,12 @@ export declare function getWorkUnit(workUnitId: string): WorkUnitInfo | null;
 
 export declare function getWorkUnitStatus(workUnitId: string): string | null;
 
+/** BRIDGE-012: Arguments passed to the global chunk callback */
+export interface GlobalChunkCallbackArgs {
+  sessionId: string;
+  chunk: StreamChunk;
+}
+
 /** Result of a Glob tool search */
 export interface GlobResult {
   /** Whether the search was successful */
@@ -988,12 +994,6 @@ export declare function persistenceUpdateSessionTokens(
   cacheCreate: number
 ): NapiSessionManifest;
 
-/** Attach to a session for live streaming */
-export declare function sessionAttach(
-  sessionId: string,
-  callback: (err: Error | null, arg: StreamChunk) => any
-): void;
-
 /**
  * Clear the active session tracking (VIEWNV-001)
  * Call this when returning to BoardView to ensure navigation works correctly
@@ -1056,9 +1056,6 @@ export declare function sessionCreateWatcher(
   project: string,
   name: string
 ): Promise<string>;
-
-/** Detach from a session (session continues running) */
-export declare function sessionDetach(sessionId: string): void;
 
 /**
  * TUI-059: Get the currently active session ID
@@ -1363,8 +1360,7 @@ export declare function sessionSendInput(
 /**
  * Explicitly set the active session for navigation.
  *
- * Use this when switching to a session that was already attached via session_subscribe,
- * or when you need to update navigation state without re-attaching.
+ * Use this when switching sessions to update the navigation state.
  *
  * VIEWNV-001: This allows TypeScript to explicitly control the navigation state.
  */
@@ -1386,6 +1382,23 @@ export declare function sessionSetBaseThinkingLevel(
 export declare function sessionSetDebugEnabled(
   sessionId: string,
   enabled: boolean
+): void;
+
+/**
+ * BRIDGE-012: Set the global chunk callback for all sessions.
+ *
+ * This registers a single callback that receives ALL chunks from ALL sessions.
+ * The callback signature is (args: { session_id: string, chunk: StreamChunk }) => void.
+ * TypeScript uses this to route chunks to the appropriate session handlers.
+ *
+ * This should be called ONCE at application startup by GlobalSessionStreamManager.
+ * Calling it again will fail (callback can only be set once).
+ *
+ * After this is set, all sessions will emit chunks through this callback,
+ * in addition to the per-session attached_callback (for backwards compatibility).
+ */
+export declare function sessionSetGlobalChunkCallback(
+  callback: (err: Error | null, arg: GlobalChunkCallbackArgs) => any
 ): void;
 
 export declare function sessionSetModel(
@@ -1462,20 +1475,6 @@ export declare const enum SessionState {
 }
 
 /**
- * Subscribe to a session for live streaming WITHOUT changing the active session.
- *
- * Use this when you want to observe a session's output (e.g., watching a parent
- * session from a watcher view) without affecting navigation state.
- *
- * VIEWNV-001: This is separate from session_attach to avoid corrupting the
- * active_session_id when subscribing to parent sessions for observation.
- */
-export declare function sessionSubscribe(
-  sessionId: string,
-  callback: (err: Error | null, arg: StreamChunk) => any
-): void;
-
-/**
  * Toggle debug capture mode for a background session (NAPI-009 + AGENT-021)
  *
  * Toggle debug capture mode for a background session.
@@ -1498,16 +1497,6 @@ export interface SessionTokens {
   /** Output tokens */
   outputTokens: number;
 }
-
-/**
- * Unsubscribe from a session WITHOUT clearing the active session.
- *
- * Use this to stop observing a session that was subscribed via session_subscribe.
- *
- * VIEWNV-001: This is separate from session_detach to avoid clearing the
- * active_session_id when unsubscribing from parent sessions.
- */
-export declare function sessionUnsubscribe(sessionId: string): void;
 
 /**
  * Update debug capture metadata with session info.

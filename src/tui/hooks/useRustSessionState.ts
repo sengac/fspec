@@ -12,7 +12,7 @@
  * - Types: src/tui/types/pause.ts (PauseInfo, PauseKind)
  * - Subscriptions: ./sessionSubscription.ts (pub/sub management)
  * - State Source: ./rustStateSource.ts (NAPI abstraction)
- * - Attachment: ./sessionAttachment.ts (attach/detach helpers)
+ * - BRIDGE-012: Per-session attach/detach replaced by global callback in GlobalSessionStreamManager
  */
 
 import { useSyncExternalStore, useCallback } from 'react';
@@ -45,11 +45,9 @@ export {
   clearAllSubscriptions,
   getSubscriptionForTesting,
 } from './sessionSubscription';
-export {
-  manualAttach,
-  manualDetach,
-  getSessionChunks,
-} from './sessionAttachment';
+
+// BRIDGE-012: sessionAttachment.ts removed - per-session attach/detach replaced by global callback
+// manualAttach, manualDetach, getSessionChunks are no longer needed
 
 // =============================================================================
 // Types
