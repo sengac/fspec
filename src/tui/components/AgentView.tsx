@@ -187,6 +187,11 @@ import {
   saveDefaultThinkingLevel,
 } from '../config/defaultThinkingLevelConfig';
 import { formatMarkdownTables } from '../utils/markdown-table-formatter';
+import {
+  parseWatcherPrefix,
+  extractToolArgsDisplay,
+  type PendingToolCallInfo,
+} from '../utils/chunkProcessor';
 import { useFspecStore } from '../store/fspecStore';
 import {
   useSessionStore,
@@ -479,136 +484,6 @@ const appendThinkingContent = (
   return messages;
 };
 
-/**
- * Interface for parsed watcher information (WATCH-012)
- */
-interface ParsedWatcherInfo {
-  role: string;
-  authority: 'Supervisor' | 'Peer';
-  sessionId: string;
-  content: string;
-}
-
-/**
- * Parse watcher message prefix to extract role, authority, session ID, and content.
- * Format: [WATCHER: role | Authority: level | Session: id]\ncontent
- *
- * WATCH-012: Parses structured prefix injected by watcher sessions.
- *
- * @param text - The raw message text
- * @returns WatcherInfo object if prefix found, null otherwise
- */
-const parseWatcherPrefix = (text: string): ParsedWatcherInfo | null => {
-  const match = text.match(
-    /^\[WATCHER: ([^|]+) \| Authority: (Supervisor|Peer) \| Session: ([^\]]+)\]\n/
-  );
-  if (match) {
-    return {
-      role: match[1].trim(),
-      authority: match[2] as 'Supervisor' | 'Peer',
-      sessionId: match[3].trim(),
-      content: text.slice(match[0].length),
-    };
-  }
-  return null;
-};
-
-/**
- * Pending tool call info for tracking inputs across ToolCall → ToolResult chunks.
- * Used to regenerate diffs for Edit/Write tools on restore.
- */
-interface PendingToolCallInfo {
-  name: string;
-  input: Record<string, unknown>;
-}
-
-/**
- * Extract args display string from tool input object.
- * DRY: Centralizes the logic for displaying tool arguments in headers.
- * Shows ALL parameters for full visibility into tool calls.
- * Exception: Edit/Write tools only show file_path (content is shown as diff).
- */
-const extractToolArgsDisplay = (
-  toolName: string,
-  inputObj: Record<string, unknown>
-): string => {
-  const toolNameLower = toolName.toLowerCase();
-
-  // Edit/Write tools: only show file_path (content displayed as diff in result)
-  if (
-    toolNameLower === 'edit' ||
-    toolNameLower === 'replace' ||
-    toolNameLower === 'write' ||
-    toolNameLower === 'write_file'
-  ) {
-    if (inputObj.file_path) {
-      return String(inputObj.file_path);
-    }
-    return '';
-  }
-
-  // Tools with command/action_type: show it first, then remaining params
-  // (Fspec uses 'command', WebSearch uses 'action_type')
-  const commandKey = inputObj.command
-    ? 'command'
-    : inputObj.action_type
-      ? 'action_type'
-      : null;
-  if (commandKey) {
-    const command = String(inputObj[commandKey]);
-    const otherEntries = Object.entries(inputObj).filter(
-      ([key]) => key !== commandKey
-    );
-
-    if (otherEntries.length === 0) {
-      return command;
-    }
-
-    // Format remaining parameters
-    const parts = otherEntries.map(([key, value]) => {
-      if (typeof value === 'string') {
-        const displayValue =
-          value.length > 100 ? `${value.slice(0, 100)}...` : value;
-        return `${key}: '${displayValue}'`;
-      } else if (value === null || value === undefined) {
-        return `${key}: ${value}`;
-      } else {
-        const jsonStr = JSON.stringify(value);
-        const displayValue =
-          jsonStr.length > 100 ? `${jsonStr.slice(0, 100)}...` : jsonStr;
-        return `${key}: ${displayValue}`;
-      }
-    });
-
-    return `${command}, { ${parts.join(', ')} }`;
-  }
-
-  // Show ALL parameters as JSON-like object for full visibility
-  const entries = Object.entries(inputObj);
-  if (entries.length === 0) {
-    return '';
-  }
-
-  // Format all parameters
-  const parts = entries.map(([key, value]) => {
-    if (typeof value === 'string') {
-      // Truncate very long strings but show key
-      const displayValue =
-        value.length > 100 ? `${value.slice(0, 100)}...` : value;
-      return `${key}: '${displayValue}'`;
-    } else if (value === null || value === undefined) {
-      return `${key}: ${value}`;
-    } else {
-      // Objects, arrays, numbers, booleans
-      const jsonStr = JSON.stringify(value);
-      const displayValue =
-        jsonStr.length > 100 ? `${jsonStr.slice(0, 100)}...` : jsonStr;
-      return `${key}: ${displayValue}`;
-    }
-  });
-
-  return `{ ${parts.join(', ')} }`;
-};
 
 /**
  * Process merged chunks into conversation messages for reattachment.
@@ -3553,6 +3428,25 @@ export const AgentView: React.FC<AgentViewProps> = ({
               });
               // NAPI-009: Reject the promise on error
               reject(new Error(chunk.error));
+            } else if (chunk.type === 'WatcherInput' && chunk.text) {
+              // BRIDGE-006: Handle watcher/bridge input messages during streaming
+              const watcherInfo = parseWatcherPrefix(chunk.text);
+              setConversation(prev => {
+                if (watcherInfo) {
+                  // Format content with role prefix (no emoji)
+                  const formattedContent = `[W] ${watcherInfo.role}> ${watcherInfo.content}`;
+                  return [
+                    ...prev,
+                    { type: 'watcher-input', content: formattedContent },
+                  ];
+                } else {
+                  // Fallback: if parsing fails, display raw message
+                  return [
+                    ...prev,
+                    { type: 'watcher-input', content: chunk.text! },
+                  ];
+                }
+              });
             }
             // REFAC-008: FspecCommandRequest is handled globally by GlobalSessionStreamManager
             // AgentView no longer processes FspecCommandRequest chunks
@@ -4741,6 +4635,25 @@ export const AgentView: React.FC<AgentViewProps> = ({
         ...prev,
         { type: 'user-input', content: chunk.text! },
       ]);
+    } else if (chunk.type === 'WatcherInput' && chunk.text) {
+      // WATCH-012: Handle watcher/bridge input messages - parse prefix and format for display
+      const watcherInfo = parseWatcherPrefix(chunk.text);
+      setConversation(prev => {
+        if (watcherInfo) {
+          // Format content with role prefix (no emoji)
+          const formattedContent = `[W] ${watcherInfo.role}> ${watcherInfo.content}`;
+          return [
+            ...prev,
+            { type: 'watcher-input', content: formattedContent },
+          ];
+        } else {
+          // Fallback: if parsing fails, display raw message
+          return [
+            ...prev,
+            { type: 'watcher-input', content: chunk.text! },
+          ];
+        }
+      });
     }
     // REFAC-008: FspecCommandRequest is handled globally by GlobalSessionStreamManager
     // AgentView no longer processes FspecCommandRequest chunks - they are filtered out
