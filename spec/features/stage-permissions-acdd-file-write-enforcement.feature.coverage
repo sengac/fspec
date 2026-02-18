@@ -1,0 +1,447 @@
+{
+  "scenarios": [
+    {
+      "name": "Block implementation file write in testing stage",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "lines": "79-105",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Allow test file write in testing stage",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "lines": "108-134",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Block code file write in specifying stage",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "lines": "137-161",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Allow attachment in backlog stage",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "lines": "164-182",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Block all writes in validating stage",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "lines": "185-210",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Block all writes in done stage",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "lines": "213-238",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/stage_permissions/matcher.rs",
+              "lines": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Allow all writes when no work unit is active",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/stage_permissions/matcher.rs",
+          "lines": "360-380",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/stage_permissions/mod.rs",
+              "lines": [
+                140,
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153,
+                154,
+                155,
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167,
+                168,
+                169,
+                170,
+                171,
+                172,
+                173,
+                174,
+                175
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/stage_permissions/matcher.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/stage_permissions/matcher.rs",
+      "codelet/tools/src/stage_permissions/mod.rs"
+    ],
+    "totalLinesCovered": 489
+  }
+}

@@ -2,6 +2,7 @@
  * Tests for InputTransition pause state (PAUSE-001)
  * 
  * Feature: spec/features/interactive-tool-pause-for-browser-debugging.feature
+ * Feature: spec/features/integrate-blocklist-prompt-action-with-tool-pause-system.feature
  * 
  * These tests verify the TUI transitions for tool pause functionality.
  * Tests are written BEFORE implementation (ACDD red phase).
@@ -210,6 +211,75 @@ describe('InputTransition Pause State (PAUSE-001)', () => {
       const output = lastFrame();
       expect(output).not.toContain('⏸');
       expect(output).toContain('Thinking...');
+    });
+  });
+
+  // =============================================================================
+  // BLOCK-007: Triple pause for blocklist prompts
+  // Feature: spec/features/integrate-blocklist-prompt-action-with-tool-pause-system.feature
+  // Scenario: Triple pause displays correct UI elements
+  // =============================================================================
+
+  describe('Scenario: Triple pause displays correct UI elements (BLOCK-007)', () => {
+    it('should display triple pause with tool name, message, and three options', () => {
+      // @step Given a blocklist rule with action "prompt" exists for ".env" files with reason "Environment files may contain secrets"
+      // @step When the AI attempts to read ".env"
+      const { lastFrame } = render(
+        <InputTransition 
+          {...defaultProps} 
+          isLoading={true}
+          isPaused={true}
+          pauseInfo={{
+            kind: 'triple',
+            toolName: 'Read',
+            message: 'Environment files may contain secrets',
+            details: '.env',
+          }}
+        />
+      );
+
+      const output = lastFrame();
+
+      // @step Then the TUI should display "⏸ Read: Environment files may contain secrets"
+      expect(output).toContain('⏸');
+      expect(output).toContain('Read');
+      expect(output).toContain('Environment files may contain secrets');
+
+      // @step And the TUI should show file path ".env" as details
+      expect(output).toContain('.env');
+
+      // @step And the TUI should show navigation hint "←/→ Navigate | Enter Select | Esc Deny"
+      expect(output).toMatch(/Navigate|←|→/);
+      expect(output).toMatch(/Enter|Select/);
+      expect(output).toMatch(/Esc|Deny/);
+
+      // @step And the default selection should be "Allow Once"
+      expect(output).toContain('Allow Once');
+      expect(output).toContain('Allow Session');
+      expect(output).toContain('Deny');
+    });
+
+    it('should show triple options with visual highlighting', () => {
+      const { lastFrame } = render(
+        <InputTransition 
+          {...defaultProps} 
+          isLoading={true}
+          isPaused={true}
+          pauseInfo={{
+            kind: 'triple',
+            toolName: 'Read',
+            message: 'Sensitive file access',
+            details: '~/.ssh/config',
+          }}
+        />
+      );
+
+      const output = lastFrame();
+      
+      // All three options should be present
+      expect(output).toContain('Allow Once');
+      expect(output).toContain('Allow Session');
+      expect(output).toContain('Deny');
     });
   });
 });

@@ -1,12 +1,10 @@
-/**
- * Feature: spec/features/global-chunk-callback-napi.feature
- *
- * Tests for global chunk callback NAPI architecture.
- * Rust exposes a single global callback via NAPI that TypeScript registers once at startup.
- * ALL chunks from ALL sessions go through this ONE callback with signature (session_id, chunk).
- * Rust has ZERO knowledge of which session is active/attached - it's a pure emitter.
- * This replaces the per-session attach()/detach() pattern completely.
- */
+// Feature: spec/features/global-chunk-callback-napi.feature
+//
+// Tests for global chunk callback NAPI architecture.
+// Rust exposes a single global callback via NAPI that TypeScript registers once at startup.
+// ALL chunks from ALL sessions go through this ONE callback with signature (session_id, chunk).
+// Rust has ZERO knowledge of which session is active/attached - it's a pure emitter.
+// This replaces the per-session attach()/detach() pattern completely.
 
 use std::fs;
 use std::path::Path;

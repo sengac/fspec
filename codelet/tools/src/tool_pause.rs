@@ -18,6 +18,7 @@ use std::sync::{Arc, RwLock};
 pub enum PauseKind {
     Continue,
     Confirm,
+    Triple,  // BLOCK-007: For blocklist prompts (Allow Once / Allow Session / Deny)
 }
 
 /// Request to pause tool execution
@@ -36,6 +37,8 @@ pub enum PauseResponse {
     Approved,
     Denied,
     Interrupted,
+    AllowOnce,    // BLOCK-007: For triple mode - permit once, prompt again next time
+    AllowSession, // BLOCK-007: For triple mode - permit for entire session
 }
 
 /// Current pause state (for UI display)
@@ -106,12 +109,34 @@ mod tests {
         assert_ne!(PauseKind::Continue, PauseKind::Confirm);
     }
 
+    // BLOCK-007: Test Triple pause kind
+    #[test]
+    fn test_pause_kind_triple() {
+        // @step Given PauseKind::Triple variant exists
+        // @step Then it should be distinguishable from other kinds
+        assert_eq!(PauseKind::Triple, PauseKind::Triple);
+        assert_ne!(PauseKind::Triple, PauseKind::Continue);
+        assert_ne!(PauseKind::Triple, PauseKind::Confirm);
+    }
+
     #[test]
     fn test_pause_response_enum() {
         assert_eq!(PauseResponse::Resumed, PauseResponse::Resumed);
         assert_eq!(PauseResponse::Approved, PauseResponse::Approved);
         assert_eq!(PauseResponse::Denied, PauseResponse::Denied);
         assert_eq!(PauseResponse::Interrupted, PauseResponse::Interrupted);
+    }
+
+    // BLOCK-007: Test AllowOnce and AllowSession responses
+    #[test]
+    fn test_pause_response_triple_variants() {
+        // @step Given PauseResponse::AllowOnce and AllowSession variants exist
+        // @step Then they should be distinguishable from each other and other responses
+        assert_eq!(PauseResponse::AllowOnce, PauseResponse::AllowOnce);
+        assert_eq!(PauseResponse::AllowSession, PauseResponse::AllowSession);
+        assert_ne!(PauseResponse::AllowOnce, PauseResponse::AllowSession);
+        assert_ne!(PauseResponse::AllowOnce, PauseResponse::Denied);
+        assert_ne!(PauseResponse::AllowSession, PauseResponse::Approved);
     }
 
     #[test]

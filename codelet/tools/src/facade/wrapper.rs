@@ -157,7 +157,8 @@ mod tests {
     #[test]
     fn test_file_wrapper_returns_facade_tool_name() {
         let facade = Arc::new(GeminiReadFileFacade) as BoxedFileToolFacade;
-        let wrapper = FileToolFacadeWrapper::new(facade);
+        // BLOCK-006: FileToolFacadeWrapper now requires session_id (use nil for tests)
+        let wrapper = FileToolFacadeWrapper::new(facade, Uuid::nil());
 
         assert_eq!(wrapper.name(), "read_file");
     }
@@ -165,7 +166,8 @@ mod tests {
     #[tokio::test]
     async fn test_file_wrapper_returns_flat_schema() {
         let facade = Arc::new(GeminiReadFileFacade) as BoxedFileToolFacade;
-        let wrapper = FileToolFacadeWrapper::new(facade);
+        // BLOCK-006: FileToolFacadeWrapper now requires session_id (use nil for tests)
+        let wrapper = FileToolFacadeWrapper::new(facade, Uuid::nil());
 
         let def = wrapper.definition(String::new()).await;
 
@@ -191,6 +193,12 @@ pub struct FileOperationResult {
 ///
 /// This enables provider-specific file facades to be used with rig's agent builder
 /// while maintaining the facade's custom tool name, schema, and parameter mapping.
+///
+/// ## BLOCK-006: Block Notifications
+///
+/// The wrapper stores session_id (TOOL-012 pattern) to emit UserNotification chunks
+/// when file writes are blocked by stage permissions. Notifications are emitted via
+/// the global chunk callback before returning the blocked error to the LLM.
 pub struct FileToolFacadeWrapper {
     /// The underlying facade providing name, schema, and param mapping
     facade: BoxedFileToolFacade,
@@ -198,22 +206,35 @@ pub struct FileToolFacadeWrapper {
     read_tool: ReadTool,
     write_tool: WriteTool,
     edit_tool: EditTool,
+    /// Session ID for notification emission - set at construction time (TOOL-012)
+    /// Used by BLOCK-006 to emit UserNotification when writes are blocked.
+    session_id: Uuid,
 }
 
 impl FileToolFacadeWrapper {
-    /// Create a new wrapper for the given file facade
-    pub fn new(facade: BoxedFileToolFacade) -> Self {
+    /// Create a new wrapper for the given file facade with session association.
+    ///
+    /// # Arguments
+    /// * `facade` - The provider-specific facade for schema/naming
+    /// * `session_id` - The session ID for notification emission (BLOCK-006)
+    pub fn new(facade: BoxedFileToolFacade, session_id: Uuid) -> Self {
         Self {
             facade,
             read_tool: ReadTool::new(),
             write_tool: WriteTool::new(),
             edit_tool: EditTool::new(),
+            session_id,
         }
     }
 
     /// Get the facade's provider name
     pub fn provider(&self) -> &'static str {
         self.facade.provider()
+    }
+
+    /// Get the session ID associated with this tool instance
+    pub fn session_id(&self) -> Uuid {
+        self.session_id
     }
 }
 
@@ -272,6 +293,21 @@ impl Tool for FileToolFacadeWrapper {
                 }
             }
             InternalFileParams::Write { file_path, content } => {
+                // BLOCK-006: Check stage permissions before write
+                // Get the current work unit's stage from the session
+                let stage = get_work_unit_stage(self.session_id);
+                if let Err(blocked) = check_write_permission(&file_path, stage.as_deref()) {
+                    // Emit notification to TUI before returning blocked error
+                    let action = format!("writing {file_path}");
+                    emit_block_notification(self.session_id, &action, &blocked.reason);
+                    
+                    return Ok(FileOperationResult {
+                        success: false,
+                        content: None,
+                        error: Some(blocked.to_string()),
+                    });
+                }
+                
                 use crate::write::WriteArgs;
                 let write_args = WriteArgs { file_path, content };
                 match self.write_tool.call(write_args).await {
@@ -292,6 +328,21 @@ impl Tool for FileToolFacadeWrapper {
                 old_string,
                 new_string,
             } => {
+                // BLOCK-006: Check stage permissions before edit (same as write)
+                // Get the current work unit's stage from the session
+                let stage = get_work_unit_stage(self.session_id);
+                if let Err(blocked) = check_write_permission(&file_path, stage.as_deref()) {
+                    // Emit notification to TUI before returning blocked error
+                    let action = format!("editing {file_path}");
+                    emit_block_notification(self.session_id, &action, &blocked.reason);
+                    
+                    return Ok(FileOperationResult {
+                        success: false,
+                        content: None,
+                        error: Some(blocked.to_string()),
+                    });
+                }
+                
                 use crate::edit::EditArgs;
                 let edit_args = EditArgs {
                     file_path,
@@ -322,8 +373,70 @@ impl Tool for FileToolFacadeWrapper {
 use super::fspec_facade::BoxedFspecToolFacade;
 use super::traits::{BoxedBashToolFacade, InternalBashParams};
 use crate::bash::BashArgs;
+use crate::stage_permissions::check_write_permission;
 use crate::BashTool;
 use uuid::Uuid;
+
+// ============================================================================
+// BLOCK-006: Block Notification Helper
+// ============================================================================
+
+/// Callback type for emitting block notifications to the TUI.
+/// This is set by the NAPI layer when initializing the session.
+/// The callback takes (session_id_str, action, reason) and emits a UserNotification chunk.
+pub type BlockNotificationCallback = fn(String, String, String);
+
+/// Callback type for getting the current work unit stage from a session.
+/// This is set by the NAPI layer when initializing.
+/// The callback takes session_id_str and returns Option<String> (the stage/status).
+pub type GetWorkUnitStageCallback = fn(String) -> Option<String>;
+
+/// Global callback for emitting block notifications.
+/// Set by codelet-napi during session initialization.
+static BLOCK_NOTIFICATION_CALLBACK: std::sync::OnceLock<BlockNotificationCallback> =
+    std::sync::OnceLock::new();
+
+/// Global callback for getting work unit stage from session.
+/// Set by codelet-napi during initialization.
+static GET_WORK_UNIT_STAGE_CALLBACK: std::sync::OnceLock<GetWorkUnitStageCallback> =
+    std::sync::OnceLock::new();
+
+/// Register the global block notification callback.
+/// Called by codelet-napi during initialization.
+pub fn set_block_notification_callback(callback: BlockNotificationCallback) {
+    let _ = BLOCK_NOTIFICATION_CALLBACK.set(callback);
+}
+
+/// Register the global work unit stage callback.
+/// Called by codelet-napi during initialization.
+pub fn set_get_work_unit_stage_callback(callback: GetWorkUnitStageCallback) {
+    let _ = GET_WORK_UNIT_STAGE_CALLBACK.set(callback);
+}
+
+/// Get the current work unit stage for a session.
+///
+/// Returns None if:
+/// - Callback not registered
+/// - Session not found
+/// - No work unit context attached to session
+fn get_work_unit_stage(session_id: Uuid) -> Option<String> {
+    GET_WORK_UNIT_STAGE_CALLBACK.get()
+        .and_then(|callback| callback(session_id.to_string()))
+}
+
+/// Emit a block notification to the TUI.
+///
+/// # Arguments
+/// * `session_id` - The session to emit the notification to
+/// * `action` - What action was blocked (e.g., "git checkout", "writing src/auth.ts")
+/// * `reason` - Why it was blocked (e.g., "Use git switch instead", "Cannot write impl files in testing stage")
+///
+/// The notification message follows the format: "AI was blocked from {action} - {reason}"
+pub fn emit_block_notification(session_id: Uuid, action: &str, reason: &str) {
+    if let Some(callback) = BLOCK_NOTIFICATION_CALLBACK.get() {
+        callback(session_id.to_string(), action.to_string(), reason.to_string());
+    }
+}
 
 /// Result type for bash operations
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -446,28 +559,48 @@ impl Tool for FspecToolFacadeWrapper {
         }
     }
 }
+/// Wrapper that adapts a BashToolFacade to rig's Tool trait.
 ///
 /// This enables provider-specific bash facades to be used with rig's agent builder
 /// while maintaining the facade's custom tool name, schema, and parameter mapping.
+///
+/// ## BLOCK-006: Block Notifications
+///
+/// The wrapper stores session_id (TOOL-012 pattern) to emit UserNotification chunks
+/// when commands are blocked by the blocklist. Notifications are emitted via the
+/// global chunk callback before returning the blocked error to the LLM.
 pub struct BashToolFacadeWrapper {
     /// The underlying facade providing name, schema, and param mapping
     facade: BoxedBashToolFacade,
     /// The base tool for actual execution
     bash_tool: BashTool,
+    /// Session ID for notification emission - set at construction time (TOOL-012)
+    /// Used by BLOCK-006 to emit UserNotification when commands are blocked.
+    session_id: Uuid,
 }
 
 impl BashToolFacadeWrapper {
-    /// Create a new wrapper for the given bash facade
-    pub fn new(facade: BoxedBashToolFacade) -> Self {
+    /// Create a new wrapper for the given bash facade with session association.
+    ///
+    /// # Arguments
+    /// * `facade` - The provider-specific facade for schema/naming
+    /// * `session_id` - The session ID for notification emission (BLOCK-006)
+    pub fn new(facade: BoxedBashToolFacade, session_id: Uuid) -> Self {
         Self {
             facade,
             bash_tool: BashTool::new(),
+            session_id,
         }
     }
 
     /// Get the facade's provider name
     pub fn provider(&self) -> &'static str {
         self.facade.provider()
+    }
+
+    /// Get the session ID associated with this tool instance
+    pub fn session_id(&self) -> Uuid {
+        self.session_id
     }
 }
 
@@ -501,13 +634,23 @@ impl Tool for BashToolFacadeWrapper {
         // Execute the bash tool based on the operation type
         match internal_params {
             InternalBashParams::Execute { command } => {
-                let bash_args = BashArgs { command };
+                let bash_args = BashArgs { command: command.clone() };
                 match self.bash_tool.call(bash_args).await {
                     Ok(output) => Ok(BashOperationResult {
                         success: true,
                         output: Some(output),
                         error: None,
                     }),
+                    Err(ToolError::Blocked { message, .. }) => {
+                        // Emit notification to TUI for blocked commands
+                        let action = command.split_whitespace().take(2).collect::<Vec<_>>().join(" ");
+                        emit_block_notification(self.session_id, &action, &message);
+                        Ok(BashOperationResult {
+                            success: false,
+                            output: None,
+                            error: Some(message),
+                        })
+                    }
                     Err(e) => Ok(BashOperationResult {
                         success: false,
                         output: None,

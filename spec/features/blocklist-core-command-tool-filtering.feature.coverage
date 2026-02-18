@@ -1,0 +1,152 @@
+{
+  "scenarios": [
+    {
+      "name": "Block dangerous command with guidance",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/blocklist/mod.rs",
+          "lines": "33-65",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "lines": [
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/blocklist-napi-integration.test.ts",
+          "lines": "31-59",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Block Bash usage for file reading with tool guidance",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/blocklist/mod.rs",
+          "lines": "67-101",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/facade/wrapper.rs",
+              "lines": [
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514,
+                515,
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/blocklist-napi-integration.test.ts",
+          "lines": "61-109",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "Project config overrides system config",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/blocklist/mod.rs",
+          "lines": "103-150",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/blocklist/config.rs",
+              "lines": [
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73
+              ]
+            }
+          ]
+        },
+        {
+          "file": "src/__tests__/blocklist-napi-integration.test.ts",
+          "lines": "111-159",
+          "implMappings": []
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 3,
+    "coveredScenarios": 3,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/blocklist/mod.rs",
+      "src/__tests__/blocklist-napi-integration.test.ts"
+    ],
+    "implFiles": [
+      "codelet/tools/src/blocklist/middleware.rs",
+      "codelet/tools/src/facade/wrapper.rs",
+      "codelet/tools/src/blocklist/config.rs"
+    ],
+    "totalLinesCovered": 313
+  }
+}

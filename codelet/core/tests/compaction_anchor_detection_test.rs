@@ -280,7 +280,7 @@ fn test_task_completion_turn_has_correct_flags() {
 fn test_anchor_vec_ordering() {
     let turn = create_turn("Test", "Response", 1000);
     
-    let anchors = vec![
+    let anchors = [
         AnchorPoint {
             turn_index: 10,
             anchor_type: AnchorType::ErrorResolution,
@@ -412,7 +412,7 @@ fn test_turn_token_count() {
 
 #[test]
 fn test_turn_sequence_total_tokens() {
-    let turns = vec![
+    let turns = [
         create_turn("Msg 1", "Resp 1", 1000),
         create_turn("Msg 2", "Resp 2", 1500),
         create_turn("Msg 3", "Resp 3", 2000),

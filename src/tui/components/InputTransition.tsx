@@ -78,6 +78,12 @@ export interface InputTransitionProps extends MultiLineInputProps {
    * Only used when isCompacting is true
    */
   compactionProgress?: CompactionProgress | null;
+
+  /**
+   * Current selection for triple pause (0 = Allow Once, 1 = Allow Session, 2 = Deny)
+   * Only used when pauseInfo.kind is 'triple'
+   */
+  triplePauseSelection?: number;
 }
 
 /**
@@ -113,6 +119,7 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
   isCompacting = false,
   compactionProgress,
   suppressEnter = false,
+  triplePauseSelection = 0,
 }) => {
   // All useState hooks grouped together
   const [animationPhase, setAnimationPhase] = useState<AnimationPhase>(
@@ -303,6 +310,38 @@ export const InputTransition: React.FC<InputTransitionProps> = ({
             <Text> </Text>
             <Text color="red">[N] Deny</Text>
             <Text dimColor> (Esc to cancel)</Text>
+          </Text>
+        </Text>
+      );
+    } else if (pauseInfo.kind === 'triple') {
+      // Triple pause: show inline triple-choice UI with selection highlighting
+      const options = [
+        { label: 'Allow Once', color: 'green' },
+        { label: 'Allow Session', color: 'blue' },
+        { label: 'Deny', color: 'red' },
+      ];
+      return (
+        <Text>
+          <Text color="cyan">⏸ {pauseInfo.toolName}</Text>
+          <Text>: </Text>
+          <Text>{pauseInfo.message}</Text>
+          {pauseInfo.details && (
+            <Text dimColor> ({pauseInfo.details})</Text>
+          )}
+          <Text>
+            {'\n'}
+            {options.map((opt, idx) => (
+              <Text key={opt.label}>
+                {idx > 0 && ' '}
+                <Text
+                  color={opt.color as 'green' | 'blue' | 'red'}
+                  inverse={triplePauseSelection === idx}
+                >
+                  [{opt.label}]
+                </Text>
+              </Text>
+            ))}
+            <Text dimColor> (←/→ Navigate | Enter Select | Esc Deny)</Text>
           </Text>
         </Text>
       );

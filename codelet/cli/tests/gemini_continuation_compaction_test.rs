@@ -9,16 +9,15 @@
 
 use codelet_core::compaction::TokenTracker;
 
-/// Test that verifies the code path handles compaction gracefully
-/// by checking the implementation logic matches expected behavior.
-/// 
-/// The actual implementation in stream_loop.rs now:
-/// 1. Saves partial continuation text to session history
-/// 2. Updates token tracker with cumulative billing
-/// 3. Sets compaction_needed flag
-/// 4. Breaks from continuation loop (instead of returning Err)
-/// 5. Post-loop logic detects compaction_needed and handles it
-
+// Test that verifies the code path handles compaction gracefully
+// by checking the implementation logic matches expected behavior.
+// 
+// The actual implementation in stream_loop.rs now:
+// 1. Saves partial continuation text to session history
+// 2. Updates token tracker with cumulative billing
+// 3. Sets compaction_needed flag
+// 4. Breaks from continuation loop (instead of returning Err)
+// 5. Post-loop logic detects compaction_needed and handles it
 #[cfg(test)]
 mod scenario_graceful_handling {
     use super::*;
@@ -181,6 +180,6 @@ mod integration_behavior_documentation {
     fn documented_control_flow() {
         // This test documents the expected behavior
         // Actual behavior is verified by the unit tests above
-        assert!(true);
+        // Test passes by reaching this point - documentation verified
     }
 }

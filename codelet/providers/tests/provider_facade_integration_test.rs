@@ -139,7 +139,7 @@ fn test_e2e_tests_have_ignore_attribute() {
     // ensures it won't run in CI without explicit --ignored flag
 
     // Verification: If this file compiles, the #[ignore] attributes are present
-    assert!(true, "E2E tests are properly marked with #[ignore]");
+    // Test passes by reaching this point - no assertion needed
 }
 
 // ============================================================================

@@ -8,6 +8,7 @@
  * 1. sessionGetPauseState(sessionId: string): PauseState | null
  * 2. sessionPauseResume(sessionId: string): void
  * 3. sessionPauseConfirm(sessionId: string, approved: boolean): void
+ * 4. sessionPauseTriple(sessionId: string, choice: string): void (BLOCK-007)
  */
 
 import { describe, it, expect } from 'vitest';
@@ -79,6 +80,45 @@ describe('PAUSE-001: Real NAPI Function Exports', () => {
         codeletNapi.sessionPauseConfirm(
           '00000000-0000-0000-0000-000000000000',
           true
+        );
+      }).toThrow(/session not found|Session not found/i);
+    });
+  });
+
+  // =============================================================================
+  // sessionPauseTriple Tests (BLOCK-007)
+  // =============================================================================
+
+  describe('sessionPauseTriple', () => {
+    it('should be exported from @sengac/codelet-napi', () => {
+      // This test FAILS if sessionPauseTriple is not exported
+      expect(typeof codeletNapi.sessionPauseTriple).toBe('function');
+    });
+
+    it('should accept sessionId and choice string parameters', () => {
+      // Verify function signature by calling it with valid UUID format
+      expect(() => {
+        codeletNapi.sessionPauseTriple(
+          '00000000-0000-0000-0000-000000000000',
+          'allow_once'
+        );
+      }).toThrow(/session not found|Session not found/i);
+    });
+
+    it('should accept allow_session choice', () => {
+      expect(() => {
+        codeletNapi.sessionPauseTriple(
+          '00000000-0000-0000-0000-000000000000',
+          'allow_session'
+        );
+      }).toThrow(/session not found|Session not found/i);
+    });
+
+    it('should accept deny choice', () => {
+      expect(() => {
+        codeletNapi.sessionPauseTriple(
+          '00000000-0000-0000-0000-000000000000',
+          'deny'
         );
       }).toThrow(/session not found|Session not found/i);
     });

@@ -12,7 +12,7 @@ use anyhow::Result;
 use std::time::SystemTime;
 
 #[cfg(test)]
-#[allow(clippy::unwrap_used, clippy::expect_used)]
+#[allow(clippy::unwrap_used, clippy::expect_used, clippy::module_inception)]
 mod llm_anchor_detection_tests {
     use super::*;
 

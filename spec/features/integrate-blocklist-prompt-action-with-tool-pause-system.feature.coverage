@@ -1,0 +1,91 @@
+{
+  "scenarios": [
+    {
+      "name": "User allows sensitive file access once",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/blocklist/middleware.rs",
+          "lines": "447-512",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "lines": "129-200"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User allows sensitive file access for session",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/blocklist/middleware.rs",
+          "lines": "514-562",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "lines": "129-200"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User denies sensitive file access",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/blocklist/middleware.rs",
+          "lines": "564-612",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "lines": "129-200"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session allowances bypass prompting",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/blocklist/middleware.rs",
+          "lines": "397-449",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "lines": "129-200"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session allowances cleared on TUI restart",
+      "testMappings": [
+        {
+          "file": "codelet/tools/src/blocklist/middleware.rs",
+          "lines": "614-666",
+          "implMappings": [
+            {
+              "file": "codelet/tools/src/blocklist/middleware.rs",
+              "lines": "129-200"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/tools/src/blocklist/middleware.rs"
+    ],
+    "implFiles": [
+      "codelet/tools/src/blocklist/middleware.rs"
+    ],
+    "totalLinesCovered": 450
+  }
+}

@@ -8,7 +8,9 @@
 pub mod astgrep;
 pub mod astgrep_refactor;
 pub mod bash;
+pub mod blocklist;
 pub mod bridge;
+pub mod stage_permissions;
 pub mod bridge_handler;
 pub mod bridge_relay;
 pub mod chrome_browser;
@@ -52,6 +54,17 @@ pub use astgrep::AstGrepTool;
 pub use astgrep_refactor::AstGrepRefactorTool;
 pub use bash::BashTool;
 pub use bash::{clear_bash_abort, request_bash_abort};
+pub use blocklist::{
+    check_bash_command, check_command_raw, check_file_path, init_blocklist, load_blocklist_config,
+    project_config_path, reload_blocklist, system_config_path, BlockedError,
+    BlocklistAction, BlocklistConfig, BlocklistMatcher, BlocklistRule, CheckResult,
+};
+pub use stage_permissions::{
+    check_write_permission, check_write_raw, init_stage_permissions, load_stage_permissions_config,
+    reload_stage_permissions, project_config_path as stage_permissions_project_config_path,
+    system_config_path as stage_permissions_system_config_path, FileCategory, StageBlockedError,
+    StageCheckResult, StagePermission, StagePermissionsConfig, StagePermissionsMatcher,
+};
 pub use bridge::{
     get_or_create_bridge_manager, remove_bridge_manager, BridgeAction, BridgeConnectionInfo,
     BridgeConnectionState, BridgeManager, BridgeToolArgs, BridgeResult, BridgeTool,

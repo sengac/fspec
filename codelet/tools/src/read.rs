@@ -6,6 +6,7 @@
 //! PROV-002: Text files are checked against token limits before being returned.
 //! Images, PDFs, and Jupyter notebooks are exempt from token limits (processed differently).
 
+use super::blocklist::check_file_path;
 use super::error::ToolError;
 use super::file_type::{detect_file_type, ExemptFileType, FileType};
 use super::limits::OutputLimits;
@@ -142,6 +143,14 @@ impl rig::tool::Tool for ReadTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Check file path against blocklist before any I/O
+        if let Err(blocked) = check_file_path(&args.file_path) {
+            return Err(ToolError::Blocked {
+                tool: "read",
+                message: blocked.to_string(),
+            });
+        }
+
         // Validate absolute path (sync - no I/O)
         let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
             tool: "read",

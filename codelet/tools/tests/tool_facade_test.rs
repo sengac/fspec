@@ -18,6 +18,7 @@ use codelet_tools::facade::{
 use rig::tool::Tool;
 use serde_json::json;
 use std::sync::Arc;
+use uuid::Uuid;
 
 #[tokio::test]
 async fn test_map_claude_web_search_parameters_to_internal_format() -> Result<()> {
@@ -393,7 +394,8 @@ async fn test_gemini_replace_facade_provides_flat_schema() -> Result<()> {
 async fn test_facade_wrapper_read_file_integrates_with_rig() -> Result<()> {
     // @step Given a FileToolFacadeWrapper wrapping GeminiReadFileFacade
     let facade = Arc::new(GeminiReadFileFacade) as Arc<dyn FileToolFacade>;
-    let wrapper = FileToolFacadeWrapper::new(facade);
+    // BLOCK-006: FileToolFacadeWrapper now requires session_id (use nil for tests)
+    let wrapper = FileToolFacadeWrapper::new(facade, Uuid::nil());
 
     // @step When I call name() on the wrapper
     let name = wrapper.name();
@@ -420,11 +422,12 @@ async fn test_file_facades_available_for_gemini_provider() -> Result<()> {
 
     // @step When create_rig_agent() is called
     // The facades are wrapped with FileToolFacadeWrapper for rig integration
-    let read_wrapper = FileToolFacadeWrapper::new(Arc::new(read_facade) as Arc<dyn FileToolFacade>);
+    // BLOCK-006: FileToolFacadeWrapper now requires session_id (use nil for tests)
+    let read_wrapper = FileToolFacadeWrapper::new(Arc::new(read_facade) as Arc<dyn FileToolFacade>, Uuid::nil());
     let write_wrapper =
-        FileToolFacadeWrapper::new(Arc::new(write_facade) as Arc<dyn FileToolFacade>);
+        FileToolFacadeWrapper::new(Arc::new(write_facade) as Arc<dyn FileToolFacade>, Uuid::nil());
     let replace_wrapper =
-        FileToolFacadeWrapper::new(Arc::new(replace_facade) as Arc<dyn FileToolFacade>);
+        FileToolFacadeWrapper::new(Arc::new(replace_facade) as Arc<dyn FileToolFacade>, Uuid::nil());
 
     // @step Then the agent has tool 'read_file' backed by GeminiReadFileFacade
     assert_eq!(read_wrapper.name(), "read_file");
@@ -499,7 +502,8 @@ async fn test_gemini_run_shell_command_facade_provides_flat_schema() -> Result<(
 async fn test_bash_facade_wrapper_integrates_with_rig() -> Result<()> {
     // @step Given a BashToolFacadeWrapper wrapping GeminiRunShellCommandFacade
     let facade = Arc::new(GeminiRunShellCommandFacade) as Arc<dyn BashToolFacade>;
-    let wrapper = BashToolFacadeWrapper::new(facade);
+    // BLOCK-006: BashToolFacadeWrapper now requires session_id (use nil for tests)
+    let wrapper = BashToolFacadeWrapper::new(facade, Uuid::nil());
 
     // @step When I call name() on the wrapper
     let name = wrapper.name();

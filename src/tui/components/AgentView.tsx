@@ -119,12 +119,16 @@ import {
   // PAUSE-001: Pause resume/confirm functions
   sessionPauseResume,
   sessionPauseConfirm,
+  sessionPauseTriple,
   // TUI-056: Anchor point retrieval
   sessionGetAnchorPoints,
   // UX-002: Compaction progress polling for automatic compaction
   sessionGetCompactionProgress,
   // TUI-065: Clear session history
   sessionClearHistory,
+  // BLOCK-004: Blocklist NAPI functions
+  blocklistLoad,
+  blocklistInit,
   // REFAC-008: sessionSendFspecResult removed - handled by GlobalSessionStreamManager
   type NapiAnchorPoint,
   type SessionRoleInfo,
@@ -164,6 +168,7 @@ import type {
 } from '../types/watcherTemplate';
 import { WatcherTemplateList } from './WatcherTemplateList';
 import { WatcherTemplateForm } from './WatcherTemplateForm';
+import { BlocklistListView, type BlocklistRule } from './BlocklistListView';
 import { SessionHeader } from './SessionHeader';
 import { formatContextWindow } from '../utils/sessionHeaderUtils';
 import type { TokenTracker } from '../utils/sessionHeaderUtils';
@@ -1294,6 +1299,11 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
   // TUI-056: Anchor viewer dialog state
   const [showAnchorViewer, setShowAnchorViewer] = useState(false);
+
+  // BLOCK-004: Blocklist management state
+  const [isBlocklistMode, setIsBlocklistMode] = useState(false);
+  const [blocklistRules, setBlocklistRules] = useState<BlocklistRule[]>([]);
+  const [disabledBlocklistRules, setDisabledBlocklistRules] = useState<Set<string>>(new Set());
   const [anchorPoints, setAnchorPoints] = useState<AnchorPoint[]>([]);
 
   // TUI-050: Slash command palette with clean input handling
@@ -1302,11 +1312,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
     inputValue,
     onInputChange: setInputValue,
     onExecuteCommand: cmd => executeSlashCommandRef.current?.(cmd),
-    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, TUI-056: add anchor viewer)
+    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, TUI-056: add anchor viewer, BLOCK-004: add blocklist)
     disabled:
       isResumeMode ||
       isWatcherMode ||
       isWatcherEditMode ||
+      isBlocklistMode ||
       showModelSelector ||
       showSettingsTab ||
       showThinkingLevelDialog ||
@@ -1470,6 +1481,16 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const displayIsPaused = rustSnapshot.isPaused;
   const displayPauseInfo = rustSnapshot.pauseInfo;
 
+  // Triple pause selection state: 0 = Allow Once, 1 = Allow Session, 2 = Deny
+  const [triplePauseSelection, setTriplePauseSelection] = useState(0);
+
+  // Reset triple pause selection when pause ends or changes to non-triple
+  useEffect(() => {
+    if (!displayIsPaused || displayPauseInfo?.kind !== 'triple') {
+      setTriplePauseSelection(0);
+    }
+  }, [displayIsPaused, displayPauseInfo?.kind]);
+
   // TUI-044: Compaction notification indicator (shows in percentage indicator for 10 seconds)
   const [compactionReduction, setCompactionReduction] = useState<number | null>(
     null
@@ -1509,11 +1530,12 @@ export const AgentView: React.FC<AgentViewProps> = ({
     inputValue,
     onInputChange: setInputValue,
     terminalWidth,
-    // Disable popup when other overlays/modes are active
+    // Disable popup when other overlays/modes are active (BLOCK-004: add blocklist)
     disabled:
       isResumeMode ||
       isWatcherMode ||
       isWatcherEditMode ||
+      isBlocklistMode ||
       showModelSelector ||
       showSettingsTab ||
       showThinkingLevelDialog,
@@ -1833,6 +1855,17 @@ export const AgentView: React.FC<AgentViewProps> = ({
             `Failed to initialize data directory: ${err instanceof Error ? err.message : String(err)}`
           );
           return; // Stop initialization - cannot proceed without data directory
+        }
+
+        // BLOCK-001: Initialize blocklist system with current project directory
+        // This loads rules from ~/.fspec/blocklist.json (system) and .fspec/blocklist.json (project)
+        // Must be called at TUI startup for blocklist rules to be enforced
+        try {
+          blocklistInit(process.cwd());
+          logger.debug('Blocklist system initialized');
+        } catch (err) {
+          // Non-critical - blocklist is a safety feature but TUI can still work without it
+          logger.warn('Failed to initialize blocklist:', err);
         }
 
         // TUI-034: Load models and build provider sections
@@ -2289,6 +2322,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
     if (userMessage === '/watcher') {
       setInputValue('');
       void handleWatcherMode();
+      return;
+    }
+
+    // BLOCK-004: Handle /blocklist command - show blocklist management overlay
+    if (userMessage === '/blocklist') {
+      setInputValue('');
+      void handleBlocklistMode();
       return;
     }
 
@@ -5120,6 +5160,51 @@ export const AgentView: React.FC<AgentViewProps> = ({
     }
   }, [currentSessionId]);
 
+  // BLOCK-004: Enter blocklist mode (show blocklist management overlay)
+  const handleBlocklistMode = useCallback(async () => {
+    try {
+      // Load blocklist rules from system and project configs
+      const config = blocklistLoad(process.cwd());
+      
+      // Map rules with source information
+      const rules: BlocklistRule[] = config.rules.map(rule => ({
+        id: rule.id,
+        pattern: rule.pattern,
+        action: rule.action,
+        reason: rule.reason,
+        guidance: rule.guidance ?? undefined,
+        // TODO: Could track source (system vs project) if needed
+        source: 'project' as const,
+      }));
+
+      setBlocklistRules(rules);
+      setIsBlocklistMode(true);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to load blocklist';
+      setConversation(prev => [
+        ...prev,
+        {
+          type: 'status',
+          content: `Blocklist error: ${errorMessage}`,
+        },
+      ]);
+    }
+  }, []);
+
+  // BLOCK-004: Toggle a rule's session state
+  const handleToggleBlocklistRule = useCallback((ruleId: string) => {
+    setDisabledBlocklistRules(prev => {
+      const next = new Set(prev);
+      if (next.has(ruleId)) {
+        next.delete(ruleId);
+      } else {
+        next.add(ruleId);
+      }
+      return next;
+    });
+  }, []);
+
   // TUI-050: Trigger useEffect for resume mode initialization (called from handleSubmitWithCommand)
   useEffect(() => {
     if (triggerResumeModeInit) {
@@ -5895,6 +5980,42 @@ export const AgentView: React.FC<AgentViewProps> = ({
             sessionPauseConfirm(currentSessionId, false);
           } catch (e) {
             logger.error('[PAUSE-001] Error confirming pause (deny):', e);
+          }
+          return true;
+        }
+        return false;
+      }
+
+      // Handle Triple pause (←/→ to navigate, Enter to select, Esc to deny)
+      if (displayPauseInfo.kind === 'triple') {
+        // Left arrow: move selection left
+        if (key.leftArrow) {
+          setTriplePauseSelection((prev) => (prev > 0 ? prev - 1 : 2));
+          return true;
+        }
+        // Right arrow: move selection right
+        if (key.rightArrow) {
+          setTriplePauseSelection((prev) => (prev < 2 ? prev + 1 : 0));
+          return true;
+        }
+        // Enter: confirm current selection
+        if (key.return) {
+          try {
+            const choices = ['allow_once', 'allow_session', 'deny'];
+            sessionPauseTriple(currentSessionId, choices[triplePauseSelection]);
+            setTriplePauseSelection(0); // Reset for next pause
+          } catch (e) {
+            logger.error('[BLOCK-007] Error sending triple pause response:', e);
+          }
+          return true;
+        }
+        // Esc: deny (same as selecting Deny option)
+        if (key.escape) {
+          try {
+            sessionPauseTriple(currentSessionId, 'deny');
+            setTriplePauseSelection(0); // Reset for next pause
+          } catch (e) {
+            logger.error('[BLOCK-007] Error sending triple pause deny:', e);
           }
           return true;
         }
@@ -7374,6 +7495,22 @@ export const AgentView: React.FC<AgentViewProps> = ({
     );
   }
 
+  // BLOCK-004: Blocklist management overlay
+  if (isBlocklistMode) {
+    return (
+      <BlocklistListView
+        rules={blocklistRules}
+        disabledRules={disabledBlocklistRules}
+        terminalWidth={terminalWidth}
+        terminalHeight={terminalHeight}
+        onToggleRule={handleToggleBlocklistRule}
+        onClose={() => {
+          setIsBlocklistMode(false);
+        }}
+      />
+    );
+  }
+
   // WATCH-023: Watcher template management overlay (replaces old WATCH-008 overlay)
   if (isWatcherMode) {
     return (
@@ -7763,6 +7900,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
             isLoading={displayIsLoading}
             isPaused={displayIsPaused}
             pauseInfo={displayPauseInfo}
+            triplePauseSelection={triplePauseSelection}
             isCompacting={compaction.state.isActive}
             compactionProgress={compaction.state.progress}
             value={inputValue}

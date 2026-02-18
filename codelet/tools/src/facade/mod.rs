@@ -97,4 +97,7 @@ pub use web_search::{
 pub use wrapper::{
     BashToolFacadeWrapper, BridgeToolFacadeWrapper, FacadeToolWrapper, FileToolFacadeWrapper,
     FspecToolFacadeWrapper, LsToolFacadeWrapper, SearchToolFacadeWrapper,
+    // BLOCK-006: Block notification callbacks
+    emit_block_notification, set_block_notification_callback, set_get_work_unit_stage_callback,
+    BlockNotificationCallback, GetWorkUnitStageCallback,
 };

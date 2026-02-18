@@ -13,6 +13,8 @@ extern crate napi_derive;
 #[cfg(not(feature = "noop"))]
 mod astgrep;
 #[cfg(not(feature = "noop"))]
+mod blocklist;
+#[cfg(not(feature = "noop"))]
 mod fspec;
 #[cfg(not(feature = "noop"))]
 mod glob;
@@ -46,6 +48,8 @@ pub use persistence::*;
 
 #[cfg(not(feature = "noop"))]
 pub use astgrep::*;
+#[cfg(not(feature = "noop"))]
+pub use blocklist::*;
 #[cfg(not(feature = "noop"))]
 pub use fspec::*;
 #[cfg(not(feature = "noop"))]

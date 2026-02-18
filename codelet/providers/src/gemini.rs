@@ -121,13 +121,15 @@ impl GeminiProvider {
 
         // Create Gemini-specific file operation facades (TOOL-003)
         // These provide Gemini-native tool names: read_file, write_file, replace
-        let read_file = FileToolFacadeWrapper::new(Arc::new(GeminiReadFileFacade));
-        let write_file = FileToolFacadeWrapper::new(Arc::new(GeminiWriteFileFacade));
-        let replace = FileToolFacadeWrapper::new(Arc::new(GeminiReplaceFacade));
+        // BLOCK-006: Pass session_id for notification emission
+        let read_file = FileToolFacadeWrapper::new(Arc::new(GeminiReadFileFacade), session_id);
+        let write_file = FileToolFacadeWrapper::new(Arc::new(GeminiWriteFileFacade), session_id);
+        let replace = FileToolFacadeWrapper::new(Arc::new(GeminiReplaceFacade), session_id);
 
         // Create Gemini-specific bash facade (TOOL-004)
         // Provides Gemini-native tool name: run_shell_command
-        let run_shell_command = BashToolFacadeWrapper::new(Arc::new(GeminiRunShellCommandFacade));
+        // BLOCK-006: Pass session_id for notification emission
+        let run_shell_command = BashToolFacadeWrapper::new(Arc::new(GeminiRunShellCommandFacade), session_id);
 
         // Create Gemini-specific search facades (TOOL-005)
         // Provides Gemini-native tool names: search_file_content, find_files

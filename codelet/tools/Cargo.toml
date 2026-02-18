@@ -73,6 +73,7 @@ ctrlc.workspace = true
 napi = "3.8.2"
 napi-derive = "3.5.1"
 once_cell = "1.19"
+dirs.workspace = true
 
 # Unix process management (for process group killing)
 [target.'cfg(unix)'.dependencies]

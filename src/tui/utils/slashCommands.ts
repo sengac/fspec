@@ -85,6 +85,9 @@ export const SLASH_COMMANDS: SlashCommand[] = [
   { name: 'watcher', description: 'Manage watcher sessions' },
   { name: 'parent', description: 'Switch to parent session' },
 
+  // Blocklist (BLOCK-004)
+  { name: 'blocklist', description: 'Manage blocklist rules' },
+
   // MCP
   { name: 'mcp', description: 'Manage MCP providers' },
 ];

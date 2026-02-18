@@ -323,6 +323,6 @@ mod tests {
         // - error helper methods - ~5 lines saved per provider
         // With 4 providers (Claude, OpenAI, Gemini, Codex), this represents
         // significant code reduction.
-        assert!(true); // Placeholder - actual verification done during migration
+        // Test passes by reaching this point - verification done during migration
     }
 }

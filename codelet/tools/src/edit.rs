@@ -3,6 +3,7 @@
 //! Edits files by replacing the first occurrence of a string.
 //! Uses tokio::fs for non-blocking async I/O.
 
+use super::blocklist::check_file_path;
 use super::error::ToolError;
 use super::validation::{
     read_file_contents, require_absolute_path, require_file_exists, write_file_contents,
@@ -60,6 +61,14 @@ impl rig::tool::Tool for EditTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Check file path against blocklist before any I/O
+        if let Err(blocked) = check_file_path(&args.file_path) {
+            return Err(ToolError::Blocked {
+                tool: "edit",
+                message: blocked.to_string(),
+            });
+        }
+
         // Validate absolute path (sync - no I/O)
         let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
             tool: "edit",

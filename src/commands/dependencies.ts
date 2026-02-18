@@ -805,20 +805,27 @@ export async function showDependencies(
 
   if (!graph) {
     const workUnit = workUnitsData.workUnits[workUnitId];
-    const relationships = workUnit.relationships || {};
+    // Support both old schema (workUnit.dependsOn) and new schema (workUnit.relationships.dependsOn)
+    const blocks = workUnit.blocks || workUnit.relationships?.blocks || [];
+    const blockedBy =
+      workUnit.blockedBy || workUnit.relationships?.blockedBy || [];
+    const dependsOn =
+      workUnit.dependsOn || workUnit.relationships?.dependsOn || [];
+    const relatesTo =
+      workUnit.relatesTo || workUnit.relationships?.relatesTo || [];
 
     let output = `Dependencies for ${workUnitId}:\n`;
-    if (relationships.blocks && relationships.blocks.length > 0) {
-      output += `  Blocks: ${relationships.blocks.join(', ')}\n`;
+    if (blocks.length > 0) {
+      output += `  Blocks: ${blocks.join(', ')}\n`;
     }
-    if (relationships.blockedBy && relationships.blockedBy.length > 0) {
-      output += `  Blocked by: ${relationships.blockedBy.join(', ')}\n`;
+    if (blockedBy.length > 0) {
+      output += `  Blocked by: ${blockedBy.join(', ')}\n`;
     }
-    if (relationships.dependsOn && relationships.dependsOn.length > 0) {
-      output += `  Depends on: ${relationships.dependsOn.join(', ')}\n`;
+    if (dependsOn.length > 0) {
+      output += `  Depends on: ${dependsOn.join(', ')}\n`;
     }
-    if (relationships.relatesTo && relationships.relatesTo.length > 0) {
-      output += `  Related to: ${relationships.relatesTo.join(', ')}\n`;
+    if (relatesTo.length > 0) {
+      output += `  Related to: ${relatesTo.join(', ')}\n`;
     }
     return output;
   }
@@ -1037,12 +1044,12 @@ export function registerDependenciesCommand(program: Command): void {
         const cwd = options.cwd || process.cwd();
 
         try {
-          const output = await showDependencies(
+          const result = await showDependencies(
             workUnitId,
             { graph: options.graph },
             { cwd }
           );
-          output.log(output);
+          output.log(result);
         } catch (error: unknown) {
           const err = error as Error;
 

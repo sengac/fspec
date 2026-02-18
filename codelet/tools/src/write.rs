@@ -3,6 +3,7 @@
 //! Writes content to files, creating parent directories as needed.
 //! Uses tokio::fs for non-blocking async I/O.
 
+use super::blocklist::check_file_path;
 use super::error::ToolError;
 use super::validation::{create_parent_dirs, require_absolute_path, write_file_contents};
 use schemars::JsonSchema;
@@ -56,6 +57,14 @@ impl rig::tool::Tool for WriteTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // Check file path against blocklist before any I/O
+        if let Err(blocked) = check_file_path(&args.file_path) {
+            return Err(ToolError::Blocked {
+                tool: "write",
+                message: blocked.to_string(),
+            });
+        }
+
         // Validate absolute path (sync - no I/O)
         let path = require_absolute_path(&args.file_path).map_err(|e| ToolError::Validation {
             tool: "write",

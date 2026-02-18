@@ -175,6 +175,86 @@ export interface AstGrepTransform {
 }
 
 /**
+ * Add a pattern to session allowances.
+ * Called when user selects "Allow Session" in the triple confirmation dialog.
+ * The pattern will be allowed for the remainder of the session (until TUI restart).
+ *
+ * @param pattern - The pattern to allow for the session
+ */
+export declare function blocklistAllowSession(pattern: string): void;
+
+/**
+ * Check a command against the blocklist.
+ * Returns the check result with blocked status, reason, and guidance.
+ *
+ * @param command - The bash command to check
+ * @returns Check result
+ */
+export declare function blocklistCheck(command: string): JsCheckResult;
+
+/**
+ * Clear all session allowances.
+ * Called on TUI restart to reset session memory.
+ */
+export declare function blocklistClearSessionAllowances(): void;
+
+/**
+ * Initialize the blocklist system with the project root.
+ * Should be called once at application startup.
+ *
+ * @param projectRoot - Path to the project root (optional, for project-specific rules)
+ */
+export declare function blocklistInit(
+  projectRoot?: string | undefined | null
+): void;
+
+/**
+ * Check if a pattern is already allowed for the current session.
+ * Used to skip the prompt dialog if user previously selected "Allow Session".
+ *
+ * @param pattern - The pattern to check
+ * @returns true if the pattern is allowed, false otherwise
+ */
+export declare function blocklistIsSessionAllowed(pattern: string): boolean;
+
+/**
+ * Load blocklist configuration from system and project paths.
+ * Returns merged config with project rules taking precedence.
+ *
+ * @param projectRoot - Path to the project root (optional)
+ * @returns Merged blocklist configuration
+ */
+export declare function blocklistLoad(
+  projectRoot?: string | undefined | null
+): JsBlocklistConfig;
+
+/**
+ * Get the project blocklist config path (.fspec/blocklist.json)
+ *
+ * @param projectRoot - Path to the project root
+ * @returns Path to project config
+ */
+export declare function blocklistProjectPath(projectRoot: string): string;
+
+/**
+ * Save blocklist configuration to the project config file.
+ *
+ * @param projectRoot - Path to the project root
+ * @param config - Blocklist configuration to save
+ */
+export declare function blocklistSave(
+  projectRoot: string,
+  config: JsBlocklistConfig
+): void;
+
+/**
+ * Get the system blocklist config path (~/.fspec/blocklist.json)
+ *
+ * @returns Path to system config, or null if home directory cannot be determined
+ */
+export declare function blocklistSystemPath(): string | null;
+
+/**
  * Call fspec command via JS-controlled invocation pattern
  *
  * CRITICAL WARNING: NO CLI INVOCATION - NO FALLBACKS - NO SIMULATIONS
@@ -419,6 +499,42 @@ export declare function isThinkingContent(
 ): boolean;
 
 export declare function isWorkUnitsWatcherActive(): boolean;
+
+/** JavaScript-friendly blocklist config structure */
+export interface JsBlocklistConfig {
+  /** Version of the config schema */
+  version: string;
+  /** List of blocklist rules */
+  rules: Array<JsBlocklistRule>;
+}
+
+/** JavaScript-friendly blocklist rule structure */
+export interface JsBlocklistRule {
+  /** Unique identifier for the rule */
+  id: string;
+  /** Regex pattern to match against commands */
+  pattern: string;
+  /** Action: "block", "allow", or "prompt" */
+  action: string;
+  /** Reason for blocking (shown to AI) */
+  reason: string;
+  /** Guidance on what to do instead (educational) */
+  guidance?: string;
+}
+
+/** JavaScript-friendly check result structure */
+export interface JsCheckResult {
+  /** Whether the command is allowed to execute */
+  allowed: boolean;
+  /** Whether the command is blocked */
+  blocked: boolean;
+  /** Reason for blocking (if blocked) */
+  reason?: string;
+  /** Guidance on what to do instead (if blocked) */
+  guidance?: string;
+  /** ID of the matching rule (if any) */
+  matchedRuleId?: string;
+}
 
 /** TypeScript-friendly thinking level enum */
 export declare const enum JsThinkingLevel {
@@ -1277,6 +1393,17 @@ export declare function sessionPauseConfirm(
  * Sends Resumed response to unblock the waiting tool.
  */
 export declare function sessionPauseResume(sessionId: string): void;
+
+/**
+ * Handle triple pause response (Allow Once / Allow Session / Deny)
+ *
+ * Called when user makes a selection during a Triple pause (blocklist prompts).
+ * Valid choices: "allow_once", "allow_session", "deny"
+ */
+export declare function sessionPauseTriple(
+  sessionId: string,
+  choice: string
+): void;
 
 /**
  * TUI-056: Restore anchor points to a background session from persisted manifest.

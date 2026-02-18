@@ -9,7 +9,7 @@
 /**
  * Kind of pause - matches Rust PauseKind enum
  */
-export type PauseKind = 'continue' | 'confirm';
+export type PauseKind = 'continue' | 'confirm' | 'triple';
 
 /**
  * Pause state info from Rust session
@@ -35,7 +35,7 @@ export interface PauseInfo {
  * This provides runtime type safety instead of using `as` type casts.
  */
 export function isValidPauseKind(kind: string): kind is PauseKind {
-  return kind === 'continue' || kind === 'confirm';
+  return kind === 'continue' || kind === 'confirm' || kind === 'triple';
 }
 
 /**

@@ -19,6 +19,7 @@
 //! - On success: stdout content, with stderr appended if present
 //! - On failure: Clear error message with exit code, followed by any output
 
+use super::blocklist::check_bash_command;
 use super::error::ToolError;
 use super::limits::OutputLimits;
 use super::truncation::{format_truncation_warning, process_output_lines, truncate_output};
@@ -486,6 +487,14 @@ impl BashTool {
             return self.call(args).await;
         };
 
+        // Check command against blocklist before execution
+        if let Err(blocked) = check_bash_command(&args.command) {
+            return Err(ToolError::Blocked {
+                tool: "bash",
+                message: blocked.to_string(),
+            });
+        }
+
         // Spawn process
         let mut child = spawn_command(&args.command)?;
 
@@ -568,6 +577,14 @@ impl rig::tool::Tool for BashTool {
             return Err(ToolError::Validation {
                 tool: "bash",
                 message: "command parameter is required".to_string(),
+            });
+        }
+
+        // Check command against blocklist before execution
+        if let Err(blocked) = check_bash_command(&args.command) {
+            return Err(ToolError::Blocked {
+                tool: "bash",
+                message: blocked.to_string(),
             });
         }
 

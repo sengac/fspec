@@ -53,6 +53,10 @@ pub enum ToolError {
         estimated_tokens: usize,
         max_tokens: usize,
     },
+
+    /// Blocked error - command blocked by blocklist
+    #[error("{message}")]
+    Blocked { tool: &'static str, message: String },
 }
 
 impl ToolError {
@@ -73,6 +77,7 @@ impl ToolError {
             ToolError::StringNotFound { .. } => false,
             ToolError::Language { .. } => false,
             ToolError::TokenLimit { .. } => false,
+            ToolError::Blocked { .. } => false,
         }
     }
 
@@ -88,6 +93,7 @@ impl ToolError {
             ToolError::StringNotFound { tool, .. } => tool,
             ToolError::Language { tool, .. } => tool,
             ToolError::TokenLimit { tool, .. } => tool,
+            ToolError::Blocked { tool, .. } => tool,
         }
     }
 }

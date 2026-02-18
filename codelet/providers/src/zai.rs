@@ -207,12 +207,14 @@ impl ZAIProvider {
         // These provide GLM-native tool names and flat schemas that GLM understands
         
         // File operation facades
-        let read_file = FileToolFacadeWrapper::new(Arc::new(ZAIReadFileFacade));
-        let write_file = FileToolFacadeWrapper::new(Arc::new(ZAIWriteFileFacade));
-        let edit_file = FileToolFacadeWrapper::new(Arc::new(ZAIEditFileFacade));
+        // BLOCK-006: Pass session_id for notification emission
+        let read_file = FileToolFacadeWrapper::new(Arc::new(ZAIReadFileFacade), session_id);
+        let write_file = FileToolFacadeWrapper::new(Arc::new(ZAIWriteFileFacade), session_id);
+        let edit_file = FileToolFacadeWrapper::new(Arc::new(ZAIEditFileFacade), session_id);
 
         // Shell command facade
-        let run_command = BashToolFacadeWrapper::new(Arc::new(ZAIRunCommandFacade));
+        // BLOCK-006: Pass session_id for notification emission
+        let run_command = BashToolFacadeWrapper::new(Arc::new(ZAIRunCommandFacade), session_id);
 
         // Search facades
         let grep_files = SearchToolFacadeWrapper::new(Arc::new(ZAIGrepFilesFacade));

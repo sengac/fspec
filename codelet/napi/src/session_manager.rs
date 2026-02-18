@@ -844,6 +844,7 @@ impl From<PauseState> for NapiPauseState {
             kind: match state.kind {
                 PauseKind::Continue => "continue".to_string(),
                 PauseKind::Confirm => "confirm".to_string(),
+                PauseKind::Triple => "triple".to_string(),
             },
             tool_name: state.tool_name,
             message: state.message,
@@ -2162,7 +2163,7 @@ mod global_chunk_callback_tests {
         // TODO: After BRIDGE-012 implementation, this test should verify
         // that BackgroundSession has NO is_attached/attached_callback fields.
         // For now, it documents the expected behavior.
-        assert!(true, "BRIDGE-012: BackgroundSession should have no attachment state");
+        // Test passes by reaching this point - BRIDGE-012 behavior documented
     }
 
     /// Scenario: No per-session NAPI attachment functions
@@ -2184,7 +2185,7 @@ mod global_chunk_callback_tests {
         // - sessionSetGlobalChunkCallback(callback: ThreadsafeFunction<(String, StreamChunk)>)
         //
         // Verification is done through AST grep and TypeScript import analysis.
-        assert!(true, "BRIDGE-012: NAPI should expose global callback, not per-session");
+        // Test passes by reaching this point - BRIDGE-012 NAPI structure documented
     }
 }
 
@@ -5517,7 +5518,64 @@ pub fn session_set_global_chunk_callback(callback: ThreadsafeFunction<GlobalChun
     let global_cb = GlobalChunkCallback::new(callback);
     GLOBAL_CHUNK_CALLBACK.set(global_cb).map_err(|_| {
         Error::from_reason("Global chunk callback already set. It can only be set once at startup.")
-    })
+    })?;
+    
+    // BLOCK-006: Register block notification callbacks with tools crate
+    // These callbacks use the GLOBAL_CHUNK_CALLBACK to emit UserNotification chunks
+    init_block_notification_callbacks();
+    
+    Ok(())
+}
+
+// ============================================================================
+// BLOCK-006: Block Notification Callbacks
+// ============================================================================
+
+use codelet_tools::facade::{
+    set_block_notification_callback, set_get_work_unit_stage_callback,
+};
+
+/// Initialize the block notification callbacks for the tools crate.
+/// This is called once when the global chunk callback is set.
+fn init_block_notification_callbacks() {
+    // Register the block notification callback
+    set_block_notification_callback(emit_block_notification_to_tui);
+    
+    // Register the work unit stage callback
+    set_get_work_unit_stage_callback(get_session_work_unit_stage);
+}
+
+/// Callback function that emits a block notification to the TUI.
+/// Called by BashToolFacadeWrapper and FileToolFacadeWrapper when an action is blocked.
+fn emit_block_notification_to_tui(session_id_str: String, action: String, reason: String) {
+    if let Some(global_cb) = GLOBAL_CHUNK_CALLBACK.get() {
+        // Format the notification message: "AI was blocked from {action} - {reason}"
+        let message = format!("AI was blocked from {} - {}", action, reason);
+        
+        // Create a UserNotification chunk with Warning severity
+        let chunk = StreamChunk::user_notification(message, NotificationSeverity::Warning);
+        
+        // Emit the chunk via the global callback
+        global_cb.call(session_id_str, chunk);
+    }
+}
+
+/// Callback function that retrieves the current work unit stage for a session.
+/// Called by FileToolFacadeWrapper to check stage permissions.
+fn get_session_work_unit_stage(session_id_str: String) -> Option<String> {
+    // Try to get the session from the SessionManager
+    let manager = SessionManager::instance();
+    
+    // Get the session by ID (handles UUID parsing internally)
+    if let Ok(session) = manager.get_session(&session_id_str) {
+        // Get the work unit context from the session
+        if let Some(ctx) = session.get_work_unit_context() {
+            // Return the status (stage) if available
+            return ctx.status;
+        }
+    }
+    
+    None
 }
 
 /// Explicitly set the active session for navigation.
@@ -5622,6 +5680,23 @@ pub fn session_pause_confirm(session_id: String, approved: bool) -> Result<()> {
         PauseResponse::Approved
     } else {
         PauseResponse::Denied
+    };
+    session.send_pause_response(response);
+    Ok(())
+}
+
+/// Handle triple pause response (Allow Once / Allow Session / Deny)
+///
+/// Called when user makes a selection during a Triple pause (blocklist prompts).
+/// Valid choices: "allow_once", "allow_session", "deny"
+#[napi]
+pub fn session_pause_triple(session_id: String, choice: String) -> Result<()> {
+    let session = SessionManager::instance().get_session(&session_id)?;
+    let response = match choice.as_str() {
+        "allow_once" => PauseResponse::AllowOnce,
+        "allow_session" => PauseResponse::AllowSession,
+        "deny" => PauseResponse::Denied,
+        _ => PauseResponse::Denied, // Default to deny for invalid choices
     };
     session.send_pause_response(response);
     Ok(())

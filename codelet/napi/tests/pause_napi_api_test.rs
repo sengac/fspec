@@ -34,6 +34,7 @@ impl From<PauseState> for NapiPauseState {
             kind: match state.kind {
                 PauseKind::Continue => "continue".to_string(),
                 PauseKind::Confirm => "confirm".to_string(),
+                PauseKind::Triple => "triple".to_string(),
             },
             tool_name: state.tool_name,
             message: state.message,

@@ -22,8 +22,9 @@ import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
 import { useInputCompat, InputPriority } from '../tui/input/index';
 
-type ConfirmMode = 'yesno' | 'typed' | 'keypress' | 'visual';
+type ConfirmMode = 'yesno' | 'typed' | 'keypress' | 'visual' | 'triple';
 type RiskLevel = 'low' | 'medium' | 'high';
+type TripleChoice = 'allowOnce' | 'allowSession' | 'deny';
 
 export interface ConfirmationDialogProps {
   message: string;
@@ -33,6 +34,8 @@ export interface ConfirmationDialogProps {
   typedPhrase?: string;
   riskLevel?: RiskLevel;
   description?: string;
+  /** Callback for triple mode - called with user's choice */
+  onTripleConfirm?: (choice: TripleChoice) => void;
 }
 
 /**
@@ -46,9 +49,11 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
   typedPhrase,
   riskLevel,
   description,
+  onTripleConfirm,
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [selectedButton, setSelectedButton] = useState<'yes' | 'no'>('yes'); // Default to 'yes'
+  const [tripleSelection, setTripleSelection] = useState<TripleChoice>('allowOnce'); // Default for triple mode
 
   // Map riskLevel to borderColor for Dialog
   const getBorderColor = (): string | undefined => {
@@ -95,6 +100,28 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
             onConfirm();
           } else {
             onCancel();
+          }
+          return true;
+        }
+      } else if (confirmMode === 'triple') {
+        // Triple button mode: Allow Once / Allow Session / Deny
+        // BLOCK-005: Sensitive path prompts with session allowance
+        const tripleOptions: TripleChoice[] = ['allowOnce', 'allowSession', 'deny'];
+        const currentIndex = tripleOptions.indexOf(tripleSelection);
+        
+        if (key.leftArrow) {
+          // Wrap around: if at first, go to last
+          const newIndex = currentIndex <= 0 ? tripleOptions.length - 1 : currentIndex - 1;
+          setTripleSelection(tripleOptions[newIndex]);
+          return true;
+        } else if (key.rightArrow) {
+          // Wrap around: if at last, go to first
+          const newIndex = currentIndex >= tripleOptions.length - 1 ? 0 : currentIndex + 1;
+          setTripleSelection(tripleOptions[newIndex]);
+          return true;
+        } else if (key.return) {
+          if (onTripleConfirm) {
+            onTripleConfirm(tripleSelection);
           }
           return true;
         }
@@ -150,6 +177,43 @@ export const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
                 bold={selectedButton === 'no'}
               >
                 {' '}No{' '}
+              </Text>
+            </Box>
+          </Box>
+          <Box marginTop={1} justifyContent="center">
+            <Text dimColor>← → Navigate | Enter Select | Esc Cancel</Text>
+          </Box>
+        </>
+      )}
+
+      {confirmMode === 'triple' && (
+        <>
+          <Box marginTop={1} justifyContent="center">
+            <Box marginX={1}>
+              <Text
+                backgroundColor={tripleSelection === 'allowOnce' ? 'green' : undefined}
+                color={tripleSelection === 'allowOnce' ? 'white' : 'gray'}
+                bold={tripleSelection === 'allowOnce'}
+              >
+                {' '}Allow Once{' '}
+              </Text>
+            </Box>
+            <Box marginX={1}>
+              <Text
+                backgroundColor={tripleSelection === 'allowSession' ? 'blue' : undefined}
+                color={tripleSelection === 'allowSession' ? 'white' : 'gray'}
+                bold={tripleSelection === 'allowSession'}
+              >
+                {' '}Allow Session{' '}
+              </Text>
+            </Box>
+            <Box marginX={1}>
+              <Text
+                backgroundColor={tripleSelection === 'deny' ? 'red' : undefined}
+                color={tripleSelection === 'deny' ? 'white' : 'gray'}
+                bold={tripleSelection === 'deny'}
+              >
+                {' '}Deny{' '}
               </Text>
             </Box>
           </Box>
