@@ -5,79 +5,20 @@
  * The fix ensures agentState transitions to 'thinking' immediately when forwarding a message to the agent.
  */
 
-import {
-  describe,
-  it,
-  expect,
-  beforeEach,
-  afterEach,
-  vi,
-  type Mock,
-} from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import type {
   SlashCommandState,
-  MinimalBot,
   MinimalWebSocket,
 } from '../telegram-slash-commands';
-
-// WebSocket constants
-const WS_OPEN = 1;
-
-/**
- * Mock bot that satisfies MinimalBot interface with testable mock functions.
- */
-interface MockBot extends MinimalBot {
-  sendMessage: Mock<
-    [chatId: string | number, text: string, options?: { parse_mode?: string }],
-    Promise<unknown>
-  >;
-}
-
-/**
- * Mock WebSocket that satisfies MinimalWebSocket interface with testable mock functions.
- */
-interface MockWebSocket extends MinimalWebSocket {
-  send: Mock<[data: string], void>;
-}
-
-/**
- * Create a properly typed mock bot for testing
- */
-function createMockBot(): MockBot {
-  return {
-    sendMessage: vi.fn().mockResolvedValue(undefined),
-  };
-}
-
-/**
- * Create a properly typed mock WebSocket for testing
- */
-function createMockWebSocket(): MockWebSocket {
-  return {
-    readyState: WS_OPEN,
-    send: vi.fn(),
-  };
-}
-
-/**
- * Create a properly typed mock state for testing
- */
-function createMockState(
-  bot: MockBot,
-  ws: MockWebSocket,
-  agentState: 'idle' | 'thinking' | 'executing' = 'idle'
-): SlashCommandState {
-  return {
-    bot,
-    chatId: '12345',
-    currentSession: {
-      ws,
-      sessionId: 'test-session-123',
-    },
-    isRunning: true,
-    agentState,
-  };
-}
+import {
+  createMockBot,
+  createMockWebSocket,
+  createMockState,
+  assertBotMessageContains,
+  WS_OPEN,
+  type MockBot,
+  type MockWebSocket,
+} from './fixtures/telegram-test-helpers';
 
 describe('Feature: /stop command incorrectly reports agent as idle when actively processing', () => {
   let mockBot: MockBot;
@@ -112,11 +53,7 @@ describe('Feature: /stop command incorrectly reports agent as idle when actively
       // @step Then the user should receive "Operation stopped"
       expect(result.handled).toBe(true);
       expect(result.action).toBe('stop');
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('stopped'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'stopped');
     });
   });
 
@@ -136,11 +73,7 @@ describe('Feature: /stop command incorrectly reports agent as idle when actively
       // @step Then the user should receive "Operation stopped"
       expect(result.handled).toBe(true);
       expect(result.action).toBe('stop');
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('stopped'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'stopped');
     });
   });
 
@@ -160,11 +93,7 @@ describe('Feature: /stop command incorrectly reports agent as idle when actively
       // @step Then the user should receive "Nothing to stop"
       expect(result.handled).toBe(true);
       expect(result.action).toBeUndefined();
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('Nothing to stop'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'Nothing to stop');
     });
   });
 });

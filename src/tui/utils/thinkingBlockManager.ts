@@ -57,15 +57,33 @@ export interface AppendThinkingOptions {
  * Find the currently active (streaming) thinking block.
  * Returns the index, or -1 if no active thinking block exists.
  *
+ * IMPORTANT: A thinking block is NOT active if there are user/watcher
+ * messages after it - that means we've moved to a new turn.
+ *
  * @param messages - Conversation messages array
  * @returns Index of active thinking block, or -1
  */
 export function findActiveThinkingBlock(
   messages: ConversationMessage[]
 ): number {
-  return messages.findLastIndex(
+  const lastStreamingThinking = messages.findLastIndex(
     m => m.type === 'thinking' && m.isStreaming === true
   );
+
+  if (lastStreamingThinking < 0) {
+    return -1;
+  }
+
+  // Check if there are any turn-boundary messages after this thinking block
+  // User/watcher input marks a new turn, so this thinking block is stale
+  for (let i = lastStreamingThinking + 1; i < messages.length; i++) {
+    const msg = messages[i];
+    if (msg.type === 'user-input' || msg.type === 'watcher-input') {
+      return -1;
+    }
+  }
+
+  return lastStreamingThinking;
 }
 
 /**
@@ -74,6 +92,9 @@ export function findActiveThinkingBlock(
  * that comes after the last tool call and user input (same turn).
  *
  * This is used for bulk processing where we don't have streaming markers.
+ *
+ * IMPORTANT: A thinking block is NOT appendable if there are user/watcher
+ * messages after it - that means we've moved to a new turn.
  *
  * @param messages - Conversation messages array
  * @returns Index of appendable thinking block, or -1
@@ -87,19 +108,24 @@ export function findAppendableThinkingBlock(
     return -1;
   }
 
-  // Check if streaming (always appendable)
+  // Check if there are any turn-boundary messages after this thinking block
+  // User/watcher input marks a new turn, so this thinking block is stale
+  for (let i = lastThinkingIdx + 1; i < messages.length; i++) {
+    const msg = messages[i];
+    if (msg.type === 'user-input' || msg.type === 'watcher-input') {
+      return -1;
+    }
+  }
+
+  // Check if streaming (can append to streaming blocks)
   if (messages[lastThinkingIdx].isStreaming === true) {
     return lastThinkingIdx;
   }
 
-  // For non-streaming, check if it's in the current turn
-  // (after last tool call and user input)
+  // For non-streaming, check if it's in the current assistant turn
+  // (must be after last tool call)
   const lastToolIdx = messages.findLastIndex(m => m.type === 'tool-call');
-  const lastUserIdx = messages.findLastIndex(m => m.type === 'user-input');
-
-  const canAppend =
-    (lastToolIdx < 0 || lastThinkingIdx > lastToolIdx) &&
-    (lastUserIdx < 0 || lastThinkingIdx > lastUserIdx);
+  const canAppend = lastToolIdx < 0 || lastThinkingIdx > lastToolIdx;
 
   return canAppend ? lastThinkingIdx : -1;
 }

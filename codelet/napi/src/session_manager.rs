@@ -4902,8 +4902,9 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
             });
             
             // BRIDGE-008: Create control handler for interrupt/clear actions
+            // BRIDGE-014: Also handles pause_response actions
             let session_for_control = session.clone();
-            let control_handler: codelet_tools::ControlHandler = Arc::new(move |action: &str| {
+            let control_handler: codelet_tools::ControlHandler = Arc::new(move |action: &str, response: Option<&str>| {
                 match action {
                     "interrupt" => {
                         tracing::info!("Bridge control: interrupting session");
@@ -4918,6 +4919,24 @@ async fn agent_loop(session: Arc<BackgroundSession>, mut input_rx: mpsc::Receive
                             // DRY: Use the shared clear_history method
                             session_for_control.clear_history();
                         });
+                    }
+                    "pause_response" => {
+                        // BRIDGE-014: Handle pause response from Telegram
+                        if let Some(resp) = response {
+                            tracing::info!("Bridge control: pause_response = {}", resp);
+                            let pause_resp = match resp {
+                                "allow_once" => PauseResponse::AllowOnce,
+                                "allow_session" => PauseResponse::AllowSession,
+                                "deny" => PauseResponse::Denied,
+                                _ => {
+                                    tracing::warn!("Unknown pause response: {}, defaulting to deny", resp);
+                                    PauseResponse::Denied
+                                }
+                            };
+                            session_for_control.send_pause_response(pause_resp);
+                        } else {
+                            tracing::warn!("pause_response action received without response value");
+                        }
                     }
                     _ => {
                         tracing::warn!("Bridge control: unknown action '{}'", action);

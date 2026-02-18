@@ -79,6 +79,60 @@ describe('Feature: Thinking Block Manager', () => {
       // @step Then the result should be 2 (the second thinking block)
       expect(result).toBe(2);
     });
+
+    it('should return -1 when user-input comes after streaming thinking block', () => {
+      // @step Given a streaming thinking block followed by user input
+      const messages: ConversationMessage[] = [
+        {
+          type: 'thinking',
+          content: '[Thinking]\nOld thought',
+          isStreaming: true,
+        },
+        { type: 'user-input', content: 'New question' },
+      ];
+
+      // @step When I find the active thinking block
+      const result = findActiveThinkingBlock(messages);
+
+      // @step Then the result should be -1 (thinking block is from previous turn)
+      expect(result).toBe(-1);
+    });
+
+    it('should return -1 when watcher-input comes after streaming thinking block', () => {
+      // @step Given a streaming thinking block followed by watcher input
+      const messages: ConversationMessage[] = [
+        {
+          type: 'thinking',
+          content: '[Thinking]\nOld thought',
+          isStreaming: true,
+        },
+        { type: 'watcher-input', content: '[W] system> Update' },
+      ];
+
+      // @step When I find the active thinking block
+      const result = findActiveThinkingBlock(messages);
+
+      // @step Then the result should be -1 (thinking block is from previous turn)
+      expect(result).toBe(-1);
+    });
+
+    it('should return active thinking block when assistant messages follow but no user input', () => {
+      // @step Given a streaming thinking block followed by assistant text
+      const messages: ConversationMessage[] = [
+        {
+          type: 'thinking',
+          content: '[Thinking]\nCurrent thought',
+          isStreaming: true,
+        },
+        { type: 'assistant-text', content: 'Hello', isStreaming: true },
+      ];
+
+      // @step When I find the active thinking block
+      const result = findActiveThinkingBlock(messages);
+
+      // @step Then the result should be 0 (still same turn)
+      expect(result).toBe(0);
+    });
   });
 
   describe('Scenario: Append thinking content to active block', () => {
@@ -124,6 +178,41 @@ describe('Feature: Thinking Block Manager', () => {
       expect(messages).toHaveLength(2);
       expect(messages[1].content).toBe('[Thinking]\nNew thought');
       expect(messages[1].isStreaming).toBe(true);
+    });
+
+    it('should create new block when user-input follows streaming thinking', () => {
+      // @step Given a streaming thinking block followed by user input
+      const messages: ConversationMessage[] = [
+        { type: 'thinking', content: '[Thinking]\nOld', isStreaming: true },
+        { type: 'user-input', content: 'Next question' },
+      ];
+
+      // @step When I append new thinking content
+      appendThinking(messages, 'New thought');
+
+      // @step Then a new thinking block should be created (not appended to old)
+      expect(messages).toHaveLength(3);
+      expect(messages[0].content).toBe('[Thinking]\nOld');
+      expect(messages[0].isStreaming).toBe(true); // Old block unchanged
+      expect(messages[2].content).toBe('[Thinking]\nNew thought');
+      expect(messages[2].isStreaming).toBe(true);
+    });
+
+    it('should create new block when watcher-input follows streaming thinking', () => {
+      // @step Given a streaming thinking block followed by watcher input
+      const messages: ConversationMessage[] = [
+        { type: 'thinking', content: '[Thinking]\nOld', isStreaming: true },
+        { type: 'watcher-input', content: '[W] system> Update' },
+      ];
+
+      // @step When I append new thinking content
+      appendThinking(messages, 'New thought');
+
+      // @step Then a new thinking block should be created (not appended to old)
+      expect(messages).toHaveLength(3);
+      expect(messages[0].content).toBe('[Thinking]\nOld');
+      expect(messages[2].content).toBe('[Thinking]\nNew thought');
+      expect(messages[2].isStreaming).toBe(true);
     });
 
     it('should insert before streaming assistant message', () => {
@@ -294,6 +383,38 @@ describe('Feature: Thinking Block Manager', () => {
       // @step Then a new thinking block should be created
       expect(messages).toHaveLength(3);
       expect(messages[2].content).toBe('[Thinking]\nNew');
+    });
+
+    it('should create new block after user-input (new turn)', () => {
+      // @step Given a thinking block followed by user input
+      const messages: ConversationMessage[] = [
+        { type: 'thinking', content: '[Thinking]\nOld', isStreaming: false },
+        { type: 'user-input', content: 'Next question' },
+      ];
+
+      // @step When I append thinking in bulk mode
+      appendThinkingBulk(messages, 'New thought');
+
+      // @step Then a new thinking block should be created (not appended to old)
+      expect(messages).toHaveLength(3);
+      expect(messages[0].content).toBe('[Thinking]\nOld');
+      expect(messages[2].content).toBe('[Thinking]\nNew thought');
+    });
+
+    it('should create new block after watcher-input (new turn)', () => {
+      // @step Given a thinking block followed by watcher input
+      const messages: ConversationMessage[] = [
+        { type: 'thinking', content: '[Thinking]\nOld', isStreaming: true },
+        { type: 'watcher-input', content: '[W] system> Update' },
+      ];
+
+      // @step When I append thinking in bulk mode
+      appendThinkingBulk(messages, 'New thought');
+
+      // @step Then a new thinking block should be created (not appended to old)
+      expect(messages).toHaveLength(3);
+      expect(messages[0].content).toBe('[Thinking]\nOld');
+      expect(messages[2].content).toBe('[Thinking]\nNew thought');
     });
   });
 

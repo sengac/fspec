@@ -6,68 +6,17 @@
  * to the agent and handled directly by the bridge.
  */
 
-import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
-import type {
-  SlashCommandState,
-  MinimalBot,
-  MinimalWebSocket,
-} from '../telegram-slash-commands';
-
-// WebSocket constants
-const WS_OPEN = 1;
-
-/**
- * Mock bot that satisfies MinimalBot interface with testable mock functions.
- * Uses intersection type to preserve both interface compliance and mock access.
- */
-interface MockBot extends MinimalBot {
-  sendMessage: Mock<
-    [chatId: string | number, text: string, options?: { parse_mode?: string }],
-    Promise<unknown>
-  >;
-}
-
-/**
- * Mock WebSocket that satisfies MinimalWebSocket interface with testable mock functions.
- */
-interface MockWebSocket extends MinimalWebSocket {
-  send: Mock<[data: string], void>;
-}
-
-/**
- * Create a properly typed mock bot for testing
- */
-function createMockBot(): MockBot {
-  return {
-    sendMessage: vi.fn().mockResolvedValue(undefined),
-  };
-}
-
-/**
- * Create a properly typed mock WebSocket for testing
- */
-function createMockWebSocket(): MockWebSocket {
-  return {
-    readyState: WS_OPEN,
-    send: vi.fn(),
-  };
-}
-
-/**
- * Create a properly typed mock state for testing
- */
-function createMockState(bot: MockBot, ws: MockWebSocket): SlashCommandState {
-  return {
-    bot,
-    chatId: '12345',
-    currentSession: {
-      ws,
-      sessionId: 'test-session-123',
-    },
-    isRunning: true,
-    agentState: 'idle',
-  };
-}
+import { describe, it, expect, beforeEach } from 'vitest';
+import type { SlashCommandState } from '../telegram-slash-commands';
+import {
+  createMockBot,
+  createMockWebSocket,
+  createMockState,
+  assertBotMessageContains,
+  getBotMessage,
+  type MockBot,
+  type MockWebSocket,
+} from './fixtures/telegram-test-helpers';
 
 describe('Feature: Telegram Slash Commands for Agent Control', () => {
   let mockBot: MockBot;
@@ -93,14 +42,10 @@ describe('Feature: Telegram Slash Commands for Agent Control', () => {
 
       // @step Then I should receive a message listing all available commands
       expect(result.handled).toBe(true);
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('Available commands'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'Available commands');
 
       // @step And the message should include "/help", "/status", "/stop", and "/clear"
-      const sentMessage = mockBot.sendMessage.mock.calls[0][1] as string;
+      const sentMessage = getBotMessage(mockBot);
       expect(sentMessage).toContain('/help');
       expect(sentMessage).toContain('/status');
       expect(sentMessage).toContain('/stop');
@@ -122,11 +67,7 @@ describe('Feature: Telegram Slash Commands for Agent Control', () => {
 
       // @step Then I should receive a message saying "Agent is idle"
       expect(result.handled).toBe(true);
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('idle'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'idle');
     });
   });
 
@@ -144,11 +85,7 @@ describe('Feature: Telegram Slash Commands for Agent Control', () => {
 
       // @step Then I should receive a message saying "Agent is thinking..."
       expect(result.handled).toBe(true);
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('thinking'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'thinking');
     });
   });
 
@@ -169,11 +106,7 @@ describe('Feature: Telegram Slash Commands for Agent Control', () => {
       expect(result.action).toBe('stop');
 
       // @step And I should receive confirmation that the operation was stopped
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('stopped'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'stopped');
     });
   });
 
@@ -191,11 +124,7 @@ describe('Feature: Telegram Slash Commands for Agent Control', () => {
 
       // @step Then I should receive a message saying "Nothing to stop"
       expect(result.handled).toBe(true);
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('Nothing to stop'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'Nothing to stop');
     });
   });
 
@@ -220,11 +149,7 @@ describe('Feature: Telegram Slash Commands for Agent Control', () => {
       // (verified by action type)
 
       // @step And I should receive confirmation that the session was cleared
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('cleared'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'cleared');
     });
   });
 
@@ -239,14 +164,10 @@ describe('Feature: Telegram Slash Commands for Agent Control', () => {
 
       // @step Then I should receive an error message
       expect(result.handled).toBe(true);
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('Unknown command'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'Unknown command');
 
       // @step And the error message should list the available commands
-      const sentMessage = mockBot.sendMessage.mock.calls[0][1] as string;
+      const sentMessage = getBotMessage(mockBot);
       expect(sentMessage).toContain('/help');
       expect(sentMessage).toContain('/status');
       expect(sentMessage).toContain('/stop');
@@ -265,14 +186,10 @@ describe('Feature: Telegram Slash Commands for Agent Control', () => {
 
       // @step Then I should receive a message listing all available commands
       expect(result.handled).toBe(true);
-      expect(mockBot.sendMessage).toHaveBeenCalledWith(
-        '12345',
-        expect.stringContaining('Available commands'),
-        expect.any(Object)
-      );
+      assertBotMessageContains(mockBot, 'Available commands');
 
       // @step And the message should include "/help", "/status", "/stop", and "/clear"
-      const sentMessage = mockBot.sendMessage.mock.calls[0][1] as string;
+      const sentMessage = getBotMessage(mockBot);
       expect(sentMessage).toContain('/help');
       expect(sentMessage).toContain('/status');
       expect(sentMessage).toContain('/stop');

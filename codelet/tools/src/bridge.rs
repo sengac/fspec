@@ -610,6 +610,7 @@ mod tests {
                 message: "build the app".to_string(),
                 images: None, // BRIDGE-007: No images in this test
                 action: None, // BRIDGE-008: No action for input messages
+                response: None, // BRIDGE-014: No response for input messages
             };
 
             // @step Then the agent should receive "build the app" as user input

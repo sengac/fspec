@@ -1,0 +1,212 @@
+{
+  "scenarios": [
+    {
+      "name": "User allows sensitive file access once via /allowonce",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "39-70",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User allows sensitive file access once via /allow alias",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "75-95",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User allows sensitive file access for session via /allowsession",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "100-126",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User denies sensitive file access via /deny",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "131-161",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User sends /deny when agent is not paused",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "166-184",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User sends /allowonce when agent is not paused",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "189-207",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User sends /allowsession when agent is not paused",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "212-230",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User checks status while agent is paused",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "235-255",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Help command shows pause management commands",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "260-284",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-slash-commands.ts",
+              "lines": [88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Telegram endpoint receives pause request from codelet",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "301-346",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pause response with allow_once sent through WebSocket control channel",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "351-421",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [779, 780, 781, 782, 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796, 797, 798, 799, 800, 801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pause response with allow_session sent through WebSocket control channel",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "426-496",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [779, 780, 781, 782, 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796, 797, 798, 799, 800, 801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Pause response with deny sent through WebSocket control channel",
+      "testMappings": [
+        {
+          "file": "bridge/__tests__/telegram-pause-commands.test.ts",
+          "lines": "499-569",
+          "implMappings": [
+            {
+              "file": "bridge/telegram-endpoint.ts",
+              "lines": [779, 780, 781, 782, 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796, 797, 798, 799, 800, 801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 13,
+    "coveredScenarios": 13,
+    "coveragePercent": 100,
+    "testFiles": [
+      "bridge/__tests__/telegram-pause-commands.test.ts"
+    ],
+    "implFiles": [
+      "bridge/telegram-slash-commands.ts",
+      "bridge/telegram-endpoint.ts"
+    ],
+    "totalLinesCovered": 699
+  }
+}

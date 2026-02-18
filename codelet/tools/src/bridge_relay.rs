@@ -30,6 +30,7 @@ const MSG_TYPE_CONTROL: &str = "control";
 // Control action constants
 const ACTION_INTERRUPT: &str = "interrupt";
 const ACTION_CLEAR: &str = "clear";
+const ACTION_PAUSE_RESPONSE: &str = "pause_response";
 
 /// Image data received from bridge endpoint (BRIDGE-007)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -83,14 +84,17 @@ pub struct InboundMessage {
     /// Optional action for control messages (BRIDGE-008)
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub action: Option<String>,
+    /// Optional response for pause_response control action (BRIDGE-014)
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub response: Option<String>,
 }
 
 /// Callback for injecting input into the session (BRIDGE-007: updated to InjectedInput)
 pub type InputInjector = Arc<dyn Fn(InjectedInput) + Send + Sync>;
 
-/// Callback for handling control actions (BRIDGE-008: interrupt, clear)
-/// Takes the action name and returns whether it was handled successfully
-pub type ControlHandler = Arc<dyn Fn(&str) + Send + Sync>;
+/// Callback for handling control actions (BRIDGE-008: interrupt, clear; BRIDGE-014: pause_response)
+/// Takes the action name and optional response value (for pause_response)
+pub type ControlHandler = Arc<dyn Fn(&str, Option<&str>) + Send + Sync>;
 
 /// Spawn a WebSocket relay task for a bridge connection
 ///
@@ -329,15 +333,27 @@ pub async fn handle_inbound_message(
         }
         MSG_TYPE_CONTROL => {
             // BRIDGE-008: Handle control messages (interrupt, clear)
+            // BRIDGE-014: Also handles pause_response
             let action = inbound.action.as_deref().unwrap_or("");
             
             match action {
                 ACTION_INTERRUPT | ACTION_CLEAR => {
                     if let Some(handler) = control_handler {
                         tracing::info!("Handling control action from bridge: {}", action);
-                        handler(action);
+                        handler(action, None);
                     } else {
                         tracing::warn!("Received control action '{}' but no control handler is configured", action);
+                    }
+                    Ok(())
+                }
+                ACTION_PAUSE_RESPONSE => {
+                    // BRIDGE-014: Handle pause response with response value
+                    if let Some(handler) = control_handler {
+                        let response = inbound.response.as_deref();
+                        tracing::info!("Handling pause_response from bridge: {:?}", response);
+                        handler(action, response);
+                    } else {
+                        tracing::warn!("Received pause_response but no control handler is configured");
                     }
                     Ok(())
                 }
@@ -580,7 +596,7 @@ mod tests {
         let interrupt_called_clone = interrupt_called.clone();
         
         let input_injector: InputInjector = Arc::new(|_| {});
-        let control_handler: ControlHandler = Arc::new(move |action: &str| {
+        let control_handler: ControlHandler = Arc::new(move |action: &str, _response: Option<&str>| {
             if action == "interrupt" {
                 interrupt_called_clone.store(true, Ordering::SeqCst);
             }
@@ -617,7 +633,7 @@ mod tests {
         let clear_called_clone = clear_called.clone();
         
         let input_injector: InputInjector = Arc::new(|_| {});
-        let control_handler: ControlHandler = Arc::new(move |action: &str| {
+        let control_handler: ControlHandler = Arc::new(move |action: &str, _response: Option<&str>| {
             if action == "clear" {
                 clear_called_clone.store(true, Ordering::SeqCst);
             }
@@ -653,7 +669,7 @@ mod tests {
         let handler_called_clone = handler_called.clone();
         
         let input_injector: InputInjector = Arc::new(|_| {});
-        let control_handler: ControlHandler = Arc::new(move |_| {
+        let control_handler: ControlHandler = Arc::new(move |_action: &str, _response: Option<&str>| {
             handler_called_clone.store(true, Ordering::SeqCst);
         });
         
@@ -690,7 +706,7 @@ mod tests {
         let input_injector: InputInjector = Arc::new(move |_| {
             input_called_clone.store(true, Ordering::SeqCst);
         });
-        let control_handler: ControlHandler = Arc::new(|_| {});
+        let control_handler: ControlHandler = Arc::new(|_action: &str, _response: Option<&str>| {});
         
         // @step When the bridge receives a message with type "input"
         let json = format!(
@@ -751,5 +767,111 @@ mod tests {
         assert_eq!(msg.msg_type, "control");
         assert_eq!(msg.session_id, "test-id");
         assert_eq!(msg.action, Some("interrupt".to_string()));
+    }
+    
+    // =========================================================================
+    // BRIDGE-014: Pause response control message tests
+    // =========================================================================
+    
+    /// @step Given the bridge is connected to a session
+    /// @step And the session is paused waiting for access decision
+    /// @step When the bridge receives a control message with action "pause_response" and response "allow_once"
+    /// @step Then the control handler should be called with action and response
+    /// @step And the session should resume with AllowOnce response
+    #[tokio::test]
+    async fn test_handle_pause_response_allow_once() {
+        use std::sync::{atomic::{AtomicBool, Ordering}, Mutex};
+        
+        let session_id = uuid::Uuid::new_v4();
+        
+        let handler_called = Arc::new(AtomicBool::new(false));
+        let handler_called_clone = handler_called.clone();
+        let received_response = Arc::new(Mutex::new(String::new()));
+        let received_response_clone = received_response.clone();
+        
+        let input_injector: InputInjector = Arc::new(|_| {});
+        let control_handler: ControlHandler = Arc::new(move |action: &str, response: Option<&str>| {
+            if action == "pause_response" {
+                handler_called_clone.store(true, Ordering::SeqCst);
+                if let Some(resp) = response {
+                    *received_response_clone.lock().unwrap() = resp.to_string();
+                }
+            }
+        });
+        
+        let json = format!(
+            r#"{{"type": "control", "session_id": "{session_id}", "message": "", "action": "pause_response", "response": "allow_once"}}"#
+        );
+        
+        let result = super::handle_inbound_message(&json, session_id, input_injector, Some(control_handler)).await;
+        
+        assert!(result.is_ok());
+        assert!(handler_called.load(Ordering::SeqCst), "Control handler should be called for pause_response");
+        assert_eq!(*received_response.lock().unwrap(), "allow_once");
+    }
+    
+    /// @step Given the bridge receives pause_response with "allow_session"
+    /// @step Then the control handler should receive response "allow_session"
+    #[tokio::test]
+    async fn test_handle_pause_response_allow_session() {
+        use std::sync::Mutex;
+        
+        let session_id = uuid::Uuid::new_v4();
+        let received_response = Arc::new(Mutex::new(String::new()));
+        let received_response_clone = received_response.clone();
+        
+        let input_injector: InputInjector = Arc::new(|_| {});
+        let control_handler: ControlHandler = Arc::new(move |_action: &str, response: Option<&str>| {
+            if let Some(resp) = response {
+                *received_response_clone.lock().unwrap() = resp.to_string();
+            }
+        });
+        
+        let json = format!(
+            r#"{{"type": "control", "session_id": "{session_id}", "message": "", "action": "pause_response", "response": "allow_session"}}"#
+        );
+        
+        let result = super::handle_inbound_message(&json, session_id, input_injector, Some(control_handler)).await;
+        
+        assert!(result.is_ok());
+        assert_eq!(*received_response.lock().unwrap(), "allow_session");
+    }
+    
+    /// @step Given the bridge receives pause_response with "deny"
+    /// @step Then the control handler should receive response "deny"
+    #[tokio::test]
+    async fn test_handle_pause_response_deny() {
+        use std::sync::Mutex;
+        
+        let session_id = uuid::Uuid::new_v4();
+        let received_response = Arc::new(Mutex::new(String::new()));
+        let received_response_clone = received_response.clone();
+        
+        let input_injector: InputInjector = Arc::new(|_| {});
+        let control_handler: ControlHandler = Arc::new(move |_action: &str, response: Option<&str>| {
+            if let Some(resp) = response {
+                *received_response_clone.lock().unwrap() = resp.to_string();
+            }
+        });
+        
+        let json = format!(
+            r#"{{"type": "control", "session_id": "{session_id}", "message": "", "action": "pause_response", "response": "deny"}}"#
+        );
+        
+        let result = super::handle_inbound_message(&json, session_id, input_injector, Some(control_handler)).await;
+        
+        assert!(result.is_ok());
+        assert_eq!(*received_response.lock().unwrap(), "deny");
+    }
+    
+    /// Test parsing inbound message with response field
+    #[test]
+    fn test_inbound_message_parse_pause_response() {
+        let json = r#"{"type": "control", "session_id": "test-id", "message": "", "action": "pause_response", "response": "allow_once"}"#;
+        let msg: InboundMessage = serde_json::from_str(json).unwrap();
+        assert_eq!(msg.msg_type, "control");
+        assert_eq!(msg.session_id, "test-id");
+        assert_eq!(msg.action, Some("pause_response".to_string()));
+        assert_eq!(msg.response, Some("allow_once".to_string()));
     }
 }

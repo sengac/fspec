@@ -2,6 +2,7 @@
  * Telegram Slash Commands for Agent Control
  *
  * BRIDGE-010: Telegram Slash Commands for Agent Control
+ * BRIDGE-014: Telegram Pause State Management Commands
  *
  * This module handles slash commands sent from Telegram users to control
  * the agent session. Commands are intercepted before being sent to the agent
@@ -12,6 +13,9 @@
  * - /status - Show agent session state
  * - /stop - Interrupt current agent operation
  * - /clear - Clear conversation history and reset session
+ * - /allowonce (or /allow) - Allow sensitive file access once
+ * - /allowsession - Allow sensitive file access for the session
+ * - /deny - Deny sensitive file access
  */
 
 import { escapeMarkdownV2 } from './telegram-formatting';
@@ -21,6 +25,16 @@ import { escapeMarkdownV2 } from './telegram-formatting';
 // ============================================================================
 
 export type AgentState = 'idle' | 'thinking' | 'executing';
+
+/**
+ * Pause info for sensitive file access prompts (BRIDGE-014)
+ */
+export interface PauseInfo {
+  kind: 'triple';
+  message: string;
+  toolName?: string;
+  details?: string;
+}
 
 /**
  * Minimal bot interface - only methods we actually use.
@@ -52,6 +66,10 @@ export interface SlashCommandState {
   };
   isRunning: boolean;
   agentState: AgentState;
+  /** BRIDGE-014: Whether agent is paused waiting for access decision */
+  isPaused?: boolean;
+  /** BRIDGE-014: Information about the current pause prompt */
+  pauseInfo?: PauseInfo;
 }
 
 export interface SlashCommandResult {
@@ -60,7 +78,7 @@ export interface SlashCommandResult {
   /** The response sent to the user (if any) */
   response?: string;
   /** Action to perform (for commands that need session interaction) */
-  action?: 'stop' | 'clear';
+  action?: 'stop' | 'clear' | 'allow_once' | 'allow_session' | 'deny';
 }
 
 // ============================================================================
@@ -75,6 +93,15 @@ const AVAILABLE_COMMANDS = [
     command: '/clear',
     description: 'Clear conversation history and reset session',
   },
+  {
+    command: '/allowonce',
+    description: 'Allow sensitive file access once (alias: /allow)',
+  },
+  {
+    command: '/allowsession',
+    description: 'Allow sensitive file access for session',
+  },
+  { command: '/deny', description: 'Deny sensitive file access' },
 ];
 
 // ============================================================================
@@ -97,7 +124,17 @@ function handleHelpCommand(): string {
 /**
  * Handle /status command - show agent state
  */
-function handleStatusCommand(agentState: AgentState): string {
+function handleStatusCommand(
+  agentState: AgentState,
+  isPaused?: boolean,
+  pauseInfo?: PauseInfo
+): string {
+  // BRIDGE-014: Check if agent is paused first
+  if (isPaused) {
+    const message = pauseInfo?.message ?? 'Waiting for access decision';
+    return `⏸ Paused: ${escapeMarkdownV2(message)}`;
+  }
+
   switch (agentState) {
     case 'idle':
       return '🟢 Agent is idle';
@@ -133,6 +170,57 @@ function handleClearCommand(): { response: string; action: 'clear' } {
   return {
     response: '🗑️ Session cleared',
     action: 'clear',
+  };
+}
+
+/**
+ * Handle /allowonce command - allow sensitive file access once
+ * BRIDGE-014: Responds to PauseKind::Triple prompts
+ */
+function handleAllowOnceCommand(isPaused?: boolean): {
+  response: string;
+  action?: 'allow_once';
+} {
+  if (!isPaused) {
+    return { response: '⚠️ No pending pause to respond to' };
+  }
+  return {
+    response: '✅ Access allowed \\(once\\)',
+    action: 'allow_once',
+  };
+}
+
+/**
+ * Handle /allowsession command - allow sensitive file access for session
+ * BRIDGE-014: Responds to PauseKind::Triple prompts
+ */
+function handleAllowSessionCommand(isPaused?: boolean): {
+  response: string;
+  action?: 'allow_session';
+} {
+  if (!isPaused) {
+    return { response: '⚠️ No pending pause to respond to' };
+  }
+  return {
+    response: '✅ Access allowed \\(session\\)',
+    action: 'allow_session',
+  };
+}
+
+/**
+ * Handle /deny command - deny sensitive file access
+ * BRIDGE-014: Responds to PauseKind::Triple prompts
+ */
+function handleDenyCommand(isPaused?: boolean): {
+  response: string;
+  action?: 'deny';
+} {
+  if (!isPaused) {
+    return { response: '⚠️ No pending pause to respond to' };
+  }
+  return {
+    response: '🚫 Access denied',
+    action: 'deny',
   };
 }
 
@@ -189,7 +277,13 @@ export async function handleSlashCommand(
 
   const { command } = parseSlashCommand(text);
   let response: string;
-  let action: 'stop' | 'clear' | undefined;
+  let action:
+    | 'stop'
+    | 'clear'
+    | 'allow_once'
+    | 'allow_session'
+    | 'deny'
+    | undefined;
 
   // Handle each command
   switch (command) {
@@ -198,7 +292,11 @@ export async function handleSlashCommand(
       break;
 
     case '/status':
-      response = handleStatusCommand(state.agentState);
+      response = handleStatusCommand(
+        state.agentState,
+        state.isPaused,
+        state.pauseInfo
+      );
       break;
 
     case '/stop': {
@@ -212,6 +310,29 @@ export async function handleSlashCommand(
       const clearResult = handleClearCommand();
       response = clearResult.response;
       action = clearResult.action;
+      break;
+    }
+
+    // BRIDGE-014: Pause response commands
+    case '/allowonce':
+    case '/allow': {
+      const allowOnceResult = handleAllowOnceCommand(state.isPaused);
+      response = allowOnceResult.response;
+      action = allowOnceResult.action;
+      break;
+    }
+
+    case '/allowsession': {
+      const allowSessionResult = handleAllowSessionCommand(state.isPaused);
+      response = allowSessionResult.response;
+      action = allowSessionResult.action;
+      break;
+    }
+
+    case '/deny': {
+      const denyResult = handleDenyCommand(state.isPaused);
+      response = denyResult.response;
+      action = denyResult.action;
       break;
     }
 

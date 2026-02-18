@@ -39,7 +39,14 @@ config();
 // ============================================================================
 
 export interface StreamChunkData {
-  type: 'text' | 'thinking' | 'tool_call' | 'tool_result' | 'done' | 'error';
+  type:
+    | 'text'
+    | 'thinking'
+    | 'tool_call'
+    | 'tool_result'
+    | 'done'
+    | 'error'
+    | 'pause_request';
   text?: string;
   thinking?: string;
   name?: string;
@@ -48,6 +55,11 @@ export interface StreamChunkData {
   content?: string;
   is_error?: boolean;
   error?: string;
+  // BRIDGE-014: Pause request fields
+  pause_kind?: 'triple';
+  pause_message?: string;
+  pause_tool_name?: string;
+  pause_details?: string;
 }
 
 export interface StreamChunkMessage {
@@ -93,6 +105,14 @@ export interface EndpointState {
   allowedUserIds: Set<number> | null;
   // Agent state for /status command
   agentState: 'idle' | 'thinking' | 'executing';
+  // BRIDGE-014: Pause state management
+  isPaused: boolean;
+  pauseInfo?: {
+    kind: 'triple';
+    message: string;
+    toolName?: string;
+    details?: string;
+  };
 }
 
 // ============================================================================
@@ -126,6 +146,9 @@ const state: EndpointState = {
   thinkingHandler: new ThinkingBlockHandler(),
   allowedUserIds: null,
   agentState: 'idle',
+  // BRIDGE-014: Pause state
+  isPaused: false,
+  pauseInfo: undefined,
 };
 
 // ============================================================================
@@ -439,6 +462,41 @@ export async function handleStreamChunk(
     state.agentState = 'executing';
   } else if (msg.data.type === 'done' || msg.data.type === 'error') {
     state.agentState = 'idle';
+    // BRIDGE-014: Clear pause state on done/error
+    state.isPaused = false;
+    state.pauseInfo = undefined;
+  }
+
+  // BRIDGE-014: Handle pause_request chunks
+  if (msg.data.type === 'pause_request') {
+    state.isPaused = true;
+    state.pauseInfo = {
+      kind: msg.data.pause_kind ?? 'triple',
+      message: msg.data.pause_message ?? 'Waiting for access decision',
+      toolName: msg.data.pause_tool_name,
+      details: msg.data.pause_details,
+    };
+
+    // Send pause notification to Telegram
+    const toolName = msg.data.pause_tool_name ?? 'Tool';
+    const pauseMessage = msg.data.pause_message ?? 'Sensitive file access';
+    const text = `⏸ ${escapeMarkdownV2(toolName)}: ${escapeMarkdownV2(pauseMessage)}\n\nRespond with /allowonce, /allowsession, or /deny`;
+
+    if (state.bot && state.chatId) {
+      try {
+        await state.bot.sendMessage(state.chatId, text, {
+          parse_mode: 'MarkdownV2',
+        });
+      } catch (error: unknown) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+        console.error(
+          '[telegram-endpoint] Failed to send pause notification:',
+          errorMessage
+        );
+      }
+    }
+    return;
   }
 
   // Track when we last received a chunk
@@ -535,20 +593,23 @@ export async function handleStreamChunk(
 
 /**
  * Send a control message to the WebSocket session.
- * Used by slash commands (/stop, /clear) to communicate with the agent.
+ * Used by slash commands (/stop, /clear, /allowonce, /allowsession, /deny) to communicate with the agent.
  */
 function sendControlMessage(
   ws: WebSocket,
   sessionId: string,
-  action: string
+  action: string,
+  response?: string
 ): void {
-  ws.send(
-    JSON.stringify({
-      type: 'control',
-      action,
-      session_id: sessionId,
-    })
-  );
+  const message: Record<string, string> = {
+    type: 'control',
+    action,
+    session_id: sessionId,
+  };
+  if (response !== undefined) {
+    message.response = response;
+  }
+  ws.send(JSON.stringify(message));
 }
 
 /**
@@ -648,7 +709,17 @@ function setupWebSocketServer(port: number, host: string): WebSocketServer {
 // ============================================================================
 
 function setupTelegramBot(token: string): TelegramBotInstance {
-  const bot = new TelegramBot(token, { polling: true });
+  // Force IPv4 to avoid Node.js 22 Happy Eyeballs timeout issues with dual-stack DNS
+  // The 'family' option forces IPv4-only connections
+  // Cast needed because @types/node-telegram-bot-api expects full request.Options
+  // but the library actually accepts partial options at runtime
+  const requestOptions = {
+    family: 4,
+  } as TelegramBotModule.ConstructorOptions['request'];
+  const bot = new TelegramBot(token, {
+    polling: true,
+    request: requestOptions,
+  });
 
   bot.on('message', async msg => {
     const chatId = msg.chat.id.toString();
@@ -729,15 +800,34 @@ function setupTelegramBot(token: string): TelegramBotInstance {
       if (result.handled) {
         // Send control message to session if action is required
         if (result.action && state.currentSession.ws) {
-          const actionMap: Record<string, string> = {
-            stop: 'interrupt',
-            clear: 'clear',
-          };
-          sendControlMessage(
-            state.currentSession.ws,
-            state.currentSession.sessionId || '',
-            actionMap[result.action]
-          );
+          // BRIDGE-014: Handle pause response actions
+          if (
+            result.action === 'allow_once' ||
+            result.action === 'allow_session' ||
+            result.action === 'deny'
+          ) {
+            // Clear pause state
+            state.isPaused = false;
+            state.pauseInfo = undefined;
+            // Send pause_response control message
+            sendControlMessage(
+              state.currentSession.ws,
+              state.currentSession.sessionId || '',
+              'pause_response',
+              result.action
+            );
+          } else {
+            // Original actions (stop, clear)
+            const actionMap: Record<string, string> = {
+              stop: 'interrupt',
+              clear: 'clear',
+            };
+            sendControlMessage(
+              state.currentSession.ws,
+              state.currentSession.sessionId || '',
+              actionMap[result.action]
+            );
+          }
         }
         return; // Don't forward slash commands to agent
       }
@@ -865,6 +955,9 @@ export async function stopEndpoint(): Promise<void> {
   state.lastChunkTime = 0;
   state.thinkingHandler.reset();
   state.agentState = 'idle';
+  // BRIDGE-014: Reset pause state
+  state.isPaused = false;
+  state.pauseInfo = undefined;
   state.isRunning = false;
 }
 
@@ -888,6 +981,9 @@ export function resetState(): void {
   state.thinkingHandler.reset();
   state.allowedUserIds = null;
   state.agentState = 'idle';
+  // BRIDGE-014: Reset pause state
+  state.isPaused = false;
+  state.pauseInfo = undefined;
   state.isRunning = false;
 }
 
