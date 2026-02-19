@@ -204,10 +204,26 @@ impl SessionStore {
             let path = entry.path();
 
             if path.extension().is_some_and(|e| e == "json") {
-                let content = fs::read_to_string(&path)
-                    .map_err(|e| format!("Failed to read session file: {}", e))?;
-                let session: SessionManifest = serde_json::from_str(&content)
-                    .map_err(|e| format!("Failed to parse session: {}", e))?;
+                let content = match fs::read_to_string(&path) {
+                    Ok(c) => c,
+                    Err(e) => {
+                        eprintln!(
+                            "[warn] Skipping unreadable session file {:?}: {}",
+                            path, e
+                        );
+                        continue;
+                    }
+                };
+                let session: SessionManifest = match serde_json::from_str(&content) {
+                    Ok(s) => s,
+                    Err(e) => {
+                        eprintln!(
+                            "[warn] Skipping incompatible session file {:?}: {}",
+                            path, e
+                        );
+                        continue;
+                    }
+                };
 
                 // Track as last session for this project
                 self.last_session

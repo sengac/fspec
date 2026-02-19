@@ -1,0 +1,221 @@
+{
+  "scenarios": [
+    {
+      "name": "Checkpoint creates ghost commit with session ID namespace",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_checkpoint_integration_test.rs",
+          "lines": "30-57",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1074,
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Checkpoint captures all worktree changes",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_checkpoint_integration_test.rs",
+          "lines": "64-91",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1074,
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Restore checkpoint returns worktree to checkpoint state",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_checkpoint_integration_test.rs",
+          "lines": "98-127",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1092,
+                1093,
+                1094,
+                1095,
+                1096,
+                1097,
+                1098,
+                1099,
+                1100,
+                1101,
+                1102,
+                1103,
+                1104,
+                1105,
+                1106,
+                1107,
+                1108
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Parallel sessions have independent checkpoint namespaces",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_checkpoint_integration_test.rs",
+          "lines": "134-162",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1074,
+                1075,
+                1076,
+                1077,
+                1078,
+                1079,
+                1080,
+                1081,
+                1082,
+                1083,
+                1084,
+                1085,
+                1086,
+                1087,
+                1088,
+                1089,
+                1090
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Checkpoint fails for non-isolated session",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_checkpoint_integration_test.rs",
+          "lines": "169-199",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                863,
+                864,
+                865,
+                866,
+                867,
+                868,
+                869,
+                870,
+                871,
+                872,
+                873,
+                874,
+                875,
+                876,
+                877,
+                878,
+                879,
+                880,
+                881,
+                882,
+                883,
+                884,
+                885,
+                886,
+                887,
+                888
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List checkpoints returns all checkpoint labels",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_checkpoint_integration_test.rs",
+          "lines": "206-230",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                1110,
+                1111,
+                1112,
+                1113,
+                1114,
+                1115,
+                1116,
+                1117,
+                1118,
+                1119,
+                1120,
+                1121,
+                1122,
+                1123,
+                1124
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/session_checkpoint_integration_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 280
+  }
+}

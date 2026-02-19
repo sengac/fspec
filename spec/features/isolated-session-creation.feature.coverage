@@ -1,0 +1,138 @@
+{
+  "scenarios": [
+    {
+      "name": "Create isolated session with worktree",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/isolated_session_tests.rs",
+          "lines": "77-116",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/isolated_session.rs",
+              "lines": "32-48"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create non-isolated session without worktree",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/isolated_session_tests.rs",
+          "lines": "122-154",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/isolated_session.rs",
+              "lines": "66-75"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Default session creation is non-isolated",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/isolated_session_tests.rs",
+          "lines": "160-182",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/isolated_session.rs",
+              "lines": "66-75"
+            },
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "4047-4048"
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/isolated_session_creation_test.rs",
+          "lines": "97-110",
+          "implMappings": []
+        }
+      ]
+    },
+    {
+      "name": "effective_cwd returns worktree path for isolated session",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/isolated_session_tests.rs",
+          "lines": "188-210",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/isolated_session.rs",
+              "lines": "77-84"
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/isolated_session_creation_test.rs",
+          "lines": "65-80",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "1024-1032"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "effective_cwd returns project root for non-isolated session",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/isolated_session_tests.rs",
+          "lines": "216-236",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/isolated_session.rs",
+              "lines": "77-84"
+            }
+          ]
+        },
+        {
+          "file": "codelet/napi/tests/isolated_session_creation_test.rs",
+          "lines": "65-80",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": "1024-1032"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Create isolated session fails if worktree already exists",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/isolated_session_tests.rs",
+          "lines": "242-275",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/worktree.rs",
+              "lines": "84-88"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/git/tests/isolated_session_tests.rs",
+      "codelet/napi/tests/isolated_session_creation_test.rs"
+    ],
+    "implFiles": [
+      "codelet/git/src/isolated_session.rs",
+      "codelet/git/src/worktree.rs",
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 85
+  }
+}

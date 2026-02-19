@@ -16,6 +16,7 @@ use rig::completion::ToolDefinition as RigToolDefinition;
 use rig::tool::Tool;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::path::PathBuf;
 
 /// Wrapper that adapts a ToolFacade to rig's Tool trait.
 ///
@@ -265,6 +266,9 @@ impl Tool for FileToolFacadeWrapper {
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
+        // GIT-020: Get effective_cwd for path resolution (worktree for isolated, project for non-isolated)
+        let effective_cwd = get_effective_cwd(self.session_id);
+
         // Execute the appropriate base tool based on the operation type
         match internal_params {
             InternalFileParams::Read {
@@ -272,9 +276,12 @@ impl Tool for FileToolFacadeWrapper {
                 offset,
                 limit,
             } => {
+                // GIT-020: Resolve path relative to effective_cwd if provided
+                let resolved_path = resolve_file_path(&file_path, effective_cwd.as_ref());
+                
                 use crate::read::ReadArgs;
                 let read_args = ReadArgs {
-                    file_path,
+                    file_path: resolved_path,
                     offset,
                     limit,
                     pdf_mode: None,
@@ -293,10 +300,13 @@ impl Tool for FileToolFacadeWrapper {
                 }
             }
             InternalFileParams::Write { file_path, content } => {
+                // GIT-020: Resolve path relative to effective_cwd if provided
+                let resolved_path = resolve_file_path(&file_path, effective_cwd.as_ref());
+                
                 // BLOCK-006: Check stage permissions before write
                 // Get the current work unit's stage from the session
                 let stage = get_work_unit_stage(self.session_id);
-                if let Err(blocked) = check_write_permission(&file_path, stage.as_deref()) {
+                if let Err(blocked) = check_write_permission(&resolved_path, stage.as_deref()) {
                     // Emit notification to TUI before returning blocked error
                     let action = format!("writing {file_path}");
                     emit_block_notification(self.session_id, &action, &blocked.reason);
@@ -309,7 +319,7 @@ impl Tool for FileToolFacadeWrapper {
                 }
                 
                 use crate::write::WriteArgs;
-                let write_args = WriteArgs { file_path, content };
+                let write_args = WriteArgs { file_path: resolved_path, content };
                 match self.write_tool.call(write_args).await {
                     Ok(result) => Ok(FileOperationResult {
                         success: true,
@@ -328,10 +338,13 @@ impl Tool for FileToolFacadeWrapper {
                 old_string,
                 new_string,
             } => {
+                // GIT-020: Resolve path relative to effective_cwd if provided
+                let resolved_path = resolve_file_path(&file_path, effective_cwd.as_ref());
+                
                 // BLOCK-006: Check stage permissions before edit (same as write)
                 // Get the current work unit's stage from the session
                 let stage = get_work_unit_stage(self.session_id);
-                if let Err(blocked) = check_write_permission(&file_path, stage.as_deref()) {
+                if let Err(blocked) = check_write_permission(&resolved_path, stage.as_deref()) {
                     // Emit notification to TUI before returning blocked error
                     let action = format!("editing {file_path}");
                     emit_block_notification(self.session_id, &action, &blocked.reason);
@@ -345,7 +358,7 @@ impl Tool for FileToolFacadeWrapper {
                 
                 use crate::edit::EditArgs;
                 let edit_args = EditArgs {
-                    file_path,
+                    file_path: resolved_path,
                     old_string,
                     new_string,
                 };
@@ -391,6 +404,13 @@ pub type BlockNotificationCallback = fn(String, String, String);
 /// The callback takes session_id_str and returns Option<String> (the stage/status).
 pub type GetWorkUnitStageCallback = fn(String) -> Option<String>;
 
+/// GIT-020: Callback type for getting the effective working directory from a session.
+/// This is set by the NAPI layer when initializing.
+/// The callback takes session_id_str and returns Option<PathBuf> (the effective_cwd).
+/// For isolated sessions, this returns the worktree path.
+/// For non-isolated sessions, this returns the project root.
+pub type GetEffectiveCwdCallback = fn(String) -> Option<PathBuf>;
+
 /// Global callback for emitting block notifications.
 /// Set by codelet-napi during session initialization.
 static BLOCK_NOTIFICATION_CALLBACK: std::sync::OnceLock<BlockNotificationCallback> =
@@ -399,6 +419,11 @@ static BLOCK_NOTIFICATION_CALLBACK: std::sync::OnceLock<BlockNotificationCallbac
 /// Global callback for getting work unit stage from session.
 /// Set by codelet-napi during initialization.
 static GET_WORK_UNIT_STAGE_CALLBACK: std::sync::OnceLock<GetWorkUnitStageCallback> =
+    std::sync::OnceLock::new();
+
+/// GIT-020: Global callback for getting effective_cwd from session.
+/// Set by codelet-napi during initialization.
+static GET_EFFECTIVE_CWD_CALLBACK: std::sync::OnceLock<GetEffectiveCwdCallback> =
     std::sync::OnceLock::new();
 
 /// Register the global block notification callback.
@@ -413,6 +438,12 @@ pub fn set_get_work_unit_stage_callback(callback: GetWorkUnitStageCallback) {
     let _ = GET_WORK_UNIT_STAGE_CALLBACK.set(callback);
 }
 
+/// GIT-020: Register the global effective_cwd callback.
+/// Called by codelet-napi during initialization.
+pub fn set_get_effective_cwd_callback(callback: GetEffectiveCwdCallback) {
+    let _ = GET_EFFECTIVE_CWD_CALLBACK.set(callback);
+}
+
 /// Get the current work unit stage for a session.
 ///
 /// Returns None if:
@@ -421,6 +452,22 @@ pub fn set_get_work_unit_stage_callback(callback: GetWorkUnitStageCallback) {
 /// - No work unit context attached to session
 fn get_work_unit_stage(session_id: Uuid) -> Option<String> {
     GET_WORK_UNIT_STAGE_CALLBACK.get()
+        .and_then(|callback| callback(session_id.to_string()))
+}
+
+/// GIT-020: Get the effective working directory for a session.
+///
+/// Returns the worktree path for isolated sessions, project root for non-isolated sessions.
+/// Returns None if callback not registered or session not found.
+///
+/// # Arguments
+/// * `session_id` - The session UUID to get effective_cwd for
+///
+/// # Returns
+/// * `Some(PathBuf)` - The effective working directory
+/// * `None` - Callback not registered or session not found
+pub fn get_effective_cwd(session_id: Uuid) -> Option<PathBuf> {
+    GET_EFFECTIVE_CWD_CALLBACK.get()
         .and_then(|callback| callback(session_id.to_string()))
 }
 
@@ -436,6 +483,34 @@ pub fn emit_block_notification(session_id: Uuid, action: &str, reason: &str) {
     if let Some(callback) = BLOCK_NOTIFICATION_CALLBACK.get() {
         callback(session_id.to_string(), action.to_string(), reason.to_string());
     }
+}
+
+/// GIT-020: Resolve a file path relative to effective_cwd if provided.
+///
+/// If effective_cwd is provided and the path is not absolute, the path is resolved
+/// relative to effective_cwd. Otherwise, the path is returned as-is.
+///
+/// # Arguments
+/// * `file_path` - The file path to resolve
+/// * `effective_cwd` - Optional effective working directory from session
+///
+/// # Returns
+/// The resolved file path as a String
+fn resolve_file_path(file_path: &str, effective_cwd: Option<&PathBuf>) -> String {
+    let path = std::path::Path::new(file_path);
+    
+    // If the path is absolute, return it as-is
+    if path.is_absolute() {
+        return file_path.to_string();
+    }
+    
+    // If effective_cwd is provided, resolve relative to it
+    if let Some(cwd) = effective_cwd {
+        return cwd.join(file_path).to_string_lossy().to_string();
+    }
+    
+    // No effective_cwd, return path as-is (will be resolved by the tool)
+    file_path.to_string()
 }
 
 /// Result type for bash operations
@@ -631,10 +706,20 @@ impl Tool for BashToolFacadeWrapper {
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
+        // GIT-020: Get effective_cwd for bash command execution (worktree for isolated, project for non-isolated)
+        let effective_cwd = get_effective_cwd(self.session_id);
+
         // Execute the bash tool based on the operation type
         match internal_params {
             InternalBashParams::Execute { command } => {
-                let bash_args = BashArgs { command: command.clone() };
+                // GIT-020: Prefix command with cd to effective_cwd if available
+                let final_command = if let Some(ref cwd) = effective_cwd {
+                    format!("cd {} && {}", cwd.display(), command)
+                } else {
+                    command.clone()
+                };
+                
+                let bash_args = BashArgs { command: final_command.clone() };
                 match self.bash_tool.call(bash_args).await {
                     Ok(output) => Ok(BashOperationResult {
                         success: true,

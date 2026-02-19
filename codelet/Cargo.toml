@@ -3,6 +3,7 @@ members = [
     "cli",
     "common",
     "core",
+    "git",
     "napi",
     "providers",
     "tools",
@@ -21,6 +22,7 @@ repository = "https://github.com/rquast/codelet"
 codelet-cli = { path = "cli" }
 codelet-common = { path = "common" }
 codelet-core = { path = "core" }
+codelet-git = { path = "git" }
 codelet-providers = { path = "providers" }
 codelet-tools = { path = "tools" }
 codelet-tui = { path = "tui" }

@@ -195,6 +195,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
         workUnitId: 'GIT-002',
         checkpointName: 'baseline',
         cwd: setup.testDir,
+        force: true, // Skip interactive prompt in tests
       });
 
       // And: I implement approach A which fails
@@ -203,6 +204,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
         workUnitId: 'GIT-002',
         checkpointName: 'baseline',
         cwd: setup.testDir,
+        force: true, // Skip interactive prompt in tests
       });
 
       // And: I implement approach B which succeeds
@@ -253,6 +255,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
         workUnitId: 'GIT-002',
         checkpointName: 'previous-state',
         cwd: setup.testDir,
+        force: true, // Skip interactive prompt in tests
       });
 
       // Then: restoration should succeed (no actual conflicts in test)
@@ -581,7 +584,7 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
       expect(content).toBe('will be deleted');
     });
 
-    it('should ignore files not in checkpoint', async () => {
+    it('should delete files not in checkpoint (ghost commit exact restore)', async () => {
       // Given: I have created checkpoint with file A
       await writeFile(join(setup.testDir, 'fileA.ts'), 'file A');
       await checkpoint({
@@ -601,18 +604,17 @@ describe('Feature: Intelligent checkpoint system for workflow transitions', () =
         force: true,
       });
 
-      // Then: file B should be left untouched
+      // Then: restoration should succeed
       expect(result.success).toBe(true);
+
+      // And: file B should be DELETED (ghost commits restore exact state)
+      // This is the new behavior as per GIT-017: "the working tree should match
+      // the exact state at checkpoint creation"
       const exists = await fs.promises
         .access(join(setup.testDir, 'fileB.ts'))
         .then(() => true)
         .catch(() => false);
-      expect(exists).toBe(true);
-      const content = await fs.promises.readFile(
-        join(setup.testDir, 'fileB.ts'),
-        'utf-8'
-      );
-      expect(content).toBe('file B');
+      expect(exists).toBe(false);
     });
 
     it('should error when restoring non-existent checkpoint', async () => {

@@ -2,7 +2,6 @@
 @codelet
 @BLOCK-003
 Feature: Stage Permissions - ACDD File Write Enforcement
-
   """
   Stage Permissions Module: Create codelet/tools/src/stage_permissions/ with StagePermissionsConfig (load/save JSON), FileCategory struct (name + glob patterns), StagePermissions (map stage names to writable categories). Integrates with work unit context from session to determine current stage. Loaded from ~/.fspec/stage-permissions.json (user) or .fspec/stage-permissions.json (project).
   """
@@ -26,14 +25,12 @@ Feature: Stage Permissions - ACDD File Write Enforcement
   #   3. File category definition: categories: {'spec': ['spec/**/*.feature'], 'test': ['src/**/*.test.ts'], 'impl': ['src/**/*.ts', '!src/**/*.test.ts']}
   #
   # ========================================
-
   Background: Stage Permissions Configuration
     Given stage permissions are defined for the project
 
   # ====================
   # TESTING STAGE
   # ====================
-
   Scenario: Block implementation file write in testing stage
     Given the current work unit is in "testing" stage
     And the project defines "impl" category as "src/**/*.ts" excluding test files
@@ -53,7 +50,6 @@ Feature: Stage Permissions - ACDD File Write Enforcement
   # ====================
   # SPECIFYING STAGE
   # ====================
-
   Scenario: Block code file write in specifying stage
     Given the current work unit is in "specifying" stage
     And "specifying" stage only allows writing to "spec" category
@@ -64,7 +60,6 @@ Feature: Stage Permissions - ACDD File Write Enforcement
   # ====================
   # BACKLOG STAGE
   # ====================
-
   Scenario: Allow attachment in backlog stage
     Given the current work unit is in "backlog" stage
     And "backlog" stage allows writing to "spec" category
@@ -74,7 +69,6 @@ Feature: Stage Permissions - ACDD File Write Enforcement
   # ====================
   # VALIDATING STAGE
   # ====================
-
   Scenario: Block all writes in validating stage
     Given the current work unit is in "validating" stage
     And "validating" stage allows writing to nothing
@@ -85,7 +79,6 @@ Feature: Stage Permissions - ACDD File Write Enforcement
   # ====================
   # DONE STAGE
   # ====================
-
   Scenario: Block all writes in done stage
     Given the current work unit is in "done" stage
     And "done" stage allows writing to nothing
@@ -96,7 +89,6 @@ Feature: Stage Permissions - ACDD File Write Enforcement
   # ====================
   # NO WORK UNIT
   # ====================
-
   Scenario: Allow all writes when no work unit is active
     Given no work unit is set for the session
     When the AI tries to write to "src/auth.ts"

@@ -22,6 +22,7 @@ napi-derive = "3"
 # Codelet crates
 codelet-cli = { path = "../cli" }
 codelet-core = { path = "../core" }
+codelet-git = { path = "../git" }
 codelet-providers = { path = "../providers" }
 codelet-tools = { path = "../tools" }
 codelet-common = { path = "../common" }

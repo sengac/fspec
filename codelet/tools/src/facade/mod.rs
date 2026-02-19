@@ -100,4 +100,6 @@ pub use wrapper::{
     // BLOCK-006: Block notification callbacks
     emit_block_notification, set_block_notification_callback, set_get_work_unit_stage_callback,
     BlockNotificationCallback, GetWorkUnitStageCallback,
+    // GIT-020: Effective CWD callback for isolated session support
+    set_get_effective_cwd_callback, get_effective_cwd, GetEffectiveCwdCallback,
 };

@@ -1,0 +1,361 @@
+{
+  "scenarios": [
+    {
+      "name": "Create isolated session with worktree",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "lines": "29-63",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                389,
+                390,
+                391,
+                392,
+                393,
+                394,
+                395,
+                396,
+                397,
+                398,
+                399,
+                400,
+                401,
+                402,
+                403,
+                404,
+                405,
+                406,
+                407,
+                408,
+                409,
+                410,
+                411,
+                412,
+                413,
+                414,
+                415,
+                416,
+                417,
+                418,
+                419,
+                420
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List all session worktrees with status",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "lines": "69-117",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "List sessions with pending merge filter",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "lines": "123-144",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                455,
+                456,
+                457,
+                458,
+                459,
+                460,
+                461,
+                462,
+                463,
+                464,
+                465,
+                466,
+                467,
+                468,
+                469,
+                470,
+                471,
+                472,
+                473,
+                474,
+                475,
+                476,
+                477,
+                478,
+                479,
+                480,
+                481,
+                482,
+                483,
+                484,
+                485,
+                486,
+                487,
+                488,
+                489,
+                490,
+                491,
+                492,
+                493
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Inspect session diff before merging",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "lines": "150-185",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                495,
+                496,
+                497,
+                498,
+                499,
+                500,
+                501,
+                502,
+                503,
+                504,
+                505,
+                506,
+                507,
+                508,
+                509,
+                510,
+                511,
+                512,
+                513,
+                514
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Merge session changes to main worktree",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "lines": "191-224",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Merge session returns conflict error",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "lines": "230-259",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                516,
+                517,
+                518,
+                519,
+                520,
+                521,
+                522,
+                523,
+                524,
+                525,
+                526,
+                527,
+                528,
+                529,
+                530,
+                531,
+                532,
+                533,
+                534,
+                535,
+                536,
+                537,
+                538,
+                539
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Discard session without applying changes",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "lines": "265-290",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                541,
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prune orphaned worktrees",
+      "testMappings": [
+        {
+          "file": "codelet/napi/tests/session_worktree_napi_test.rs",
+          "lines": "296-323",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": [
+                561,
+                562,
+                563,
+                564,
+                565,
+                566,
+                567,
+                568,
+                569,
+                570,
+                571,
+                572,
+                573,
+                574,
+                575,
+                576,
+                577,
+                578,
+                579,
+                580
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 8,
+    "coveredScenarios": 8,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/napi/tests/session_worktree_napi_test.rs"
+    ],
+    "implFiles": [
+      "codelet/napi/src/git.rs"
+    ],
+    "totalLinesCovered": 477
+  }
+}

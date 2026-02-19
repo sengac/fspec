@@ -315,7 +315,10 @@ pub fn cherry_pick(
 }
 
 /// List all sessions for a project
-pub fn list_sessions(project: &Path) -> Result<Vec<SessionManifest>, String> {
+/// 
+/// Note: This is pub(crate) to avoid collision with git::list_sessions NAPI export.
+/// External callers should use persistence_list_sessions NAPI binding.
+pub(crate) fn list_sessions(project: &Path) -> Result<Vec<SessionManifest>, String> {
     init_stores()?;
     let store = SESSION_STORE.lock().map_err(|e| e.to_string())?;
     Ok(store

@@ -575,7 +575,9 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, blocklistAllowSession, blocklistCheck, blocklistClearSessionAllowances, blocklistInit, blocklistIsSessionAllowed, blocklistLoad, blocklistProjectPath, blocklistSave, blocklistSystemPath, callFspecCommand, credentialsReload, extractThinkingText, getAllWorkUnits, getThinkingConfig, getWorkUnit, getWorkUnitStatus, globSearch, isThinkingContent, isWorkUnitsWatcherActive, JsThinkingLevel, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, NapiAnchorType, napiComputeEffectiveThinkingLevel, napiDetectThinkingLevel, napiHasDisableKeywords, NotificationSeverity, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, sessionClearActive, sessionClearHistory, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionGetActive, sessionGetAnchorPoints, sessionGetBaseThinkingLevel, sessionGetBufferedOutput, sessionGetCompactionProgress, sessionGetDebugEnabled, sessionGetFirst, sessionGetMergedOutput, sessionGetModel, sessionGetNext, sessionGetParent, sessionGetPauseState, sessionGetPendingInput, sessionGetPrev, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetTurnDetails, sessionGetWatchers, sessionGetWorkUnitContext, sessionInterrupt, sessionManagerCreate, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionPauseConfirm, sessionPauseResume, sessionPauseTriple, sessionRestoreAnchorPoints, sessionRestoreMessages, sessionRestoreTokenState, sessionSendFspecResult, sessionSendInput, sessionSetActive, sessionSetBaseThinkingLevel, sessionSetDebugEnabled, sessionSetGlobalChunkCallback, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, sessionSetWorkUnitContext, SessionState, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, startWorkUnitsWatcher, stopWorkUnitsWatcher, testCallback, testProviderConnection, toggleDebug, watcherInject } = nativeBinding
+const { abortSession, applySessionChanges, AstGrepCaseType, astGrepRefactor, astGrepReplace, astGrepSearch, AstGrepSeparator, blocklistAllowSession, blocklistCheck, blocklistClearSessionAllowances, blocklistInit, blocklistIsSessionAllowed, blocklistLoad, blocklistProjectPath, blocklistSave, blocklistSystemPath, callFspecCommand, createGhostCheckpoint, createWorktree, createWorktreeAtRef, credentialsReload, deleteGhostCheckpoint, discardSession, extractThinkingText, getAllWorkUnits, getCheckpointDiffFiles, getCurrentBranch, getFileDiff, getSessionDiff, getStagedFiles, getThinkingConfig, getUnstagedFiles, getUntrackedFiles, getWorkUnit, getWorkUnitStatus, globSearch, inspectSession, isThinkingContent, isWorkUnitsWatcherActive, JsThinkingLevel, listGhostCheckpoints, listSessions, listWorktrees, mergeSession, MessageRole, modelsGetCacheDirectory, modelsGetInfo, modelsListAll, modelsListForProvider, modelsRefreshCache, NapiAnchorType, napiComputeEffectiveThinkingLevel, napiDetectThinkingLevel, napiHasDisableKeywords, NotificationSeverity, persistenceAddHistory, persistenceAppendMessage, persistenceAppendMessageWithMetadata, persistenceBlobExists, persistenceCherryPick, persistenceCleanupOrphanedMessages, persistenceClearCompactionState, persistenceCreateSession, persistenceCreateSessionWithProvider, persistenceDeleteSession, persistenceForkSession, persistenceGetBlob, persistenceGetDataDirectory, persistenceGetHistory, persistenceGetMessage, persistenceGetMessageEnvelope, persistenceGetMessageEnvelopeRaw, persistenceGetSessionMessageEnvelopes, persistenceGetSessionMessageEnvelopesFull, persistenceGetSessionMessageEnvelopesRaw, persistenceGetSessionMessageEnvelopesRawFull, persistenceGetSessionMessages, persistenceGetSessionMessagesFull, persistenceListSessions, persistenceLoadSession, persistenceMergeMessages, persistenceRenameSession, persistenceResumeLastSession, persistenceSearchHistory, persistenceSetCompactionState, persistenceSetDataDirectory, persistenceSetSessionTokens, persistenceStoreBlob, persistenceStoreMessageEnvelope, persistenceUpdateSessionTokens, pruneOrphaned, removeWorktree, restoreGhostCheckpoint, sessionClearActive, sessionClearHistory, sessionClearObservedCorrelationIds, sessionClearRole, sessionCompact, sessionCreateWatcher, sessionGetActive, sessionGetAnchorPoints, sessionGetBaseThinkingLevel, sessionGetBufferedOutput, sessionGetCompactionProgress, sessionGetDebugEnabled, sessionGetFirst, sessionGetMergedOutput, sessionGetModel, sessionGetNext, sessionGetParent, sessionGetPauseState, sessionGetPendingInput, sessionGetPrev, sessionGetRole, sessionGetStatus, sessionGetTokens, sessionGetTurnDetails, sessionGetWatchers, sessionGetWorkUnitContext, sessionInterrupt, sessionManagerCreate, sessionManagerCreateIsolated, sessionManagerCreateWithId, sessionManagerDestroy, sessionManagerList, sessionPauseConfirm, sessionPauseResume, sessionPauseTriple, sessionRestoreAnchorPoints, sessionRestoreMessages, sessionRestoreTokenState, sessionSendFspecResult, sessionSendInput, sessionSetActive, sessionSetBaseThinkingLevel, sessionSetDebugEnabled, sessionSetGlobalChunkCallback, sessionSetModel, sessionSetObservedCorrelationIds, sessionSetPendingInput, sessionSetRole, sessionSetWorkUnitContext, SessionState, sessionToggleDebug, sessionUpdateDebugMetadata, setRustLogCallback, startWorkUnitsWatcher, stopWorkUnitsWatcher, testCallback, testProviderConnection, toggleDebug, watcherInject } = nativeBinding
+export { abortSession }
+export { applySessionChanges }
 export { AstGrepCaseType }
 export { astGrepRefactor }
 export { astGrepReplace }
@@ -591,16 +593,33 @@ export { blocklistProjectPath }
 export { blocklistSave }
 export { blocklistSystemPath }
 export { callFspecCommand }
+export { createGhostCheckpoint }
+export { createWorktree }
+export { createWorktreeAtRef }
 export { credentialsReload }
+export { deleteGhostCheckpoint }
+export { discardSession }
 export { extractThinkingText }
 export { getAllWorkUnits }
+export { getCheckpointDiffFiles }
+export { getCurrentBranch }
+export { getFileDiff }
+export { getSessionDiff }
+export { getStagedFiles }
 export { getThinkingConfig }
+export { getUnstagedFiles }
+export { getUntrackedFiles }
 export { getWorkUnit }
 export { getWorkUnitStatus }
 export { globSearch }
+export { inspectSession }
 export { isThinkingContent }
 export { isWorkUnitsWatcherActive }
 export { JsThinkingLevel }
+export { listGhostCheckpoints }
+export { listSessions }
+export { listWorktrees }
+export { mergeSession }
 export { MessageRole }
 export { modelsGetCacheDirectory }
 export { modelsGetInfo }
@@ -647,6 +666,9 @@ export { persistenceSetSessionTokens }
 export { persistenceStoreBlob }
 export { persistenceStoreMessageEnvelope }
 export { persistenceUpdateSessionTokens }
+export { pruneOrphaned }
+export { removeWorktree }
+export { restoreGhostCheckpoint }
 export { sessionClearActive }
 export { sessionClearHistory }
 export { sessionClearObservedCorrelationIds }
@@ -675,6 +697,7 @@ export { sessionGetWatchers }
 export { sessionGetWorkUnitContext }
 export { sessionInterrupt }
 export { sessionManagerCreate }
+export { sessionManagerCreateIsolated }
 export { sessionManagerCreateWithId }
 export { sessionManagerDestroy }
 export { sessionManagerList }

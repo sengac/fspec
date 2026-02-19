@@ -1,6 +1,5 @@
 @BLOCK-005
 Feature: Sensitive Path Prompts
-
   """
   Prompt Dialog: Extend existing ConfirmationDialog component with a new 'triple' confirmMode that shows three buttons [Allow Once] [Allow Session] [Deny]. Uses visual mode pattern with ←/→ navigation. Triggered from tool facade middleware when rule.action='prompt'.
   Session Allowances: Stored in Arc<RwLock<HashSet<String>>> keyed by matched pattern. Wire up NAPI binding blocklist_allow_session. Memory cleared on TUI restart.
@@ -22,14 +21,12 @@ Feature: Sensitive Path Prompts
   #   3. Deny: User chooses Deny → Read blocked → AI receives error
   #
   # ========================================
-
   Background: Sensitive Path Rules Configured
     Given the user has fspec configured with sensitive path rules
 
   # ====================
   # SSH DIRECTORY ACCESS
   # ====================
-
   Scenario: Prompt for SSH config access - user allows once
     Given a blocklist rule exists prompting for "~/.ssh" access with reason "SSH directory contains private keys"
     When the AI tries to read "~/.ssh/config"
@@ -56,7 +53,6 @@ Feature: Sensitive Path Prompts
   # ====================
   # ENVIRONMENT FILES
   # ====================
-
   Scenario: Prompt for environment file access
     Given a blocklist rule exists prompting for ".env" files with reason "Environment files may contain secrets"
     When the AI tries to read ".env"
@@ -65,7 +61,6 @@ Feature: Sensitive Path Prompts
   # ====================
   # FSPEC CONFIG
   # ====================
-
   Scenario: Prompt for fspec config access
     Given a blocklist rule exists prompting for "~/.fspec" access
     When the AI tries to read "~/.fspec/blocklist.json"
@@ -74,7 +69,6 @@ Feature: Sensitive Path Prompts
   # ====================
   # SESSION MEMORY
   # ====================
-
   Scenario: Session allowances cleared on TUI restart
     Given a blocklist rule prompts for "npm install" commands
     When the AI runs "npm install" and user allows for session

@@ -1,0 +1,291 @@
+{
+  "scenarios": [
+    {
+      "name": "Create isolated session with worktree",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/isolated-session-napi.test.ts",
+          "lines": "68-98",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5655,
+                5656,
+                5657,
+                5658,
+                5659,
+                5660,
+                5661,
+                5662,
+                5663,
+                5664,
+                5665,
+                5666,
+                5667,
+                5668,
+                5669,
+                5670,
+                5671,
+                5672,
+                5673,
+                5674,
+                5675,
+                5676,
+                5677,
+                5678,
+                5679,
+                5680,
+                5681,
+                5682,
+                5683,
+                5684,
+                5685,
+                5686,
+                5687,
+                5688,
+                5689,
+                5690,
+                5691,
+                5692,
+                5693
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Isolated session files appear in worktree not main project",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/isolated-session-napi.test.ts",
+          "lines": "100-125",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5655,
+                5656,
+                5657,
+                5658,
+                5659,
+                5660,
+                5661,
+                5662,
+                5663,
+                5664,
+                5665,
+                5666,
+                5667,
+                5668,
+                5669,
+                5670,
+                5671,
+                5672,
+                5673,
+                5674,
+                5675,
+                5676,
+                5677,
+                5678,
+                5679,
+                5680,
+                5681,
+                5682,
+                5683,
+                5684,
+                5685,
+                5686,
+                5687,
+                5688,
+                5689,
+                5690,
+                5691,
+                5692,
+                5693
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Creating duplicate isolated session fails with WorktreeExists error",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/isolated-session-napi.test.ts",
+          "lines": "127-152",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5655,
+                5656,
+                5657,
+                5658,
+                5659,
+                5660,
+                5661,
+                5662,
+                5663,
+                5664,
+                5665,
+                5666,
+                5667,
+                5668,
+                5669,
+                5670,
+                5671,
+                5672,
+                5673,
+                5674,
+                5675,
+                5676,
+                5677,
+                5678,
+                5679,
+                5680,
+                5681,
+                5682,
+                5683,
+                5684,
+                5685,
+                5686,
+                5687,
+                5688,
+                5689,
+                5690,
+                5691,
+                5692,
+                5693
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session manifest created for orphan detection",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/isolated-session-napi.test.ts",
+          "lines": "154-180",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5655,
+                5656,
+                5657,
+                5658,
+                5659,
+                5660,
+                5661,
+                5662,
+                5663,
+                5664,
+                5665,
+                5666,
+                5667,
+                5668,
+                5669,
+                5670,
+                5671,
+                5672,
+                5673,
+                5674,
+                5675,
+                5676,
+                5677,
+                5678,
+                5679,
+                5680,
+                5681,
+                5682,
+                5683,
+                5684,
+                5685,
+                5686,
+                5687,
+                5688,
+                5689,
+                5690,
+                5691,
+                5692,
+                5693
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Isolated session appears in listSessions with active status",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/isolated-session-napi.test.ts",
+          "lines": "182-205",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                5655,
+                5656,
+                5657,
+                5658,
+                5659,
+                5660,
+                5661,
+                5662,
+                5663,
+                5664,
+                5665,
+                5666,
+                5667,
+                5668,
+                5669,
+                5670,
+                5671,
+                5672,
+                5673,
+                5674,
+                5675,
+                5676,
+                5677,
+                5678,
+                5679,
+                5680,
+                5681,
+                5682,
+                5683,
+                5684,
+                5685,
+                5686,
+                5687,
+                5688,
+                5689,
+                5690,
+                5691,
+                5692,
+                5693
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 5,
+    "coveredScenarios": 5,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/__tests__/isolated-session-napi.test.ts"
+    ],
+    "implFiles": [
+      "codelet/napi/src/session_manager.rs"
+    ],
+    "totalLinesCovered": 329
+  }
+}

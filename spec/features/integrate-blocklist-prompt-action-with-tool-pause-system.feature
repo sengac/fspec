@@ -1,7 +1,6 @@
 @done
 @BLOCK-007
 Feature: Integrate Blocklist Prompt Action with Tool Pause System
-
   """
   Add PauseKind::Triple variant to codelet/tools/src/tool_pause.rs alongside Continue and Confirm
   Add PauseResponse::AllowOnce and PauseResponse::AllowSession variants
@@ -35,7 +34,6 @@ Feature: Integrate Blocklist Prompt Action with Tool Pause System
   #   6. User restarts TUI → Session allowances cleared → AI reads ~/.env → Prompt shown again
   #
   # ========================================
-
   Background: User Story
     As a developer using the TUI
     I want to be prompted with Allow Once / Allow Session / Deny when AI accesses sensitive files
@@ -44,7 +42,6 @@ Feature: Integrate Blocklist Prompt Action with Tool Pause System
   # ====================
   # ALLOW ONCE BEHAVIOR
   # ====================
-
   Scenario: User allows sensitive file access once
     Given a blocklist rule with action "prompt" exists for ".env" files
     And the AI session is active
@@ -59,7 +56,6 @@ Feature: Integrate Blocklist Prompt Action with Tool Pause System
   # ====================
   # ALLOW SESSION BEHAVIOR
   # ====================
-
   Scenario: User allows sensitive file access for session
     Given a blocklist rule with action "prompt" exists for "~/.ssh" access
     And the AI session is active
@@ -73,7 +69,6 @@ Feature: Integrate Blocklist Prompt Action with Tool Pause System
   # ====================
   # DENY BEHAVIOR
   # ====================
-
   Scenario: User denies sensitive file access
     Given a blocklist rule with action "prompt" exists for ".env" files
     And the AI session is active
@@ -86,7 +81,6 @@ Feature: Integrate Blocklist Prompt Action with Tool Pause System
   # ====================
   # SESSION MEMORY
   # ====================
-
   Scenario: Session allowances bypass prompting
     Given a blocklist rule with action "prompt" exists for ".env" files
     And the user previously allowed ".env" pattern for the session
@@ -99,7 +93,3 @@ Feature: Integrate Blocklist Prompt Action with Tool Pause System
     When the user restarts the TUI
     And the AI attempts to read "~/.env"
     Then the TUI should prompt again
-
-  # ====================
-  # TUI DISPLAY
-  # ====================

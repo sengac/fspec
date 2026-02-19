@@ -17,6 +17,8 @@ mod blocklist;
 #[cfg(not(feature = "noop"))]
 mod fspec;
 #[cfg(not(feature = "noop"))]
+mod git;
+#[cfg(not(feature = "noop"))]
 mod glob;
 #[cfg(not(feature = "noop"))]
 mod models;
@@ -52,6 +54,8 @@ pub use astgrep::*;
 pub use blocklist::*;
 #[cfg(not(feature = "noop"))]
 pub use fspec::*;
+#[cfg(not(feature = "noop"))]
+pub use git::*;
 #[cfg(not(feature = "noop"))]
 pub use glob::*;
 #[cfg(not(feature = "noop"))]

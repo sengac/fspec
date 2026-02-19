@@ -1,6 +1,5 @@
 @BLOCK-004
 Feature: Blocklist TUI - List/Form Views
-
   """
   TUI Components: Create BlocklistListView.tsx (full-screen overlay, follows WatcherTemplateList pattern) and BlocklistFormView.tsx (full-screen form, follows WatcherCreateView pattern). Both use position=absolute with full width/height, black background, header with border, scrollable content, footer with keyboard hints. Use useInputCompat with InputPriority.CRITICAL.
   Integration Points: Register /blocklist in slashCommands.ts. Add isBlocklistMode state to AgentView.tsx.
@@ -24,7 +23,6 @@ Feature: Blocklist TUI - List/Form Views
   #   4. Session cleared: User restarts TUI → 'git-checkout-block' rule is active again
   #
   # ========================================
-
   Background: Blocklist TUI Available
     Given the user has fspec TUI running
     And blocklist rules are configured
@@ -32,7 +30,6 @@ Feature: Blocklist TUI - List/Form Views
   # ====================
   # VIEWING RULES
   # ====================
-
   Scenario: View blocklist rules via /blocklist command
     Given system blocklist has rules "git-checkout-block" and "cat-block"
     And project blocklist has rule "rm-rf-allow-node-modules"
@@ -52,7 +49,6 @@ Feature: Blocklist TUI - List/Form Views
   # ====================
   # SESSION RULE TOGGLE
   # ====================
-
   Scenario: User disables rule for session
     Given a blocklist rule "git-checkout-block" exists blocking "git checkout"
     When the user runs "/blocklist" command
@@ -77,7 +73,6 @@ Feature: Blocklist TUI - List/Form Views
   # ====================
   # KEYBOARD NAVIGATION
   # ====================
-
   Scenario: Navigate blocklist with keyboard
     Given the user has run "/blocklist" command
     When the user presses "j" or down arrow

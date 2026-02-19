@@ -2058,12 +2058,20 @@
           "description": "Missing message ID edge case scenarios"
         },
         {
+          "name": "@orphan-detection",
+          "description": "Tests for orphan detection logic"
+        },
+        {
           "name": "@overwrite",
           "description": "Tests overwrite behavior (file replacement without prompts)"
         },
         {
           "name": "@prerequisites",
           "description": "Prerequisite validation scenarios"
+        },
+        {
+          "name": "@prune",
+          "description": "Tests for pruning operations"
         },
         {
           "name": "@regression",
@@ -2346,7 +2354,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-13T23:35:24.836Z",
+    "lastUpdated": "2026-02-19T00:11:35.702Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

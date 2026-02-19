@@ -1,6 +1,5 @@
 @BLOCK-006
 Feature: Block Notifications
-
   """
   Block Notifications: When AI action is blocked, emit a notification event to TUI showing 'AI was blocked from {action} - {reason}'. Use existing NotificationDialog or toast pattern. Notifications appear briefly then auto-dismiss, allowing user to see what AI attempted.
   """
@@ -20,14 +19,12 @@ Feature: Block Notifications
   #   2. Command block notification: AI runs 'git checkout' → User sees toast: 'AI was blocked from git checkout - Use git switch instead'
   #
   # ========================================
-
   Background: Block Notifications Enabled
     Given the user has fspec TUI running with notifications enabled
 
   # ====================
   # NOTIFICATION DISPLAY
   # ====================
-
   Scenario: Notify user when AI command is blocked
     Given a blocklist rule exists blocking "git checkout" with reason "Use git switch instead"
     When the AI runs "git checkout main" via Bash

@@ -2,7 +2,6 @@
 @tools
 @BLOCK-002
 Feature: Blocklist Core - Command/Tool Filtering
-
   """
   Rust Blocklist Module: Create codelet/tools/src/blocklist/ with BlocklistConfig (load/save JSON), BlocklistRule struct, BlocklistMatcher (regex evaluation). FilterMiddleware wraps existing tool execution in FacadeToolWrapper, checks rules before passing to base tool.
   NAPI Bindings: Wire up blocklist_load, blocklist_save, blocklist_check. Config stored at ~/.fspec/blocklist.json (user) or .fspec/blocklist.json (project), project takes precedence.
@@ -25,14 +24,12 @@ Feature: Blocklist Core - Command/Tool Filtering
   #   3. Config hierarchy: System blocks 'rm -rf' → Project allows 'rm -rf ./node_modules' → AI runs it → Allowed
   #
   # ========================================
-
   Background: Blocklist Configuration
     Given the user has fspec configured with blocklist rules
 
   # ====================
   # COMMAND BLOCKING
   # ====================
-
   Scenario: Block dangerous command with guidance
     Given a blocklist rule exists blocking "git checkout" with reason "Use git switch instead"
     When the AI runs "git checkout main" via Bash
@@ -48,7 +45,6 @@ Feature: Blocklist Core - Command/Tool Filtering
   # ====================
   # CONFIG HIERARCHY
   # ====================
-
   Scenario: Project config overrides system config
     Given system blocklist at "~/.fspec/blocklist.json" blocks "rm -rf"
     And project blocklist at ".fspec/blocklist.json" allows "rm -rf ./node_modules"

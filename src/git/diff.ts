@@ -1,10 +1,11 @@
 /**
- * Git diff operations using isomorphic-git
+ * Git diff operations using gitoxide (gix) via NAPI bindings
  */
 
-import git from 'isomorphic-git';
-import fsNode from 'fs';
+import { getFileDiff as napiGetFileDiff } from '@sengac/codelet-napi';
+import { execSync } from 'child_process';
 import path from 'path';
+import { readFileSync, existsSync } from 'fs';
 import { diffLines, Change } from 'diff';
 
 /**
@@ -18,54 +19,8 @@ export async function getFileDiff(
   filepath: string
 ): Promise<string | null> {
   try {
-    const fullPath = path.join(cwd, filepath);
-    const fs = fsNode.promises;
-
-    // Check if file exists
-    try {
-      await fs.access(fullPath);
-    } catch {
-      return null;
-    }
-
-    // Get HEAD version of file (if it exists)
-    let headBuffer = Buffer.alloc(0);
-    let headContent = '';
-    try {
-      const headCommitOid = await git.resolveRef({
-        fs: fsNode,
-        dir: cwd,
-        ref: 'HEAD',
-      });
-      const { blob } = await git.readBlob({
-        fs: fsNode,
-        dir: cwd,
-        oid: headCommitOid,
-        filepath,
-      });
-      headBuffer = Buffer.from(blob);
-      headContent = headBuffer.toString('utf8');
-    } catch {
-      // File doesn't exist in HEAD (new file)
-      headContent = '';
-    }
-
-    // Get working directory version
-    const workingBuffer = await fs.readFile(fullPath);
-    const workingContent = workingBuffer.toString('utf8');
-
-    // Check if either version is binary
-    if (isBinaryContent(headBuffer) || isBinaryContent(workingBuffer)) {
-      return '[Binary file - no diff available]';
-    }
-
-    // If contents are identical, no diff
-    if (headContent === workingContent) {
-      return null;
-    }
-
-    // Generate unified diff
-    return generateUnifiedDiff(filepath, headContent, workingContent);
+    const result = napiGetFileDiff(cwd, filepath);
+    return result ?? null;
   } catch (error) {
     throw new Error(
       `Failed to get diff for ${filepath}: ${error instanceof Error ? error.message : String(error)}`
@@ -86,51 +41,35 @@ export async function getCheckpointFileDiff(
   checkpointRef: string
 ): Promise<string | null> {
   try {
-    // Get checkpoint version of file
-    let checkpointBuffer = Buffer.alloc(0);
+    // Get checkpoint version of file using git CLI
     let checkpointContent = '';
     try {
-      const checkpointOid = await git.resolveRef({
-        fs: fsNode,
-        dir: cwd,
-        ref: checkpointRef,
+      checkpointContent = execSync(`git show "${checkpointRef}:${filepath}"`, {
+        cwd,
+        encoding: 'utf8',
+        timeout: 5000,
       });
-      const { blob } = await git.readBlob({
-        fs: fsNode,
-        dir: cwd,
-        oid: checkpointOid,
-        filepath,
-      });
-      checkpointBuffer = Buffer.from(blob);
-      checkpointContent = checkpointBuffer.toString('utf8');
     } catch {
       // File doesn't exist in checkpoint - will be deleted on restore
       return `Will be deleted on restore: ${filepath}\n\nThis file exists in HEAD but not in the checkpoint.\nRestoring the checkpoint will remove this file from the working directory.`;
     }
 
-    // Get HEAD version of file (if it exists)
-    let headBuffer = Buffer.alloc(0);
+    // Get HEAD version of file
     let headContent = '';
     try {
-      const headCommitOid = await git.resolveRef({
-        fs: fsNode,
-        dir: cwd,
-        ref: 'HEAD',
+      headContent = execSync(`git show HEAD:"${filepath}"`, {
+        cwd,
+        encoding: 'utf8',
+        timeout: 5000,
       });
-      const { blob } = await git.readBlob({
-        fs: fsNode,
-        dir: cwd,
-        oid: headCommitOid,
-        filepath,
-      });
-      headBuffer = Buffer.from(blob);
-      headContent = headBuffer.toString('utf8');
     } catch {
       // File doesn't exist in HEAD (was deleted)
       headContent = '';
     }
 
     // Check if either version is binary
+    const checkpointBuffer = Buffer.from(checkpointContent);
+    const headBuffer = Buffer.from(headContent);
     if (isBinaryContent(headBuffer) || isBinaryContent(checkpointBuffer)) {
       return '[Binary file - no diff available]';
     }

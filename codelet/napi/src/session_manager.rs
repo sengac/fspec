@@ -19,12 +19,20 @@ use codelet_cli::session::context_gathering::gather_environment_info;
 use codelet_common::debug_capture::{
     get_debug_capture_manager, handle_debug_command_with_dir, SessionMetadata,
 };
+use codelet_git::ghost_commit::{
+    create_ghost_commit, restore_ghost_commit, list_ghost_checkpoints,
+    GhostCheckpoint, RestoreResult,
+};
+use codelet_git::{
+    create_worktree, create_session_manifest,
+};
 use codelet_tools::{clear_bash_abort, request_bash_abort};
 use codelet_tools::tool_pause::{PauseKind, PauseRequest, PauseResponse, PauseState, set_pause_handler, PauseHandler};
 use napi::bindgen_prelude::*;
 use napi::threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode};
 use once_cell::sync::OnceCell;
 use std::collections::HashMap;
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU32, AtomicU64, Ordering};
 use std::sync::{Arc, RwLock};
 use tokio::sync::{broadcast, mpsc, Mutex, Notify};
@@ -853,6 +861,34 @@ impl From<PauseState> for NapiPauseState {
     }
 }
 
+/// GIT-021: Error type for session checkpoint operations
+#[derive(Debug)]
+pub enum SessionError {
+    /// Session is not isolated - checkpoint operations require an isolated session with worktree
+    NotIsolated,
+    /// Git operation failed
+    GitError(codelet_git::GitError),
+}
+
+impl std::fmt::Display for SessionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SessionError::NotIsolated => {
+                write!(f, "Session is not isolated - checkpoint operations require an isolated session with worktree")
+            }
+            SessionError::GitError(e) => write!(f, "Git error: {}", e),
+        }
+    }
+}
+
+impl std::error::Error for SessionError {}
+
+impl From<codelet_git::GitError> for SessionError {
+    fn from(err: codelet_git::GitError) -> Self {
+        SessionError::GitError(err)
+    }
+}
+
 /// Background session that runs agent in a tokio task.
 ///
 /// The `id` field serves as the persistence identifier - TypeScript stores this ID
@@ -947,10 +983,20 @@ pub struct BackgroundSession {
     /// TUI-059: Base environment content (without work unit)
     /// Stored so we can compose full environment info when work unit changes
     base_environment_content: RwLock<String>,
+    
+    /// GIT-019: Path to worktree for isolated sessions
+    /// Only set when session was created with isolated=true
+    pub worktree_path: Option<PathBuf>,
+    
+    /// GIT-019: Base commit SHA for isolated sessions
+    /// The commit the worktree was created from
+    pub base_commit: Option<String>,
 }
 
 impl BackgroundSession {
     /// Create a new background session
+    /// 
+    /// GIT-019: Added worktree_path and base_commit parameters for isolated session support
     pub(crate) fn new(
         id: Uuid,
         name: String,
@@ -959,6 +1005,8 @@ impl BackgroundSession {
         model_id: Option<String>,
         inner: codelet_cli::session::Session,
         input_tx: mpsc::Sender<PromptInput>,
+        worktree_path: Option<PathBuf>,
+        base_commit: Option<String>,
     ) -> Self {
         // Create watcher input channel (WATCH-006)
         let (watcher_input_tx, watcher_input_rx) = mpsc::channel::<WatcherInput>(16);
@@ -1002,7 +1050,74 @@ impl BackgroundSession {
             work_unit_context: RwLock::new(None), // TUI-059: No work unit context initially
             // TUI-059: Store base environment content for composing with work unit later
             base_environment_content: RwLock::new(gather_environment_info().to_reminder_content()),
+            // GIT-019: Worktree path and base commit for isolated sessions
+            worktree_path,
+            base_commit,
         }
+    }
+
+    /// GIT-019: Returns the effective working directory for this session
+    /// 
+    /// - For isolated sessions: returns the worktree path
+    /// - For non-isolated sessions: returns the project root
+    pub fn effective_cwd(&self) -> PathBuf {
+        self.worktree_path
+            .clone()
+            .unwrap_or_else(|| PathBuf::from(&self.project))
+    }
+
+    /// GIT-021: Create a checkpoint capturing current worktree state
+    /// 
+    /// Uses ghost commits to capture all working tree state (staged, unstaged, untracked files).
+    /// Checkpoints are stored at refs/fspec-checkpoints/<session-id>/<label>
+    /// 
+    /// # Arguments
+    /// * `label` - Name for the checkpoint
+    /// 
+    /// # Errors
+    /// * `SessionError::NotIsolated` - Session is not isolated (no worktree)
+    /// * `SessionError::GitError` - Git operation failed
+    pub fn checkpoint(&self, label: &str) -> std::result::Result<GhostCheckpoint, SessionError> {
+        let worktree_path = self.worktree_path.as_ref()
+            .ok_or(SessionError::NotIsolated)?;
+        
+        // Use session ID as the work_unit_id for checkpoint namespace
+        create_ghost_commit(worktree_path, &self.id.to_string(), label)
+            .map_err(SessionError::from)
+    }
+
+    /// GIT-021: Restore worktree to checkpoint state
+    /// 
+    /// Restores all files from the specified checkpoint, deleting files that
+    /// were created after the checkpoint.
+    /// 
+    /// # Arguments
+    /// * `label` - Name of the checkpoint to restore
+    /// 
+    /// # Errors
+    /// * `SessionError::NotIsolated` - Session is not isolated (no worktree)
+    /// * `SessionError::GitError` - Git operation failed
+    pub fn restore(&self, label: &str) -> std::result::Result<RestoreResult, SessionError> {
+        let worktree_path = self.worktree_path.as_ref()
+            .ok_or(SessionError::NotIsolated)?;
+        
+        restore_ghost_commit(worktree_path, &self.id.to_string(), label, true)
+            .map_err(SessionError::from)
+    }
+
+    /// GIT-021: List all checkpoints for this session
+    /// 
+    /// Returns all checkpoint labels that have been created for this session.
+    /// 
+    /// # Errors
+    /// * `SessionError::NotIsolated` - Session is not isolated (no worktree)
+    /// * `SessionError::GitError` - Git operation failed
+    pub fn list_checkpoints(&self) -> std::result::Result<Vec<String>, SessionError> {
+        let worktree_path = self.worktree_path.as_ref()
+            .ok_or(SessionError::NotIsolated)?;
+        
+        list_ghost_checkpoints(worktree_path, &self.id.to_string())
+            .map_err(SessionError::from)
     }
 
     /// Get debug enabled state
@@ -4018,6 +4133,8 @@ impl SessionManager {
             model_id,
             inner,
             input_tx,
+            None, // GIT-019: worktree_path (non-isolated by default)
+            None, // GIT-019: base_commit (non-isolated by default)
         ));
         
         // Spawn agent loop task
@@ -4034,6 +4151,136 @@ impl SessionManager {
         self.set_active_session(uuid);
         
         Ok(())
+    }
+
+    /// GIT-028: Create an isolated session with a git worktree.
+    ///
+    /// Creates a session that operates in an isolated git worktree at
+    /// `.fspec/worktrees/<session-id>/`. Also creates a session manifest
+    /// at `~/.fspec/git-sessions/<session-id>.json` for orphan detection.
+    ///
+    /// Returns IsolatedSessionResult with worktree path and base commit.
+    pub async fn create_isolated_session_with_id(
+        &self,
+        id: &str,
+        model: &str,
+        project: &str,
+        name: &str,
+    ) -> Result<IsolatedSessionResult> {
+        let uuid = Uuid::parse_str(id)
+            .map_err(|e| Error::from_reason(format!("Invalid session ID: {}", e)))?;
+
+        // Check session limits in a block to ensure lock is dropped before async operations
+        {
+            let sessions = self.sessions.read().expect("sessions lock poisoned");
+            if sessions.len() >= MAX_SESSIONS {
+                return Err(Error::from_reason(format!(
+                    "Maximum sessions ({}) reached",
+                    MAX_SESSIONS
+                )));
+            }
+            if sessions.contains_key(&uuid) {
+                return Err(Error::from_reason(format!(
+                    "Session {} already exists",
+                    id
+                )));
+            }
+        }
+
+        // GIT-028: Create worktree for isolated session
+        let worktree_result = create_worktree(project, id)
+            .map_err(|e| Error::from_reason(format!("Failed to create worktree: {}", e)))?;
+        
+        let worktree_path = worktree_result.info.path.clone();
+        let base_commit = worktree_result.base_commit.clone();
+
+        // GIT-028: Create session manifest for orphan detection
+        create_session_manifest(
+            id,
+            project,
+            Some(worktree_path.clone()),
+            Some(base_commit.clone()),
+        ).map_err(|e| Error::from_reason(format!("Failed to create session manifest: {}", e)))?;
+
+        let (input_tx, input_rx) = mpsc::channel::<PromptInput>(32);
+
+        // Load environment variables from .env file (if present)
+        let _ = dotenvy::dotenv();
+
+        // Require model string in "provider/model-id" format
+        if !model.contains('/') || model.is_empty() {
+            return Err(Error::from_reason(format!(
+                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
+                model
+            )));
+        }
+
+        // Parse model string to extract provider_id and model_id for storage
+        let parts: Vec<&str> = model.split('/').collect();
+        let registry_provider = parts.first().unwrap_or(&"");
+        let model_part = parts.get(1).unwrap_or(&"");
+
+        // Validate both parts are non-empty
+        if registry_provider.is_empty() || model_part.is_empty() {
+            return Err(Error::from_reason(format!(
+                "Invalid model string '{}': must be in 'provider/model-id' format (e.g., 'anthropic/claude-opus-4-5')",
+                model
+            )));
+        }
+
+        let (provider_id, model_id) = (Some(registry_provider.to_string()), Some(model_part.to_string()));
+
+        // Resolve credentials internally using the credentials module.
+        let project_path = std::path::PathBuf::from(project);
+        if let Err(e) = crate::credentials::resolve_and_set_env_var(registry_provider, Some(project_path.as_path())) {
+            tracing::error!("Failed to resolve credentials for provider {}: {}", registry_provider, e);
+        }
+
+        // Create ProviderManager with model registry support and select the model
+        let mut provider_manager = codelet_providers::ProviderManager::with_model_support()
+            .await
+            .map_err(|e| Error::from_reason(format!("Failed to create provider manager: {}", e)))?;
+
+        // Select the model (validates against registry)
+        provider_manager.select_model(model)
+            .map_err(|e| Error::from_reason(format!("Failed to select model: {}", e)))?;
+
+        // Create session from the configured provider manager
+        let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
+
+        // Inject context reminders (CLAUDE.md discovery, environment info)
+        inner.inject_context_reminders();
+
+        // GIT-028: Create BackgroundSession with worktree_path and base_commit populated
+        let session = Arc::new(BackgroundSession::new(
+            uuid,
+            name.to_string(),
+            project.to_string(),
+            provider_id,
+            model_id,
+            inner,
+            input_tx,
+            Some(worktree_path.clone()), // GIT-028: Isolated session worktree
+            Some(base_commit.clone()),    // GIT-028: Base commit for isolation
+        ));
+        
+        // Spawn agent loop task
+        let session_clone = session.clone();
+        tokio::spawn(async move {
+            agent_loop(session_clone, input_rx).await;
+        });
+        
+        // Store session
+        self.sessions.write().expect("sessions lock poisoned").insert(uuid, session);
+        
+        // VIEWNV-001: Set newly created session as active for navigation purposes
+        self.set_active_session(uuid);
+        
+        Ok(IsolatedSessionResult {
+            session_id: id.to_string(),
+            worktree_path: worktree_path.to_string_lossy().to_string(),
+            base_commit,
+        })
     }
     
     /// Create a watcher session that observes a parent session (WATCH-019)
@@ -4128,6 +4375,8 @@ impl SessionManager {
             model_id,
             inner,
             input_tx,
+            None, // GIT-019: watcher sessions are always non-isolated
+            None, // GIT-019: no base_commit for watcher sessions
         ));
         
         // Set the watcher role
@@ -5512,6 +5761,43 @@ pub async fn session_manager_create_with_id(
     SessionManager::instance().create_session_with_id(&session_id, &model, &project, &name).await
 }
 
+/// GIT-028: Result of creating an isolated session
+#[napi(object)]
+pub struct IsolatedSessionResult {
+    /// Session ID
+    pub session_id: String,
+    /// Path to the worktree directory
+    pub worktree_path: String,
+    /// Base commit SHA the worktree was created from
+    pub base_commit: String,
+}
+
+/// GIT-028: Create an isolated background session with a git worktree.
+///
+/// This creates a session that operates in an isolated git worktree,
+/// allowing the AI agent to make file changes without affecting the main project.
+/// The worktree is created at `.fspec/worktrees/<session-id>/`.
+///
+/// A session manifest is also created at `~/.fspec/git-sessions/<session-id>.json`
+/// for orphan detection and management.
+///
+/// @param session_id - Unique session identifier (UUID format)
+/// @param model - Model path in "provider/model-id" format
+/// @param project - Path to the git repository
+/// @param name - Display name for the session
+/// @returns IsolatedSessionResult with worktree path and base commit
+#[napi]
+pub async fn session_manager_create_isolated(
+    session_id: String,
+    model: String,
+    project: String,
+    name: String,
+) -> Result<IsolatedSessionResult> {
+    SessionManager::instance()
+        .create_isolated_session_with_id(&session_id, &model, &project, &name)
+        .await
+}
+
 /// List all background sessions
 #[napi]
 pub fn session_manager_list() -> Vec<SessionInfo> {
@@ -5551,7 +5837,7 @@ pub fn session_set_global_chunk_callback(callback: ThreadsafeFunction<GlobalChun
 // ============================================================================
 
 use codelet_tools::facade::{
-    set_block_notification_callback, set_get_work_unit_stage_callback,
+    set_block_notification_callback, set_get_work_unit_stage_callback, set_get_effective_cwd_callback,
 };
 
 /// Initialize the block notification callbacks for the tools crate.
@@ -5562,6 +5848,9 @@ fn init_block_notification_callbacks() {
     
     // Register the work unit stage callback
     set_get_work_unit_stage_callback(get_session_work_unit_stage);
+    
+    // GIT-020: Register the effective_cwd callback
+    set_get_effective_cwd_callback(get_session_effective_cwd);
 }
 
 /// Callback function that emits a block notification to the TUI.
@@ -5592,6 +5881,24 @@ fn get_session_work_unit_stage(session_id_str: String) -> Option<String> {
             // Return the status (stage) if available
             return ctx.status;
         }
+    }
+    
+    None
+}
+
+/// GIT-020: Callback function that retrieves the effective_cwd for a session.
+/// Called by FileToolFacadeWrapper and BashToolFacadeWrapper for isolated session support.
+///
+/// For isolated sessions, returns the worktree path.
+/// For non-isolated sessions, returns the project root.
+fn get_session_effective_cwd(session_id_str: String) -> Option<std::path::PathBuf> {
+    // Try to get the session from the SessionManager
+    let manager = SessionManager::instance();
+    
+    // Get the session by ID (handles UUID parsing internally)
+    if let Ok(session) = manager.get_session(&session_id_str) {
+        // Get the effective_cwd from the session (worktree path for isolated, project root for non-isolated)
+        return Some(session.effective_cwd());
     }
     
     None

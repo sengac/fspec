@@ -2,7 +2,6 @@
 @integration
 @BLOCK-001
 Feature: Blocklist System Integration Tests
-
   """
   Integration tests should be placed in codelet/tools/tests/ for Rust E2E tests and src/__tests__/integration/ for TypeScript/React E2E tests
   Use mock file system and mock session context to test complete flows without requiring actual TUI rendering
@@ -49,7 +48,6 @@ Feature: Blocklist System Integration Tests
   #   A: backlog = nothing (work hasn't started), validating = nothing (if you need changes, go back to implementing), done = nothing (if you need changes, reopen it)
   #
   # ========================================
-
   Background: User Story
     As a developer
     I want to run integration tests for the blocklist system
@@ -66,7 +64,6 @@ Feature: Blocklist System Integration Tests
     When the TUI is restarted
     Then the rule should be active again
 
-
   Scenario: Stage permissions block and allow based on work unit state
     Given a work unit is in "testing" stage
     When the AI tries to write to "src/auth.ts"
@@ -77,7 +74,6 @@ Feature: Blocklist System Integration Tests
     When the work unit is moved to "implementing" stage
     And the AI tries to write to "src/auth.ts"
     Then the write should now be allowed
-
 
   Scenario: Sensitive path prompts with session memory
     Given a blocklist rule exists prompting for "~/.ssh" access
@@ -91,7 +87,6 @@ Feature: Blocklist System Integration Tests
     And the AI tries to read "~/.ssh/id_rsa"
     Then a prompt should appear again
 
-
   Scenario: TUI blocklist view with session toggle
     Given system and project blocklist configs are loaded
     When the user opens /blocklist
@@ -102,10 +97,8 @@ Feature: Blocklist System Integration Tests
     When the user re-opens /blocklist
     Then the rule should show disabled state
 
-
   Scenario: Blocklist system initializes automatically at TUI startup
     Given a blocklist config exists at system level with a blocking rule
     When the TUI starts up
     Then blocklist rules should be loaded and active
     Then blocked commands should be rejected when executed
-

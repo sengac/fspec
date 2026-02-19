@@ -1,0 +1,422 @@
+{
+  "scenarios": [
+    {
+      "name": "Detect orphaned worktree when session manifest is missing",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_orphan_pruning_tests.rs",
+          "lines": "42-72",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_status.rs",
+              "lines": [
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Detect orphaned worktree when session manifest is terminated",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_orphan_pruning_tests.rs",
+          "lines": "79-117",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_status.rs",
+              "lines": [
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Active session with missing manifest is not orphaned",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_orphan_pruning_tests.rs",
+          "lines": "124-154",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_status.rs",
+              "lines": [
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session with valid non-terminated manifest is not orphaned",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_orphan_pruning_tests.rs",
+          "lines": "161-199",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_status.rs",
+              "lines": [
+                630,
+                631,
+                632,
+                633,
+                634,
+                635,
+                636,
+                637,
+                638,
+                639,
+                640,
+                641,
+                642,
+                643,
+                644,
+                645,
+                646,
+                647,
+                648,
+                649,
+                650,
+                651,
+                652,
+                653,
+                654,
+                655,
+                656,
+                657,
+                658,
+                659,
+                660,
+                661,
+                662,
+                663,
+                664,
+                665,
+                666,
+                667,
+                668,
+                669,
+                670,
+                671,
+                672,
+                673,
+                674
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prune all orphaned worktrees",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_orphan_pruning_tests.rs",
+          "lines": "206-276",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_status.rs",
+              "lines": [
+                676,
+                677,
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684,
+                685,
+                686,
+                687,
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prune returns zero when no orphaned worktrees exist",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_orphan_pruning_tests.rs",
+          "lines": "283-343",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_status.rs",
+              "lines": [
+                676,
+                677,
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684,
+                685,
+                686,
+                687,
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Prune returns list of pruned session IDs",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_orphan_pruning_tests.rs",
+          "lines": "350-409",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_status.rs",
+              "lines": [
+                676,
+                677,
+                678,
+                679,
+                680,
+                681,
+                682,
+                683,
+                684,
+                685,
+                686,
+                687,
+                688,
+                689,
+                690,
+                691,
+                692,
+                693,
+                694,
+                695,
+                696,
+                697,
+                698,
+                699,
+                700,
+                701,
+                702,
+                703,
+                704,
+                705,
+                706,
+                707,
+                708,
+                709,
+                710,
+                711,
+                712,
+                713
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 7,
+    "coveredScenarios": 7,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/git/tests/session_orphan_pruning_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/git/src/session_status.rs"
+    ],
+    "totalLinesCovered": 626
+  }
+}

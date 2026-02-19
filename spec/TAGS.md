@@ -567,8 +567,10 @@ Tags for test-related scenarios and requirements.
 | `@manual-test` | Requires Manual Testing |
 | `@medium-command` | Medium complexity command with multiple options |
 | `@no-message-id` | Missing message ID edge case scenarios |
+| `@orphan-detection` | Tests for orphan detection logic |
 | `@overwrite` | Tests overwrite behavior (file replacement without prompts) |
 | `@prerequisites` | Prerequisite validation scenarios |
+| `@prune` | Tests for pruning operations |
 | `@regression` | Regression tests - comprehensive validation of existing functionality |
 | `@removal` | Scenario for removed or deprecated functionality |
 | `@resume-command` | Scenarios testing the /resume command |
@@ -828,7 +830,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-13T23:35:24.836Z_
+_Last updated: 2026-02-19T00:11:35.702Z_
 
 **Update Command**: `fspec tag-stats`
 

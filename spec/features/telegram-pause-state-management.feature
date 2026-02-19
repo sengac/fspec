@@ -4,7 +4,6 @@
 @telegram
 @BRIDGE-014
 Feature: Telegram Pause State Management Commands
-
   """
   Extend telegram-slash-commands.ts AVAILABLE_COMMANDS array with /allowonce, /allowsession, /deny commands
   Add 'isPaused' boolean and 'pauseInfo' object to EndpointState in telegram-endpoint.ts to track pause state
@@ -33,7 +32,6 @@ Feature: Telegram Pause State Management Commands
   #   6. /help shows all commands including /allowonce, /allowsession, /deny
   #
   # ========================================
-
   Background: User Story
     As a Telegram user
     I want to respond to sensitive file access prompts remotely

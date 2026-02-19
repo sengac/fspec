@@ -1,0 +1,232 @@
+{
+  "scenarios": [
+    {
+      "name": "Get session diff with changes",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "67-162",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "43-106"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Apply session changes copies modified files",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "177-219",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "108-188"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Apply session changes copies added files",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "232-259",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "108-188"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Apply session changes removes deleted files",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "272-310",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "108-188"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Apply session changes when main has diverged",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "326-375",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "108-188"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Abort session discards changes",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "388-425",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "190-203"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get session diff with no changes",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "440-461",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "43-106"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Session diff handles binary files",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "474-507",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "43-106"
+            },
+            {
+              "file": "codelet/git/src/utils.rs",
+              "lines": "1-17"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get session diff without applying",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "520-556",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "43-106"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fail gracefully when session does not exist",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "567-586",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "43-60"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Fail gracefully when applying non-existent session",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "597-614",
+          "implMappings": [
+            {
+              "file": "codelet/git/src/session_result.rs",
+              "lines": "108-135"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI binding exposes getSessionDiff",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "631-656",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": "206-218"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI binding exposes applySessionChanges",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "668-694",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": "229-232"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "NAPI binding exposes abortSession",
+      "testMappings": [
+        {
+          "file": "codelet/git/tests/session_result_tests.rs",
+          "lines": "706-737",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/git.rs",
+              "lines": "239-242"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 14,
+    "coveredScenarios": 14,
+    "coveragePercent": 100,
+    "testFiles": [
+      "codelet/git/tests/session_result_tests.rs"
+    ],
+    "implFiles": [
+      "codelet/git/src/session_result.rs",
+      "codelet/git/src/utils.rs",
+      "codelet/napi/src/git.rs"
+    ],
+    "totalLinesCovered": 620
+  }
+}
