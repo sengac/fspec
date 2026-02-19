@@ -7,6 +7,7 @@
 
 import {
   sessionManagerCreateWithId,
+  sessionManagerCreateIsolated,
   sessionManagerList,
   sessionRestoreMessages,
   sessionRestoreTokenState,
@@ -14,6 +15,18 @@ import {
   persistenceCreateSessionWithProvider,
   persistenceLoadSession,
   persistenceGetSessionMessageEnvelopes,
+  listSessions,
+  inspectSession,
+  mergeSession,
+  discardSession,
+  pruneOrphaned,
+} from '@sengac/codelet-napi';
+import type {
+  SessionInfoJs,
+  SessionResultJs,
+  MergeResultJs,
+  DiscardResultJs,
+  PruneResultJs,
 } from '@sengac/codelet-napi';
 import type { StreamChunk } from '@sengac/codelet-napi';
 import { logger } from '../../utils/logger';
@@ -29,6 +42,16 @@ export interface CreateSessionResult {
 }
 
 /**
+ * Result of creating an isolated session (GIT-029)
+ */
+export interface CreateIsolatedSessionResult extends CreateSessionResult {
+  /** Path to the git worktree created for this session */
+  worktreePath: string;
+  /** Base commit SHA the worktree was created from */
+  baseCommit: string;
+}
+
+/**
  * Options for creating a new session
  */
 export interface CreateSessionOptions {
@@ -38,6 +61,8 @@ export interface CreateSessionOptions {
   project: string;
   /** Optional session name (defaults to timestamp-based name) */
   name?: string;
+  /** If true, create an isolated session with a git worktree (GIT-029) */
+  isolated?: boolean;
 }
 
 /**
@@ -267,4 +292,138 @@ export async function restoreSession(
     wasBackgroundSession: false,
     unregister,
   };
+}
+
+// ========================================
+// GIT-029: Isolated Session Management
+// ========================================
+
+/**
+ * Create an isolated session with a git worktree (GIT-029)
+ *
+ * Creates a session that operates in an isolated git worktree,
+ * allowing the AI agent to make file changes without affecting the main project.
+ * The worktree is created at `.fspec/worktrees/<session-id>/`.
+ *
+ * @returns The created session info with worktree path
+ * @throws If session creation fails
+ */
+export async function createIsolatedSession(
+  options: CreateSessionOptions
+): Promise<CreateIsolatedSessionResult> {
+  const { modelPath, project, name } = options;
+  const sessionName = name || `Isolated Session ${new Date().toLocaleString()}`;
+
+  // Create persisted session first (gives us the ID)
+  const persistedSession = persistenceCreateSessionWithProvider(
+    sessionName,
+    project,
+    modelPath
+  );
+
+  // Create isolated Rust background session with git worktree
+  const isolatedResult = await sessionManagerCreateIsolated(
+    persistedSession.id,
+    modelPath,
+    project,
+    sessionName
+  );
+
+  const manager = GlobalSessionStreamManager.getInstance();
+  manager.subscribeToSession(persistedSession.id);
+
+  return {
+    sessionId: persistedSession.id,
+    name: sessionName,
+    provider: modelPath,
+    worktreePath: isolatedResult.worktreePath,
+    baseCommit: isolatedResult.baseCommit,
+  };
+}
+
+/**
+ * List all session worktrees with status information (GIT-029)
+ *
+ * Returns information about all session worktrees, optionally filtered by status.
+ *
+ * @param repoPath - Path to the git repository
+ * @param activeSessions - Array of currently active session IDs
+ * @param filter - Optional filter: "all", "active", "pending_merge", "clean", "orphaned"
+ * @returns Array of session info objects with status
+ */
+export function listSessionWorktrees(
+  repoPath: string,
+  activeSessions: string[],
+  filter?: string
+): SessionInfoJs[] {
+  return listSessions(repoPath, activeSessions, filter);
+}
+
+/**
+ * Inspect a session's changes without side effects (GIT-029)
+ *
+ * Returns diff information for a session worktree without modifying
+ * the worktree or any session state.
+ *
+ * @param repoPath - Path to the git repository
+ * @param sessionId - Session identifier
+ * @returns Session result with unified diff and file lists
+ */
+export function inspectSessionChanges(
+  repoPath: string,
+  sessionId: string
+): SessionResultJs {
+  return inspectSession(repoPath, sessionId);
+}
+
+/**
+ * Merge session changes to main worktree (GIT-029)
+ *
+ * Applies all changes from session to main worktree and removes
+ * the session worktree on success.
+ *
+ * @param repoPath - Path to the git repository
+ * @param sessionId - Session identifier
+ * @returns Merge result with file lists
+ * @throws Error with "Conflict" if main has conflicting changes
+ */
+export function mergeSessionChanges(
+  repoPath: string,
+  sessionId: string
+): MergeResultJs {
+  return mergeSession(repoPath, sessionId);
+}
+
+/**
+ * Discard session changes without applying (GIT-029)
+ *
+ * Removes the session worktree without applying any changes
+ * to the main worktree.
+ *
+ * @param repoPath - Path to the git repository
+ * @param sessionId - Session identifier
+ * @returns Discard result with count of files discarded
+ */
+export function discardSessionChanges(
+  repoPath: string,
+  sessionId: string
+): DiscardResultJs {
+  return discardSession(repoPath, sessionId);
+}
+
+/**
+ * Prune orphaned session worktrees (GIT-029)
+ *
+ * Removes all worktrees that have no valid session record.
+ * Active sessions are never pruned.
+ *
+ * @param repoPath - Path to the git repository
+ * @param activeSessions - Array of currently active session IDs
+ * @returns Prune result with count and list of pruned session IDs
+ */
+export function pruneOrphanedSessions(
+  repoPath: string,
+  activeSessions: string[]
+): PruneResultJs {
+  return pruneOrphaned(repoPath, activeSessions);
 }

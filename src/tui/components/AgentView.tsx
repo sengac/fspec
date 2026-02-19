@@ -218,7 +218,7 @@ import {
 } from '../hooks/useRustSessionState';
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
-import { createSession, restoreSession } from '../services/sessionService';
+import { createSession, createIsolatedSession, restoreSession } from '../services/sessionService';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -4789,8 +4789,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
   );
 
   // VIEWNV-001: Handle create session dialog confirmation
+  // GIT-029: Now accepts isolated parameter to create isolated session with git worktree
   // Creates session immediately so /thinking and other commands work right away
-  const handleCreateSessionConfirm = useCallback(async () => {
+  const handleCreateSessionConfirm = useCallback(async (isolated: boolean = false) => {
     // Wait for models to be initialized before creating session
     // This prevents race condition where session is created with incomplete model info
     if (!modelsInitialized) {
@@ -4816,11 +4817,20 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Always use full model path format (provider/model-id)
       const modelPath = `${currentModel.providerId}/${currentModel.modelId}`;
 
-      // Use the service to create the session
-      const result = await createSession({
-        modelPath,
-        project,
-      });
+      // GIT-029: Use isolated session creation when requested
+      let result;
+      if (isolated) {
+        result = await createIsolatedSession({
+          modelPath,
+          project,
+        });
+        logger.debug(`GIT-029: Created isolated session ${result.sessionId} at ${result.worktreePath}`);
+      } else {
+        result = await createSession({
+          modelPath,
+          project,
+        });
+      }
 
       // Activate the session in the store
       activateSession(result.sessionId);
