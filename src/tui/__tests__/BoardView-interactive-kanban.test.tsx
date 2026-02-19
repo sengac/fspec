@@ -7,19 +7,29 @@
  * All tests MUST FAIL initially to prove they actually test something.
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render } from 'ink-testing-library';
 import React from 'react';
 import { useFspecStore } from '../store/fspecStore';
+import { useSessionStore } from '../store/sessionStore';
 
 // Import components that don't exist yet (will fail until implemented)
 import { BoardView } from '../components/BoardView';
 
 describe('Feature: Interactive Kanban board CLI', () => {
   beforeEach(async () => {
+    // Reset session store to prevent state leakage between tests
+    // GIT-030: CreateSessionDialog state needs to be reset
+    useSessionStore.getState().reset();
+    
     // Load real data before each test
     const store = useFspecStore.getState();
     await store.loadData();
+  });
+
+  afterEach(() => {
+    // GIT-030: Ensure dialog is closed after each test
+    useSessionStore.getState().reset();
   });
 
   describe('Scenario: Navigate to next column with right arrow', () => {
@@ -81,8 +91,13 @@ describe('Feature: Interactive Kanban board CLI', () => {
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // @step When the user presses the Enter key
-      stdin.write('\r'); // Enter key
-      await new Promise(resolve => setTimeout(resolve, 50));
+      // GIT-030: Enter now shows CreateSessionDialog first
+      stdin.write('\r'); // Enter key - shows dialog
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Confirm the dialog to open agent view
+      stdin.write('\r'); // Enter to confirm "Yes" (default selection)
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // @step Then the agent view should open
       // Agent view shows tokens display in header
@@ -105,8 +120,13 @@ describe('Feature: Interactive Kanban board CLI', () => {
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // @step And the user has opened the agent view
-      stdin.write('\r'); // Enter key to open agent view
-      await new Promise(resolve => setTimeout(resolve, 50));
+      // GIT-030: Enter key now shows CreateSessionDialog first
+      stdin.write('\r'); // Enter key to show dialog
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Confirm the dialog - "Yes" is selected by default, press Enter to confirm
+      stdin.write('\r'); // Enter to confirm dialog and open agent view
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       // Verify we're in agent view (agent view shows tokens display)
       const agentFrame = frames.find(f => f.includes('tokens:')) || frames[frames.length - 1];

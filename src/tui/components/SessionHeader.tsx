@@ -83,6 +83,8 @@ export interface SessionHeaderProps {
   watcherInfo?: WatcherHeaderInfo;
   /** Session number (1-based index in session list) - helps identify session when switching */
   sessionNumber?: number;
+  /** GIT-029: Whether session is isolated (has a git worktree) */
+  isIsolated?: boolean;
 }
 
 /**
@@ -121,6 +123,7 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   compactionReduction = null,
   watcherInfo,
   sessionNumber,
+  isIsolated = false,
 }) => {
   // TUI-060: Simple Zustand selectors for work unit info
   const workUnitId = useCurrentWorkUnitId();
@@ -164,6 +167,9 @@ export const SessionHeader: React.FC<SessionHeaderProps> = ({
   leftContent += chalk.cyan.bold(`${sessionPrefix}${workUnitText}${separator}${modelId || 'Loading...'}`);
 
   // Badges - each with their own color
+  if (isIsolated) {
+    leftContent += chalk.green(' [ISOLATED]');
+  }
   if (hasReasoning) {
     leftContent += chalk.magenta(' [R]');
   }

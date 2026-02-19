@@ -78,8 +78,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
     setNavigationTarget,
     clearNavigationTarget,
     closeCreateSessionDialog,
+    openCreateSessionDialog,
     prepareForNewSession,
     navigateToNewSession,
+    navigateToNewSessionIsolated,
   } = useSessionActions();
 
   // VIEWNV-001: Session navigation hook for Shift+Arrow navigation
@@ -551,11 +553,12 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
               if (attachedSessionId) {
                 // Navigate to existing session (like Shift+Right does)
                 setNavigationTarget(attachedSessionId);
+                setViewMode('agent');
               } else {
-                // No attached session - prepare to auto-create one
-                navigateToNewSession();
+                // GIT-030: No attached session - show CreateSessionDialog so user can choose Normal/Isolated
+                // Don't set viewMode yet - wait for dialog confirmation
+                openCreateSessionDialog();
               }
-              setViewMode('agent');
             }
           }
         }}
@@ -611,9 +614,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
       {/* VIEWNV-001: Create session dialog */}
       {showCreateSessionDialog && (
         <CreateSessionDialog
-          onConfirm={() => {
-            // VIEWNV-001: Use unified navigateToNewSession action
-            navigateToNewSession();
+          onConfirm={(isolated) => {
+            // GIT-031: Accept isolated parameter and pass to navigateToNewSession
+            // AgentView will read pendingIsolatedSession from store when auto-creating
+            navigateToNewSessionIsolated(isolated);
             setSelectedWorkUnit(null);
             setViewMode('agent');
           }}

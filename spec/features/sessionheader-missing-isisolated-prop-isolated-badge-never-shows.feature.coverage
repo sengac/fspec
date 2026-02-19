@@ -1,0 +1,69 @@
+{
+  "scenarios": [
+    {
+      "name": "Display ISOLATED badge for isolated session",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
+          "lines": "97-130",
+          "implMappings": [
+            {
+              "file": "src/tui/components/AgentView.tsx",
+              "lines": [
+                7745,
+                7746,
+                7747,
+                7748,
+                7749,
+                7750,
+                7751,
+                7752,
+                7753,
+                7754,
+                7755,
+                7756,
+                7757,
+                7758,
+                7759,
+                7760,
+                7761,
+                7762,
+                7763
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Do not display ISOLATED badge for normal session",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
+          "lines": "132-144",
+          "implMappings": [
+            {
+              "file": "src/tui/store/sessionStore.ts",
+              "lines": [
+                163
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/isolated-session-integration.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/AgentView.tsx",
+      "src/tui/store/sessionStore.ts"
+    ],
+    "totalLinesCovered": 67
+  }
+}

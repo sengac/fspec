@@ -56,6 +56,18 @@ interface SessionStoreState {
   /** Current work unit status (e.g., "specifying", "implementing") */
   currentWorkUnitStatus: string | null;
 
+  // ===== GIT-029: Isolation State =====
+
+  /** Whether the current session is isolated (has a git worktree) */
+  isIsolated: boolean;
+
+  /** Path to the worktree (if isolated) */
+  worktreePath: string | null;
+
+  // GIT-031: Pending isolated flag for session auto-creation
+  /** Whether the next auto-created session should be isolated */
+  pendingIsolatedSession: boolean;
+
   // ===== Navigation State =====
 
   /**
@@ -101,6 +113,9 @@ interface SessionStoreState {
     workUnitStatus: string | null
   ) => void;
 
+  /** GIT-029: Set isolation state for current session */
+  setIsolationState: (isIsolated: boolean, worktreePath: string | null) => void;
+
   /**
    * Set navigation target (called by BoardView when navigating to a session).
    */
@@ -134,6 +149,12 @@ interface SessionStoreState {
    * Combines: prepareForNewSession() + requestAutoCreateSession()
    */
   navigateToNewSession: () => void;
+
+  /**
+   * GIT-031: Navigate to AgentView with auto-create session, with isolated flag.
+   * Used when CreateSessionDialog is confirmed with isolated toggle.
+   */
+  navigateToNewSessionIsolated: (isolated: boolean) => void;
 }
 
 /**
@@ -145,6 +166,9 @@ const initialState = {
   shouldAutoCreateSession: false,
   currentWorkUnitId: null,
   currentWorkUnitStatus: null,
+  isIsolated: false,
+  worktreePath: null,
+  pendingIsolatedSession: false,
   navigationTargetSessionId: null,
   showCreateSessionDialog: false,
 };
@@ -190,6 +214,8 @@ export const useSessionStore = create<SessionStoreState>()(
         state.showCreateSessionDialog = false;
         state.currentWorkUnitId = null;
         state.currentWorkUnitStatus = null;
+        state.isIsolated = false;
+        state.worktreePath = null;
       });
     },
 
@@ -217,6 +243,16 @@ export const useSessionStore = create<SessionStoreState>()(
       set(state => {
         state.currentWorkUnitId = workUnitId;
         state.currentWorkUnitStatus = workUnitStatus;
+      });
+    },
+
+    setIsolationState: (isIsolated: boolean, worktreePath: string | null) => {
+      logger.debug(
+        `[SessionStore] setIsolationState: isIsolated=${isIsolated}, worktreePath=${worktreePath}`
+      );
+      set(state => {
+        state.isIsolated = isIsolated;
+        state.worktreePath = worktreePath;
       });
     },
 
@@ -264,6 +300,9 @@ export const useSessionStore = create<SessionStoreState>()(
         state.shouldAutoCreateSession = false;
         state.currentWorkUnitId = null;
         state.currentWorkUnitStatus = null;
+        state.isIsolated = false;
+        state.worktreePath = null;
+        state.pendingIsolatedSession = false;
         state.navigationTargetSessionId = null;
         state.showCreateSessionDialog = false;
       });
@@ -287,6 +326,35 @@ export const useSessionStore = create<SessionStoreState>()(
         state.navigationTargetSessionId = null;
         state.currentWorkUnitId = null;
         state.currentWorkUnitStatus = null;
+        state.isIsolated = false;
+        state.worktreePath = null;
+        state.pendingIsolatedSession = false;
+      });
+    },
+
+    navigateToNewSessionIsolated: (isolated: boolean) => {
+      logger.debug(
+        `[SessionStore] navigateToNewSessionIsolated: isolated=${isolated}`
+      );
+      // Clear Rust's active session when navigating to create a new one
+      try {
+        sessionClearActive();
+      } catch (e) {
+        logger.warn(
+          `[SessionStore] Failed to clear active session in Rust: ${e}`
+        );
+      }
+      set(state => {
+        state.currentSessionId = null;
+        state.isReadyForNewSession = true;
+        state.shouldAutoCreateSession = true;
+        state.showCreateSessionDialog = false;
+        state.navigationTargetSessionId = null;
+        state.currentWorkUnitId = null;
+        state.currentWorkUnitStatus = null;
+        state.isIsolated = false;
+        state.worktreePath = null;
+        state.pendingIsolatedSession = isolated;
       });
     },
   }))
@@ -316,6 +384,14 @@ export const useNavigationTargetSessionId = () =>
 export const useShowCreateSessionDialog = () =>
   useSessionStore(state => state.showCreateSessionDialog);
 
+export const useIsIsolated = () => useSessionStore(state => state.isIsolated);
+
+export const useWorktreePath = () =>
+  useSessionStore(state => state.worktreePath);
+
+export const usePendingIsolatedSession = () =>
+  useSessionStore(state => state.pendingIsolatedSession);
+
 /**
  * Action hooks (stable references with shallow comparison)
  */
@@ -327,11 +403,13 @@ export const useSessionActions = () =>
       requestAutoCreateSession: state.requestAutoCreateSession,
       clearAutoCreateRequest: state.clearAutoCreateRequest,
       setCurrentWorkUnit: state.setCurrentWorkUnit,
+      setIsolationState: state.setIsolationState,
       setNavigationTarget: state.setNavigationTarget,
       clearNavigationTarget: state.clearNavigationTarget,
       openCreateSessionDialog: state.openCreateSessionDialog,
       closeCreateSessionDialog: state.closeCreateSessionDialog,
       navigateToNewSession: state.navigateToNewSession,
+      navigateToNewSessionIsolated: state.navigateToNewSessionIsolated,
       reset: state.reset,
     }))
   );

@@ -18,7 +18,9 @@ import { randomUUID } from 'crypto';
 // Import the NAPI bindings we need to test
 import {
   sessionManagerCreateIsolated,
+  sessionManagerCreateWithId,
   sessionManagerDestroy,
+  sessionManagerList,
   listSessions,
   inspectSession,
   mergeSession,
@@ -444,6 +446,64 @@ describe('Feature: TUI integration for isolated sessions - Part C: NAPI Binding 
 
       // Cleanup
       destroySession(activeId);
+    });
+  });
+
+  // ========================================
+  // GIT-029: SessionInfo isolation state fields
+  // ========================================
+
+  describe('Scenario: SessionInfo includes isolation state fields', () => {
+    it('should return isIsolated=true and worktreePath for isolated sessions', async () => {
+      // @step Given an isolated session has been created
+      const sessionId = randomUUID();
+      await sessionManagerCreateIsolated(
+        sessionId,
+        'anthropic/claude-sonnet-4-20250514',
+        testDir,
+        'Isolated Session'
+      );
+
+      // @step When I call sessionManagerList
+      const sessions = sessionManagerList();
+
+      // @step Then the SessionInfo for that session should have isIsolated set to true
+      const sessionInfo = sessions.find(s => s.id === sessionId);
+      expect(sessionInfo).toBeDefined();
+      expect(sessionInfo?.isIsolated).toBe(true);
+
+      // @step Then the SessionInfo should have worktreePath set to the worktree directory
+      expect(sessionInfo?.worktreePath).toBeDefined();
+      expect(sessionInfo?.worktreePath).toContain('.fspec/worktrees');
+      expect(sessionInfo?.worktreePath).toContain(sessionId);
+
+      // Cleanup
+      destroySession(sessionId);
+    });
+
+    it('should return isIsolated=false and worktreePath=undefined for normal sessions', async () => {
+      // @step Given a normal (non-isolated) session has been created
+      const sessionId = randomUUID();
+      await sessionManagerCreateWithId(
+        sessionId,
+        'anthropic/claude-sonnet-4-20250514',
+        testDir,
+        'Normal Session'
+      );
+
+      // @step When I call sessionManagerList
+      const sessions = sessionManagerList();
+
+      // @step Then the SessionInfo for that session should have isIsolated set to false
+      const sessionInfo = sessions.find(s => s.id === sessionId);
+      expect(sessionInfo).toBeDefined();
+      expect(sessionInfo?.isIsolated).toBe(false);
+
+      // @step And the SessionInfo should have worktreePath set to undefined/null
+      expect(sessionInfo?.worktreePath).toBeUndefined();
+
+      // Cleanup
+      destroySession(sessionId);
     });
   });
 });

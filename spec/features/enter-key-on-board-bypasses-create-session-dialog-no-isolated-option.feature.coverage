@@ -1,0 +1,73 @@
+{
+  "scenarios": [
+    {
+      "name": "Show Create Session dialog when no attached session",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
+          "lines": "18-40",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                542,
+                543,
+                544,
+                545,
+                546,
+                547,
+                548,
+                549,
+                550,
+                551,
+                552,
+                553,
+                554,
+                555,
+                556,
+                557,
+                558,
+                559,
+                560,
+                561,
+                562
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Navigate directly to attached session",
+      "testMappings": [
+        {
+          "file": "src/tui/components/__tests__/isolated-session-integration.test.tsx",
+          "lines": "42-55",
+          "implMappings": [
+            {
+              "file": "src/tui/components/BoardView.tsx",
+              "lines": [
+                553,
+                554,
+                555,
+                556
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/components/__tests__/isolated-session-integration.test.tsx"
+    ],
+    "implFiles": [
+      "src/tui/components/BoardView.tsx"
+    ],
+    "totalLinesCovered": 62
+  }
+}

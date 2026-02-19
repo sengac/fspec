@@ -1,29 +1,13 @@
 @session-management
 @tui-component
 @GIT-029
-Feature: Isolated session TUI components
+Feature: Session Management Panel
 
   """
   TUI components for isolated session management:
   - CreateSessionDialog with Isolated toggle option
   - SessionManagementPanel for viewing and managing completed sessions
   """
-
-  # ========================================
-  # EXAMPLE MAPPING CONTEXT
-  # ========================================
-  #
-  # BUSINESS RULES:
-  #   1. Session creation dialog must have an 'Isolated' toggle option
-  #   2. When isolated toggle is enabled, must call sessionManagerCreateIsolated() instead of sessionManagerCreateWithId()
-  #   3. Session info must display worktree path when session is isolated
-  #   4. Session Management Panel must show sessions with status: pending_merge, clean, orphaned
-  #   5. Merge button must call mergeSession() and copy changes to main worktree
-  #   6. Discard button must call discardSession() and remove worktree without applying
-  #   7. Prune orphaned button must call pruneOrphaned() to clean up crashed sessions
-  #   8. Each session in the management panel must show diff summary (files changed count)
-  #
-  # ========================================
 
   Background: User Story
     As a developer

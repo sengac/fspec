@@ -33,6 +33,8 @@ import {
   stopGlobalSessionStreamManager,
 } from '../globalSessionStreamManager';
 
+import { useSessionStore } from '../../store/sessionStore';
+
 describe('Feature: Global Session Stream Subscription for FspecCommandRequest Handling', () => {
   let testSetup: WorkUnitTestSetup;
 
@@ -491,6 +493,99 @@ describe('Feature: Global Session Stream Subscription for FspecCommandRequest Ha
 
       const newManager = GlobalSessionStreamManager.getInstance();
       expect(newManager.getSubscribedSessions()).toEqual([]);
+    });
+  });
+
+  // ----------------------------------------
+  // GIT-029: IsolationStateChange StreamChunk handling
+  // ----------------------------------------
+
+  describe('Scenario: IsolationStateChange StreamChunk updates sessionStore', () => {
+    it('should update sessionStore when IsolationStateChange chunk is received for active session', async () => {
+      // @step Given the GlobalSessionStreamManager is initialized
+      initGlobalSessionStreamManager();
+      const manager = GlobalSessionStreamManager.getInstance();
+
+      const session = persistenceCreateSessionWithProvider(
+        'Isolation Test Session',
+        testSetup.testDir,
+        'anthropic/claude-sonnet-4-20250514'
+      );
+
+      manager.subscribeToSession(session.id);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // @step And I have an active session
+      useSessionStore.getState().activateSession(session.id);
+      expect(useSessionStore.getState().currentSessionId).toBe(session.id);
+
+      // Initial state should be non-isolated
+      expect(useSessionStore.getState().isIsolated).toBe(false);
+      expect(useSessionStore.getState().worktreePath).toBeNull();
+
+      // @step When an IsolationStateChange chunk is received with isIsolated=true and worktreePath set
+      const isolationChunk: StreamChunk = {
+        type: 'IsolationStateChange',
+        isIsolated: true,
+        worktreePath: '/project/.fspec/worktrees/test-session-id',
+      };
+      manager.simulateChunk(session.id, isolationChunk);
+
+      // @step Then the sessionStore should have isIsolated set to true
+      expect(useSessionStore.getState().isIsolated).toBe(true);
+
+      // @step And the sessionStore should have worktreePath set to the received path
+      expect(useSessionStore.getState().worktreePath).toBe(
+        '/project/.fspec/worktrees/test-session-id'
+      );
+
+      // Cleanup
+      useSessionStore.getState().reset();
+    });
+  });
+
+  describe('Scenario: IsolationStateChange StreamChunk ignored for non-active sessions', () => {
+    it('should not update sessionStore when IsolationStateChange chunk is received for different session', async () => {
+      // @step Given the GlobalSessionStreamManager is initialized
+      initGlobalSessionStreamManager();
+      const manager = GlobalSessionStreamManager.getInstance();
+
+      const sessionA = persistenceCreateSessionWithProvider(
+        'Session A',
+        testSetup.testDir,
+        'anthropic/claude-sonnet-4-20250514'
+      );
+      const sessionB = persistenceCreateSessionWithProvider(
+        'Session B',
+        testSetup.testDir,
+        'anthropic/claude-sonnet-4-20250514'
+      );
+
+      manager.subscribeToSession(sessionA.id);
+      manager.subscribeToSession(sessionB.id);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // @step And I have an active session "session-A"
+      useSessionStore.getState().activateSession(sessionA.id);
+      expect(useSessionStore.getState().currentSessionId).toBe(sessionA.id);
+
+      // Set initial isolation state for session A
+      useSessionStore.getState().setIsolationState(false, null);
+
+      // @step When an IsolationStateChange chunk is received for a different session "session-B"
+      const isolationChunk: StreamChunk = {
+        type: 'IsolationStateChange',
+        isIsolated: true,
+        worktreePath: '/project/.fspec/worktrees/session-b-id',
+      };
+      manager.simulateChunk(sessionB.id, isolationChunk);
+
+      // @step Then the sessionStore isolation state should remain unchanged
+      expect(useSessionStore.getState().isIsolated).toBe(false);
+      expect(useSessionStore.getState().worktreePath).toBeNull();
+
+      // Cleanup
+      useSessionStore.getState().reset();
     });
   });
 });

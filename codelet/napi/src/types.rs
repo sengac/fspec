@@ -400,6 +400,17 @@ pub enum StreamChunk {
         #[napi(js_name = "workUnits")]
         work_units: Vec<WorkUnitInfo>,
     },
+
+    /// GIT-029: Isolation state change - emitted when session isolation state changes
+    /// TypeScript should update sessionStore.setIsolationState() when this is received
+    IsolationStateChange {
+        /// Whether the session is isolated (has a git worktree)
+        #[napi(js_name = "isIsolated")]
+        is_isolated: bool,
+        /// Path to the worktree (if isolated)
+        #[napi(js_name = "worktreePath")]
+        worktree_path: Option<String>,
+    },
 }
 
 impl StreamChunk {
@@ -556,6 +567,14 @@ impl StreamChunk {
         Self::WorkUnitsUpdate { work_units }
     }
 
+    /// GIT-029: Isolation state change - emitted when session isolation state changes
+    pub fn isolation_state_change(is_isolated: bool, worktree_path: Option<String>) -> Self {
+        Self::IsolationStateChange {
+            is_isolated,
+            worktree_path,
+        }
+    }
+
     /// Convert StreamChunk to serde_json::Value for bridge relay (BRIDGE-001)
     ///
     /// This manual serialization is needed because StreamChunk uses NAPI's
@@ -708,6 +727,11 @@ impl StreamChunk {
                     "status": wu.status,
                     "workType": wu.work_type,
                 })).collect::<Vec<_>>(),
+            }),
+            Self::IsolationStateChange { is_isolated, worktree_path } => json!({
+                "type": "isolationStateChange",
+                "isIsolated": is_isolated,
+                "worktreePath": worktree_path,
             }),
         }
     }

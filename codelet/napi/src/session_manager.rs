@@ -810,6 +810,10 @@ pub struct SessionInfo {
     pub provider_id: Option<String>,
     /// Model ID (e.g., "claude-sonnet-4", "gpt-4o")
     pub model_id: Option<String>,
+    /// GIT-029: Whether this is an isolated session with a git worktree
+    pub is_isolated: bool,
+    /// GIT-029: Path to the worktree (if isolated)
+    pub worktree_path: Option<String>,
 }
 
 /// Model info returned by session_get_model
@@ -1575,6 +1579,9 @@ impl BackgroundSession {
             message_count,
             provider_id: self.provider_id.read().expect("provider_id lock poisoned").clone(),
             model_id: self.model_id.read().expect("model_id lock poisoned").clone(),
+            // GIT-029: Isolation state
+            is_isolated: self.worktree_path.is_some(),
+            worktree_path: self.worktree_path.as_ref().map(|p| p.to_string_lossy().to_string()),
         }
     }
 }
@@ -4150,6 +4157,12 @@ impl SessionManager {
         // This ensures Shift+Left/Right navigation works immediately after session creation
         self.set_active_session(uuid);
         
+        // GIT-029: Emit IsolationStateChange chunk to sync UI with isolation state (non-isolated)
+        if let Some(global_cb) = GLOBAL_CHUNK_CALLBACK.get() {
+            let chunk = StreamChunk::isolation_state_change(false, None);
+            global_cb.call(id.to_string(), chunk);
+        }
+        
         Ok(())
     }
 
@@ -4275,6 +4288,15 @@ impl SessionManager {
         
         // VIEWNV-001: Set newly created session as active for navigation purposes
         self.set_active_session(uuid);
+        
+        // GIT-029: Emit IsolationStateChange chunk to sync UI with isolation state
+        if let Some(global_cb) = GLOBAL_CHUNK_CALLBACK.get() {
+            let chunk = StreamChunk::isolation_state_change(
+                true,
+                Some(worktree_path.to_string_lossy().to_string()),
+            );
+            global_cb.call(id.to_string(), chunk);
+        }
         
         Ok(IsolatedSessionResult {
             session_id: id.to_string(),

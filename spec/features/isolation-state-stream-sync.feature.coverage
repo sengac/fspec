@@ -1,0 +1,95 @@
+{
+  "scenarios": [
+    {
+      "name": "IsolationStateChange StreamChunk updates sessionStore",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/globalSessionStreamManager.test.ts",
+          "lines": "503-545",
+          "implMappings": [
+            {
+              "file": "src/tui/services/globalSessionStreamManager.ts",
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ]
+            },
+            {
+              "file": "src/tui/store/sessionStore.ts",
+              "lines": [
+                238,
+                239,
+                240,
+                241,
+                242,
+                243,
+                244,
+                245,
+                246
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "IsolationStateChange StreamChunk ignored for non-active sessions",
+      "testMappings": [
+        {
+          "file": "src/tui/services/__tests__/globalSessionStreamManager.test.ts",
+          "lines": "547-590",
+          "implMappings": [
+            {
+              "file": "src/tui/services/globalSessionStreamManager.ts",
+              "lines": [
+                247,
+                248,
+                249,
+                250,
+                251,
+                252,
+                253,
+                254,
+                255,
+                256,
+                257,
+                258,
+                259,
+                260,
+                261,
+                262
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "totalScenarios": 2,
+    "coveredScenarios": 2,
+    "coveragePercent": 100,
+    "testFiles": [
+      "src/tui/services/__tests__/globalSessionStreamManager.test.ts"
+    ],
+    "implFiles": [
+      "src/tui/services/globalSessionStreamManager.ts",
+      "src/tui/store/sessionStore.ts"
+    ],
+    "totalLinesCovered": 128
+  }
+}

@@ -1672,6 +1672,10 @@ export interface SessionInfo {
   providerId?: string;
   /** Model ID (e.g., "claude-sonnet-4", "gpt-4o") */
   modelId?: string;
+  /** GIT-029: Whether this is an isolated session with a git worktree */
+  isIsolated: boolean;
+  /** GIT-029: Path to the worktree (if isolated) */
+  worktreePath?: string;
 }
 
 /** Session information with derived status for listing */
@@ -2110,7 +2114,12 @@ export type StreamChunk =
   | { type: 'CompactionComplete'; compactionResult: CompactionResult }
   | { type: 'FspecCommandRequest'; fspecRequest: FspecRequest }
   | { type: 'FspecCommandResult'; fspecResult: FspecResult }
-  | { type: 'WorkUnitsUpdate'; workUnits: Array<WorkUnitInfo> };
+  | { type: 'WorkUnitsUpdate'; workUnits: Array<WorkUnitInfo> }
+  | {
+      type: 'IsolationStateChange' /** Whether the session is isolated (has a git worktree) */;
+      isIsolated: boolean /** Path to the worktree (if isolated) */;
+      worktreePath?: string;
+    };
 
 /** Simple test function to verify callback pattern works from TypeScript */
 export declare function testCallback(

@@ -67,3 +67,11 @@ Feature: Isolated session NAPI bindings
     When I call pruneOrphaned with active session IDs
     Then all orphaned worktrees should be removed
     And a PruneResult should be returned with the count of pruned sessions
+
+  @napi
+  Scenario: SessionInfo includes isolation state fields
+    Given an isolated session has been created
+    When I call sessionManagerList
+    Then the SessionInfo for that session should have isIsolated set to true
+    Then the SessionInfo should have worktreePath set to the worktree directory
+

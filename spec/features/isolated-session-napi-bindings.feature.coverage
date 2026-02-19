@@ -329,18 +329,38 @@
           ]
         }
       ]
+    },
+    {
+      "name": "SessionInfo includes isolation state fields",
+      "testMappings": [
+        {
+          "file": "src/tui/__tests__/session-management-napi.test.ts",
+          "lines": "455-508",
+          "implMappings": [
+            {
+              "file": "codelet/napi/src/session_manager.rs",
+              "lines": [
+                814,
+                815,
+                816
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "stats": {
-    "totalScenarios": 5,
-    "coveredScenarios": 5,
+    "totalScenarios": 6,
+    "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
       "src/tui/__tests__/session-management-napi.test.ts"
     ],
     "implFiles": [
-      "codelet/napi/src/git.rs"
+      "codelet/napi/src/git.rs",
+      "codelet/napi/src/session_manager.rs"
     ],
-    "totalLinesCovered": 549
+    "totalLinesCovered": 606
   }
 }

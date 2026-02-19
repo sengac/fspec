@@ -210,6 +210,8 @@ import {
   useCurrentSessionId,
   useIsReadyForNewSession,
   useShouldAutoCreateSession,
+  usePendingIsolatedSession,
+  useIsIsolated,
   useShowCreateSessionDialog,
   useSessionActions,
 } from '../store/sessionStore';
@@ -1125,6 +1127,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
   const currentSessionId = useCurrentSessionId();
   const isReadyForNewSession = useIsReadyForNewSession();
   const shouldAutoCreateSession = useShouldAutoCreateSession();
+  const pendingIsolatedSession = usePendingIsolatedSession();
+  const isIsolated = useIsIsolated();
   const showCreateSessionDialog = useShowCreateSessionDialog();
   const {
     activateSession,
@@ -5001,10 +5005,20 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Always use full model path format (provider/model-id)
         const modelPath = `${currentModel.providerId}/${currentModel.modelId}`;
 
-        const result = await createSession({
-          modelPath,
-          project,
-        });
+        // GIT-031: Use pendingIsolatedSession to determine if isolated session should be created
+        let result;
+        if (pendingIsolatedSession) {
+          result = await createIsolatedSession({
+            modelPath,
+            project,
+          });
+          logger.debug(`GIT-031: Auto-created isolated session ${result.sessionId} at ${result.worktreePath}`);
+        } else {
+          result = await createSession({
+            modelPath,
+            project,
+          });
+        }
 
         activateSession(result.sessionId);
 
@@ -5032,6 +5046,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     void autoCreateSession();
   }, [
     shouldAutoCreateSession,
+    pendingIsolatedSession,
     currentSessionId,
     currentModel,
     modelsInitialized,
@@ -7744,6 +7759,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
         contextFillPercentage={contextFillPercentage}
         compactionReduction={compactionReduction}
         sessionNumber={sessionNumber}
+        isIsolated={isIsolated}
       />
 
       {/* Conversation area using VirtualList for proper scrolling - matches FileDiffViewer pattern */}

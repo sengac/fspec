@@ -17,6 +17,7 @@ import type {
   StreamChunk,
   GlobalChunkCallbackArgs,
 } from '@sengac/codelet-napi';
+import { useSessionStore } from '../store/sessionStore';
 
 export type SessionChunkHandler = (chunk: StreamChunk) => void;
 export type GlobalChunkHandler = (
@@ -241,6 +242,22 @@ export class GlobalSessionStreamManager {
           error
         );
       }
+    }
+
+    // GIT-029: Handle IsolationStateChange globally to sync session store
+    if (chunk.type === 'IsolationStateChange') {
+      const { isIsolated, worktreePath } = chunk;
+      const currentSessionId = useSessionStore.getState().currentSessionId;
+      // Only update if this is the current active session
+      if (currentSessionId === sessionId) {
+        useSessionStore
+          .getState()
+          .setIsolationState(isIsolated, worktreePath ?? null);
+        logger.debug(
+          `[GlobalSessionStreamManager] IsolationStateChange: isIsolated=${isIsolated}, worktreePath=${worktreePath}`
+        );
+      }
+      // Don't return - allow the chunk to be forwarded to session handlers as well
     }
 
     if (chunk.type === 'FspecCommandRequest' && chunk.fspecRequest) {

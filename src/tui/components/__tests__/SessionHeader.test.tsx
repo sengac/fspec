@@ -362,4 +362,56 @@ describe('Feature: Session Header Work Unit Status Display', () => {
       expect(output).toContain('[22.12%: COMPACTED 35.57%]');
     });
   });
+
+  // ----------------------------------------
+  // GIT-029: Isolation State Badge
+  // ----------------------------------------
+
+  describe('Scenario: SessionHeader displays ISOLATED badge for isolated session', () => {
+    it('should display [ISOLATED] badge when isIsolated is true', () => {
+      // @step Given I have created an isolated session
+      // @step When the SessionHeader renders
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          isIsolated={true}
+        />
+      );
+
+      // @step Then I should see an "[ISOLATED]" badge in green
+      const output = lastFrame();
+      expect(output).toContain('[ISOLATED]');
+    });
+  });
+
+  describe('Scenario: SessionHeader does not display ISOLATED badge for normal session', () => {
+    it('should not display [ISOLATED] badge when isIsolated is false', () => {
+      // @step Given I have created a normal (non-isolated) session
+      // @step When the SessionHeader renders
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+          isIsolated={false}
+        />
+      );
+
+      // @step Then I should not see an "[ISOLATED]" badge
+      const output = lastFrame();
+      expect(output).not.toContain('[ISOLATED]');
+    });
+
+    it('should not display [ISOLATED] badge when isIsolated is undefined (default)', () => {
+      // @step Given I have created a normal (non-isolated) session
+      // @step When the SessionHeader renders without isIsolated prop
+      const { lastFrame } = render(
+        <SessionHeader
+          {...defaultProps}
+        />
+      );
+
+      // @step Then I should not see an "[ISOLATED]" badge
+      const output = lastFrame();
+      expect(output).not.toContain('[ISOLATED]');
+    });
+  });
 });
