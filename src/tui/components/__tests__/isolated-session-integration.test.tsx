@@ -2,17 +2,93 @@
  * Feature: spec/features/enter-key-on-board-bypasses-create-session-dialog-no-isolated-option.feature
  * Feature: spec/features/boardview-createsessiondialog-callback-ignores-isolated-parameter.feature
  * Feature: spec/features/sessionheader-missing-isisolated-prop-isolated-badge-never-shows.feature
+ * Feature: spec/features/createsessiondialog-shows-wrong-text-when-pressing-enter-on-work-unit.feature
  *
  * Tests for isolated session creation integration across BoardView and AgentView.
  *
  * GIT-030: Enter key on board should show CreateSessionDialog (not bypass it)
  * GIT-031: BoardView CreateSessionDialog callback must accept and use isolated parameter
  * GIT-032: AgentView must read isIsolated from sessionStore and pass it to SessionHeader
+ * TUI-067: CreateSessionDialog must show context-appropriate text based on work unit
  */
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+
+// TUI-067: Test context-aware dialog text
+describe('Feature: CreateSessionDialog shows wrong text when pressing Enter on work unit', () => {
+  describe('Scenario: Show work-unit-aware text when pressing Enter on a story', () => {
+    it('should pass workUnit prop to CreateSessionDialog in BoardView', () => {
+      // @step Given I am viewing the board with work unit "AUTH-001" titled "User Login"
+      const boardViewPath = path.join(__dirname, '..', 'BoardView.tsx');
+      const boardViewSource = fs.readFileSync(boardViewPath, 'utf-8');
+
+      // @step When I press Enter on the story card
+      // Find the CreateSessionDialog and verify it receives workUnit prop
+      const dialogMatch = boardViewSource.match(/<CreateSessionDialog[\s\S]*?\/>/);
+      expect(dialogMatch).toBeDefined();
+
+      // @step Then the dialog title should be "Work on AUTH-001?"
+      // @step And the dialog description should be "Start an AI session for this task"
+      // Verify the workUnit prop is passed
+      if (dialogMatch) {
+        expect(dialogMatch[0]).toContain('workUnit=');
+        expect(dialogMatch[0]).toContain('selectedWorkUnit');
+      }
+    });
+
+    it('should show work-unit-aware text when workUnit prop is provided', () => {
+      // @step Given I am viewing the board with work unit "AUTH-001" titled "User Login"
+      const dialogPath = path.join(__dirname, '..', '..', '..', 'components', 'CreateSessionDialog.tsx');
+      const dialogSource = fs.readFileSync(dialogPath, 'utf-8');
+
+      // @step When I press Enter on the story card
+      // Verify the dialog generates context-aware text when workUnit is provided
+      
+      // @step Then the dialog title should be "Work on AUTH-001?"
+      expect(dialogSource).toContain('`Work on ${workUnit.id}?`');
+
+      // @step And the dialog description should be "Start an AI session for this task"
+      expect(dialogSource).toContain("'Start an AI session for this task'");
+    });
+  });
+
+  describe('Scenario: Show generic unattached text when using Shift+Right navigation', () => {
+    it('should not pass workUnit prop in AgentView', () => {
+      // @step Given I am in the agent view with no work unit selected
+      const agentViewPath = path.join(__dirname, '..', 'AgentView.tsx');
+      const agentViewSource = fs.readFileSync(agentViewPath, 'utf-8');
+
+      // @step When I press Shift+Right past the last session
+      // Find the CreateSessionDialog in AgentView - it should NOT have workUnit prop
+      const dialogMatch = agentViewSource.match(/<CreateSessionDialog[\s\S]*?\/>/);
+      expect(dialogMatch).toBeDefined();
+
+      // @step Then the dialog title should be "Start New Agent?"
+      // @step And the dialog description should be "Begin a fresh AI conversation, not linked to any task."
+      // Verify AgentView does NOT pass workUnit (unattached session)
+      if (dialogMatch) {
+        expect(dialogMatch[0]).not.toContain('workUnit=');
+      }
+    });
+
+    it('should show generic text when workUnit prop is not provided', () => {
+      // @step Given I am in the agent view with no work unit selected
+      const dialogPath = path.join(__dirname, '..', '..', '..', 'components', 'CreateSessionDialog.tsx');
+      const dialogSource = fs.readFileSync(dialogPath, 'utf-8');
+
+      // @step When I press Shift+Right past the last session
+      // Verify the dialog shows generic text when workUnit is undefined
+      
+      // @step Then the dialog title should be "Start New Agent?"
+      expect(dialogSource).toContain("'Start New Agent?'");
+
+      // @step And the dialog description should be "Begin a fresh AI conversation, not linked to any task."
+      expect(dialogSource).toContain("'Begin a fresh AI conversation, not linked to any task.'");
+    });
+  });
+});
 
 describe('Feature: Enter key on board bypasses Create Session dialog - no isolated option', () => {
   describe('Scenario: Show Create Session dialog when no attached session', () => {

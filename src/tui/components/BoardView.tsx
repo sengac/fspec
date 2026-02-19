@@ -618,12 +618,17 @@ export const BoardView: React.FC<BoardViewProps> = ({ onExit, showStashPanel = t
             // GIT-031: Accept isolated parameter and pass to navigateToNewSession
             // AgentView will read pendingIsolatedSession from store when auto-creating
             navigateToNewSessionIsolated(isolated);
-            setSelectedWorkUnit(null);
+            // Note: Don't clear selectedWorkUnit here - it was intentionally set in onEnter
+            // when user pressed Enter on a work unit. AgentView needs it for auto-attach.
             setViewMode('agent');
           }}
           onCancel={() => {
             closeCreateSessionDialog();
+            // Only clear selection when user cancels (they don't want to go to agent view)
+            setSelectedWorkUnit(null);
           }}
+          // TUI-067: Pass work unit for context-aware dialog text
+          workUnit={selectedWorkUnit ? { id: selectedWorkUnit.id, title: selectedWorkUnit.title } : undefined}
         />
       )}
 

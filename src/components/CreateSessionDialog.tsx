@@ -3,13 +3,15 @@
  *
  * VIEWNV-001: Unified Shift+Arrow Navigation Across BoardView, AgentView, and SplitPaneView
  * GIT-029: Added Isolated toggle for creating sessions with git worktrees
+ * TUI-067: Show context-appropriate text based on whether a work unit is selected
  *
- * This dialog is shown when the user navigates past the right edge of the session list
- * (Shift+Right from the last session or last watcher of the last session).
+ * This dialog is shown in two contexts:
+ * 1. When pressing Enter on a work unit card - shows work-unit-aware text
+ * 2. When Shift+Right past the last session - shows generic unattached text
  *
  * Features:
  * - Yes/No confirmation with Isolated toggle option
- * - Creates a new agent conversation not linked to any work unit
+ * - Context-aware text: work-unit-linked vs unattached session
  * - Uses the base Dialog component for consistent modal styling
  * - When Isolated is ON, creates session with git worktree for safe changes
  *
@@ -21,11 +23,21 @@ import { Box, Text } from 'ink';
 import { Dialog } from './Dialog';
 import { useInputCompat, InputPriority } from '../tui/input/index';
 
+/**
+ * TUI-067: Work unit info for context-aware dialog text
+ */
+export interface WorkUnitInfo {
+  id: string;
+  title?: string;
+}
+
 export interface CreateSessionDialogProps {
   /** Callback when user confirms - starts new agent conversation */
   onConfirm: (isolated: boolean) => void;
   /** Callback when user cancels - stays at current position */
   onCancel: () => void;
+  /** TUI-067: Optional work unit for context-aware dialog text */
+  workUnit?: WorkUnitInfo;
 }
 
 /**
@@ -40,9 +52,16 @@ export interface CreateSessionDialogProps {
 export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
   onConfirm,
   onCancel,
+  workUnit,
 }) => {
   const [selectedButton, setSelectedButton] = useState<'yes' | 'no'>('yes');
   const [isolated, setIsolated] = useState(false);
+
+  // TUI-067: Context-aware title and description based on work unit
+  const title = workUnit ? `Work on ${workUnit.id}?` : 'Start New Agent?';
+  const description = workUnit
+    ? 'Start an AI session for this task'
+    : 'Begin a fresh AI conversation, not linked to any task.';
 
   useInputCompat({
     id: 'create-session-dialog-nav',
@@ -74,8 +93,8 @@ export const CreateSessionDialog: React.FC<CreateSessionDialogProps> = ({
 
   return (
     <Dialog onClose={onCancel} borderColor="cyan">
-      <Text bold>Start New Agent?</Text>
-      <Text dimColor>Begin a fresh AI conversation, not linked to any task.</Text>
+      <Text bold>{title}</Text>
+      <Text dimColor>{description}</Text>
 
       {/* Isolated Toggle */}
       <Box marginTop={1} justifyContent="center">
