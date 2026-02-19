@@ -184,6 +184,7 @@ import { ThreeButtonDialog } from '../../components/ThreeButtonDialog';
 import { ErrorDialog } from '../../components/ErrorDialog';
 import { NotificationDialog } from '../../components/NotificationDialog';
 import { CreateSessionDialog } from '../../components/CreateSessionDialog';
+import { SessionManagementPanel } from './SessionManagementPanel';
 import { ThinkingLevelDialog } from './ThinkingLevelDialog';
 import {
   loadDefaultThinkingLevel,
@@ -1300,6 +1301,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
   // TUI-056: Anchor viewer dialog state
   const [showAnchorViewer, setShowAnchorViewer] = useState(false);
 
+  // GIT-029: Session management panel state
+  const [showSessionManagementPanel, setShowSessionManagementPanel] = useState(false);
+
   // BLOCK-004: Blocklist management state
   const [isBlocklistMode, setIsBlocklistMode] = useState(false);
   const [blocklistRules, setBlocklistRules] = useState<BlocklistRule[]>([]);
@@ -1312,7 +1316,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     inputValue,
     onInputChange: setInputValue,
     onExecuteCommand: cmd => executeSlashCommandRef.current?.(cmd),
-    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, TUI-056: add anchor viewer, BLOCK-004: add blocklist)
+    // Disable palette when other overlays/modes are active (TUI-054: add thinking dialog, TUI-056: add anchor viewer, BLOCK-004: add blocklist, GIT-029: add session management)
     disabled:
       isResumeMode ||
       isWatcherMode ||
@@ -1321,7 +1325,8 @@ export const AgentView: React.FC<AgentViewProps> = ({
       showModelSelector ||
       showSettingsTab ||
       showThinkingLevelDialog ||
-      showAnchorViewer,
+      showAnchorViewer ||
+      showSessionManagementPanel,
   });
 
   // TUI-031: Tok/s display (calculated in Rust, just displayed here)
@@ -3880,6 +3885,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
           return;
         }
         setShowAnchorViewer(true);
+        return;
+      }
+
+      // GIT-029: Handle /sessions command - show session management panel
+      if (userMessage === '/sessions') {
+        setInputValue('');
+        setShowSessionManagementPanel(true);
         return;
       }
 
@@ -7612,6 +7624,17 @@ export const AgentView: React.FC<AgentViewProps> = ({
         onClose={() => setShowAnchorViewer(false)}
         _terminalWidth={terminalWidth}
         _terminalHeight={terminalHeight}
+      />
+    );
+  }
+
+  // GIT-029: Session management panel (modal overlay)
+  if (showSessionManagementPanel) {
+    return (
+      <SessionManagementPanel
+        repoPath={currentProjectRef.current}
+        onClose={() => setShowSessionManagementPanel(false)}
+        isActive={true}
       />
     );
   }

@@ -4,18 +4,12 @@
       "name": "Create session with isolated toggle disabled (default)",
       "testMappings": [
         {
-          "file": "src/tui/__tests__/isolated-session-tui.test.tsx",
-          "lines": "76-98",
+          "file": "src/tui/components/__tests__/SessionManagementPanel.test.tsx",
+          "lines": "88-112",
           "implMappings": [
             {
               "file": "src/tui/services/sessionService.ts",
               "lines": [
-                82,
-                83,
-                84,
-                85,
-                86,
-                87,
                 88,
                 89,
                 90,
@@ -39,7 +33,13 @@
                 108,
                 109,
                 110,
-                111
+                111,
+                112,
+                113,
+                114,
+                115,
+                116,
+                117
               ]
             }
           ]
@@ -50,18 +50,12 @@
       "name": "Create session with isolated toggle enabled",
       "testMappings": [
         {
-          "file": "src/tui/__tests__/isolated-session-tui.test.tsx",
-          "lines": "101-123",
+          "file": "src/tui/components/__tests__/SessionManagementPanel.test.tsx",
+          "lines": "114-146",
           "implMappings": [
             {
               "file": "src/tui/services/sessionService.ts",
               "lines": [
-                305,
-                306,
-                307,
-                308,
-                309,
-                310,
                 311,
                 312,
                 313,
@@ -93,11 +87,7 @@
                 339,
                 340,
                 341,
-                342,
-                343,
-                344,
-                345,
-                346
+                342
               ]
             }
           ]
@@ -108,8 +98,8 @@
       "name": "View Session Management Panel with pending sessions",
       "testMappings": [
         {
-          "file": "src/tui/__tests__/isolated-session-tui.test.tsx",
-          "lines": "130-190",
+          "file": "src/tui/components/__tests__/SessionManagementPanel.test.tsx",
+          "lines": "152-229",
           "implMappings": [
             {
               "file": "src/tui/components/SessionManagementPanel.tsx",
@@ -495,28 +485,22 @@
       "name": "Merge a pending_merge session",
       "testMappings": [
         {
-          "file": "src/tui/__tests__/isolated-session-tui.test.tsx",
-          "lines": "193-221",
+          "file": "src/tui/components/__tests__/SessionManagementPanel.test.tsx",
+          "lines": "231-301",
           "implMappings": [
             {
-              "file": "src/tui/services/sessionService.ts",
+              "file": "src/tui/components/SessionManagementPanel.tsx",
               "lines": [
-                384,
-                385,
-                386,
-                387,
-                388,
-                389,
-                390,
-                391,
-                392,
-                393,
-                394,
-                395,
-                396,
-                397,
-                398,
-                399
+                132,
+                133,
+                134,
+                135,
+                136,
+                137,
+                138,
+                139,
+                140,
+                141
               ]
             }
           ]
@@ -527,28 +511,22 @@
       "name": "Discard a pending_merge session",
       "testMappings": [
         {
-          "file": "src/tui/__tests__/isolated-session-tui.test.tsx",
-          "lines": "224-255",
+          "file": "src/tui/components/__tests__/SessionManagementPanel.test.tsx",
+          "lines": "303-376",
           "implMappings": [
             {
-              "file": "src/tui/services/sessionService.ts",
+              "file": "src/tui/components/SessionManagementPanel.tsx",
               "lines": [
-                401,
-                402,
-                403,
-                404,
-                405,
-                406,
-                407,
-                408,
-                409,
-                410,
-                411,
-                412,
-                413,
-                414,
-                415,
-                416
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150,
+                151,
+                152,
+                153
               ]
             }
           ]
@@ -559,27 +537,24 @@
       "name": "Prune orphaned sessions",
       "testMappings": [
         {
-          "file": "src/tui/__tests__/isolated-session-tui.test.tsx",
-          "lines": "258-280",
+          "file": "src/tui/components/__tests__/SessionManagementPanel.test.tsx",
+          "lines": "378-448",
           "implMappings": [
             {
-              "file": "src/tui/services/sessionService.ts",
+              "file": "src/tui/components/SessionManagementPanel.tsx",
               "lines": [
-                418,
-                419,
-                420,
-                421,
-                422,
-                423,
-                424,
-                425,
-                426,
-                427,
-                428,
-                429,
-                430,
-                431,
-                432
+                156,
+                157,
+                158,
+                159,
+                160,
+                161,
+                162,
+                163,
+                164,
+                165,
+                166,
+                167
               ]
             }
           ]
@@ -592,12 +567,12 @@
     "coveredScenarios": 6,
     "coveragePercent": 100,
     "testFiles": [
-      "src/tui/__tests__/isolated-session-tui.test.tsx"
+      "src/tui/components/__tests__/SessionManagementPanel.test.tsx"
     ],
     "implFiles": [
       "src/tui/services/sessionService.ts",
       "src/tui/components/SessionManagementPanel.tsx"
     ],
-    "totalLinesCovered": 681
+    "totalLinesCovered": 817
   }
 }

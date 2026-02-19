@@ -90,6 +90,13 @@ export const SLASH_COMMANDS: SlashCommand[] = [
 
   // MCP
   { name: 'mcp', description: 'Manage MCP providers' },
+
+  // GIT-029: Isolated session management
+  {
+    name: 'sessions',
+    description: 'Manage isolated session worktrees',
+    requiresSession: false,
+  },
 ];
 
 /**
