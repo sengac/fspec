@@ -102,4 +102,6 @@ pub use wrapper::{
     BlockNotificationCallback, GetWorkUnitStageCallback,
     // GIT-020: Effective CWD callback for isolated session support
     set_get_effective_cwd_callback, get_effective_cwd, GetEffectiveCwdCallback,
+    // TOOL-014: Path validation for worktree isolation
+    validate_and_resolve_path, validate_and_resolve_path_with_cwd,
 };

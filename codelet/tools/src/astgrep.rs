@@ -2,9 +2,12 @@
 //!
 //! Uses ast-grep-core and ast-grep-language for AST-based pattern matching,
 //! and ignore crate for gitignore-aware file walking.
+//!
+//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
 use crate::{
     error::ToolError,
+    facade::validate_and_resolve_path,
     limits::OutputLimits,
     truncation::{format_truncation_warning, process_output_lines, truncate_output},
     ToolOutput,
@@ -17,14 +20,24 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::Path;
+use uuid::Uuid;
 
 /// AstGrepTool for AST-based code pattern matching
-pub struct AstGrepTool;
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
+/// In isolated sessions, search paths are resolved to the session's worktree.
+pub struct AstGrepTool {
+    /// Session ID for worktree isolation support
+    session_id: Uuid,
+}
 
 impl AstGrepTool {
-    /// Create a new AstGrepTool
-    pub fn new() -> Self {
-        Self
+    /// Create a new AstGrepTool with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 
     /// Parse language string to SupportLang
@@ -316,12 +329,6 @@ impl AstGrepTool {
     }
 }
 
-impl Default for AstGrepTool {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 /// A single match result
 struct MatchResult {
     file: String,
@@ -381,6 +388,20 @@ impl rig::tool::Tool for AstGrepTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // TOOL-014: Validate and resolve path for worktree isolation
+        let resolved_path = if let Some(ref path) = args.path {
+            match validate_and_resolve_path(self.session_id, path, "ast_grep") {
+                Ok(resolved) => Some(resolved.to_string_lossy().to_string()),
+                Err(e) => return Err(e),
+            }
+        } else {
+            // No path specified - resolve current directory for worktree isolation
+            match validate_and_resolve_path(self.session_id, ".", "ast_grep") {
+                Ok(resolved) => Some(resolved.to_string_lossy().to_string()),
+                Err(e) => return Err(e),
+            }
+        };
+
         // Delegate to existing execute method by converting args to Value
         let mut value_map = serde_json::Map::new();
         value_map.insert(
@@ -391,7 +412,7 @@ impl rig::tool::Tool for AstGrepTool {
             "language".to_string(),
             serde_json::Value::String(args.language),
         );
-        if let Some(path) = args.path {
+        if let Some(path) = resolved_path {
             value_map.insert("path".to_string(), serde_json::Value::String(path));
         }
 

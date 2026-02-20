@@ -132,22 +132,23 @@ impl OpenAIProvider {
 
         // Build agent with all 11 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         // TOOL-012: Pass session_id to fspec and bridge tools
+        // TOOL-014: All tools require session_id for worktree isolation
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
-            .tool(ReadTool::new())
-            .tool(WriteTool::new())
-            .tool(EditTool::new())
+            .tool(ReadTool::new(session_id))
+            .tool(WriteTool::new(session_id))
+            .tool(EditTool::new(session_id))
             .tool(BashTool::new(session_id))
-            .tool(GrepTool::new())
-            .tool(GlobTool::new())
-            .tool(LsTool::new())
-            .tool(AstGrepTool::new())
-            .tool(AstGrepRefactorTool::new())
+            .tool(GrepTool::new(session_id))
+            .tool(GlobTool::new(session_id))
+            .tool(LsTool::new(session_id))
+            .tool(AstGrepTool::new(session_id)) // TOOL-014: AstGrepTool with session_id for worktree isolation
+            .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(openai_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(openai_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
-            .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
+            .tool(WebSearchTool::new(session_id)); // WEB-001, TOOL-014: WebSearchTool with session_id
 
         // Set preamble if provided
         if let Some(p) = preamble {

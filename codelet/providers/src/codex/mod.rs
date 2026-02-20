@@ -134,20 +134,21 @@ impl CodexProvider {
 
         // Build agent with all 10 tools using rig's builder pattern (WEB-001: Added WebSearchTool)
         // Note: Codex doesn't have Fspec/Bridge tools - simpler toolset for code completion
+        // TOOL-014: All tools require session_id for worktree isolation
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
-            .tool(ReadTool::new())
-            .tool(WriteTool::new())
-            .tool(EditTool::new())
+            .tool(ReadTool::new(session_id))
+            .tool(WriteTool::new(session_id))
+            .tool(EditTool::new(session_id))
             .tool(BashTool::new(session_id))
-            .tool(GrepTool::new())
-            .tool(GlobTool::new())
-            .tool(LsTool::new())
-            .tool(AstGrepTool::new())
-            .tool(AstGrepRefactorTool::new())
-            .tool(WebSearchTool::new()); // WEB-001: Added WebSearchTool with consistent new() pattern
+            .tool(GrepTool::new(session_id))
+            .tool(GlobTool::new(session_id))
+            .tool(LsTool::new(session_id))
+            .tool(AstGrepTool::new(session_id)) // TOOL-014: AstGrepTool with session_id for worktree isolation
+            .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
+            .tool(WebSearchTool::new(session_id)); // WEB-001, TOOL-014: WebSearchTool with session_id
 
         // Set preamble if provided
         if let Some(p) = preamble {

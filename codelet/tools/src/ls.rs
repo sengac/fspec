@@ -2,6 +2,8 @@
 //!
 //! Lists directory contents with file metadata (permissions, size, modification time).
 //! Uses tokio::fs for non-blocking async I/O.
+//!
+//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
 use crate::{
     error::ToolError,
@@ -12,6 +14,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::path::Path;
+use uuid::Uuid;
 
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
@@ -31,12 +34,22 @@ const PERMISSION_BITS: &[(u32, char)] = &[
 ];
 
 /// LS tool for listing directory contents
-pub struct LsTool;
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
+/// In isolated sessions, directory paths are resolved to the session's worktree.
+pub struct LsTool {
+    /// Session ID for worktree isolation support
+    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
+    session_id: Uuid,
+}
 
 impl LsTool {
-    /// Create a new LS tool instance
-    pub fn new() -> Self {
-        Self
+    /// Create a new LS tool instance with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 
     /// Format file mode as permission string (e.g., drwxr-xr-x or -rw-r--r--)
@@ -97,12 +110,6 @@ impl LsTool {
         let m = if mp < 10 { mp + 3 } else { mp - 9 };
         let year = if m <= 2 { y + 1 } else { y } as i32;
         (year, m, d)
-    }
-}
-
-impl Default for LsTool {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

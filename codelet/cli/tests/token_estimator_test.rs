@@ -5,6 +5,7 @@
 //!
 //! Tests for tiktoken-rs based token estimation and file read limits.
 
+use uuid::Uuid;
 use codelet_common::token_estimator::{count_tokens, max_file_tokens, DEFAULT_MAX_FILE_TOKENS};
 use codelet_tools::read::{ReadArgs, ReadTool};
 use codelet_tools::error::ToolError;
@@ -81,7 +82,7 @@ async fn test_read_file_under_token_limit() {
     std::fs::write(&file_path, &content).expect("Failed to write test file");
 
     // @step When the read tool is called
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -113,7 +114,7 @@ async fn test_read_file_exceeding_token_limit() {
     std::fs::write(&file_path, &content).expect("Failed to write test file");
 
     // @step When the read tool is called
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -167,7 +168,7 @@ async fn test_read_image_file_exempt() {
     std::fs::write(&file_path, &content).expect("Failed to write test file");
 
     // @step When the read tool is called
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -204,7 +205,7 @@ async fn test_read_pdf_file_exempt() {
 
     // @step When the read tool is called
     // Use text mode since visual mode requires Pdfium library
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -289,7 +290,7 @@ async fn test_partial_read_within_token_limit() {
     std::fs::write(&file_path, &content).expect("Failed to write test file");
 
     // @step When the read tool is called with a limit
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -429,7 +430,7 @@ async fn test_debug_line_and_token_limits() {
     }
     std::fs::write(&file_path, &content).expect("Failed to write test file");
     
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),

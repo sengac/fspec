@@ -4,6 +4,7 @@
 //!
 //! Feature: spec/features/ast-code-refactor-tool-for-codelet.feature
 
+use uuid::Uuid;
 use codelet_tools::astgrep_refactor::{AstGrepRefactorArgs, AstGrepRefactorTool};
 use rig::tool::Tool;
 use std::fs;
@@ -34,7 +35,7 @@ const Footer = () => {
     let target_file = temp_dir.path().join("extracted.ts");
 
     // @step When the agent calls astgrep_refactor with extract mode
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "const Header = () => { $$$BODY }".to_string(),
         language: "tsx".to_string(),
@@ -96,7 +97,7 @@ fn baz(z: i32) {
     let target_file = temp_dir.path().join("extracted.rs");
 
     // @step When the agent calls astgrep_refactor with this pattern
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME($$$ARGS) { $$$BODY }".to_string(),
         language: "rust".to_string(),
@@ -147,7 +148,7 @@ fn hello() {
     let target_file = temp_dir.path().join("extracted.rs");
 
     // @step When the agent calls astgrep_refactor with pattern "class NonExistent"
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "struct NonExistent".to_string(), // Using struct for Rust instead of class
         language: "rust".to_string(),
@@ -188,7 +189,7 @@ async fn test_error_when_invalid_language_specified() {
     let target_file = temp_dir.path().join("extracted.txt");
 
     // @step When the agent calls astgrep_refactor with language "invalid_lang"
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME".to_string(),
         language: "invalid_lang".to_string(),
@@ -239,7 +240,7 @@ fn after() {}
     let target_file = temp_dir.path().join("extracted.rs");
 
     // @step When the agent extracts the function using astgrep_refactor
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn target_function() { $$$BODY }".to_string(),
         language: "rust".to_string(),
@@ -291,7 +292,7 @@ fn target() {
     let target_file = temp_dir.path().join("extracted.rs");
 
     // @step When the agent calls astgrep_refactor and it succeeds
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn target() { $$$BODY }".to_string(),
         language: "rust".to_string(),
@@ -341,7 +342,7 @@ fn old_function() {
     let replacement = "fn new_function() {\n    println!(\"new\");\n}";
 
     // @step When the agent calls astgrep_refactor in replace mode
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn old_function() { $$$BODY }".to_string(),
         language: "rust".to_string(),
@@ -403,7 +404,7 @@ fn function_b() {
     .unwrap();
 
     // @step When the agent extracts function B to the same target file
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn function_b() { $$$BODY }".to_string(),
         language: "rust".to_string(),

@@ -3,6 +3,7 @@
 //! Tests for multimodal Read tool implementation
 //! Feature: spec/features/add-multimodal-content-support-to-read-tool.feature
 
+use uuid::Uuid;
 use codelet_tools::ReadTool;
 use rig::tool::Tool;
 use std::fs::File;
@@ -29,7 +30,7 @@ async fn test_read_png_image_and_display_visually() {
     file.write_all(&png_data).unwrap();
 
     // @step When I ask the agent to read screenshot.png
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let args = codelet_tools::read::ReadArgs {
         file_path: png_path.to_string_lossy().to_string(),
         offset: None,
@@ -61,7 +62,7 @@ async fn test_read_text_file_with_line_numbers() {
     file.write_all(b"{\n  \"key\": \"value\"\n}").unwrap();
 
     // @step When I ask the agent to read config.json
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let args = codelet_tools::read::ReadArgs {
         file_path: json_path.to_string_lossy().to_string(),
         offset: None,
@@ -95,7 +96,7 @@ async fn test_handle_corrupted_image_gracefully() {
     // Don't create the parent directory - file doesn't exist
 
     // @step When I ask the agent to read broken.png
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let args = codelet_tools::read::ReadArgs {
         file_path: broken_path.to_string_lossy().to_string(),
         offset: None,
@@ -136,7 +137,7 @@ async fn test_detect_image_type_by_content_when_extension_missing() {
     file.write_all(&png_data).unwrap();
 
     // @step When I ask the agent to read image-without-extension
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let args = codelet_tools::read::ReadArgs {
         file_path: no_ext_path.to_string_lossy().to_string(),
         offset: None,
@@ -174,7 +175,7 @@ async fn test_read_offset_exceeds_file_length() {
         .unwrap();
 
     // @step When I read the file with an offset of 240 (way beyond the 10 lines)
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let args = codelet_tools::read::ReadArgs {
         file_path: text_path.to_string_lossy().to_string(),
         offset: Some(240), // Much larger than the 10 lines in the file

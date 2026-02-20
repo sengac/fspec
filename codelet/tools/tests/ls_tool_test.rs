@@ -3,6 +3,7 @@
 //! Tests for LsTool implementation
 //! Feature: spec/features/add-ls-tool-for-directory-listing.feature
 
+use uuid::Uuid;
 use codelet_tools::LsTool;
 use rig::tool::Tool;
 use std::fs::{self, File};
@@ -25,7 +26,7 @@ async fn test_list_directory_returns_files_and_subdirectories_with_metadata() {
     File::create(temp_path.join("alpha.ts")).unwrap();
 
     // @step When I list the directory contents
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(temp_path.to_string_lossy().to_string()),
     };
@@ -63,7 +64,7 @@ async fn test_list_specific_path_returns_only_contents_of_that_directory() {
     File::create(temp_path.join("root.ts")).unwrap();
 
     // @step When I list the directory 'src'
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(src_dir.to_string_lossy().to_string()),
     };
@@ -84,7 +85,7 @@ async fn test_list_nonexistent_directory() {
 
     // @step When I list a non-existent directory '/nonexistent'
     let nonexistent_path = "/nonexistent-xyz123-dir";
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(nonexistent_path.to_string()),
     };
@@ -111,7 +112,7 @@ async fn test_large_directory_listings_are_truncated() {
     }
 
     // @step When I list the directory contents
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(temp_path.to_string_lossy().to_string()),
     };
@@ -136,7 +137,7 @@ async fn test_output_format_shows_permissions_size_mtime_and_name() {
     File::create(temp_path.join("test.ts")).unwrap();
 
     // @step When I list the directory contents
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(temp_path.to_string_lossy().to_string()),
     };
@@ -165,7 +166,7 @@ async fn test_list_empty_directory() {
     let temp_path = temp_dir.path();
 
     // @step When I invoke the LS tool on that directory
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(temp_path.to_string_lossy().to_string()),
     };
@@ -185,7 +186,7 @@ async fn test_list_path_that_is_file() {
     writeln!(file, "test content").unwrap();
 
     // @step When I invoke the LS tool on that path
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(file_path.to_string_lossy().to_string()),
     };
@@ -202,7 +203,7 @@ async fn test_list_path_that_is_file() {
 #[tokio::test]
 async fn test_list_defaults_to_current_directory() {
     // @step Given no path is provided
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs { path: None };
 
     // @step When I invoke the LS tool
@@ -228,7 +229,7 @@ async fn test_handle_files_with_special_characters() {
     File::create(temp_path.join("file-with-dashes.ts")).unwrap();
 
     // @step When I list the directory contents
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(temp_path.to_string_lossy().to_string()),
     };
@@ -253,7 +254,7 @@ async fn test_show_file_sizes_in_bytes() {
     file.write_all(content.as_bytes()).unwrap();
 
     // @step When I list the directory containing the file
-    let tool = LsTool::new();
+    let tool = LsTool::new(Uuid::nil());
     let args = codelet_tools::ls::LsArgs {
         path: Some(temp_path.to_string_lossy().to_string()),
     };

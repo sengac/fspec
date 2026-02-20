@@ -172,7 +172,7 @@ async fn test_claude_facade_provides_flat_schema_with_action_type_enum() -> Resu
 async fn test_facade_wrapper_integrates_with_rig_tool_trait() -> Result<()> {
     // @step Given a FacadeToolWrapper wrapping GeminiGoogleWebSearchFacade
     let facade = Arc::new(GeminiGoogleWebSearchFacade);
-    let wrapper = FacadeToolWrapper::new(facade);
+    let wrapper = FacadeToolWrapper::new(facade, Uuid::nil());
 
     // @step When I call name() on the wrapper (rig::tool::Tool method)
     let name = wrapper.name();
@@ -199,7 +199,7 @@ async fn test_facade_wrapper_integrates_with_rig_tool_trait() -> Result<()> {
 async fn test_facade_wrapper_returns_definition_with_flat_schema() -> Result<()> {
     // @step Given a FacadeToolWrapper wrapping GeminiGoogleWebSearchFacade
     let facade = Arc::new(GeminiGoogleWebSearchFacade);
-    let wrapper = FacadeToolWrapper::new(facade);
+    let wrapper = FacadeToolWrapper::new(facade, Uuid::nil());
 
     // @step When I call definition() on the wrapper
     let def = wrapper.definition(String::new()).await;
@@ -220,7 +220,7 @@ async fn test_facade_wrapper_returns_definition_with_flat_schema() -> Result<()>
 async fn test_facade_wrapper_web_fetch_integrates_with_rig() -> Result<()> {
     // @step Given a FacadeToolWrapper wrapping GeminiWebFetchFacade
     let facade = Arc::new(GeminiWebFetchFacade);
-    let wrapper = FacadeToolWrapper::new(facade);
+    let wrapper = FacadeToolWrapper::new(facade, Uuid::nil());
 
     // @step When I call name() on the wrapper
     let name = wrapper.name();
@@ -627,7 +627,7 @@ async fn test_gemini_glob_facade_provides_flat_schema() -> Result<()> {
 async fn test_search_facade_wrapper_integrates_with_rig_for_search_file_content() -> Result<()> {
     // @step Given a SearchToolFacadeWrapper wrapping GeminiSearchFileContentFacade
     let facade = Arc::new(GeminiSearchFileContentFacade) as Arc<dyn SearchToolFacade>;
-    let wrapper = SearchToolFacadeWrapper::new(facade);
+    let wrapper = SearchToolFacadeWrapper::new(facade, Uuid::nil());
 
     // @step When I call name() on the wrapper
     let name = wrapper.name();
@@ -649,7 +649,7 @@ async fn test_search_facade_wrapper_integrates_with_rig_for_search_file_content(
 async fn test_search_facade_wrapper_integrates_with_rig_for_glob() -> Result<()> {
     // @step Given a SearchToolFacadeWrapper wrapping GeminiGlobFacade
     let facade = Arc::new(GeminiGlobFacade) as Arc<dyn SearchToolFacade>;
-    let wrapper = SearchToolFacadeWrapper::new(facade);
+    let wrapper = SearchToolFacadeWrapper::new(facade, Uuid::nil());
 
     // @step When I call name() on the wrapper
     let name = wrapper.name();
@@ -746,7 +746,7 @@ async fn test_gemini_list_directory_facade_provides_flat_schema() -> Result<()> 
 async fn test_ls_tool_facade_wrapper_integrates_with_rig() -> Result<()> {
     // @step Given a LsToolFacadeWrapper wrapping GeminiListDirectoryFacade
     let facade = Arc::new(GeminiListDirectoryFacade) as Arc<dyn LsToolFacade>;
-    let wrapper = LsToolFacadeWrapper::new(facade);
+    let wrapper = LsToolFacadeWrapper::new(facade, Uuid::nil());
 
     // @step When I call name() on the wrapper
     let name = wrapper.name();

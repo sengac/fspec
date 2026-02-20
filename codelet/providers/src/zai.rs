@@ -217,11 +217,13 @@ impl ZAIProvider {
         let run_command = BashToolFacadeWrapper::new(Arc::new(ZAIRunCommandFacade), session_id);
 
         // Search facades
-        let grep_files = SearchToolFacadeWrapper::new(Arc::new(ZAIGrepFilesFacade));
-        let find_files = SearchToolFacadeWrapper::new(Arc::new(ZAIFindFilesFacade));
+        // TOOL-014: Pass session_id for worktree isolation
+        let grep_files = SearchToolFacadeWrapper::new(Arc::new(ZAIGrepFilesFacade), session_id);
+        let find_files = SearchToolFacadeWrapper::new(Arc::new(ZAIFindFilesFacade), session_id);
 
         // Directory listing facade
-        let list_dir = LsToolFacadeWrapper::new(Arc::new(ZAIListDirFacade));
+        // TOOL-014: Pass session_id for worktree isolation
+        let list_dir = LsToolFacadeWrapper::new(Arc::new(ZAIListDirFacade), session_id);
 
         // Build agent with Z.AI-optimized tools using rig's builder pattern
         // TOOL-012: Pass session_id to fspec and bridge tools
@@ -236,11 +238,11 @@ impl ZAIProvider {
             .tool(grep_files) // Z.AI-native grep_files
             .tool(find_files) // Z.AI-native find_files
             .tool(list_dir) // Z.AI-native list_dir
-            .tool(AstGrepTool::new())
-            .tool(AstGrepRefactorTool::new())
+            .tool(AstGrepTool::new(session_id)) // TOOL-014: AstGrepTool with session_id for worktree isolation
+            .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(zai_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(zai_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
-            .tool(WebSearchTool::new());
+            .tool(WebSearchTool::new(session_id)); // WEB-001, TOOL-014: WebSearchTool with session_id
 
         // Set preamble if provided
         if let Some(preamble_text) = preamble {

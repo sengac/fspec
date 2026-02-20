@@ -1,11 +1,14 @@
 // Web Search Tool Implementation
 // Implements web search capabilities with Search, OpenPage, and FindInPage actions
 // Uses Chrome DevTools Protocol via rust-headless-chrome for full JavaScript support
+//
+// TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
 use rig::{completion::ToolDefinition, tool::Tool};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::sync::{Arc, Mutex};
+use uuid::Uuid;
 
 use crate::chrome_browser::{ChromeBrowser, ChromeConfig, ChromeError};
 use crate::limits::OutputLimits;
@@ -236,8 +239,14 @@ where
 ///
 /// Uses Chrome DevTools Protocol for full JavaScript rendering support,
 /// enabling access to SPAs and dynamically-generated content.
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
 #[derive(Clone, Debug)]
-pub struct WebSearchTool;
+pub struct WebSearchTool {
+    /// Session ID for worktree isolation support
+    #[allow(dead_code)] // Reserved for future worktree isolation
+    session_id: Uuid,
+}
 
 /// Web search request arguments
 #[derive(Debug, Deserialize, Serialize)]
@@ -318,16 +327,13 @@ pub struct WebSearchResult {
     pub action: WebSearchAction,
 }
 
-impl Default for WebSearchTool {
-    fn default() -> Self {
-        Self
-    }
-}
-
 impl WebSearchTool {
-    /// Create a new WebSearchTool instance
-    pub fn new() -> Self {
-        Self
+    /// Create a new WebSearchTool instance with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 }
 

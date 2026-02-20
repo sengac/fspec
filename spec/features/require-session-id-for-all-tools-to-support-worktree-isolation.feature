@@ -2,12 +2,48 @@
 Feature: Require session_id for all tools to support worktree isolation
 
   """
-  Tools affected: ReadTool, WriteTool, EditTool, GrepTool, GlobTool, LsTool, AstGrepTool, AstGrepRefactorTool, WebSearchTool
+  ============================================================================
+  MANDATORY REQUIREMENTS - NON-NEGOTIABLE
+  ============================================================================
+
+  REQUIREMENT 1: ALL TOOL CONSTRUCTORS MUST REQUIRE session_id PARAMETER
+    - ReadTool::new(session_id: Uuid) - REQUIRED
+    - WriteTool::new(session_id: Uuid) - REQUIRED
+    - EditTool::new(session_id: Uuid) - REQUIRED
+    - GrepTool::new(session_id: Uuid) - REQUIRED
+    - GlobTool::new(session_id: Uuid) - REQUIRED
+    - LsTool::new(session_id: Uuid) - REQUIRED
+    - AstGrepTool::new(session_id: Uuid) - REQUIRED
+    - AstGrepRefactorTool::new(session_id: Uuid) - REQUIRED
+    - WebSearchTool::new(session_id: Uuid) - REQUIRED
+    - SearchToolFacadeWrapper::new(session_id: Uuid) - REQUIRED
+    - LsToolFacadeWrapper::new(session_id: Uuid) - REQUIRED
+
+  REQUIREMENT 2: NO DEFAULT TRAIT IMPLEMENTATIONS
+    - Tools MUST NOT implement Default trait
+    - There is no valid default without a session_id
+    - Compilation MUST fail if tool is constructed without session_id
+
+  REQUIREMENT 3: ALL PROVIDERS MUST PASS session_id TO ALL TOOLS
+    - Claude provider MUST pass session_id to all tools
+    - OpenAI provider MUST pass session_id to all tools
+    - Codex provider MUST pass session_id to all tools
+    - Gemini provider MUST pass session_id to all tools
+    - ZAI provider MUST pass session_id to all tools
+
+  REQUIREMENT 4: PATH VALIDATION IN ISOLATED SESSIONS
+    - Tools MUST call get_effective_cwd(session_id) to resolve file paths
+    - Tools MUST reject absolute paths outside worktree when session is isolated
+    - Tools MUST resolve relative paths to worktree directory
+
+  ============================================================================
+  IMPLEMENTATION NOTES
+  ============================================================================
+
   Pattern: Store session_id field, implement get_effective_cwd() method, resolve paths before file operations
   FspecTool and BridgeTool already have session_id - verify they use it for path resolution
-  Implement validate_path_in_worktree(session_id, path) helper that checks if resolved path is within worktree directory
-  Helper function signature: fn validate_and_resolve_path(session_id: Uuid, path: &str) -> Result<PathBuf, ToolError> - resolves relative paths to worktree, rejects absolute paths outside worktree
-  Shared lookup pattern: 1) Call get_effective_cwd(session_id) 2) If Some(worktree_path), resolve relative paths to worktree and reject absolute paths outside worktree 3) If None, operate normally in current directory
+  Helper: validate_and_resolve_path(session_id: Uuid, path: &str) -> Result<PathBuf, ToolError>
+  Shared lookup: 1) Call get_effective_cwd(session_id) 2) If Some(worktree_path), resolve relative paths to worktree and reject absolute paths outside worktree 3) If None, operate normally
   """
 
   # ========================================
@@ -15,13 +51,13 @@ Feature: Require session_id for all tools to support worktree isolation
   # ========================================
   #
   # BUSINESS RULES:
-  #   1. All tool constructors must take session_id: uuid::Uuid as required parameter
-  #   2. Tools must call get_effective_cwd(session_id) to resolve file paths in isolated sessions
-  #   3. Remove Default trait implementations from tools (cannot default without session_id)
-  #   4. All providers must pass session_id when constructing tools
-  #   5. Tools must validate file paths - if a worktree exists for the session, reject operations targeting the main project directory
-  #   6. Return error if tool attempts to read/write outside worktree when session is isolated
-  #   7. All tools must use the shared get_effective_cwd(session_id) function from codelet_tools::facade to look up the worktree path
+  #   1. All tool constructors MUST take session_id: uuid::Uuid as REQUIRED parameter - NO EXCEPTIONS
+  #   2. Tools MUST call get_effective_cwd(session_id) to resolve file paths in isolated sessions
+  #   3. Tools MUST NOT implement Default trait (cannot default without session_id)
+  #   4. All providers MUST pass session_id when constructing tools - NO EXCEPTIONS
+  #   5. Tools MUST validate file paths - if worktree exists, reject operations outside worktree
+  #   6. Tools MUST return error if attempting to read/write outside worktree when session is isolated
+  #   7. All tools MUST use shared get_effective_cwd(session_id) from codelet_tools::facade
   #
   # EXAMPLES:
   #   1. ReadTool::new(session_id) reads file from worktree path in isolated session
@@ -54,9 +90,143 @@ Feature: Require session_id for all tools to support worktree isolation
     I want to have all tools use session_id for worktree lookup
     So that file operations work correctly in isolated sessions
 
-  # ========================================
+  # ============================================================================
+  # REQUIREMENT 1: CONSTRUCTOR SIGNATURE - session_id IS MANDATORY
+  # ============================================================================
+  # These scenarios verify that ALL tools REQUIRE session_id in their constructor.
+  # This is a compile-time guarantee - tools cannot be instantiated without session_id.
+  # ============================================================================
+
+  Scenario: ReadTool REQUIRES session_id parameter in constructor
+    Given ReadTool is being instantiated
+    Then the constructor signature MUST be ReadTool::new(session_id: Uuid)
+    And calling ReadTool::new() without session_id MUST fail to compile
+    And ReadTool MUST NOT implement Default trait
+
+  Scenario: WriteTool REQUIRES session_id parameter in constructor
+    Given WriteTool is being instantiated
+    Then the constructor signature MUST be WriteTool::new(session_id: Uuid)
+    And calling WriteTool::new() without session_id MUST fail to compile
+    And WriteTool MUST NOT implement Default trait
+
+  Scenario: EditTool REQUIRES session_id parameter in constructor
+    Given EditTool is being instantiated
+    Then the constructor signature MUST be EditTool::new(session_id: Uuid)
+    And calling EditTool::new() without session_id MUST fail to compile
+    And EditTool MUST NOT implement Default trait
+
+  Scenario: GrepTool REQUIRES session_id parameter in constructor
+    Given GrepTool is being instantiated
+    Then the constructor signature MUST be GrepTool::new(session_id: Uuid)
+    And calling GrepTool::new() without session_id MUST fail to compile
+    And GrepTool MUST NOT implement Default trait
+
+  Scenario: GlobTool REQUIRES session_id parameter in constructor
+    Given GlobTool is being instantiated
+    Then the constructor signature MUST be GlobTool::new(session_id: Uuid)
+    And calling GlobTool::new() without session_id MUST fail to compile
+    And GlobTool MUST NOT implement Default trait
+
+  Scenario: LsTool REQUIRES session_id parameter in constructor
+    Given LsTool is being instantiated
+    Then the constructor signature MUST be LsTool::new(session_id: Uuid)
+    And calling LsTool::new() without session_id MUST fail to compile
+    And LsTool MUST NOT implement Default trait
+
+  Scenario: AstGrepTool REQUIRES session_id parameter in constructor
+    Given AstGrepTool is being instantiated
+    Then the constructor signature MUST be AstGrepTool::new(session_id: Uuid)
+    And calling AstGrepTool::new() without session_id MUST fail to compile
+    And AstGrepTool MUST NOT implement Default trait
+
+  Scenario: AstGrepRefactorTool REQUIRES session_id parameter in constructor
+    Given AstGrepRefactorTool is being instantiated
+    Then the constructor signature MUST be AstGrepRefactorTool::new(session_id: Uuid)
+    And calling AstGrepRefactorTool::new() without session_id MUST fail to compile
+    And AstGrepRefactorTool MUST NOT implement Default trait
+
+  Scenario: WebSearchTool REQUIRES session_id parameter in constructor
+    Given WebSearchTool is being instantiated
+    Then the constructor signature MUST be WebSearchTool::new(session_id: Uuid)
+    And calling WebSearchTool::new() without session_id MUST fail to compile
+    And WebSearchTool MUST NOT implement Default trait
+
+  Scenario: SearchToolFacadeWrapper REQUIRES session_id parameter in constructor
+    Given SearchToolFacadeWrapper is being instantiated
+    Then the constructor signature MUST be SearchToolFacadeWrapper::new(session_id: Uuid)
+    And calling SearchToolFacadeWrapper::new() without session_id MUST fail to compile
+    And SearchToolFacadeWrapper MUST NOT implement Default trait
+
+  Scenario: LsToolFacadeWrapper REQUIRES session_id parameter in constructor
+    Given LsToolFacadeWrapper is being instantiated
+    Then the constructor signature MUST be LsToolFacadeWrapper::new(session_id: Uuid)
+    And calling LsToolFacadeWrapper::new() without session_id MUST fail to compile
+    And LsToolFacadeWrapper MUST NOT implement Default trait
+
+  # ============================================================================
+  # REQUIREMENT 3: PROVIDER COMPLIANCE - ALL PROVIDERS MUST PASS session_id
+  # ============================================================================
+  # These scenarios verify that ALL providers pass session_id to ALL tools.
+  # If any provider fails to pass session_id, compilation MUST fail.
+  # ============================================================================
+
+  Scenario: Claude provider MUST pass session_id to all tools
+    Given a Claude provider creating an agent with session_id
+    When tools are instantiated for the agent
+    Then ReadTool MUST be constructed with ReadTool::new(session_id)
+    And WriteTool MUST be constructed with WriteTool::new(session_id)
+    And EditTool MUST be constructed with EditTool::new(session_id)
+    And GrepTool MUST be constructed with GrepTool::new(session_id)
+    And GlobTool MUST be constructed with GlobTool::new(session_id)
+    And LsTool MUST be constructed with LsTool::new(session_id)
+    And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
+    And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
+
+  Scenario: OpenAI provider MUST pass session_id to all tools
+    Given an OpenAI provider creating an agent with session_id
+    When tools are instantiated for the agent
+    Then ReadTool MUST be constructed with ReadTool::new(session_id)
+    And WriteTool MUST be constructed with WriteTool::new(session_id)
+    And EditTool MUST be constructed with EditTool::new(session_id)
+    And GrepTool MUST be constructed with GrepTool::new(session_id)
+    And GlobTool MUST be constructed with GlobTool::new(session_id)
+    And LsTool MUST be constructed with LsTool::new(session_id)
+    And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
+    And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
+
+  Scenario: Codex provider MUST pass session_id to all tools
+    Given a Codex provider creating an agent with session_id
+    When tools are instantiated for the agent
+    Then ReadTool MUST be constructed with ReadTool::new(session_id)
+    And WriteTool MUST be constructed with WriteTool::new(session_id)
+    And EditTool MUST be constructed with EditTool::new(session_id)
+    And GrepTool MUST be constructed with GrepTool::new(session_id)
+    And GlobTool MUST be constructed with GlobTool::new(session_id)
+    And LsTool MUST be constructed with LsTool::new(session_id)
+    And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
+    And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
+
+  Scenario: Gemini provider MUST pass session_id to all tools
+    Given a Gemini provider creating an agent with session_id
+    When tools are instantiated for the agent
+    Then SearchToolFacadeWrapper MUST be constructed with SearchToolFacadeWrapper::new(session_id)
+    And LsToolFacadeWrapper MUST be constructed with LsToolFacadeWrapper::new(session_id)
+    And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
+    And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
+    And all file operation wrappers MUST receive session_id
+
+  Scenario: ZAI provider MUST pass session_id to all tools
+    Given a ZAI provider creating an agent with session_id
+    When tools are instantiated for the agent
+    Then SearchToolFacadeWrapper MUST be constructed with SearchToolFacadeWrapper::new(session_id)
+    And LsToolFacadeWrapper MUST be constructed with LsToolFacadeWrapper::new(session_id)
+    And AstGrepTool MUST be constructed with AstGrepTool::new(session_id)
+    And AstGrepRefactorTool MUST be constructed with AstGrepRefactorTool::new(session_id)
+    And all file operation wrappers MUST receive session_id
+
+  # ============================================================================
   # HAPPY PATH - Relative paths resolve to worktree
-  # ========================================
+  # ============================================================================
 
   Scenario: ReadTool resolves relative path to worktree in isolated session
     Given an isolated session with worktree at ".fspec/worktrees/abc123/"
@@ -111,9 +281,9 @@ Feature: Require session_id for all tools to support worktree isolation
     When BashTool runs "pwd"
     Then the output should contain ".fspec/worktrees/abc123"
 
-  # ========================================
+  # ============================================================================
   # ERROR CASES - Absolute paths outside worktree rejected
-  # ========================================
+  # ============================================================================
 
   Scenario: ReadTool rejects absolute path outside worktree
     Given an isolated session with worktree at ".fspec/worktrees/abc123/"
@@ -163,18 +333,12 @@ Feature: Require session_id for all tools to support worktree isolation
     Then it should return ToolError::Validation with tool "ast_grep_refactor"
     And the error message should contain "outside isolated worktree"
 
-  # ========================================
+  # ============================================================================
   # NON-ISOLATED SESSION - Normal operation
-  # ========================================
+  # ============================================================================
 
   Scenario: Tools operate normally with Uuid::nil() in tests
     Given a non-isolated session with Uuid::nil()
     When get_effective_cwd is called
     Then it should return None
     And tools should operate in the current directory without path validation
-
-  Scenario: Tools require session_id in constructor
-    Given a tool class that previously had parameterless new()
-    When the tool is instantiated
-    Then it must require session_id: uuid::Uuid as parameter
-    And Default trait implementation should not exist

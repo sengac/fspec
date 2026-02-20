@@ -4,6 +4,7 @@
 // Tests for WEB-002: Chrome DevTools Web Search Implementation
 // Uses rust-headless-chrome for full browser-based web search with JavaScript support
 
+use uuid::Uuid;
 use anyhow::Result;
 use codelet_tools::{
     ChromeBrowser, ChromeConfig, ChromeError, PageContent, PageFetcher, SearchEngine, SearchResult,
@@ -306,7 +307,7 @@ fn test_agent_uses_locally_installed_chrome() -> Result<(), ChromeError> {
 fn test_browser_is_lazily_initialized() {
     // @step Given the web search tool is loaded
     use codelet_tools::WebSearchTool;
-    let _web_search_tool = WebSearchTool::new();
+    let _web_search_tool = WebSearchTool::new(Uuid::nil());
 
     // @step When no web search has been performed yet
     // Just loading the tool should not start Chrome

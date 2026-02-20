@@ -7,6 +7,8 @@
 //! This is a known limitation - the crate doesn't provide async variants.
 //! The blocking operations are fast enough for typical use cases and
 //! acceptable given the search performance benefits of ripgrep's implementation.
+//!
+//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
 use crate::{
     error::ToolError,
@@ -22,6 +24,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::path::Path;
+use uuid::Uuid;
 
 /// Output mode for grep results
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -45,12 +48,22 @@ impl OutputMode {
 }
 
 /// GrepTool for content search using ripgrep crates
-pub struct GrepTool;
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
+/// In isolated sessions, search paths are resolved to the session's worktree.
+pub struct GrepTool {
+    /// Session ID for worktree isolation support
+    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
+    session_id: Uuid,
+}
 
 impl GrepTool {
-    /// Create a new GrepTool
-    pub fn new() -> Self {
-        Self
+    /// Create a new GrepTool with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 
     /// Build the regex matcher with options
@@ -326,12 +339,6 @@ impl GrepTool {
             truncated: was_truncated,
             is_error: false,
         })
-    }
-}
-
-impl Default for GrepTool {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

@@ -48,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
 
     // === WRITE TOOL ===
     println!("   📝 Testing Write tool...");
-    let write_tool = codelet::tools::WriteTool::new();
+    let write_tool = codelet::tools::WriteTool::new(Uuid::nil());
     let write_result = write_tool
         .execute(serde_json::json!({
             "file_path": format!("{}/test_file.txt", test_dir),
@@ -59,7 +59,7 @@ async fn main() -> anyhow::Result<()> {
 
     // === READ TOOL ===
     println!("   📖 Testing Read tool...");
-    let read_tool = codelet::tools::ReadTool::new();
+    let read_tool = codelet::tools::ReadTool::new(Uuid::nil());
     let read_result = read_tool
         .execute(serde_json::json!({
             "file_path": format!("{}/test_file.txt", test_dir)
@@ -72,7 +72,7 @@ async fn main() -> anyhow::Result<()> {
 
     // === EDIT TOOL ===
     println!("   ✏️  Testing Edit tool...");
-    let edit_tool = codelet::tools::EditTool::new();
+    let edit_tool = codelet::tools::EditTool::new(Uuid::nil());
     let edit_result = edit_tool
         .execute(serde_json::json!({
             "file_path": format!("{}/test_file.txt", test_dir),
@@ -97,7 +97,7 @@ async fn main() -> anyhow::Result<()> {
 
     // === GREP TOOL ===
     println!("   🔍 Testing Grep tool...");
-    let grep_tool = codelet::tools::GrepTool::new();
+    let grep_tool = codelet::tools::GrepTool::new(Uuid::nil());
     let grep_result = grep_tool
         .execute(serde_json::json!({
             "pattern": "Modified",
@@ -112,7 +112,7 @@ async fn main() -> anyhow::Result<()> {
 
     // === GLOB TOOL ===
     println!("   🌐 Testing Glob tool...");
-    let glob_tool = codelet::tools::GlobTool::new();
+    let glob_tool = codelet::tools::GlobTool::new(Uuid::nil());
     let glob_result = glob_tool
         .execute(serde_json::json!({
             "pattern": "*.txt",
@@ -132,7 +132,7 @@ async fn main() -> anyhow::Result<()> {
         "fn main() {\n    println!(\"Hello\");\n}\n\nfn helper() -> i32 {\n    42\n}",
     )?;
 
-    let astgrep_tool = codelet::tools::AstGrepTool::new();
+    let astgrep_tool = codelet::tools::AstGrepTool::new(Uuid::nil());
     let astgrep_result = astgrep_tool
         .execute(serde_json::json!({
             "pattern": "fn $NAME() { $$$ }",

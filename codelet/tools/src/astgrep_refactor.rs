@@ -5,8 +5,10 @@
 //! - Replace mode: Replace matched code in-place with replacement text
 //!
 //! Feature: spec/features/ast-code-refactor-tool-for-codelet.feature
+//!
+//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
-use crate::{error::ToolError, ToolOutput};
+use crate::{error::ToolError, facade::validate_and_resolve_path, ToolOutput};
 use anyhow::Result;
 use ast_grep_core::matcher::Pattern;
 use ast_grep_core::meta_var::MetaVariable;
@@ -17,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
+use uuid::Uuid;
 
 /// Case conversion types for Convert transform
 #[derive(Debug, Clone, Deserialize, Serialize, JsonSchema, PartialEq)]
@@ -108,12 +111,21 @@ pub enum Transform {
 }
 
 /// AstGrepRefactorTool for AST-based code refactoring
-pub struct AstGrepRefactorTool;
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
+/// In isolated sessions, file paths are resolved to the session's worktree.
+pub struct AstGrepRefactorTool {
+    /// Session ID for worktree isolation support
+    session_id: Uuid,
+}
 
 impl AstGrepRefactorTool {
-    /// Create a new AstGrepRefactorTool
-    pub fn new() -> Self {
-        Self
+    /// Create a new AstGrepRefactorTool with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 
     /// Parse language string to SupportLang
@@ -912,12 +924,6 @@ impl AstGrepRefactorTool {
     }
 }
 
-impl Default for AstGrepRefactorTool {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 // rig::tool::Tool implementation
 
 /// Arguments for AstGrepRefactor tool (rig::tool::Tool)
@@ -1050,6 +1056,22 @@ impl rig::tool::Tool for AstGrepRefactorTool {
     }
 
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
+        // TOOL-014: Validate and resolve source_file path for worktree isolation
+        let resolved_source = match validate_and_resolve_path(self.session_id, &args.source_file, "ast_grep_refactor") {
+            Ok(resolved) => resolved.to_string_lossy().to_string(),
+            Err(e) => return Err(e),
+        };
+
+        // TOOL-014: Validate and resolve target_file path if provided
+        let resolved_target = if let Some(ref target) = args.target_file {
+            match validate_and_resolve_path(self.session_id, target, "ast_grep_refactor") {
+                Ok(resolved) => Some(resolved.to_string_lossy().to_string()),
+                Err(e) => return Err(e),
+            }
+        } else {
+            None
+        };
+
         // Delegate to existing execute method by converting args to Value
         let mut value_map = serde_json::Map::new();
         value_map.insert(
@@ -1062,9 +1084,9 @@ impl rig::tool::Tool for AstGrepRefactorTool {
         );
         value_map.insert(
             "source_file".to_string(),
-            serde_json::Value::String(args.source_file),
+            serde_json::Value::String(resolved_source),
         );
-        if let Some(target) = args.target_file {
+        if let Some(target) = resolved_target {
             value_map.insert("target_file".to_string(), serde_json::Value::String(target));
         }
         if let Some(repl) = args.replacement {

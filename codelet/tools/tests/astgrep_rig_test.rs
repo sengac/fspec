@@ -2,6 +2,7 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 //! Test for AstGrep rig::tool::Tool implementation
 
+use uuid::Uuid;
 use codelet_tools::AstGrepTool;
 use rig::tool::Tool;
 use std::fs;
@@ -16,7 +17,7 @@ async fn test_astgrep_rig_tool_language_parameter() {
     fs::write(&file, "fn hello() { println!(\"hello\"); }").unwrap();
 
     // Use the rig::tool::Tool interface
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let args = codelet_tools::astgrep::AstGrepArgs {
         pattern: "fn $NAME".to_string(),
         language: "rust".to_string(),

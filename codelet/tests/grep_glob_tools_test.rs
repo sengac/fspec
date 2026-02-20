@@ -7,6 +7,7 @@
 //! These tests verify the implementation of grep crate-based content search
 //! and ignore crate-based gitignore-aware file pattern matching.
 
+use uuid::Uuid;
 use codelet::agent::Runner;
 use codelet::tools::{glob::GlobTool, grep::GrepTool, Tool, ToolRegistry};
 use serde_json::json;
@@ -30,7 +31,7 @@ async fn test_grep_search_returns_file_paths_containing_pattern() {
     fs::write(&file3, "// This file has no match\nfn baz() {}").unwrap();
 
     // @step When I execute the Grep tool with pattern "TODO"
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "TODO",
@@ -63,7 +64,7 @@ async fn test_grep_content_mode_shows_lines_with_numbers() {
     .unwrap();
 
     // @step When I execute the Grep tool with pattern "export function" and output_mode "content"
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "export function",
@@ -92,7 +93,7 @@ async fn test_grep_glob_filter_only_searches_matching_files() {
     fs::write(&js_file, "// TODO: JavaScript file").unwrap();
 
     // @step When I execute the Grep tool with pattern "TODO" and glob "*.ts"
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "TODO",
@@ -118,7 +119,7 @@ async fn test_grep_context_lines_includes_surrounding_lines() {
     fs::write(&file, "line 1\nline 2\n// TODO: fix this\nline 4\nline 5\n").unwrap();
 
     // @step When I execute the Grep tool with pattern "TODO" and -A set to 2 in content mode
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "TODO",
@@ -144,7 +145,7 @@ async fn test_grep_case_insensitive_matches_all_cases() {
     fs::write(&file, "ERROR: critical\nerror: warning\nError: info\n").unwrap();
 
     // @step When I execute the Grep tool with pattern "error" and -i flag
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "error",
@@ -174,7 +175,7 @@ async fn test_grep_multiline_matches_spanning_lines() {
     .unwrap();
 
     // @step When I execute the Grep tool with a multiline pattern and multiline enabled
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "fn foo\\([\\s\\S]*?\\) -> bool",
@@ -202,7 +203,7 @@ async fn test_grep_count_mode_returns_match_counts() {
     fs::write(&file2, "TODO single\n").unwrap();
 
     // @step When I execute the Grep tool with output_mode "count"
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "TODO",
@@ -227,7 +228,7 @@ async fn test_grep_nonexistent_pattern_returns_no_matches() {
     fs::write(&file, "fn main() {}\n").unwrap();
 
     // @step When I execute the Grep tool with a non-existent pattern
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "ZZZZNONEXISTENT12345",
@@ -264,7 +265,7 @@ async fn test_glob_search_returns_matching_files() {
     fs::write(&non_ts, "# readme").unwrap();
 
     // @step When I execute the Glob tool with pattern "**/*.ts"
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "**/*.ts",
@@ -299,7 +300,7 @@ async fn test_glob_path_limits_search_to_directory() {
     fs::write(&lib_file, "// lib util").unwrap();
 
     // @step When I execute the Glob tool with pattern "*.ts" and path "src"
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "*.ts",
@@ -322,7 +323,7 @@ async fn test_glob_nonexistent_pattern_returns_no_matches() {
     fs::write(&file, "// code").unwrap();
 
     // @step When I execute the Glob tool with pattern "nonexistent*.xyz"
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "nonexistent*.xyz",
@@ -362,7 +363,7 @@ async fn test_glob_respects_gitignore() {
     fs::write(&ignored_file, "// dep").unwrap();
 
     // @step When I execute the Glob tool with pattern "**/*.js"
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "**/*.js",

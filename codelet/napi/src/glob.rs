@@ -2,10 +2,13 @@
 //!
 //! Exposes glob file pattern matching functionality to TypeScript via NAPI-RS.
 //! Reuses the existing GlobTool implementation from codelet-tools.
+//!
+//! TOOL-014: NAPI bindings use Uuid::nil() since they operate outside of session context.
 
 use codelet_tools::glob::{GlobArgs, GlobTool};
 use napi_derive::napi;
 use rig::tool::Tool;
+use uuid::Uuid;
 
 /// Result of a Glob tool search
 #[napi(object)]
@@ -31,7 +34,8 @@ pub struct GlobResult {
 /// GlobResult with matching file paths or error message
 #[napi]
 pub async fn glob_search(pattern: String, path: Option<String>, case_insensitive: Option<bool>) -> napi::Result<GlobResult> {
-    let tool = GlobTool::new();
+    // TOOL-014: Use Uuid::nil() for NAPI bindings (no session context)
+    let tool = GlobTool::new(Uuid::nil());
     let args = GlobArgs { pattern, path, case_insensitive };
 
     match tool.call(args).await {

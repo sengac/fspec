@@ -5,6 +5,8 @@
 //!
 //! PROV-002: Text files are checked against token limits before being returned.
 //! Images, PDFs, and Jupyter notebooks are exempt from token limits (processed differently).
+//!
+//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
 use super::blocklist::check_file_path;
 use super::error::ToolError;
@@ -20,6 +22,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::path::Path;
 use tokio::fs;
+use uuid::Uuid;
 
 /// Structured output for the Read tool supporting multimodal content
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,12 +35,22 @@ pub enum ReadOutput {
 }
 
 /// Read tool for reading file contents
-pub struct ReadTool;
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
+/// In isolated sessions, file paths are resolved to the session's worktree.
+pub struct ReadTool {
+    /// Session ID for worktree isolation support
+    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
+    session_id: Uuid,
+}
 
 impl ReadTool {
-    /// Create a new Read tool instance
-    pub fn new() -> Self {
-        Self
+    /// Create a new Read tool instance with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 
     /// Read file as binary and return raw bytes
@@ -84,12 +97,6 @@ impl ReadTool {
         }
 
         output
-    }
-}
-
-impl Default for ReadTool {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

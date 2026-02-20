@@ -11,6 +11,7 @@
 //! - Preview/dry-run mode
 //! - Error handling for invalid transforms
 
+use uuid::Uuid;
 use codelet_tools::astgrep_refactor::{
     AstGrepRefactorArgs, AstGrepRefactorTool, CaseType, ConvertTransform, ReplaceTransform,
     Separator, SubstringTransform, Transform,
@@ -41,7 +42,7 @@ async fn test_match_function_using_partial_pattern_with_meta_variables() {
 
     // @step When I use pattern 'fn $NAME($$$ARGS) { $$$BODY }' to match the function
     // Note: ast-grep patterns must match the complete AST node structure
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME($$$ARGS) { $$$BODY }".to_string(),
         language: "rust".to_string(),
@@ -79,7 +80,7 @@ async fn test_match_call_expressions_without_full_statement_as_pattern() {
     fs::write(&source_file, "const x = 1; console.log(x); const y = 2;").unwrap();
 
     // @step When I use pattern 'console.log($MSG)' to find the call
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "console.log($MSG)".to_string(),
         language: "typescript".to_string(),
@@ -125,7 +126,7 @@ async fn test_rename_function_using_convert_transform_with_case_conversion() {
         }),
     );
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME() { }".to_string(),
         language: "rust".to_string(),
@@ -176,7 +177,7 @@ async fn test_extract_substring_from_captured_variable() {
         }),
     );
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "const $NAME = $VALUE".to_string(),
         language: "typescript".to_string(),
@@ -223,7 +224,7 @@ async fn test_remove_suffix_using_replace_transform_with_regex() {
         }),
     );
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME() { }".to_string(),
         language: "rust".to_string(),
@@ -270,7 +271,7 @@ oldFunc(arg5);
     .unwrap();
 
     // @step When I refactor with pattern 'oldFunc($$$ARGS)', replacement 'newFunc($$$ARGS)', and batch: true
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "oldFunc($$$ARGS)".to_string(),
         language: "typescript".to_string(),
@@ -319,7 +320,7 @@ async fn test_preview_changes_without_modifying_files() {
     fs::write(&source_file, original_content).unwrap();
 
     // @step When I refactor with pattern 'fn old()', replacement 'fn new()', and preview: true
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn old() { }".to_string(),
         language: "rust".to_string(),
@@ -381,7 +382,7 @@ async fn test_chain_multiple_transforms_with_dependency_ordering() {
         }),
     );
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME() { }".to_string(),
         language: "rust".to_string(),
@@ -428,7 +429,7 @@ async fn test_use_separated_by_option_to_control_word_splitting() {
         }),
     );
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "const $NAME = $VALUE".to_string(),
         language: "typescript".to_string(),
@@ -474,7 +475,7 @@ async fn test_fail_operation_when_transform_has_invalid_regex() {
         }),
     );
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME() { }".to_string(),
         language: "rust".to_string(),
@@ -526,7 +527,7 @@ async fn test_reject_transforms_when_using_extract_mode() {
         }),
     );
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME() { }".to_string(),
         language: "rust".to_string(),
@@ -575,7 +576,7 @@ fn bar() { }
 
     let target_file = temp_dir.path().join("extracted.rs");
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME() { }".to_string(),
         language: "rust".to_string(),
@@ -633,7 +634,7 @@ async fn test_fail_operation_when_transforms_have_cyclic_dependency() {
         }),
     );
 
-    let tool = AstGrepRefactorTool::new();
+    let tool = AstGrepRefactorTool::new(Uuid::nil());
     let args = AstGrepRefactorArgs {
         pattern: "fn $NAME() { }".to_string(),
         language: "rust".to_string(),

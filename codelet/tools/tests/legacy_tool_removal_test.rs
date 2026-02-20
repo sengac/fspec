@@ -5,6 +5,7 @@
 
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 
+use uuid::Uuid;
 /// Scenario: Tool files contain only rig::tool::Tool implementation
 #[test]
 fn test_tool_files_contain_only_rig_tool_impl() {
@@ -200,7 +201,7 @@ async fn test_tools_can_be_tested_directly_using_rig_trait() {
     use codelet_tools::ReadTool;
     use rig::tool::Tool;
 
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
 
     // @step When I call the tool using rig::tool::Tool::call method
     // Create a test file to read

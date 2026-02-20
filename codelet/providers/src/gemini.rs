@@ -116,8 +116,9 @@ impl GeminiProvider {
 
         // Create Gemini-specific web search facades (TOOL-001)
         // These provide Gemini-native tool names and flat schemas
-        let google_web_search = FacadeToolWrapper::new(Arc::new(GeminiGoogleWebSearchFacade));
-        let web_fetch = FacadeToolWrapper::new(Arc::new(GeminiWebFetchFacade));
+        // TOOL-014: Pass session_id for consistency
+        let google_web_search = FacadeToolWrapper::new(Arc::new(GeminiGoogleWebSearchFacade), session_id);
+        let web_fetch = FacadeToolWrapper::new(Arc::new(GeminiWebFetchFacade), session_id);
 
         // Create Gemini-specific file operation facades (TOOL-003)
         // These provide Gemini-native tool names: read_file, write_file, replace
@@ -133,13 +134,15 @@ impl GeminiProvider {
 
         // Create Gemini-specific search facades (TOOL-005)
         // Provides Gemini-native tool names: search_file_content, find_files
+        // TOOL-014: Pass session_id for worktree isolation
         let search_file_content =
-            SearchToolFacadeWrapper::new(Arc::new(GeminiSearchFileContentFacade));
-        let find_files = SearchToolFacadeWrapper::new(Arc::new(GeminiGlobFacade));
+            SearchToolFacadeWrapper::new(Arc::new(GeminiSearchFileContentFacade), session_id);
+        let find_files = SearchToolFacadeWrapper::new(Arc::new(GeminiGlobFacade), session_id);
 
         // Create Gemini-specific directory listing facade (TOOL-006)
         // Provides Gemini-native tool name: list_directory
-        let list_directory = LsToolFacadeWrapper::new(Arc::new(GeminiListDirectoryFacade));
+        // TOOL-014: Pass session_id for worktree isolation
+        let list_directory = LsToolFacadeWrapper::new(Arc::new(GeminiListDirectoryFacade), session_id);
 
         // Build agent with all tools using rig's builder pattern
         // TOOL-001: Use facade wrappers for web search instead of generic WebSearchTool
@@ -159,8 +162,8 @@ impl GeminiProvider {
             .tool(search_file_content) // TOOL-005: Gemini-native search_file_content
             .tool(find_files) // TOOL-005: Gemini-native find_files
             .tool(list_directory) // TOOL-006: Gemini-native list_directory
-            .tool(AstGrepTool::new())
-            .tool(AstGrepRefactorTool::new())
+            .tool(AstGrepTool::new(session_id)) // TOOL-014: AstGrepTool with session_id for worktree isolation
+            .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(gemini_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(gemini_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
             .tool(google_web_search) // TOOL-001: Gemini-native google_web_search

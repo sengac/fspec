@@ -2,6 +2,8 @@
 //!
 //! Writes content to files, creating parent directories as needed.
 //! Uses tokio::fs for non-blocking async I/O.
+//!
+//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
 use super::blocklist::check_file_path;
 use super::error::ToolError;
@@ -9,20 +11,25 @@ use super::validation::{create_parent_dirs, require_absolute_path, write_file_co
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use uuid::Uuid;
 
 /// Write tool for writing file contents
-pub struct WriteTool;
-
-impl WriteTool {
-    /// Create a new Write tool instance
-    pub fn new() -> Self {
-        Self
-    }
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
+/// In isolated sessions, file paths are resolved to the session's worktree.
+pub struct WriteTool {
+    /// Session ID for worktree isolation support
+    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
+    session_id: Uuid,
 }
 
-impl Default for WriteTool {
-    fn default() -> Self {
-        Self::new()
+impl WriteTool {
+    /// Create a new Write tool instance with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 }
 

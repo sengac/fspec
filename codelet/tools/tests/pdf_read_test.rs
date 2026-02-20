@@ -6,6 +6,7 @@
 //! Tests for PDF reading support with three modes: visual, text, and images.
 //! Uses lopdf for text/images modes and hayro (pure Rust) for visual mode.
 
+use uuid::Uuid;
 use codelet_tools::pdf::RenderedPdfPages;
 use codelet_tools::read::{ReadArgs, ReadTool};
 use lopdf::dictionary;
@@ -24,7 +25,7 @@ async fn test_read_pdf_default_visual_mode_renders_pages_as_images() {
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with no pdf_mode specified
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -99,7 +100,7 @@ async fn test_read_pdf_text_mode_extracts_searchable_text() {
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with pdf_mode="text"
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -144,7 +145,7 @@ async fn test_read_pdf_images_mode_extracts_embedded_images() {
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with pdf_mode="images"
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -180,7 +181,7 @@ async fn test_reject_password_protected_pdf_with_clear_error() {
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with any pdf_mode
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -219,7 +220,7 @@ async fn test_visual_mode_includes_page_count() {
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with pdf_mode="visual"
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -265,7 +266,7 @@ async fn test_text_mode_handles_scanned_pdfs_gracefully() {
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with pdf_mode="text"
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -308,7 +309,7 @@ async fn test_pdf_modes_exempt_from_token_limits() {
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with any pdf_mode
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -347,7 +348,7 @@ async fn test_invalid_pdf_mode_falls_back_to_visual() {
     std::fs::write(&file_path, &pdf_bytes).expect("Failed to write test PDF");
 
     // @step When the read tool is called with pdf_mode="invalid_mode"
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),

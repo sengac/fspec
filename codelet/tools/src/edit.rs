@@ -2,6 +2,8 @@
 //!
 //! Edits files by replacing the first occurrence of a string.
 //! Uses tokio::fs for non-blocking async I/O.
+//!
+//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
 use super::blocklist::check_file_path;
 use super::error::ToolError;
@@ -11,20 +13,25 @@ use super::validation::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use uuid::Uuid;
 
 /// Edit tool for modifying file contents
-pub struct EditTool;
-
-impl EditTool {
-    /// Create a new Edit tool instance
-    pub fn new() -> Self {
-        Self
-    }
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
+/// In isolated sessions, file paths are resolved to the session's worktree.
+pub struct EditTool {
+    /// Session ID for worktree isolation support
+    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
+    session_id: Uuid,
 }
 
-impl Default for EditTool {
-    fn default() -> Self {
-        Self::new()
+impl EditTool {
+    /// Create a new Edit tool instance with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 }
 

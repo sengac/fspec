@@ -319,22 +319,23 @@ impl ClaudeProvider {
         // Build agent with all 11 tools using rig's builder pattern (TOOL-007: Uses FacadeToolWrapper for web search)
         // MODEL-001: Use stored model name instead of DEFAULT_MODEL
         // TOOL-012: Pass session_id to fspec and bridge tools
+        // TOOL-014: All tools require session_id for worktree isolation
         let mut agent_builder = self
             .rig_client
             .agent(&self.model_name)
             .max_tokens(MAX_OUTPUT_TOKENS as u64)
-            .tool(ReadTool::new())
-            .tool(WriteTool::new())
-            .tool(EditTool::new())
+            .tool(ReadTool::new(session_id))
+            .tool(WriteTool::new(session_id))
+            .tool(EditTool::new(session_id))
             .tool(BashTool::new(session_id))
-            .tool(GrepTool::new())
-            .tool(GlobTool::new())
-            .tool(LsTool::new())
-            .tool(AstGrepTool::new())
-            .tool(AstGrepRefactorTool::new())
+            .tool(GrepTool::new(session_id))
+            .tool(GlobTool::new(session_id))
+            .tool(LsTool::new(session_id))
+            .tool(AstGrepTool::new(session_id)) // TOOL-014: AstGrepTool with session_id for worktree isolation
+            .tool(AstGrepRefactorTool::new(session_id)) // TOOL-014: AstGrepRefactorTool with session_id for worktree isolation
             .tool(claude_fspec_tool(session_id)) // TOOL-012: FspecTool with explicit session association
             .tool(claude_bridge_tool(session_id)) // TOOL-012: BridgeTool with explicit session association
-            .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade))); // TOOL-007: Use facade for consistent tool interfaces
+            .tool(FacadeToolWrapper::new(Arc::new(ClaudeWebSearchFacade), session_id)); // TOOL-007, TOOL-014: Facade with session_id
 
         // PROV-006, TOOL-008: Apply cache_control to system prompt using facade
         let is_oauth = self.is_oauth_mode();

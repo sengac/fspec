@@ -7,6 +7,7 @@
 //! These tests verify the implementation of AST-based code search
 //! using the native ast-grep Rust crates (ast-grep-core + ast-grep-language).
 
+use uuid::Uuid;
 use codelet::agent::Runner;
 use codelet::tools::{astgrep::AstGrepTool, Tool, ToolRegistry};
 use serde_json::json;
@@ -38,7 +39,7 @@ function helperFunction() {
     .unwrap();
 
     // @step When I execute the AstGrep tool with pattern "function executeTool" and language "typescript"
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "function executeTool",
@@ -82,7 +83,7 @@ logger.debug("Debug info", { key: "value" });
     .unwrap();
 
     // @step When I execute the AstGrep tool with pattern "logger.$METHOD($$$ARGS)" and language "typescript"
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "logger.$METHOD($$$ARGS)",
@@ -129,7 +130,7 @@ fn no_return() {
 
     // @step When I execute the AstGrep tool with pattern "fn $NAME($$$ARGS) -> $RET { $$$BODY }" and language "rust"
     // Note: In Rust AST, function definitions include the body, so we need to match it
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "fn $NAME($$$ARGS) -> $RET { $$$BODY }",
@@ -156,7 +157,7 @@ async fn test_astgrep_invalid_pattern_returns_helpful_error() {
     fs::write(&file, "function foo() {}").unwrap();
 
     // @step When I execute the AstGrep tool with the invalid pattern and language "typescript"
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "function {{{",
@@ -198,7 +199,7 @@ async fn test_astgrep_limit_search_to_specific_paths() {
     fs::write(&test_file, "fn test_function() {}").unwrap();
 
     // @step When I execute the AstGrep tool with pattern "fn $NAME" and language "rust" and paths ["src/"]
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "fn $NAME",
@@ -238,7 +239,7 @@ fn function_{}_e() {{ println!("e"); }}
     }
 
     // @step When I execute the AstGrep tool with a pattern that matches many files
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .execute(json!({
             "pattern": "fn $NAME()",

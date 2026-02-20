@@ -7,6 +7,7 @@
 //! These tests verify the implementation of grep crate-based content search
 //! and ignore crate-based gitignore-aware file pattern matching.
 
+use uuid::Uuid;
 use codelet_tools::{
     glob::{GlobArgs, GlobTool},
     grep::{GrepArgs, GrepTool},
@@ -32,7 +33,7 @@ async fn test_grep_search_returns_file_paths_containing_pattern() {
     fs::write(&file3, "// This file has no match\nfn baz() {}").unwrap();
 
     // @step When I execute the Grep tool with pattern "TODO"
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .call(GrepArgs {
             pattern: "TODO".to_string(),
@@ -63,7 +64,7 @@ async fn test_grep_content_mode_shows_lines_with_numbers() {
     .unwrap();
 
     // @step When I execute the Grep tool with pattern "export function" and output_mode "content"
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .call(GrepArgs {
             pattern: "export function".to_string(),
@@ -103,7 +104,7 @@ async fn test_grep_respects_gitignore() {
     fs::write(temp_dir.path().join(".gitignore"), "build/").unwrap();
 
     // @step When I execute the Grep tool with pattern "TODO"
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .call(GrepArgs {
             pattern: "TODO".to_string(),
@@ -129,7 +130,7 @@ async fn test_grep_no_matches() {
     fs::write(&file, "// No matches here\nfn main() {}").unwrap();
 
     // @step When I execute the Grep tool with pattern "XYZNONEXISTENT123"
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     let result = tool
         .call(GrepArgs {
             pattern: "XYZNONEXISTENT123".to_string(),
@@ -162,7 +163,7 @@ async fn test_glob_returns_matching_file_paths() {
     fs::write(&ts1, "export function app() {}").unwrap();
 
     // @step When I execute the Glob tool with pattern "*.rs"
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     let result = tool
         .call(GlobArgs {
             pattern: "*.rs".to_string(),
@@ -196,7 +197,7 @@ async fn test_glob_recursive_pattern_finds_nested_files() {
     fs::write(&sub_file, "// sub").unwrap();
 
     // @step When I execute the Glob tool with pattern "**/*.rs"
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     let result = tool
         .call(GlobArgs {
             pattern: "**/*.rs".to_string(),
@@ -234,7 +235,7 @@ async fn test_glob_respects_gitignore() {
     fs::write(temp_dir.path().join(".gitignore"), "node_modules/").unwrap();
 
     // @step When I execute the Glob tool with pattern "**/*.ts"
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     let result = tool
         .call(GlobArgs {
             pattern: "**/*.ts".to_string(),
@@ -260,7 +261,7 @@ async fn test_glob_no_matches() {
     fs::write(&file, "fn main() {}").unwrap();
 
     // @step When I execute the Glob tool with pattern "*.xyz"
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     let result = tool
         .call(GlobArgs {
             pattern: "*.xyz".to_string(),
@@ -283,7 +284,7 @@ async fn test_glob_no_matches() {
 /// Scenario: GrepTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_grep_tool_has_correct_definition() {
-    let tool = GrepTool::new();
+    let tool = GrepTool::new(Uuid::nil());
     assert_eq!(GrepTool::NAME, "Grep");
 
     let def = tool.definition("".to_string()).await;
@@ -294,7 +295,7 @@ async fn test_grep_tool_has_correct_definition() {
 /// Scenario: GlobTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_glob_tool_has_correct_definition() {
-    let tool = GlobTool::new();
+    let tool = GlobTool::new(Uuid::nil());
     assert_eq!(GlobTool::NAME, "Glob");
 
     let def = tool.definition("".to_string()).await;

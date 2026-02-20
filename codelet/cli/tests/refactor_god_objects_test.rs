@@ -258,13 +258,13 @@ mod api_compatibility {
     fn test_tools_exports() {
         // @step Then all existing imports from cli, core, providers, tools crates should still work
         let _bash = BashTool::new(Uuid::nil());
-        let _read = ReadTool::new();
-        let _write = WriteTool::new();
-        let _edit = EditTool::new();
-        let _grep = GrepTool::new();
-        let _glob = GlobTool::new();
-        let _ls = LsTool::new();
-        let _astgrep = AstGrepTool::new();
+        let _read = ReadTool::new(Uuid::nil());
+        let _write = WriteTool::new(Uuid::nil());
+        let _edit = EditTool::new(Uuid::nil());
+        let _grep = GrepTool::new(Uuid::nil());
+        let _glob = GlobTool::new(Uuid::nil());
+        let _ls = LsTool::new(Uuid::nil());
+        let _astgrep = AstGrepTool::new(Uuid::nil());
 
         let _err: ToolError = ToolError::Timeout {
             tool: "test",

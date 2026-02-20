@@ -3,6 +3,8 @@
 //! Uses ignore crate for gitignore-aware file walking
 //! and globset for glob pattern matching.
 //! Uses tokio::fs for non-blocking async I/O.
+//!
+//! TOOL-014: Supports worktree isolation via session_id for isolated sessions.
 
 use crate::{
     error::ToolError,
@@ -16,14 +18,25 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::path::PathBuf;
 use std::time::SystemTime;
+use uuid::Uuid;
 
 /// GlobTool for gitignore-aware file pattern matching
-pub struct GlobTool;
+///
+/// TOOL-014: Requires session_id for worktree isolation support.
+/// In isolated sessions, search paths are resolved to the session's worktree.
+pub struct GlobTool {
+    /// Session ID for worktree isolation support
+    #[allow(dead_code)] // Will be used for path resolution in worktree isolation
+    session_id: Uuid,
+}
 
 impl GlobTool {
-    /// Create a new GlobTool
-    pub fn new() -> Self {
-        Self
+    /// Create a new GlobTool with session awareness
+    ///
+    /// # Arguments
+    /// * `session_id` - The session ID for worktree isolation (TOOL-014)
+    pub fn new(session_id: Uuid) -> Self {
+        Self { session_id }
     }
 
     /// Get file modification time for sorting (async, non-blocking)
@@ -32,12 +45,6 @@ impl GlobTool {
             .await
             .and_then(|m| m.modified())
             .unwrap_or(SystemTime::UNIX_EPOCH)
-    }
-}
-
-impl Default for GlobTool {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

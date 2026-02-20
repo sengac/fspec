@@ -1,16 +1,18 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 // Feature: spec/features/web-search-and-fetch-tool-integration.feature
+// TOOL-014: Tests use Uuid::nil() for session_id since they don't need worktree isolation
 
 use anyhow::Result;
 use codelet_common::web_search::WebSearchAction;
 use codelet_tools::WebSearchTool;
 use rig::tool::Tool;
+use uuid::Uuid;
 
 #[tokio::test]
 #[ignore = "Spawns Chrome - run with --ignored flag"]
 async fn test_agent_performs_web_search() -> Result<()> {
     // @step Given the web search tool is available
-    let web_search_tool = WebSearchTool;
+    let web_search_tool = WebSearchTool::new(Uuid::nil());
 
     // @step When the agent executes a search query "weather in Seattle"
     let search_request = codelet_tools::web_search::WebSearchRequest {
@@ -34,7 +36,7 @@ async fn test_agent_performs_web_search() -> Result<()> {
 #[ignore = "Spawns Chrome - run with --ignored flag"]
 async fn test_agent_fetches_page_content() -> Result<()> {
     // @step Given the web search tool is available
-    let web_search_tool = WebSearchTool;
+    let web_search_tool = WebSearchTool::new(Uuid::nil());
 
     // @step When the agent opens a page "https://example.com"
     let page_request = codelet_tools::web_search::WebSearchRequest {
@@ -60,7 +62,7 @@ async fn test_agent_fetches_page_content() -> Result<()> {
 #[ignore = "Spawns Chrome - run with --ignored flag"]
 async fn test_agent_searches_within_page_content() -> Result<()> {
     // @step Given the web search tool is available
-    let web_search_tool = WebSearchTool;
+    let web_search_tool = WebSearchTool::new(Uuid::nil());
 
     // @step When the agent searches within a page with URL "https://example.com" and pattern "contact"
     let search_request = codelet_tools::web_search::WebSearchRequest {
@@ -88,14 +90,14 @@ async fn test_agent_searches_within_page_content() -> Result<()> {
 #[ignore = "Spawns Chrome - run with --ignored flag"]
 async fn test_web_search_tool_registration() -> Result<()> {
     // @step Given the codelet system is starting up
-    let web_search_tool = WebSearchTool;
+    let web_search_tool = WebSearchTool::new(Uuid::nil());
 
     // @step When the web search configuration is enabled
     // Get the tool definition (simulates registration)
     let definition = web_search_tool.definition("".to_string()).await;
 
     // @step Then the WebSearch tool is registered as a native OpenAI tool
-    assert_eq!(definition.name, "web_search");
+    assert_eq!(definition.name, "WebSearch");
     assert!(definition.description.contains("web search"));
 
     // @step And the tool appears in the available tools list

@@ -4,6 +4,7 @@
 //!
 //! Tests for Core File Tools (Read, Write, Edit) - CORE-002
 
+use uuid::Uuid;
 use codelet_tools::{
     edit::EditTool,
     limits::OutputLimits,
@@ -32,7 +33,7 @@ async fn test_read_file_returns_contents_with_line_numbers() {
     .unwrap();
 
     // @step When I execute the Read tool with file_path "/home/user/src/index.ts"
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let result = tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -60,7 +61,7 @@ async fn test_read_file_with_offset_and_limit() {
     fs::write(&file_path, content).unwrap();
 
     // @step When I execute the Read tool with file_path "/home/user/large.ts" offset 50 and limit 100
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let result = tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -94,7 +95,7 @@ async fn test_read_file_truncated_with_warning() {
     fs::write(&file_path, content).unwrap();
 
     // @step When I execute the Read tool with file_path "/home/user/huge.ts"
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let result = tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -120,7 +121,7 @@ async fn test_read_file_truncated_with_warning() {
 #[tokio::test]
 async fn test_read_file_relative_path_error() {
     // @step When I execute the Read tool with file_path "src/main.rs"
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let result = tool
         .call(ReadArgs {
             file_path: "src/main.rs".to_string(),
@@ -148,7 +149,7 @@ async fn test_read_file_truncates_long_lines() {
     fs::write(&file_path, &long_line).unwrap();
 
     // @step When I execute the Read tool with file_path "/home/user/wide.ts"
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let result = tool
         .call(ReadArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -172,7 +173,7 @@ async fn test_read_file_truncates_long_lines() {
 #[tokio::test]
 async fn test_read_nonexistent_file_error() {
     // @step When I execute the Read tool with file_path "/home/user/nonexistent.ts"
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     let result = tool
         .call(ReadArgs {
             file_path: "/home/user/nonexistent.ts".to_string(),
@@ -203,7 +204,7 @@ async fn test_write_tool_creates_new_file() {
     assert!(!file_path.exists());
 
     // @step When I execute the Write tool with file_path "/home/user/new.ts" and content "export const foo = 1;"
-    let tool = WriteTool::new();
+    let tool = WriteTool::new(Uuid::nil());
     let result = tool
         .call(WriteArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -230,7 +231,7 @@ async fn test_write_tool_overwrites_existing_file() {
     fs::write(&file_path, "old content").unwrap();
 
     // @step When I execute the Write tool with file_path "/home/user/old.ts" and content "new content"
-    let tool = WriteTool::new();
+    let tool = WriteTool::new(Uuid::nil());
     let result = tool
         .call(WriteArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -259,7 +260,7 @@ async fn test_write_tool_creates_parent_directories() {
     assert!(!file_path.parent().unwrap().exists());
 
     // @step When I execute the Write tool with file_path "/home/user/nested/deep/file.ts" and content "content"
-    let tool = WriteTool::new();
+    let tool = WriteTool::new(Uuid::nil());
     let result = tool
         .call(WriteArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -279,7 +280,7 @@ async fn test_write_tool_creates_parent_directories() {
 #[tokio::test]
 async fn test_write_tool_relative_path_error() {
     // @step When I execute the Write tool with file_path "relative/path.ts" and content "content"
-    let tool = WriteTool::new();
+    let tool = WriteTool::new(Uuid::nil());
     let result = tool
         .call(WriteArgs {
             file_path: "relative/path.ts".to_string(),
@@ -308,7 +309,7 @@ async fn test_edit_tool_replaces_first_occurrence() {
     fs::write(&file_path, "let foo = 1;\nlet foo = 2;\n").unwrap();
 
     // @step When I execute the Edit tool with file_path "/home/user/main.rs" old_string "foo" and new_string "bar"
-    let tool = EditTool::new();
+    let tool = EditTool::new(Uuid::nil());
     let result = tool
         .call(codelet_tools::edit::EditArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -338,7 +339,7 @@ async fn test_edit_tool_old_string_not_found() {
     fs::write(&file_path, "hello world").unwrap();
 
     // @step When I execute the Edit tool with file_path "/home/user/test.rs" old_string "xyz123" and new_string "replacement"
-    let tool = EditTool::new();
+    let tool = EditTool::new(Uuid::nil());
     let result = tool
         .call(codelet_tools::edit::EditArgs {
             file_path: file_path.to_string_lossy().to_string(),
@@ -363,7 +364,7 @@ async fn test_edit_tool_old_string_not_found() {
 #[tokio::test]
 async fn test_edit_tool_relative_path_error() {
     // @step When I execute the Edit tool with file_path "relative.ts" old_string "a" and new_string "b"
-    let tool = EditTool::new();
+    let tool = EditTool::new(Uuid::nil());
     let result = tool
         .call(codelet_tools::edit::EditArgs {
             file_path: "relative.ts".to_string(),
@@ -384,7 +385,7 @@ async fn test_edit_tool_relative_path_error() {
 #[tokio::test]
 async fn test_edit_nonexistent_file_error() {
     // @step When I execute the Edit tool with file_path "/home/user/missing.ts" old_string "a" and new_string "b"
-    let tool = EditTool::new();
+    let tool = EditTool::new(Uuid::nil());
     let result = tool
         .call(codelet_tools::edit::EditArgs {
             file_path: "/home/user/missing.ts".to_string(),
@@ -445,7 +446,7 @@ fn test_output_limits_constants() {
 /// Scenario: ReadTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_read_tool_has_correct_definition() {
-    let tool = ReadTool::new();
+    let tool = ReadTool::new(Uuid::nil());
     assert_eq!(ReadTool::NAME, "Read");
 
     let def = tool.definition("".to_string()).await;
@@ -456,7 +457,7 @@ async fn test_read_tool_has_correct_definition() {
 /// Scenario: WriteTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_write_tool_has_correct_definition() {
-    let tool = WriteTool::new();
+    let tool = WriteTool::new(Uuid::nil());
     assert_eq!(WriteTool::NAME, "Write");
 
     let def = tool.definition("".to_string()).await;
@@ -467,7 +468,7 @@ async fn test_write_tool_has_correct_definition() {
 /// Scenario: EditTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_edit_tool_has_correct_definition() {
-    let tool = EditTool::new();
+    let tool = EditTool::new(Uuid::nil());
     assert_eq!(EditTool::NAME, "Edit");
 
     let def = tool.definition("".to_string()).await;

@@ -6,6 +6,7 @@
 //! These tests verify the implementation of AST-based code search
 //! using the native ast-grep Rust crates (ast-grep-core + ast-grep-language).
 
+use uuid::Uuid;
 use codelet_tools::astgrep::{AstGrepArgs, AstGrepTool};
 use rig::tool::Tool;
 use std::fs;
@@ -36,7 +37,7 @@ function helperFunction() {
     .unwrap();
 
     // @step When I execute the AstGrep tool with pattern "function executeTool" and language "typescript"
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "function executeTool".to_string(),
@@ -76,7 +77,7 @@ logger.debug("Debug info", { key: "value" });
     .unwrap();
 
     // @step When I execute the AstGrep tool with pattern "logger.$METHOD($$$ARGS)" and language "typescript"
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "logger.$METHOD($$$ARGS)".to_string(),
@@ -118,7 +119,7 @@ struct InternalData {
     .unwrap();
 
     // @step When I execute the AstGrep tool with pattern "struct $NAME" and language "rust"
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "struct $NAME".to_string(),
@@ -155,7 +156,7 @@ def create_user(data: dict) -> dict:
     .unwrap();
 
     // @step When I execute the AstGrep tool with pattern "def $NAME($$$ARGS):" and language "python"
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "def $NAME($$$ARGS):".to_string(),
@@ -193,7 +194,7 @@ async fn test_astgrep_invalid_pattern_returns_error() {
     fs::write(&file, "const x = 1;").unwrap();
 
     // @step When I execute the AstGrep tool with an invalid/unmatched pattern
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "function {{{ invalid".to_string(),
@@ -226,7 +227,7 @@ async fn test_astgrep_unsupported_language_returns_error() {
     fs::write(&file, "some content").unwrap();
 
     // @step When I execute the AstGrep tool with an unsupported language
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "some pattern".to_string(),
@@ -243,7 +244,7 @@ async fn test_astgrep_unsupported_language_returns_error() {
 #[tokio::test]
 async fn test_astgrep_nonexistent_path_returns_error() {
     // @step When I execute the AstGrep tool with a non-existent path
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "function $NAME".to_string(),
@@ -291,7 +292,7 @@ function MyComponent() {
     // 1. A call expression: useEffect($$$ARGS)
     // 2. A block statement: { $$$BODY }
     // This should return an error, not panic
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "useEffect($$$ARGS) { $$$BODY }".to_string(),
@@ -318,7 +319,7 @@ async fn test_astgrep_multiple_statements_pattern_returns_error() {
     fs::write(&file, "const x = 1;\nconst y = 2;").unwrap();
 
     // @step When I execute the AstGrep tool with a pattern that is two separate statements
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "const x = 1; const y = 2;".to_string(),
@@ -342,7 +343,7 @@ async fn test_astgrep_multiple_statements_pattern_returns_error() {
 /// Scenario: AstGrepTool has correct rig::tool::Tool definition
 #[tokio::test]
 async fn test_astgrep_tool_has_correct_definition() {
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     assert_eq!(AstGrepTool::NAME, "AstGrep");
 
     let def = tool.definition("".to_string()).await;
@@ -373,7 +374,7 @@ function anotherFunction(x) {
     // @step When I execute the AstGrep tool with a complete function pattern
     // NOTE: ast-grep requires the full AST node structure. For function_declaration,
     // this means including the body: function $NAME($$$ARGS) { $$$BODY }
-    let tool = AstGrepTool::new();
+    let tool = AstGrepTool::new(Uuid::nil());
     let result = tool
         .call(AstGrepArgs {
             pattern: "function $NAME($$$ARGS) { $$$BODY }".to_string(),

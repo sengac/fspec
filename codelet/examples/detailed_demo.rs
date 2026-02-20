@@ -13,7 +13,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 1. Write Tool
     println!("📝 WRITE TOOL - Create a multi-line file");
-    let write_tool = WriteTool::new();
+    let write_tool = WriteTool::new(Uuid::nil());
     let result = write_tool.execute(json!({
         "file_path": format!("{}/sample.rs", test_dir),
         "content": "fn fibonacci(n: u32) -> u32 {\n    match n {\n        0 => 0,\n        1 => 1,\n        _ => fibonacci(n - 1) + fibonacci(n - 2),\n    }\n}"
@@ -22,7 +22,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 2. Read Tool
     println!("📖 READ TOOL - Read with line numbers");
-    let read_tool = ReadTool::new();
+    let read_tool = ReadTool::new(Uuid::nil());
     let result = read_tool
         .execute(json!({
             "file_path": format!("{}/sample.rs", test_dir)
@@ -36,7 +36,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 3. Edit Tool
     println!("✏️  EDIT TOOL - Replace function name");
-    let edit_tool = EditTool::new();
+    let edit_tool = EditTool::new(Uuid::nil());
     let result = edit_tool
         .execute(json!({
             "file_path": format!("{}/sample.rs", test_dir),
@@ -58,7 +58,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 5. Grep Tool
     println!("🔍 GREP TOOL - Search for pattern");
-    let grep_tool = GrepTool::new();
+    let grep_tool = GrepTool::new(Uuid::nil());
     let result = grep_tool
         .execute(json!({
             "pattern": "fn.*\\(",
@@ -74,7 +74,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 6. Glob Tool
     println!("🌐 GLOB TOOL - Find files by pattern");
-    let glob_tool = GlobTool::new();
+    let glob_tool = GlobTool::new(Uuid::nil());
     let result = glob_tool
         .execute(json!({
             "pattern": "*.rs",
@@ -89,7 +89,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 7. AstGrep Tool
     println!("🌳 ASTGREP TOOL - Find function definitions");
-    let astgrep_tool = AstGrepTool::new();
+    let astgrep_tool = AstGrepTool::new(Uuid::nil());
     let result = astgrep_tool
         .execute(json!({
             "pattern": "fn $NAME($$$ARGS) { $$$ }",
