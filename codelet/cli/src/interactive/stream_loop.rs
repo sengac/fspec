@@ -256,54 +256,6 @@ where
         }
     }
 
-    // CRITICAL: Add user prompt to message history for persistence (CLI-008)
-    // BRIDGE-007: Support multimodal messages with text and images
-    if let Some(bridge_images) = images {
-        // Create multimodal message with text and images
-        let mut content_parts: Vec<UserContent> = Vec::new();
-        
-        // Add text first (if not empty)
-        if !prompt.is_empty() {
-            content_parts.push(UserContent::text(prompt));
-        }
-        
-        // Add images
-        for img in bridge_images {
-            // Parse media type string to ImageMediaType enum
-            let media_type = match img.media_type.as_str() {
-                "image/jpeg" | "image/jpg" => Some(ImageMediaType::JPEG),
-                "image/png" => Some(ImageMediaType::PNG),
-                "image/gif" => Some(ImageMediaType::GIF),
-                "image/webp" => Some(ImageMediaType::WEBP),
-                _ => Some(ImageMediaType::JPEG), // Default to JPEG
-            };
-            content_parts.push(UserContent::image_base64(img.data, media_type, None));
-        }
-        
-        // If we have content, push as multimodal message
-        if !content_parts.is_empty() {
-            session.messages.push(Message::User {
-                content: match OneOrMany::many(content_parts) {
-                    Ok(content) => content,
-                    Err(_) => {
-                        // Fallback to text only if somehow content_parts was empty
-                        OneOrMany::one(UserContent::text(prompt))
-                    }
-                },
-            });
-        } else {
-            // Fallback to text-only if somehow both are empty
-            session.messages.push(Message::User {
-                content: OneOrMany::one(UserContent::text(prompt)),
-            });
-        }
-    } else {
-        // Standard text-only message
-        session.messages.push(Message::User {
-            content: OneOrMany::one(UserContent::text(prompt)),
-        });
-    }
-
     // GEMINI-THINK: For Gemini preview models with thinking enabled, ensure thought signatures
     // are present on function calls in the active loop. Without this, Gemini 2.5/3 preview
     // models return 400 errors or stop responding after tool calls.
@@ -420,6 +372,35 @@ where
     let mut stream = agent
         .prompt_streaming_with_history_and_hook(prompt, &mut session.messages, hook)
         .await;
+
+    // FIXED: Add user message to history AFTER rig clones it (CLI-008, BRIDGE-007)
+    // This ensures: (1) LLM sees prompt once, (2) persistence still works
+    // Previously this was done BEFORE the call above, causing duplication because
+    // rig's build() concatenates chat_history + prompt, and the prompt was already in history.
+    session.messages.push(Message::User {
+        content: match images {
+            Some(bridge_images) => {
+                let mut content_parts: Vec<UserContent> = Vec::new();
+                if !prompt.is_empty() {
+                    content_parts.push(UserContent::text(prompt));
+                }
+                for img in bridge_images {
+                    let media_type = match img.media_type.as_str() {
+                        "image/jpeg" | "image/jpg" => Some(ImageMediaType::JPEG),
+                        "image/png" => Some(ImageMediaType::PNG),
+                        "image/gif" => Some(ImageMediaType::GIF),
+                        "image/webp" => Some(ImageMediaType::WEBP),
+                        _ => Some(ImageMediaType::JPEG),
+                    };
+                    content_parts.push(UserContent::image_base64(img.data, media_type, None));
+                }
+                OneOrMany::many(content_parts).unwrap_or_else(|_| {
+                    OneOrMany::one(UserContent::text(prompt))
+                })
+            }
+            None => OneOrMany::one(UserContent::text(prompt)),
+        },
+    });
 
     // CLI-022: Capture api.response.start event
     if let Ok(manager_arc) = get_debug_capture_manager() {

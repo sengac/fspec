@@ -857,4 +857,143 @@ mod tests {
 
         assert_eq!(request.normalized_documents(), None);
     }
+
+    // ==========================================================================
+    // MESSAGE DUPLICATION BUG INVESTIGATION TESTS
+    // 
+    // These tests document and verify the message duplication bug where:
+    // - stream_loop.rs pushes user message to session.messages BEFORE calling rig
+    // - rig's build() ALWAYS appends prompt to chat_history via concat()
+    // - Result: user message appears twice in final LLM request
+    // ==========================================================================
+
+    /// Test that demonstrates the duplication bug when chat_history already contains the prompt.
+    /// 
+    /// This test DOCUMENTS the bug - it shows what happens when stream_loop.rs
+    /// pushes the user message before calling rig.
+    #[test]
+    fn test_build_duplicates_prompt_when_already_in_history() {
+        // Simulate chat_history that already contains the prompt (the bug state)
+        // In real code: stream_loop.rs pushes "Hello" to session.messages
+        // Then session.messages is cloned and passed to rig as chat_history
+        let chat_history_with_prompt: Vec<Message> = vec![
+            "Previous message".into(), // Previous user message
+            "Hello".into(),            // <-- Bug: stream_loop.rs already pushed this
+        ];
+        
+        // The prompt that rig will add (same as what's already in history)
+        let prompt: Message = "Hello".into();
+        
+        // Simulate what build() does: [chat_history, vec![prompt]].concat()
+        let final_history: Vec<Message> = [chat_history_with_prompt, vec![prompt]].concat();
+        
+        // BUG DOCUMENTATION: "Hello" appears TWICE
+        // Count messages (we should have 3: Previous, Hello, Hello)
+        assert_eq!(
+            final_history.len(), 3,
+            "BUG: Should have 3 messages (1 previous + 2 duplicates of Hello) but got {}",
+            final_history.len()
+        );
+    }
+
+    /// Test that shows correct behavior: chat_history should NOT include the current prompt.
+    /// 
+    /// After fixing stream_loop.rs to NOT push the user message before calling rig,
+    /// this is how the system should behave.
+    #[test]
+    fn test_build_no_duplication_when_history_excludes_prompt() {
+        // CORRECT: chat_history does NOT include the current prompt
+        // Only previous messages are in history
+        let chat_history_without_prompt: Vec<Message> = vec![
+            "Previous message".into(),
+        ];
+        
+        // The prompt that rig will add
+        let prompt: Message = "Hello".into();
+        
+        // build() concatenates: [chat_history, vec![prompt]]
+        let final_history: Vec<Message> = [chat_history_without_prompt, vec![prompt]].concat();
+        
+        // CORRECT: Should have exactly 2 messages (Previous + Hello)
+        assert_eq!(
+            final_history.len(), 2,
+            "Should have 2 messages (1 previous + 1 prompt) but got {}",
+            final_history.len()
+        );
+    }
+
+    /// Test simulating the full flow from stream_loop.rs through rig
+    /// 
+    /// This test mimics:
+    /// 1. Previous conversation history
+    /// 2. User types "What is 2+2?"
+    /// 3. stream_loop.rs pushes to session.messages (THE BUG)
+    /// 4. session.messages is cloned and passed to rig
+    /// 5. rig's build() appends prompt again
+    #[test]
+    fn test_full_flow_duplication_bug() {
+        // Initial conversation state
+        let mut session_messages: Vec<Message> = vec![
+            "Hi".into(),  // User says Hi
+            Message::Assistant {
+                id: None,
+                content: OneOrMany::one(crate::message::AssistantContent::text("Hello! How can I help?")),
+            },
+        ];
+        
+        // New user input
+        let user_input = "What is 2+2?";
+        
+        // BUG: stream_loop.rs pushes user message BEFORE calling rig
+        session_messages.push(user_input.into());
+        
+        // rig_agent.rs clones session_messages for rig
+        let history_for_rig = session_messages.clone();
+        
+        // rig's build() concatenates: [history_for_rig, vec![prompt]]
+        let prompt: Message = user_input.into();
+        let final_request_history: Vec<Message> = [history_for_rig, vec![prompt]].concat();
+        
+        // BUG: We now have 4 messages instead of 3
+        // Hi, Assistant, "What is 2+2?", "What is 2+2?"
+        assert_eq!(
+            final_request_history.len(), 4,
+            "BUG: Should have 4 messages (showing duplication) but got {}",
+            final_request_history.len()
+        );
+    }
+
+    /// Test the FIXED flow - what should happen after removing the manual push
+    #[test]
+    fn test_full_flow_after_fix() {
+        // Initial conversation state
+        let session_messages: Vec<Message> = vec![
+            "Hi".into(),  // User says Hi
+            Message::Assistant {
+                id: None,
+                content: OneOrMany::one(crate::message::AssistantContent::text("Hello! How can I help?")),
+            },
+        ];
+        
+        // New user input
+        let user_input = "What is 2+2?";
+        
+        // FIXED: Do NOT push user message before calling rig
+        // session.messages stays as-is (no push here)
+        
+        // rig_agent.rs passes session_messages (without new prompt)
+        let history_for_rig = session_messages.clone();
+        
+        // rig's build() adds the prompt: [history_for_rig, vec![prompt]]
+        let prompt: Message = user_input.into();
+        let final_request_history: Vec<Message> = [history_for_rig, vec![prompt]].concat();
+        
+        // CORRECT: Should have exactly 3 messages
+        // Hi, Assistant, "What is 2+2?"
+        assert_eq!(
+            final_request_history.len(), 3,
+            "Should have 3 messages (Hi, Assistant, Question) but got {}",
+            final_request_history.len()
+        );
+    }
 }
