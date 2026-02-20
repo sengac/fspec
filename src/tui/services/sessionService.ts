@@ -98,6 +98,11 @@ export async function createSession(
     modelPath
   );
 
+  // GIT-029: Subscribe BEFORE creating Rust session to catch IsolationStateChange chunk
+  // The chunk is emitted during session creation, so we must be subscribed first
+  const manager = GlobalSessionStreamManager.getInstance();
+  manager.subscribeToSession(persistedSession.id);
+
   // Create Rust background session with the same ID
   await sessionManagerCreateWithId(
     persistedSession.id,
@@ -105,9 +110,6 @@ export async function createSession(
     project,
     sessionName
   );
-
-  const manager = GlobalSessionStreamManager.getInstance();
-  manager.subscribeToSession(persistedSession.id);
 
   return {
     sessionId: persistedSession.id,
@@ -241,6 +243,11 @@ export async function restoreSession(
   const modelPath = sessionManifest?.provider || fallbackModelPath;
   const sessionName = sessionManifest?.name || 'Restored Session';
 
+  // GIT-029: Subscribe BEFORE creating Rust session to catch IsolationStateChange chunk
+  // The chunk is emitted during session creation, so we must be subscribed first
+  const manager = GlobalSessionStreamManager.getInstance();
+  manager.subscribeToSession(sessionId);
+
   try {
     await sessionManagerCreateWithId(
       sessionId,
@@ -275,9 +282,6 @@ export async function restoreSession(
       sessionManifest.tokenUsage.cumulativeBilledOutput
     );
   }
-
-  const manager = GlobalSessionStreamManager.getInstance();
-  manager.subscribeToSession(sessionId);
 
   let unregister: (() => void) | undefined;
   if (onStreamChunk) {
@@ -321,6 +325,11 @@ export async function createIsolatedSession(
     modelPath
   );
 
+  // GIT-029: Subscribe BEFORE creating Rust session to catch IsolationStateChange chunk
+  // The chunk is emitted during session creation, so we must be subscribed first
+  const manager = GlobalSessionStreamManager.getInstance();
+  manager.subscribeToSession(persistedSession.id);
+
   // Create isolated Rust background session with git worktree
   const isolatedResult = await sessionManagerCreateIsolated(
     persistedSession.id,
@@ -328,9 +337,6 @@ export async function createIsolatedSession(
     project,
     sessionName
   );
-
-  const manager = GlobalSessionStreamManager.getInstance();
-  manager.subscribeToSession(persistedSession.id);
 
   return {
     sessionId: persistedSession.id,

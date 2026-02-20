@@ -326,7 +326,7 @@ impl ClaudeProvider {
             .tool(ReadTool::new())
             .tool(WriteTool::new())
             .tool(EditTool::new())
-            .tool(BashTool::new())
+            .tool(BashTool::new(session_id))
             .tool(GrepTool::new())
             .tool(GlobTool::new())
             .tool(LsTool::new())

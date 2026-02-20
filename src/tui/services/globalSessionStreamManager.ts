@@ -62,6 +62,16 @@ async function getNapiModule(): Promise<NapiModule> {
  * BRIDGE-012: Singleton that manages all session stream subscriptions via global callback.
  * Rust emits all chunks through ONE global callback, TypeScript routes by session_id.
  */
+/**
+ * Pending isolation state for sessions that haven't been activated yet.
+ * GIT-029: When IsolationStateChange arrives before activateSession is called,
+ * we store the state here and apply it when the session is activated.
+ */
+export interface PendingIsolationState {
+  isIsolated: boolean;
+  worktreePath: string | null;
+}
+
 export class GlobalSessionStreamManager {
   private static instance: GlobalSessionStreamManager | null = null;
   private sessionHandlers: Map<string, Set<SessionChunkHandler>> = new Map();
@@ -74,6 +84,12 @@ export class GlobalSessionStreamManager {
         projectRoot: string
       ) => Promise<string>)
     | null = null;
+
+  /**
+   * GIT-029: Pending isolation state for sessions not yet activated.
+   * Key: sessionId, Value: isolation state to apply when session activates
+   */
+  private pendingIsolationState: Map<string, PendingIsolationState> = new Map();
 
   private constructor() {}
 
@@ -98,6 +114,8 @@ export class GlobalSessionStreamManager {
       for (const sessionId of sessions) {
         GlobalSessionStreamManager.instance.unsubscribeFromSession(sessionId);
       }
+      // GIT-029: Clear pending isolation state
+      GlobalSessionStreamManager.instance.pendingIsolationState.clear();
     }
     GlobalSessionStreamManager.instance = null;
     // BRIDGE-012: Reset global callback state for testing
@@ -161,6 +179,8 @@ export class GlobalSessionStreamManager {
 
     this.subscribedSessions.delete(sessionId);
     this.sessionHandlers.delete(sessionId);
+    // GIT-029: Clean up any pending isolation state for this session
+    this.pendingIsolationState.delete(sessionId);
     // BRIDGE-012: No longer need to call detachFromSession - global callback handles cleanup
   }
 
@@ -226,6 +246,28 @@ export class GlobalSessionStreamManager {
   }
 
   /**
+   * GIT-029: Get and clear pending isolation state for a session.
+   * Called when a session is activated to apply any IsolationStateChange
+   * that arrived before the session was activated.
+   *
+   * @param sessionId - Session to get pending state for
+   * @returns Pending isolation state if any, or null
+   */
+  public getPendingIsolationState(
+    sessionId: string
+  ): PendingIsolationState | null {
+    const state = this.pendingIsolationState.get(sessionId);
+    if (state) {
+      this.pendingIsolationState.delete(sessionId);
+      logger.debug(
+        `[GlobalSessionStreamManager] Retrieved pending isolation state for ${sessionId}: isIsolated=${state.isIsolated}`
+      );
+      return state;
+    }
+    return null;
+  }
+
+  /**
    * Simulate a chunk being received from a session (for testing).
    */
   public simulateChunk(sessionId: string, chunk: StreamChunk): void {
@@ -254,7 +296,16 @@ export class GlobalSessionStreamManager {
           .getState()
           .setIsolationState(isIsolated, worktreePath ?? null);
         logger.debug(
-          `[GlobalSessionStreamManager] IsolationStateChange: isIsolated=${isIsolated}, worktreePath=${worktreePath}`
+          `[GlobalSessionStreamManager] IsolationStateChange applied immediately: isIsolated=${isIsolated}, worktreePath=${worktreePath}`
+        );
+      } else {
+        // Session not yet active - store for later application when activated
+        this.pendingIsolationState.set(sessionId, {
+          isIsolated,
+          worktreePath: worktreePath ?? null,
+        });
+        logger.debug(
+          `[GlobalSessionStreamManager] IsolationStateChange stored as pending for ${sessionId}: isIsolated=${isIsolated}`
         );
       }
       // Don't return - allow the chunk to be forwarded to session handlers as well
@@ -424,4 +475,24 @@ export function registerTestHandler(
     manager['sessionHandlers'].set(sessionId, new Set());
   }
   return manager.registerHandler(sessionId, handler);
+}
+
+/**
+ * GIT-029: Apply pending isolation state for a session.
+ * Called when a session is activated to apply any IsolationStateChange
+ * that arrived before the session was activated.
+ *
+ * @param sessionId - Session to check for pending isolation state
+ */
+export function applyPendingIsolationState(sessionId: string): void {
+  const manager = GlobalSessionStreamManager.getInstance();
+  const pendingState = manager.getPendingIsolationState(sessionId);
+  if (pendingState) {
+    useSessionStore
+      .getState()
+      .setIsolationState(pendingState.isIsolated, pendingState.worktreePath);
+    logger.info(
+      `[GlobalSessionStreamManager] Applied pending isolation state for ${sessionId}: isIsolated=${pendingState.isIsolated}`
+    );
+  }
 }

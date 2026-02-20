@@ -1,0 +1,28 @@
+{
+  "scenarios": [
+    {
+      "name": "File search in isolated session searches the worktree",
+      "testMappings": []
+    },
+    {
+      "name": "File search in non-isolated session searches project root",
+      "testMappings": []
+    },
+    {
+      "name": "File search before session creation uses project root fallback",
+      "testMappings": []
+    },
+    {
+      "name": "File search reflects worktree state after AI deletes file",
+      "testMappings": []
+    }
+  ],
+  "stats": {
+    "totalScenarios": 4,
+    "coveredScenarios": 0,
+    "coveragePercent": 0,
+    "testFiles": [],
+    "implFiles": [],
+    "totalLinesCovered": 0
+  }
+}

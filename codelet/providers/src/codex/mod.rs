@@ -122,7 +122,7 @@ impl CodexProvider {
     /// Returns a fully configured rig::agent::Agent ready for use with RigAgent.
     pub fn create_rig_agent(
         &self,
-        _session_id: uuid::Uuid,
+        session_id: uuid::Uuid,
         preamble: Option<&str>,
         _thinking_config: Option<serde_json::Value>,
     ) -> rig::agent::Agent<openai::completion::CompletionModel> {
@@ -141,7 +141,7 @@ impl CodexProvider {
             .tool(ReadTool::new())
             .tool(WriteTool::new())
             .tool(EditTool::new())
-            .tool(BashTool::new())
+            .tool(BashTool::new(session_id))
             .tool(GrepTool::new())
             .tool(GlobTool::new())
             .tool(LsTool::new())

@@ -246,15 +246,46 @@ impl Session {
     /// session.inject_context_reminders();
     /// ```
     pub fn inject_context_reminders(&mut self) {
-        use context_gathering::{discover_claude_md, gather_environment_info};
+        self.inject_context_reminders_with_isolation(None);
+    }
+
+    /// GIT-034: Inject context reminders with isolation context
+    ///
+    /// Same as `inject_context_reminders()` but also includes isolation context
+    /// for worktree sessions. When the session is isolated, the environment
+    /// reminder will include Isolation, Worktree path, and Base commit fields.
+    ///
+    /// # Arguments
+    /// * `isolation` - Optional isolation context for worktree sessions
+    ///
+    /// # Example
+    /// ```
+    /// use codelet_cli::session::Session;
+    /// use codelet_cli::session::context_gathering::IsolationContext;
+    ///
+    /// let mut session = Session::new(None).unwrap();
+    /// let isolation = IsolationContext {
+    ///     is_isolated: true,
+    ///     worktree_path: Some(".fspec/worktrees/abc123/".to_string()),
+    ///     base_commit: Some("7a8b9c0d".to_string()),
+    /// };
+    /// session.inject_context_reminders_with_isolation(Some(&isolation));
+    /// ```
+    pub fn inject_context_reminders_with_isolation(
+        &mut self,
+        isolation: Option<&context_gathering::IsolationContext>,
+    ) {
+        use context_gathering::{
+            discover_claude_md, gather_environment_info_with_isolation,
+        };
 
         // Inject CLAUDE.md/AGENTS.md content if found
         if let Some(content) = discover_claude_md(None) {
             self.add_system_reminder(SystemReminderType::ClaudeMd, &content);
         }
 
-        // Inject environment information
-        let env_info = gather_environment_info();
+        // Inject environment information with optional isolation context
+        let env_info = gather_environment_info_with_isolation(isolation);
         self.add_system_reminder(
             SystemReminderType::Environment,
             &env_info.to_reminder_content(),

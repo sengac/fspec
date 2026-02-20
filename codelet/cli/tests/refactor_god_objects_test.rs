@@ -246,6 +246,7 @@ mod api_compatibility {
     use codelet_tools::{
         AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, LsTool, ReadTool, WriteTool,
     };
+    use uuid::Uuid;
 
     // @step Given the existing public API is used by external code
     // This is verified by the existing test suite
@@ -256,7 +257,7 @@ mod api_compatibility {
     #[test]
     fn test_tools_exports() {
         // @step Then all existing imports from cli, core, providers, tools crates should still work
-        let _bash = BashTool::new();
+        let _bash = BashTool::new(Uuid::nil());
         let _read = ReadTool::new();
         let _write = WriteTool::new();
         let _edit = EditTool::new();

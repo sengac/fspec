@@ -6,6 +6,7 @@ use codelet::agent::RigAgent;
 use codelet::providers::{ClaudeProvider, LlmProvider};
 use codelet::tools::{Tool, ToolRegistry};
 use std::fs;
+use uuid::Uuid;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -83,7 +84,7 @@ async fn main() -> anyhow::Result<()> {
 
     // === BASH TOOL ===
     println!("   🐚 Testing Bash tool...");
-    let bash_tool = codelet::tools::BashTool::new();
+    let bash_tool = codelet::tools::BashTool::new(Uuid::nil());
     let bash_result = bash_tool
         .execute(serde_json::json!({
             "command": format!("ls -la {}", test_dir)

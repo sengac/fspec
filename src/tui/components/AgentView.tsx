@@ -222,6 +222,7 @@ import {
 import { getRustStateSource } from '../hooks/rustStateSource';
 import { useSessionNavigation } from '../hooks/useSessionNavigation';
 import { createSession, createIsolatedSession, restoreSession } from '../services/sessionService';
+import { applyPendingIsolationState } from '../services/globalSessionStreamManager';
 
 // TUI-034: Model selection types
 interface ModelSelection {
@@ -2382,6 +2383,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Switch to parent session (atomic state transition via store)
         activateSession(parentId);
 
+        // GIT-029: Apply any pending isolation state that arrived before activation
+        applyPendingIsolationState(parentId);
+
         // REFAC-008: Attach via GlobalSessionStreamManager and track cleanup
         sessionCleanupRef.current = attachToSession(parentId, (chunk: StreamChunk) => {
           handleStreamChunk(chunk);
@@ -2446,6 +2450,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
         );
         if (target) {
           activateSession(target.id);
+
+          // GIT-029: Apply any pending isolation state that arrived before activation
+          applyPendingIsolationState(target.id);
+
           setConversation(prev => [
             ...prev,
             {
@@ -2525,6 +2533,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
           name
         );
         activateSession(forkedSession.id);
+
+        // GIT-029: Apply any pending isolation state that arrived before activation
+        applyPendingIsolationState(forkedSession.id);
+
         setConversation(prev => [
           ...prev,
           {
@@ -2708,6 +2720,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
         activeSessionId = persistedSession.id;
         // Atomic state transition via store (sets currentSessionId + isReadyForNewSession=false)
         activateSession(activeSessionId);
+
+        // GIT-029: Apply any pending isolation state that arrived before activation
+        applyPendingIsolationState(activeSessionId);
 
         // Register session with SessionManager for background execution
         // This enables ESC + Detach and /resume to work properly
@@ -4769,6 +4784,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
         // Update session state (atomic transition via store)
         activateSession(sessionId);
 
+        // GIT-029: Apply any pending isolation state that arrived before activation
+        applyPendingIsolationState(sessionId);
+
         // TUI-052: Restore pending input if available
         try {
           const pendingInput = sessionGetPendingInput(sessionId);
@@ -4850,6 +4868,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       // Activate the session in the store
       activateSession(result.sessionId);
+
+      // GIT-029: Apply any pending isolation state that arrived before activation
+      applyPendingIsolationState(result.sessionId);
 
       // TUI-058: Apply default thinking level to new session
       applyDefaultThinkingLevel(result.sessionId);
@@ -5021,6 +5042,9 @@ export const AgentView: React.FC<AgentViewProps> = ({
         }
 
         activateSession(result.sessionId);
+
+        // GIT-029: Apply any pending isolation state that arrived before activation
+        applyPendingIsolationState(result.sessionId);
 
         // TUI-058: Apply default thinking level to new session
         applyDefaultThinkingLevel(result.sessionId);
@@ -5280,6 +5304,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
       // Switch to the watcher session (atomic transition via store)
       activateSession(selectedWatcher.id);
+
+      // GIT-029: Apply any pending isolation state that arrived before activation
+      applyPendingIsolationState(selectedWatcher.id);
+
       setIsWatcherMode(false);
       setWatcherList([]);
 
@@ -5433,6 +5461,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
 
         // Switch to watcher instance session (atomic transition via store)
         activateSession(instance.sessionId);
+
+        // GIT-029: Apply any pending isolation state that arrived before activation
+        applyPendingIsolationState(instance.sessionId);
+
         setIsWatcherMode(false);
         setWatcherList([]);
 
@@ -5737,6 +5769,10 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Update session state (atomic transition via store)
       // Note: activateSession sets both currentSessionId and isReadyForNewSession=false atomically
       activateSession(selectedSession.id);
+
+      // GIT-029: Apply any pending isolation state that arrived before activation
+      applyPendingIsolationState(selectedSession.id);
+
       setIsResumeMode(false);
       setAvailableSessions([]);
       setResumeSessionIndex(0);

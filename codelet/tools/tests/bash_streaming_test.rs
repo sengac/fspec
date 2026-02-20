@@ -12,6 +12,7 @@
 use codelet_tools::bash::{BashArgs, BashTool, StreamCallback};
 use codelet_tools::limits::OutputLimits;
 use std::sync::{Arc, Mutex};
+use uuid::Uuid;
 
 // Global lock for tests that modify the abort flag.
 // This prevents race conditions when tests run in parallel.
@@ -60,7 +61,7 @@ async fn test_stream_command_output_to_ui_in_real_time() {
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
     
     // @step Given a bash command that produces incremental output
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
 
     // @step When the command executes through the bash tool
@@ -69,6 +70,7 @@ async fn test_stream_command_output_to_ui_in_real_time() {
         .call_with_streaming(
             BashArgs {
                 command: "for i in 1 2 3; do echo \"line $i\"; done".to_string(),
+                cwd: None,
             },
             Some(collector.create_callback()),
         )
@@ -98,7 +100,7 @@ async fn test_buffer_complete_output_for_llm_response() {
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
     
     // @step Given a bash command that produces multiple lines of output
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
 
     // @step When the command completes execution
@@ -106,6 +108,7 @@ async fn test_buffer_complete_output_for_llm_response() {
         .call_with_streaming(
             BashArgs {
                 command: "echo 'line 1'; echo 'line 2'; echo 'line 3'".to_string(),
+                cwd: None,
             },
             Some(collector.create_callback()),
         )
@@ -140,7 +143,7 @@ async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
     
     // @step Given a bash command that produces output exceeding MAX_OUTPUT_CHARS
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
 
     // Generate ~50000 characters (exceeds MAX_OUTPUT_CHARS of 30000)
@@ -149,6 +152,7 @@ async fn test_truncate_large_output_for_llm_while_streaming_full_to_ui() {
         .call_with_streaming(
             BashArgs {
                 command: "seq 1 5000 | while read i; do echo \"line $i\"; done".to_string(),
+                cwd: None,
             },
             Some(collector.create_callback()),
         )
@@ -188,7 +192,7 @@ async fn test_emit_progress_through_stream_output_trait() {
     let _lock = ABORT_TEST_LOCK.lock().unwrap();
     
     // @step Given a bash command is executing
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
 
     // @step When stdout chunks are received from the subprocess
@@ -196,6 +200,7 @@ async fn test_emit_progress_through_stream_output_trait() {
         .call_with_streaming(
             BashArgs {
                 command: "echo 'chunk1'; echo 'chunk2'; echo 'chunk3'".to_string(),
+                cwd: None,
             },
             Some(collector.create_callback()),
         )
@@ -247,7 +252,7 @@ async fn test_abort_running_bash_command() {
     use std::time::{Duration, Instant};
 
     // @step Given a bash command that runs for a long time
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
 
     // Clear any previous abort state
@@ -260,6 +265,7 @@ async fn test_abort_running_bash_command() {
             BashArgs {
                 // Sleep for 10 seconds - we'll abort before it completes
                 command: "sleep 10; echo 'completed'".to_string(),
+                cwd: None,
             },
             Some(callback),
         )
@@ -316,13 +322,14 @@ async fn test_clear_abort_allows_new_commands() {
     clear_bash_abort();
 
     // @step Then a new command should run successfully
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
     let collector = MockStreamCollector::new();
 
     let result = tool
         .call_with_streaming(
             BashArgs {
                 command: "echo 'success'".to_string(),
+                cwd: None,
             },
             Some(collector.create_callback()),
         )

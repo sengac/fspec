@@ -6,6 +6,7 @@
 //! This module implements:
 //! 1. CLAUDE.md/AGENTS.md discovery by searching current + parent directories
 //! 2. Environment info gathering (platform, arch, shell, user, cwd)
+//! 3. GIT-034: Isolation context for worktree sessions
 //!
 //! The discovered context is injected via the system_reminders module.
 
@@ -14,6 +15,21 @@ use tracing::warn;
 
 /// Context file names to search for (in priority order)
 const CONTEXT_FILES: [&str; 2] = ["CLAUDE.md", "AGENTS.md"];
+
+/// GIT-034: Isolation context for worktree sessions
+///
+/// When a session runs in an isolated worktree, this context provides
+/// information about the isolation state so the AI can inform users
+/// about the worktree location and merge/discard options.
+#[derive(Debug, Clone, Default)]
+pub struct IsolationContext {
+    /// Whether the session is running in isolated mode
+    pub is_isolated: bool,
+    /// Relative path to the worktree (e.g., ".fspec/worktrees/abc123/")
+    pub worktree_path: Option<String>,
+    /// Short SHA of the base commit (first 8 chars)
+    pub base_commit: Option<String>,
+}
 
 /// Environment information gathered for system reminder injection
 #[derive(Debug, Clone)]
@@ -30,6 +46,8 @@ pub struct EnvironmentInfo {
     pub cwd: Option<String>,
     /// Current date in ISO 8601 format (YYYY-MM-DD), using local time
     pub date: String,
+    /// GIT-034: Isolation context for worktree sessions
+    pub isolation: Option<IsolationContext>,
 }
 
 impl EnvironmentInfo {
@@ -52,8 +70,30 @@ impl EnvironmentInfo {
             lines.push(format!("Working directory: {cwd}"));
         }
 
+        // GIT-034: Add isolation fields when session is isolated
+        // These appear between Working directory and Date
+        if let Some(ref isolation) = self.isolation {
+            if isolation.is_isolated {
+                lines.push("Isolation: ACTIVE".to_string());
+                
+                if let Some(ref path) = isolation.worktree_path {
+                    lines.push(format!("Worktree: {path}"));
+                }
+                
+                if let Some(ref commit) = isolation.base_commit {
+                    // Display short SHA (first 8 chars)
+                    let short_sha = if commit.len() > 8 {
+                        &commit[..8]
+                    } else {
+                        commit
+                    };
+                    lines.push(format!("Base commit: {short_sha}"));
+                }
+            }
+        }
+
         // TUI-064: Add current date in ISO 8601 format (YYYY-MM-DD)
-        // This appears after working directory as specified in architecture notes
+        // This appears last as specified in architecture notes
         lines.push(format!("Date: {}", self.date));
 
         lines.join("\n")
@@ -154,7 +194,25 @@ pub fn gather_environment_info() -> EnvironmentInfo {
         user,
         cwd,
         date,
+        isolation: None, // GIT-034: No isolation by default
     }
+}
+
+/// GIT-034: Gather environment information with isolation context.
+///
+/// Same as `gather_environment_info()` but also includes isolation context
+/// for worktree sessions. When the session is isolated, the reminder will
+/// include Isolation, Worktree path, and Base commit fields.
+///
+/// # Arguments
+/// * `isolation` - Optional isolation context for worktree sessions
+///
+/// # Returns
+/// * `EnvironmentInfo` - Gathered environment information with isolation context
+pub fn gather_environment_info_with_isolation(isolation: Option<&IsolationContext>) -> EnvironmentInfo {
+    let mut info = gather_environment_info();
+    info.isolation = isolation.cloned();
+    info
 }
 
 #[cfg(test)]
@@ -171,6 +229,7 @@ mod tests {
             user: Some("testuser".to_string()),
             cwd: Some("/home/testuser/project".to_string()),
             date: "2026-02-14".to_string(),
+            isolation: None,
         };
 
         let content = info.to_reminder_content();
@@ -193,6 +252,7 @@ mod tests {
             user: None,
             cwd: None,
             date: "2026-02-14".to_string(),
+            isolation: None,
         };
 
         let content = info.to_reminder_content();
@@ -266,6 +326,7 @@ mod tests {
             user: Some("testuser".to_string()),
             cwd: Some("/home/testuser/project".to_string()),
             date: "2026-02-14".to_string(),
+            isolation: None,
         };
 
         let content = info.to_reminder_content();
@@ -301,6 +362,7 @@ mod tests {
             user: Some("testuser".to_string()),
             cwd: Some("/home/testuser/project".to_string()),
             date: "2026-02-14".to_string(),
+            isolation: None,
         };
 
         let content = info.to_reminder_content();
@@ -345,6 +407,7 @@ mod tests {
             user: Some("testuser".to_string()),
             cwd: Some("/home/testuser/project".to_string()),
             date: "2026-02-13".to_string(),
+            isolation: None,
         };
         let old_content = old_info.to_reminder_content();
         assert!(
@@ -380,5 +443,209 @@ mod tests {
                 "Fresh content should NOT have old date"
             );
         }
+    }
+
+    // GIT-034: Tests for isolation context in environment reminder
+    
+    /// Feature: spec/features/ai-system-reminder-includes-isolation-state-and-worktree-path.feature
+    /// Scenario: Isolated session environment reminder includes isolation fields
+    #[test]
+    fn test_isolation_context_included_in_reminder() {
+        // @step Given a session is created with isolated mode enabled
+        let info = EnvironmentInfo {
+            platform: "linux".to_string(),
+            arch: "x86_64".to_string(),
+            shell: Some("/bin/bash".to_string()),
+            user: Some("testuser".to_string()),
+            cwd: Some("/home/testuser/project".to_string()),
+            date: "2026-02-20".to_string(),
+            isolation: Some(IsolationContext {
+                is_isolated: true,
+                worktree_path: Some(".fspec/worktrees/abc-123/".to_string()),
+                base_commit: Some("7a8b9c0def123456".to_string()),
+            }),
+        };
+
+        // @step When the environment system-reminder is generated
+        let content = info.to_reminder_content();
+
+        // @step Then the reminder should contain "Isolation: ACTIVE"
+        assert!(
+            content.contains("Isolation: ACTIVE"),
+            "Isolated session should have Isolation: ACTIVE. Got:\n{content}"
+        );
+
+        // @step And the reminder should contain "Worktree: .fspec/worktrees/abc-123/"
+        assert!(
+            content.contains("Worktree: .fspec/worktrees/abc-123/"),
+            "Isolated session should have worktree path. Got:\n{content}"
+        );
+
+        // @step And the reminder should contain "Base commit: 7a8b9c0d"
+        assert!(
+            content.contains("Base commit: 7a8b9c0d"),
+            "Isolated session should have short base commit. Got:\n{content}"
+        );
+    }
+
+    /// Feature: spec/features/ai-system-reminder-includes-isolation-state-and-worktree-path.feature
+    /// Scenario: Non-isolated session environment reminder excludes isolation fields
+    #[test]
+    fn test_non_isolated_excludes_isolation_fields() {
+        // @step Given a session is created with isolated mode disabled
+        let info = EnvironmentInfo {
+            platform: "linux".to_string(),
+            arch: "x86_64".to_string(),
+            shell: Some("/bin/bash".to_string()),
+            user: Some("testuser".to_string()),
+            cwd: Some("/home/testuser/project".to_string()),
+            date: "2026-02-20".to_string(),
+            isolation: None,
+        };
+
+        // @step When the environment system-reminder is generated
+        let content = info.to_reminder_content();
+
+        // @step Then the reminder should NOT contain "Isolation:"
+        assert!(
+            !content.contains("Isolation:"),
+            "Non-isolated session should NOT have Isolation field. Got:\n{content}"
+        );
+
+        // @step And the reminder should NOT contain "Worktree:"
+        assert!(
+            !content.contains("Worktree:"),
+            "Non-isolated session should NOT have Worktree field. Got:\n{content}"
+        );
+
+        // @step And the reminder should NOT contain "Base commit:"
+        assert!(
+            !content.contains("Base commit:"),
+            "Non-isolated session should NOT have Base commit field. Got:\n{content}"
+        );
+
+        // @step And the reminder should contain "Working directory:"
+        assert!(
+            content.contains("Working directory:"),
+            "Non-isolated session should have Working directory. Got:\n{content}"
+        );
+    }
+
+    /// GIT-034: Test that gather_environment_info_with_isolation includes isolation context
+    #[test]
+    fn test_gather_with_isolation_includes_context() {
+        let isolation = IsolationContext {
+            is_isolated: true,
+            worktree_path: Some(".fspec/worktrees/test-session/".to_string()),
+            base_commit: Some("abcdef12".to_string()),
+        };
+
+        let info = gather_environment_info_with_isolation(Some(&isolation));
+        
+        assert!(info.isolation.is_some(), "Isolation context should be set");
+        let iso = info.isolation.as_ref().unwrap();
+        assert!(iso.is_isolated, "is_isolated should be true");
+        assert_eq!(
+            iso.worktree_path.as_ref().unwrap(),
+            ".fspec/worktrees/test-session/"
+        );
+        assert_eq!(iso.base_commit.as_ref().unwrap(), "abcdef12");
+    }
+
+    /// GIT-034: Test that gather_environment_info_with_isolation(None) has no isolation
+    #[test]
+    fn test_gather_with_isolation_none_has_no_context() {
+        let info = gather_environment_info_with_isolation(None);
+        
+        assert!(info.isolation.is_none(), "Isolation context should be None");
+        
+        // Content should not contain isolation fields
+        let content = info.to_reminder_content();
+        assert!(!content.contains("Isolation:"), "Should not have Isolation field");
+        assert!(!content.contains("Worktree:"), "Should not have Worktree field");
+        assert!(!content.contains("Base commit:"), "Should not have Base commit field");
+    }
+
+    /// GIT-034: Test that isolation fields appear in correct order
+    #[test]
+    fn test_isolation_fields_order() {
+        let info = EnvironmentInfo {
+            platform: "linux".to_string(),
+            arch: "x86_64".to_string(),
+            shell: Some("/bin/bash".to_string()),
+            user: Some("testuser".to_string()),
+            cwd: Some("/home/testuser/project".to_string()),
+            date: "2026-02-20".to_string(),
+            isolation: Some(IsolationContext {
+                is_isolated: true,
+                worktree_path: Some(".fspec/worktrees/test/".to_string()),
+                base_commit: Some("12345678".to_string()),
+            }),
+        };
+
+        let content = info.to_reminder_content();
+        let lines: Vec<&str> = content.lines().collect();
+
+        let cwd_pos = lines.iter().position(|l| l.starts_with("Working directory:"));
+        let isolation_pos = lines.iter().position(|l| l.starts_with("Isolation:"));
+        let worktree_pos = lines.iter().position(|l| l.starts_with("Worktree:"));
+        let commit_pos = lines.iter().position(|l| l.starts_with("Base commit:"));
+        let date_pos = lines.iter().position(|l| l.starts_with("Date:"));
+
+        // Isolation should appear after Working directory
+        assert!(
+            isolation_pos.unwrap() > cwd_pos.unwrap(),
+            "Isolation should appear after Working directory"
+        );
+
+        // Worktree should appear after Isolation
+        assert!(
+            worktree_pos.unwrap() > isolation_pos.unwrap(),
+            "Worktree should appear after Isolation"
+        );
+
+        // Base commit should appear after Worktree
+        assert!(
+            commit_pos.unwrap() > worktree_pos.unwrap(),
+            "Base commit should appear after Worktree"
+        );
+
+        // Date should appear last
+        assert!(
+            date_pos.unwrap() > commit_pos.unwrap(),
+            "Date should appear after Base commit (last)"
+        );
+    }
+
+    /// GIT-034: Test that base commit displays short SHA
+    #[test]
+    fn test_base_commit_short_sha() {
+        let info = EnvironmentInfo {
+            platform: "linux".to_string(),
+            arch: "x86_64".to_string(),
+            shell: None,
+            user: None,
+            cwd: None,
+            date: "2026-02-20".to_string(),
+            isolation: Some(IsolationContext {
+                is_isolated: true,
+                worktree_path: Some(".fspec/worktrees/test/".to_string()),
+                base_commit: Some("abcdef1234567890abcdef".to_string()), // Long SHA
+            }),
+        };
+
+        let content = info.to_reminder_content();
+        
+        // Should display short SHA (first 8 chars)
+        assert!(
+            content.contains("Base commit: abcdef12"),
+            "Should display short SHA (8 chars). Got:\n{content}"
+        );
+        
+        // Should NOT display full SHA
+        assert!(
+            !content.contains("abcdef1234567890abcdef"),
+            "Should NOT display full SHA"
+        );
     }
 }

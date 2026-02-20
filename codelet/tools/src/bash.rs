@@ -283,17 +283,33 @@ impl StreamBuffers {
 /// Spawn a shell command with proper configuration.
 ///
 /// Handles platform-specific setup (process groups on Unix).
-fn spawn_command(command: &str) -> Result<tokio::process::Child, ToolError> {
+/// If `cwd` is provided, validates the directory exists and sets it as the working directory.
+fn spawn_command(command: &str, cwd: Option<&str>) -> Result<tokio::process::Child, ToolError> {
+    // Validate cwd exists if provided
+    if let Some(dir) = cwd {
+        if !std::path::Path::new(dir).is_dir() {
+            return Err(ToolError::Validation {
+                tool: "bash",
+                message: format!("Directory not found: {dir}"),
+            });
+        }
+    }
+
     #[cfg(unix)]
     {
-        Command::new("sh")
-            .arg("-c")
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c")
             .arg(command)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .process_group(0) // Create new process group for clean termination
-            .kill_on_drop(true) // Fallback: kill direct child if guard fails
-            .spawn()
+            .kill_on_drop(true); // Fallback: kill direct child if guard fails
+        
+        if let Some(dir) = cwd {
+            cmd.current_dir(dir);
+        }
+        
+        cmd.spawn()
             .map_err(|e| ToolError::Execution {
                 tool: "bash",
                 message: format!("Failed to spawn command: {e}"),
@@ -302,13 +318,18 @@ fn spawn_command(command: &str) -> Result<tokio::process::Child, ToolError> {
 
     #[cfg(not(unix))]
     {
-        Command::new("sh")
-            .arg("-c")
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c")
             .arg(command)
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .kill_on_drop(true) // Kill process when Child is dropped
-            .spawn()
+            .kill_on_drop(true); // Kill process when Child is dropped
+        
+        if let Some(dir) = cwd {
+            cmd.current_dir(dir);
+        }
+        
+        cmd.spawn()
             .map_err(|e| ToolError::Execution {
                 tool: "bash",
                 message: format!("Failed to spawn command: {e}"),
@@ -451,12 +472,27 @@ async fn wait_for_tasks_with_abort(
 pub type StreamCallback = Arc<dyn Fn(&str) + Send + Sync>;
 
 /// Bash tool for executing shell commands
-pub struct BashTool;
+pub struct BashTool {
+    /// Session ID for worktree isolation support
+    /// The tool looks up the effective_cwd for the session to execute commands in the correct directory
+    session_id: uuid::Uuid,
+}
 
 impl BashTool {
-    /// Create a new Bash tool instance
-    pub fn new() -> Self {
-        Self
+    /// Create a new Bash tool instance with session awareness
+    /// 
+    /// The session_id is used to look up the effective_cwd (worktree path for 
+    /// isolated sessions) so commands execute in the correct directory.
+    pub fn new(session_id: uuid::Uuid) -> Self {
+        Self { session_id }
+    }
+
+    /// Get the effective cwd for this tool instance
+    /// 
+    /// Looks up the effective_cwd via the global callback.
+    /// Returns None if no callback registered (non-isolated session).
+    fn get_effective_cwd(&self) -> Option<std::path::PathBuf> {
+        crate::facade::get_effective_cwd(self.session_id)
     }
 
     /// Execute command with streaming output to UI
@@ -495,8 +531,17 @@ impl BashTool {
             });
         }
 
+        // TOOL-013: Determine effective working directory
+        // Session isolation takes precedence - if effective_cwd is set, use it
+        // Otherwise fall back to args.cwd (which may be None)
+        let effective_cwd = self.get_effective_cwd();
+        let cwd = effective_cwd
+            .as_ref()
+            .map(|p| p.to_string_lossy().to_string())
+            .or(args.cwd);
+
         // Spawn process
-        let mut child = spawn_command(&args.command)?;
+        let mut child = spawn_command(&args.command, cwd.as_deref())?;
 
         // Create process group killer guard (Unix only)
         #[cfg(unix)]
@@ -536,12 +581,6 @@ impl BashTool {
     }
 }
 
-impl Default for BashTool {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 // ============================================================================
 // rig::tool::Tool Implementation
 // ============================================================================
@@ -551,6 +590,10 @@ impl Default for BashTool {
 pub struct BashArgs {
     /// The bash command to execute
     pub command: String,
+    /// Optional working directory for command execution.
+    /// If provided, the command will run in this directory instead of inheriting from the parent process.
+    #[serde(default)]
+    pub cwd: Option<String>,
 }
 
 impl rig::tool::Tool for BashTool {
@@ -588,8 +631,17 @@ impl rig::tool::Tool for BashTool {
             });
         }
 
+        // TOOL-013: Determine effective working directory
+        // Session isolation takes precedence - if effective_cwd is set, use it
+        // Otherwise fall back to args.cwd (which may be None)
+        let effective_cwd = self.get_effective_cwd();
+        let cwd = effective_cwd
+            .as_ref()
+            .map(|p| p.to_string_lossy().to_string())
+            .or(args.cwd);
+
         // Spawn process
-        let mut child = spawn_command(&args.command)?;
+        let mut child = spawn_command(&args.command, cwd.as_deref())?;
 
         // Create process group killer guard (Unix only)
         #[cfg(unix)]

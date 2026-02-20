@@ -2,6 +2,7 @@ use codelet::tools::{
     AstGrepTool, BashTool, EditTool, GlobTool, GrepTool, ReadTool, Tool, WriteTool,
 };
 use serde_json::json;
+use uuid::Uuid;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -47,7 +48,7 @@ async fn main() -> anyhow::Result<()> {
 
     // 4. Bash Tool
     println!("🐚 BASH TOOL - Execute command");
-    let bash_tool = BashTool::new();
+    let bash_tool = BashTool::new(Uuid::nil());
     let result = bash_tool
         .execute(json!({
             "command": format!("wc -l {}/sample.rs", test_dir)

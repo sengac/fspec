@@ -1070,6 +1070,29 @@ impl BackgroundSession {
             .unwrap_or_else(|| PathBuf::from(&self.project))
     }
 
+    /// GIT-034: Build isolation context for environment reminder injection
+    /// 
+    /// Returns Some(IsolationContext) if session is isolated, None otherwise.
+    /// The worktree path is converted to a relative path from project root.
+    fn build_isolation_context(&self) -> Option<codelet_cli::session::context_gathering::IsolationContext> {
+        if let Some(ref worktree_path) = self.worktree_path {
+            // Convert worktree path to relative path from project root
+            let project_root = PathBuf::from(&self.project);
+            let relative_path = worktree_path
+                .strip_prefix(&project_root)
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_else(|_| worktree_path.to_string_lossy().to_string());
+            
+            Some(codelet_cli::session::context_gathering::IsolationContext {
+                is_isolated: true,
+                worktree_path: Some(relative_path),
+                base_commit: self.base_commit.clone(),
+            })
+        } else {
+            None
+        }
+    }
+
     /// GIT-021: Create a checkpoint capturing current worktree state
     /// 
     /// Uses ghost commits to capture all working tree state (staged, unstaged, untracked files).
@@ -1549,7 +1572,9 @@ impl BackgroundSession {
         
         // CRITICAL: Reinject context reminders so AI retains project context
         // Without this, the AI loses CLAUDE.md and environment info
-        inner.inject_context_reminders();
+        // GIT-034: Include isolation context so AI knows about worktree
+        let isolation = self.build_isolation_context();
+        inner.inject_context_reminders_with_isolation(isolation.as_ref());
         drop(inner);
         
         // Reset the interrupt flag
@@ -4261,8 +4286,17 @@ impl SessionManager {
         // Create session from the configured provider manager
         let mut inner = codelet_cli::session::Session::from_provider_manager(provider_manager);
 
-        // Inject context reminders (CLAUDE.md discovery, environment info)
-        inner.inject_context_reminders();
+        // GIT-034: Build isolation context for the environment reminder
+        let isolation = codelet_cli::session::context_gathering::IsolationContext {
+            is_isolated: true,
+            worktree_path: Some(worktree_path.strip_prefix(&project_path)
+                .map(|p| p.to_string_lossy().to_string())
+                .unwrap_or_else(|_| worktree_path.to_string_lossy().to_string())),
+            base_commit: Some(base_commit.clone()),
+        };
+
+        // Inject context reminders with isolation context
+        inner.inject_context_reminders_with_isolation(Some(&isolation));
 
         // GIT-028: Create BackgroundSession with worktree_path and base_commit populated
         let session = Arc::new(BackgroundSession::new(

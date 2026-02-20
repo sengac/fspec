@@ -8,6 +8,7 @@ use codelet::agent::Runner;
 use codelet::tools::{bash::BashTool, limits::OutputLimits, Tool, ToolRegistry};
 use serde_json::json;
 use std::time::Duration;
+use uuid::Uuid;
 
 // ==========================================
 // BASH TOOL EXECUTION TESTS
@@ -17,7 +18,7 @@ use std::time::Duration;
 #[tokio::test]
 async fn test_execute_simple_command_successfully() {
     // @step Given the Bash tool is available
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
 
     // @step When I execute the Bash tool with command "echo hello"
     let result = tool
@@ -38,7 +39,7 @@ async fn test_execute_simple_command_successfully() {
 #[tokio::test]
 async fn test_execute_command_fails_returns_error() {
     // @step Given the Bash tool is available
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
 
     // @step When I execute the Bash tool with command "ls /nonexistent_directory_12345"
     let result = tool
@@ -63,7 +64,7 @@ async fn test_execute_command_fails_returns_error() {
 #[tokio::test]
 async fn test_long_output_truncated_at_character_limit() {
     // @step Given the Bash tool is available
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
 
     // @step When I execute the Bash tool with a command that generates over 30000 characters
     // Generate ~50000 characters (each line is ~11 chars "line NNNNN\n")
@@ -86,7 +87,7 @@ async fn test_long_output_truncated_at_character_limit() {
 #[tokio::test]
 async fn test_long_lines_replaced_with_omission_message() {
     // @step Given the Bash tool is available
-    let tool = BashTool::new();
+    let tool = BashTool::new(Uuid::nil());
 
     // @step When I execute the Bash tool with a command that outputs a line over 2000 characters
     // Generate a single line with 3000 'x' characters

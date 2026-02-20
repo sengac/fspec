@@ -659,11 +659,11 @@ impl BashToolFacadeWrapper {
     ///
     /// # Arguments
     /// * `facade` - The provider-specific facade for schema/naming
-    /// * `session_id` - The session ID for notification emission (BLOCK-006)
+    /// * `session_id` - The session ID for notification emission (BLOCK-006) and worktree isolation
     pub fn new(facade: BoxedBashToolFacade, session_id: Uuid) -> Self {
         Self {
             facade,
-            bash_tool: BashTool::new(),
+            bash_tool: BashTool::new(session_id),
             session_id,
         }
     }
@@ -706,20 +706,14 @@ impl Tool for BashToolFacadeWrapper {
         // Use the facade to map provider-specific params to internal format
         let internal_params = self.facade.map_params(args.0)?;
 
-        // GIT-020: Get effective_cwd for bash command execution (worktree for isolated, project for non-isolated)
-        let effective_cwd = get_effective_cwd(self.session_id);
-
         // Execute the bash tool based on the operation type
+        // TOOL-013: BashTool now handles effective_cwd lookup internally via session_id
         match internal_params {
             InternalBashParams::Execute { command } => {
-                // GIT-020: Prefix command with cd to effective_cwd if available
-                let final_command = if let Some(ref cwd) = effective_cwd {
-                    format!("cd {} && {}", cwd.display(), command)
-                } else {
-                    command.clone()
+                let bash_args = BashArgs { 
+                    command: command.clone(),
+                    cwd: None, // BashTool handles cwd lookup via session_id
                 };
-                
-                let bash_args = BashArgs { command: final_command.clone() };
                 match self.bash_tool.call(bash_args).await {
                     Ok(output) => Ok(BashOperationResult {
                         success: true,
