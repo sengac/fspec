@@ -2411,9 +2411,14 @@ export const AgentView: React.FC<AgentViewProps> = ({
     // SESS-001: Handle /detach command - detach session from work unit and clear conversation
     if (userMessage === '/detach') {
       setInputValue('');
-      if (workUnitId) {
-        detachSessionFromWorkUnit(workUnitId);
-        logger.debug(`SESS-001: Detached session from work unit ${workUnitId}`);
+      // TUI-068: Use getWorkUnitBySession to find the ACTUAL attached work unit,
+      // not the workUnitId prop (which is the original board context).
+      const attachedWorkUnitId = currentSessionId
+        ? getWorkUnitBySession(currentSessionId)
+        : undefined;
+      if (attachedWorkUnitId) {
+        detachSessionFromWorkUnit(attachedWorkUnitId);
+        logger.debug(`SESS-001: Detached session from work unit ${attachedWorkUnitId}`);
         // Clear conversation for fresh start
         setConversation([]);
         setTokenUsage({ inputTokens: 0, outputTokens: 0 });
@@ -3581,6 +3586,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
     currentModel,
     workUnitId,
     attachSessionToWorkUnit,
+    getWorkUnitBySession,
     detachSessionFromWorkUnit,
     isReadyForNewSession,
     activateSession,
@@ -3794,8 +3800,13 @@ export const AgentView: React.FC<AgentViewProps> = ({
       // Handle /detach command
       if (userMessage === '/detach') {
         setInputValue('');
-        if (workUnitId) {
-          detachSessionFromWorkUnit(workUnitId);
+        // TUI-068: Use getWorkUnitBySession to find the ACTUAL attached work unit,
+        // not the workUnitId prop (which is the original board context).
+        const attachedWorkUnitId = currentSessionId
+          ? getWorkUnitBySession(currentSessionId)
+          : undefined;
+        if (attachedWorkUnitId) {
+          detachSessionFromWorkUnit(attachedWorkUnitId);
           setConversation([]);
           setTokenUsage({ inputTokens: 0, outputTokens: 0 });
           prepareForNewSession();
@@ -3982,7 +3993,7 @@ export const AgentView: React.FC<AgentViewProps> = ({
       providerSections,
       currentModel,
       currentSessionId,
-      workUnitId,
+      getWorkUnitBySession,
       detachSessionFromWorkUnit,
       prepareForNewSession,
     ]
@@ -5897,16 +5908,23 @@ export const AgentView: React.FC<AgentViewProps> = ({
           }
         }
         // SESS-001: Clear session attachment when session is destroyed
-        if (workUnitId) {
-          detachSessionFromWorkUnit(workUnitId);
+        // TUI-068: Use getWorkUnitBySession to find the ACTUAL attached work unit,
+        // not the workUnitId prop (which is the original board context).
+        // The session may have been attached to a different work unit via IPC
+        // when AI ran 'fspec update-work-unit-status'.
+        const attachedWorkUnitId = currentSessionId
+          ? getWorkUnitBySession(currentSessionId)
+          : undefined;
+        if (attachedWorkUnitId) {
+          detachSessionFromWorkUnit(attachedWorkUnitId);
           logger.debug(
-            `SESS-001: Cleared session attachment for work unit ${workUnitId} (session destroyed)`
+            `SESS-001: Cleared session attachment for work unit ${attachedWorkUnitId} (session destroyed)`
           );
         }
         onExit();
       }
     },
-    [currentSessionId, onExit, workUnitId, detachSessionFromWorkUnit]
+    [currentSessionId, onExit, getWorkUnitBySession, detachSessionFromWorkUnit]
   );
 
   // Mouse scroll acceleration state (like VirtualList)
