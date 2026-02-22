@@ -129,6 +129,7 @@ Tags that categorize features by functional area.
 | `@example-mapping` | Example mapping for BDD discovery (rules, examples, questions, assumptions) |
 | `@export` | Export operations |
 | `@feature-management` | Feature File Operations |
+| `@filesystem-access` | Filesystem access operations |
 | `@filtering` | Filtering and query operations |
 | `@forecasting` | Forecasting and predictions |
 | `@formatting` | Auto-Formatting |
@@ -265,6 +266,8 @@ Tags for specific technical concerns or architectural patterns.
 | `@append-mode` | AST refactor append mode |
 | `@ast` | Abstract Syntax Tree |
 | `@ast-analysis` | AST-based code analysis features |
+| `@astgrep` | AstGrep tool operations |
+| `@astgrep-refactor` | AstGrepRefactor tool operations |
 | `@auth-001` | Work unit identifier for authentication features (example in example-mapping feature) |
 | `@auth-methods` | Authentication method handling |
 | `@auto-create` | Scenarios testing automatic file creation when files are missing |
@@ -317,6 +320,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@disconnect` | Disconnection handling scenarios |
 | `@discovery` | BDD discovery technique used before writing Gherkin scenarios |
 | `@document` | Document content type scenarios |
+| `@edit` | Edit tool operations |
 | `@email` | Email-related functionality |
 | `@env-vars` | Environment variable handling |
 | `@envelope` | Message envelope metadata scenarios |
@@ -337,7 +341,9 @@ Tags for specific technical concerns or architectural patterns.
 | `@gemini` | Google Gemini AI provider integration |
 | `@gherkin` | Gherkin Specification Compliance |
 | `@github-integration` | Features integrating with GitHub API or URLs |
+| `@glob` | Glob tool operations |
 | `@graceful-degradation` | Features that gracefully handle missing or invalid data |
+| `@grep` | Grep tool operations |
 | `@guidance` | Features that provide AI guidance/prompts rather than code implementation |
 | `@highlighting` | Scenarios testing visual highlighting behavior |
 | `@http-server` | HTTP server implementation and lifecycle management |
@@ -364,6 +370,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@llm-integration` | LLM integration and response handling |
 | `@local` | Local-only functionality |
 | `@logging` | Logging and diagnostics features |
+| `@ls` | Ls tool operations |
 | `@markdown` | Markdown rendering and processing |
 | `@markdown-formatting` | Markdown formatting and rendering features |
 | `@marked` | Marked library for markdown parsing |
@@ -384,11 +391,13 @@ Tags for specific technical concerns or architectural patterns.
 | `@napi` | NAPI-RS native module bindings for Node.js |
 | `@native` | Native platform builds |
 | `@no-logging` | Ensuring secrets are not logged |
+| `@non-isolated` | Non-isolated session scenarios |
 | `@ollama` | Ollama local provider |
 | `@outbound` | Outbound message flow scenarios |
 | `@outside-in-bdd` | Outside-in BDD approach using personas and behavior-first thinking |
 | `@package` | npm package configuration |
 | `@parallel-tools` | Parallel tool execution scenarios |
+| `@path-traversal` | Path traversal attack prevention |
 | `@pattern-detection` | Features involving pattern detection and analysis from historical data |
 | `@per-message` | Per-message metadata scenarios |
 | `@performance` | Performance optimization and efficiency features |
@@ -435,6 +444,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@strategy-planning` | Strategy planning and decision-making features that guide user choices |
 | `@streaming` | Real-time output streaming features |
 | `@structure` | Message structure preservation scenarios |
+| `@symlink` | Symlink escape attack prevention |
 | `@system-reminder` | Anti-drift pattern for AI agents using contextual reminders |
 | `@template` | Template System |
 | `@template-generation` | Template and documentation generation |
@@ -471,6 +481,7 @@ Tags for specific technical concerns or architectural patterns.
 | `@web` | Web-based features and browser functionality |
 | `@worker-threads` | Features involving Node.js worker threads for parallel processing |
 | `@workspace` | Cargo workspace configuration |
+| `@write` | Write tool operations |
 | `@zoom` | Zoom and scaling functionality for diagrams and visualizations |
 | `@zoom-pan` | Zoom and pan interaction features |
 | `@zustand` | Zustand state management library |
@@ -541,7 +552,9 @@ Tags for test-related scenarios and requirements.
 | Tag | Description |
 |-----|-------------|
 | `@acceptance` | Acceptance criteria validation |
+| `@allowed` | Access is allowed |
 | `@auto-attach` | Scenarios related to automatic session attachment |
+| `@backward-compatible` | Backward compatibility verification |
 | `@blocking` | Operations that block workflow progression |
 | `@circular-dependency` | Circular dependency detection tests |
 | `@compaction-fork-before-compaction-point` | Edge case: fork before compaction boundary |
@@ -830,7 +843,7 @@ fspec list-features --tag=@cli --tag=@cross-platform
 | @formatting | 1 | 4% |
 | @utility | 1 | 4% |
 
-_Last updated: 2026-02-19T00:11:35.702Z_
+_Last updated: 2026-02-22T12:00:39.199Z_
 
 **Update Command**: `fspec tag-stats`
 

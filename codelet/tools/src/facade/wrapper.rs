@@ -444,12 +444,25 @@ pub type BlockNotificationCallback = fn(String, String, String);
 /// The callback takes session_id_str and returns Option<String> (the stage/status).
 pub type GetWorkUnitStageCallback = fn(String) -> Option<String>;
 
-/// GIT-020: Callback type for getting the effective working directory from a session.
+/// GIT-020: Isolation context for file access control in isolated sessions.
+/// 
+/// Contains both the worktree path (where operations are allowed) and the 
+/// blocked project path (where operations are forbidden).
+#[derive(Clone, Debug)]
+pub struct IsolationContext {
+    /// The worktree path - files within this directory are ALLOWED
+    pub worktree_path: PathBuf,
+    /// The original project path - files within this directory are BLOCKED
+    /// (except for those within the worktree which takes precedence)
+    pub blocked_project_path: PathBuf,
+}
+
+/// GIT-020: Callback type for getting the isolation context from a session.
 /// This is set by the NAPI layer when initializing.
-/// The callback takes session_id_str and returns Option<PathBuf> (the effective_cwd).
-/// For isolated sessions, this returns the worktree path.
-/// For non-isolated sessions, this returns the project root.
-pub type GetEffectiveCwdCallback = fn(String) -> Option<PathBuf>;
+/// The callback takes session_id_str and returns Option<IsolationContext>.
+/// For isolated sessions, this returns Some(IsolationContext) with worktree and blocked_project paths.
+/// For non-isolated sessions, this returns None (no restrictions).
+pub type GetEffectiveCwdCallback = fn(String) -> Option<IsolationContext>;
 
 /// Global callback for emitting block notifications.
 /// Set by codelet-napi during session initialization.
@@ -495,20 +508,26 @@ fn get_work_unit_stage(session_id: Uuid) -> Option<String> {
         .and_then(|callback| callback(session_id.to_string()))
 }
 
-/// GIT-020: Get the effective working directory for a session.
+/// GIT-020: Get the isolation context for a session.
 ///
-/// Returns the worktree path for isolated sessions, project root for non-isolated sessions.
-/// Returns None if callback not registered or session not found.
+/// Returns the IsolationContext for isolated sessions (with worktree and blocked_project paths).
+/// Returns None for non-isolated sessions (no file access restrictions).
 ///
 /// # Arguments
-/// * `session_id` - The session UUID to get effective_cwd for
+/// * `session_id` - The session UUID to get isolation context for
 ///
 /// # Returns
-/// * `Some(PathBuf)` - The effective working directory
-/// * `None` - Callback not registered or session not found
-pub fn get_effective_cwd(session_id: Uuid) -> Option<PathBuf> {
+/// * `Some(IsolationContext)` - The isolation context for restricted access
+/// * `None` - No isolation (callback not registered, session not found, or non-isolated session)
+pub fn get_isolation_context(session_id: Uuid) -> Option<IsolationContext> {
     GET_EFFECTIVE_CWD_CALLBACK.get()
         .and_then(|callback| callback(session_id.to_string()))
+}
+
+/// Legacy alias for get_isolation_context - returns just the worktree path.
+/// Used by code that only needs the effective working directory.
+pub fn get_effective_cwd(session_id: Uuid) -> Option<PathBuf> {
+    get_isolation_context(session_id).map(|ctx| ctx.worktree_path)
 }
 
 /// Emit a block notification to the TUI.
@@ -528,39 +547,184 @@ pub fn emit_block_notification(session_id: Uuid, action: &str, reason: &str) {
 /// TOOL-014: Validate and resolve a path for worktree isolation.
 ///
 /// This function ensures that file operations in isolated sessions are restricted
-/// to the worktree directory. It provides the core path validation logic for all tools.
+/// appropriately. It provides the core path validation logic for all tools.
 ///
 /// # Behavior
 ///
-/// If session has an effective_cwd (worktree):
-/// - Relative paths are resolved relative to worktree
-/// - Absolute paths within worktree are allowed
-/// - Absolute paths outside worktree are REJECTED with ToolError::Validation
+/// If session has an isolation context (isolated session):
+/// - Paths within the worktree are ALLOWED
+/// - Paths within the blocked_project (original project) are BLOCKED
+/// - Paths elsewhere (e.g., /tmp, /etc) are ALLOWED
 ///
-/// If session has no effective_cwd (Uuid::nil() or non-isolated):
+/// If session has no isolation context (Uuid::nil() or non-isolated):
 /// - Paths are returned as-is (normal operation, no validation)
 ///
 /// # Arguments
-/// * `session_id` - The session UUID for worktree lookup
+/// * `session_id` - The session UUID for isolation context lookup
 /// * `path` - The file path to validate and resolve
 /// * `tool_name` - Name of the calling tool for error messages
 ///
 /// # Returns
 /// * `Ok(PathBuf)` - The resolved path (safe to use)
-/// * `Err(ToolError::Validation)` - Path is outside worktree
+/// * `Err(ToolError::Validation)` - Path is blocked (within original project)
 pub fn validate_and_resolve_path(
     session_id: Uuid,
     path: &str,
     tool_name: &'static str,
 ) -> Result<PathBuf, ToolError> {
-    let effective_cwd = get_effective_cwd(session_id);
-    validate_and_resolve_path_with_cwd(path, effective_cwd.as_ref(), tool_name)
+    let isolation_ctx = get_isolation_context(session_id);
+    validate_and_resolve_path_with_isolation(path, isolation_ctx.as_ref(), tool_name)
 }
 
-/// Internal path validation with explicit worktree path.
+/// Internal path validation with explicit isolation context.
 ///
 /// This is the core implementation that can be tested in isolation without
 /// requiring a registered callback.
+///
+/// # Arguments
+/// * `path` - The file path to validate and resolve
+/// * `isolation_ctx` - Optional isolation context (None = no isolation)
+/// * `tool_name` - Name of the calling tool for error messages
+///
+/// # Validation Logic
+/// 1. If path is within worktree → ALLOW (return resolved path)
+/// 2. If path is within blocked_project → BLOCK (return error)
+/// 3. Otherwise (e.g., /tmp, /etc) → ALLOW (return path as-is)
+pub fn validate_and_resolve_path_with_isolation(
+    path: &str,
+    isolation_ctx: Option<&IsolationContext>,
+    tool_name: &'static str,
+) -> Result<PathBuf, ToolError> {
+    match isolation_ctx {
+        Some(ctx) => {
+            let path_buf = std::path::Path::new(path);
+            
+            // Get canonical paths for comparison
+            let canonical_worktree = ctx.worktree_path.canonicalize().map_err(|_| {
+                ToolError::Validation {
+                    tool: tool_name,
+                    message: format!(
+                        "Cannot resolve worktree path. Session worktree: {}",
+                        ctx.worktree_path.display()
+                    ),
+                }
+            })?;
+            
+            let canonical_blocked = ctx.blocked_project_path.canonicalize().map_err(|_| {
+                ToolError::Validation {
+                    tool: tool_name,
+                    message: format!(
+                        "Cannot resolve blocked project path: {}",
+                        ctx.blocked_project_path.display()
+                    ),
+                }
+            })?;
+            
+            if path_buf.is_absolute() {
+                // For absolute paths, check against both worktree and blocked project
+                match path_buf.canonicalize() {
+                    Ok(canonical_path) => {
+                        // Path exists - check hierarchy
+                        // 1. If within worktree → ALLOW
+                        if canonical_path.starts_with(&canonical_worktree) {
+                            return Ok(canonical_path);
+                        }
+                        // 2. If within blocked_project → BLOCK
+                        if canonical_path.starts_with(&canonical_blocked) {
+                            return Err(ToolError::Validation {
+                                tool: tool_name,
+                                message: format!(
+                                    "Path is blocked from original project. Cannot access files in: {}",
+                                    canonical_blocked.display()
+                                ),
+                            });
+                        }
+                        // 3. Otherwise (e.g., /tmp, /etc) → ALLOW
+                        Ok(canonical_path)
+                    }
+                    Err(_) => {
+                        // Path doesn't exist yet - check by prefix
+                        // First check if it would be within worktree
+                        if path_buf.starts_with(&canonical_worktree) || path_buf.starts_with(&ctx.worktree_path) {
+                            return Ok(path_buf.to_path_buf());
+                        }
+                        // Then check if it would be within blocked_project
+                        if path_buf.starts_with(&canonical_blocked) || path_buf.starts_with(&ctx.blocked_project_path) {
+                            return Err(ToolError::Validation {
+                                tool: tool_name,
+                                message: format!(
+                                    "Cannot {} to original project. Path blocked: {}",
+                                    tool_name,
+                                    canonical_blocked.display()
+                                ),
+                            });
+                        }
+                        // Otherwise → ALLOW (path outside both worktree and blocked_project)
+                        Ok(path_buf.to_path_buf())
+                    }
+                }
+            } else {
+                // Relative path - resolve to worktree, then validate
+                let resolved = ctx.worktree_path.join(path);
+                
+                // Try to canonicalize to follow symlinks and resolve .. components
+                match resolved.canonicalize() {
+                    Ok(canonical_path) => {
+                        // Path exists - check hierarchy
+                        // 1. If within worktree → ALLOW
+                        if canonical_path.starts_with(&canonical_worktree) {
+                            return Ok(canonical_path);
+                        }
+                        // 2. If within blocked_project (symlink escape or ..) → BLOCK
+                        if canonical_path.starts_with(&canonical_blocked) {
+                            return Err(ToolError::Validation {
+                                tool: tool_name,
+                                message: format!(
+                                    "Path is blocked from original project. Cannot access files in: {}",
+                                    canonical_blocked.display()
+                                ),
+                            });
+                        }
+                        // 3. Otherwise (.. escaped to somewhere else like /tmp) → ALLOW
+                        Ok(canonical_path)
+                    }
+                    Err(_) => {
+                        // Path doesn't exist - normalize manually and check for escape
+                        let normalized = normalize_path(&resolved);
+                        
+                        // Check if normalized path is within worktree
+                        if normalized.starts_with(&canonical_worktree) || normalized.starts_with(&ctx.worktree_path) {
+                            return Ok(normalized);
+                        }
+                        // Check if it escaped to blocked_project
+                        if normalized.starts_with(&canonical_blocked) || normalized.starts_with(&ctx.blocked_project_path) {
+                            return Err(ToolError::Validation {
+                                tool: tool_name,
+                                message: format!(
+                                    "Path is blocked from original project. Cannot access files in: {}",
+                                    canonical_blocked.display()
+                                ),
+                            });
+                        }
+                        // Otherwise → ALLOW (escaped to somewhere else)
+                        Ok(normalized)
+                    }
+                }
+            }
+        }
+        None => {
+            // No isolation context - allow all paths
+            let path_buf = PathBuf::from(path);
+            Ok(path_buf)
+        }
+    }
+}
+
+/// Legacy wrapper for backward compatibility with tests.
+/// 
+/// This function is used by existing tests that pass just a worktree path.
+/// For isolated sessions, it creates an IsolationContext where the blocked_project
+/// is derived from the worktree path (parent of .fspec/worktrees/).
 ///
 /// # Arguments
 /// * `path` - The file path to validate and resolve
@@ -573,103 +737,42 @@ pub fn validate_and_resolve_path_with_cwd(
 ) -> Result<PathBuf, ToolError> {
     match worktree_path {
         Some(worktree) => {
-            let path_buf = std::path::Path::new(path);
-            
-            // Get canonical worktree path for comparison
-            let canonical_worktree = worktree.canonicalize().map_err(|_| {
-                ToolError::Validation {
-                    tool: tool_name,
-                    message: format!(
-                        "Cannot resolve worktree path. Session worktree: {}",
-                        worktree.display()
-                    ),
-                }
-            })?;
-            
-            if path_buf.is_absolute() {
-                // For absolute paths, check if they're within the worktree
-                // Try to canonicalize to follow symlinks and resolve ..
-                match path_buf.canonicalize() {
-                    Ok(canonical_path) => {
-                        // Path exists - check it's within worktree (follows symlinks)
-                        if canonical_path.starts_with(&canonical_worktree) {
-                            return Ok(canonical_path);
-                        }
-                        // Path exists but is outside worktree (or symlink points outside)
-                        Err(ToolError::Validation {
-                            tool: tool_name,
-                            message: format!(
-                                "Path is outside isolated worktree. Session worktree: {}",
-                                canonical_worktree.display()
-                            ),
-                        })
-                    }
-                    Err(_) => {
-                        // Path doesn't exist yet - check if it would be within worktree
-                        // by comparing the path prefix (for writes to new files)
-                        if path_buf.starts_with(&canonical_worktree) {
-                            return Ok(path_buf.to_path_buf());
-                        }
-                        // Also check against non-canonical worktree (in case of symlinked worktree)
-                        if path_buf.starts_with(worktree) {
-                            return Ok(path_buf.to_path_buf());
-                        }
-                        Err(ToolError::Validation {
-                            tool: tool_name,
-                            message: format!(
-                                "Cannot {} outside isolated worktree. Session worktree: {}",
-                                tool_name,
-                                canonical_worktree.display()
-                            ),
-                        })
-                    }
-                }
-            } else {
-                // Relative path - resolve to worktree, then verify it doesn't escape
-                let resolved = worktree.join(path);
-                
-                // Try to canonicalize to follow symlinks and resolve .. components
-                match resolved.canonicalize() {
-                    Ok(canonical_path) => {
-                        // Path exists - verify it's within worktree (catches symlink escapes and ..)
-                        if canonical_path.starts_with(&canonical_worktree) {
-                            return Ok(canonical_path);
-                        }
-                        // Resolved path escapes worktree (via .. or symlink)
-                        Err(ToolError::Validation {
-                            tool: tool_name,
-                            message: format!(
-                                "Path is outside isolated worktree. Session worktree: {}",
-                                canonical_worktree.display()
-                            ),
-                        })
-                    }
-                    Err(_) => {
-                        // Path doesn't exist - normalize manually and check for escape
-                        // We need to handle .. components that would escape the worktree
-                        let normalized = normalize_path(&resolved);
-                        if normalized.starts_with(&canonical_worktree) {
-                            return Ok(normalized);
-                        }
-                        // Also check against non-canonical worktree
-                        if normalized.starts_with(worktree) {
-                            return Ok(normalized);
-                        }
-                        Err(ToolError::Validation {
-                            tool: tool_name,
-                            message: format!(
-                                "Path is outside isolated worktree. Session worktree: {}",
-                                canonical_worktree.display()
-                            ),
-                        })
-                    }
-                }
-            }
+            // Derive blocked_project from worktree path
+            // Worktree is typically at /project/.fspec/worktrees/<session-id>
+            // So blocked_project should be /project
+            let blocked_project = derive_project_root_from_worktree(worktree);
+            let ctx = IsolationContext {
+                worktree_path: worktree.clone(),
+                blocked_project_path: blocked_project,
+            };
+            validate_and_resolve_path_with_isolation(path, Some(&ctx), tool_name)
         }
         None => {
-            // No worktree isolation - normal operation
-            Ok(PathBuf::from(path))
+            // No worktree - allow all paths
+            validate_and_resolve_path_with_isolation(path, None, tool_name)
         }
+    }
+}
+
+/// Derive the project root from a worktree path.
+///
+/// Worktrees are typically at: /project/.fspec/worktrees/<session-id>
+/// This function extracts /project from that path.
+fn derive_project_root_from_worktree(worktree: &PathBuf) -> PathBuf {
+    // Look for .fspec/worktrees in the path and get the parent
+    let worktree_str = worktree.to_string_lossy();
+    if let Some(idx) = worktree_str.find(".fspec/worktrees") {
+        let project_root = &worktree_str[..idx];
+        // Remove trailing slash if present
+        let trimmed = project_root.trim_end_matches('/').trim_end_matches('\\');
+        if trimmed.is_empty() {
+            PathBuf::from("/")
+        } else {
+            PathBuf::from(trimmed)
+        }
+    } else {
+        // Fallback: assume worktree is the project root itself
+        worktree.clone()
     }
 }
 

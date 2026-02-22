@@ -446,6 +446,10 @@
           "description": "Feature File Operations"
         },
         {
+          "name": "@filesystem-access",
+          "description": "Filesystem access operations"
+        },
+        {
           "name": "@filtering",
           "description": "Filtering and query operations"
         },
@@ -962,6 +966,14 @@
           "description": "AST-based code analysis features"
         },
         {
+          "name": "@astgrep",
+          "description": "AstGrep tool operations"
+        },
+        {
+          "name": "@astgrep-refactor",
+          "description": "AstGrepRefactor tool operations"
+        },
+        {
           "name": "@auth-001",
           "description": "Work unit identifier for authentication features (example in example-mapping feature)"
         },
@@ -1170,6 +1182,10 @@
           "description": "Document content type scenarios"
         },
         {
+          "name": "@edit",
+          "description": "Edit tool operations"
+        },
+        {
           "name": "@email",
           "description": "Email-related functionality"
         },
@@ -1250,8 +1266,16 @@
           "description": "Features integrating with GitHub API or URLs"
         },
         {
+          "name": "@glob",
+          "description": "Glob tool operations"
+        },
+        {
           "name": "@graceful-degradation",
           "description": "Features that gracefully handle missing or invalid data"
+        },
+        {
+          "name": "@grep",
+          "description": "Grep tool operations"
         },
         {
           "name": "@guidance",
@@ -1358,6 +1382,10 @@
           "description": "Logging and diagnostics features"
         },
         {
+          "name": "@ls",
+          "description": "Ls tool operations"
+        },
+        {
           "name": "@markdown",
           "description": "Markdown rendering and processing"
         },
@@ -1438,6 +1466,10 @@
           "description": "Ensuring secrets are not logged"
         },
         {
+          "name": "@non-isolated",
+          "description": "Non-isolated session scenarios"
+        },
+        {
           "name": "@ollama",
           "description": "Ollama local provider"
         },
@@ -1456,6 +1488,10 @@
         {
           "name": "@parallel-tools",
           "description": "Parallel tool execution scenarios"
+        },
+        {
+          "name": "@path-traversal",
+          "description": "Path traversal attack prevention"
         },
         {
           "name": "@pattern-detection",
@@ -1642,6 +1678,10 @@
           "description": "Message structure preservation scenarios"
         },
         {
+          "name": "@symlink",
+          "description": "Symlink escape attack prevention"
+        },
+        {
           "name": "@system-reminder",
           "description": "Anti-drift pattern for AI agents using contextual reminders"
         },
@@ -1784,6 +1824,10 @@
         {
           "name": "@workspace",
           "description": "Cargo workspace configuration"
+        },
+        {
+          "name": "@write",
+          "description": "Write tool operations"
         },
         {
           "name": "@zoom",
@@ -1954,8 +1998,16 @@
           "description": "Acceptance criteria validation"
         },
         {
+          "name": "@allowed",
+          "description": "Access is allowed"
+        },
+        {
           "name": "@auto-attach",
           "description": "Scenarios related to automatic session attachment"
+        },
+        {
+          "name": "@backward-compatible",
+          "description": "Backward compatibility verification"
         },
         {
           "name": "@blocking",
@@ -2354,7 +2406,7 @@
     ]
   },
   "statistics": {
-    "lastUpdated": "2026-02-19T00:11:35.702Z",
+    "lastUpdated": "2026-02-22T12:00:39.199Z",
     "phaseStats": [
       {
         "phase": "Phase 1",

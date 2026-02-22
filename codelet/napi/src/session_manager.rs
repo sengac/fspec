@@ -5943,19 +5943,39 @@ fn get_session_work_unit_stage(session_id_str: String) -> Option<String> {
     None
 }
 
-/// GIT-020: Callback function that retrieves the effective_cwd for a session.
+/// GIT-020: Callback function that retrieves the isolation context for a session.
 /// Called by FileToolFacadeWrapper and BashToolFacadeWrapper for isolated session support.
 ///
-/// For isolated sessions, returns the worktree path.
-/// For non-isolated sessions, returns the project root.
-fn get_session_effective_cwd(session_id_str: String) -> Option<std::path::PathBuf> {
+/// For isolated sessions, returns Some(IsolationContext) with:
+/// - worktree_path: Where file operations ARE allowed (the isolated worktree)
+/// - blocked_project_path: Where file operations are BLOCKED (the original project)
+///
+/// For non-isolated sessions, returns None to SKIP path validation entirely.
+///
+/// CRITICAL: Non-isolated sessions MUST return None so they can access ANY path
+/// (e.g., /tmp, /etc, anywhere on the filesystem). Only isolated sessions should
+/// have their file access restricted.
+///
+/// GIT-020 FIX: The isolation should ONLY block the original project directory,
+/// NOT all paths outside the worktree. Paths like /tmp, /etc are ALLOWED.
+fn get_session_effective_cwd(session_id_str: String) -> Option<codelet_tools::facade::IsolationContext> {
     // Try to get the session from the SessionManager
     let manager = SessionManager::instance();
     
     // Get the session by ID (handles UUID parsing internally)
     if let Ok(session) = manager.get_session(&session_id_str) {
-        // Get the effective_cwd from the session (worktree path for isolated, project root for non-isolated)
-        return Some(session.effective_cwd());
+        // CRITICAL: Only return Some(...) for isolated sessions.
+        // Non-isolated sessions must return None to skip path validation.
+        // session.worktree_path is Some only for isolated sessions.
+        if let Some(ref worktree_path) = session.worktree_path {
+            // Create IsolationContext with:
+            // - worktree_path: The isolated worktree (ALLOWED)
+            // - blocked_project_path: The original project (BLOCKED)
+            return Some(codelet_tools::facade::IsolationContext {
+                worktree_path: worktree_path.clone(),
+                blocked_project_path: std::path::PathBuf::from(&session.project),
+            });
+        }
     }
     
     None
