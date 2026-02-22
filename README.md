@@ -28,7 +28,7 @@ fspec works with any AI provider that supports tool calling. Set your API key an
 
 | Provider | Environment Variable |
 |----------|---------------------|
-| **Anthropic** | `ANTHROPIC_API_KEY` |
+| **Anthropic** | `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` (run `claude setup-token`) |
 | **Google Gemini** | `GOOGLE_GENERATIVE_AI_API_KEY` |
 | **OpenAI** | `OPENAI_API_KEY` |
 | **Codex** | OAuth (automatic) |
