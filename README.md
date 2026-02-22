@@ -172,6 +172,7 @@ The agent learns fspec's workflow and manages your specs automatically.
 - **Coverage tracking** — Link code to requirements
 - **Multiple sessions** — Run concurrent AI conversations in background
 - **Isolated sessions** — Work in git worktrees for safe experimentation
+- **Watcher sessions** — Child AIs that observe and review parent sessions in real-time
 
 ---
 
@@ -205,3 +206,47 @@ Now all AI responses stream to Telegram. Send messages back to provide input. Ru
 ### Multiple Bridges
 
 Connect to multiple endpoints simultaneously—Telegram, Slack, Discord, or any WebSocket server. Each bridge receives the same stream.
+
+---
+
+## Watcher Sessions
+
+Watchers are child AI sessions that observe a parent session in real-time and can automatically interject with feedback. Think of them as specialized reviewers running alongside your main coding agent.
+
+### Use Cases
+
+- **Security Reviewer** — Watches for SQL injection, XSS, authentication issues
+- **Test Enforcer** — Reminds the agent to write tests before implementation  
+- **Architecture Advisor** — Suggests patterns and flags structural problems
+- **Documentation Checker** — Ensures code changes include doc updates
+
+### Creating a Watcher
+
+Type `/watcher` in any session to open the watcher overlay. Press **N** to create a new template:
+
+- **Name** — Role name like "Security Reviewer"
+- **Authority** — Peer (suggestions) or Supervisor (directives)
+- **Model** — Which AI model to use
+- **Brief** — Instructions for what to watch for
+- **Auto-inject** — Whether to automatically send feedback to the parent
+
+### How It Works
+
+1. Watcher observes parent session output in real-time
+2. At breakpoints (tool results, turn completion), watcher evaluates what it saw
+3. If the watching brief is triggered, watcher decides to interject or continue
+4. **Auto-inject ON**: Feedback automatically appears in parent session as a purple message
+5. **Auto-inject OFF**: You review the feedback and manually inject if desired
+
+### Split View
+
+When viewing a watcher session, the screen splits:
+
+- **Left pane** — Parent session (read-only, dimmed)
+- **Right pane** — Watcher conversation (interactive)
+- **←/→ arrows** — Switch between panes
+- **Tab** — Select specific turns to discuss
+
+### Templates
+
+Watcher configurations are saved as reusable templates in `~/.fspec/watcher-templates.json`. Spawn instances quickly with `/watcher spawn <slug>` or press Enter on any template in the overlay.
