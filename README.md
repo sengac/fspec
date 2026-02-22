@@ -28,11 +28,101 @@ cd /path/to/your/project
 fspec
 ```
 
-This opens the interactive platform with a Kanban board, AI conversations, and live spec validation.
+This opens the interactive platform with a Kanban board and AI conversations.
 
 ![Interactive Kanban](interactive-kanban.png)
 
-Press **Enter** on any work unit to start coding with the agent.
+---
+
+## First Run: Getting Started
+
+When you first run `fspec` on a new project, the board is empty—no work units yet. Here's how to begin:
+
+### 1. Start an AI Agent
+
+Press **`/`** (or **Shift+Right**) to start a new AI conversation. A dialog appears:
+
+```
+Start New Agent?
+Begin a fresh AI conversation, not linked to any task.
+
+Mode:  Normal  / Isolated
+```
+
+- **Normal** — Agent works directly in your project
+- **Isolated** — Agent works in a git worktree (safe for experimental changes)
+
+Press **Enter** on "Yes" to launch the agent.
+
+### 2. Use It However You Want
+
+**fspec doesn't force any workflow.** The AI agent is a full-featured coding assistant. You can:
+
+- Ask it to write code, refactor, debug, or explain things
+- Have it review PRs, write documentation, or answer questions
+- Use it exactly like any other AI coding tool
+
+The ACDD workflow is available when you want it, not required. fspec provides the tools—you decide how to use them.
+
+### 3. Foundation Discovery (When Using ACDD)
+
+If you want to use the spec-driven workflow, start with **Foundation Discovery**. For new projects without `spec/foundation.json`, tell the AI:
+
+```
+"Let's set up fspec for this project"
+"Run fspec discover-foundation"
+```
+
+The AI guides you through creating your project's requirements document:
+
+- Analyzes your codebase
+- Asks about project vision, personas, and capabilities
+- Builds `foundation.json` field by field
+- Finalizes with `fspec discover-foundation --finalize`
+
+This is a one-time setup that establishes project context for the ACDD workflow.
+
+### 4. Create Work Units
+
+Once foundation exists (or skip it for quick tasks), tell the AI what you want:
+
+```
+"Create a story for user authentication"
+"I need to add a payment processing feature"
+"There's a bug where login fails on mobile"
+```
+
+The AI creates work units (stories, bugs, or tasks) and adds them to your backlog.
+
+### 5. Work the Kanban Board
+
+Now you have cards on the board! The workflow is:
+
+```
+BACKLOG → SPECIFYING → TESTING → IMPLEMENTING → VALIDATING → DONE
+```
+
+- Press **Enter** on any card to work on it with the AI
+- The AI moves cards through stages automatically
+- Each stage has specific goals (see "How It Works" below)
+
+Or ignore the board entirely and just chat with the agent—it's your choice.
+
+---
+
+## Keyboard Shortcuts
+
+| Key | Action |
+|-----|--------|
+| `/` | Start new AI agent |
+| **Shift+Right** | Navigate to next session (or create new) |
+| **Shift+Left** | Navigate to previous session (or back to board) |
+| **Enter** | Open selected work unit with AI |
+| **↑ ↓ ← →** | Navigate board |
+| **C** | View git checkpoints |
+| **F** | View changed files |
+| **D** | View FOUNDATION.md |
+| **Esc** | Exit / Go back |
 
 ---
 
@@ -79,6 +169,7 @@ The agent learns fspec's workflow and manages your specs automatically.
 - **Git checkpoints** — Automatic save points for safe experimentation
 - **Coverage tracking** — Link code to requirements
 - **Multiple sessions** — Run concurrent AI conversations in background
+- **Isolated sessions** — Work in git worktrees for safe experimentation
 
 ---
 
