@@ -187,6 +187,7 @@ Monitor and interact with your AI sessions from your phone. The Bridge tool conn
 2. **Configure the bridge** — Create `bridge/.env`:
    ```bash
    TELEGRAM_BOT_TOKEN=your_token_here
+   TELEGRAM_ALLOWED_USER_IDS=123456789   # Your Telegram user ID (optional but recommended)
    ```
 
 3. **Start the endpoint**:
@@ -202,6 +203,20 @@ Monitor and interact with your AI sessions from your phone. The Bridge tool conn
    ```
 
 Now all AI responses stream to Telegram. Send messages back to provide input. Run tasks overnight and check progress from bed.
+
+### Security: User Whitelist
+
+By default, anyone who finds your bot can interact with it. Set `TELEGRAM_ALLOWED_USER_IDS` to restrict access:
+
+```bash
+# Single user
+TELEGRAM_ALLOWED_USER_IDS=123456789
+
+# Multiple users (comma-separated)
+TELEGRAM_ALLOWED_USER_IDS=123456789,987654321
+```
+
+To find your Telegram user ID, message [@userinfobot](https://t.me/userinfobot) or check the bridge console output when you send a message.
 
 ### Multiple Bridges
 
