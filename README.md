@@ -25,7 +25,6 @@ You don't write the specs. You don't write the tests. You answer questions and r
 ```bash
 npm install -g @sengac/fspec
 cd /path/to/your/project
-fspec init
 fspec
 ```
 
@@ -53,6 +52,13 @@ This is **Acceptance Criteria Driven Development (ACDD)**. The agent drives. You
 ## Using with External Agents
 
 fspec also works as a tool for Claude Code, Cursor, Codex, or any AI agent:
+
+```bash
+cd /path/to/your/project
+fspec init
+```
+
+This installs agent-specific documentation and slash commands. Then tell your agent:
 
 ```
 "Run fspec bootstrap"
