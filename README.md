@@ -22,6 +22,31 @@ When you just want to code, skip all that. fspec is a capable coding assistant o
 
 ---
 
+## Supported Providers
+
+fspec works with any AI provider that supports tool calling. Set your API key and start coding:
+
+| Provider | Environment Variable | Models |
+|----------|---------------------|--------|
+| **Anthropic** | `ANTHROPIC_API_KEY` | Claude Opus 4, Sonnet 4, Haiku |
+| **Google Gemini** | `GOOGLE_GENERATIVE_AI_API_KEY` | Gemini 2.5 Pro/Flash |
+| **OpenAI** | `OPENAI_API_KEY` | GPT-4o, o1, o3 |
+| **Codex** | OAuth (automatic) | ChatGPT models via OAuth |
+| **xAI** | `XAI_API_KEY` | Grok 3 |
+| **DeepSeek** | `DEEPSEEK_API_KEY` | DeepSeek V3, R1 |
+| **Mistral** | `MISTRAL_API_KEY` | Mistral Large, Codestral |
+| **Groq** | `GROQ_API_KEY` | Llama, Mixtral (fast inference) |
+| **OpenRouter** | `OPENROUTER_API_KEY` | 100+ models via unified API |
+| **Together AI** | `TOGETHER_API_KEY` | Open-source models |
+| **Ollama** | — | Local models (no API key needed) |
+| **Azure OpenAI** | `AZURE_OPENAI_API_KEY` | Azure-hosted GPT models |
+
+**OpenAI-compatible APIs** — Ollama, vLLM, and any server implementing the OpenAI API format work automatically.
+
+Switch models mid-conversation with `/model` or press **M** in any session.
+
+---
+
 ## Quick Start
 
 ```bash
